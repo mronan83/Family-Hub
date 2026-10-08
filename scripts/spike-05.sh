@@ -57,11 +57,15 @@ unschedule() {
 }
 
 # Preconditions ------------------------------------------------------------------------------------
-versions=$(sql -c "select string_agg(extname || ' ' || extversion, ', ' order by extname) from pg_extension where extname in ('pg_net', 'pg_cron')")
-case "$versions" in
-  *pg_cron*pg_net*) echo "extensions: $versions" ;;
-  *) echo "::error::pg_cron and pg_net must be enabled (migration 20261008040000_job_scheduler)"; exit 1 ;;
-esac
+# e2e on the same preview applies the migration that enables pg_cron and pg_net; wait for it.
+DEADLINE=$(( $(now) + ${EXTENSIONS_WAIT:-900} ))
+while :; do
+  versions=$(sql -c "select string_agg(extname || ' ' || extversion, ', ' order by extname) from pg_extension where extname in ('pg_net', 'pg_cron')")
+  case "$versions" in *pg_cron*pg_net*) break ;; esac
+  [ "$(now)" -lt "$DEADLINE" ] || { echo "::error::pg_cron and pg_net are not enabled (migration 20261008040000_job_scheduler; e2e applies it)"; exit 1; }
+  sleep 15
+done
+echo "extensions: $versions"
 
 # pg_cron against production, running while everything else is measured ---------------------------
 unschedule

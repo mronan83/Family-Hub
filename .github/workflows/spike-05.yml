@@ -2,6 +2,9 @@
 # the production database calls the probe on that preview, the way pg_cron jobs will call the job
 # endpoints, and the results land in the run's summary. Runs only for those branches; to measure
 # again (for example after Vercel changes its limits), push a branch with that prefix.
+#
+# It has its own concurrency group, so it never displaces an e2e run, and applies no migrations
+# itself: e2e on the same preview enables pg_cron and pg_net, and the script waits for them.
 name: spike-05
 
 on:
@@ -11,7 +14,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: demo-family
+  group: spike-05
   cancel-in-progress: false
 
 jobs:
@@ -21,7 +24,7 @@ jobs:
       github.event.deployment.environment != 'Production' &&
       startsWith(github.event.deployment.ref, 'claude/spike-05')
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 30
     env:
       PREVIEW_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
@@ -31,16 +34,8 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.deployment.sha }}
-      - uses: supabase/setup-cli@v3
-        with:
-          version: 2.117.0
-      - name: Include main's migrations
-        run: |
-          git fetch --no-tags --depth=1 origin main
-          git checkout FETCH_HEAD -- supabase/migrations
-      # Same step as e2e: enables pg_cron and pg_net if this branch adds them, and resets the demo
-      # family, which nothing here uses.
-      - name: Apply new migrations
-        run: bash scripts/preview-db.sh
       - name: Measure
         run: bash scripts/spike-05.sh
+      - name: Remove the temporary cron job
+        if: always()
+        run: psql "$SUPABASE_DB_URL" -X -q -c "select cron.unschedule(jobid) from cron.job where jobname = 'spike-05-cron'" || true
