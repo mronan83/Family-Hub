@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.7 · Status: build baseline · Maintained by Claude Code
+> v0.7.1: PR #1 merged; WP-01 and WP-02 done. WP-01's live-environment checks move to WP-41 (blocked on Y-2..Y-4); Y-1 is now branch protection.
 > v0.7: WP-40 reminders (web push, switchable per person, device and item; D-35).
 > v0.6: one family list (D-30..D-34): WP-08 becomes chores, tasks, tags and visibility (L); WP-09 generates one shared occurrence per due date and carries tasks over (L); WP-12 adds My tasks (L); WP-02/04 add the earns-rewards switch; WP-10, WP-11, WP-15, WP-16, WP-17, WP-19 and WP-37 take the new rules.
 > v0.5.2: §0 Waiting on you lists the owner actions that unblock work; the five build artifacts are also published as interactive pages generated from these files (`pnpm docs:build`).
@@ -17,10 +18,10 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 
 | Item | Action | Where | Unblocks |
 |---|---|---|---|
-| Y-1 | Review and merge pull request #1 (WP-01, WP-02, docs v0.7), then turn on branch protection for `main` as in `01` §9.3 (pull request required, CI checks plus e2e, squash merge only) | GitHub → Pull requests → #1; Settings → Branches | Merge to `main`; WP-37, WP-07, WP-15 start from merged work |
-| Y-2 | Create the second Supabase Free project (`familywise-preview`) and share its project ref, the ID in its URL (not a key) | Supabase dashboard → New project | e2e on previews (WP-01 done-when), SPIKE-01 |
-| Y-3 | Add the GitHub secrets and variables listed in `01` §9.8 | GitHub → Settings → Secrets and variables → Actions | deploy, keepalive and e2e workflows; SPIKE-05 |
-| Y-4 | Add the Vercel environment variables in `01` §9.8 for Production and Preview (publishable key, secret key, `JOB_SIGNING_SECRET`); create the protection bypass secret | Vercel → family-wise → Settings | WP-03 sign-in on previews, SPIKE-05 |
+| Y-1 | Turn on branch protection for `main` as in `01` §9.3: pull request required, the CI checks required (plus e2e once WP-41 is done), squash merge only | GitHub → Settings → Branches | Every later merge passes its checks first |
+| Y-2 | Create the second Supabase Free project (`familywise-preview`) and share its project ref, the ID in its URL (not a key) | Supabase dashboard → New project | WP-41 (e2e on previews), SPIKE-01 |
+| Y-3 | Add the GitHub secrets and variables listed in `01` §9.8 | GitHub → Settings → Secrets and variables → Actions | WP-41 (deploy, keepalive and e2e workflows), SPIKE-05 |
+| Y-4 | Add the Vercel environment variables in `01` §9.8 for Production and Preview (publishable key, secret key, `JOB_SIGNING_SECRET`); create the protection bypass secret | Vercel → family-wise → Settings | WP-41, WP-03 sign-in on previews, SPIKE-05 |
 | Y-5 | Invite your spouse to the Supabase organization team, so the built-in mailer can deliver their magic links | Supabase → Organization → Team | WP-03 done-when (second admin signs in by magic link) |
 | Y-6 | Publish one iCloud calendar and save its link as the repository secret `ICS_SPIKE_URL` | iCloud Calendar → Share → Public Calendar; GitHub secrets | SPIKE-02, then WP-22 and WP-29 |
 | Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
@@ -34,14 +35,15 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 
 | Item | Title | Milestone | Size | Depends on | Status |
 |---|---|---|---|---|---|
-| SPIKE-01 | Device sessions + Realtime under RLS | P0 | S | WP-02 | Queued |
-| SPIKE-05 | `pg_cron`/`pg_net` → Vercel job limits | P0 | S | WP-01 | Queued (needs Supabase + Vercel secrets, `01` §9.8) |
+| SPIKE-01 | Device sessions + Realtime under RLS | P0 | S | WP-02 | Blocked: Y-2 (preview Supabase project) |
+| SPIKE-05 | `pg_cron`/`pg_net` → Vercel job limits | P0 | S | WP-01 | Blocked: Y-3 and Y-4 (secrets, `01` §9.8) |
 | SPIKE-02 | iCloud ICS fidelity; CalDAV with a secondary Apple ID | P1d | S | — | Blocked: needs a published iCloud calendar link |
 | SPIKE-04 | School menu platform and feed | P2 | S | — | Done: Nutrislice public JSON API (`01` §5.5) |
 | SPIKE-03 | Pi 5 + 32" 4K panel: touch, kiosk flags, power, animation budget | P1a | S | — | Blocked: hardware being sourced (OQ-05b) |
-| WP-01 | Repo, CI/CD pipeline, environments | P0 | M | — | In progress (`claude/p0-foundation`) |
-| WP-37 | Brand system and design tokens | P0 | M | WP-01 | Queued |
-| WP-02 | Tenancy schema and RLS | P0 | M | WP-01 | In progress (`claude/p0-foundation`) |
+| WP-01 | Repo, CI/CD pipeline, environments | P0 | M | — | Done (PR #1) |
+| WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | Blocked: Y-2, Y-3, Y-4 (owner setup) |
+| WP-37 | Brand system and design tokens | P0 | M | WP-01 | Ready |
+| WP-02 | Tenancy schema and RLS | P0 | M | WP-01 | Done (PR #1) |
 | WP-03 | Admin authentication and onboarding | P0 | M | WP-02, WP-37 | Queued |
 | WP-04 | Members UI | P0 | S | WP-03, WP-37 | Queued |
 | WP-05 | Device pairing and device auth | P0 | L | WP-03 | Queued |
@@ -56,7 +58,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Queued |
 | WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | Queued |
 | WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
-| WP-15 | Rules engine package | P1b | L | WP-01 | Queued |
+| WP-15 | Rules engine package | P1b | L | WP-01 | Ready |
 | WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Queued |
 | WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Queued |
 | WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Queued |
@@ -112,6 +114,7 @@ flowchart LR
     WP05 --> WP06[WP-06 Board shell and realtime]
     WP37 --> WP06
     WP01 --> WP07[WP-07 Jobs and observability]
+    WP01 --> WP41[WP-41 Turn on environments]
     WP02 --> WP07
   end
   subgraph P1a[P1a Kid loop]
@@ -227,7 +230,13 @@ flowchart LR
 - Production pipeline: migrate (`supabase db push`) → app (`vercel deploy --prod`) → smoke; Vercel auto production deploy off.
 - Free-plan operations (`01` §9.10): keepalive heartbeat to both projects; migrations over the session pooler.
 - Secrets inventory and cost ceiling written in `01` §9.8–9.9; PR template with the docs checklist.
-- **Done when:** a PR runs all gates green without Docker; a preview deploys and e2e passes against the rebuilt preview database; a merge runs migrate → app → smoke against production; keepalive writes to both projects.
+- **Done when:** a PR runs all CI gates green without Docker, and the e2e, deploy and keepalive workflows exist and stop at a clear configuration check until their secrets exist. Running them live is WP-41.
+
+### WP-41 — Turn on previews, production deploys, and keepalive
+**Phase:** P0 · **Size:** S · **Depends on:** WP-01 · **Reqs:** NFR-14, NFR-08
+- Starts once the owner has done Y-2 (preview project), Y-3 (GitHub secrets and variables) and Y-4 (Vercel environment variables).
+- First live runs of the WP-01 workflows: rebuild the preview database and run e2e on a preview; set `DEPLOY_ENABLED` and run migrate, then app, then smoke against production; keepalive writing to both projects. Add e2e to the required checks (Y-1).
+- **Done when:** e2e passes on a preview against the rebuilt preview database; a merge runs migrate, then app, then smoke against production; keepalive writes to both projects.
 
 ### WP-37 — Brand system and design tokens
 **Phase:** P0 · **Size:** M · **Depends on:** WP-01 · **Reqs:** NFR-13
@@ -482,7 +491,7 @@ flowchart LR
 
 | Milestone | Items | Notes |
 |---|---|---|
-| P0 | SPIKE-01, SPIKE-05, WP-01 – WP-07, WP-37 | One L (device auth) |
+| P0 | SPIKE-01, SPIKE-05, WP-01 – WP-07, WP-37, WP-41 | One L (device auth) |
 | P1a | SPIKE-03, WP-08 – WP-14, WP-16, WP-21 | Five L (chores/tasks, generator, events/status, board Today, admin ops) |
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
