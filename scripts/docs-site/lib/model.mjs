@@ -299,7 +299,7 @@ export function loadModel(root) {
   const host = {};
   for (const [h, ids2] of Object.entries({
     'Pi kiosk': ['PI', 'BRD', 'OUTBOX'],
-    'Vercel (Next.js)': ['ADM', 'API', 'AUTH', 'RULES', 'OCCGEN', 'CALSYNC', 'MENUIMP'],
+    'Vercel (Next.js)': ['ADM', 'API', 'AUTH', 'RULES', 'OCCGEN', 'CALSYNC', 'MENUIMP', 'NOTIFY'],
     Supabase: ['DB', 'RT', 'VAULT', 'SAUTH', 'SCHED'],
     'Cross-cutting': ['OBS', 'UI', 'CICD'],
   })) {

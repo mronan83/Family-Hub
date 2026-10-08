@@ -1,6 +1,7 @@
 # 03 — User Stories
 
-> Version 0.6 · Status: build baseline · Maintained by Claude Code
+> Version 0.7 · Status: build baseline · Maintained by Claude Code
+> v0.7: reminders, switchable per person, device and item (US-317, US-318, US-319; D-35).
 > v0.6: one family list (D-30..D-34): shared items with who-did-it credit (US-311), household tags (US-312), due times (US-313), overdue tasks carry over (US-314), private items (US-315), My tasks (US-316), Family view (US-1006), earns-rewards switch (US-1109); US-301, US-303, US-304, US-307, US-401, US-1002, US-1101 updated.
 > v0.5: free plans (D-29): backups (US-903), cost and pausing (US-909) and previews (US-911) updated.
 > v0.4: magic link + password sign-in (US-102) with Apple/passkey later (US-106); event-time conflicts (US-205); today-only board and parent-only late credit (US-303, US-307); approval switch and day-close rules (US-310, US-307); closures spare today (US-602); delivery pipeline (US-911).
@@ -233,6 +234,30 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given items are assigned to me, when I open My tasks, then I see overdue, today's, and upcoming items in that order, including shared items I am on.
 - Given I type a title in quick add, when I save, then a family-visible task due today and assigned to me exists in one step.
 - Given I complete an item on my phone, when the board refreshes, then it shows as done by me.
+
+### US-317 — Turn reminders on or off for myself
+**As a** parent **I want** to turn reminders on or off for myself and choose which devices get them **so that** I'm nudged only where and when I want.
+**Priority:** Must · **Phase:** P2 · **Reqs:** CHR-15
+- Given reminders are off (the default), when an item of mine comes due, then I get no notification.
+- Given I tap "Turn on reminders" in the admin app on my iPhone's Home Screen and allow notifications, when I send a test, then it arrives on that phone.
+- Given reminders are on for my phone and laptop, when I remove the laptop in Settings, then only the phone receives them.
+- Given I turn reminders off, when anything comes due, then no device of mine is notified until I turn them back on.
+
+### US-318 — Choose which items remind me
+**As a** parent **I want** a bell on each item and a default for new ones **so that** only the things I care about interrupt me.
+**Priority:** Must · **Phase:** P2 · **Reqs:** CHR-16
+- Given my default is "remind me", when I'm assigned a new item, then its bell is on for me, and I can turn it off for that item only.
+- Given "Call the plumber" is due at 15:00 with a 15-minute lead, when it is 14:45 and the task is open, then I get exactly one notification, and tapping it opens the item in My tasks.
+- Given I complete the item at 14:30, when 14:45 arrives, then no notification is sent.
+- Given an item has no due time, when its due date arrives, then I'm reminded at my morning time.
+- Given a shared item, when it comes due, then each assignee with reminders on is notified, and nobody is notified after someone completes it.
+
+### US-319 — Morning digest, quiet hours, and discreet notifications
+**As a** parent **I want** an optional morning summary, quiet hours, and discreet notifications for private items **so that** reminders help without disturbing anyone or spoiling surprises.
+**Priority:** Must · **Phase:** P2 · **Reqs:** CHR-17
+- Given I turn on the digest at 7:00, when it is 7:00, then I get one notification summarizing my overdue and today's items, and none on days with nothing due.
+- Given quiet hours of 21:00 to 7:00, when a reminder falls inside them, then it is held until 7:00 and sent once.
+- Given a private item reminds me, when the notification shows on my lock screen, then it reads "Private task due at 15:00" without the title.
 
 ---
 

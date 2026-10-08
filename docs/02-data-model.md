@@ -1,6 +1,7 @@
 # 02 — Data Model
 
-> Version 0.6 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> Version 0.7 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.7: reminders (D-35): `reminder_preference`, `push_subscription`, `reminder_delivery` (§2.4, §3.7); `chore_assignee.remind`, `chore.remind_lead_minutes`.
 > v0.6: one family list (D-30..D-34): one shared occurrence per due date with an assignee snapshot (`chore_occurrence_assignee`) and `done_by`/`rewarded` credit on events; per-member status view with `covered`; routines get missed, tasks carry over; `due_time`; household `tag` list referenced by id; private visibility in RLS; `member.earns_rewards`; ledger posts per rewarded member.
 > v0.4: events fold in `occurred_at` order with a receipt-time clamp (D-20); board events outside the due date are flagged (D-21); the approval switch re-resolves `scheduled` occurrences only (D-22); day-close turns `rejected` into `missed` (D-23); closures regenerate dates after today only (D-24); ledger writes only through definer functions (D-28); rebuild is report-only unless applied.
 > Companions: `01-technical-architecture.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-backlog.md`
@@ -265,6 +266,50 @@ erDiagram
   }
 ```
 
+### 2.4 Reminders
+
+```mermaid
+erDiagram
+  member ||--o| reminder_preference : "chooses"
+  member ||--o{ push_subscription : "receives on"
+  member ||--o{ reminder_delivery : "is reminded"
+  chore_occurrence ||--o{ reminder_delivery : "reminds about"
+  member ||--o{ chore_assignee : "bell per item"
+
+  reminder_preference {
+    uuid member_id PK
+    bool enabled
+    bool default_on
+    int default_lead_minutes
+    time morning_time
+    time digest_time
+    time quiet_start
+    time quiet_end
+    bool hide_private_titles
+  }
+  push_subscription {
+    uuid id PK
+    uuid member_id FK
+    text endpoint
+    text device_label
+    timestamptz last_success_at
+  }
+  reminder_delivery {
+    uuid id PK
+    uuid occurrence_id FK
+    uuid member_id FK
+    text kind
+    timestamptz scheduled_for
+    text status
+    text dedupe_key
+  }
+  chore_assignee {
+    uuid chore_id PK
+    uuid member_id PK
+    bool remind
+  }
+```
+
 ---
 
 ## 3. Table catalog
@@ -288,8 +333,8 @@ erDiagram
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `chore` | `title`, `description`, `icon`, `kind` (`chore` routine / `task` to-do), `points`, `approval` (`inherit`/`required`/`none`), `schedule jsonb`, `due_time?` (household-local), `day_types text[]`, `visibility` (`family`/`private`), `created_by → auth.users`, `start_date`, `end_date`, `archived_at` | One model for the whole family's list (D-30). A routine not done on its day becomes `missed`; a task, one-off or repeating, stays open and shows as overdue until done or cancelled (D-31). `due_time` orders and groups the day; it never changes scoring. |
-| `chore_assignee` | `chore_id`, `member_id` | Any member, child or adult; several per item. All assignees share one occurrence per due date. |
+| `chore` | `title`, `description`, `icon`, `kind` (`chore` routine / `task` to-do), `points`, `approval` (`inherit`/`required`/`none`), `schedule jsonb`, `due_time?` (household-local), `day_types text[]`, `visibility` (`family`/`private`), `created_by → auth.users`, `remind_lead_minutes?`, `start_date`, `end_date`, `archived_at` | One model for the whole family's list (D-30). A routine not done on its day becomes `missed`; a task, one-off or repeating, stays open and shows as overdue until done or cancelled (D-31). `due_time` orders and groups the day; it never changes scoring. |
+| `chore_assignee` | `chore_id`, `member_id`, `remind?` | Any member, child or adult; several per item. All assignees share one occurrence per due date. |
 | `tag` | `name` (unique per household, case-insensitive), `color` (brand token key), `icon` (brand icon key), `sort_order`, `archived_at` | Household-defined (D-33). Rules, filters and insights reference the id, so renaming or archiving never breaks a goal. |
 | `chore_tag` | PK `(chore_id, tag_id)` | Tags on an item. |
 | `chore_occurrence` | `chore_id`, `due_date`, `due_time?`, `kind`, `day_type`, `points_snapshot`, `requires_approval_snapshot` (resolved from the chore override and `approval_mode` at generation and whenever either changes, for `scheduled` occurrences only; check-offs already `pending_approval` stay in the queue, D-22), `status`, `done_by uuid[]`, `rewarded uuid[]`, `status_event_id`, `status_changed_at`, `finalized_at` | `UNIQUE (chore_id, due_date)`: one occurrence per item per due date, shared by its assignees. `done_by` and `rewarded` come from the folded event (who did it, and which of them earn rewards). **`status` is a persisted projection** of the event log, maintained by trigger and by the day-close job (§4.2). `status_event_id` has no FK (avoids a cycle). Index `(household_id, due_date, status)`. Snapshots protect history from later chore edits. |
@@ -395,6 +440,16 @@ else coalesce(lunch_override(m, d).mode,
 ```
 
 If the effective mode is `buy`, the board shows `school_menu_day` for `(menu_source, d, 'lunch')`; if `bring`, it shows the planned `meal_plan_entry` for the lunch slot.
+
+### 3.7 Reminders
+
+| Table | Key columns | Notes |
+|---|---|---|
+| `reminder_preference` | PK `member_id`, `enabled` (default false), `default_on` (bell on for new items), `default_lead_minutes` (0, 15, 60 or 1440), `morning_time` (default 08:00), `digest_time?` (null = off), `quiet_start?`, `quiet_end?`, `hide_private_titles` (default true) | One row per adult with a login (D-35). Readable and editable only by that person. |
+| `push_subscription` | `member_id`, `user_id → auth.users`, `endpoint` (unique), `p256dh`, `auth_secret`, `device_label`, `last_success_at`, `failure_count` | One per device and browser. Readable only by its owner; the reminders job reads it as service role. Deleted when the push service answers 404 or 410. |
+| `reminder_delivery` | `occurrence_id?`, `member_id`, `kind` (`due`/`digest`), `scheduled_for`, `sent_at?`, `status` (`held`/`sent`/`skipped`/`failed`), `dedupe_key` (unique) | One row per reminder per person (`due:{occurrence}:{member}` or `digest:{member}:{date}`), inserted before sending so a retry never sends twice. Readable only by that person. Pruned after 90 days. |
+
+Whether and when each assignee is reminded: `chore_assignee.remind` (null follows the person's `default_on`; true or false overrides it) and `chore.remind_lead_minutes` (null uses the person's `default_lead_minutes`). An item without a due time reminds at the person's `morning_time` on its due date. Nothing is sent when the person, the item or every device is switched off, or when the occurrence is already done.
 
 ---
 
@@ -915,7 +970,7 @@ function evaluateHistory(input: HistoryInput):
 | Concern | Decision |
 |---|---|
 | Hot read paths | `chore_occurrence_assignee (household_id, member_id, due_date)`, `chore_occurrence (household_id, due_date, status)`, open tasks (partial index), `chore_completion_event (done_by)` (GIN), `points_ledger (household_id, member_id, created_at)`, `member_daily_summary (member_id, summary_date)`, `calendar_event_instance (household_id, local_start_date)`, `meal_plan_entry (household_id, plan_date, slot)` |
-| Retention | Events and goal history kept indefinitely (tiny volume). `calendar_event_instance` pruned to window. `job_run` pruned at 90 days. `points_ledger`, `member_daily_summary`, `streak_segment` kept indefinitely. `audit_log` kept 2 years. |
+| Retention | Events and goal history kept indefinitely (tiny volume). `calendar_event_instance` pruned to window. `job_run` and `reminder_delivery` pruned at 90 days; `push_subscription` deleted on a 404/410 from the push service. `points_ledger`, `member_daily_summary`, `streak_segment` kept indefinitely. `audit_log` kept 2 years. |
 | Export | `/admin/settings/export` returns a JSON/CSV bundle of all household data (NFR-05). |
 | Delete | Household deletion cascades via a documented procedure (not raw FK cascade on append-only tables); child profile deletion removes `member` PII and anonymizes events. |
 | Migration order | tenancy → devices → tags + chores/occurrences (assignee snapshot, per-member view)/events + status projection → points ledger + catalog + redemptions → history tables + `close_past_due` → rewards (+ triggers) → school year + `resolve_day_type` → calendar (+ `device_calendar`) → meals/menu → `board_snapshot` → RLS pgTAP suite |
@@ -933,6 +988,7 @@ function evaluateHistory(input: HistoryInput):
 | `job_run` | DEV-08, CAL-06, MENU-04, NFR-07 |
 | `chore`, `chore_assignee`, `chore_occurrence` (incl. `status`), `chore_occurrence_assignee`, `v_member_occurrence` | CHR-01..03, CHR-07, CHR-09, CHR-11..14, SCH-03 |
 | `tag`, `chore_tag` | CHR-10, RWD-02 |
+| `reminder_preference`, `push_subscription`, `reminder_delivery` | CHR-15..17 |
 | `chore_completion_event` | CHR-04..09, DEV-06, NFR-06 |
 | `points_ledger`, `v_points_balance`, `reward_catalog_item`, `redemption`, `points_rule` | PTS-01..06 |
 | `member_daily_summary`, `streak_segment` | RWD-11, RWD-12 |

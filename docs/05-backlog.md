@@ -1,6 +1,7 @@
 # 05 — Backlog
 
-> Version 0.6 · Status: build baseline · Maintained by Claude Code
+> Version 0.7 · Status: build baseline · Maintained by Claude Code
+> v0.7: WP-40 reminders (web push, switchable per person, device and item; D-35).
 > v0.6: one family list (D-30..D-34): WP-08 becomes chores, tasks, tags and visibility (L); WP-09 generates one shared occurrence per due date and carries tasks over (L); WP-12 adds My tasks (L); WP-02/04 add the earns-rewards switch; WP-10, WP-11, WP-15, WP-16, WP-17, WP-19 and WP-37 take the new rules.
 > v0.5.2: §0 Waiting on you lists the owner actions that unblock work; the five build artifacts are also published as interactive pages generated from these files (`pnpm docs:build`).
 > v0.5: free plans (D-29): WP-01 uses a shared preview database and a keepalive; WP-24 backups are our own nightly encrypted dumps; preview-branch references replaced.
@@ -71,6 +72,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Queued |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Queued |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Queued |
+| WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Queued |
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Queued |
 | WP-33 | Export and delete | P3 | M | WP-04 | Queued |
 | WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
@@ -163,6 +165,9 @@ flowchart LR
     WP16 --> WP30[WP-30 Bonus rules and wishlist]
     WP17 --> WP30
     WP20 --> WP31[WP-31 Accessibility pass]
+    WP07 --> WP40[WP-40 Reminders]
+    WP12 --> WP40
+    WP37 --> WP40
   end
   subgraph P3[P3 Polish]
     WP03 --> WP32[WP-32 Audit log]
@@ -431,6 +436,14 @@ flowchart LR
 - WCAG AA contrast, no color-only cues, reduced motion verified across every screen, celebration and transition built so far (the automated checks from WP-37 already run on each PR).
 - **Done when:** an automated contrast check and a manual checklist pass.
 
+### WP-40 — Reminders (web push)
+**Phase:** P2 · **Size:** M · **Depends on:** WP-07, WP-12, WP-37 · **Reqs:** CHR-15, CHR-16, CHR-17
+- `reminder_preference`, `push_subscription`, `reminder_delivery` (`02` §3.7), `chore_assignee.remind`, `chore.remind_lead_minutes`; RLS so each person sees only their own preferences, devices and deliveries.
+- Admin service worker push handler (tapping opens the item in My tasks). Settings: turn reminders on (the permission prompt appears only after that tap), list, test and remove devices, default bell, lead time, morning time, digest, quiet hours, private titles. A bell on each item in My tasks and in the item editor.
+- `reminders` job every 5 minutes (`pg_cron` + `pg_net` to a signed endpoint, `01` §5.9): household-local schedule, skips done items and anything switched off, inserts `reminder_delivery` with a dedupe key before sending, holds during quiet hours, prunes subscriptions on 404/410; daily digest.
+- Needs the VAPID keys in Vercel (`01` §9.8), an owner action when this work package starts.
+- **Done when:** against a mocked push service, a task due in 15 minutes produces exactly one push, completing it first produces none, switching reminders off for the person, the item or the device stops them, quiet hours hold and release once, and a private item's payload has no title (E2E, plus pgTAP for the dedupe); on a real iPhone the test notification arrives (L-10).
+
 ### Phase P3 — Polish
 
 ### WP-32 — Audit log viewer and coverage
@@ -474,7 +487,7 @@ flowchart LR
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
-| P2 | SPIKE-04, WP-25 – WP-31 | Menu adapters is the L |
+| P2 | SPIKE-04, WP-25 – WP-31, WP-40 | Menu adapters is the L |
 | P3 | WP-32 – WP-36, WP-38 | — |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

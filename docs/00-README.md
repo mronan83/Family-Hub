@@ -1,4 +1,4 @@
-# FamilyWise — Project Brief (v0.6)
+# FamilyWise — Project Brief (v0.7)
 
 A family "digital board" for a 32" 4K touch display (Raspberry Pi 5 kiosk) holding the whole family's chores and to-dos in one list: everyone sees who is doing what, a child's work earns points to spend in a rewards shop and progress toward goals, and parents manage everything, including their own tasks, from phone or laptop. The board is only the interactive front end. Apple Calendar remains the system of record for events. Hosted on Vercel + Supabase.
 
@@ -59,6 +59,7 @@ Source of truth for IDs is `04`. CI runs `python3 docs/check_traceability.py --d
 | D-32 | **Rewards follow the person.** Each member has an earns-rewards switch, on for children and off for adults by default. Points, the approval workflow, goals and reward streaks apply only to credited members with it on. |
 | D-33 | **Tags are a household list.** Tags (name, color, icon) are defined by admins and referenced by id. Goals, filters and insights measure by tag, so renaming or archiving a tag never breaks a goal. |
 | D-34 | **Family-visible unless private.** Every item shows on the board and to both parents unless it is set private; a private item is visible only to the admin who created it and to assignees who sign in, enforced by RLS. Anyone at the board can check off any family-visible item; the event records who did it and that it came from the board. |
+| D-35 | **Reminders are web push, and switchable.** Parents' reminders are web push notifications to the admin app (added to the iPhone Home Screen, or a desktop browser). They are off until a person turns them on, and switchable per person, per device and per item. Each item reminds each person at most once and never after it is done; quiet hours hold them; private items hide their title on the lock screen. No email or SMS: Supabase's built-in email is limited and SMS costs money (D-29). |
 
 ## Repo layout
 
@@ -110,11 +111,11 @@ brand/                   brand asset kit
 | OQ-10 | Offline conflicts resolve by event timestamp (D-20). |
 | OQ-11 | Why the school name matters: only to pick the lunch-menu adapter (SPIKE-04). The platform name alone is enough; no school name needs to be stored in the docs. |
 | OQ-12 | The lunch menu is on Nutrislice, which has a public JSON API (SPIKE-04 done, `01` §5.5). The school is chosen in the admin portal. |
+| OQ-13 | Yes: reminders for parents' tasks, and they must be switchable on and off (D-35). |
 
 ## Open questions
 
 | ID | Question | Blocks |
 |---|---|---|
 | OQ-05b | Exact panel model and mounting (touch driver, height)? Hardware is being sourced. | SPIKE-03, WP-14, WP-34 |
-| OQ-13 | Do parents want reminders for their own tasks (for example web push to the admin app installed on an iPhone)? Not in scope until decided. | — |
 | OQ-06b | Production domain name (after a trademark/domain check against "FamilyWize")? | ACC-06 / WP-38, custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
