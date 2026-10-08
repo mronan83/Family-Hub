@@ -1,7 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
 > Version 1.0 · Status: draft for build
-> Companions: `01-target-architecture.md` · `02-data-model.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-work-breakdown.md`
+> Companions: `01-technical-architecture.md` · `02-data-model.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-backlog.md`
 > Assets live in `brand/`. Open `brand/specimen.html` to see everything rendered. Implementation lands in WP-37.
 
 ---

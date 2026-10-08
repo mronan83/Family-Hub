@@ -1,6 +1,7 @@
 # 03 — User Stories
 
-> Version 0.3 · Status: draft for build
+> Version 0.4 · Status: build baseline · Maintained by Claude Code
+> v0.4: magic link + password sign-in (US-102) with Apple/passkey later (US-106); event-time conflicts (US-205); today-only board and parent-only late credit (US-303, US-307); approval switch and day-close rules (US-310, US-307); closures spare today (US-602); delivery pipeline (US-911).
 > Each story lists its `Reqs:` (defined in `04-requirements-traceability.md`). Acceptance criteria are Given/When/Then and are the basis for Playwright, Vitest, and pgTAP test names (prefix tests with the story or requirement ID, e.g. `[US-304][CHR-04]`).
 
 ## Personas
@@ -12,7 +13,7 @@
 | **Board** | Device | The paired kiosk; it is only the interactive front end and acts on behalf of the household, not a person. |
 | **System** | Platform | Scheduled jobs and derived-data maintenance. |
 
-Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2** meals and school menu · **P3** polish and hardening.
+Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (built as P1a–P1d) · **P2** meals, menu and extras · **P3** polish. Nothing goes live until every phase is built (D-19).
 
 ---
 
@@ -25,9 +26,11 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given a second household exists, when I query as a member of the first, then I see zero rows from the second.
 
 ### US-102 — Sign in securely
-**As an** admin **I want** to sign in with Apple, a magic link, or a passkey **so that** only parents can manage the board.
+**As an** admin **I want** to sign in with an emailed magic link or with my email and password **so that** only parents can manage the board.
 **Priority:** Must · **Phase:** P0 · **Reqs:** ACC-02, NFR-04
-- Given I choose Sign in with Apple, when authentication succeeds, then I land on `/admin` for my household.
+- Given I enter my email and choose "Email me a link", when I open the link before it expires, then I land on `/admin` for my household.
+- Given I have set a password, when I sign in with my email and password, then I land on `/admin` for my household; a wrong password shows a neutral error and does not reveal whether the email exists.
+- Given I forgot my password, when I request a reset, then I receive a reset link and can set a new password.
 - Given I am not signed in, when I request any `/admin` route, then I am redirected to sign-in.
 - Given a paired board session, when it calls an admin route, then it receives 403.
 
@@ -48,6 +51,13 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 **Priority:** Should · **Phase:** P3 · **Reqs:** ACC-05
 - Given an admin edits a goal's rules, when I open the audit log, then I see actor, time, entity, and a before/after diff.
 - Given a device is revoked, when I open the log, then the action and actor are recorded.
+
+### US-106 — Sign in with Apple or a passkey
+**As an** admin **I want** to add Sign in with Apple or a passkey to my account **so that** I can sign in quickly on my Apple devices.
+**Priority:** Should · **Phase:** P3 · **Reqs:** ACC-06
+- Given the production domain is configured, when I choose Sign in with Apple and authentication succeeds, then I land on `/admin` for my household and my existing account is linked, not duplicated.
+- Given I am signed in, when I enroll a passkey and later sign in with it, then I land on `/admin` without entering a password.
+- Given either method fails or is cancelled, when I return to sign-in, then magic link and password still work.
 
 ---
 
@@ -84,6 +94,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given wifi is off, when the child checks off chores, then the UI updates instantly and the events are queued.
 - Given wifi returns, when the outbox replays, then each event is applied exactly once and the board shows server-authoritative state.
 - Given the board has been offline for 24 hours, when it is opened, then it displays the last cached day's data with a stale indicator.
+- Given the child checked off a chore offline at 7:00 and a parent unchecked it on the phone at 7:30, when the board's 7:00 event replays at 8:00, then the chore stays open because the later event by time wins.
+- Given the board's clock runs ahead, when its events reach the server, then their time is capped at the time the server received them.
 
 ### US-206 — Know when data is stale
 **As a** parent **I want** a subtle indicator when the board's data is old **so that** I know when not to trust it.
@@ -118,6 +130,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-03, BRD-01
 - Given today has three scheduled chores for me, when I open the board, then I see exactly those three with icons and my progress for the day.
 - Given a chore isn't scheduled today, when I open the board, then it is not shown.
+- Given yesterday had unfinished chores, when I open the board, then only today's chores appear; catching up a past day is done by a parent.
 
 ### US-304 — Check off a chore
 **As a** kid **I want** to tap a chore to mark it done **so that** I get credit and see my progress grow.
@@ -138,7 +151,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given approval is off, when my child checks off a chore, then it counts immediately and a parent can still uncheck it later.
 - Given approval is on, when my child checks off a chore, then it shows as pending on the board and earns no points until I approve it.
 - Given I set one chore to "never needs approval" while approval is on, when it is checked off, then it counts immediately.
-- Given I switch approval on mid-week, when I save, then open occurrences follow the new setting and completed ones are unchanged.
+- Given I switch approval on mid-week, when I save, then `scheduled` occurrences follow the new setting and completed ones are unchanged.
+- Given check-offs are waiting for approval, when I switch approval off, then they stay in my approval queue until I decide them.
 
 ### US-306 — Approve completions (optional)
 **As an** admin **I want** to optionally require approval on specific chores, and to review what was checked off **so that** credit reflects real effort.
@@ -151,9 +165,10 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 **As an** admin **I want** to check chores off for my child, undo them, or skip a day **so that** sick days and corrections don't unfairly break progress.
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-06, CHR-07
 - Given a scheduled occurrence in the past, when I mark it `skip`, then it is excluded from streak and count denominators.
-- Given an occurrence is still `scheduled` when the household-local day ends, when the day-close job runs, then its `status` becomes `missed`, `finalized_at` is set, and the day's `member_daily_summary` row is written.
+- Given an occurrence is still `scheduled` or `rejected` when the household-local day ends, when the day-close job runs, then its `status` becomes `missed`, `finalized_at` is set, and the day's `member_daily_summary` row is written.
 - Given the day-close job runs twice, when it finishes, then the result is identical (idempotent).
-- Given a missed occurrence, when the child or a parent completes it late, then it folds to `completed` or `approved`, points are earned, and the day's history is re-derived.
+- Given a missed occurrence, when a parent completes it late, then it folds to `approved`, points are earned, and the day's history is re-derived.
+- Given the board was offline across midnight, when a check-off whose time falls outside the chore's due date replays, then it is stored as flagged and waits for a parent as `pending_approval`.
 
 ### US-309 — Uncheck a batch of chores
 **As an** admin **I want** to select several chores my child checked off but did not actually do and uncheck them together **so that** points and progress stay honest without tedious one-by-one edits.
@@ -298,7 +313,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 **As a** parent **I want** chores and lunches to adapt to school days, breaks, weekends, and summer **so that** I don't maintain separate setups.
 **Priority:** Must · **Phase:** P1 · **Reqs:** SCH-02, SCH-03
 - Given a date inside a break closure, when the day type resolves, then it is `break`; on a Saturday it is `weekend`; outside any school year it is `summer`.
-- Given chores restricted to `school_day`, when a snow-day closure is added, then future occurrences for that date are removed and past ones are untouched.
+- Given chores restricted to `school_day`, when a snow-day closure is added for a future date, then that date's occurrences are removed and past ones are untouched.
+- Given a closure is added for today, when I save, then today's occurrences are left as they are; only later dates change.
 
 ### US-603 — Import no-school days from a calendar
 **As an** admin **I want** to pull no-school days from the school calendar feed **so that** I don't re-enter them.
@@ -429,6 +445,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given usage, when it approaches plan limits, then a warning appears in System Health.
 
 ---
+
+### US-911 — Changes ship through one safe pipeline
+**As an** admin **I want** every change to pass automated checks and a preview before it reaches production **so that** a mistake never breaks the family's board.
+**Priority:** Must · **Phase:** P0 · **Reqs:** NFR-14, NFR-12
+- Given a pull request, when it is opened, then lint, typecheck, unit tests, database tests, traceability and build run without Docker, and the PR cannot merge until they pass.
+- Given a pull request, when Vercel finishes its preview, then the preview uses its own Supabase preview branch and the e2e suite runs against it.
+- Given a merge to `main`, when the deploy runs, then migrations are applied to production before the app is deployed, and a failed migration stops the app deploy.
+- Given production before launch, when I look at it, then no board is paired and no family data exists until the launch runbook is run.
 
 ### US-910 — It looks and feels like FamilyWise
 **As a** parent **I want** the board and admin to share one clear, friendly identity **so that** the product feels trustworthy to my family and consistent on every screen.

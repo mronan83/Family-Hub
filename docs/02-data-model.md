@@ -1,7 +1,8 @@
 # 02 — Data Model
 
-> Version 0.2.1 · Status: draft for build · Database: Supabase Postgres 15+
-> Companions: `01-target-architecture.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-work-breakdown.md`
+> Version 0.4 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.4: events fold in `occurred_at` order with a receipt-time clamp (D-20); board events outside the due date are flagged (D-21); the approval switch re-resolves `scheduled` occurrences only (D-22); day-close turns `rejected` into `missed` (D-23); closures regenerate dates after today only (D-24); ledger writes only through definer functions (D-28); rebuild is report-only unless applied.
+> Companions: `01-technical-architecture.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-backlog.md`
 
 ---
 
@@ -13,7 +14,7 @@
 - Enumerations are `text` with `CHECK` constraints (easier to migrate than Postgres enums).
 - Config entities are archived (`archived_at`), not deleted. Events and ledger rows are never updated or deleted.
 - **Truth vs projection (v0.2):** `chore_completion_event` and `points_ledger` are append-only truth. `chore_occurrence.status`, `member_daily_summary`, `streak_segment` and all `*_progress` tables are **persisted projections** that can be rebuilt from truth at any time (§4.2).
-- RLS enabled on **every** table in `public`; policies per `01-target-architecture.md` §6.3.
+- RLS enabled on **every** table in `public`; policies per `01-technical-architecture.md` §6.3.
 - Naming: snake_case, singular table names.
 
 ---
@@ -263,7 +264,7 @@ erDiagram
 |---|---|---|
 | `chore` | `title`, `description`, `icon`, `kind` (`chore`/`task`), `points`, `approval` (`inherit`/`required`/`none`), `schedule jsonb`, `day_types text[]`, `tags text[]`, `start_date`, `end_date`, `archived_at` | `kind='task'` with a one-off schedule covers to-dos. |
 | `chore_assignee` | `chore_id`, `member_id` | One occurrence is generated per assignee. |
-| `chore_occurrence` | `chore_id`, `member_id`, `due_date`, `day_type`, `points_snapshot`, `requires_approval_snapshot` (resolved from the chore override and `approval_mode` at generation and whenever either changes, for open occurrences only), `status`, `status_event_id`, `status_changed_at`, `finalized_at` | `UNIQUE (chore_id, member_id, due_date)`. **`status` is a persisted projection** of the event log, maintained by trigger and by the day-close job (§4.2). `status_event_id` has no FK (avoids a cycle). Index `(household_id, member_id, due_date, status)`. Snapshots protect history from later chore edits. |
+| `chore_occurrence` | `chore_id`, `member_id`, `due_date`, `day_type`, `points_snapshot`, `requires_approval_snapshot` (resolved from the chore override and `approval_mode` at generation and whenever either changes, for `scheduled` occurrences only; check-offs already `pending_approval` stay in the queue, D-22), `status`, `status_event_id`, `status_changed_at`, `finalized_at` | `UNIQUE (chore_id, member_id, due_date)`. **`status` is a persisted projection** of the event log, maintained by trigger and by the day-close job (§4.2). `status_event_id` has no FK (avoids a cycle). Index `(household_id, member_id, due_date, status)`. Snapshots protect history from later chore edits. |
 | `chore_completion_event` | see DDL §4.1 | **Append-only.** `batch_id` groups a bulk uncheck so it can be reviewed or reversed as one action (CHR-08). |
 
 `chore_occurrence.status` values:
@@ -274,9 +275,9 @@ erDiagram
 | `completed` | Checked off, no approval needed | **yes** | Earns points. |
 | `pending_approval` | Checked off, awaiting parent | no | Only when approval is required or flagged. |
 | `approved` | Parent approved or admin-completed | **yes** | Earns points. |
-| `rejected` | Parent rejected | no | Returns to open for the kid. |
+| `rejected` | Parent rejected | no | Returns to open for the kid. Becomes `missed` at day-close if not redone (D-23). |
 | `skipped` | Parent skipped | neutral | Excluded from numerator and denominator. |
-| `missed` | Past due and never done | no (bad) | Set only by the day-close job; `finalized_at` is set at the same time. |
+| `missed` | Past due and never done | no (bad) | Set by the day-close job from `scheduled` or `rejected`; `finalized_at` is set at the same time. Shown only on past days, never on the board's today list. |
 
 `schedule jsonb` shape (validated by zod):
 
@@ -341,6 +342,8 @@ erDiagram
 
 The result is computed, never stored per day (the occurrence stores a snapshot of the type it was generated under).
 
+When a closure or school year changes, the generator re-resolves and regenerates `scheduled` occurrences for dates **after today** only. Today's occurrences and the past are never touched (D-24).
+
 ### 3.6 Meals and school menu
 
 | Table | Key columns | Notes |
@@ -388,7 +391,34 @@ create table chore_completion_event (
   note          text
 );
 create index on chore_completion_event (household_id, member_id, credit_date);
-create index on chore_completion_event (occurrence_id, recorded_at desc);
+create index on chore_completion_event (occurrence_id, occurred_at desc, recorded_at desc, id desc);
+
+-- Server-side normalization (never trust the caller): household, member and credit date come
+-- from the occurrence; occurred_at is clamped to receipt time (D-20); a board event outside the
+-- occurrence's due date is flagged for a parent (D-21).
+create function private.normalize_completion_event() returns trigger
+language plpgsql security definer set search_path = '' as $$
+declare o record;
+begin
+  select occ.household_id, occ.member_id, occ.due_date, h.timezone
+    into strict o
+    from public.chore_occurrence occ
+    join public.household h on h.id = occ.household_id
+   where occ.id = new.occurrence_id;
+  new.household_id := o.household_id;
+  new.member_id    := o.member_id;
+  new.credit_date  := o.due_date;
+  new.recorded_at  := now();
+  new.occurred_at  := least(new.occurred_at, new.recorded_at);
+  if new.actor_type = 'device'
+     and (new.occurred_at at time zone o.timezone)::date <> o.due_date then
+    new.review_status := 'flagged';
+  end if;
+  return new;
+end $$;
+
+create trigger trg_cce_normalize before insert on chore_completion_event
+  for each row execute function private.normalize_completion_event();
 
 create function private.prevent_mutation() returns trigger
 language plpgsql as $$ begin raise exception 'append-only table'; end $$;
@@ -413,45 +443,49 @@ alter table chore_occurrence
   add column finalized_at      timestamptz;       -- set by day-close; null while the day is open
 create index on chore_occurrence (household_id, member_id, due_date, status);
 
--- Single source of folding logic (used by the trigger and by rebuild)
-create function private.fold_occurrence_status(p_occ uuid) returns text
-language sql stable as $$
-  select case
-           when e.event_type is null then
-             case when o.finalized_at is not null then 'missed' else 'scheduled' end
-           else case e.event_type
-             when 'complete' then
+-- Single source of folding logic (used by the trigger and by rebuild).
+-- The latest event by event time wins (D-20); ties break on recorded_at, then id.
+create type private.folded_status as (status text, event_id uuid);
+
+create function private.fold_occurrence_status(p_occ uuid) returns private.folded_status
+language sql stable set search_path = '' as $$
+  select row(
+           case
+             when e.event_type is null then
+               case when o.finalized_at is not null then 'missed' else 'scheduled' end
+             when e.event_type = 'complete' then
                case when o.requires_approval_snapshot or e.review_status = 'flagged'
                     then 'pending_approval' else 'completed' end
-             when 'approve'          then 'approved'
-             when 'admin_complete'   then 'approved'
-             when 'reject'           then 'rejected'
-             when 'skip'             then 'skipped'
-             when 'undo'             then case when o.finalized_at is not null
-                                               then 'missed' else 'scheduled' end
-             when 'admin_uncomplete' then case when o.finalized_at is not null
-                                               then 'missed' else 'scheduled' end
-           end
-         end
-  from chore_occurrence o
+             when e.event_type in ('approve', 'admin_complete') then 'approved'
+             when e.event_type = 'skip' then 'skipped'
+             -- reject, undo and admin_uncomplete reopen the chore; once the day is closed it is missed (D-23)
+             when o.finalized_at is not null then 'missed'
+             when e.event_type = 'reject' then 'rejected'
+             else 'scheduled'
+           end,
+           e.id)::private.folded_status
+  from public.chore_occurrence o
   left join lateral (
-    select ev.event_type, ev.review_status
-    from chore_completion_event ev
+    select ev.id, ev.event_type, ev.review_status
+    from public.chore_completion_event ev
     where ev.occurrence_id = o.id
-    order by ev.recorded_at desc, ev.id desc
+    order by ev.occurred_at desc, ev.recorded_at desc, ev.id desc
     limit 1
   ) e on true
   where o.id = p_occ
 $$;
 
--- Keep status current on every event (same transaction as the insert)
+-- Keep status current on every event (same transaction as the insert).
+-- status_event_id is the event the status was folded from, which may not be the event just inserted.
 create function private.apply_completion_event() returns trigger
 language plpgsql security definer set search_path = '' as $$
 begin
   update public.chore_occurrence o
-     set status            = private.fold_occurrence_status(o.id),
-         status_event_id   = new.id,
-         status_changed_at = now()
+     set status            = f.status,
+         status_event_id   = f.event_id,
+         status_changed_at = case when o.status is distinct from f.status
+                                  then now() else o.status_changed_at end
+    from private.fold_occurrence_status(new.occurrence_id) f
    where o.id = new.occurrence_id;
   return new;
 end $$;
@@ -475,8 +509,10 @@ begin
   )
   update public.chore_occurrence o
      set finalized_at      = now(),
-         status            = case when o.status = 'scheduled' then 'missed' else o.status end,
-         status_changed_at = now()
+         status            = case when o.status in ('scheduled', 'rejected') then 'missed'
+                                  else o.status end,
+         status_changed_at = case when o.status in ('scheduled', 'rejected') then now()
+                                  else o.status_changed_at end
     from closing c
    where o.id = c.id;
   get diagnostics n = row_count;
@@ -485,26 +521,38 @@ begin
   return n;
 end $$;
 
--- Rebuild (admin tool and CI check): re-fold every occurrence in range; reports drift
-create function private.rebuild_occurrence_status(p_household uuid, p_from date, p_to date)
+-- Rebuild (admin tool and nightly check): re-fold every occurrence in range and report drift.
+-- Report-only by default; p_apply => true writes the corrections (which may post ledger corrections
+-- through trg_occ_points).
+create function private.rebuild_occurrence_status(
+  p_household uuid, p_from date, p_to date, p_apply boolean default false)
 returns table (occurrence_id uuid, was text, now_is text)
 language sql security definer set search_path = '' as $$
-  with fixed as (
+  with drift as (
+    select o.id, o.status as was, f.status as now_is, f.event_id
+    from public.chore_occurrence o
+    cross join lateral private.fold_occurrence_status(o.id) f
+    where o.household_id = p_household
+      and o.due_date between p_from and p_to
+      and (o.status is distinct from f.status or o.status_event_id is distinct from f.event_id)
+  ), applied as (
     update public.chore_occurrence o
-       set status = private.fold_occurrence_status(o.id)
-     where o.household_id = p_household and o.due_date between p_from and p_to
-       and o.status is distinct from private.fold_occurrence_status(o.id)
-    returning o.id, o.status
-  ) select id, null::text, status from fixed
+       set status = d.now_is, status_event_id = d.event_id, status_changed_at = now()
+      from drift d
+     where p_apply and o.id = d.id
+    returning o.id
+  )
+  select d.id, d.was, d.now_is from drift d
 $$;
 ```
 
 Rules:
 
-- A completion after day-close is allowed (late credit). It folds normally; `credit_date` stays the due date, and history tables are re-derived for that date.
+- Late credit after day-close is a parent action (`admin_complete`, D-21). It folds normally; `credit_date` stays the due date, and history tables are re-derived for that date. A board event outside the due date is stored `flagged` and folds to `pending_approval`.
 - `missed` is therefore a status, not a tombstone: an undo of a late completion returns the occurrence to `missed`.
+- Conflicts resolve by event time (D-20): an event that arrives late but happened earlier than the current folded event does not change the status.
 - Counted-as-done: `completed`, `approved`. Neutral (excluded from numerator and denominator): `skipped`. Bad: `missed`. Not counted: `scheduled`, `pending_approval`, `rejected`.
-- A nightly CI-style job runs `rebuild_occurrence_status` for the last 14 days and alerts on drift (NFR-06).
+- A nightly job runs `rebuild_occurrence_status` (report-only) for the last 14 days and alerts on drift (NFR-06); applying the fix is an explicit admin action.
 
 ### 4.2b Points ledger
 
@@ -560,7 +608,17 @@ select member_id,
 from points_ledger group by member_id;
 ```
 
-Redemption flow: `requested` (API checks `balance − sum(open requests) ≥ cost`) → admin `approved` (API inserts the `spend` entry, dedupe `red:{id}:spend`) or `denied`; `cancelled` before approval; after approval a cancel posts a `refund`. `fulfilled` is bookkeeping only.
+**Ledger write functions (D-28).** Application code never inserts into `points_ledger`. Earn and reversal come from `trg_occ_points`; every other entry goes through one `SECURITY DEFINER` function, `private.post_ledger(...)` (insert `on conflict (dedupe_key) do nothing`), called by these entry points:
+
+| Entry point | Caller | Entry | Dedupe key |
+|---|---|---|---|
+| `public.adjust_points(member, amount, reason, request_id)` | admin (RLS-checked inside) | `adjustment` | `adj:{request_id}` |
+| `public.decide_redemption(redemption, 'approve' \| 'deny')` | admin | `spend` on approve | `red:{id}:spend` |
+| `public.cancel_redemption(redemption)` | admin, or device while `requested` | `refund` if it was approved | `red:{id}:refund` |
+| `private.post_goal_payout(goal, n)` / `private.reverse_goal_payout(goal, n)` | reconcile job | `bonus` / `reversal` | `goal:{id}:payout:{n}` / `goal:{id}:payout_rev:{n}` |
+| `private.post_points_rule_bonus(rule, member, key)` | reconcile job | `bonus` | `rule:{id}:{member}:{key}` |
+
+Redemption flow: `requested` (`public.request_redemption` checks `balance − sum(open requests) ≥ cost` under a member lock) → admin `approved` (spend posted) or `denied`; `cancelled` before approval; after approval a cancel posts a `refund`. `fulfilled` is bookkeeping only.
 
 ### 4.3 Dirty-marking trigger
 

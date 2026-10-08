@@ -1,7 +1,8 @@
-# 01 — Target Architecture
+# 01 — Technical Architecture
 
-> Version 0.2 · Status: draft for build · v0.2 adds: persisted occurrence status with explicit `missed`, points ledger + rewards shop, streak history, per-device calendar selection, 4K display target
-> Companions: `00-README.md` · `02-data-model.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-work-breakdown.md`
+> Version 0.4 · Status: build baseline · Maintained by Claude Code
+> v0.4: event-time ordering for completion events (D-20), today-only board with parent-only late credit (D-21), magic link + password sign-in (D-25), `UI` and `CICD` components, delivery pipeline without Docker or staging (§9, D-26).
+> Companions: `00-README.md` · `02-data-model.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-backlog.md` · `06-brand-and-style-guide.md`
 > Component IDs (e.g. `BRD`, `API`) are used in the traceability matrix. Requirement IDs (e.g. `CHR-04`) are defined in `04`.
 
 ---
@@ -25,7 +26,7 @@ flowchart LR
   kid(["Child<br/>touch, ~1m"])
   parents(["Parents / Admins<br/>phone, laptop"])
 
-  subgraph HB["Household Board System"]
+  subgraph HB["FamilyWise"]
     board["Board App<br/>/board PWA on Pi"]
     admin["Admin Portal<br/>/admin"]
     core[("Core Platform<br/>Vercel + Supabase")]
@@ -115,9 +116,11 @@ flowchart TB
 | `DB` | Database | Postgres, RLS, functions and triggers (`fold_occurrence_status`, status / ledger / dirty-goal triggers, `close_past_due`, `resolve_day_type`, `board_snapshot`), view `v_points_balance`. | Supabase Postgres 15+ | all |
 | `RT` | Realtime | Change notifications to board, filtered by RLS. | Supabase Realtime | DEV-05 |
 | `VAULT` | Secrets | Calendar URLs/credentials, job signing secret. | Supabase Vault | CAL-01/08, NFR-04 |
-| `SAUTH` | Admin identity | Sign in with Apple, email magic link, passkeys; device principals live here too. | Supabase Auth | ACC-02, DEV-02 |
+| `SAUTH` | Admin identity | Email magic link and email + password (required); Sign in with Apple and passkeys once the production domain exists; device principals live here too. | Supabase Auth | ACC-02, ACC-06, DEV-02 |
 | `PI` | Kiosk host | Raspberry Pi OS, Chromium kiosk, watchdog, screen power. | systemd, Chromium | DEV-04/07, NFR-02 |
 | `OBS` | Observability | Structured logs, error tracking, `job_run` table surfaced in admin. | Vercel logs, Sentry (optional) | NFR-07, CAL-06 |
+| `UI` | Design system | FamilyWise tokens (Day and Evening), self-hosted fonts, typed icon set, avatars and brand components (`ChoreTile`, `PointsChip`, `GoalMeter`, `Banner`, `Button`) shared by board and admin. | `packages/ui`, `brand/` | NFR-13, NFR-11 |
+| `CICD` | Delivery pipeline | Pull-request gates, preview environments, ordered production deploys (migrations, then app), docs traceability. No Docker, no staging. | GitHub Actions, Vercel, Supabase branching, Supabase CLI | NFR-14, NFR-12, NFR-08 |
 
 ---
 
@@ -177,7 +180,9 @@ sequenceDiagram
 
 If `RULES` evaluation fails after the insert, the completion still stands and the goal stays `dirty`; `progress_reconcile` (5.6) repairs it within minutes.
 
-### 5.3 Offline replay (DEV-06, NFR-01)
+The fold always takes the event with the latest `occurred_at` (D-20), so an event that arrives late but happened earlier never overrides a later decision. `status_event_id` records the event the status was folded from, not the event that was just inserted.
+
+### 5.3 Offline replay and conflicts (DEV-06, NFR-01, D-20, D-21)
 
 ```mermaid
 sequenceDiagram
@@ -191,15 +196,21 @@ sequenceDiagram
   Note over B,O: wifi returns
   O->>A: replay oldest first
   A->>D: insert (idempotent on id)
-  alt occurred_at outside due-date local day
-    A->>D: store with review_status = flagged
-    Note over D: shows as pending_approval for admin
+  D->>D: clamp occurred_at to receipt time
+  alt board event and occurred_at outside the due date (household-local)
+    D->>D: review_status = flagged
+    Note over D: folds to pending_approval for a parent
   else normal
-    A->>D: store accepted
+    D->>D: review_status = accepted
   end
+  D->>D: re-fold status by occurred_at (latest wins)
   A-->>O: authoritative state, outbox cleared
   O->>B: rebase optimistic state on server state
 ```
+
+**Conflict rule (D-20).** Every event carries the time it happened (`occurred_at`), online or offline. The fold orders an occurrence's events by `occurred_at`, then `recorded_at`, then `id`, and the latest wins. Example: the child taps *Make bed* offline at 7:00; a parent unchecks it on the phone at 7:30; the tap replays at 8:00. The 7:30 uncheck is later by event time, so the chore stays open. The database clamps `occurred_at` to the time the event was received, so a device clock running fast cannot win future conflicts.
+
+**Today only (D-21).** The board shows today's chores only. Late credit for a past day is parent-only (`admin_complete`). A board event whose `occurred_at` falls outside the occurrence's due date is kept but flagged for a parent, which covers an offline board that missed midnight.
 
 ### 5.4 Calendar sync (CAL-02, CAL-06, CAL-07)
 
@@ -316,7 +327,7 @@ sequenceDiagram
 
 | Principal | AuthN | Reads | Writes |
 |---|---|---|---|
-| Admin | Supabase Auth (Apple / magic link / passkey) | all rows of own household | config tables via server actions under the user's session (RLS enforced) |
+| Admin | Supabase Auth: email magic link or email + password (ACC-02); Sign in with Apple or passkey later (ACC-06) | all rows of own household | config tables via server actions under the user's session (RLS enforced) |
 | Board device | Device auth user, `app_metadata.role=device` | board tables of own household while `device.status='active'` | none direct; `POST /api/completions` and `POST /api/redemptions` only |
 | Jobs | Signed bearer secret + service role | all | derived tables, instances, menu rows |
 | Child | not a principal | n/a | acts only through the device |
@@ -382,15 +393,104 @@ sequenceDiagram
 
 ---
 
-## 9. Environments and delivery
+## 9. Environments and delivery (NFR-14, NFR-12, NFR-08, D-26)
 
-| Env | Web | Database | Purpose |
+No Docker anywhere, and no staging. Isolation comes from per-PR preview environments; production stays dark until launch (D-19).
+
+### 9.1 Environments
+
+| Env | Web | Database | Used for |
 |---|---|---|---|
-| Local | `next dev` | `supabase start` | development, pgTAP |
-| Preview | Vercel preview | shared dev Supabase project | PR review, Playwright |
-| Production | Vercel prod | prod Supabase project (**Pro recommended**) | the family board |
+| Workspace | `next dev` | DB tests: native Postgres + Supabase compatibility bootstrap (`scripts/db-test.sh`). App: points at the PR's Supabase preview branch | writing code, fast feedback |
+| CI | `next build` | native Postgres 17 on the GitHub runner + pgTAP | gates on every push and PR |
+| Preview (one per PR) | Vercel preview deployment | Supabase preview branch for that PR (migrations + `supabase/seed.sql`) | review, Playwright e2e |
+| Production | Vercel production | Supabase project `jpzwmibrsvsxcimbxtmb` (Pro) | the family board; dark until launch |
 
-CI (GitHub Actions): lint, typecheck, `rules-engine` unit tests, `supabase db reset` + pgTAP, Playwright e2e (including offline scenarios via service-worker/network emulation), migration drift check. Migrations via Supabase CLI only; no dashboard schema edits.
+### 9.2 Workflow
+
+```mermaid
+flowchart LR
+  dev["Branch per work package<br/>commits prefixed [REQ-ID]"] --> ci{"CI gates<br/>checks · database · build"}
+  ci -->|green| pr["Pull request"]
+  pr --> prev["Preview<br/>Vercel deployment +<br/>Supabase preview branch"]
+  prev --> e2e{"e2e on preview<br/>(Playwright)"}
+  e2e -->|green| rev["Review + docs updated"]
+  rev --> merge["Squash merge to main"]
+  merge --> mig["deploy: migrate<br/>supabase db push"]
+  mig --> app["deploy: app<br/>vercel --prod"]
+  app --> smoke{"smoke<br/>/api/health"}
+  smoke --> dark["Production (dark until launch)"]
+```
+
+### 9.3 Pull request gates
+
+| Check | What runs | Blocks merge |
+|---|---|---|
+| `ci / checks` | frozen-lockfile install, ESLint, Prettier check, typecheck, Vitest (rules engine ≥ 90% coverage), migration lint, `check_traceability.py` | yes |
+| `ci / database` | `scripts/db-test.sh`: throwaway database on native Postgres, compatibility bootstrap, all migrations in order, pgTAP via `pg_prove` | yes |
+| `ci / build` | `next build` for `apps/web` | yes |
+| `e2e / preview` | Playwright against the PR's Vercel preview once Vercel reports a successful deployment | yes |
+
+`main` is protected: pull request required, the four checks required, squash merge only, no force pushes. Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
+
+### 9.4 Database tests without Docker
+
+- `supabase/tests/bootstrap/` recreates what the hosted platform provides: the `anon`, `authenticated`, `service_role` and `authenticator` roles; an `auth` schema with `auth.users`, `auth.uid()`, `auth.jwt()` and `auth.role()` reading `request.jwt.claims`; the `extensions` schema; and stand-ins for `vault`, `pg_cron`, `pg_net` and the `supabase_realtime` publication.
+- `scripts/db-test.sh` creates a throwaway database, applies the bootstrap and then every migration in filename order, runs `pg_prove` over `supabase/tests/*.test.sql`, and drops the database.
+- Tests act as a principal with `set local role authenticated` plus `set local request.jwt.claims`, exactly as PostgREST does.
+- The bootstrap is never deployed. Migrations must not depend on it beyond what Supabase itself provides.
+- Fidelity: once preview branches are enabled, the e2e workflow also runs the pgTAP suite against the PR's preview branch, so any drift between the bootstrap and real Supabase shows up before merge.
+
+### 9.5 Preview environments
+
+- Vercel's Git integration builds every PR branch as a preview deployment.
+- Supabase branching (GitHub integration) creates a preview branch per PR, applies `supabase/migrations` and `supabase/seed.sql`, and Supabase's Vercel integration writes that branch's URL and keys into the preview deployment.
+- Previews sit behind Vercel deployment protection; the e2e workflow uses the automation bypass secret.
+- Preview branches are deleted when the PR closes; their compute is billed only while open.
+
+### 9.6 Production deploy (ordered)
+
+`deploy.yml` runs on every push to `main`:
+
+1. **migrate** (GitHub environment `production`): `supabase link` then `supabase db push`. A failure stops the deploy.
+2. **app**: `vercel pull`, `vercel build --prod`, `vercel deploy --prebuilt --prod`.
+3. **smoke**: `GET /api/health` on production returns 200.
+
+Vercel's automatic production deploy from Git is turned off (`vercel.json`), and Supabase's GitHub integration must not deploy migrations to production, so the app never ships ahead of its schema. Migrations are forward-only and compatible with the previously deployed app; a breaking change is split into expand and contract PRs.
+
+### 9.7 Launch
+
+- Production is deployed continuously but dark: no board paired and no family data.
+- Launch happens once every milestone is done and the launch acceptance checklist (`04` §E) passes: tag `v1.0.0`, reset production data with the launch runbook (schema kept, household data truncated), create the household, invite the second admin, pair the Pi.
+- After launch the same pipeline applies; a migration that rewrites data is preceded by a confirmed backup.
+
+### 9.8 Secrets and configuration
+
+No secret is committed or pasted into chat.
+
+| Name | Stored in | Used by |
+|---|---|---|
+| `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` | GitHub Actions secrets (environment `production`) | migrate |
+| `SUPABASE_PROJECT_ID` (`jpzwmibrsvsxcimbxtmb`) | GitHub Actions variable | migrate |
+| `VERCEL_TOKEN` | GitHub Actions secret (environment `production`) | app deploy |
+| `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | GitHub Actions variables | app deploy |
+| `VERCEL_AUTOMATION_BYPASS_SECRET` | GitHub Actions secret | e2e on protected previews |
+| `PRODUCTION_URL` | GitHub Actions variable | smoke check |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Vercel env (production); set per preview by the Supabase integration | app |
+| `SUPABASE_SERVICE_ROLE_KEY` | Vercel env, server only | jobs, derived tables |
+| `JOB_SIGNING_SECRET` | Vercel env and Supabase Vault | `pg_net` → job endpoints |
+
+### 9.9 Cost ceiling (NFR-08)
+
+| Item | Plan | Why |
+|---|---|---|
+| Supabase | Pro | no inactivity pausing, daily backups, preview branches |
+| Supabase preview branches | hourly compute while a PR is open | per-PR isolation instead of staging |
+| Vercel | Hobby (personal, non-commercial); Pro only if limits require | hosting, previews |
+| Domain | annual | production URL, passkeys, email sender (OQ-06b) |
+| Apple Developer Program | annual | Sign in with Apple (ACC-06) |
+
+**Ceiling: USD 60 per month** all-in during the build, reviewed at each milestone. Check current list prices when the accounts are set up; System Health shows a warning as usage approaches plan limits (US-909).
 
 ---
 
@@ -424,3 +524,7 @@ CI (GitHub Actions): lint, typecheck, `rules-engine` unit tests, `supabase db re
 | Calendar selection | Per-device selection table | Global show/hide flag | Different boards can show different calendars |
 | Points | Append-only ledger; balance derived | Mutable balance column | Clawbacks, redemptions, and audits stay exact |
 | Hosting | Vercel + Supabase | Pi-hosted backend | Admin from anywhere; Pi is a thin, replaceable client |
+| Event conflicts | Latest `occurred_at` wins, clamped to receipt time | Arrival order | A later parent decision is never overwritten by an earlier offline tap (D-20) |
+| Database tests | Native Postgres + compatibility bootstrap; pgTAP | `supabase start` (Docker) | No Docker in the workflow (D-26) |
+| Pre-production | Per-PR preview environments; production dark until launch | Persistent staging project | No staging; each change is isolated |
+| Production deploy order | GitHub Actions: migrations, then app | Vercel auto-deploy on merge | The app never runs ahead of its schema |

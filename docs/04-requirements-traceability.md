@@ -1,10 +1,10 @@
 # 04 — Requirements and Traceability
 
-> Version 0.3 · Status: draft for build
+> Version 0.4 · Status: build baseline · Maintained by Claude Code
 > This file is the **source of truth for requirement IDs**. Stories (`03`), work packages (`05`), components (`01`), and entities (`02`) trace to these IDs. `check_traceability.py` enforces the links in CI.
 
 **ID scheme:** `<DOMAIN>-<NN>` · domains: `ACC` access · `DEV` device/board shell · `CHR` chores · `RWD` rewards · `CAL` calendar · `SCH` school year · `MEAL` meals · `MENU` school menu · `BRD` board UI · `PTS` points economy · `NFR` non-functional.
-**Priority:** M = Must · S = Should · C = Could. **Phase:** P0 foundation · P1 kid loop and rewards (delivered as P1a kid loop, P1b points/shop/streak history, P1c goals, P1d calendar/school year/hardening) · P2 meals, menu and extras · P3 polish.
+**Priority:** M = Must · S = Should · C = Could. **Phase:** P0 foundation · P1 kid loop and rewards (built as P1a kid loop, P1b rules engine/shop/streak history, P1c goals, P1d calendar/hardening) · P2 meals, menu and extras · P3 polish. Phases are build milestones; there is one launch, after P3 (D-19).
 **Source:** User = stated by Matthew · Derived = needed to make a stated need work · Design = architectural/quality decision.
 **Verification:** `U` unit (Vitest) · `DB` pgTAP · `INT` integration with fixtures/mocks · `E2E` Playwright · `HW` manual on Pi hardware · `REV` design/security review or drill.
 
@@ -15,10 +15,11 @@
 | ID | Requirement | Pri | Phase | Source |
 |---|---|---|---|---|
 | ACC-01 | The system shall support a household with an IANA timezone and week start, and scope all data to it. | M | P0 | Derived |
-| ACC-02 | The system shall authenticate admins via Sign in with Apple, email magic link, or passkey. | M | P0 | User |
+| ACC-02 | The system shall authenticate admins via email magic link and via email + password (with password reset); both methods are required. | M | P0 | User |
 | ACC-03 | An admin shall be able to invite additional admins by email. | M | P0 | User |
 | ACC-04 | Admins shall manage member profiles (child/adult) with name, avatar, and color; children shall not require logins; multiple children shall be supported. | M | P0 | User |
 | ACC-05 | The system shall record an audit log of admin and device changes. | S | P3 | Design |
+| ACC-06 | Admins may also sign in with Sign in with Apple or a passkey, enabled once the production domain is fixed. | S | P3 | User |
 | DEV-01 | A board shall be paired via a single-use, short-lived code issued in the admin portal. | M | P0 | User |
 | DEV-02 | A paired board shall have a scoped, revocable device identity limited to reading board data and submitting completions. | M | P0 | Design |
 | DEV-03 | Admins shall list, rename, and revoke devices and see last-seen time. | M | P0 | Derived |
@@ -82,7 +83,7 @@
 | NFR-01 | The board shall remain functional offline for at least 24 hours from cached data. | M | P1 | Design |
 | NFR-02 | The board shall target a 3840×2160 32" panel, laid out at 1920×1080 logical px with device scale factor 2, be interactive in under 2 s from cache on a Pi 5, and give check-off feedback under 100 ms. | M | P1 | User |
 | NFR-03 | Child-facing interactions shall tolerate imprecise touch (debounce, confirm destructive actions). | M | P1 | Design |
-| NFR-04 | RLS shall be enabled on every table and tested; secrets shall never reach the client; admins shall be able to use passkeys. | M | P0 | Design |
+| NFR-04 | RLS shall be enabled on every table and tested; secrets shall never reach the client. | M | P0 | Design |
 | NFR-05 | Child PII shall be minimized, no third-party trackers used, and household data exportable and deletable. | S | P3 | Design |
 | NFR-06 | Completion events shall be append-only with UTC instants, local credit dates, and idempotency keys. | M | P1 | Design |
 | NFR-07 | The system shall provide structured logs, error tracking, and job health visibility. | S | P1 | Design |
@@ -96,14 +97,15 @@
 | PTS-04 | A child shall request a catalog item; requests shall not exceed the available balance; an admin approves (posting the spend), denies, or fulfills. A reversal after a spend takes the points away and may leave a negative balance. | M | P1 | User |
 | PTS-05 | Admins may define automatic bonus rules (for example a streak milestone) that post bonus points once. | S | P2 | Derived |
 | PTS-06 | A child may pin a catalog item as a saving goal and see progress toward its cost. | S | P2 | Derived |
-| NFR-13 | The product shall be branded FamilyWise and implement the brand and style guide: design tokens (light and Evening themes), self-hosted fonts, logo and app icons, the 85-icon set, member avatars, and a status-to-visual mapping with icon, label and color for every occurrence status. | M | P0 | User |
 | NFR-12 | The rules engine shall have at least 90% unit coverage, RLS shall be pgTAP-tested, and CI shall gate on e2e including offline. | M | P0 | Design |
+| NFR-13 | The product shall be branded FamilyWise and implement the brand and style guide: design tokens (light and Evening themes), self-hosted fonts, logo and app icons, the 85-icon set, member avatars, and a status-to-visual mapping with icon, label and color for every occurrence status. | M | P0 | User |
+| NFR-14 | Every change shall reach production only through a pull request that passes CI gates (lint, typecheck, unit, pgTAP, traceability, build) and e2e on its own preview environment (Vercel preview + Supabase preview branch); merging applies migrations before deploying the app. No Docker and no staging environment. | M | P0 | User |
 
 ---
 
 ## B. Traceability matrix
 
-Stories and Work packages are generated from `03-user-stories.md` and `05-work-breakdown.md` (`Reqs:` lines). Do not hand-edit those two columns; run `check_traceability.py` to detect drift.
+Stories and Work packages are generated from `03-user-stories.md` and `05-backlog.md` (`Reqs:` lines). Do not hand-edit those two columns; run `check_traceability.py` to detect drift.
 
 | Req | Stories | Work packages | Components | Data entities | Verification |
 |---|---|---|---|---|---|
@@ -111,7 +113,8 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-work-b
 | ACC-02 | US-102 | WP-03 | ADM, SAUTH | household_user | E2E |
 | ACC-03 | US-103 | WP-03 | ADM, API, SAUTH | invite, household_user | E2E, DB |
 | ACC-04 | US-104 | WP-04 | ADM, DB | member | E2E, DB |
-| ACC-05 | US-105 | WP-32 | API, ADM, DB | audit_log | DB, E2E |
+| ACC-05 | US-105 | WP-03, WP-32 | API, ADM, DB | audit_log | DB, E2E |
+| ACC-06 | US-106 | WP-38 | ADM, SAUTH | household_user | E2E |
 | DEV-01 | US-201 | WP-05 | ADM, API, AUTH, BRD, SAUTH | device_pairing, device | E2E, DB |
 | DEV-02 | US-201, US-202 | WP-05 | AUTH, DB, SAUTH | device | DB |
 | DEV-03 | US-202 | WP-05 | ADM, AUTH | device | E2E |
@@ -131,16 +134,16 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-work-b
 | RWD-01 | US-401 | WP-19 | ADM, API | reward_goal | E2E |
 | RWD-02 | US-401 | WP-15 | RULES, DB | reward_rule | U |
 | RWD-03 | US-401 | WP-15 | RULES | reward_goal | U |
-| RWD-04 | US-406, US-407 | WP-19 | RULES, API, SCHED, DB | reward_rule_progress, reward_goal_progress | U, INT, DB |
+| RWD-04 | US-406, US-407 | WP-19, WP-39 | RULES, API, SCHED, DB | reward_rule_progress, reward_goal_progress | U, INT, DB |
 | RWD-05 | US-402 | WP-15 | RULES | reward_rule | U |
 | RWD-06 | US-405 | WP-19 | RULES, SCHED, API | reward_goal, reward_goal_event | U, INT |
 | RWD-07 | US-403 | WP-20 | BRD | reward_goal_progress | E2E |
-| RWD-08 | US-404 | WP-20 | BRD | reward_goal | E2E |
+| RWD-08 | US-404 | WP-11, WP-20 | BRD | reward_goal | E2E |
 | RWD-09 | US-405 | WP-19 | ADM, API | reward_goal, reward_goal_event | E2E |
-| RWD-10 | US-406 | WP-19 | ADM, RULES | reward_goal, reward_rule | U, E2E |
+| RWD-10 | US-406 | WP-39 | ADM, RULES | reward_goal, reward_rule | U, E2E |
 | RWD-11 | US-408 | WP-15, WP-17 | DB, SCHED, RULES | member_daily_summary, streak_segment | U, DB, INT |
 | RWD-12 | US-408 | WP-17 | ADM, RULES | member_daily_summary, streak_segment | E2E, U |
-| RWD-13 | US-409 | WP-19 | RULES, API, DB | reward_goal, points_ledger, redemption | U, INT |
+| RWD-13 | US-409 | WP-39 | RULES, API, DB | reward_goal, points_ledger, redemption | U, INT |
 | CAL-01 | US-501 | WP-22 | ADM, CALSYNC, VAULT | calendar_source | INT, E2E |
 | CAL-02 | US-502 | WP-22 | CALSYNC, SCHED | calendar_event, calendar_event_instance | U, INT |
 | CAL-03 | US-501 | WP-22 | CALSYNC, ADM, BRD | — | REV |
@@ -179,18 +182,19 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-work-b
 | NFR-05 | US-902 | WP-33 | ADM, API, DB | household, member | E2E, INT |
 | NFR-06 | US-907 | WP-10 | DB, API | chore_completion_event | DB, U |
 | NFR-07 | US-904 | WP-07 | OBS, API | job_run | INT, REV |
-| NFR-08 | US-909 | WP-01 | — | — | REV |
+| NFR-08 | US-909 | WP-01 | CICD | — | REV |
 | NFR-09 | US-101, US-901 | WP-02 | DB | all tables | DB |
 | NFR-10 | US-903 | WP-24 | DB | — | REV |
-| NFR-11 | US-906 | WP-31 | BRD, ADM | — | E2E, REV |
+| NFR-11 | US-906 | WP-31 | BRD, ADM, UI | — | E2E, REV |
 | PTS-01 | US-309, US-1101, US-1106 | WP-16 | DB, API, ADM | points_ledger, chore_occurrence | DB, U, E2E |
-| PTS-02 | US-1102 | WP-16, WP-20 | BRD, DB | v_points_balance, points_ledger | E2E |
+| PTS-02 | US-1102 | WP-11, WP-16, WP-20 | BRD, DB | v_points_balance, points_ledger | E2E |
 | PTS-03 | US-1103 | WP-18 | ADM, API, BRD | reward_catalog_item | E2E, DB |
 | PTS-04 | US-1104, US-1105 | WP-18, WP-20 | BRD, ADM, API, DB, OUTBOX | redemption, points_ledger, reward_catalog_item | E2E, DB, INT |
 | PTS-05 | US-1107 | WP-30 | SCHED, RULES, ADM | points_rule, points_ledger | U, INT |
 | PTS-06 | US-1108 | WP-30 | BRD, DB | reward_catalog_item, v_points_balance | E2E |
-| NFR-13 | US-910 | WP-37 | BRD, ADM | — | E2E, REV |
-| NFR-12 | US-908 | WP-01, WP-02, WP-15 | all | — | CI |
+| NFR-12 | US-908, US-911 | WP-01, WP-02, WP-15 | all | — | CI |
+| NFR-13 | US-910 | WP-37 | BRD, ADM, UI | — | E2E, REV |
+| NFR-14 | US-911 | WP-01 | CICD | — | CI, REV |
 
 ---
 
@@ -198,14 +202,14 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-work-b
 
 | Phase | Must | Should | Could | Total |
 |---|---|---|---|---|
-| P0 | 12 | 1 | 0 | 13 |
+| P0 | 13 | 1 | 0 | 14 |
 | P1 | 43 | 5 | 0 | 48 |
 | P2 | 9 | 6 | 1 | 16 |
-| P3 | 0 | 4 | 3 | 7 |
-| **Total** | **64** | **16** | **4** | **84** |
+| P3 | 0 | 5 | 3 | 8 |
+| **Total** | **65** | **17** | **4** | **86** |
 
-- Requirements: **84** · with at least one story: **84** · stories: **73** (P0: 11 · P1: 43 · P2: 12 · P3: 7).
-- With at least one work package: **84** · work packages: **37**.
+- Requirements: **86** · with at least one story: **86** · stories: **75** (P0: 12 · P1: 43 · P2: 12 · P3: 8).
+- With at least one work package: **86** · work packages: **39**.
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -215,7 +219,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-work-b
 | Component | Requirements |
 |---|---|
 | `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, CAL-03, CAL-04, CAL-05, CHR-04, CHR-07, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08 |
-| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, BRD-05, CAL-01, CAL-03, CAL-05, CAL-06, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MENU-01, MENU-03, MENU-04, NFR-05, NFR-11, NFR-13, PTS-01, PTS-03, PTS-04, PTS-05, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04 |
+| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, BRD-05, CAL-01, CAL-03, CAL-05, CAL-06, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MENU-01, MENU-03, MENU-04, NFR-05, NFR-11, NFR-13, PTS-01, PTS-03, PTS-04, PTS-05, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04 |
 | `API` | ACC-03, ACC-05, BRD-04, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, DEV-01, DEV-06, MEAL-03, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13 |
 | `AUTH` | DEV-01, DEV-02, DEV-03 |
 | `RULES` | PTS-05, RWD-02, RWD-03, RWD-04, RWD-05, RWD-06, RWD-10, RWD-11, RWD-12, RWD-13 |
@@ -227,29 +231,43 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-work-b
 | `DB` | ACC-01, ACC-04, ACC-05, CAL-05, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, DEV-02, DEV-05, MEAL-04, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, PTS-01, PTS-02, PTS-04, PTS-06, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03 |
 | `RT` | DEV-05 |
 | `VAULT` | CAL-01, CAL-08, NFR-04 |
-| `SAUTH` | ACC-02, ACC-03, DEV-01, DEV-02, NFR-04 |
+| `SAUTH` | ACC-02, ACC-03, ACC-06, DEV-01, DEV-02, NFR-04 |
 | `PI` | DEV-04, DEV-07, NFR-02 |
 | `OBS` | CAL-06, DEV-08, MENU-04, NFR-07 |
+| `UI` | NFR-11, NFR-13 |
+| `CICD` | NFR-08, NFR-14 |
 
 `all` (NFR-12) applies to every component. Generated by `check_traceability.py --fix`.
 
 ---
 
-## E. Phases and exit criteria
+## E. Milestones, exit criteria and launch
 
-Work packages (`05-work-breakdown.md`) are assigned to these phases.
+Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is done when its exit criteria pass in CI and on a preview environment. Milestones are not release gates: nothing goes live until every milestone is done and the launch acceptance checklist below passes (D-19). Independent work packages may run in parallel; the sequence is chosen so that no finished work package needs rework.
 
-| Phase | Scope | Exit criteria |
+| Milestone | Scope | Exit criteria (CI + preview) |
 |---|---|---|
-| **P0 Foundation** | Repo, CI gates, environments, tenancy schema + RLS, admin auth, members, device pairing, board shell, realtime, job framework | Admin signs in, creates household + child, pairs a board that shows live-updated data within 3 s; pgTAP isolation and revoked-device tests green; deployed to production |
-| **P1a Kid loop** | Chores, occurrences, completion events + persisted status + day-close, Today screen, admin chore ops (approve, uncheck, bulk uncheck), offline outbox, 4K kiosk host | A child checks off chores for 7 days, including an induced wifi outage, with zero lost or duplicate events; a missed day is recorded as `missed` by day-close |
-| **P1b Points, shop, streak history** | Rules engine, points ledger, streak history + insights, catalog, redemptions | Property tests green; points balance reconciles to the ledger; a reward is requested, approved and fulfilled end to end; insights match a hand count for 14 days |
-| **P1c Goals** | Goal admin, progress pipeline, payouts, board points/shop/goals UI, celebrations | One real goal tracked for 14 days with parent-verified progress; payout posts exactly once |
-| **P1d Calendar, school year, hardening** | School year + day types, ICS sync, calendar views + per-device selection, backups, runbooks, soak | Board matches the phone calendar for 14 days; chosen calendars only; kiosk recovers from a power pull; 7-day soak with no manual intervention; restore drill done |
-| **P2 Meals, menu, extras** | Meal plan, library, buy/bring, menu adapter(s) + CSV, CalDAV, bonus rules, wishlist, accessibility pass | A full school week is planned in under 10 minutes; 4 weeks of menu load via adapter or CSV |
-| **P3 Polish** | Audit log, export/delete, quiet hours, weather, layout config, grocery-ready ingredients, closure import | Backlog by value; start only when P1 usage metrics (daily completion rate) are healthy |
+| **P0 Foundation** | Repo, CI/CD pipeline, tenancy schema + RLS, admin auth, members, device pairing, board shell, realtime, job framework, brand system | All PR gates green; pgTAP isolation and revoked-device tests green; on a preview, an admin signs in (magic link and password), creates a household and child, pairs a browser as a board, and sees a rename within 3 s; production deploy pipeline (migrate → app → smoke) green |
+| **P1a Kid loop** | School year + day types, chores, occurrences, completion events + persisted status + day-close, points ledger, Today screen with balance and chore celebration, admin chore ops (approve, uncheck, bulk uncheck), offline outbox, 4K kiosk host | Day-type precedence tests green; E2E: check-off, undo, double tap, bulk uncheck with matching ledger reversals, approval on/off; offline replay with zero lost or duplicate events and event-time conflict resolution; day-close marks `scheduled` and `rejected` as `missed`; rebuild reports no drift after property tests |
+| **P1b Rules engine, shop, streak history** | Rules engine, streak history + insights, catalog, redemptions | Property tests green; request → approve → fulfil end to end with two concurrent requests unable to overspend; insights match a hand-computed 14-day fixture |
+| **P1c Goals** | Goal admin, progress pipeline, payouts and reversals, board points/shop/goals UI, celebrations | A seeded goal is achieved, paid out once, un-achieved by a reversal (payout reversed) and re-achieved; reconcile heals a dirtied goal |
+| **P1d Calendar and hardening** | ICS sync, calendar views + per-device selection, backups, runbooks | ICS fixtures (DST, all-day, cancelled, moved) green; per-device selection reflected within 3 s; restore drill recorded |
+| **P2 Meals, menu, extras** | Meal plan, library, buy/bring, menu adapter(s) + CSV, CalDAV, bonus rules, wishlist, accessibility pass | Week planning, copy-week and buy/bring flows green; 4 weeks of menu load from CSV; a failing adapter keeps cached menus; bonus posts once; accessibility checks green |
+| **P3 Polish** | Audit log, export/delete, quiet hours, weather, layout config, grocery-ready ingredients, closure import, Sign in with Apple and passkeys | Each work package's done-when passes; every mutating route writes an audit row |
 
-**Phase gate rule:** do not start the next sub-phase until the current exit criteria are met and the family has used it for a week. If the child's board usage drops, fix the reward loop (not the roadmap).
+### Launch acceptance (run once, on the real Pi and panel, after P3)
+
+| # | Check | Source |
+|---|---|---|
+| L-01 | A child checks off chores for 7 days, including an induced wifi outage, with zero lost or duplicate events; a missed day is recorded as `missed` | former P1a exit |
+| L-02 | Points balance reconciles to the ledger after 14 days of real use; a reward is requested, approved and fulfilled | former P1b exit |
+| L-03 | One real goal tracked for 14 days with parent-verified progress; payout posts exactly once | former P1c exit |
+| L-04 | Board matches the phone calendar for 14 days, showing only the chosen calendars | former P1d exit |
+| L-05 | Kiosk boots to the board unattended and recovers from a power pull; 7-day soak with no manual intervention | former P1d exit, WP-14 |
+| L-06 | Restore drill completed against the production backup | NFR-10 |
+| L-07 | A full school week is planned in under 10 minutes; 4 weeks of menu load via adapter or CSV | former P2 exit |
+| L-08 | Hardware checklist (§F) passes: touch latency, calibration, boot-to-board time, dim/sleep, SPIKE-03 animation budget | HW |
+| L-09 | Production data reset with the launch runbook; household created; second admin invited; board paired | `01` §9.7 |
 
 ---
 
@@ -275,9 +293,9 @@ Work packages (`05-work-breakdown.md`) are assigned to these phases.
 | R-03 | Device session longevity / Realtime under RLS unproven | Med | High | SPIKE-01 before building on it |
 | R-04 | iCloud published-calendar behavior changes or lacks fidelity | Med | Med | SPIKE-02; CalDAV fallback; last-good retention |
 | R-05 | School menu feed unavailable or unofficial | High | Med | Adapter + CSV/manual; SPIKE-04 on the actual district |
-| R-06 | Supabase free-tier pause or vendor outage | Med | High | Pro plan for production; offline cache |
+| R-06 | Supabase free-tier pause or vendor outage | Med | High | Pro plan for production (also required for preview branches); offline cache |
 | R-07 | Pi hardware (SD corruption, touch driver, panel latency) | Med | High | NVMe/SSD boot; SPIKE-03 on the real panel |
-| R-08 | Maintenance burden on a single builder | High | High | Phase gates; no feature that needs weekly care; health page and alerts |
+| R-08 | Maintenance burden on a single builder | High | High | Automated PR gates and ordered deploys; no feature that needs weekly care; health page and alerts |
 | R-09 | Child data privacy | Low | High | Minimal fields, no trackers, export/delete |
 | R-10 | Time bugs (DST, timezone, day rollover) | Med | High | Household timezone authoritative; fixtures and property tests |
 | R-11 | Vercel cron/function duration limits | Med | Med | `pg_cron` + `pg_net`; one-source-per-invocation; SPIKE-05 |
@@ -285,6 +303,9 @@ Work packages (`05-work-breakdown.md`) are assigned to these phases.
 | R-13 | Self-check with parent verification in real life invites "check everything" behavior | Med | Med | Bulk uncheck (CHR-08) with a batch id; optional approval per chore; insights show override rate; no punitive wording on the board |
 | R-14 | 4K rendering on Pi 5 is too slow for animations | Med | Med | SPIKE-03; logical 1080p layout with DPR 2; compositor-only animations; documented 1080p output fallback |
 | R-15 | Day-close job skipped or late, leaving stale `scheduled` days | Low | Med | Hourly idempotent job with catch-up; stale-day alert on the health page; `rebuild_occurrence_status` drift check |
+| R-16 | Database tests run on native Postgres with a compatibility bootstrap (no Docker), which can drift from real Supabase | Med | Med | Bootstrap mirrors only platform objects; pgTAP suite also runs against each PR's Supabase preview branch; production deploy smoke check |
+| R-17 | Pi and panel not yet available, so the 4K budget (SPIKE-03) is validated late | Med | Med | Build to the 1920×1080 logical / DPR 2 spec; compositor-only animations; desktop Chromium at 3840×2160 DPR 2 in e2e; WP-14 and launch check L-08 run when hardware arrives |
+| R-18 | Device clock skew affects event-time conflict resolution | Low | Med | Server clamps `occurred_at` to receipt time; board events outside the due date are flagged for a parent (D-20, D-21) |
 
 ### Spikes (time-boxed, before dependent work)
 
@@ -301,17 +322,19 @@ Work packages (`05-work-breakdown.md`) are assigned to these phases.
 | ID | Assumption |
 |---|---|
 | A-01 | One household in v1; schema is multi-tenant-ready. |
-| A-02 | Admins use Apple devices; Sign in with Apple is acceptable. |
+| A-02 | Admins use Apple devices; magic link and email + password are the required sign-in methods (Sign in with Apple and passkeys are additive, ACC-06). |
 | A-03 | Child can navigate icon-first UI; text is secondary. |
 | A-04 | US English, imperial units, Monday–Friday school week. |
 | A-05 | Home wifi is generally stable; outages are short. |
 | A-06 | The panel is mounted at child-reachable height or on a stand. |
 | A-07 | Apple Calendar remains the household's event system of record. |
+| A-08 | Production stays dark until launch; there is no staging environment and no Docker in the workflow. |
 
 ---
 
 ## H. Maintaining traceability
 
+0. Claude Code maintains `01`–`05`. Every PR that changes behavior, schema, scope or sequence updates the affected artifact and adds a row to **I**.
 1. New requirement → add to **A**, add a matrix row in **B**, write at least one story (`03`) and at least one work package (`05`) with `Reqs:`; run `--fix` to fill the Stories and Work packages columns.
 2. Run `python check_traceability.py --docs . --tests .` locally and in CI.
 3. Never rename an ID; deprecate with a note and add a new one.
@@ -323,6 +346,7 @@ Work packages (`05-work-breakdown.md`) are assigned to these phases.
 
 | Version | Changes |
 |---|---|
+| 0.4 | Decisions D-19..D-28 from the build kickoff. Single launch after P3; milestones replace family-use gates; launch acceptance checklist (§E). ACC-02 is now magic link + password; Sign in with Apple and passkeys move to new ACC-06 (US-106, WP-38); passkey clause removed from NFR-04. New NFR-14 delivery pipeline (US-911, WP-01). Event-time conflict resolution, today-only board, approval switch, rejected → missed, closures spare today. WP-19 split (payouts and preview move to WP-39); missing dependencies fixed; spikes added to the backlog. Docs renamed: `01-technical-architecture.md`, `05-backlog.md`. Risks R-16..R-18. |
 | 0.3 | Brand: product name FamilyWise; NFR-13 and WP-37 added; brand and style guide `06` and asset kit `brand/` |
 | 0.2.1 | Goal achievement is not sticky: reversals un-achieve goals and reverse payouts (RWD-04); approval workflow is a household on/off switch with per-chore override (CHR-05, now Must); negative balance after a reversal accepted; trust metrics added to insights (RWD-12); nothing is cut from scope |
 | 0.2 | Persisted occurrence `status` (CHR-07) with day-close and `missed`; bulk uncheck (CHR-08); streak history and insights (RWD-11/12); goal payouts (RWD-13); per-device calendar selection (CAL-05, now Must); points economy domain PTS-01..06; 4K reference panel (NFR-02, BRD-03, SPIKE-03); self-check with real-life parent verification as default (CHR-05); work packages added (`05`) and a Work packages column in the matrix; phases split P1a–P1d |
