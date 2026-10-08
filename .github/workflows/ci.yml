@@ -29,6 +29,8 @@ jobs:
       - run: pnpm test
       - name: Traceability
         run: python3 docs/check_traceability.py --docs docs --tests .
+      - name: Docs pages (broken cross-links and unknown IDs fail the build)
+        run: pnpm docs:build --check
 
   database:
     runs-on: ubuntu-24.04

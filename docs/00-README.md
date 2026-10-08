@@ -6,6 +6,8 @@ A family "digital board" for a 32" 4K touch display (Raspberry Pi 5 kiosk): a ch
 
 Claude Code produces, maintains and manages the five build artifacts below. Every PR that changes behavior, schema, scope or sequence updates the affected artifact in the same PR, bumps its version line, and adds a row to `04` §I.
 
+Each artifact is also published as an interactive page, generated from these files and the repository by `pnpm docs:build` (`scripts/docs-site/`) and republished after every change: [Architecture](https://claude.ai/artifact/Dftg4YwZxg6Q1EaTPfrnsh) · [Data model](https://claude.ai/artifact/8KhG59m4Ks58UNjAsNQEp6) · [Requirements](https://claude.ai/artifact/Cg842vuorGTaRqgcA8xuLi) · [User stories](https://claude.ai/artifact/QkpusCRRGz7NRSGS6dBgTq) · [Backlog](https://claude.ai/artifact/Ko7eHK6imRF6puCwYojqHC). The markdown stays the source of truth; edit it, never the pages. CI runs `pnpm docs:build --check`, which fails on a broken cross-link or an unknown ID.
+
 | File | Artifact | Purpose |
 |---|---|---|
 | `01-technical-architecture.md` | **Technical Architecture** | Context/container diagrams, components, runtime flows, security, offline, jobs, kiosk, delivery pipeline, failure modes |

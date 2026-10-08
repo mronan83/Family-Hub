@@ -1,10 +1,28 @@
 # 05 — Backlog
 
 > Version 0.5 · Status: build baseline · Maintained by Claude Code
+> v0.5.2: §0 Waiting on you lists the owner actions that unblock work; the five build artifacts are also published as interactive pages generated from these files (`pnpm docs:build`).
 > v0.5: free plans (D-29): WP-01 uses a shared preview database and a keepalive; WP-24 backups are our own nightly encrypted dumps; preview-branch references replaced.
 > v0.4: renamed from Work Breakdown; status board (§1); spikes are backlog items (§3); sequence changed so no finished work package needs rework (WP-37 before WP-03, WP-21 before WP-09, WP-16 before WP-11 and WP-12); WP-19 split, payouts and preview move to WP-39; WP-38 adds Sign in with Apple and passkeys; WP-01 carries the delivery pipeline (NFR-14); missing dependencies fixed.
 > Companions: `01-technical-architecture.md` · `02-data-model.md` · `03-user-stories.md` · `04-requirements-traceability.md`
 > Each work package (WP) is one branch and one pull request. Requirement links (`Reqs:`) and `Depends on:` lines are enforced by `check_traceability.py`; the Work packages column in `04` §B is generated from them.
+
+---
+
+## 0. Waiting on you
+
+Only the owner can do these. Each row names what it unblocks; everything else on the board is Claude Code's, or waits on one of these. Secrets go straight into GitHub or Vercel settings, never into chat.
+
+| Item | Action | Where | Unblocks |
+|---|---|---|---|
+| Y-1 | Your go-ahead to open the pull request for `claude/p0-foundation` (WP-01, WP-02) | Reply in the build session | Merge to `main` and the first production deploy; WP-37, WP-07, WP-15 start from merged work |
+| Y-2 | Create the second Supabase Free project (`familywise-preview`) and share its project ref, the ID in its URL (not a key) | Supabase dashboard → New project | e2e on previews (WP-01 done-when), SPIKE-01 |
+| Y-3 | Add the GitHub secrets and variables listed in `01` §9.8 | GitHub → Settings → Secrets and variables → Actions | deploy, keepalive and e2e workflows; SPIKE-05 |
+| Y-4 | Add the Vercel environment variables in `01` §9.8 for Production and Preview (publishable key, secret key, `JOB_SIGNING_SECRET`); create the protection bypass secret | Vercel → family-wise → Settings | WP-03 sign-in on previews, SPIKE-05 |
+| Y-5 | Invite your spouse to the Supabase organization team, so the built-in mailer can deliver their magic links | Supabase → Organization → Team | WP-03 done-when (second admin signs in by magic link) |
+| Y-6 | Publish one iCloud calendar and save its link as the repository secret `ICS_SPIKE_URL` | iCloud Calendar → Share → Public Calendar; GitHub secrets | SPIKE-02, then WP-22 and WP-29 |
+| Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
+| Y-8 | Choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
 
 ---
 
