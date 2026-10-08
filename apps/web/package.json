@@ -3,12 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "pnpm brand && next dev",
+    "build": "pnpm brand && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "brand": "node ../../packages/ui/scripts/brand.mjs --public public"
   },
   "dependencies": {
     "@familywise/rules-engine": "workspace:*",

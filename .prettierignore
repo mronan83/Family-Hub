@@ -8,3 +8,5 @@ coverage/
 playwright-report/
 test-results/
 supabase/.temp/
+packages/ui/src/generated/
+e2e/ui/__snapshots__/

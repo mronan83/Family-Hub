@@ -1,0 +1,335 @@
+/* FamilyWise components (06 §6, §7). Role tokens only: no raw colors here (a test enforces it).
+   Sizes follow the surface: wrap the board in .board and the admin app in .admin. */
+@import './generated/tokens.css';
+
+/* Surfaces ---------------------------------------------------------------------------------- */
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+.theme-day,
+.theme-evening {
+  background: var(--bg);
+  color: var(--text);
+}
+.board {
+  --border-w: 2px;
+  --touch: var(--touch-min);
+  --icon-tile: 56px;
+  --icon-row: 36px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--t-body);
+  line-height: 1.4;
+}
+.admin {
+  --border-w: 1px;
+  --touch: 44px;
+  --icon-tile: 24px;
+  --icon-row: 20px;
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  line-height: 1.4;
+}
+.admin h1,
+.admin h2,
+.admin h3 {
+  font-family: var(--font-display);
+  line-height: 1.25;
+}
+.fw-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.fw-icon {
+  flex: none;
+  vertical-align: middle;
+}
+
+/* Logo: the nearest theme (page or .theme-day/.theme-evening) shows its lockup. Custom properties
+   inherit from the nearest declaration, which plain selectors cannot express. */
+:root,
+.theme-day {
+  --logo-day: inline-block;
+  --logo-evening: none;
+}
+:root[data-theme='evening'],
+.theme-evening {
+  --logo-day: none;
+  --logo-evening: inline-block;
+}
+.fw-logo {
+  display: inline-flex;
+}
+.fw-logo__day {
+  display: var(--logo-day);
+}
+.fw-logo__evening {
+  display: var(--logo-evening);
+}
+
+/* Chore tile -------------------------------------------------------------------------------- */
+.fw-tile {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  min-height: var(--touch);
+  padding: var(--s-4) var(--s-6);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  color: var(--text);
+}
+.board .fw-tile {
+  min-height: var(--touch-primary);
+}
+.fw-tile__icon {
+  width: var(--icon-tile);
+  height: var(--icon-tile);
+  color: var(--text-soft);
+}
+.fw-tile__body {
+  flex: 1;
+  min-width: 0;
+}
+.fw-tile__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--t-body);
+  line-height: 1.25;
+}
+.fw-tile__status {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: var(--s-1) 0 0;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-tile__status-icon {
+  width: var(--icon-row);
+  height: var(--icon-row);
+}
+.fw-tile__private {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 0 var(--s-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+
+.fw-tile--done {
+  background: var(--primary-tint);
+  border-color: var(--primary);
+}
+.fw-tile--done .fw-tile__status {
+  color: var(--primary-text);
+}
+.fw-tile--waiting {
+  background: var(--reward-tint);
+  border-color: var(--reward);
+}
+.fw-tile--waiting .fw-tile__status {
+  color: var(--reward-text);
+}
+.fw-tile--retry {
+  border-color: var(--info);
+}
+.fw-tile--retry .fw-tile__status {
+  color: var(--info);
+}
+.fw-tile--skipped {
+  background: transparent;
+  border-style: dashed;
+}
+.fw-tile--missed {
+  background: var(--missed-tint);
+  border-color: var(--missed);
+}
+.fw-tile--missed .fw-tile__status {
+  color: var(--missed-text);
+}
+.fw-tile--late {
+  border-color: var(--reward);
+}
+.fw-tile--late .fw-tile__status {
+  color: var(--reward-text);
+}
+.fw-tile--covered .fw-tile__status {
+  color: var(--text-soft);
+}
+
+/* Points chip ------------------------------------------------------------------------------- */
+.fw-points {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--s-4);
+  border-radius: var(--r-pill);
+  background: var(--reward);
+  color: var(--on-reward);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.fw-points[data-size='admin'] {
+  min-height: 28px;
+  padding: 0 var(--s-3);
+  font-size: var(--t-small);
+}
+.fw-points--negative {
+  background: var(--missed-tint);
+  color: var(--missed-text);
+}
+
+/* Goal meter -------------------------------------------------------------------------------- */
+.fw-meter__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-4);
+  margin-bottom: var(--s-2);
+}
+.fw-meter__label {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+.fw-meter__value {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-soft);
+}
+.fw-meter__track {
+  height: 28px;
+  border-radius: var(--r-pill);
+  background: var(--primary-tint);
+  overflow: hidden;
+}
+.fw-meter__fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--primary), var(--reward));
+}
+
+/* Banner ------------------------------------------------------------------------------------ */
+.fw-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  font-size: var(--t-small);
+  color: var(--text);
+}
+.fw-banner__icon {
+  width: var(--icon-row);
+  height: var(--icon-row);
+}
+.fw-banner--stale {
+  background: var(--reward-tint);
+}
+.fw-banner--stale .fw-banner__icon {
+  color: var(--reward-text);
+}
+.fw-banner--offline {
+  background: var(--missed-tint);
+}
+.fw-banner--offline .fw-banner__icon {
+  color: var(--missed-text);
+}
+.fw-banner--info {
+  background: var(--primary-tint);
+}
+.fw-banner--info .fw-banner__icon {
+  color: var(--primary-text);
+}
+
+/* Button ------------------------------------------------------------------------------------ */
+.fw-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--touch);
+  padding: 0 var(--s-6);
+  border: var(--border-w) solid transparent;
+  border-radius: var(--r-pill);
+  font: inherit;
+  font-family: var(--font-display);
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease);
+}
+.fw-btn:active {
+  transform: scale(0.97);
+}
+.fw-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.fw-btn__icon {
+  width: var(--icon-row);
+  height: var(--icon-row);
+}
+.fw-btn--primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.fw-btn--secondary {
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-btn--ghost {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--text);
+}
+
+/* Avatar ------------------------------------------------------------------------------------ */
+.fw-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  object-fit: cover;
+}
+.fw-avatar--initials {
+  color: var(--fw-surface); /* member colors are chosen for white text (06 §4.2) */
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+/* Boot splash ------------------------------------------------------------------------------- */
+.fw-splash {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--s-8);
+  min-height: 100vh;
+  margin: 0;
+  font-family: var(--font-display);
+}
+.fw-splash__message {
+  margin: 0;
+  font-size: var(--t-heading, 40px);
+  font-weight: 700;
+}
