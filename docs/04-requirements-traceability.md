@@ -1,6 +1,6 @@
 # 04 — Requirements and Traceability
 
-> Version 0.7 · Status: build baseline · Maintained by Claude Code
+> Version 0.8 · Status: build baseline · Maintained by Claude Code
 > This file is the **source of truth for requirement IDs**. Stories (`03`), work packages (`05`), components (`01`), and entities (`02`) trace to these IDs. `check_traceability.py` enforces the links in CI.
 
 **ID scheme:** `<DOMAIN>-<NN>` · domains: `ACC` access · `DEV` device/board shell · `CHR` chores · `RWD` rewards · `CAL` calendar · `SCH` school year · `MEAL` meals · `MENU` school menu · `BRD` board UI · `PTS` points economy · `NFR` non-functional.
@@ -110,7 +110,7 @@
 | PTS-07 | Each member shall have an earns-rewards switch, on by default for a child and off for an adult. Only credited members with it on earn points, go through approval, count toward goals, and show reward streaks. | M | P1 | User |
 | NFR-12 | The rules engine shall have at least 90% unit coverage, RLS shall be pgTAP-tested, and CI shall gate on e2e including offline. | M | P0 | Design |
 | NFR-13 | The product shall be branded FamilyWise and implement the brand and style guide: design tokens (light and Evening themes), self-hosted fonts, logo and app icons, the 85-icon set, member avatars, and a status-to-visual mapping with icon, label and color for every occurrence status. | M | P0 | User |
-| NFR-14 | Every change shall reach production only through a pull request that passes CI gates (lint, typecheck, unit, pgTAP, traceability, build) and e2e on its preview deployment against a preview database rebuilt from the PR's migrations; merging applies migrations before deploying the app. No Docker and no staging environment. | M | P0 | User |
+| NFR-14 | Every change shall reach production only through a pull request that passes CI gates (lint, typecheck, unit, pgTAP, traceability, build) and e2e on its preview deployment, which runs as the demo family in the one database with the PR's additive migrations applied, and that the owner has approved after viewing its preview; merging applies migrations before deploying the app. No Docker and no staging environment. | M | P0 | User |
 
 ---
 
@@ -317,7 +317,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | R-03 | Device session longevity / Realtime under RLS unproven | Med | High | SPIKE-01 before building on it |
 | R-04 | iCloud published-calendar behavior changes or lacks fidelity | Med | Med | SPIKE-02; CalDAV fallback; last-good retention |
 | R-05 | School menu feed unavailable or unofficial | Med | Med | The district's Nutrislice feed is public but undocumented, so it could change: adapter isolated behind the interface, last good menu cached, CSV/manual fallback, failures surfaced (MENU-04) |
-| R-06 | Supabase Free project paused for inactivity, or vendor outage | Med | High | Keepalive heartbeat four times a day to both projects; failure email; restore runbook; offline cache keeps the board usable |
+| R-06 | Supabase Free project paused for inactivity, or vendor outage | Med | High | Keepalive heartbeat four times a day; failure email; restore runbook; offline cache keeps the board usable |
 | R-07 | Pi hardware (SD corruption, touch driver, panel latency) | Med | High | NVMe/SSD boot; SPIKE-03 on the real panel |
 | R-08 | Maintenance burden on a single builder | High | High | Automated PR gates and ordered deploys; no feature that needs weekly care; health page and alerts |
 | R-09 | Child data privacy | Low | High | Minimal fields, no trackers, export/delete |
@@ -327,17 +327,18 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | R-13 | Self-check with parent verification in real life invites "check everything" behavior | Med | Med | Bulk uncheck (CHR-08) with a batch id; optional approval per chore; insights show override rate; no punitive wording on the board |
 | R-14 | 4K rendering on Pi 5 is too slow for animations | Med | Med | SPIKE-03; logical 1080p layout with DPR 2; compositor-only animations; documented 1080p output fallback |
 | R-15 | Day-close job skipped or late, leaving stale `scheduled` days | Low | Med | Hourly idempotent job with catch-up; stale-day alert on the health page; `rebuild_occurrence_status` drift check |
-| R-16 | Database tests run on native Postgres with a compatibility bootstrap (no Docker), which can drift from real Supabase | Med | Med | Bootstrap mirrors only platform objects; every e2e run applies all migrations to the real preview project; pgTAP on the preview project once role switching is verified; production deploy smoke check |
+| R-16 | Database tests run on native Postgres with a compatibility bootstrap (no Docker), which can drift from real Supabase | Med | Med | Bootstrap mirrors only platform objects; the e2e workflow applies each PR's additive migrations to the real project before merge; any other migration is first applied by the deploy, which stops before the app ships if it fails; production smoke check |
 | R-17 | Pi and panel not yet available, so the 4K budget (SPIKE-03) is validated late | Med | Med | Build to the 1920×1080 logical / DPR 2 spec; compositor-only animations; desktop Chromium at 3840×2160 DPR 2 in e2e; WP-14 and launch check L-08 run when hardware arrives |
 | R-18 | Device clock skew affects event-time conflict resolution | Low | Med | Server clamps `occurred_at` to receipt time; board events outside the due date are flagged for a parent (D-20, D-21) |
 | R-19 | Supabase's built-in email reaches only team members, about 2 per hour, so magic links and resets can fail | High | Med | Password sign-in needs no email; invites are shareable links; add both parents to the Supabase team; custom SMTP once a domain exists (OQ-06b) |
-| R-20 | No automatic backups on Supabase Free | Med | High | Nightly encrypted `pg_dump` kept 30 days; rehearsed restore into the preview project (WP-24, L-06) |
+| R-20 | No automatic backups on Supabase Free | Med | High | Nightly encrypted `pg_dump` kept 30 days; rehearsed restore into a throwaway database (WP-24, L-06) |
 | R-21 | Free-plan limits or policies change | Low | Med | Usage on System Health; the cost ceiling records that a paid upgrade is a deliberate decision |
 | R-22 | Parents keep their own to-dos in other apps, so the family list goes stale and the board loses trust | Med | High | My tasks on the phone with quick add (CHR-14); the Family view shows everyone's day; reminders by web push, switchable per person (D-35) |
 | R-23 | A private item leaks through the board snapshot, an audit row, or the other admin's view | Low | High | One RLS rule on the item, its occurrences, events and audit rows; pgTAP proves the board and the other admin see nothing; the snapshot reads through RLS |
 | R-24 | Web push on iPhone works only for the admin app added to the Home Screen with permission granted, and Apple can change the rules | Med | Med | Onboarding step with a test notification; Settings lists each device's last delivery; My tasks and the board work without push; launch check L-10 on real phones |
 | R-25 | Production secrets are repository secrets, readable by any workflow run on any branch (GitHub Free, private repository) | Low | High | Only the owner and Claude Code push; workflow changes are reviewed in the pull request diff; the Vercel token is scoped to the team and expires; the database password and the token can be rotated from their dashboards |
 | R-26 | A commit reaches `main` without passing its checks, since GitHub Free does not enforce branch protection on a private repository | Low | Med | The deploy gate refuses to ship it and the failed run emails the owner; fix forward in a pull request or revert (D-36) |
+| R-27 | Previews run unapproved code against the production database | Low | High | Previews hold only the browser-safe key, so RLS applies to everything they do; they run as the demo family, which RLS keeps apart from yours (pgTAP); only additive migrations are applied before approval; previews sit behind a Vercel login; nothing in the pipeline wipes the database (D-37) |
 
 ### Spikes (time-boxed, before dependent work)
 
@@ -361,7 +362,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | A-06 | The panel is mounted at child-reachable height or on a stand. |
 | A-07 | Apple Calendar remains the household's event system of record. |
 | A-08 | Production stays dark until launch; there is no staging environment and no Docker in the workflow. |
-| A-09 | Free plans only: Supabase Free (two projects), Vercel Hobby, GitHub Free. |
+| A-09 | Free plans only: Supabase Free (one project), Vercel Hobby, GitHub Free. |
 | A-10 | Family members trust each other at the board: anyone can check off any family-visible item, and each check-off records who did it and that it came from the board. |
 | A-11 | Parents use iPhones on iOS 16.4 or later and add the admin app to the Home Screen, which web push requires. |
 | A-12 | The repository stays private, and only the owner and Claude Code (acting for the owner) push to it. |
@@ -382,6 +383,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8 | One database (D-37): previews use the production project and run as the demo family, a separate household kept apart by RLS; previews hold only the browser-safe key; a PR's additive migrations are applied when its preview is tested, anything that removes or renames ships with the deploy; nothing wipes the database. The delivery loop includes the owner's preview and approval (NFR-14 reworded, US-911). The second Supabase project, `PREVIEW_DB_URL` and the preview project variables are gone; Y-2 dropped. R-27; R-06, R-16, R-20 and A-09 updated. |
 | 0.7.2 | GitHub Free does not enforce branch protection, environment secrets or required reviewers on a private repository (D-36). The deploy workflow now enforces the pull request gates: it ships only the head of `main`, from a merged pull request, with every CI check and e2e green. All GitHub secrets are repository secrets. Y-1 becomes the squash-only merge setting. R-25, R-26, A-12. |
 | 0.7.1 | PR #1 merged: WP-01 and WP-02 done. WP-01's live-environment checks (e2e on a preview, first production deploy, keepalive on both projects) move to new WP-41, blocked on owner setup Y-2..Y-4. Y-1 is now branch protection for `main`. |
 | 0.7 | Reminders for parents (D-35, OQ-13 answered): web push, off until switched on, switchable per person, device and item; at most once per item, never after done; quiet hours, morning digest, private titles hidden. New CHR-15..CHR-17 (US-317..US-319), component `NOTIFY`, WP-40, L-10, R-24, A-11. |

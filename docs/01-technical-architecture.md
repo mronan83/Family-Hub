@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
-> Version 0.7 · Status: build baseline · Maintained by Claude Code
+> Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8: one database (D-37): previews run as the demo family in the production project; the delivery loop includes your preview and approval (§9.1–9.5, §9.7–9.10, §11).
 > v0.7.2: GitHub Free limits (D-36): the deploy workflow enforces the pull request gates (§9.2, §9.3, §9.6); all GitHub secrets are repository secrets (§9.8); GitHub Free constraints in §9.10.
 > v0.7: reminders (D-35): `NOTIFY` component, `reminders` job, flow §5.9, VAPID secrets (§9.8), failure mode and alternative.
 > v0.6: one family list (D-30..D-34): every member's chores and tasks in one model; one shared occurrence per due date with who-did-it credit; routines get missed, tasks carry over; Family view on the board and My tasks in admin; private items enforced by RLS (§4, §5.2, §5.6, §5.8, §6, §7, §11).
@@ -449,27 +450,32 @@ No Docker anywhere, no staging, and free plans only (D-29): Supabase Free, Verce
 
 | Env | Web | Database | Used for |
 |---|---|---|---|
-| Workspace | `next dev` | DB tests: native Postgres + Supabase compatibility bootstrap (`scripts/db-test.sh`). App: points at the preview project | writing code, fast feedback |
+| Workspace | `next dev` | DB tests: native Postgres + Supabase compatibility bootstrap (`scripts/db-test.sh`). App: the production project as the demo family, browser-safe key only | writing code, fast feedback |
 | CI | `next build` | native Postgres 17 on the GitHub runner + pgTAP | gates on every push and PR |
-| Preview (one per PR) | Vercel preview deployment | the shared **preview** project (second Supabase Free project), wiped and rebuilt from the PR's migrations + `supabase/seed.sql` at the start of every e2e run | review, Playwright e2e |
-| Production | Vercel production (`family-wise-topaz.vercel.app`) | Supabase project `jpzwmibrsvsxcimbxtmb` (Free) | the family board; dark until launch |
+| Preview (one per PR) | Vercel preview deployment | the production project, as the **demo family** (a separate household); the PR's new migrations applied before its e2e run unless one removes or renames something (§9.5) | your review, Playwright e2e |
+| Production | Vercel production (`family-wise-topaz.vercel.app`) | Supabase project `jpzwmibrsvsxcimbxtmb` (Free), the one database | the family board; dark until launch |
 
 ### 9.2 Workflow
 
+Your part is the requirements, the preview and the approval; Claude Code does the rest.
+
 ```mermaid
 flowchart LR
-  dev["Branch per work package<br/>commits prefixed [REQ-ID]"] --> ci{"CI gates<br/>checks · database · build"}
-  ci -->|green| pr["Pull request"]
-  pr --> prev["Preview<br/>Vercel deployment +<br/>preview DB rebuilt for the run"]
-  prev --> e2e{"e2e on preview<br/>(Playwright)"}
-  e2e -->|green| rev["Review + docs updated"]
-  rev --> merge["Squash merge to main"]
+  req["You: requirements"] --> dev["Claude Code: develop<br/>branch per work package"]
+  dev --> ci{"CI gates<br/>checks · database · docs · build"}
+  ci -->|green| prev["Preview + e2e<br/>as the demo family"]
+  prev -->|green| look["You: preview"]
+  look --> ok{"You: approve"}
+  ok -->|changes| dev
+  ok -->|approved| merge["Claude Code: squash merge"]
   merge --> gate{"deploy: gate<br/>head of main · merged PR ·<br/>CI and e2e green"}
   gate --> mig["deploy: migrate<br/>supabase db push"]
   mig --> app["deploy: app<br/>vercel --prod"]
   app --> smoke{"smoke<br/>/api/health"}
   smoke --> dark["Production (dark until launch)"]
 ```
+
+Approval is your word to Claude Code, here or as a comment on the pull request: GitHub does not let you formally approve a pull request opened under your own account. Claude Code merges only after it, and only with every check green.
 
 ### 9.3 Pull request gates
 
@@ -479,7 +485,7 @@ flowchart LR
 | `ci / database` | `scripts/db-test.sh`: throwaway database on native Postgres, compatibility bootstrap, all migrations in order, pgTAP via `pg_prove` | yes |
 | `ci / docs` | `pnpm docs:build --check` (no broken cross-link or unknown ID in the five docs pages), then `pnpm docs:layout`: each page on 13 device profiles from a 320 px phone to a 4K monitor, failing on sideways scroll, content off screen, touch targets under 44 px, or script errors | yes |
 | `ci / build` | `next build` for `apps/web` | yes |
-| `e2e / preview` | Once Vercel reports a successful preview: rebuild the preview database from the PR's migrations and seed, then Playwright against the preview URL. Runs are serialized | yes |
+| `e2e / preview` | Once Vercel reports a successful preview: apply the PR's new migrations unless one removes or renames something, reset the demo family, then Playwright against the preview URL. Runs are serialized | yes |
 
 GitHub Free does not enforce branch protection on a private repository (D-36), so the five checks are required in two places:
 
@@ -494,15 +500,16 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 - `scripts/db-test.sh` creates a throwaway database, applies the bootstrap and then every migration in filename order, runs `pg_prove` over `supabase/tests/*.test.sql`, and drops the database.
 - Tests act as a principal with `set local role authenticated` plus `set local request.jwt.claims`, exactly as PostgREST does.
 - The bootstrap is never deployed. Migrations must not depend on it beyond what Supabase itself provides.
-- Fidelity: the e2e workflow applies every migration to the real (preview) Supabase project before each run, so a migration that only works against the bootstrap fails before merge. Running the pgTAP suite there as well is added once role switching on hosted Supabase is verified (R-16).
+- Fidelity: the e2e workflow applies a pull request's new migrations to the real Supabase project before its preview is tested, so a migration that only works against the bootstrap fails before merge. A migration that removes or renames something is first applied by the deploy, where a failure stops the deploy before the app ships (R-16).
 
-### 9.5 Preview environments
+### 9.5 Previews on the one database (D-37)
 
-- Vercel's Git integration builds every PR branch as a preview deployment. Vercel's **Preview** environment variables point at the preview project; **Production** variables point at production.
-- Supabase Free has no per-PR database branches, so all previews share one free **preview** project. At the start of every e2e run, `scripts/preview-db.sh` wipes everything the migrations created (`scripts/preview-reset.sql`), applies the PR's migrations with `supabase db push`, and loads `supabase/seed.sql`. Runs are serialized (one `preview-database` concurrency group), so two PRs never test against the same database at once.
-- The script refuses to run unless the connection string names the preview project and not production.
-- The preview project is test data only: nothing is promoted from it, and it is rebuilt every run. It is not a staging environment.
-- Previews sit behind Vercel deployment protection; the e2e workflow uses the automation bypass secret. The production domain is public, so the kiosk and the smoke check reach it without a Vercel login.
+- Vercel builds every PR branch as a preview. Previews use the production Supabase project with the browser-safe keys only (URL and publishable key), so every query goes through RLS. They hold no secret key and no job signing secret; scheduled jobs call production only.
+- Previews and e2e run as the **demo family**: a separate household with made-up members, defined in `supabase/seed.sql` under a fixed id. RLS keeps it apart from your household exactly as it keeps any two households apart (the pgTAP isolation suite), so nothing done in a preview reaches your family's data, and your family never sees the demo family. Re-running the seed resets the demo family and touches no other household (pgTAP, `012_demo_family`).
+- When Vercel reports a successful preview, the e2e workflow (`scripts/preview-db.sh`) applies the PR's new migrations, resets the demo family, and runs Playwright against the preview. Runs are serialized.
+- New migrations that only add (tables, columns, functions, policies) are applied before approval; the running app ignores them by design (§9.6). If any new migration drops, renames, retypes, truncates or deletes, none of the PR's migrations are applied before approval: they ship with the deploy, and the preview runs on the current schema. If you reject a change whose additions were applied, a follow-up migration removes them.
+- Nothing in the pipeline wipes the database, so nothing depends on remembering a switch at launch.
+- Previews sit behind Vercel Authentication: sign in to Vercel once on each device you preview from. The e2e workflow uses the automation bypass secret. The production domain is public, so the kiosk and the smoke check reach it without a Vercel login.
 
 ### 9.6 Production deploy (ordered)
 
@@ -518,38 +525,35 @@ Vercel's automatic production deploy from Git is turned off (`vercel.json`), so 
 ### 9.7 Launch
 
 - Production is deployed continuously but dark: no board paired and no family data.
-- Launch happens once every milestone is done and the launch acceptance checklist (`04` §E) passes: tag `v1.0.0`, reset production data with the launch runbook (schema kept, household data truncated), create the household, invite the second admin, pair the Pi.
+- Launch happens once every milestone is done and the launch acceptance checklist (`04` §E) passes: tag `v1.0.0`, delete any trial households you made while previewing (the demo family stays, for previews), create your household, invite the second admin, pair the Pi. Nothing is wiped.
 - After launch the same pipeline applies; a migration that rewrites data is preceded by a confirmed backup.
 
 ### 9.8 Secrets and configuration
 
-No secret is committed or pasted into chat. Database URLs are the **session pooler** URI from each Supabase project's Connect dialog (port 5432, user `postgres.<project-ref>`).
+No secret is committed or pasted into chat. The database URL is the **session pooler** URI from the Supabase project's Connect dialog (port 5432, user `postgres.<project-ref>`).
 
 GitHub Free keeps environment secrets to public repositories (D-36), so every GitHub secret below is a repository secret, which any workflow run in the repository can read. Only the owner and Claude Code push, and a change to a workflow is reviewed in the pull request diff like any other code (R-25).
 
 | Name | Kind | Stored in | Used by |
 |---|---|---|---|
-| `SUPABASE_DB_URL` | secret | GitHub repository | migrate, keepalive, backup |
-| `PREVIEW_DB_URL` | secret | GitHub repository | e2e (preview rebuild), keepalive |
-| `SUPABASE_PROJECT_ID` = `jpzwmibrsvsxcimbxtmb` | variable | GitHub repository | preview guard |
-| `SUPABASE_PREVIEW_PROJECT_ID` | variable | GitHub repository | preview guard |
+| `SUPABASE_DB_URL` | secret | GitHub repository | migrate, e2e (new migrations, demo family reset), keepalive, backup |
 | `VERCEL_TOKEN` | secret | GitHub repository (a Vercel token scoped to the project's team, with an expiry) | app deploy |
 | `VERCEL_ORG_ID` = `team_A8TfHlLyTc2toipq0WsMVKvK`, `VERCEL_PROJECT_ID` = `prj_DnYxdFgs03cQOWsKZklobWGCTYqe` | variables | GitHub repository | app deploy |
 | `VERCEL_AUTOMATION_BYPASS_SECRET` | secret | GitHub repository (value from Vercel → Deployment Protection) | e2e on protected previews |
 | `PRODUCTION_URL` = `https://family-wise-topaz.vercel.app` | variable | GitHub repository | smoke check |
 | `DEPLOY_ENABLED` = `true` | variable | GitHub repository | turns on production deploys (set last, in WP-41) |
 | `BACKUP_PASSPHRASE` | secret | GitHub repository | nightly backup encryption (WP-24) |
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (`sb_publishable_…`) | env | Vercel: Production → production project; Preview → preview project | app (browser-safe; RLS applies) |
-| `SUPABASE_SECRET_KEY` (`sb_secret_…`, marked Sensitive) | env, server only | Vercel: Production → production project; Preview → preview project | jobs, derived tables (bypasses RLS; never `NEXT_PUBLIC_`) |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (`sb_publishable_…`) | env | Vercel: Production and Preview, the same values | app (browser-safe; RLS applies) |
+| `SUPABASE_SECRET_KEY` (`sb_secret_…`, marked Sensitive) | env, server only | Vercel: Production only; previews never hold it (D-37) | jobs, derived tables (bypasses RLS; never `NEXT_PUBLIC_`) |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | env (browser-safe) | Vercel: Production and Preview | admin app subscribes to push (WP-40) |
-| `VAPID_PRIVATE_KEY` (Sensitive), `VAPID_SUBJECT` (`mailto:` contact) | env, server only | Vercel: Production and Preview | reminders job (WP-40) |
-| `JOB_SIGNING_SECRET` | env | Vercel and Supabase Vault | `pg_net` → job endpoints |
+| `VAPID_PRIVATE_KEY` (Sensitive), `VAPID_SUBJECT` (`mailto:` contact) | env, server only | Vercel: Production only | reminders job (WP-40) |
+| `JOB_SIGNING_SECRET` | env | Vercel Production only, and Supabase Vault | `pg_net` → job endpoints |
 
 ### 9.9 Cost ceiling (NFR-08)
 
 | Item | Plan | Monthly cost |
 |---|---|---|
-| Supabase | Free: production project + preview project (the plan allows two active projects) | 0 |
+| Supabase | Free: one project for production and previews (D-37); the plan's second free project stays unused | 0 |
 | Vercel | Hobby (personal, non-commercial) | 0 |
 | GitHub | Free, private repository: no branch protection or environment secrets (D-36); Actions minutes are capped per month (§9.10) | 0 |
 | Domain | optional until ACC-06 or custom email (OQ-06b) | about 1–2 if bought |
@@ -562,12 +566,12 @@ GitHub Free keeps environment secrets to public repositories (D-36), so every Gi
 
 | Free-plan constraint | What we do |
 |---|---|
-| Projects pause after about a week of low database activity | `keepalive.yml` writes a heartbeat to both projects four times a day (`private.heartbeat`). A failed run (usually a paused project) emails you; the runbook restores it from the dashboard. The board keeps working from its offline cache meanwhile (§7). After launch, pg_cron jobs and the board add activity too. |
-| No usable automatic backups | Nightly `backup.yml` (WP-24): `pg_dump` over the session pooler, compressed, encrypted with `BACKUP_PASSPHRASE`, kept as a private workflow artifact for 30 days. Restore drill: decrypt and load into the preview project. Storage files (catalog and goal images) are not in the dump; they are re-uploadable. |
+| Projects pause after about a week of low database activity | `keepalive.yml` writes a heartbeat to the project four times a day (`private.heartbeat`). A failed run (usually a paused project) emails you; the runbook restores it from the dashboard. The board keeps working from its offline cache meanwhile (§7). After launch, pg_cron jobs and the board add activity too. |
+| No usable automatic backups | Nightly `backup.yml` (WP-24): `pg_dump` over the session pooler, compressed, encrypted with `BACKUP_PASSPHRASE`, kept as a private workflow artifact for 30 days. Restore drill: decrypt and load into a throwaway Postgres on the CI runner (§9.4). Storage files (catalog and goal images) are not in the dump; they are re-uploadable. |
 | Direct database connection is IPv6-only | All CI access uses the session pooler URI (IPv4). |
 | GitHub Free: no branch protection, environment secrets or required reviewers on a private repository | The deploy gate enforces the pull request gates (§9.6); every secret is a repository secret (§9.8); squash-only merges (D-36). |
 | GitHub Free: a monthly cap on Actions minutes for a private repository (2,000 at the time of writing), each job rounded up to the minute | A CI run is four parallel jobs of about a minute each, and a newer push cancels the older run on the same branch. If a busy month nears the cap, GitHub → Settings → Billing shows usage. |
-| No per-PR database branches | One shared preview project, rebuilt per e2e run (§9.5). |
+| No per-PR database branches | Previews run as the demo family in the one database (§9.5, D-37). |
 | Built-in auth email reaches only Supabase team members, about 2 per hour | Password sign-in needs no email. Invites are shareable links (WP-03), so they do not depend on email. Magic links and password resets reach anyone added to the Supabase organization's team until custom SMTP (a free-tier email provider, which needs a domain) is configured. |
 | Usage caps (database size, storage, egress, realtime connections) | Our expected use is a small fraction: one household, a few devices, small JSON snapshots. System Health tracks usage; check current limits on Supabase's pricing page. |
 
@@ -611,7 +615,7 @@ GitHub Free keeps environment secrets to public repositories (D-36), so every Gi
 | Hosting | Vercel + Supabase | Pi-hosted backend | Admin from anywhere; Pi is a thin, replaceable client |
 | Event conflicts | Latest `occurred_at` wins, clamped to receipt time | Arrival order | A later parent decision is never overwritten by an earlier offline tap (D-20) |
 | Database tests | Native Postgres + compatibility bootstrap; pgTAP | `supabase start` (Docker) | No Docker in the workflow (D-26) |
-| Pre-production | Per-PR preview deployments sharing one free preview database, rebuilt per run; production dark until launch | Persistent staging project; per-PR Supabase branches | No staging; branches need a paid plan (D-29) |
+| Pre-production | Per-PR previews on the one database as the demo family, approved by you before merge; production dark until launch | A second Supabase project for previews; a throwaway Supabase in CI; persistent staging; per-PR Supabase branches | Keeps the second free project unused; CI Supabase needs Docker; no staging; branches need a paid plan (D-29, D-37) |
 | Supabase plan | Free, with keepalive and our own encrypted backups | Pro | Cost ceiling of zero (D-29) |
 | Reminders | Web push to the admin app, switchable per person, device and item | Email or SMS | Free, and works for Home Screen apps on iPhone; Supabase's built-in email is limited and SMS costs money (D-29, D-35) |
 | Production deploy order | GitHub Actions: migrations, then app | Vercel auto-deploy on merge | The app never runs ahead of its schema |

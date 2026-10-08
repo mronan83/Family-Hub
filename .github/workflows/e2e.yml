@@ -1,7 +1,8 @@
-# e2e on each Vercel preview (01 §9.3, §9.5). Supabase Free has no per-PR branches, so previews share
-# one free "preview" project. Each run rebuilds that database from this commit's migrations, seeds it,
-# then runs Playwright against the preview URL through Vercel deployment protection. Runs are
-# serialized so two PRs never share the database at the same time.
+# e2e on each Vercel preview (01 §9.3, §9.5, D-37). Previews use the one Supabase database and run
+# as the demo family, a separate household that RLS keeps apart from every real one. Each run applies
+# the pull request's new migrations (unless one removes or renames something; those wait for the
+# deploy), resets the demo family, then runs Playwright against the preview URL through Vercel
+# deployment protection. Runs are serialized so two previews never reset the demo family at once.
 name: e2e
 
 on:
@@ -11,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: preview-database
+  group: demo-family
   cancel-in-progress: false
 
 jobs:
@@ -23,17 +24,13 @@ jobs:
     env:
       E2E_BASE_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-      PREVIEW_DB_URL: ${{ secrets.PREVIEW_DB_URL }}
-      SUPABASE_PREVIEW_PROJECT_ID: ${{ vars.SUPABASE_PREVIEW_PROJECT_ID }}
-      SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
     steps:
       - name: Check configuration
         run: |
           missing=()
           [ -n "$VERCEL_AUTOMATION_BYPASS_SECRET" ] || missing+=(VERCEL_AUTOMATION_BYPASS_SECRET)
-          [ -n "$PREVIEW_DB_URL" ] || missing+=(PREVIEW_DB_URL)
-          [ -n "$SUPABASE_PREVIEW_PROJECT_ID" ] || missing+=(SUPABASE_PREVIEW_PROJECT_ID)
-          [ -n "$SUPABASE_PROJECT_ID" ] || missing+=(SUPABASE_PROJECT_ID)
+          [ -n "$SUPABASE_DB_URL" ] || missing+=(SUPABASE_DB_URL)
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::error::e2e is not configured yet; missing: ${missing[*]} (docs/01-technical-architecture.md §9.8)"
             exit 1
@@ -44,7 +41,13 @@ jobs:
       - uses: supabase/setup-cli@v3
         with:
           version: 2.117.0
-      - name: Rebuild the preview database
+      - name: Include main's migrations
+        # The database already has main's migrations; a branch behind main must not look like it
+        # is missing them.
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          git checkout FETCH_HEAD -- supabase/migrations
+      - name: Apply new migrations and reset the demo family
         run: bash scripts/preview-db.sh
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
