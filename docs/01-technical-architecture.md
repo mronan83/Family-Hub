@@ -516,7 +516,7 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 
 `deploy.yml` runs when `ci` finishes on `main`, or by hand from `main`:
 
-1. **gate**: deploys only the current head of `main`, so production never moves backwards (an older commit is skipped). The commit must have passed `ci / checks`, `ci / database`, `ci / docs` and `ci / build`, it must have come from a merged pull request, and that pull request's head must have passed `e2e / preview`. Anything else fails the run. A missing secret from §9.8 fails here too, with its name.
+1. **gate**: deploys only the current head of `main`, so production never moves backwards (an older commit is skipped). The commit must have passed `ci / checks`, `ci / database`, `ci / docs` and `ci / build`, it must have come from a merged pull request, and that pull request's head must have passed `e2e / preview`. Anything else fails the run. A missing secret from §9.8 fails here too, with its name, and so does a `VERCEL_TOKEN` that cannot open the project, before anything touches the database.
 2. **migrate**: `supabase db push --db-url` over the Supabase session pooler (IPv4; the Free plan's direct connection is IPv6-only). A failure stops the deploy.
 3. **app**: `vercel pull`, `vercel build --prod`, `vercel deploy --prebuilt --prod`.
 4. **smoke**: `GET /api/health` on production returns 200.
