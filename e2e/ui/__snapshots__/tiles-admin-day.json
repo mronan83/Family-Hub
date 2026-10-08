@@ -1,0 +1,134 @@
+[
+  {
+    "status": "scheduled",
+    "display": null,
+    "icon": "circle",
+    "label": "Open",
+    "background": "rgb(255, 255, 255)",
+    "border": "1px solid rgb(231, 225, 214)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(75, 85, 99)",
+    "minHeight": "44px"
+  },
+  {
+    "status": "completed",
+    "display": null,
+    "icon": "check-circle",
+    "label": "Done",
+    "background": "rgb(204, 251, 241)",
+    "border": "1px solid rgb(15, 118, 110)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(17, 94, 89)",
+    "minHeight": "44px"
+  },
+  {
+    "status": "pending_approval",
+    "display": null,
+    "icon": "clock",
+    "label": "Needs review",
+    "background": "rgb(254, 243, 199)",
+    "border": "1px solid rgb(251, 191, 36)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(146, 64, 14)",
+    "minHeight": "44px"
+  },
+  {
+    "status": "approved",
+    "display": null,
+    "icon": "shield-check",
+    "label": "Approved",
+    "background": "rgb(204, 251, 241)",
+    "border": "1px solid rgb(15, 118, 110)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(17, 94, 89)",
+    "minHeight": "44px"
+  },
+  {
+    "status": "rejected",
+    "display": null,
+    "icon": "retry",
+    "label": "Sent back",
+    "background": "rgb(255, 255, 255)",
+    "border": "1px solid rgb(3, 105, 161)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(3, 105, 161)",
+    "minHeight": "44px"
+  },
+  {
+    "status": "skipped",
+    "display": null,
+    "icon": "moon",
+    "label": "Skipped",
+    "background": "rgba(0, 0, 0, 0)",
+    "border": "1px dashed rgb(231, 225, 214)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(75, 85, 99)",
+    "minHeight": "44px"
+  },
+  {
+    "status": "missed",
+    "display": null,
+    "icon": "minus-circle",
+    "label": "Missed",
+    "background": "rgb(241, 232, 245)",
+    "border": "1px solid rgb(126, 79, 143)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(91, 58, 104)",
+    "minHeight": "44px"
+  },
+  {
+    "status": "scheduled",
+    "display": "overdue",
+    "icon": "hourglass",
+    "label": "Overdue",
+    "background": "rgb(255, 255, 255)",
+    "border": "1px solid rgb(251, 191, 36)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(146, 64, 14)",
+    "minHeight": "44px"
+  },
+  {
+    "status": "scheduled",
+    "display": "past-time",
+    "icon": "hourglass",
+    "label": "Past its time",
+    "background": "rgb(255, 255, 255)",
+    "border": "1px solid rgb(251, 191, 36)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(146, 64, 14)",
+    "minHeight": "44px"
+  },
+  {
+    "status": "completed",
+    "display": null,
+    "icon": "check-circle",
+    "label": "Done · by Maya",
+    "background": "rgb(204, 251, 241)",
+    "border": "1px solid rgb(15, 118, 110)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(17, 94, 89)",
+    "minHeight": "44px"
+  },
+  {
+    "status": "completed",
+    "display": "covered",
+    "icon": "check",
+    "label": "Covered · by Maya",
+    "background": "rgb(255, 255, 255)",
+    "border": "1px solid rgb(231, 225, 214)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(75, 85, 99)",
+    "minHeight": "44px"
+  },
+  {
+    "status": "scheduled",
+    "display": null,
+    "icon": "circle",
+    "label": "Open",
+    "background": "rgb(255, 255, 255)",
+    "border": "1px solid rgb(231, 225, 214)",
+    "text": "rgb(31, 41, 55)",
+    "statusText": "rgb(75, 85, 99)",
+    "minHeight": "44px"
+  }
+]
