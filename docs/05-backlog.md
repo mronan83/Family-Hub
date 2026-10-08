@@ -1,6 +1,7 @@
 # 05 — Backlog
 
-> Version 0.5 · Status: build baseline · Maintained by Claude Code
+> Version 0.6 · Status: build baseline · Maintained by Claude Code
+> v0.6: one family list (D-30..D-34): WP-08 becomes chores, tasks, tags and visibility (L); WP-09 generates one shared occurrence per due date and carries tasks over (L); WP-12 adds My tasks (L); WP-02/04 add the earns-rewards switch; WP-10, WP-11, WP-15, WP-16, WP-17, WP-19 and WP-37 take the new rules.
 > v0.5.2: §0 Waiting on you lists the owner actions that unblock work; the five build artifacts are also published as interactive pages generated from these files (`pnpm docs:build`).
 > v0.5: free plans (D-29): WP-01 uses a shared preview database and a keepalive; WP-24 backups are our own nightly encrypted dumps; preview-branch references replaced.
 > v0.4: renamed from Work Breakdown; status board (§1); spikes are backlog items (§3); sequence changed so no finished work package needs rework (WP-37 before WP-03, WP-21 before WP-09, WP-16 before WP-11 and WP-12); WP-19 split, payouts and preview move to WP-39; WP-38 adds Sign in with Apple and passkeys; WP-01 carries the delivery pipeline (NFR-14); missing dependencies fixed.
@@ -45,13 +46,13 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-05 | Device pairing and device auth | P0 | L | WP-03 | Queued |
 | WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | Queued |
 | WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Queued |
-| WP-08 | Chores CRUD | P1a | M | WP-04 | Queued |
+| WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Queued |
 | WP-21 | School year and day types | P1a | M | WP-04 | Queued |
-| WP-09 | Occurrence generator | P1a | M | WP-08, WP-21 | Queued |
+| WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | Queued |
 | WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | Queued |
 | WP-16 | Points ledger | P1a | M | WP-10 | Queued |
 | WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37 | Queued |
-| WP-12 | Admin chore operations | P1a | M | WP-10, WP-16 | Queued |
+| WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Queued |
 | WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | Queued |
 | WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
 | WP-15 | Rules engine package | P1b | L | WP-01 | Queued |
@@ -112,7 +113,7 @@ flowchart LR
     WP02 --> WP07
   end
   subgraph P1a[P1a Kid loop]
-    WP04 --> WP08[WP-08 Chores CRUD]
+    WP04 --> WP08[WP-08 Chores, tasks, tags]
     WP04 --> WP21[WP-21 School year and day types]
     WP08 --> WP09[WP-09 Occurrence generator]
     WP21 --> WP09
@@ -225,17 +226,18 @@ flowchart LR
 
 ### WP-37 — Brand system and design tokens
 **Phase:** P0 · **Size:** M · **Depends on:** WP-01 · **Reqs:** NFR-13
-- `packages/ui`: import `brand/familywise-tokens.css` and `fonts.css`; typed `Icon` (from `icons/index.json`), `Avatar`, `ChoreTile` (all seven statuses), `PointsChip`, `GoalMeter`, `Banner`, `Button`; Day and Evening theme switching (board by household-local time with manual override; admin by `prefers-color-scheme`).
+- `packages/ui`: import `brand/familywise-tokens.css` and `fonts.css`; typed `Icon` (from `icons/index.json`), `Avatar`, `ChoreTile` (all seven statuses, plus the display states Overdue, Past its time, Covered by another member, Done by, and a private badge for admin views), `PointsChip`, `GoalMeter`, `Banner`, `Button`; Day and Evening theme switching (board by household-local time with manual override; admin by `prefers-color-scheme`).
 - App identity: favicon, touch icon, PWA icons, and **two manifests**: board (`/board`, fullscreen, landscape) and admin (`/admin`, standalone, any orientation); head tags; board boot splash; FamilyWise page titles; service-worker precache of fonts.
 - Token fixes: Evening `--success` override (Leaf 600 on the Evening surface is 2.89:1) and an OS dark-mode hook for admin.
 - Guards: lint or test that fails on raw hex outside the tokens file; Playwright snapshots of tile states in both themes; axe contrast check on shells; unit test that every `OccurrenceStatus` has a tile mapping.
 - **Done when:** a `/dev/brand` page renders the specimen from real components, and the contrast and snapshot checks run in CI.
 
 ### WP-02 — Tenancy schema and RLS
-**Phase:** P0 · **Size:** M · **Depends on:** WP-01 · **Reqs:** ACC-01, NFR-04, NFR-09, NFR-12
+**Phase:** P0 · **Size:** M · **Depends on:** WP-01 · **Reqs:** ACC-01, NFR-04, NFR-09, NFR-12, PTS-07
 - Tables from `02` §3.1 (`household`, `household_user`, `member`, `invite`, `device`, `device_pairing`, `household_settings`, `job_run`) with `household_id` everywhere, RLS enabled, and the helpers in `02` §4.5.
 - Migration lint that fails CI if a `public` table lacks RLS or `household_id` (a pgTAP test over the catalog after all migrations, `supabase/tests/001_schema_lint.test.sql`).
-- pgTAP: cross-tenant read and write denied for admin and device; revoked device denied immediately.
+- `member.earns_rewards`, set from the role on insert (on for a child, off for an adult) and changeable per person (D-32).
+- pgTAP: cross-tenant read and write denied for admin and device; revoked device denied immediately; earns-rewards defaults.
 - **Done when:** the isolation suite is green and the lint blocks a deliberately broken migration.
 
 ### WP-03 — Admin authentication and onboarding
@@ -246,9 +248,10 @@ flowchart LR
 - **Done when:** two admins can sign in, one by magic link and one by password, and see the same household; an expired or reused invite is rejected (E2E); invite and household writes produce audit rows.
 
 ### WP-04 — Members UI
-**Phase:** P0 · **Size:** S · **Depends on:** WP-03, WP-37 · **Reqs:** ACC-04
+**Phase:** P0 · **Size:** S · **Depends on:** WP-03, WP-37 · **Reqs:** ACC-04, PTS-07
 - CRUD for child and adult members (name, avatar, color), archive instead of delete, multiple children supported by the schema.
-- **Done when:** the single child profile exists and an adult profile can be linked to an admin.
+- Earns-rewards switch on each member (D-32), defaulting from the role.
+- **Done when:** the single child profile exists, an adult profile can be linked to an admin, and the switch defaults correctly and can be changed.
 
 ### WP-05 — Device pairing and device auth
 **Phase:** P0 · **Size:** L · **Depends on:** WP-03 · **Reqs:** DEV-01, DEV-02, DEV-03, NFR-04
@@ -273,47 +276,53 @@ flowchart LR
 
 ### Phase P1a — Kid loop
 
-### WP-08 — Chores CRUD
-**Phase:** P1a · **Size:** M · **Depends on:** WP-04 · **Reqs:** CHR-01
-- `chore` and `chore_assignee` tables; admin UI to create, edit, archive chores and one-off tasks (title, icon, assignees, points, approval flag, tags, schedule, day types).
+### WP-08 — Chores, tasks, tags, and visibility
+**Phase:** P1a · **Size:** L · **Depends on:** WP-04 · **Reqs:** CHR-01, CHR-09, CHR-10, CHR-11, CHR-13
+- `chore` (`kind` chore = routine or task = to-do, optional `due_time`, `visibility`, `created_by`), `chore_assignee` (any member, several per item), `tag` and `chore_tag` (`02` §3.2); admin UI for the combined family list with filters by person, tag, due, status and kind.
+- Household tag editor (name, color token, icon; rename and archive keep goals working, D-33).
+- Private visibility enforced by RLS on the item and everything derived from it, including audit rows (`private.can_see_chore`, `02` §4.5, D-34).
 - Zod validation of `schedule jsonb`.
-- **Done when:** a parent can create the six seed chores on a phone in under five minutes.
+- **Done when:** a parent can create the seed list (six chores plus adult tasks) on a phone in under five minutes; pgTAP proves a private item is invisible to the board and to the other admin, and visible to an assignee who signs in.
 
 ### WP-21 — School year and day types
 **Phase:** P1a · **Size:** M · **Depends on:** WP-04 · **Reqs:** SCH-01, SCH-02, SCH-03
 - `school_year`, `school_term`, `school_closure`, `member_school_profile`, `resolve_day_type` (`02` §4.4), admin UI.
 - Closure and school-year edits trigger regeneration for dates after today only (D-24).
+- Members without a school profile (adults) follow the household's default school year (`02` §3.5).
 - **Done when:** pgTAP covers weekend, break, no_school, school_day, summer precedence; a break week produces no school-only chores; a closure added for today leaves today alone.
 
 ### WP-09 — Occurrence generator
-**Phase:** P1a · **Size:** M · **Depends on:** WP-08, WP-21 · **Reqs:** CHR-02, CHR-03
-- `chore_occurrence` (with `status` default `scheduled`), rolling-window generation per assignee using the real `resolve_day_type`, regeneration of only future `scheduled` occurrences on edit, snapshots of points and approval flag.
-- **Done when:** property tests show generation is idempotent and edits never touch past occurrences; DST fixtures pass.
+**Phase:** P1a · **Size:** L · **Depends on:** WP-08, WP-21 · **Reqs:** CHR-02, CHR-03, CHR-09, CHR-11, CHR-12
+- `chore_occurrence` (with `status` default `scheduled`) and `chore_occurrence_assignee`: one occurrence per item per due date with a snapshot of its assignees, `kind`, `due_time`, points and approval flag; rolling-window generation using the real `resolve_day_type` (per assignee's school profile, generated if any assignee's day type matches); regeneration of only future `scheduled` occurrences on edit.
+- Tasks carry over: open past-due tasks stay `scheduled` and are listed as overdue; a repeating task keeps generating while earlier ones are open (D-31).
+- `v_member_occurrence`: one row per occurrence and member with the per-member status (`covered` when someone else did it).
+- **Done when:** property tests show generation is idempotent and edits never touch past occurrences or their assignee snapshots; DST fixtures pass; a shared item yields one occurrence per day.
 
 ### WP-10 — Completion events, status projection, and day-close
-**Phase:** P1a · **Size:** L · **Depends on:** WP-09, WP-07 · **Reqs:** CHR-04, CHR-07, NFR-06
-- `chore_completion_event` (append-only, client-generated ids, `batch_id`), `normalize_completion_event` (clamp, flag, server-derived household/member/credit date), `fold_occurrence_status` by event time, `apply_completion_event`, `close_past_due` (`scheduled` and `rejected` → `missed`), and report-only `rebuild_occurrence_status` (`02` §4.1–4.2).
-- `POST /api/completions` accepting batches, idempotent on `id`.
+**Phase:** P1a · **Size:** L · **Depends on:** WP-09, WP-07 · **Reqs:** CHR-04, CHR-07, CHR-09, CHR-12, NFR-06
+- `chore_completion_event` (append-only, client-generated ids, `batch_id`), `normalize_completion_event` (clamp, flag for routines only, server-derived household and credit date, `done_by` validated and `rewarded` computed from the earns-rewards switch), `fold_occurrence_status` by event time, `apply_completion_event`, `close_past_due` (routines only: `scheduled` and `rejected` → `missed`; tasks carry over), and report-only `rebuild_occurrence_status` (`02` §4.1–4.2).
+- `POST /api/completions` accepting batches, idempotent on `id`, with `done_by` (defaults to the profile on screen).
 - `day_close` job (hourly, idempotent, catch-up) writing `missed` and `finalized_at`; nightly drift report.
-- **Done when:** pgTAP proves immutability, replay idempotency, event-time ordering (a late-arriving earlier event never overrides a later one), the clamp, the flag rule, and that rebuild equals the stored projection after random event sequences; a closed day has no `scheduled` or `rejected` rows.
+- **Done when:** pgTAP proves immutability, replay idempotency, event-time ordering (a late-arriving earlier event never overrides a later one), the clamp, the flag rule, and that rebuild equals the stored projection after random event sequences; a closed day has no `scheduled` or `rejected` routines while open tasks survive it; a shared item credits only `done_by`.
 
 ### WP-16 — Points ledger
-**Phase:** P1a · **Size:** M · **Depends on:** WP-10 · **Reqs:** PTS-01, PTS-02
-- `points_ledger`, `post_points` trigger, `private.post_ledger`, `public.adjust_points` with reason and request id, `v_points_balance`, snapshot inclusion of balance and recent activity.
-- **Done when:** random complete/undo/approve sequences always leave the ledger balance equal to the sum of done occurrences' points plus adjustments (pgTAP/property test); no application role can insert into `points_ledger` directly.
+**Phase:** P1a · **Size:** M · **Depends on:** WP-10 · **Reqs:** PTS-01, PTS-02, PTS-07
+- `points_ledger`, `post_points` trigger (one earn or reversal per rewarded member of the folded event), `private.post_ledger`, `public.adjust_points` with reason and request id, `v_points_balance`, snapshot inclusion of balance and recent activity.
+- **Done when:** random complete/undo/approve sequences always leave each member's balance equal to the points of the done occurrences that rewarded them plus adjustments; a member with earns rewards off never receives an earn (pgTAP/property test); no application role can insert into `points_ledger` directly.
 
 ### WP-11 — Board Today screen and check-off
-**Phase:** P1a · **Size:** L · **Depends on:** WP-06, WP-10, WP-16, WP-37 · **Reqs:** BRD-01, BRD-02, BRD-03, CHR-04, NFR-03, PTS-02, RWD-08
-- Today screen with the child's chores (today only, D-21), points chip with live balance, tap to check off with optimistic UI (feedback under 100 ms), chore-done celebration (check pop, tint, points count-up; reduced motion honoured), time-boxed undo, child selector.
+**Phase:** P1a · **Size:** L · **Depends on:** WP-06, WP-10, WP-16, WP-37 · **Reqs:** BRD-01, BRD-02, BRD-03, BRD-07, CHR-04, CHR-11, CHR-12, NFR-03, PTS-02, RWD-08
+- Today screen per member (today's items plus open overdue tasks, D-21) grouped by part of day from due times, and a Family view with a column per person; who-did-it picker for shared items (assignees first, anyone selectable, several allowed); points chip with live balance for members who earn rewards, tap to check off with optimistic UI (feedback under 100 ms), chore-done celebration (check pop, tint, points count-up; reduced motion honoured), time-boxed undo, member selector; private items never reach the board.
 - Layout reserves the slots that later WPs fill (events, meals, goal meter, streak flame), so adding them is additive.
 - Debounce and confirm for destructive actions; icon-first layout on the 1920×1080 logical grid with 56 px minimum targets.
 - **Done when:** the Playwright check-off flow passes, including a rapid double tap resulting in one effective completion and the balance updating once.
 
-### WP-12 — Admin chore operations
-**Phase:** P1a · **Size:** M · **Depends on:** WP-10, WP-16 · **Reqs:** CHR-05, CHR-06, CHR-08
+### WP-12 — Admin chore operations and My tasks
+**Phase:** P1a · **Size:** L · **Depends on:** WP-10, WP-16 · **Reqs:** CHR-05, CHR-06, CHR-08, CHR-14
 - Admin day view: complete, uncomplete, skip any occurrence; late credit for past days (`admin_complete`); approval queue (approve, reject, flagged items); household approval on/off switch and per-chore override that re-resolve `scheduled` occurrences only (D-22).
 - Multi-select "Not actually done" producing one `batch_id`; undo of a batch.
-- **Done when:** a parent unchecks four of five items in one action, the child sees them open again on the board, and exactly four reversals post to the ledger.
+- My tasks on the phone: overdue, today and upcoming items assigned to me (shared ones included), quick add (family-visible task due today, assigned to me), complete with `done_by` = me.
+- **Done when:** a parent unchecks four of five items in one action, the child sees them open again on the board, and exactly four reversals post to the ledger; quick add creates a task in one step and it appears on the board.
 
 ### WP-13 — Offline outbox and stale indicator
 **Phase:** P1a · **Size:** M · **Depends on:** WP-11 · **Reqs:** DEV-06, DEV-08, NFR-01
@@ -332,15 +341,15 @@ flowchart LR
 ### Phase P1b — Rules engine, shop, streak history
 
 ### WP-15 — Rules engine package
-**Phase:** P1b · **Size:** L · **Depends on:** WP-01 · **Reqs:** RWD-02, RWD-03, RWD-05, RWD-11, NFR-12
-- `packages/rules-engine`: `evaluateGoal` and `evaluateHistory` per `02` §5; pure, no clock or I/O.
+**Phase:** P1b · **Size:** L · **Depends on:** WP-01 · **Reqs:** RWD-02, RWD-03, RWD-05, RWD-11, CHR-10, NFR-12
+- `packages/rules-engine`: `evaluateGoal` and `evaluateHistory` per `02` §5 over per-member facts (`covered` is neutral; day classes use routines only; scope by tag ids); pure, no clock or I/O.
 - Property tests with `fast-check` (event orderings, DST, replay) and at least 90% coverage.
 - **Done when:** the coverage gate is green and the documented edge cases in `02` §5 each have a named test.
 
 ### WP-17 — Streak history and insights
 **Phase:** P1b · **Size:** M · **Depends on:** WP-10, WP-15 · **Reqs:** RWD-11, RWD-12
-- `member_daily_summary` and `streak_segment` written by day-close using `evaluateHistory`; late completions re-derive the affected day.
-- Admin Insights page: current and best good streak, longest bad streak, completion rate, heatmap, most-missed chores, trust panel (reversal/rejection rate, time to verify); board streak flame.
+- `member_daily_summary` and `streak_segment` for every member, written by day-close using `evaluateHistory`; late completions re-derive the affected day; reward streaks are shown only for members who earn rewards.
+- Admin Insights page: current and best good streak, longest bad streak, completion rate, heatmap, most-missed chores, completion by tag, trust panel (reversal/rejection rate, time to verify); board streak flame.
 - **Done when:** after 14 seeded days the insights match a hand-computed table and a rebuild produces identical rows.
 
 ### WP-18 — Reward catalog and redemptions
@@ -351,8 +360,8 @@ flowchart LR
 ### Phase P1c — Goals
 
 ### WP-19 — Goals admin and progress pipeline
-**Phase:** P1c · **Size:** L · **Depends on:** WP-15, WP-16 · **Reqs:** RWD-01, RWD-04, RWD-06, RWD-09
-- Goal CRUD with rules, lifecycle jobs (scheduled → active → expired), dirty flag trigger, reconcile within 5 minutes, reversible achievement (achieved ↔ active with `unachieved` events, `celebrated_at` cleared), redeem and redemption history.
+**Phase:** P1c · **Size:** L · **Depends on:** WP-15, WP-16 · **Reqs:** RWD-01, RWD-04, RWD-06, RWD-09, CHR-10
+- Goal CRUD with rules (scoped to all items, tags by id, or specific items; goals only for members who earn rewards or the whole family), lifecycle jobs (scheduled → active → expired), dirty flag trigger, reconcile within 5 minutes, reversible achievement (achieved ↔ active with `unachieved` events, `celebrated_at` cleared), redeem and redemption history.
 - **Done when:** a seeded goal becomes achieved, returns to active when the deciding chore is unchecked, and is achieved again; reconcile heals a deliberately dirtied goal.
 
 ### WP-39 — Goal payouts, payout reversal, and rule-change preview
@@ -461,7 +470,7 @@ flowchart LR
 | Milestone | Items | Notes |
 |---|---|---|
 | P0 | SPIKE-01, SPIKE-05, WP-01 – WP-07, WP-37 | One L (device auth) |
-| P1a | SPIKE-03, WP-08 – WP-14, WP-16, WP-21 | Two L (events/status, board Today) |
+| P1a | SPIKE-03, WP-08 – WP-14, WP-16, WP-21 | Five L (chores/tasks, generator, events/status, board Today, admin ops) |
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |

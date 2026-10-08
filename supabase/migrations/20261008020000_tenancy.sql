@@ -65,6 +65,7 @@ create table public.member (
                   check (color in ('member-1', 'member-2', 'member-3', 'member-4', 'member-5', 'member-6')),
   birth_year    smallint check (birth_year between 1900 and 2100),
   user_id       uuid references auth.users (id) on delete set null,
+  earns_rewards boolean not null,        -- D-32: set from the role on insert unless given
   archived_at   timestamptz,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now(),
@@ -74,6 +75,16 @@ create index on public.member (household_id) where archived_at is null;
 create unique index on public.member (household_id, user_id) where user_id is not null;
 create trigger trg_member_updated before update on public.member
   for each row execute function private.set_updated_at();
+
+-- [PTS-07] Rewards follow the person: on for a child, off for an adult, unless set explicitly.
+create function private.member_defaults() returns trigger
+language plpgsql set search_path = '' as $$
+begin
+  new.earns_rewards := coalesce(new.earns_rewards, new.role = 'child');
+  return new;
+end $$;
+create trigger trg_member_defaults before insert on public.member
+  for each row execute function private.member_defaults();
 
 create table public.invite (
   id            uuid primary key default gen_random_uuid(),

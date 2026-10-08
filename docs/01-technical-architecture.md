@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
-> Version 0.5 · Status: build baseline · Maintained by Claude Code
+> Version 0.6 · Status: build baseline · Maintained by Claude Code
+> v0.6: one family list (D-30..D-34): every member's chores and tasks in one model; one shared occurrence per due date with who-did-it credit; routines get missed, tasks carry over; Family view on the board and My tasks in admin; private items enforced by RLS (§4, §5.2, §5.6, §5.8, §6, §7, §11).
 > v0.5.2: `ci / docs` gate: the interactive docs pages build without broken links and pass a layout check on 13 device profiles (§9.3).
 > v0.5.1: Supabase publishable/secret API keys (§9.8); SPIKE-04 result: Nutrislice public menu API (§5.5).
 > v0.5: free plans only (D-29): one shared Supabase preview project instead of per-PR branches, keepalive against inactivity pausing, migrations over the session pooler, own nightly backups, email limits (§9.10).
@@ -41,7 +42,8 @@ flowchart LR
   menu[("School menu source<br/>Nutrislice / SchoolCafe / CSV")]
 
   kid -->|"check off, browse"| board
-  parents -->|"configure, approve"| admin
+  parents -->|"configure, approve, my tasks"| admin
+  parents -->|"family view, check off"| board
   parents -.->|"edit events"| apple
   core -->|"scheduled pull"| apple
   core -->|"adapter / import"| menu
@@ -106,17 +108,17 @@ flowchart TB
 
 | ID | Component | Responsibility | Tech | Primary requirements |
 |---|---|---|---|---|
-| `BRD` | Board App | Kid-facing UI: Today, Calendar, Goals, Meals. Optimistic check-off, notify-then-refetch realtime, idle auto-return, offline cache. | Next.js route group `(board)`, PWA (Serwist), Dexie (IndexedDB), Tailwind | BRD-*, DEV-04..08, CHR-04, RWD-07/08, CAL-04, MEAL-06 |
-| `ADM` | Admin App | Responsive parent portal: members, devices, chores, goals, calendars, school year, meal plan, menu, audit. | Next.js route group `(admin)`, server actions, shadcn/ui | ACC-*, DEV-03, CHR-01/05/06, RWD-01/09/10, CAL-05/06, SCH-*, MEAL-*, MENU-* |
-| `API` | API layer | Validated writes (zod), derives `household_id` from the verified session (never from the body), invokes `RULES`, uses service role only for derived tables. Owns the redemption workflow (request, approve, deny, fulfill). | Next.js route handlers | CHR-04, RWD-04, DEV-06, PTS-04 |
+| `BRD` | Board App | Family-facing UI: Today per member and a Family view of everyone's day, Calendar, Goals, Meals. Optimistic check-off with a who-did-it picker for shared items, notify-then-refetch realtime, idle auto-return, offline cache. Never shows private items. | Next.js route group `(board)`, PWA (Serwist), Dexie (IndexedDB), Tailwind | BRD-*, DEV-04..08, CHR-04, RWD-07/08, CAL-04, MEAL-06 |
+| `ADM` | Admin App | Responsive parent portal: members (incl. the earns-rewards switch), devices, the family list of chores and tasks with tags and visibility, My tasks on the phone, goals, calendars, school year, meal plan, menu, audit. | Next.js route group `(admin)`, server actions, shadcn/ui | ACC-*, DEV-03, CHR-01/05/06, RWD-01/09/10, CAL-05/06, SCH-*, MEAL-*, MENU-* |
+| `API` | API layer | Validated writes (zod), derives `household_id` from the verified session (never from the body), passes `done_by` for check-offs (the database validates it and fixes `rewarded`), invokes `RULES`, uses service role only for derived tables. Owns the redemption workflow (request, approve, deny, fulfill). | Next.js route handlers | CHR-04, RWD-04, DEV-06, PTS-04 |
 | `AUTH` | Pairing + device auth | Pairing codes, creates device principals, issues/revokes device sessions. | Route handlers + Supabase Admin API | DEV-01/02/03 |
-| `RULES` | Rules engine | Pure functions: evaluate goals (COUNT, STREAK, DAILY_ALL_DONE, POINTS), AND/OR composition, grace days; computes streak history (good and bad segments) and daily summaries. Isomorphic (runs on server and board). | `packages/rules-engine`, TypeScript, Vitest | RWD-02..06, RWD-10, RWD-11, NFR-12 |
-| `OCCGEN` | Occurrence generator + day close | Materializes `chore_occurrence` rows for a rolling window from chore schedules + day types; regenerates future rows on chore edits. Day close finalizes unresolved past-due occurrences as `missed`, writes daily summaries, and rebuilds streak segments. | Route handler jobs | CHR-02/03/07, SCH-03, RWD-11 |
+| `RULES` | Rules engine | Pure functions over per-member facts (`covered` is neutral; tags by id): evaluate goals (COUNT, STREAK, DAILY_ALL_DONE, POINTS), AND/OR composition, grace days; computes streak history (good and bad segments, routines only) and daily summaries. Isomorphic (runs on server and board). | `packages/rules-engine`, TypeScript, Vitest | RWD-02..06, RWD-10, RWD-11, NFR-12 |
+| `OCCGEN` | Occurrence generator + day close | Materializes one `chore_occurrence` per item per due date for a rolling window, with a snapshot of its assignees, from schedules + day types; regenerates future rows on edits. Day close finalizes unresolved past-due routines as `missed` (tasks carry over), writes daily summaries for every member, and rebuilds streak segments. | Route handler jobs | CHR-02/03/07, SCH-03, RWD-11 |
 | `CALSYNC` | Calendar sync | Fetch ICS/CalDAV, parse, expand recurrences into a window, upsert events/instances, record health. | `ical.js`, `tsdav` | CAL-01..03, CAL-06..08 |
 | `MENUIMP` | Menu import | Adapter interface + implementations + CSV/manual; never overwrites manual overrides. | Route handler job | MENU-01..05 |
 | `OUTBOX` | Offline outbox | Service worker caches app shell; IndexedDB stores board snapshot + queued completion events; replays with idempotency keys. | Serwist, Dexie | DEV-06, NFR-01 |
 | `SCHED` | Scheduler | Time-based triggers into signed job endpoints. | `pg_cron` + `pg_net` | CAL-02, CHR-03, MENU-05 |
-| `DB` | Database | Postgres, RLS, functions and triggers (`fold_occurrence_status`, status / ledger / dirty-goal triggers, `close_past_due`, `resolve_day_type`, `board_snapshot`), view `v_points_balance`. | Supabase Postgres 15+ | all |
+| `DB` | Database | Postgres, RLS (incl. `can_see_chore` for private items), functions and triggers (`fold_occurrence_status`, status / ledger / dirty-goal triggers, `close_past_due`, `resolve_day_type`, `board_snapshot`), views `v_points_balance`, `v_member_occurrence`. | Supabase Postgres 15+ | all |
 | `RT` | Realtime | Change notifications to board, filtered by RLS. | Supabase Realtime | DEV-05 |
 | `VAULT` | Secrets | Calendar URLs/credentials, job signing secret. | Supabase Vault | CAL-01/08, NFR-04 |
 | `SAUTH` | Admin identity | Email magic link and email + password (required); Sign in with Apple and passkeys once the production domain exists; device principals live here too. | Supabase Auth | ACC-02, ACC-06, DEV-02 |
@@ -168,11 +170,11 @@ sequenceDiagram
 
   K->>B: tap chore
   B->>B: optimistic UI + local progress projection (RULES)
-  B->>O: enqueue {id: uuid, occurrence_id, occurred_at}
+  B->>O: enqueue {id: uuid, occurrence_id, occurred_at, done_by}
   O->>A: POST /api/completions
   A->>A: verify device session, derive household_id
   A->>D: insert event ON CONFLICT (id) DO NOTHING
-  D->>D: triggers fold occurrence status, post points ledger entry, mark goals dirty
+  D->>D: normalize (validate done_by, fix rewarded), fold status, post ledger per rewarded member, mark goals dirty
   A->>R: evaluate dirty goals from occurrence statuses
   R-->>A: GoalEvaluation[]
   A->>D: upsert progress, append goal events, clear dirty
@@ -182,6 +184,8 @@ sequenceDiagram
 ```
 
 If `RULES` evaluation fails after the insert, the completion still stands and the goal stays `dirty`; `progress_reconcile` (5.6) repairs it within minutes.
+
+On a member's own screen `done_by` is that member; on the Family view the picker lists the item's assignees first and allows anyone in the family, or several people (D-30). Only members who earn rewards get points, approval and celebrations (D-32).
 
 The fold always takes the event with the latest `occurred_at` (D-20), so an event that arrives late but happened earlier never overrides a later decision. `status_event_id` records the event the status was folded from, not the event that was just inserted.
 
@@ -272,8 +276,8 @@ sequenceDiagram
 |---|---|---|---|
 | `calendar_sync` | every 15 min | `/api/jobs/calendar-sync` | one source per invocation; advisory lock per source |
 | `menu_import` | daily | `/api/jobs/menu-import` | window 28 days ahead; skips override rows |
-| `occurrence_gen` | hourly + on chore edit | `/api/jobs/occurrence-gen` | `UNIQUE (chore_id, member_id, due_date)` + `ON CONFLICT DO NOTHING`; rolling 14 days |
-| `day_close` | hourly (acts once a household's local day has ended) | `/api/jobs/day-close` | `close_past_due()` marks unresolved occurrences `missed` and stamps `finalized_at`; writes `member_daily_summary`; rebuilds `streak_segment` for affected members; idempotent |
+| `occurrence_gen` | hourly + on chore edit | `/api/jobs/occurrence-gen` | one occurrence per item per due date, `UNIQUE (chore_id, due_date)` + `ON CONFLICT DO NOTHING`, with its `chore_occurrence_assignee` snapshot; rolling 14 days |
+| `day_close` | hourly (acts once a household's local day has ended) | `/api/jobs/day-close` | `close_past_due()` marks unresolved routines `missed` and stamps `finalized_at` (tasks stay open, D-31); writes `member_daily_summary` for every member; rebuilds `streak_segment` for affected members; idempotent |
 | `progress_reconcile` | every 5 min | `/api/jobs/progress-reconcile` | recompute dirty goals; apply time-based transitions (scheduled→active, active→expired at household-local midnight); post goal payouts and points bonus rules idempotently; nightly full recompute |
 
 All job endpoints verify a bearer secret (constant-time compare) held in `VAULT` and sent by `pg_net`. Keep each invocation short (one source, one household) and verify current Vercel function duration and cron limits for your plan before relying on them.
@@ -319,8 +323,8 @@ sequenceDiagram
   S->>O: POST /api/jobs/day-close (signed, hourly)
   O->>D: households whose local day has ended
   loop each household
-    O->>D: close_past_due(): scheduled -> missed, stamp finalized_at
-    O->>D: load occurrences for affected members
+    O->>D: close_past_due(): routines scheduled/rejected -> missed, stamp finalized_at; tasks stay open
+    O->>D: load v_member_occurrence for affected members
     O->>R: evaluateHistory(per member, per scope)
     R-->>O: streak segments + daily summaries
     O->>D: upsert member_daily_summary, streak_segment
@@ -336,8 +340,8 @@ sequenceDiagram
 
 | Principal | AuthN | Reads | Writes |
 |---|---|---|---|
-| Admin | Supabase Auth: email magic link or email + password (ACC-02); Sign in with Apple or passkey later (ACC-06) | all rows of own household | config tables via server actions under the user's session (RLS enforced) |
-| Board device | Device auth user, `app_metadata.role=device` | board tables of own household while `device.status='active'` | none direct; `POST /api/completions` and `POST /api/redemptions` only |
+| Admin | Supabase Auth: email magic link or email + password (ACC-02); Sign in with Apple or passkey later (ACC-06) | all rows of own household, except another admin's private items (D-34) | config tables via server actions under the user's session (RLS enforced) |
+| Board device | Device auth user, `app_metadata.role=device` | family-visible board tables of own household while `device.status='active'` | none direct; `POST /api/completions` (with `done_by`) and `POST /api/redemptions` only |
 | Jobs | Signed bearer secret + service role | all | derived tables, instances, menu rows |
 | Child | not a principal | n/a | acts only through the device |
 
@@ -356,8 +360,9 @@ sequenceDiagram
 - Admin policies: full CRUD where `household_id` in `admin_household_ids()`.
 - Device policies: `SELECT` only, on board tables, where `household_id = device_household_id()`.
 - Derived, instance, and event tables have **no** insert/update/delete policy for end users; only the service role writes them.
+- Private items (D-34): `private.can_see_chore(chore_id)` admits family items to everyone in the household and private items only to their creator and assignees who sign in. The item, its occurrences, assignee snapshots, events and audit rows all use it, so the board and the other admin never receive a private row.
 - Views use `security_invoker = true` so RLS applies through them.
-- pgTAP suite proves: cross-household isolation, revoked-device denial, device cannot write, admin cannot read other households.
+- pgTAP suite proves: cross-household isolation, revoked-device denial, device cannot write, admin cannot read other households, and private items are invisible to the board and to the other admin.
 
 ### 6.4 Secrets and calendar credentials
 
@@ -376,7 +381,7 @@ sequenceDiagram
 
 **Notify-then-refetch.** Realtime events only say "something changed in table X for household H". The board refetches the affected slice via `board_snapshot(from, to)`. This avoids trusting partial payloads for derived data and keeps the client logic simple.
 
-**Board snapshot** (single RPC, RLS-invoker): day type, occurrences + status for the window, goals + progress, points balance + active catalog + the member's open redemption requests, streak summary, calendar instances (today-1 .. today+14) **limited to the calendars selected for that device**, meal plan (7 days), school menu for buy days. It is the unit cached in IndexedDB.
+**Board snapshot** (single RPC, RLS-invoker): day type, every member's family-visible occurrences for today plus open overdue tasks (with assignees, due time, status and who did it), goals + progress, points balance + active catalog + open redemption requests and streak summary for each member who earns rewards, calendar instances (today-1 .. today+14) **limited to the calendars selected for that device**, meal plan (7 days), school menu for buy days. It is the unit cached in IndexedDB.
 
 **Offline rules**
 
@@ -549,6 +554,11 @@ No secret is committed or pasted into chat. Database URLs are the **session pool
 | Calendar writes | None (Apple Calendar only) | Two-way sync | Write-back is where sync bugs live |
 | Calendar selection | Per-device selection table | Global show/hide flag | Different boards can show different calendars |
 | Points | Append-only ledger; balance derived | Mutable balance column | Clawbacks, redemptions, and audits stay exact |
+| Family list | One model for every member's chores and tasks; behavior follows the person (earns-rewards switch) | Separate kid and parent lists | One code path for scheduling, history and check-off; the board shows the whole family's day (D-30, D-32) |
+| Ownership | Member references (assignees) | Tags such as kid, mom, dad | Reward eligibility, per-person views and reports need a real relationship; tags stay for categories (D-33) |
+| Shared items | One occurrence per due date with who-did-it credit | One copy per assignee | Shared work appears once and credit goes to whoever did it (D-30) |
+| Late to-dos | Tasks carry over as overdue; routines get missed | Everything missed at day-close | A to-do should not vanish at midnight; routines still build honest history (D-31) |
+| Tags | Household tag list referenced by id | Free-text tags | Goals measure by tag; a rename must never break a running goal (D-33) |
 | Hosting | Vercel + Supabase | Pi-hosted backend | Admin from anywhere; Pi is a thin, replaceable client |
 | Event conflicts | Latest `occurred_at` wins, clamped to receipt time | Arrival order | A later parent decision is never overwritten by an earlier offline tap (D-20) |
 | Database tests | Native Postgres + compatibility bootstrap; pgTAP | `supabase start` (Docker) | No Docker in the workflow (D-26) |

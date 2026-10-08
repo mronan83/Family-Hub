@@ -1,6 +1,6 @@
-# FamilyWise — Project Brief (v0.5)
+# FamilyWise — Project Brief (v0.6)
 
-A family "digital board" for a 32" 4K touch display (Raspberry Pi 5 kiosk): a child checks off chores, earns points, spends them in a rewards shop and watches progress toward goals; parents manage everything from phone or laptop. The board is only the interactive front end. Apple Calendar remains the system of record for events. Hosted on Vercel + Supabase.
+A family "digital board" for a 32" 4K touch display (Raspberry Pi 5 kiosk) holding the whole family's chores and to-dos in one list: everyone sees who is doing what, a child's work earns points to spend in a rewards shop and progress toward goals, and parents manage everything, including their own tasks, from phone or laptop. The board is only the interactive front end. Apple Calendar remains the system of record for events. Hosted on Vercel + Supabase.
 
 ## Document map
 
@@ -28,7 +28,7 @@ Source of truth for IDs is `04`. CI runs `python3 docs/check_traceability.py --d
 | D-01 | Board and admin are the system of record for chores, rewards, meals, school year. Apple Calendar owns events; sync is read-only. |
 | D-02 | Next.js (App Router, TypeScript) on Vercel; Supabase for Postgres, Auth, Realtime, Vault, `pg_cron`. |
 | D-03 | Completions are immutable events (truth). `chore_occurrence.status` is a persisted, rebuildable projection of them; progress and history tables are projections too. |
-| D-04 | Chore occurrences are materialized per assignee. A day-close job marks unfinished past-due occurrences `missed` and finalizes the day, so good and bad streaks can be shown over time. |
+| D-04 | Occurrences are materialized one per chore per due date and shared by its assignees (D-30). A day-close job marks unfinished routines `missed` and finalizes the day, so good and bad streaks can be shown over time; tasks carry over instead (D-31). |
 | D-05 | Day type (school day, break, weekend, summer, no school) is resolved from school-year config and drives chores and lunch. |
 | D-06 | The board is a device principal (a Supabase Auth user with scoped `app_metadata`), revocable instantly via RLS. |
 | D-07 | Offline-first board: PWA, IndexedDB snapshot, idempotent outbox. |
@@ -45,7 +45,7 @@ Source of truth for IDs is `04`. CI runs `python3 docs/check_traceability.py --d
 | D-18 | The product is named FamilyWise. Brand tokens and assets in `brand/` are the single source for color, type, and icons; the board never uses red for child-visible states and never relies on color alone (NFR-13). |
 | D-19 | **Single launch.** Nothing goes live until every phase (P0–P3) is built and the launch acceptance checklist (`04` §E) passes. Phases are build milestones, not release gates. Scope is fixed; no feature is cut. |
 | D-20 | **Event time decides.** An occurrence's status folds its events in `occurred_at` order (latest wins), online or offline; ties break on `recorded_at`, then `id`. The database clamps `occurred_at` to no later than the time it was received. |
-| D-21 | **Today only on the board.** The board shows today's chores only. Late credit for a past day is parent-only (`admin_complete`). A board event whose `occurred_at` falls outside the occurrence's due date (household-local) is stored as `flagged` and waits for a parent. |
+| D-21 | **Today on the board.** The board shows today's items and any open overdue tasks (D-31). Late credit for a past day's routine is parent-only (`admin_complete`). A board event on a routine whose `occurred_at` falls outside its due date (household-local) is stored as `flagged` and waits for a parent. |
 | D-22 | Switching approval on or off re-resolves `scheduled` occurrences only. Check-offs already waiting for approval stay in the queue; completed ones are unchanged. |
 | D-23 | Day-close finalizes both `scheduled` and `rejected` occurrences as `missed`. |
 | D-24 | A school closure added for today leaves today's occurrences untouched; only later dates are regenerated. |
@@ -54,6 +54,11 @@ Source of truth for IDs is `04`. CI runs `python3 docs/check_traceability.py --d
 | D-27 | Three reward models stay as scoped: goals (with their own achieve → redeem lifecycle), shop redemptions, and wishlist pins. |
 | D-28 | The points ledger is written only by `SECURITY DEFINER` database functions: earn and reversal by trigger; spend, refund, adjustment and bonus by named functions the API calls. |
 | D-29 | **Free plans only.** Supabase Free (a production project and a preview project), Vercel Hobby, GitHub Free. A keepalive prevents inactivity pausing, backups are our own nightly encrypted dumps, and CI reaches the database through the session pooler (`01` §9.10). |
+| D-30 | **One family list.** Chores and tasks for every member, adults included, live in one model. Owners are family members (assignees), never tags. Each item has one occurrence per due date shared by all its assignees: whoever does it is recorded (`done_by`) and it is done for everyone; for an assignee who did not do it, it counts as `covered` (neutral). |
+| D-31 | **Routines and to-dos.** A chore is a routine: if it is not done on its day, day-close marks it `missed`. A task is a to-do, one-off or repeating: it stays open and shows as overdue until it is done or cancelled, and is never `missed`. An optional due time orders and groups the day and marks lateness; it never changes scoring. |
+| D-32 | **Rewards follow the person.** Each member has an earns-rewards switch, on for children and off for adults by default. Points, the approval workflow, goals and reward streaks apply only to credited members with it on. |
+| D-33 | **Tags are a household list.** Tags (name, color, icon) are defined by admins and referenced by id. Goals, filters and insights measure by tag, so renaming or archiving a tag never breaks a goal. |
+| D-34 | **Family-visible unless private.** Every item shows on the board and to both parents unless it is set private; a private item is visible only to the admin who created it and to assignees who sign in, enforced by RLS. Anyone at the board can check off any family-visible item; the event records who did it and that it came from the board. |
 
 ## Repo layout
 
@@ -111,4 +116,5 @@ brand/                   brand asset kit
 | ID | Question | Blocks |
 |---|---|---|
 | OQ-05b | Exact panel model and mounting (touch driver, height)? Hardware is being sourced. | SPIKE-03, WP-14, WP-34 |
+| OQ-13 | Do parents want reminders for their own tasks (for example web push to the admin app installed on an iPhone)? Not in scope until decided. | — |
 | OQ-06b | Production domain name (after a trademark/domain check against "FamilyWize")? | ACC-06 / WP-38, custom SMTP for magic links beyond the Supabase team (`01` §9.10) |

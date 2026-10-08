@@ -323,7 +323,12 @@ export function loadModel(root) {
       anchor: c.anchor,
       intro: lines.slice(0, start).join('\n').trim(),
       extra: lines.slice(end).join('\n').trim(),
-      tables: table(c.md).rows.map((r) => ({ name: stripMd(r[0]), keyCols: r[1], notes: r[2] })),
+      // The name is the first code span, so "`v_member_occurrence` (view)" is v_member_occurrence.
+      tables: table(c.md).rows.map((r) => ({
+        name: (r[0].match(/`([^`]+)`/) || [])[1] || stripMd(r[0]),
+        keyCols: r[1],
+        notes: r[2],
+      })),
     };
   });
   m.entityMap = records(table(need(D, '7.').md)).map((r) => ({

@@ -1,6 +1,6 @@
 # 04 — Requirements and Traceability
 
-> Version 0.5 · Status: build baseline · Maintained by Claude Code
+> Version 0.6 · Status: build baseline · Maintained by Claude Code
 > This file is the **source of truth for requirement IDs**. Stories (`03`), work packages (`05`), components (`01`), and entities (`02`) trace to these IDs. `check_traceability.py` enforces the links in CI.
 
 **ID scheme:** `<DOMAIN>-<NN>` · domains: `ACC` access · `DEV` device/board shell · `CHR` chores · `RWD` rewards · `CAL` calendar · `SCH` school year · `MEAL` meals · `MENU` school menu · `BRD` board UI · `PTS` points economy · `NFR` non-functional.
@@ -28,16 +28,22 @@
 | DEV-06 | The board shall accept check-offs while offline, queue them, and replay them idempotently and in order. | M | P1 | Design |
 | DEV-07 | The board shall support quiet hours and burn-in mitigation. | S | P3 | Design |
 | DEV-08 | The board shall indicate when its data is stale. | S | P1 | Design |
-| CHR-01 | Admins shall create, edit, and archive chores and one-off tasks (title, icon, assignees, points, approval flag, tags). | M | P1 | User |
+| CHR-01 | Admins shall create, edit, and archive chores (routines) and tasks (to-dos, one-off or repeating) with title, icon, assignees (any family members), points, approval flag, household tags, optional due time, and visibility. | M | P1 | User |
 | CHR-02 | Chores shall support recurrence (daily, weekly by weekday, monthly, once) and day-type filters. | M | P1 | User |
-| CHR-03 | The system shall materialize occurrences per assignee for a rolling window and regenerate only future occurrences on edit. | M | P1 | Design |
-| CHR-04 | A child shall check off an occurrence with one tap and undo within a configurable window via a compensating event. | M | P1 | User |
+| CHR-03 | The system shall materialize one occurrence per item per due date for a rolling window, snapshot its assignees, and regenerate only future occurrences on edit. | M | P1 | Design |
+| CHR-04 | A family member shall check off an occurrence on the board with one tap, recording who did it, and undo within a configurable window via a compensating event. | M | P1 | User |
 | CHR-05 | The approval workflow shall be switchable on or off for the household at any time, with a per-chore override. When off, a check-off counts immediately and a parent verifies in real life and can uncheck; when on, it is `pending_approval` until approved or rejected. | M | P1 | User |
 | CHR-06 | Admins shall complete, uncomplete, or skip any occurrence. | M | P1 | Derived |
-| CHR-07 | Each occurrence shall carry a persisted `status` (scheduled, completed, pending_approval, approved, rejected, skipped, missed) projected from the event log; a day-close job shall mark unfinished past-due occurrences `missed` and finalize the day. The projection shall be rebuildable. | M | P1 | User |
+| CHR-07 | Each occurrence shall carry a persisted `status` (scheduled, completed, pending_approval, approved, rejected, skipped, missed) projected from the event log; a day-close job shall mark unfinished past-due routines `missed` and finalize the day (tasks carry over, CHR-12). The projection shall be rebuildable. | M | P1 | User |
 | CHR-08 | Admins shall select and uncheck several occurrences at once; the resulting events share a batch id and any earned points are reversed. | M | P1 | User |
+| CHR-09 | Any family member, child or adult, can be assigned, and one item can have several assignees. Each due date is a single shared occurrence: whoever completes it is recorded as having done it, it is done for every assignee, and it counts as covered (neutral) for assignees who did not do it. | M | P1 | User |
+| CHR-10 | Admins shall define household tags (name, color, icon) and apply them to items; goals, filters, and insights reference tags by id, so renaming or archiving a tag never breaks a goal. | M | P1 | User |
+| CHR-11 | An item may have a due time (household-local). The board orders and groups the day by it (morning, after school, evening, anytime) and marks items past their due time; scoring is unchanged. | M | P1 | User |
+| CHR-12 | A task not done by its due date shall stay open and show as overdue until completed or cancelled; it is never marked missed, and a completion after the due date is recorded as late. | M | P1 | User |
+| CHR-13 | An item shall be family-visible (on the board and to every admin) unless set private; a private item is visible only to the admin who created it and to assignees who sign in, enforced by RLS on the item, its occurrences, events, and audit rows. | M | P1 | User |
+| CHR-14 | An admin shall have a My tasks view on the phone listing items assigned to them that are due today, overdue, or upcoming, with quick add. | M | P1 | User |
 | RWD-01 | Admins shall create, edit, and archive reward goals with title, image, assignee, start date, and end date. | M | P1 | User |
-| RWD-02 | Goals shall support rule types COUNT, STREAK, DAILY_ALL_DONE, and POINTS, scoped to all chores, tags, or specific chores. | M | P1 | User |
+| RWD-02 | Goals shall support rule types COUNT, STREAK, DAILY_ALL_DONE, and POINTS, scoped to all items, household tags (by id), or specific items. | M | P1 | User |
 | RWD-03 | A goal shall combine its rules with ALL or ANY logic. | M | P1 | Derived |
 | RWD-04 | Progress and goal achievement shall be derived from current completion state, rebuildable, and self-healing (dirty flag, reconcile within 5 minutes). A reversed completion shall un-achieve a goal that depended on it and reverse its payout. | M | P1 | User |
 | RWD-05 | Streaks shall treat non-scheduled days as neutral, forgive a configurable number of misses per week, report best and current streak, and never count today as a miss. | M | P1 | Design |
@@ -47,7 +53,7 @@
 | RWD-09 | Admins shall mark achieved goals as redeemed and view redemption history. | M | P1 | Derived |
 | RWD-10 | Admins shall preview the effect of rule changes against historical data before saving. | S | P1 | Design |
 | RWD-11 | Daily outcomes and runs of good and bad days (including missed days) shall be persisted per member so streak history can be shown over time. | M | P1 | User |
-| RWD-12 | Admins shall view insights: current and best good streak, longest bad streak, completion rate over a range, a day heatmap, most-missed chores, and trust metrics (reversal and rejection rate, time to verify) to inform the approval setting. | S | P1 | Derived |
+| RWD-12 | Admins shall view insights: current and best good streak, longest bad streak, completion rate over a range, a day heatmap, most-missed chores, completion by tag, and trust metrics (reversal and rejection rate, time to verify) to inform the approval setting. | S | P1 | Derived |
 | RWD-13 | A goal shall define a payout on achievement: custom reward, a number of points, or a catalog item. | S | P1 | User |
 | CAL-01 | Admins shall connect calendars by ICS URL, with the URL stored only in Vault. | M | P1 | User |
 | CAL-02 | Calendars shall sync at least every 15 minutes and expand recurring events across a rolling window. | M | P1 | User |
@@ -75,11 +81,12 @@
 | MENU-04 | Menus shall be cached, failures surfaced, and meal planning never blocked by a failed import. | M | P2 | Design |
 | MENU-05 | Menus shall refresh daily over a 28-day window. | S | P2 | Design |
 | BRD-01 | The board shall have a Today screen with chores, events, meals, and goal progress. | M | P1 | User |
-| BRD-02 | The board shall let a child select their profile and filter to their chores and goals. | M | P1 | Derived |
+| BRD-02 | The board shall let a family member select their profile and filter to their items, and, for a member who earns rewards, their points and goals. | M | P1 | Derived |
 | BRD-03 | Child-facing UI shall be icon-first with touch targets of at least 56 logical px (about 21 mm on the 4K reference panel; target 96 or more for primary actions) and text legible at 2 m. | M | P1 | User |
 | BRD-04 | The board may show a local weather widget. | C | P3 | User |
 | BRD-05 | Admins shall configure which panels appear and their order. | S | P3 | Derived |
 | BRD-06 | The board shall return to Today after 60 seconds of inactivity, deferring while a celebration plays. | M | P1 | Design |
+| BRD-07 | The board shall show a Family view of today: every member's family-visible items and open overdue tasks, grouped by person and part of day, where anyone can check off an item and pick who did it. | M | P1 | User |
 | NFR-01 | The board shall remain functional offline for at least 24 hours from cached data. | M | P1 | Design |
 | NFR-02 | The board shall target a 3840×2160 32" panel, laid out at 1920×1080 logical px with device scale factor 2, be interactive in under 2 s from cache on a Pi 5, and give check-off feedback under 100 ms. | M | P1 | User |
 | NFR-03 | Child-facing interactions shall tolerate imprecise touch (debounce, confirm destructive actions). | M | P1 | Design |
@@ -91,12 +98,13 @@
 | NFR-09 | Every table shall carry `household_id` and isolate tenants (multi-tenant-ready). | M | P0 | Design |
 | NFR-10 | Production data shall be backed up daily (encrypted, off the database host) with a documented, rehearsed restore. | M | P1 | Design |
 | NFR-11 | The UI shall meet WCAG AA contrast, avoid color-only cues, and honor reduced motion. | S | P2 | Design |
-| PTS-01 | Points shall be posted to an append-only ledger: earned when an occurrence enters a done status, reversed when it leaves one, with manual adjustments and idempotent dedupe keys. | M | P1 | User |
+| PTS-01 | Points shall be posted to an append-only ledger: earned by each credited member who earns rewards when an occurrence enters a done status, reversed when it leaves one, with manual adjustments and idempotent dedupe keys. | M | P1 | User |
 | PTS-02 | The board shall show the member's points balance and recent activity; a negative balance shall display as a debt. | M | P1 | User |
 | PTS-03 | Admins shall create, edit and archive a catalog of rewards and activities with point costs, images and optional stock. | M | P1 | User |
 | PTS-04 | A child shall request a catalog item; requests shall not exceed the available balance; an admin approves (posting the spend), denies, or fulfills. A reversal after a spend takes the points away and may leave a negative balance. | M | P1 | User |
 | PTS-05 | Admins may define automatic bonus rules (for example a streak milestone) that post bonus points once. | S | P2 | Derived |
 | PTS-06 | A child may pin a catalog item as a saving goal and see progress toward its cost. | S | P2 | Derived |
+| PTS-07 | Each member shall have an earns-rewards switch, on by default for a child and off for an adult. Only credited members with it on earn points, go through approval, count toward goals, and show reward streaks. | M | P1 | User |
 | NFR-12 | The rules engine shall have at least 90% unit coverage, RLS shall be pgTAP-tested, and CI shall gate on e2e including offline. | M | P0 | Design |
 | NFR-13 | The product shall be branded FamilyWise and implement the brand and style guide: design tokens (light and Evening themes), self-hosted fonts, logo and app icons, the 85-icon set, member avatars, and a status-to-visual mapping with icon, label and color for every occurrence status. | M | P0 | User |
 | NFR-14 | Every change shall reach production only through a pull request that passes CI gates (lint, typecheck, unit, pgTAP, traceability, build) and e2e on its preview deployment against a preview database rebuilt from the PR's migrations; merging applies migrations before deploying the app. No Docker and no staging environment. | M | P0 | User |
@@ -125,14 +133,20 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | DEV-08 | US-206 | WP-13 | BRD, OBS | job_run | E2E |
 | CHR-01 | US-301 | WP-08 | ADM, API | chore, chore_assignee | E2E, DB |
 | CHR-02 | US-302 | WP-09 | OCCGEN, DB | chore, school_closure | U, INT |
-| CHR-03 | US-303, US-308 | WP-09 | OCCGEN, SCHED, DB | chore_occurrence | INT, DB |
-| CHR-04 | US-304, US-305 | WP-10, WP-11 | BRD, OUTBOX, API, DB | chore_completion_event, chore_occurrence | E2E, DB |
+| CHR-03 | US-303, US-308, US-311 | WP-09 | OCCGEN, SCHED, DB | chore_occurrence | INT, DB |
+| CHR-04 | US-304, US-305, US-1006 | WP-10, WP-11 | BRD, OUTBOX, API, DB | chore_completion_event, chore_occurrence | E2E, DB |
 | CHR-05 | US-306, US-310 | WP-12 | ADM, API | chore_completion_event | E2E |
 | CHR-06 | US-307, US-309 | WP-12 | ADM, API | chore_completion_event | E2E |
-| CHR-07 | US-307 | WP-10 | DB, SCHED, BRD, ADM | chore_occurrence, chore_completion_event | DB, INT |
+| CHR-07 | US-307, US-314 | WP-10 | DB, SCHED, BRD, ADM | chore_occurrence, chore_completion_event | DB, INT |
 | CHR-08 | US-309 | WP-12 | ADM, API, DB | chore_completion_event, points_ledger | E2E, DB |
+| CHR-09 | US-304, US-311, US-316 | WP-08, WP-09, WP-10 | ADM, BRD, API, OCCGEN, DB | chore_assignee, chore_occurrence_assignee, chore_completion_event | DB, E2E |
+| CHR-10 | US-312 | WP-08, WP-15, WP-19 | ADM, RULES, DB | tag, chore_tag, reward_rule | DB, U, E2E |
+| CHR-11 | US-313 | WP-08, WP-09, WP-11 | ADM, BRD, OCCGEN | chore, chore_occurrence | E2E, U |
+| CHR-12 | US-303, US-314 | WP-09, WP-10, WP-11 | OCCGEN, SCHED, DB, BRD | chore_occurrence | DB, INT, E2E |
+| CHR-13 | US-315 | WP-08 | ADM, BRD, API, DB | chore, audit_log | DB, E2E |
+| CHR-14 | US-316 | WP-12 | ADM | chore_occurrence_assignee | E2E |
 | RWD-01 | US-401 | WP-19 | ADM, API | reward_goal | E2E |
-| RWD-02 | US-401 | WP-15 | RULES, DB | reward_rule | U |
+| RWD-02 | US-312, US-401 | WP-15 | RULES, DB | reward_rule, tag | U |
 | RWD-03 | US-401 | WP-15 | RULES | reward_goal | U |
 | RWD-04 | US-406, US-407 | WP-19, WP-39 | RULES, API, SCHED, DB | reward_rule_progress, reward_goal_progress | U, INT, DB |
 | RWD-05 | US-402 | WP-15 | RULES | reward_rule | U |
@@ -175,6 +189,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | BRD-04 | US-1003 | WP-35 | BRD, API | household_settings | E2E |
 | BRD-05 | US-1004 | WP-35 | ADM, BRD | household_settings | E2E |
 | BRD-06 | US-1005 | WP-14 | BRD | — | E2E |
+| BRD-07 | US-1006 | WP-11 | BRD, API | chore_occurrence, chore_occurrence_assignee | E2E |
 | NFR-01 | US-205 | WP-13 | OUTBOX, BRD | — | E2E |
 | NFR-02 | US-905 | WP-14 | BRD, PI | — | HW, E2E |
 | NFR-03 | US-905 | WP-11 | BRD | — | HW, E2E |
@@ -192,6 +207,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | PTS-04 | US-1104, US-1105 | WP-18, WP-20 | BRD, ADM, API, DB, OUTBOX | redemption, points_ledger, reward_catalog_item | E2E, DB, INT |
 | PTS-05 | US-1107 | WP-30 | SCHED, RULES, ADM | points_rule, points_ledger | U, INT |
 | PTS-06 | US-1108 | WP-30 | BRD, DB | reward_catalog_item, v_points_balance | E2E |
+| PTS-07 | US-1109 | WP-02, WP-04, WP-16 | ADM, DB, RULES | member, points_ledger | DB, E2E |
 | NFR-12 | US-908, US-911 | WP-01, WP-02, WP-15 | all | — | CI |
 | NFR-13 | US-910 | WP-37 | BRD, ADM, UI | — | E2E, REV |
 | NFR-14 | US-911 | WP-01 | CICD | — | CI, REV |
@@ -203,13 +219,13 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | Phase | Must | Should | Could | Total |
 |---|---|---|---|---|
 | P0 | 13 | 1 | 0 | 14 |
-| P1 | 43 | 5 | 0 | 48 |
+| P1 | 51 | 5 | 0 | 56 |
 | P2 | 9 | 6 | 1 | 16 |
 | P3 | 0 | 5 | 3 | 8 |
-| **Total** | **65** | **17** | **4** | **86** |
+| **Total** | **73** | **17** | **4** | **94** |
 
-- Requirements: **86** · with at least one story: **86** · stories: **75** (P0: 12 · P1: 43 · P2: 12 · P3: 8).
-- With at least one work package: **86** · work packages: **39**.
+- Requirements: **94** · with at least one story: **94** · stories: **83** (P0: 12 · P1: 51 · P2: 12 · P3: 8).
+- With at least one work package: **94** · work packages: **39**.
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -218,17 +234,17 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 
 | Component | Requirements |
 |---|---|
-| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, CAL-03, CAL-04, CAL-05, CHR-04, CHR-07, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08 |
-| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, BRD-05, CAL-01, CAL-03, CAL-05, CAL-06, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MENU-01, MENU-03, MENU-04, NFR-05, NFR-11, NFR-13, PTS-01, PTS-03, PTS-04, PTS-05, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04 |
-| `API` | ACC-03, ACC-05, BRD-04, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, DEV-01, DEV-06, MEAL-03, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13 |
+| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, CAL-03, CAL-04, CAL-05, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08 |
+| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, BRD-05, CAL-01, CAL-03, CAL-05, CAL-06, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MENU-01, MENU-03, MENU-04, NFR-05, NFR-11, NFR-13, PTS-01, PTS-03, PTS-04, PTS-05, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04 |
+| `API` | ACC-03, ACC-05, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, DEV-01, DEV-06, MEAL-03, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13 |
 | `AUTH` | DEV-01, DEV-02, DEV-03 |
-| `RULES` | PTS-05, RWD-02, RWD-03, RWD-04, RWD-05, RWD-06, RWD-10, RWD-11, RWD-12, RWD-13 |
-| `OCCGEN` | CHR-02, CHR-03, SCH-03 |
+| `RULES` | CHR-10, PTS-05, PTS-07, RWD-02, RWD-03, RWD-04, RWD-05, RWD-06, RWD-10, RWD-11, RWD-12, RWD-13 |
+| `OCCGEN` | CHR-02, CHR-03, CHR-09, CHR-11, CHR-12, SCH-03 |
 | `CALSYNC` | CAL-01, CAL-02, CAL-03, CAL-06, CAL-07, CAL-08, SCH-04 |
 | `MENUIMP` | MEAL-05, MENU-01, MENU-02, MENU-03, MENU-04, MENU-05 |
 | `OUTBOX` | CHR-04, DEV-06, NFR-01, PTS-04 |
-| `SCHED` | CAL-02, CHR-03, CHR-07, MENU-05, PTS-05, RWD-04, RWD-06, RWD-11 |
-| `DB` | ACC-01, ACC-04, ACC-05, CAL-05, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, DEV-02, DEV-05, MEAL-04, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, PTS-01, PTS-02, PTS-04, PTS-06, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03 |
+| `SCHED` | CAL-02, CHR-03, CHR-07, CHR-12, MENU-05, PTS-05, RWD-04, RWD-06, RWD-11 |
+| `DB` | ACC-01, ACC-04, ACC-05, CAL-05, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, DEV-02, DEV-05, MEAL-04, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, PTS-01, PTS-02, PTS-04, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03 |
 | `RT` | DEV-05 |
 | `VAULT` | CAL-01, CAL-08, NFR-04 |
 | `SAUTH` | ACC-02, ACC-03, ACC-06, DEV-01, DEV-02, NFR-04 |
@@ -248,7 +264,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | Milestone | Scope | Exit criteria (CI + preview) |
 |---|---|---|
 | **P0 Foundation** | Repo, CI/CD pipeline, tenancy schema + RLS, admin auth, members, device pairing, board shell, realtime, job framework, brand system | All PR gates green; pgTAP isolation and revoked-device tests green; on a preview, an admin signs in (magic link and password), creates a household and child, pairs a browser as a board, and sees a rename within 3 s; production deploy pipeline (migrate → app → smoke) green |
-| **P1a Kid loop** | School year + day types, chores, occurrences, completion events + persisted status + day-close, points ledger, Today screen with balance and chore celebration, admin chore ops (approve, uncheck, bulk uncheck), offline outbox, 4K kiosk host | Day-type precedence tests green; E2E: check-off, undo, double tap, bulk uncheck with matching ledger reversals, approval on/off; offline replay with zero lost or duplicate events and event-time conflict resolution; day-close marks `scheduled` and `rejected` as `missed`; rebuild reports no drift after property tests |
+| **P1a Kid loop** | School year + day types, chores, occurrences, completion events + persisted status + day-close, points ledger, Today screen with balance and chore celebration, admin chore ops (approve, uncheck, bulk uncheck), offline outbox, 4K kiosk host | Day-type precedence tests green; E2E: check-off, undo, double tap, bulk uncheck with matching ledger reversals, approval on/off; offline replay with zero lost or duplicate events and event-time conflict resolution; day-close marks `scheduled` and `rejected` as `missed`; rebuild reports no drift after property tests; a shared item credits only who did it and is covered for the others; an overdue task carries over while a routine becomes missed; a private item is invisible on the board and to the other admin |
 | **P1b Rules engine, shop, streak history** | Rules engine, streak history + insights, catalog, redemptions | Property tests green; request → approve → fulfil end to end with two concurrent requests unable to overspend; insights match a hand-computed 14-day fixture |
 | **P1c Goals** | Goal admin, progress pipeline, payouts and reversals, board points/shop/goals UI, celebrations | A seeded goal is achieved, paid out once, un-achieved by a reversal (payout reversed) and re-achieved; reconcile heals a dirtied goal |
 | **P1d Calendar and hardening** | ICS sync, calendar views + per-device selection, backups, runbooks | ICS fixtures (DST, all-day, cancelled, moved) green; per-device selection reflected within 3 s; restore drill recorded |
@@ -309,6 +325,8 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | R-19 | Supabase's built-in email reaches only team members, about 2 per hour, so magic links and resets can fail | High | Med | Password sign-in needs no email; invites are shareable links; add both parents to the Supabase team; custom SMTP once a domain exists (OQ-06b) |
 | R-20 | No automatic backups on Supabase Free | Med | High | Nightly encrypted `pg_dump` kept 30 days; rehearsed restore into the preview project (WP-24, L-06) |
 | R-21 | Free-plan limits or policies change | Low | Med | Usage on System Health; the cost ceiling records that a paid upgrade is a deliberate decision |
+| R-22 | Parents keep their own to-dos in other apps, so the family list goes stale and the board loses trust | Med | High | My tasks on the phone with quick add (CHR-14); the Family view shows everyone's day; reminders are an open question (OQ-13) |
+| R-23 | A private item leaks through the board snapshot, an audit row, or the other admin's view | Low | High | One RLS rule on the item, its occurrences, events and audit rows; pgTAP proves the board and the other admin see nothing; the snapshot reads through RLS |
 
 ### Spikes (time-boxed, before dependent work)
 
@@ -333,6 +351,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | A-07 | Apple Calendar remains the household's event system of record. |
 | A-08 | Production stays dark until launch; there is no staging environment and no Docker in the workflow. |
 | A-09 | Free plans only: Supabase Free (two projects), Vercel Hobby, GitHub Free. |
+| A-10 | Family members trust each other at the board: anyone can check off any family-visible item, and each check-off records who did it and that it came from the board. |
 
 ---
 
@@ -350,6 +369,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.6 | One family list (D-30..D-34): chores and tasks for every member in one model; one shared occurrence per due date with `done_by` credit and `covered` for the others; routines get missed, tasks carry over as overdue; optional due time; household tag list driving goals by id; family-visible unless private; earns-rewards switch per member. New CHR-09..CHR-14, BRD-07, PTS-07 (US-311..US-316, US-1006, US-1109); CHR-01, CHR-03, CHR-04, CHR-07, BRD-02, PTS-01, RWD-02, RWD-12 reworded; R-22, R-23, A-10; WP-08, WP-09 and WP-12 grow to L. |
 | 0.5.3 | The interactive docs pages adapt to phones, tablets, laptops and monitors (fluid type, touch-sized controls, folding filters, restacking matrices, notch-safe gutters). New CI gate `ci / docs` (`01` §9.3) runs the link check and a layout check on 13 device profiles. |
 | 0.5.2 | `05` §0 Waiting on you (Y-1..Y-8). The five build artifacts are also published as interactive pages generated from `01`–`05` by `pnpm docs:build`, which CI runs with `--check` for broken links. |
 | 0.5.1 | SPIKE-04 done: Nutrislice public JSON API; WP-27 unblocked. Supabase publishable and secret API keys replace anon and service-role key names. |
