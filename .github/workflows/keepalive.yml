@@ -1,0 +1,42 @@
+# Supabase Free pauses a project after a week of low database activity (01 §9.10). This writes a
+# heartbeat to both projects four times a day. A failure here usually means a project was paused:
+# GitHub emails the failure, and the runbook restores it from the Supabase dashboard.
+name: keepalive
+
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [production, preview]
+    env:
+      DB_URL: ${{ matrix.target == 'production' && secrets.SUPABASE_DB_URL || secrets.PREVIEW_DB_URL }}
+    steps:
+      - name: Write heartbeat
+        run: |
+          if [ -z "$DB_URL" ]; then
+            echo "::warning::${{ matrix.target }} database URL is not configured yet; skipping"
+            exit 0
+          fi
+          # Before the first migration lands, the heartbeat table does not exist yet; a plain query
+          # still counts as activity.
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -X -q -c "
+            do \$\$ begin
+              if to_regclass('private.heartbeat') is not null then
+                insert into private.heartbeat (source) values ('github-keepalive')
+                on conflict (source) do update
+                  set beat_at = now(), beats = private.heartbeat.beats + 1;
+              else
+                perform now();
+              end if;
+            end \$\$;"
+          echo "heartbeat written to ${{ matrix.target }}"

@@ -1,0 +1,15 @@
+{
+  "name": "@familywise/ui",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "eslint": "9.39.5",
+    "typescript": "6.0.3"
+  }
+}

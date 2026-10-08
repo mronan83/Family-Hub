@@ -1,6 +1,10 @@
 # 03 — User Stories
 
-> Version 0.3 · Status: draft for build
+> Version 0.7 · Status: build baseline · Maintained by Claude Code
+> v0.7: reminders, switchable per person, device and item (US-317, US-318, US-319; D-35).
+> v0.6: one family list (D-30..D-34): shared items with who-did-it credit (US-311), household tags (US-312), due times (US-313), overdue tasks carry over (US-314), private items (US-315), My tasks (US-316), Family view (US-1006), earns-rewards switch (US-1109); US-301, US-303, US-304, US-307, US-401, US-1002, US-1101 updated.
+> v0.5: free plans (D-29): backups (US-903), cost and pausing (US-909) and previews (US-911) updated.
+> v0.4: magic link + password sign-in (US-102) with Apple/passkey later (US-106); event-time conflicts (US-205); today-only board and parent-only late credit (US-303, US-307); approval switch and day-close rules (US-310, US-307); closures spare today (US-602); delivery pipeline (US-911).
 > Each story lists its `Reqs:` (defined in `04-requirements-traceability.md`). Acceptance criteria are Given/When/Then and are the basis for Playwright, Vitest, and pgTAP test names (prefix tests with the story or requirement ID, e.g. `[US-304][CHR-04]`).
 
 ## Personas
@@ -8,11 +12,12 @@
 | ID | Persona | Description |
 |---|---|---|
 | **Kid** | Child | Uses the 32" 4K touch board. One child in v1 (schema supports more). Icon-first UI. Never signs in. |
-| **Admin** | Parent | Manages everything from phone/laptop. Two admins in v1. |
+| **Admin** | Parent | Manages everything from phone/laptop, including their own tasks. Two admins in v1. |
+| **Family** | Everyone at the board | Sees who is doing what today and checks items off for anyone. |
 | **Board** | Device | The paired kiosk; it is only the interactive front end and acts on behalf of the household, not a person. |
 | **System** | Platform | Scheduled jobs and derived-data maintenance. |
 
-Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2** meals and school menu · **P3** polish and hardening.
+Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (built as P1a–P1d) · **P2** meals, menu and extras · **P3** polish. Nothing goes live until every phase is built (D-19).
 
 ---
 
@@ -25,9 +30,11 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given a second household exists, when I query as a member of the first, then I see zero rows from the second.
 
 ### US-102 — Sign in securely
-**As an** admin **I want** to sign in with Apple, a magic link, or a passkey **so that** only parents can manage the board.
+**As an** admin **I want** to sign in with an emailed magic link or with my email and password **so that** only parents can manage the board.
 **Priority:** Must · **Phase:** P0 · **Reqs:** ACC-02, NFR-04
-- Given I choose Sign in with Apple, when authentication succeeds, then I land on `/admin` for my household.
+- Given I enter my email and choose "Email me a link", when I open the link before it expires, then I land on `/admin` for my household.
+- Given I have set a password, when I sign in with my email and password, then I land on `/admin` for my household; a wrong password shows a neutral error and does not reveal whether the email exists.
+- Given I forgot my password, when I request a reset, then I receive a reset link and can set a new password.
 - Given I am not signed in, when I request any `/admin` route, then I am redirected to sign-in.
 - Given a paired board session, when it calls an admin route, then it receives 403.
 
@@ -48,6 +55,13 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 **Priority:** Should · **Phase:** P3 · **Reqs:** ACC-05
 - Given an admin edits a goal's rules, when I open the audit log, then I see actor, time, entity, and a before/after diff.
 - Given a device is revoked, when I open the log, then the action and actor are recorded.
+
+### US-106 — Sign in with Apple or a passkey
+**As an** admin **I want** to add Sign in with Apple or a passkey to my account **so that** I can sign in quickly on my Apple devices.
+**Priority:** Should · **Phase:** P3 · **Reqs:** ACC-06
+- Given the production domain is configured, when I choose Sign in with Apple and authentication succeeds, then I land on `/admin` for my household and my existing account is linked, not duplicated.
+- Given I am signed in, when I enroll a passkey and later sign in with it, then I land on `/admin` without entering a password.
+- Given either method fails or is cancelled, when I return to sign-in, then magic link and password still work.
 
 ---
 
@@ -84,6 +98,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given wifi is off, when the child checks off chores, then the UI updates instantly and the events are queued.
 - Given wifi returns, when the outbox replays, then each event is applied exactly once and the board shows server-authoritative state.
 - Given the board has been offline for 24 hours, when it is opened, then it displays the last cached day's data with a stale indicator.
+- Given the child checked off a chore offline at 7:00 and a parent unchecked it on the phone at 7:30, when the board's 7:00 event replays at 8:00, then the chore stays open because the later event by time wins.
+- Given the board's clock runs ahead, when its events reach the server, then their time is capped at the time the server received them.
 
 ### US-206 — Know when data is stale
 **As a** parent **I want** a subtle indicator when the board's data is old **so that** I know when not to trust it.
@@ -102,9 +118,11 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 ## E3 — Chores and tasks
 
 ### US-301 — Create a chore or task
-**As an** admin **I want** to create chores and one-off tasks with icon, assignees, points, and optional approval **so that** each child has clear responsibilities.
+**As an** admin **I want** to create chores (routines) and tasks (to-dos) with an icon, assignees from the whole family, points, tags, an optional due time, and optional approval **so that** everyone's responsibilities live in one list.
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-01
-- Given I save a chore with a title, icon, and one assignee, when I view the chore list, then it appears and occurrences exist for the next 14 days where scheduled.
+- Given I save a chore with a title, icon, and one assignee, when I view the list, then it appears and occurrences exist for the next 14 days where scheduled.
+- Given I save an item assigned only to an adult who does not earn rewards, when it is completed, then no points are posted, whatever its points value.
+- Given I choose Task and a due date, when I save, then it behaves as a to-do that stays open until done (US-314).
 - Given I set "requires approval", when the child completes it, then its state is `pending_approval`.
 
 ### US-302 — Schedule chores around the school year
@@ -115,16 +133,18 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 
 ### US-303 — See my chores for today
 **As a** kid **I want** to see today's chores as big pictures **so that** I know what to do without help.
-**Priority:** Must · **Phase:** P1 · **Reqs:** CHR-03, BRD-01
+**Priority:** Must · **Phase:** P1 · **Reqs:** CHR-03, BRD-01, CHR-12
 - Given today has three scheduled chores for me, when I open the board, then I see exactly those three with icons and my progress for the day.
 - Given a chore isn't scheduled today, when I open the board, then it is not shown.
+- Given yesterday had an unfinished routine, when I open the board, then only today's items and my open overdue tasks appear; catching up a past day's routine is done by a parent.
 
 ### US-304 — Check off a chore
 **As a** kid **I want** to tap a chore to mark it done **so that** I get credit and see my progress grow.
-**Priority:** Must · **Phase:** P1 · **Reqs:** CHR-04
+**Priority:** Must · **Phase:** P1 · **Reqs:** CHR-04, CHR-09
 - Given a scheduled chore, when I tap it, then it shows complete within 100 ms and a completion event is recorded exactly once.
 - Given I double-tap rapidly, when events reach the server, then only one effective completion exists (idempotent).
 - Given the chore does not require approval (the default), when I check it off, then its status becomes `completed` immediately and points are earned; a parent verifies in real life afterwards.
+- Given the chore is shared with someone else, when I check it off on my own screen, then I am recorded as the one who did it.
 
 ### US-305 — Undo an accidental tap
 **As a** kid **I want** to undo a mistaken tap right away **so that** I'm not credited for something I didn't do.
@@ -138,7 +158,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given approval is off, when my child checks off a chore, then it counts immediately and a parent can still uncheck it later.
 - Given approval is on, when my child checks off a chore, then it shows as pending on the board and earns no points until I approve it.
 - Given I set one chore to "never needs approval" while approval is on, when it is checked off, then it counts immediately.
-- Given I switch approval on mid-week, when I save, then open occurrences follow the new setting and completed ones are unchanged.
+- Given I switch approval on mid-week, when I save, then `scheduled` occurrences follow the new setting and completed ones are unchanged.
+- Given check-offs are waiting for approval, when I switch approval off, then they stay in my approval queue until I decide them.
 
 ### US-306 — Approve completions (optional)
 **As an** admin **I want** to optionally require approval on specific chores, and to review what was checked off **so that** credit reflects real effort.
@@ -151,9 +172,10 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 **As an** admin **I want** to check chores off for my child, undo them, or skip a day **so that** sick days and corrections don't unfairly break progress.
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-06, CHR-07
 - Given a scheduled occurrence in the past, when I mark it `skip`, then it is excluded from streak and count denominators.
-- Given an occurrence is still `scheduled` when the household-local day ends, when the day-close job runs, then its `status` becomes `missed`, `finalized_at` is set, and the day's `member_daily_summary` row is written.
+- Given a routine is still `scheduled` or `rejected` when the household-local day ends, when the day-close job runs, then its `status` becomes `missed`, `finalized_at` is set, and the day's `member_daily_summary` row is written.
 - Given the day-close job runs twice, when it finishes, then the result is identical (idempotent).
-- Given a missed occurrence, when the child or a parent completes it late, then it folds to `completed` or `approved`, points are earned, and the day's history is re-derived.
+- Given a missed occurrence, when a parent completes it late, then it folds to `approved`, points are earned, and the day's history is re-derived.
+- Given the board was offline across midnight, when a check-off whose time falls outside the chore's due date replays, then it is stored as flagged and waits for a parent as `pending_approval`.
 
 ### US-309 — Uncheck a batch of chores
 **As an** admin **I want** to select several chores my child checked off but did not actually do and uncheck them together **so that** points and progress stay honest without tedious one-by-one edits.
@@ -168,6 +190,75 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given a chore with past completions, when I change its title and schedule, then past occurrences and their completions are unchanged and future `scheduled` occurrences are regenerated.
 - Given I change points, when I view a past occurrence, then it shows its original `points_snapshot`.
 
+### US-311 — Share one item between several people
+**As an** admin **I want** to assign one chore or task to several family members **so that** shared work appears once and whoever does it gets the credit.
+**Priority:** Must · **Phase:** P1 · **Reqs:** CHR-09, CHR-03
+- Given "Feed the dog" is assigned to Sam and Dad, when the day's items are generated, then there is one occurrence for the day, shown under both of them.
+- Given Sam checks it off on Sam's screen, when it is saved, then it is done for both, Sam is recorded as having done it, and it counts as covered (neither done nor missed) for Dad.
+- Given it was done together, when the person checking it off picks Sam and Dad, then both are recorded and each one who earns rewards gets the item's points.
+- Given nobody does a shared routine, when the day closes, then it is missed for every assignee.
+- Given I later change the assignees, when I view past days, then they still show who was responsible on each day.
+
+### US-312 — Define household tags
+**As an** admin **I want** to define our own tags with a name, color, and icon **so that** we can filter the list and set measurable goals by category.
+**Priority:** Must · **Phase:** P1 · **Reqs:** CHR-10, RWD-02
+- Given I create the tag "Kitchen" and apply it to three chores, when I filter by Kitchen, then exactly those three appear.
+- Given a goal counts chores tagged Kitchen, when I rename the tag to "Kitchen & dishes", then the goal counts the same chores and its progress is unchanged.
+- Given I archive a tag, when I edit items, then it is no longer offered, but goals and history that use it keep working.
+
+### US-313 — Give an item a due time
+**As an** admin **I want** to set an optional due time **so that** the day is ordered into morning, after school, and evening.
+**Priority:** Must · **Phase:** P1 · **Reqs:** CHR-11
+- Given "Make bed" is due at 7:30 and "Homework" at 16:00, when the board shows today, then "Make bed" is under Morning and "Homework" under After school; items without a time appear under Anytime.
+- Given it is 7:45 and "Make bed" is open, when the board renders, then the item is marked as past its time in a calm style, never red.
+- Given "Make bed" is done at 8:05, when the day closes, then it is done, not missed; the due time does not change scoring.
+
+### US-314 — Overdue tasks carry over
+**As a** parent **I want** a task that wasn't done by its due date to stay on the list **so that** to-dos are not lost at midnight.
+**Priority:** Must · **Phase:** P1 · **Reqs:** CHR-12, CHR-07
+- Given the task "Call the plumber" was due yesterday and is still open, when the day closes, then it stays open and shows as overdue, not missed.
+- Given an overdue task, when an assignee completes it, then it is done, recorded as late, and any points are earned on the day it was done.
+- Given the routine "Make bed" was not done yesterday, when the day closes, then it is missed; only tasks carry over.
+- Given the repeating task "Pay the card bill" is still overdue when the next one is generated, when I view the list, then both appear until each is done or cancelled.
+
+### US-315 — Keep an item private
+**As an** admin **I want** to mark an item private **so that** surprises and personal items stay off the board and away from the other parent.
+**Priority:** Must · **Phase:** P1 · **Reqs:** CHR-13
+- Given I create a private task "Buy anniversary gift" assigned to me, when the board or my spouse's account loads, then the item, its occurrences, and its audit history are not returned.
+- Given a private task is assigned to my spouse, when my spouse signs in, then they see it because they are responsible for it.
+- Given an item is family-visible (the default), when anyone opens the board, then it appears under its assignees.
+
+### US-316 — My tasks on my phone
+**As a** parent **I want** a My tasks view on my phone **so that** I can run my own day from the same family list.
+**Priority:** Must · **Phase:** P1 · **Reqs:** CHR-14, CHR-09
+- Given items are assigned to me, when I open My tasks, then I see overdue, today's, and upcoming items in that order, including shared items I am on.
+- Given I type a title in quick add, when I save, then a family-visible task due today and assigned to me exists in one step.
+- Given I complete an item on my phone, when the board refreshes, then it shows as done by me.
+
+### US-317 — Turn reminders on or off for myself
+**As a** parent **I want** to turn reminders on or off for myself and choose which devices get them **so that** I'm nudged only where and when I want.
+**Priority:** Must · **Phase:** P2 · **Reqs:** CHR-15
+- Given reminders are off (the default), when an item of mine comes due, then I get no notification.
+- Given I tap "Turn on reminders" in the admin app on my iPhone's Home Screen and allow notifications, when I send a test, then it arrives on that phone.
+- Given reminders are on for my phone and laptop, when I remove the laptop in Settings, then only the phone receives them.
+- Given I turn reminders off, when anything comes due, then no device of mine is notified until I turn them back on.
+
+### US-318 — Choose which items remind me
+**As a** parent **I want** a bell on each item and a default for new ones **so that** only the things I care about interrupt me.
+**Priority:** Must · **Phase:** P2 · **Reqs:** CHR-16
+- Given my default is "remind me", when I'm assigned a new item, then its bell is on for me, and I can turn it off for that item only.
+- Given "Call the plumber" is due at 15:00 with a 15-minute lead, when it is 14:45 and the task is open, then I get exactly one notification, and tapping it opens the item in My tasks.
+- Given I complete the item at 14:30, when 14:45 arrives, then no notification is sent.
+- Given an item has no due time, when its due date arrives, then I'm reminded at my morning time.
+- Given a shared item, when it comes due, then each assignee with reminders on is notified, and nobody is notified after someone completes it.
+
+### US-319 — Morning digest, quiet hours, and discreet notifications
+**As a** parent **I want** an optional morning summary, quiet hours, and discreet notifications for private items **so that** reminders help without disturbing anyone or spoiling surprises.
+**Priority:** Must · **Phase:** P2 · **Reqs:** CHR-17
+- Given I turn on the digest at 7:00, when it is 7:00, then I get one notification summarizing my overdue and today's items, and none on days with nothing due.
+- Given quiet hours of 21:00 to 7:00, when a reminder falls inside them, then it is held until 7:00 and sent once.
+- Given a private item reminds me, when the notification shows on my lock screen, then it reads "Private task due at 15:00" without the title.
+
 ---
 
 ## E4 — Rewards
@@ -175,7 +266,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 ### US-401 — Create a reward goal
 **As an** admin **I want** to define a reward with start and end dates and rules **so that** my child works toward something specific.
 **Priority:** Must · **Phase:** P1 · **Reqs:** RWD-01, RWD-02, RWD-03
-- Given I create a goal "Movie night" with a 14-day window and rules (COUNT ≥ 20 morning chores) AND (STREAK ≥ 5), when I save, then its status is `scheduled` or `active` depending on the start date.
+- Given I create a goal "Movie night" with a 14-day window and rules (COUNT ≥ 20 chores tagged Morning) AND (STREAK ≥ 5), when I save, then its status is `scheduled` or `active` depending on the start date.
 - Given the rule logic is `any`, when only one rule is met, then the goal is achieved.
 
 ### US-402 — Streaks that forgive
@@ -298,7 +389,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 **As a** parent **I want** chores and lunches to adapt to school days, breaks, weekends, and summer **so that** I don't maintain separate setups.
 **Priority:** Must · **Phase:** P1 · **Reqs:** SCH-02, SCH-03
 - Given a date inside a break closure, when the day type resolves, then it is `break`; on a Saturday it is `weekend`; outside any school year it is `summer`.
-- Given chores restricted to `school_day`, when a snow-day closure is added, then future occurrences for that date are removed and past ones are untouched.
+- Given chores restricted to `school_day`, when a snow-day closure is added for a future date, then that date's occurrences are removed and past ones are untouched.
+- Given a closure is added for today, when I save, then today's occurrences are left as they are; only later dates change.
 
 ### US-603 — Import no-school days from a calendar
 **As an** admin **I want** to pull no-school days from the school calendar feed **so that** I don't re-enter them.
@@ -388,7 +480,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 ### US-903 — Backups I can trust
 **As an** admin **I want** automatic backups and a documented restore **so that** a mistake or outage doesn't erase the history.
 **Priority:** Must · **Phase:** P1 · **Reqs:** NFR-10
-- Given production is on a plan with daily backups, when I follow the restore runbook in a drill, then the database is recovered to a prior point.
+- Given the nightly encrypted backup ran, when I follow the restore runbook in a drill, then the database is recovered into the preview project as of that night.
 - Given the runbook, when read, then it states RPO/RTO and steps to re-pair the board.
 
 ### US-904 — Know when something breaks
@@ -423,12 +515,22 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given the rules engine, when run with property tests on random event orderings, then results are deterministic.
 
 ### US-909 — Costs stay predictable
-**As an** admin **I want** a clear cost ceiling and no surprise pauses **so that** the board is dependable.
+**As an** admin **I want** the board to run on free plans with no surprise pauses **so that** it is dependable and costs nothing each month.
 **Priority:** Should · **Phase:** P0 · **Reqs:** NFR-08
-- Given the production project, when reviewed, then the plan avoids inactivity pausing and the monthly cost is documented.
-- Given usage, when it approaches plan limits, then a warning appears in System Health.
+- Given the production and preview projects are on Supabase Free, when a week passes with no family use, then neither project is paused because the keepalive writes a heartbeat several times a day.
+- Given a keepalive run fails, when it fails, then I receive an email and the runbook shows how to restore the project, while the board keeps showing cached data.
+- Given usage, when it approaches a Free-plan limit, then a warning appears in System Health.
+- Given the cost ceiling, when I review it, then the recurring cost is zero and any paid upgrade is a documented decision.
 
 ---
+
+### US-911 — Changes ship through one safe pipeline
+**As an** admin **I want** every change to pass automated checks and a preview before it reaches production **so that** a mistake never breaks the family's board.
+**Priority:** Must · **Phase:** P0 · **Reqs:** NFR-14, NFR-12
+- Given a pull request, when it is opened, then lint, typecheck, unit tests, database tests, traceability and build run without Docker, and the PR cannot merge until they pass.
+- Given a pull request, when Vercel finishes its preview, then the preview database is rebuilt from that PR's migrations and seed, and the e2e suite runs against the preview; two PRs never test at the same time.
+- Given a merge to `main`, when the deploy runs, then migrations are applied to production before the app is deployed, and a failed migration stops the app deploy.
+- Given production before launch, when I look at it, then no board is paired and no family data exists until the launch runbook is run.
 
 ### US-910 — It looks and feels like FamilyWise
 **As a** parent **I want** the board and admin to share one clear, friendly identity **so that** the product feels trustworthy to my family and consistent on every screen.
@@ -449,10 +551,10 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given I open the board, when Today loads, then I see date/time, my chores, up to five events, today's meals (P2), and the active goal meter.
 - Given nothing is scheduled, when Today loads, then a friendly empty state appears.
 
-### US-1002 — Switch between children
-**As a** kid **I want** to pick my own profile **so that** I only see my chores and goals.
+### US-1002 — Switch between family members
+**As a** kid **I want** to pick my own profile **so that** I only see my items and goals.
 **Priority:** Must · **Phase:** P1 · **Reqs:** BRD-02
-- Given two children, when I tap my avatar, then the screen filters to my chores and goals.
+- Given several family members, when I tap my avatar, then the screen filters to my items, and to my points and goals if I earn rewards.
 - Given the board is idle, when the idle timer elapses, then it returns to the household default view.
 
 ### US-1003 — Weather at a glance
@@ -473,6 +575,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given the child is on the Calendar tab, when 60 seconds pass without touch, then the board returns to Today.
 - Given a celebration is playing, when idle time elapses, then the return waits until it finishes.
 
+### US-1006 — See the whole family's day
+**As a** family **we want** a Family view on the board **so that** everyone can see who is doing what today.
+**Priority:** Must · **Phase:** P1 · **Reqs:** BRD-07, CHR-04
+- Given each member has family-visible items today, when I open the Family view, then I see a column per person grouped by part of day, with overdue tasks first.
+- Given I tap an item with several assignees, when the who-did-it picker appears, then the assignees are listed first and I can pick anyone in the family, or several people.
+- Given an adult who does not earn rewards checks off an item, when it saves, then no points or celebration appear; a child's item still celebrates.
+- Given an item is private, when the Family view loads, then it is not shown.
+
 ---
 
 ## E11 — Points and rewards shop
@@ -484,6 +594,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 - Given the same event is replayed, when processed, then no duplicate entry is created.
 - Given the chore is later unchecked, when the status leaves done, then a matching `reversal` of -5 is posted once.
 - Given I check off a chore that requires approval, when it is `pending_approval`, then no points are posted until it is approved.
+- Given my sister and I did a shared 5-point chore together, when it is checked off for both of us, then each of us earns 5 points once.
 
 ### US-1102 — See my points balance
 **As a** kid **I want** to see my points on the board **so that** I know what I can afford.
@@ -530,3 +641,11 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop MVP · **P2**
 **Priority:** Should · **Phase:** P2 · **Reqs:** PTS-06
 - Given I pin a 200-point item with a balance of 120, when I open Today, then I see a meter at 60%.
 - Given I reach the cost, when the board renders, then it prompts me to ask for it.
+
+### US-1109 — Choose who earns rewards
+**As an** admin **I want** an earns-rewards switch on each family member **so that** points, approval, and goals apply only to the people we choose.
+**Priority:** Must · **Phase:** P1 · **Reqs:** PTS-07
+- Given I add a child, when I save, then earns rewards is on; given I add an adult, then it is off.
+- Given Dad has earns rewards off, when he completes a 5-point chore, then no ledger entry is posted and no approval is needed.
+- Given I turn earns rewards on for an adult for a family challenge, when they complete chores, then they earn points and can have goals.
+- Given I turn the switch off, when I view past history, then points already earned stay in the ledger.

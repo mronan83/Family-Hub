@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-"""check_traceability.py — validate and regenerate the Household Board traceability docs.
+"""check_traceability.py — validate and regenerate the FamilyWise traceability docs.
 
 Source of truth:
   04-requirements-traceability.md  (register + matrix)  -> requirement IDs
   03-user-stories.md               (**Reqs:** lines)    -> story -> requirement links
-  05-work-breakdown.md             (**Reqs:** lines)    -> work package -> requirement links
-  01-target-architecture.md        (component table)    -> valid component IDs
+  05-backlog.md                    (**Reqs:** lines)    -> work package -> requirement links
+  01-technical-architecture.md     (component table)    -> valid component IDs
 
 Checks (errors fail the run):
   * register IDs are unique; every requirement has >= 1 story and >= 1 work package
   * every story and work package lists >= 1 requirement and every referenced ID exists
   * matrix rows == register rows; Stories and Work packages columns match 03/05; components are valid
   * no unresolved {{placeholders}}
+  * backlog: every `Depends on` work package exists, sits in the same or an earlier milestone
+    (P0 < P1a < P1b < P1c < P1d < P2 < P3), and forms no cycle; the dependency diagram's edges
+    equal the declared dependencies; the status board lists every work package with matching
+    milestone, size and dependencies
 Warnings:
   * a requirement's earliest story or work package is scheduled after the requirement's phase
   * (with --tests DIR) requirements with no test referencing their ID
@@ -35,10 +39,16 @@ REQ_FULL = re.compile(r"^" + REQ + r"$")
 STORY_HEAD = re.compile(r"^###\s+(US-\d+)\s+—\s+(.*)$")
 WP_HEAD = re.compile(r"^###\s+(WP-\d+)\s+—\s+(.*)$")
 PHASE_RE = re.compile(r"\*\*Phase:\*\*\s*P(\d)")
+MILESTONE_RE = re.compile(r"\*\*Phase:\*\*\s*(P\d[a-d]?)")
+SIZE_RE = re.compile(r"\*\*Size:\*\*\s*([SML])\b")
+DEPS_RE = re.compile(r"\*\*Depends on:\*\*\s*([^·]*)")
+WP_RE = re.compile(r"\bWP-\d{2}\b")
+EDGE_RE = re.compile(r"WP(\d{2})(?:\[[^\]]*\])?\s*-->\s*WP(\d{2})")
+MILESTONE_ORDER = ["P0", "P1a", "P1b", "P1c", "P1d", "P2", "P3"]
 FILES = {
-    "arch": "01-target-architecture.md",
+    "arch": "01-technical-architecture.md",
     "stories": "03-user-stories.md",
-    "wps": "05-work-breakdown.md",
+    "wps": "05-backlog.md",
     "reqs": "04-requirements-traceability.md",
 }
 SKIP_DIRS = {"node_modules", ".git", ".next", "dist", "build", ".turbo"}
@@ -80,7 +90,7 @@ def parse_items(text: str, head=STORY_HEAD):
         m = head.match(line)
         if m:
             cur = m.group(1)
-            stories[cur] = {"title": m.group(2), "reqs": [], "phase": None}
+            stories[cur] = {"title": m.group(2), "reqs": [], "phase": None, "milestone": None, "size": None, "deps": []}
             continue
         if line.startswith("### ") and not m:
             cur = None
@@ -89,7 +99,76 @@ def parse_items(text: str, head=STORY_HEAD):
             pm = PHASE_RE.search(line)
             if pm:
                 stories[cur]["phase"] = int(pm.group(1))
+            mm = MILESTONE_RE.search(line)
+            if mm:
+                stories[cur]["milestone"] = mm.group(1)
+            sm = SIZE_RE.search(line)
+            if sm:
+                stories[cur]["size"] = sm.group(1)
+            dm = DEPS_RE.search(line)
+            if dm:
+                stories[cur]["deps"] = WP_RE.findall(dm.group(1))
     return stories
+
+
+def check_backlog(wps, wps_text: str, errors: list[str]) -> None:
+    """Dependencies, milestone order, diagram edges and status board of 05-backlog.md."""
+    rank = {m: i for i, m in enumerate(MILESTONE_ORDER)}
+    for wid, w in wps.items():
+        if w["milestone"] not in rank:
+            errors.append(f"{wid}: milestone '{w['milestone']}' is not one of {', '.join(MILESTONE_ORDER)}")
+            continue
+        for d in w["deps"]:
+            if d == wid:
+                errors.append(f"{wid}: depends on itself")
+            elif d not in wps:
+                errors.append(f"{wid}: depends on unknown work package {d}")
+            elif wps[d]["milestone"] in rank and rank[wps[d]["milestone"]] > rank[w["milestone"]]:
+                errors.append(f"{wid} ({w['milestone']}) depends on {d} in a later milestone ({wps[d]['milestone']})")
+    state: dict[str, int] = {}
+
+    def visit(n: str, path: list[str]) -> None:
+        state[n] = 1
+        for d in wps[n]["deps"]:
+            if d not in wps:
+                continue
+            if state.get(d) == 1:
+                errors.append("dependency cycle: " + " -> ".join(path + [n, d]))
+            elif not state.get(d):
+                visit(d, path + [n])
+        state[n] = 2
+
+    for n in wps:
+        if not state.get(n):
+            visit(n, [])
+    declared = {(d, wid) for wid, w in wps.items() for d in w["deps"]}
+    drawn = {(f"WP-{a}", f"WP-{b}") for a, b in EDGE_RE.findall(wps_text)}
+    if drawn:
+        for a, b in sorted(declared - drawn):
+            errors.append(f"diagram is missing edge {a} --> {b} (declared in {b})")
+        for a, b in sorted(drawn - declared):
+            errors.append(f"diagram edge {a} --> {b} is not declared in {b}'s Depends on")
+    board = {}
+    for line in wps_text.splitlines():
+        if line.startswith("| WP-"):
+            cells = split_row(line)
+            if len(cells) >= 6:
+                board[cells[0]] = cells
+    if board:
+        for wid, w in wps.items():
+            row = board.get(wid)
+            if not row:
+                errors.append(f"{wid}: missing from the status board")
+                continue
+            if row[2] != w["milestone"]:
+                errors.append(f"{wid}: status board milestone '{row[2]}' != section '{w['milestone']}'")
+            if row[3] != w["size"]:
+                errors.append(f"{wid}: status board size '{row[3]}' != section '{w['size']}'")
+            if sorted(WP_RE.findall(row[4])) != sorted(w["deps"]):
+                errors.append(f"{wid}: status board depends '{row[4]}' != section '{', '.join(w['deps']) or '—'}'")
+        for wid in board:
+            if wid not in wps:
+                errors.append(f"{wid}: on the status board but has no section")
 
 
 def coverage_md(register, stories, story_map, wps, wp_map) -> list[str]:
@@ -213,6 +292,8 @@ def main() -> int:
                 errors.append(f"{wid}: references unknown requirement {r}")
             else:
                 wp_map[r].append(wid)
+
+    check_backlog(wps, wps_text, errors)
 
     for rid, meta in register.items():
         if not story_map.get(rid):

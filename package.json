@@ -1,0 +1,39 @@
+{
+  "name": "familywise",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @familywise/web dev",
+    "build": "pnpm --filter @familywise/web build",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck && tsc -p e2e",
+    "test": "pnpm -r --if-present test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "trace": "python3 docs/check_traceability.py --docs docs --tests .",
+    "docs:build": "node scripts/docs-site/build.mjs",
+    "docs:layout": "node scripts/docs-site/check-layout.mjs",
+    "db:test": "bash scripts/db-test.sh",
+    "e2e": "playwright test -c e2e"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.63.0",
+    "@types/node": "22.20.5",
+    "@vitest/coverage-v8": "4.1.11",
+    "eslint": "9.39.5",
+    "marked": "18.0.13",
+    "prettier": "3.9.8",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.0",
+    "vitest": "4.1.11"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "unrs-resolver"
+    ]
+  }
+}

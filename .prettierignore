@@ -1,0 +1,10 @@
+# Docs and the brand kit are maintained by hand; formatting them would churn tables.
+docs/
+brand/
+*.md
+pnpm-lock.yaml
+.next/
+coverage/
+playwright-report/
+test-results/
+supabase/.temp/

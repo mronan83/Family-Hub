@@ -1,7 +1,10 @@
 # 02 — Data Model
 
-> Version 0.2.1 · Status: draft for build · Database: Supabase Postgres 15+
-> Companions: `01-target-architecture.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-work-breakdown.md`
+> Version 0.7 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.7: reminders (D-35): `reminder_preference`, `push_subscription`, `reminder_delivery` (§2.4, §3.7); `chore_assignee.remind`, `chore.remind_lead_minutes`.
+> v0.6: one family list (D-30..D-34): one shared occurrence per due date with an assignee snapshot (`chore_occurrence_assignee`) and `done_by`/`rewarded` credit on events; per-member status view with `covered`; routines get missed, tasks carry over; `due_time`; household `tag` list referenced by id; private visibility in RLS; `member.earns_rewards`; ledger posts per rewarded member.
+> v0.4: events fold in `occurred_at` order with a receipt-time clamp (D-20); board events outside the due date are flagged (D-21); the approval switch re-resolves `scheduled` occurrences only (D-22); day-close turns `rejected` into `missed` (D-23); closures regenerate dates after today only (D-24); ledger writes only through definer functions (D-28); rebuild is report-only unless applied.
+> Companions: `01-technical-architecture.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-backlog.md`
 
 ---
 
@@ -13,7 +16,9 @@
 - Enumerations are `text` with `CHECK` constraints (easier to migrate than Postgres enums).
 - Config entities are archived (`archived_at`), not deleted. Events and ledger rows are never updated or deleted.
 - **Truth vs projection (v0.2):** `chore_completion_event` and `points_ledger` are append-only truth. `chore_occurrence.status`, `member_daily_summary`, `streak_segment` and all `*_progress` tables are **persisted projections** that can be rebuilt from truth at any time (§4.2).
-- RLS enabled on **every** table in `public`; policies per `01-target-architecture.md` §6.3.
+- RLS enabled on **every** table in `public`; policies per `01-technical-architecture.md` §6.3. `supabase/tests/001_schema_lint.test.sql` fails CI if a public table lacks RLS or a non-null `household_id`, or if `anon` can execute a `private` function.
+- **Ownership is a member reference, never a tag** (D-30): `chore_assignee` links items to members of any role; tags are household categories (`tag`) referenced by id (D-33).
+- **Visibility** (D-34): an item is `family` (board and every admin) or `private` (its creator and assignees who sign in). Every table derived from an item (occurrences, assignee snapshots, events, audit rows) applies the same rule through `private.can_see_chore`.
 - Naming: snake_case, singular table names.
 
 ---
@@ -52,6 +57,7 @@ erDiagram
     text role
     text avatar_key
     text color
+    bool earns_rewards
   }
   device {
     uuid id PK
@@ -68,8 +74,11 @@ erDiagram
 erDiagram
   member ||--o{ chore_assignee : "assigned"
   chore ||--o{ chore_assignee : "has"
+  tag ||--o{ chore_tag : "labels"
+  chore ||--o{ chore_tag : "tagged"
   chore ||--o{ chore_occurrence : "generates"
-  member ||--o{ chore_occurrence : "owes"
+  chore_occurrence ||--|{ chore_occurrence_assignee : "shared by"
+  member ||--o{ chore_occurrence_assignee : "responsible for"
   chore_occurrence ||--o{ chore_completion_event : "recorded by"
   member ||--o{ reward_goal : "pursues"
   reward_goal ||--|{ reward_rule : "defined by"
@@ -89,26 +98,44 @@ erDiagram
     text title
     text kind
     int points
-    bool requires_approval
+    text approval
     jsonb schedule
+    time due_time
     text_arr day_types
-    text_arr tags
+    text visibility
+    uuid created_by
+  }
+  tag {
+    uuid id PK
+    text name
+    text color
+    text icon
   }
   chore_occurrence {
     uuid id PK
     uuid chore_id FK
-    uuid member_id FK
     date due_date
+    time due_time
+    text kind
     int points_snapshot
     bool requires_approval_snapshot
     text status
+    uuid_arr done_by
+    uuid_arr rewarded
     uuid status_event_id
     timestamptz finalized_at
+  }
+  chore_occurrence_assignee {
+    uuid occurrence_id PK
+    uuid member_id PK
+    date due_date
   }
   chore_completion_event {
     uuid id PK
     uuid occurrence_id FK
     text event_type
+    uuid_arr done_by
+    uuid_arr rewarded
     timestamptz occurred_at
     date credit_date
     text review_status
@@ -239,6 +266,50 @@ erDiagram
   }
 ```
 
+### 2.4 Reminders
+
+```mermaid
+erDiagram
+  member ||--o| reminder_preference : "chooses"
+  member ||--o{ push_subscription : "receives on"
+  member ||--o{ reminder_delivery : "is reminded"
+  chore_occurrence ||--o{ reminder_delivery : "reminds about"
+  member ||--o{ chore_assignee : "bell per item"
+
+  reminder_preference {
+    uuid member_id PK
+    bool enabled
+    bool default_on
+    int default_lead_minutes
+    time morning_time
+    time digest_time
+    time quiet_start
+    time quiet_end
+    bool hide_private_titles
+  }
+  push_subscription {
+    uuid id PK
+    uuid member_id FK
+    text endpoint
+    text device_label
+    timestamptz last_success_at
+  }
+  reminder_delivery {
+    uuid id PK
+    uuid occurrence_id FK
+    uuid member_id FK
+    text kind
+    timestamptz scheduled_for
+    text status
+    text dedupe_key
+  }
+  chore_assignee {
+    uuid chore_id PK
+    uuid member_id PK
+    bool remind
+  }
+```
+
 ---
 
 ## 3. Table catalog
@@ -247,24 +318,29 @@ erDiagram
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `household` | `name`, `timezone` (IANA), `week_start` (0–6), `locale` | `timezone` is authoritative for all business dates. |
+| `household` | `name`, `timezone` (IANA), `week_start` (0–6), `locale` | `timezone` is authoritative for all business dates; an unknown zone is rejected by trigger (`private.check_timezone`). Its `id` is the tenant key, so it is the one table without a `household_id` column. |
 | `household_user` | `household_id`, `user_id → auth.users`, `role` (`owner`/`admin`) | PK `(household_id, user_id)`. Defines admins. |
-| `member` | `display_name`, `role` (`child`/`adult`), `avatar_key`, `color`, `birth_year?`, `user_id?`, `archived_at` | Children have no `user_id`. Supports multiple children. |
+| `member` | `display_name`, `role` (`child`/`adult`), `avatar_key` (one of the 8 brand avatars), `color` (brand token key `member-1`..`member-6`, never hex, D-18), `birth_year?`, `user_id?`, `earns_rewards`, `archived_at` | Children have no `user_id` (enforced by check). Supports multiple children. `earns_rewards` is set from the role on insert (on for a child, off for an adult) and can be changed per person (D-32). |
 | `invite` | `email`, `token_hash`, `role`, `expires_at`, `accepted_at` | Token stored hashed. |
 | `device` | `name`, `auth_user_id → auth.users`, `status` (`active`/`revoked`), `last_seen_at`, `app_version`, `board_config jsonb`, `revoked_at` | One auth user per device. |
-| `device_pairing` | `code_hash`, `expires_at`, `consumed_at`, `created_by` | Single-use, 10-minute TTL. |
+| `device_pairing` | `code_hash`, `expires_at`, `consumed_at`, `device_id?`, `created_by` | Single-use; TTL capped at 10 minutes by check. |
 | `household_settings` | `quiet_hours`, `celebration`, `streak_defaults`, `approval_mode` (`off`/`on`; household switch, changeable at any time), `undo_window_seconds`, `board_layout`, `points_settings` (all `jsonb`, zod-validated) | 1:1 with `household`. |
-| `audit_log` | `actor_type`, `actor_id`, `action`, `entity_type`, `entity_id`, `diff jsonb`, `at` | Written by API for admin and device actions. |
-| `job_run` | `job_type`, `target_id`, `started_at`, `finished_at`, `status`, `stats jsonb`, `error` | Feeds sync-health UI and stale indicators. |
+| `audit_log` | `actor_type`, `actor_id`, `action`, `entity_type`, `entity_id`, `chore_id?`, `diff jsonb`, `at` | Written by API for admin and device actions. Rows about an item carry its `chore_id`, so a private item's history is visible only to those who can see the item (D-34). |
+| `job_run` | `job_type`, `target_id`, `started_at`, `finished_at`, `status` (`running`/`ok`/`error`/`skipped`), `stats jsonb`, `error` | One row per job per household. Feeds sync-health UI and stale indicators; written by jobs as service role, read by admins and the board. |
+| `private.heartbeat` | `source` (PK), `beat_at`, `beats` | Infrastructure only: the keepalive target that stops Supabase Free from pausing the project (`01` §9.10). Not exposed through the API; not tenant data. |
 
 ### 3.2 Chores
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `chore` | `title`, `description`, `icon`, `kind` (`chore`/`task`), `points`, `approval` (`inherit`/`required`/`none`), `schedule jsonb`, `day_types text[]`, `tags text[]`, `start_date`, `end_date`, `archived_at` | `kind='task'` with a one-off schedule covers to-dos. |
-| `chore_assignee` | `chore_id`, `member_id` | One occurrence is generated per assignee. |
-| `chore_occurrence` | `chore_id`, `member_id`, `due_date`, `day_type`, `points_snapshot`, `requires_approval_snapshot` (resolved from the chore override and `approval_mode` at generation and whenever either changes, for open occurrences only), `status`, `status_event_id`, `status_changed_at`, `finalized_at` | `UNIQUE (chore_id, member_id, due_date)`. **`status` is a persisted projection** of the event log, maintained by trigger and by the day-close job (§4.2). `status_event_id` has no FK (avoids a cycle). Index `(household_id, member_id, due_date, status)`. Snapshots protect history from later chore edits. |
-| `chore_completion_event` | see DDL §4.1 | **Append-only.** `batch_id` groups a bulk uncheck so it can be reviewed or reversed as one action (CHR-08). |
+| `chore` | `title`, `description`, `icon`, `kind` (`chore` routine / `task` to-do), `points`, `approval` (`inherit`/`required`/`none`), `schedule jsonb`, `due_time?` (household-local), `day_types text[]`, `visibility` (`family`/`private`), `created_by → auth.users`, `remind_lead_minutes?`, `start_date`, `end_date`, `archived_at` | One model for the whole family's list (D-30). A routine not done on its day becomes `missed`; a task, one-off or repeating, stays open and shows as overdue until done or cancelled (D-31). `due_time` orders and groups the day; it never changes scoring. |
+| `chore_assignee` | `chore_id`, `member_id`, `remind?` | Any member, child or adult; several per item. All assignees share one occurrence per due date. |
+| `tag` | `name` (unique per household, case-insensitive), `color` (brand token key), `icon` (brand icon key), `sort_order`, `archived_at` | Household-defined (D-33). Rules, filters and insights reference the id, so renaming or archiving never breaks a goal. |
+| `chore_tag` | PK `(chore_id, tag_id)` | Tags on an item. |
+| `chore_occurrence` | `chore_id`, `due_date`, `due_time?`, `kind`, `day_type`, `points_snapshot`, `requires_approval_snapshot` (resolved from the chore override and `approval_mode` at generation and whenever either changes, for `scheduled` occurrences only; check-offs already `pending_approval` stay in the queue, D-22), `status`, `done_by uuid[]`, `rewarded uuid[]`, `status_event_id`, `status_changed_at`, `finalized_at` | `UNIQUE (chore_id, due_date)`: one occurrence per item per due date, shared by its assignees. `done_by` and `rewarded` come from the folded event (who did it, and which of them earn rewards). **`status` is a persisted projection** of the event log, maintained by trigger and by the day-close job (§4.2). `status_event_id` has no FK (avoids a cycle). Index `(household_id, due_date, status)`. Snapshots protect history from later chore edits. |
+| `chore_occurrence_assignee` | PK `(occurrence_id, member_id)`, `due_date` | Snapshot of who was responsible on that date, written by the generator; later assignee changes affect only future occurrences. Index `(household_id, member_id, due_date)`. |
+| `v_member_occurrence` (view) | one row per occurrence and member: each assignee, plus anyone in `done_by` who was not assigned | `member_status` is the occurrence status, except `covered` when someone else did it; `credited` is true for members in `done_by`. Security invoker. Feeds the rules engine, daily summaries and My tasks. |
+| `chore_completion_event` | see DDL §4.1 | **Append-only.** `done_by` records who did it; `rewarded` is computed on insert from each member's earns-rewards switch, so later switch changes never rewrite history. `batch_id` groups a bulk uncheck so it can be reviewed or reversed as one action (CHR-08). |
 
 `chore_occurrence.status` values:
 
@@ -274,9 +350,11 @@ erDiagram
 | `completed` | Checked off, no approval needed | **yes** | Earns points. |
 | `pending_approval` | Checked off, awaiting parent | no | Only when approval is required or flagged. |
 | `approved` | Parent approved or admin-completed | **yes** | Earns points. |
-| `rejected` | Parent rejected | no | Returns to open for the kid. |
+| `rejected` | Parent rejected | no | Returns to open for the kid. Becomes `missed` at day-close if not redone (D-23). |
 | `skipped` | Parent skipped | neutral | Excluded from numerator and denominator. |
-| `missed` | Past due and never done | no (bad) | Set only by the day-close job; `finalized_at` is set at the same time. |
+| `missed` | Past due and never done | no (bad) | Routines only: set by the day-close job from `scheduled` or `rejected`; `finalized_at` is set at the same time. Shown only on past days, never on the board's today list. A task is never missed (D-31). |
+
+Per member (`v_member_occurrence`), a done or pending occurrence is `covered` for an assignee who is not in `done_by`: neutral, like `skipped`. An open task whose due date (or due time today) has passed is shown as **overdue**; that is a display state of `scheduled`, not a stored status. A task completed after its due date is recorded as late (`credit_date` after `due_date`).
 
 `schedule jsonb` shape (validated by zod):
 
@@ -295,7 +373,7 @@ erDiagram
 | Table | Key columns | Notes |
 |---|---|---|
 | `reward_goal` | `member_id?` (null = family goal), `title`, `description`, `image_path`, `reward_kind` (`item`/`experience`/`privilege`/`other`), `payout jsonb` (`{type:'custom'}` \| `{type:'points', amount}` \| `{type:'catalog_item', item_id}`), `start_date`, `end_date`, `rule_logic` (`all`/`any`), `status`, `achieved_at`, `redeemed_at`, `redeemed_by`, `celebrated_at`, `rules_version`, `archived_at` | `status`: `draft`, `scheduled`, `active`, `achieved`, `redeemed`, `expired`, `cancelled`. |
-| `reward_rule` | `goal_id`, `rule_type` (`COUNT`/`STREAK`/`DAILY_ALL_DONE`/`POINTS`), `target`, `scope jsonb`, `params jsonb`, `sort_order` | `scope`: `{ "all": true }` or `{ "chore_ids": [...], "tags": [...] }`. |
+| `reward_rule` | `goal_id`, `rule_type` (`COUNT`/`STREAK`/`DAILY_ALL_DONE`/`POINTS`), `target`, `scope jsonb`, `params jsonb`, `sort_order` | `scope`: `{ "all": true }` or `{ "chore_ids": [...], "tag_ids": [...] }`. Tags by id (D-33). |
 | `reward_rule_progress` | `rule_id` PK, `goal_id`, `current_value`, `target_value`, `current_streak`, `best_streak`, `last_qualifying_date`, `is_met`, `computed_at`, `engine_version` | **Derived.** Rebuildable. |
 | `reward_goal_progress` | `goal_id` PK, `pct`, `is_achieved`, `dirty`, `computed_at`, `engine_version` | **Derived.** `dirty` set by trigger. |
 | `reward_goal_event` | `goal_id`, `type` (`created`, `activated`, `rules_changed`, `achieved`, `unachieved`, `payout_reversed`, `needs_review`, `redeemed`, `expired`, `cancelled`, `recomputed`), `actor`, `payload jsonb`, `at` | Lifecycle log; drives celebrations and history. |
@@ -304,11 +382,11 @@ erDiagram
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `points_ledger` | `member_id`, `entry_type` (`earn`/`reversal`/`bonus`/`spend`/`refund`/`adjustment`), `amount` (signed), `occurrence_id?`, `redemption_id?`, `goal_id?`, `reason`, `dedupe_key` (unique), `created_by_type`, `created_by`, `created_at` | **Append-only.** Balance is a sum. A reversal after a spend may take the balance negative; the board shows it as a debt (R-12). |
+| `points_ledger` | `member_id`, `entry_type` (`earn`/`reversal`/`bonus`/`spend`/`refund`/`adjustment`), `amount` (signed), `occurrence_id?`, `redemption_id?`, `goal_id?`, `reason`, `dedupe_key` (unique), `created_by_type`, `created_by`, `created_at` | **Append-only.** Balance is a sum. Earn and reversal post once per rewarded member of the occurrence (D-32). A reversal after a spend may take the balance negative; the board shows it as a debt (R-12). |
 | `reward_catalog_item` | `title`, `description`, `image_path`, `cost_points`, `stock?`, `weekly_limit?`, `active`, `sort_order`, `archived_at` | Admin-defined reward and activity inventory (arcade-style prizes). |
 | `redemption` | `id` (client uuid), `member_id`, `catalog_item_id`, `cost_snapshot`, `status` (`requested`/`approved`/`denied`/`fulfilled`/`cancelled`), `requested_at`, `decided_at`, `decided_by`, `fulfilled_at`, `note` | Approval posts the `spend` entry. A request is accepted only if balance minus open requests is at least the cost. |
 | `points_rule` | `rule_type` (`streak_bonus`/`all_done_bonus`), `params jsonb`, `bonus_points`, `active` | P2 bonus automation (PTS-05). |
-| `member_daily_summary` | PK `(member_id, summary_date)`, `scheduled_count`, `done_count`, `missed_count`, `skipped_count`, `points_earned`, `day_class` (`good`/`bad`/`neutral`), `finalized_at` | One row per day, written by day-close. Feeds heatmaps and insights (RWD-11/12). Rebuildable. |
+| `member_daily_summary` | PK `(member_id, summary_date)`, `scheduled_count`, `done_count`, `missed_count`, `skipped_count`, `covered_count`, `points_earned`, `day_class` (`good`/`bad`/`neutral`), `finalized_at` | One row per member per day, for every member, written by day-close. Day classes use routines only; tasks count toward `done_count` on their credit date and never make a day bad. Feeds heatmaps and insights (RWD-11/12). Rebuildable. |
 | `streak_segment` | `member_id`, `kind` (`good`/`bad`), `start_date`, `end_date?` (null = ongoing), `length_days`, `engine_version` | Raw runs of consecutive good or bad days, **no grace applied**. Goal streaks (with grace) are computed separately by the rules engine. Rebuildable. |
 
 ### 3.4 Calendar
@@ -339,7 +417,9 @@ erDiagram
 | 4 | Inside the member's school year | `school_day` |
 | 5 | Otherwise | `summer` |
 
-The result is computed, never stored per day (the occurrence stores a snapshot of the type it was generated under).
+The result is computed, never stored per day (the occurrence stores a snapshot of the type it was generated under). A member without a school profile, usually an adult, follows the household's default school year, so a parent's "pack lunches on school days" works. A shared item is generated for a date when its day-type filter matches for any assignee.
+
+When a closure or school year changes, the generator re-resolves and regenerates `scheduled` occurrences for dates **after today** only. Today's occurrences and the past are never touched (D-24).
 
 ### 3.6 Meals and school menu
 
@@ -361,6 +441,16 @@ else coalesce(lunch_override(m, d).mode,
 
 If the effective mode is `buy`, the board shows `school_menu_day` for `(menu_source, d, 'lunch')`; if `bring`, it shows the planned `meal_plan_entry` for the lunch slot.
 
+### 3.7 Reminders
+
+| Table | Key columns | Notes |
+|---|---|---|
+| `reminder_preference` | PK `member_id`, `enabled` (default false), `default_on` (bell on for new items), `default_lead_minutes` (0, 15, 60 or 1440), `morning_time` (default 08:00), `digest_time?` (null = off), `quiet_start?`, `quiet_end?`, `hide_private_titles` (default true) | One row per adult with a login (D-35). Readable and editable only by that person. |
+| `push_subscription` | `member_id`, `user_id → auth.users`, `endpoint` (unique), `p256dh`, `auth_secret`, `device_label`, `last_success_at`, `failure_count` | One per device and browser. Readable only by its owner; the reminders job reads it as service role. Deleted when the push service answers 404 or 410. |
+| `reminder_delivery` | `occurrence_id?`, `member_id`, `kind` (`due`/`digest`), `scheduled_for`, `sent_at?`, `status` (`held`/`sent`/`skipped`/`failed`), `dedupe_key` (unique) | One row per reminder per person (`due:{occurrence}:{member}` or `digest:{member}:{date}`), inserted before sending so a retry never sends twice. Readable only by that person. Pruned after 90 days. |
+
+Whether and when each assignee is reminded: `chore_assignee.remind` (null follows the person's `default_on`; true or false overrides it) and `chore.remind_lead_minutes` (null uses the person's `default_lead_minutes`). An item without a due time reminds at the person's `morning_time` on its due date. Nothing is sent when the person, the item or every device is switched off, or when the occurrence is already done.
+
 ---
 
 ## 4. Key DDL
@@ -372,23 +462,65 @@ create table chore_completion_event (
   id            uuid primary key,                 -- client-generated idempotency key
   household_id  uuid not null references household(id),
   occurrence_id uuid not null references chore_occurrence(id),
-  member_id     uuid not null references member(id),
   event_type    text not null check (event_type in
                   ('complete','undo','approve','reject',
                    'admin_complete','admin_uncomplete','skip')),
+  done_by       uuid[] not null default '{}',     -- who did it (D-30); set on complete, approve, admin_complete
+  rewarded      uuid[] not null default '{}',     -- members in done_by who earn rewards, fixed on insert (D-32)
   actor_type    text not null check (actor_type in ('device','admin','system')),
   actor_id      uuid,
   occurred_at   timestamptz not null,             -- client-claimed time
   recorded_at   timestamptz not null default now(),
-  credit_date   date not null,                    -- always the occurrence due_date
-  points_delta  int  not null default 0,
+  credit_date   date not null,                    -- routine: its due date; task: the day it was done
   review_status text not null default 'accepted'
                   check (review_status in ('accepted','flagged')),
   batch_id      uuid,                             -- groups a bulk uncheck (CHR-08)
-  note          text
+  note          text,
+  check ((event_type in ('complete','approve','admin_complete')) = (cardinality(done_by) > 0))
 );
-create index on chore_completion_event (household_id, member_id, credit_date);
-create index on chore_completion_event (occurrence_id, recorded_at desc);
+create index on chore_completion_event (household_id, credit_date);
+create index on chore_completion_event using gin (done_by);
+create index on chore_completion_event (occurrence_id, occurred_at desc, recorded_at desc, id desc);
+
+-- Server-side normalization (never trust the caller): household and credit date come from the
+-- occurrence; occurred_at is clamped to receipt time (D-20); done_by must name household members and
+-- rewarded is fixed from their earns-rewards switch (D-32); a board event on a routine outside its
+-- due date is flagged for a parent (D-21). Tasks can be done on any day (D-31).
+create function private.normalize_completion_event() returns trigger
+language plpgsql security definer set search_path = '' as $$
+declare o record;
+begin
+  select occ.household_id, occ.due_date, occ.kind, occ.done_by as current_done_by, h.timezone
+    into strict o
+    from public.chore_occurrence occ
+    join public.household h on h.id = occ.household_id
+   where occ.id = new.occurrence_id;
+  new.household_id := o.household_id;
+  new.recorded_at  := now();
+  new.occurred_at  := least(new.occurred_at, new.recorded_at);
+  if new.event_type = 'approve' and cardinality(new.done_by) = 0 then
+    new.done_by := o.current_done_by;               -- an approval credits whoever the check-off credited
+  elsif new.event_type not in ('complete', 'approve', 'admin_complete') then
+    new.done_by := '{}';
+  end if;
+  if exists (select 1 from unnest(new.done_by) d(id)
+             where not exists (select 1 from public.member m
+                               where m.id = d.id and m.household_id = o.household_id)) then
+    raise exception 'done_by must name members of this household' using errcode = '23514';
+  end if;
+  new.rewarded := array(select m.id from public.member m
+                        where m.id = any(new.done_by) and m.earns_rewards order by m.id);
+  new.credit_date := case when o.kind = 'chore' then o.due_date
+                          else (new.occurred_at at time zone o.timezone)::date end;
+  if new.actor_type = 'device' and o.kind = 'chore'
+     and (new.occurred_at at time zone o.timezone)::date <> o.due_date then
+    new.review_status := 'flagged';
+  end if;
+  return new;
+end $$;
+
+create trigger trg_cce_normalize before insert on chore_completion_event
+  for each row execute function private.normalize_completion_event();
 
 create function private.prevent_mutation() returns trigger
 language plpgsql as $$ begin raise exception 'append-only table'; end $$;
@@ -408,56 +540,89 @@ alter table chore_occurrence
   add column status            text not null default 'scheduled'
     check (status in ('scheduled','completed','pending_approval','approved',
                       'rejected','skipped','missed')),
+  add column done_by           uuid[] not null default '{}',  -- from the folded event
+  add column rewarded          uuid[] not null default '{}',  -- from the folded event
   add column status_event_id   uuid,              -- last event folded in; no FK on purpose
   add column status_changed_at timestamptz,
-  add column finalized_at      timestamptz;       -- set by day-close; null while the day is open
-create index on chore_occurrence (household_id, member_id, due_date, status);
+  add column finalized_at      timestamptz;       -- set by day-close for routines; null for tasks
+create index on chore_occurrence (household_id, due_date, status);
+create index on chore_occurrence (household_id, due_date)          -- open tasks, shown as overdue
+  where kind = 'task' and status = 'scheduled';
 
--- Single source of folding logic (used by the trigger and by rebuild)
-create function private.fold_occurrence_status(p_occ uuid) returns text
-language sql stable as $$
-  select case
-           when e.event_type is null then
-             case when o.finalized_at is not null then 'missed' else 'scheduled' end
-           else case e.event_type
-             when 'complete' then
-               case when o.requires_approval_snapshot or e.review_status = 'flagged'
+-- Single source of folding logic (used by the trigger and by rebuild).
+-- The latest event by event time wins (D-20); ties break on recorded_at, then id.
+create type private.folded_status as (status text, event_id uuid, done_by uuid[], rewarded uuid[]);
+
+create function private.fold_occurrence_status(p_occ uuid) returns private.folded_status
+language sql stable set search_path = '' as $$
+  select row(
+           case
+             when e.event_type is null then
+               case when o.finalized_at is not null then 'missed' else 'scheduled' end
+             when e.event_type = 'complete' then
+               -- approval applies only when someone credited earns rewards (D-32)
+               case when (o.requires_approval_snapshot and cardinality(e.rewarded) > 0)
+                         or e.review_status = 'flagged'
                     then 'pending_approval' else 'completed' end
-             when 'approve'          then 'approved'
-             when 'admin_complete'   then 'approved'
-             when 'reject'           then 'rejected'
-             when 'skip'             then 'skipped'
-             when 'undo'             then case when o.finalized_at is not null
-                                               then 'missed' else 'scheduled' end
-             when 'admin_uncomplete' then case when o.finalized_at is not null
-                                               then 'missed' else 'scheduled' end
-           end
-         end
-  from chore_occurrence o
+             when e.event_type in ('approve', 'admin_complete') then 'approved'
+             when e.event_type = 'skip' then 'skipped'
+             -- reject, undo and admin_uncomplete reopen the chore; once the day is closed it is missed (D-23)
+             when o.finalized_at is not null then 'missed'
+             when e.event_type = 'reject' then 'rejected'
+             else 'scheduled'
+           end,
+           e.id,
+           case when e.event_type in ('complete', 'approve', 'admin_complete') then e.done_by
+                else '{}'::uuid[] end,
+           case when e.event_type in ('complete', 'approve', 'admin_complete') then e.rewarded
+                else '{}'::uuid[] end)::private.folded_status
+  from public.chore_occurrence o
   left join lateral (
-    select ev.event_type, ev.review_status
-    from chore_completion_event ev
+    select ev.id, ev.event_type, ev.review_status, ev.done_by, ev.rewarded
+    from public.chore_completion_event ev
     where ev.occurrence_id = o.id
-    order by ev.recorded_at desc, ev.id desc
+    order by ev.occurred_at desc, ev.recorded_at desc, ev.id desc
     limit 1
   ) e on true
   where o.id = p_occ
 $$;
 
--- Keep status current on every event (same transaction as the insert)
+-- Keep status current on every event (same transaction as the insert).
+-- status_event_id is the event the status was folded from, which may not be the event just inserted.
 create function private.apply_completion_event() returns trigger
 language plpgsql security definer set search_path = '' as $$
 begin
   update public.chore_occurrence o
-     set status            = private.fold_occurrence_status(o.id),
-         status_event_id   = new.id,
-         status_changed_at = now()
+     set status            = f.status,
+         done_by           = f.done_by,
+         rewarded          = f.rewarded,
+         status_event_id   = f.event_id,
+         status_changed_at = case when o.status is distinct from f.status
+                                  then now() else o.status_changed_at end
+    from private.fold_occurrence_status(new.occurrence_id) f
    where o.id = new.occurrence_id;
   return new;
 end $$;
 
 create trigger trg_cce_apply after insert on chore_completion_event
   for each row execute function private.apply_completion_event();
+
+-- Per-member view of shared occurrences (D-30): every assignee, plus anyone credited who was not
+-- assigned. Someone else's check-off is 'covered' for an assignee: neutral, like skipped.
+create view v_member_occurrence with (security_invoker = true) as
+select o.id as occurrence_id, o.household_id, o.chore_id, o.kind, o.due_date, o.due_time,
+       m.member_id,
+       m.member_id = any(o.done_by)  as credited,
+       m.member_id = any(o.rewarded) as rewarded,
+       case when cardinality(o.done_by) > 0 and not m.member_id = any(o.done_by) then 'covered'
+            else o.status end        as member_status,
+       o.points_snapshot, o.finalized_at
+from chore_occurrence o
+cross join lateral (
+  select a.member_id from chore_occurrence_assignee a where a.occurrence_id = o.id
+  union
+  select unnest(o.done_by)
+) m(member_id);
 
 -- Day close: runs hourly (cheap, idempotent). Closes any household whose local day has ended.
 create function private.close_past_due(p_household uuid default null) returns int
@@ -469,14 +634,17 @@ begin
     from public.chore_occurrence o
     join public.household h on h.id = o.household_id
     where o.finalized_at is null
+      and o.kind = 'chore'                        -- routines only; tasks carry over (D-31)
       and o.due_date < (now() at time zone h.timezone)::date
       and (p_household is null or o.household_id = p_household)
     for update of o skip locked
   )
   update public.chore_occurrence o
      set finalized_at      = now(),
-         status            = case when o.status = 'scheduled' then 'missed' else o.status end,
-         status_changed_at = now()
+         status            = case when o.status in ('scheduled', 'rejected') then 'missed'
+                                  else o.status end,
+         status_changed_at = case when o.status in ('scheduled', 'rejected') then now()
+                                  else o.status_changed_at end
     from closing c
    where o.id = c.id;
   get diagnostics n = row_count;
@@ -485,26 +653,42 @@ begin
   return n;
 end $$;
 
--- Rebuild (admin tool and CI check): re-fold every occurrence in range; reports drift
-create function private.rebuild_occurrence_status(p_household uuid, p_from date, p_to date)
+-- Rebuild (admin tool and nightly check): re-fold every occurrence in range and report drift.
+-- Report-only by default; p_apply => true writes the corrections (which may post ledger corrections
+-- through trg_occ_points).
+create function private.rebuild_occurrence_status(
+  p_household uuid, p_from date, p_to date, p_apply boolean default false)
 returns table (occurrence_id uuid, was text, now_is text)
 language sql security definer set search_path = '' as $$
-  with fixed as (
+  with drift as (
+    select o.id, o.status as was, f.status as now_is, f.event_id, f.done_by, f.rewarded
+    from public.chore_occurrence o
+    cross join lateral private.fold_occurrence_status(o.id) f
+    where o.household_id = p_household
+      and o.due_date between p_from and p_to
+      and (o.status is distinct from f.status or o.status_event_id is distinct from f.event_id
+           or o.done_by is distinct from f.done_by or o.rewarded is distinct from f.rewarded)
+  ), applied as (
     update public.chore_occurrence o
-       set status = private.fold_occurrence_status(o.id)
-     where o.household_id = p_household and o.due_date between p_from and p_to
-       and o.status is distinct from private.fold_occurrence_status(o.id)
-    returning o.id, o.status
-  ) select id, null::text, status from fixed
+       set status = d.now_is, status_event_id = d.event_id, done_by = d.done_by,
+           rewarded = d.rewarded, status_changed_at = now()
+      from drift d
+     where p_apply and o.id = d.id
+    returning o.id
+  )
+  select d.id, d.was, d.now_is from drift d
 $$;
 ```
 
 Rules:
 
-- A completion after day-close is allowed (late credit). It folds normally; `credit_date` stays the due date, and history tables are re-derived for that date.
+- Late credit for a routine after day-close is a parent action (`admin_complete`, D-21). It folds normally; `credit_date` stays the due date, and history tables are re-derived for that date. A board event on a routine outside its due date is stored `flagged` and folds to `pending_approval`.
+- Tasks are never finalized by day-close, so they never fold to `missed`; they are completed whenever they are done, on the board or a phone, with `credit_date` the day done (late when after `due_date`).
+- Shared occurrences (D-30): the folded event's `done_by` is who did it and `rewarded` those of them who earn rewards. Approval applies only when `rewarded` is not empty.
 - `missed` is therefore a status, not a tombstone: an undo of a late completion returns the occurrence to `missed`.
-- Counted-as-done: `completed`, `approved`. Neutral (excluded from numerator and denominator): `skipped`. Bad: `missed`. Not counted: `scheduled`, `pending_approval`, `rejected`.
-- A nightly CI-style job runs `rebuild_occurrence_status` for the last 14 days and alerts on drift (NFR-06).
+- Conflicts resolve by event time (D-20): an event that arrives late but happened earlier than the current folded event does not change the status.
+- Counted-as-done: `completed`, `approved` (per member: only when credited). Neutral (excluded from numerator and denominator): `skipped`, and per member `covered`. Bad: `missed`. Not counted: `scheduled`, `pending_approval`, `rejected`.
+- A nightly job runs `rebuild_occurrence_status` (report-only) for the last 14 days and alerts on drift (NFR-06); applying the fix is an explicit admin action.
 
 ### 4.2b Points ledger
 
@@ -529,27 +713,35 @@ create index on points_ledger (household_id, member_id, created_at);
 create trigger trg_pl_immutable before update or delete on points_ledger
   for each row execute function private.prevent_mutation();
 
--- Earn on entering a done status; reverse on leaving it.
+-- Earn on entering a done status, reverse on leaving it: once per rewarded member (D-32).
 create function private.post_points() returns trigger
 language plpgsql security definer set search_path = '' as $$
-declare was_done bool := old.status in ('completed','approved');
-        is_done  bool := new.status in ('completed','approved');
+declare
+  before_set uuid[] := case when old.status in ('completed','approved') then old.rewarded else '{}' end;
+  after_set  uuid[] := case when new.status in ('completed','approved') then new.rewarded else '{}' end;
+  m uuid;
 begin
-  if new.points_snapshot = 0 or was_done = is_done then return new; end if;
-  insert into public.points_ledger
-    (household_id, member_id, entry_type, amount, occurrence_id, dedupe_key, created_by_type)
-  values
-    (new.household_id, new.member_id,
-     case when is_done then 'earn' else 'reversal' end,
-     case when is_done then new.points_snapshot else -new.points_snapshot end,
-     new.id,
-     'occ:' || new.id || case when is_done then ':earn:' else ':rev:' end || new.status_event_id,
-     'system')
-  on conflict (dedupe_key) do nothing;
+  if new.points_snapshot = 0 then return new; end if;
+  foreach m in array after_set loop
+    continue when m = any(before_set);
+    insert into public.points_ledger
+      (household_id, member_id, entry_type, amount, occurrence_id, dedupe_key, created_by_type)
+    values (new.household_id, m, 'earn', new.points_snapshot, new.id,
+            'occ:' || new.id || ':earn:' || m || ':' || new.status_event_id, 'system')
+    on conflict (dedupe_key) do nothing;
+  end loop;
+  foreach m in array before_set loop
+    continue when m = any(after_set);
+    insert into public.points_ledger
+      (household_id, member_id, entry_type, amount, occurrence_id, dedupe_key, created_by_type)
+    values (new.household_id, m, 'reversal', -new.points_snapshot, new.id,
+            'occ:' || new.id || ':rev:' || m || ':' || new.status_event_id, 'system')
+    on conflict (dedupe_key) do nothing;
+  end loop;
   return new;
 end $$;
 
-create trigger trg_occ_points after update of status on chore_occurrence
+create trigger trg_occ_points after update of status, rewarded on chore_occurrence
   for each row execute function private.post_points();
 
 create view v_points_balance with (security_invoker = true) as
@@ -560,7 +752,17 @@ select member_id,
 from points_ledger group by member_id;
 ```
 
-Redemption flow: `requested` (API checks `balance − sum(open requests) ≥ cost`) → admin `approved` (API inserts the `spend` entry, dedupe `red:{id}:spend`) or `denied`; `cancelled` before approval; after approval a cancel posts a `refund`. `fulfilled` is bookkeeping only.
+**Ledger write functions (D-28).** Application code never inserts into `points_ledger`. Earn and reversal come from `trg_occ_points`; every other entry goes through one `SECURITY DEFINER` function, `private.post_ledger(...)` (insert `on conflict (dedupe_key) do nothing`), called by these entry points:
+
+| Entry point | Caller | Entry | Dedupe key |
+|---|---|---|---|
+| `public.adjust_points(member, amount, reason, request_id)` | admin (RLS-checked inside) | `adjustment` | `adj:{request_id}` |
+| `public.decide_redemption(redemption, 'approve' \| 'deny')` | admin | `spend` on approve | `red:{id}:spend` |
+| `public.cancel_redemption(redemption)` | admin, or device while `requested` | `refund` if it was approved | `red:{id}:refund` |
+| `private.post_goal_payout(goal, n)` / `private.reverse_goal_payout(goal, n)` | reconcile job | `bonus` / `reversal` | `goal:{id}:payout:{n}` / `goal:{id}:payout_rev:{n}` |
+| `private.post_points_rule_bonus(rule, member, key)` | reconcile job | `bonus` | `rule:{id}:{member}:{key}` |
+
+Redemption flow: `requested` (`public.request_redemption` checks `balance − sum(open requests) ≥ cost` under a member lock) → admin `approved` (spend posted) or `denied`; `cancelled` before approval; after approval a cancel posts a `refund`. `fulfilled` is bookkeeping only.
 
 ### 4.3 Dirty-marking trigger
 
@@ -574,7 +776,11 @@ begin
    where p.goal_id = g.id
      and g.household_id = new.household_id
      and g.status in ('active','achieved')
-     and (g.member_id is null or g.member_id = new.member_id)
+     and (g.member_id is null
+          or exists (select 1 from public.chore_occurrence_assignee a
+                     where a.occurrence_id = new.occurrence_id and a.member_id = g.member_id)
+          or exists (select 1 from public.chore_completion_event ev   -- anyone ever credited
+                     where ev.occurrence_id = new.occurrence_id and g.member_id = any(ev.done_by)))
      and g.start_date <= new.credit_date
      and (g.end_date is null or g.end_date >= new.credit_date);
   return new;
@@ -589,12 +795,15 @@ create trigger trg_cce_dirty after insert on chore_completion_event
 ```sql
 create function public.resolve_day_type(p_member uuid, p_date date)
 returns text language sql stable as $$
-  with sy as (
-    select y.id, y.start_date, y.end_date
-    from member_school_profile sp
-    join school_year y on y.id = sp.school_year_id
-    where sp.member_id = p_member
-      and p_date between y.start_date and y.end_date
+  with sy as (                     -- the member's school year, or the household default if none
+    select y.id
+    from school_year y
+    join member m on m.id = p_member and m.household_id = y.household_id
+    where p_date between y.start_date and y.end_date
+      and (exists (select 1 from member_school_profile sp
+                   where sp.member_id = p_member and sp.school_year_id = y.id)
+           or (y.is_default and not exists (select 1 from member_school_profile sp
+                                            where sp.member_id = p_member)))
     limit 1
   )
   select case
@@ -624,12 +833,36 @@ language sql stable security definer set search_path = '' as $$
   where auth_user_id = (select auth.uid()) and status = 'active'
 $$;
 
+-- Visibility of an item (D-34): family items to everyone in the household; private items only to
+-- their creator and to assignees who sign in. Derived tables (occurrences, assignee snapshots,
+-- events, audit rows with a chore_id) call it with their chore_id. created_by is set from auth.uid()
+-- on insert and cannot be changed.
+create function private.can_see_chore(p_chore uuid) returns boolean
+language sql stable security definer set search_path = '' as $$
+  select exists (
+    select 1 from public.chore c
+    where c.id = p_chore
+      and (c.visibility = 'family'
+           or c.created_by = (select auth.uid())
+           or exists (select 1 from public.chore_assignee a
+                      join public.member m on m.id = a.member_id
+                      where a.chore_id = c.id and m.user_id = (select auth.uid())))
+  )
+$$;
+
 -- example policies on a board-readable table
 create policy chore_admin_all on public.chore for all to authenticated
-  using (household_id in (select private.admin_household_ids()))
+  using (household_id in (select private.admin_household_ids()) and private.can_see_chore(id))
   with check (household_id in (select private.admin_household_ids()));
 create policy chore_device_read on public.chore for select to authenticated
-  using (household_id = private.device_household_id());
+  using (household_id = (select private.device_household_id()) and visibility = 'family');
+
+-- derived tables follow the item (the board never sees a private one: the device user is neither
+-- its creator nor an assignee)
+create policy occurrence_admin_read on public.chore_occurrence for select to authenticated
+  using (household_id in (select private.admin_household_ids()) and private.can_see_chore(chore_id));
+create policy occurrence_device_read on public.chore_occurrence for select to authenticated
+  using (household_id = (select private.device_household_id()) and private.can_see_chore(chore_id));
 ```
 
 ### 4.6 Board snapshot contract
@@ -638,11 +871,13 @@ create policy chore_device_read on public.chore for select to authenticated
 
 ```
 { fetched_at, household: {timezone, week_start},
-  members: [...], day_types: {member_id: {date: type}},
-  occurrences: [... chore_occurrence incl. status ...],
-  points: { balance, earned_total, open_requests, recent_ledger },
+  members: [... incl. earns_rewards ...], day_types: {member_id: {date: type}},
+  occurrences: [ family-visible occurrences due today plus open overdue tasks, with kind,
+                 due_time, assignees, status, done_by ],
+  points: { per member who earns rewards: balance, earned_total, open_requests, recent_ledger },
   catalog: [ reward_catalog_item rows (active) ], redemptions: [ open and recent ],
-  streaks: { current_good, best_good, current_bad, heatmap: [ member_daily_summary rows ] },
+  streaks: { per member who earns rewards: current_good, best_good, current_bad,
+             heatmap: [ member_daily_summary rows ] },
   goals: [ {goal, rules, progress} ],
   calendar: [ calendar_event_instance rows for this device's device_calendar selection ],
   meals: [ meal_plan_entry + meal ], lunch: [ effective mode per child per day ],
@@ -659,16 +894,18 @@ Pure functions, no I/O, no `Date.now()` (the clock is an input).
 type RuleType = 'COUNT' | 'STREAK' | 'DAILY_ALL_DONE' | 'POINTS';
 type OccurrenceStatus = 'scheduled'|'completed'|'pending_approval'|'approved'
                       | 'rejected'|'skipped'|'missed';
-interface RuleScope { all?: boolean; chore_ids?: string[]; tags?: string[] }
+type MemberStatus = OccurrenceStatus | 'covered';   // per member: someone else did it (neutral)
+interface RuleScope { all?: boolean; chore_ids?: string[]; tag_ids?: string[] }
 interface StreakParams {
   grace_per_week: number;                       // goal streaks only; misses forgiven per household week (default 1)
   qualify: { mode: 'all_scheduled' | 'min_count' | 'min_pct'; value?: number };
 }
 interface Rule { id: string; type: RuleType; target: number; scope: RuleScope;
                  params: Record<string, unknown> }
-interface OccurrenceFact {                      // straight from chore_occurrence
-  id: string; chore_id: string; member_id: string; tags: string[];
-  due_date: string; status: OccurrenceStatus; points: number }
+interface OccurrenceFact {                      // from v_member_occurrence: one per occurrence and member
+  id: string; chore_id: string; member_id: string; kind: 'chore'|'task'; tag_ids: string[];
+  due_date: string; credit_date: string|null; status: MemberStatus; credited: boolean;
+  points: number }
 interface GoalInput { goal: { id: string; member_id: string|null; start_date: string;
                               end_date: string|null; rule_logic: 'all'|'any'; status: string };
                       rules: Rule[]; occurrences: OccurrenceFact[];
@@ -688,22 +925,22 @@ function evaluateHistory(input: HistoryInput):
     current: { kind: 'good'|'bad'|null; length: number }; bestGood: number; worstBad: number };
 ```
 
-`missed` is now an input status, not something the engine infers. The engine never reads a clock; "today" is `asOf`.
+`missed` is now an input status, not something the engine infers. The engine never reads a clock; "today" is `asOf`. Facts are per member (D-30): a goal for a member counts only facts where that member is `credited`; a family goal (`member_id` null) counts each done occurrence once. Tasks count toward `COUNT` and `POINTS` on their `credit_date` and never make a day bad (D-31).
 
 ### Rule semantics
 
 | Rule | Counts | Edge cases |
 |---|---|---|
-| `COUNT` | in-scope occurrences in `completed`/`approved` with `due_date` in `[start, end]` | `pending_approval`, `rejected`, `missed` do not count; `undo` removes the count |
+| `COUNT` | in-scope occurrences in `completed`/`approved` credited to the member, with `credit_date` in `[start, end]` | `pending_approval`, `rejected`, `missed`, `covered` do not count; `undo` removes the count |
 | `POINTS` | sum of `points` for the same set | uses `points_snapshot`, so later chore edits don't change history |
-| `DAILY_ALL_DONE` | number of days where **every** in-scope scheduled occurrence is done | days with zero scheduled (or all skipped) are not counted and not penalized |
+| `DAILY_ALL_DONE` | number of days where **every** in-scope routine is done | tasks are ignored; `covered` and `skipped` are neutral; days with zero routines are not counted and not penalized |
 | `STREAK` | consecutive qualifying days | see below |
 
 **Day classes (history and streaks)**
 
 | Class | Definition |
 |---|---|
-| `neutral` | No in-scope occurrences, or all `skipped`. Does not extend or break a run. |
+| `neutral` | No in-scope routines, or all `skipped` or `covered`. Does not extend or break a run. |
 | `open` | Today (`asOf`) or any day with a `scheduled` occurrence not yet finalized. Never counted as bad. |
 | `good` | Finalized day where the qualify mode is satisfied (default: every non-skipped occurrence done). |
 | `bad` | Finalized day with at least one `missed` and the qualify mode not satisfied. |
@@ -732,12 +969,12 @@ function evaluateHistory(input: HistoryInput):
 
 | Concern | Decision |
 |---|---|
-| Hot read paths | `chore_occurrence (household_id, member_id, due_date, status)`, `points_ledger (household_id, member_id, created_at)`, `member_daily_summary (member_id, summary_date)`, `calendar_event_instance (household_id, local_start_date)`, `meal_plan_entry (household_id, plan_date, slot)` |
-| Retention | Events and goal history kept indefinitely (tiny volume). `calendar_event_instance` pruned to window. `job_run` pruned at 90 days. `points_ledger`, `member_daily_summary`, `streak_segment` kept indefinitely. `audit_log` kept 2 years. |
+| Hot read paths | `chore_occurrence_assignee (household_id, member_id, due_date)`, `chore_occurrence (household_id, due_date, status)`, open tasks (partial index), `chore_completion_event (done_by)` (GIN), `points_ledger (household_id, member_id, created_at)`, `member_daily_summary (member_id, summary_date)`, `calendar_event_instance (household_id, local_start_date)`, `meal_plan_entry (household_id, plan_date, slot)` |
+| Retention | Events and goal history kept indefinitely (tiny volume). `calendar_event_instance` pruned to window. `job_run` and `reminder_delivery` pruned at 90 days; `push_subscription` deleted on a 404/410 from the push service. `points_ledger`, `member_daily_summary`, `streak_segment` kept indefinitely. `audit_log` kept 2 years. |
 | Export | `/admin/settings/export` returns a JSON/CSV bundle of all household data (NFR-05). |
 | Delete | Household deletion cascades via a documented procedure (not raw FK cascade on append-only tables); child profile deletion removes `member` PII and anonymizes events. |
-| Migration order | tenancy → devices → chores/occurrences/events + status projection → points ledger + catalog + redemptions → history tables + `close_past_due` → rewards (+ triggers) → school year + `resolve_day_type` → calendar (+ `device_calendar`) → meals/menu → `board_snapshot` → RLS pgTAP suite |
-| Seed data | one household, 2 admins, 1 child, 6 chores, 14 days of mixed good/missed history, 5 catalog items with a points balance, 2 goals (count + streak, one with a points payout), 1 ICS fixture, 1 school year with breaks, 1 week of meals |
+| Migration order | tenancy → devices → tags + chores/occurrences (assignee snapshot, per-member view)/events + status projection → points ledger + catalog + redemptions → history tables + `close_past_due` → rewards (+ triggers) → school year + `resolve_day_type` → calendar (+ `device_calendar`) → meals/menu → `board_snapshot` → RLS pgTAP suite |
+| Seed data | one household, 2 admins (earns rewards off), 1 child, 4 tags, 6 chores (one shared with a parent), 4 adult tasks (one private, one overdue, one repeating), 14 days of mixed good/missed history, 5 catalog items with a points balance, 2 goals (count + streak, one with a points payout), 1 ICS fixture, 1 school year with breaks, 1 week of meals |
 
 ---
 
@@ -745,12 +982,14 @@ function evaluateHistory(input: HistoryInput):
 
 | Entity | Requirements |
 |---|---|
-| `household`, `household_settings`, `household_user`, `invite`, `member` | ACC-01..04, NFR-09 |
+| `household`, `household_settings`, `household_user`, `invite`, `member` | ACC-01..04, NFR-09, PTS-07 |
 | `device`, `device_pairing` | DEV-01..03, NFR-04 |
-| `audit_log` | ACC-05 |
+| `audit_log` | ACC-05, CHR-13 |
 | `job_run` | DEV-08, CAL-06, MENU-04, NFR-07 |
-| `chore`, `chore_assignee`, `chore_occurrence` (incl. `status`) | CHR-01..03, CHR-07, SCH-03 |
-| `chore_completion_event` | CHR-04..08, DEV-06, NFR-06 |
+| `chore`, `chore_assignee`, `chore_occurrence` (incl. `status`), `chore_occurrence_assignee`, `v_member_occurrence` | CHR-01..03, CHR-07, CHR-09, CHR-11..14, SCH-03 |
+| `tag`, `chore_tag` | CHR-10, RWD-02 |
+| `reminder_preference`, `push_subscription`, `reminder_delivery` | CHR-15..17 |
+| `chore_completion_event` | CHR-04..09, DEV-06, NFR-06 |
 | `points_ledger`, `v_points_balance`, `reward_catalog_item`, `redemption`, `points_rule` | PTS-01..06 |
 | `member_daily_summary`, `streak_segment` | RWD-11, RWD-12 |
 | `reward_goal`, `reward_rule`, `reward_rule_progress`, `reward_goal_progress`, `reward_goal_event` | RWD-01..10, RWD-13 |
