@@ -102,6 +102,30 @@ export function latestNote(doc) {
   return { version, text: rest.join(':').trim() };
 }
 
+// Gives each body cell of plain <table> markup its column name, so the table can restack into
+// labeled cards on phones (table.md rules in site.css). Cells that set their own label keep it.
+export function labelled(html) {
+  return html.replace(/<table>([\s\S]*?)<\/table>/g, (whole, inner) => {
+    const head = inner.match(/<thead>([\s\S]*?)<\/thead>/);
+    const labels = head
+      ? [...head[1].matchAll(/<th[^>]*>([\s\S]*?)<\/th>/g)].map((x) =>
+          x[1].replace(/<[^>]+>/g, '').trim(),
+        )
+      : [];
+    const body = inner.replace(/<tr>([\s\S]*?)<\/tr>/g, (row, cells) => {
+      let col = 0;
+      return `<tr>${cells.replace(/<(th scope="row"|td)([^>]*)>/g, (m, tag, attrs) => {
+        const label = labels[col] || '';
+        col += Number((attrs.match(/colspan="(\d+)"/) || [])[1] || 1);
+        return tag === 'td' && !attrs.includes('data-label')
+          ? `<td data-label="${esc(label)}"${attrs}>`
+          : m;
+      })}</tr>`;
+    });
+    return `<table class="md">${body}</table>`;
+  });
+}
+
 export const countBy = (arr, f) => arr.reduce((o, x) => ((o[f(x)] = (o[f(x)] || 0) + 1), o), {});
 
 export function section(id, title, body, opts = {}) {
@@ -126,11 +150,14 @@ export function filterBar({ groups, placeholder, noun }) {
           }</button>`,
       )
       .join('')}</div>`;
+  const toggle = groups.length
+    ? `<button type="button" class="btn facet-toggle" aria-expanded="false" aria-controls="facets">${icon('list-check')}Filters<span class="n" hidden></span></button>`
+    : '';
   return `<div class="filters" data-noun="${esc(noun)}">
-  <div class="search">${icon('search')}<label class="sr" for="q">Search ${esc(noun)}</label><input id="q" type="search" placeholder="${esc(
+  <div class="filter-top"><div class="search">${icon('search')}<label class="sr" for="q">Search ${esc(noun)}</label><input id="q" type="search" placeholder="${esc(
     placeholder,
-  )}" autocomplete="off" spellcheck="false"><kbd aria-hidden="true">/</kbd></div>
-  <div class="facets">${groups.map(facet).join('')}</div>
+  )}" autocomplete="off" spellcheck="false" enterkeyhint="search"><kbd aria-hidden="true">/</kbd></div>${toggle}</div>
+  ${groups.length ? `<div class="facets" id="facets">${groups.map(facet).join('')}</div>` : ''}
   <p class="count"><span id="count" aria-live="polite"></span><span class="temp-filter" hidden></span><button type="button" class="reset" hidden>Clear filters</button></p>
 </div>`;
 }

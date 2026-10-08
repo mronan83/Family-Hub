@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.5 · Status: build baseline · Maintained by Claude Code
+> v0.5.2: `ci / docs` gate: the interactive docs pages build without broken links and pass a layout check on 13 device profiles (§9.3).
 > v0.5.1: Supabase publishable/secret API keys (§9.8); SPIKE-04 result: Nutrislice public menu API (§5.5).
 > v0.5: free plans only (D-29): one shared Supabase preview project instead of per-PR branches, keepalive against inactivity pausing, migrations over the session pooler, own nightly backups, email limits (§9.10).
 > v0.4: event-time ordering for completion events (D-20), today-only board with parent-only late credit (D-21), magic link + password sign-in (D-25), `UI` and `CICD` components, delivery pipeline without Docker or staging (§9, D-26).
@@ -436,10 +437,11 @@ flowchart LR
 |---|---|---|
 | `ci / checks` | frozen-lockfile install, ESLint, Prettier check, typecheck, Vitest (rules engine ≥ 90% coverage), migration lint, `check_traceability.py` | yes |
 | `ci / database` | `scripts/db-test.sh`: throwaway database on native Postgres, compatibility bootstrap, all migrations in order, pgTAP via `pg_prove` | yes |
+| `ci / docs` | `pnpm docs:build --check` (no broken cross-link or unknown ID in the five docs pages), then `pnpm docs:layout`: each page on 13 device profiles from a 320 px phone to a 4K monitor, failing on sideways scroll, content off screen, touch targets under 44 px, or script errors | yes |
 | `ci / build` | `next build` for `apps/web` | yes |
 | `e2e / preview` | Once Vercel reports a successful preview: rebuild the preview database from the PR's migrations and seed, then Playwright against the preview URL. Runs are serialized | yes |
 
-`main` is protected: pull request required, the four checks required, squash merge only, no force pushes. Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
+`main` is protected: pull request required, the five checks required, squash merge only, no force pushes. Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 
 ### 9.4 Database tests without Docker
 

@@ -7,6 +7,7 @@ import {
   filterBar,
   ghLink,
   icon,
+  labelled,
   meter,
   pill,
   section,
@@ -249,7 +250,7 @@ export function requirements(m, ctx) {
     .join('')}</tbody></table></div>`;
 
   const body = [
-    section('build-status', 'Build status', buildStatus, {
+    section('build-status', 'Build status', labelled(buildStatus), {
       note: 'Requirements by domain and phase, by the status of the work packages that build them. Select a domain or phase to filter the register.',
     }),
     section('trace-model', 'How the trace works', model),

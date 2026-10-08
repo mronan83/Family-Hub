@@ -6,8 +6,9 @@ import {
   countBy,
   filterBar,
   icon,
+  labelled,
   latestNote,
-  meter,
+  stack,
   pill,
   section,
   shell,
@@ -60,16 +61,17 @@ export function stories(m, ctx) {
   }`;
 
   // Story map: epic × phase ------------------------------------------------------------
-  const map = `<div class="matrix"><table><thead><tr><th>Epic</th><th>Progress</th>${PHASES.map((p) => `<th>${p}</th>`).join('')}</tr></thead><tbody>${m.epics
+  const map = `<div class="matrix"><table><thead><tr><th>Epic</th>${PHASES.map((p) => `<th>${p}</th>`).join('')}</tr></thead><tbody>${m.epics
     .map((e) => {
       const ss = e.stories.map((id) => m.stories.get(id));
       const done = ss.filter((s) => s.status === 'done').length;
-      return `<tr><th scope="row"><a href="#${e.id.toLowerCase()}">${e.id}</a> ${esc(e.title)}<small>${ss.length} stories</small></th><td><span class="prog">${meter(done, ss.length)}<span>${done} of ${ss.length} done</span></span></td>${PHASES.map(
-        (p) => {
-          const ids = ss.filter((s) => s.phase === p).map((s) => s.id);
-          return `<td>${ids.length ? tags(ctx, ids) : '<span class="none">—</span>'}</td>`;
-        },
-      ).join('')}</tr>`;
+      return `<tr><th scope="row"><a href="#${e.id.toLowerCase()}">${e.id}</a> ${esc(e.title)}<small>${ss.length} stories</small><span class="prog">${stack(
+        countBy(ss, (x) => x.status),
+        { small: true, legend: false },
+      )}<span>${done} of ${ss.length} done</span></span></th>${PHASES.map((p) => {
+        const ids = ss.filter((s) => s.phase === p).map((s) => s.id);
+        return `<td>${ids.length ? tags(ctx, ids) : '<span class="none">—</span>'}</td>`;
+      }).join('')}</tr>`;
     })
     .join('')}</tbody></table></div>`;
 
@@ -133,7 +135,7 @@ export function stories(m, ctx) {
 
   const body = [
     section('personas', 'Personas', personas),
-    section('story-map', 'Story map', map, {
+    section('story-map', 'Story map', labelled(map), {
       note: 'Every story by epic and phase, tinted by the status of the work packages that deliver it. P1 is built as milestones P1a to P1d.',
     }),
     section(

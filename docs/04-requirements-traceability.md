@@ -350,6 +350,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.5.3 | The interactive docs pages adapt to phones, tablets, laptops and monitors (fluid type, touch-sized controls, folding filters, restacking matrices, notch-safe gutters). New CI gate `ci / docs` (`01` §9.3) runs the link check and a layout check on 13 device profiles. |
 | 0.5.2 | `05` §0 Waiting on you (Y-1..Y-8). The five build artifacts are also published as interactive pages generated from `01`–`05` by `pnpm docs:build`, which CI runs with `--check` for broken links. |
 | 0.5.1 | SPIKE-04 done: Nutrislice public JSON API; WP-27 unblocked. Supabase publishable and secret API keys replace anon and service-role key names. |
 | 0.5 | Free plans only (D-29): NFR-08 and NFR-10 reworded; NFR-14 uses a shared preview database rebuilt per e2e run instead of per-PR branches; risks R-06 and R-16 updated, R-19..R-21 added; A-09. |

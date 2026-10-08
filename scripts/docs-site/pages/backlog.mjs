@@ -6,8 +6,8 @@ import {
   countBy,
   filterBar,
   icon,
+  labelled,
   latestNote,
-  meter,
   pill,
   section,
   shell,
@@ -129,20 +129,16 @@ export function backlog(m, ctx) {
       return `<td>${ids.length ? tags(ctx, ids) : '<span class="none">—</span>'}</td>`;
     };
     const left = its.reduce((s, i) => s + (i.status === 'done' ? 0 : SIZE_DAYS[i.size] || 0), 0);
-    return `<tr><th scope="row">${ms} ${esc(msInfo?.name || '')}<small>${its.length} items · ~${days(left)} builder-days left</small></th><td><span class="prog">${meter(
-      done,
-      its.length,
-      `${done} of ${its.length} done`,
-    )}<span>${done} of ${its.length} done</span>${stack(
+    return `<tr><th scope="row">${ms} ${esc(msInfo?.name || '')}<small>${its.length} items · ~${days(left)} builder-days left</small><span class="prog">${stack(
       countBy(its, (i) => i.status),
       { small: true, legend: false },
-    )}</span></td>${cell('S')}${cell('M')}${cell('L')}</tr>`;
+    )}<span>${done} of ${its.length} done</span></span></th>${cell('S')}${cell('M')}${cell('L')}</tr>`;
   }).join('');
-  const launchRow = `<tr><th scope="row">Launch<small>after P3, on the real Pi and panel (D-19)</small></th><td><span class="prog"><span>${m.launch.length} checks, none run yet</span></span></td><td colspan="3">${tags(
+  const launchRow = `<tr><th scope="row">Launch<small>after P3, on the real Pi and panel (D-19) · ${m.launch.length} checks, none run yet</small></th><td colspan="3" data-label="Launch checks">${tags(
     ctx,
     m.launch.map((l) => l.id),
   )}</td></tr>`;
-  const matrix = `<div class="matrix"><table><thead><tr><th>Milestone</th><th>Progress</th><th>S · ≤ 2 days</th><th>M · 3–5 days</th><th>L · 1–2 weeks</th></tr></thead><tbody>${rows}${launchRow}</tbody></table></div>
+  const matrix = `<div class="matrix"><table><thead><tr><th>Milestone</th><th>S · ≤ 2 days</th><th>M · 3–5 days</th><th>L · 1–2 weeks</th></tr></thead><tbody>${rows}${launchRow}</tbody></table></div>
 <details class="more"><summary>Exit criteria for each milestone (04 §E)</summary><div class="table-wrap"><table class="md"><thead><tr><th>Milestone</th><th>Exit criteria (CI + preview)</th></tr></thead><tbody>${m.milestones
     .map(
       (x) =>
@@ -173,7 +169,7 @@ export function backlog(m, ctx) {
       ? `<ul class="trace-list">${startable
           .map(
             (it) =>
-              `<li>${tag(ctx, it.id)}<span class="t">${esc(it.title)}${it.waitingOn.length ? ` · waits on ${it.waitingOn.join(', ')}` : ''}${it.status === 'blocked' ? ` · ${esc(stripMd(it.statusNote))}` : ''}</span></li>`,
+              `<li>${tag(ctx, it.id)}<span class="t">${mdInline(it.fullTitle || it.title, ctx)}${it.waitingOn.length ? ` · waits on ${it.waitingOn.join(', ')}` : ''}${it.status === 'blocked' ? ` · ${esc(stripMd(it.statusNote))}` : ''}</span></li>`,
           )
           .join('')}</ul>`
       : '<p>Nothing: every open item waits on unfinished work.</p>'
@@ -183,7 +179,7 @@ export function backlog(m, ctx) {
       ? `<ul class="trace-list">${nextUp
           .map(
             (it) =>
-              `<li>${tag(ctx, it.id)}<span class="t">${esc(it.title)}${it.waitingOn.length ? ` · also needs ${it.waitingOn.join(', ')}` : ''}</span></li>`,
+              `<li>${tag(ctx, it.id)}<span class="t">${mdInline(it.fullTitle || it.title, ctx)}${it.waitingOn.length ? ` · also needs ${it.waitingOn.join(', ')}` : ''}</span></li>`,
           )
           .join('')}</ul>`
       : '<p>Nothing is waiting only on the work in progress.</p>'
@@ -244,7 +240,7 @@ export function backlog(m, ctx) {
 
   const body = [
     section('s-0', 'Waiting on you', waiting, { anchors: ['waiting'] }),
-    section('track', 'Milestones', matrix, {
+    section('track', 'Milestones', labelled(matrix), {
       note: 'Each spike and work package by milestone and size, tinted by status. Phases are build milestones, not releases: one launch after P3 (D-19).',
     }),
     section('critical-path', 'Longest remaining chain', chain + next, {

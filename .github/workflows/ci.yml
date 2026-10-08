@@ -29,8 +29,6 @@ jobs:
       - run: pnpm test
       - name: Traceability
         run: python3 docs/check_traceability.py --docs docs --tests .
-      - name: Docs pages (broken cross-links and unknown IDs fail the build)
-        run: pnpm docs:build --check
 
   database:
     runs-on: ubuntu-24.04
@@ -57,6 +55,22 @@ jobs:
           echo "PGPORT=$port" >> "$GITHUB_ENV"
           psql -p "$port" -h localhost -U postgres -Atc 'select version()'
       - run: bash scripts/db-test.sh
+
+  docs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build the docs pages (broken cross-links and unknown IDs fail)
+        run: pnpm docs:build --check
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Layout on phones, tablets, laptops and monitors
+        run: pnpm docs:layout
 
   build:
     runs-on: ubuntu-24.04

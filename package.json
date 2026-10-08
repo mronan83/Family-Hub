@@ -15,6 +15,7 @@
     "format:check": "prettier --check .",
     "trace": "python3 docs/check_traceability.py --docs docs --tests .",
     "docs:build": "node scripts/docs-site/build.mjs",
+    "docs:layout": "node scripts/docs-site/check-layout.mjs",
     "db:test": "bash scripts/db-test.sh",
     "e2e": "playwright test -c e2e"
   },

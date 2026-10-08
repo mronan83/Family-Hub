@@ -51,7 +51,21 @@
       count.textContent = `Showing ${shown} of ${items.length} ${noun}`;
       const any = words.length || Object.values(active).some((s) => s.size);
       reset.hidden = !any;
+      if (badge) {
+        const n = Object.values(active).reduce((sum, s) => sum + s.size, 0);
+        badge.textContent = String(n);
+        badge.hidden = !n;
+      }
     };
+
+    // On small screens the chips fold behind a Filters button.
+    const toggle = $('.facet-toggle', bar);
+    const badge = toggle && $('.n', toggle);
+    toggle?.addEventListener('click', () => {
+      const open = !bar.classList.contains('open');
+      bar.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+    });
 
     bar.addEventListener('click', (e) => {
       const b = e.target.closest('.chip[data-facet]');
@@ -88,7 +102,8 @@
         temp.textContent = b.dataset.filterLabel || value;
       }
       apply();
-      bar.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
+      const top = bar.getBoundingClientRect().top + scrollY - 8;
+      scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
     });
 
     document.addEventListener('keydown', (e) => {
@@ -127,7 +142,12 @@
     const offset = sticky ? bar.offsetHeight + 12 : 16;
     const top = el.getBoundingClientRect().top + scrollY - offset;
     scrollTo({ top, behavior: smooth && !reduced ? 'smooth' : 'auto' });
-    const target = el.matches('details') ? el.querySelector('summary') || el : el;
+    // Flash the part that names the target: a row's summary or a section's heading, not a whole section.
+    const target = el.matches('details')
+      ? el.querySelector('summary') || el
+      : el.matches('section')
+        ? el.querySelector('.sec-head') || el
+        : el;
     target.classList.remove('flash');
     void target.offsetWidth;
     target.classList.add('flash');
@@ -172,6 +192,72 @@
       { rootMargin: '0px 0px -70% 0px' },
     );
     targets.forEach((t) => io.observe(t));
+  }
+
+  // Diagrams -------------------------------------------------------------------
+  // The viewer renders each <pre class="mermaid"> into an SVG. Wide diagrams get a toggle between
+  // fitting the screen and their actual size (scrolling sideways); tiny-when-fitted ones start actual.
+  const natural = (svg) =>
+    parseFloat(svg.style.maxWidth) ||
+    svg.viewBox?.baseVal?.width ||
+    svg.getBoundingClientRect().width;
+  const setSize = (fig, svg, actual) => {
+    fig.classList.toggle('actual', actual);
+    svg.style.width = actual ? natural(svg) + 'px' : '';
+    const btn = fig.querySelector('.diagram-tools button');
+    if (btn) {
+      btn.textContent = actual ? 'Fit to width' : 'Actual size';
+      btn.setAttribute('aria-pressed', String(actual));
+    }
+  };
+  const fitDiagram = (fig) => {
+    const svg = fig.querySelector('svg');
+    if (!svg) return;
+    const width = natural(svg);
+    const room = fig.clientWidth - 32;
+    let tools = fig.querySelector('.diagram-tools');
+    if (width <= room + 8) {
+      tools?.remove();
+      setSize(fig, svg, false);
+      return;
+    }
+    if (!tools) {
+      tools = document.createElement('div');
+      tools.className = 'diagram-tools';
+      const note = document.createElement('span');
+      note.textContent = 'Wider than the screen.';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn';
+      btn.addEventListener('click', () => setSize(fig, svg, !fig.classList.contains('actual')));
+      tools.append(note, btn);
+      fig.prepend(tools);
+      setSize(fig, svg, room / width < 0.55);
+    }
+  };
+  const figures = $$('.diagram');
+  if (figures.length && 'MutationObserver' in window) {
+    const mo = new MutationObserver((list) => {
+      for (const rec of list) {
+        const fig = rec.target.closest?.('.diagram');
+        if (fig && fig.querySelector('svg')) fitDiagram(fig);
+      }
+    });
+    for (const fig of figures) {
+      mo.observe(fig, { childList: true, subtree: true });
+      fitDiagram(fig);
+    }
+    if ('ResizeObserver' in window) {
+      let last = innerWidth;
+      new ResizeObserver(() => {
+        if (Math.abs(innerWidth - last) < 40) return;
+        last = innerWidth;
+        for (const fig of figures) {
+          fig.querySelector('.diagram-tools')?.remove();
+          fitDiagram(fig);
+        }
+      }).observe(document.documentElement);
+    }
   }
 
   // Hover cards for IDs ------------------------------------------------------------
@@ -221,7 +307,9 @@
     pop.hidden = true;
     a?.removeAttribute('aria-describedby');
   };
+  const canHover = matchMedia('(hover: hover)');
   document.addEventListener('mouseover', (e) => {
+    if (!canHover.matches) return;
     const a = e.target.closest('a[data-id]');
     if (!a) return;
     clearTimeout(timer);
@@ -233,7 +321,7 @@
   });
   document.addEventListener('focusin', (e) => {
     const a = e.target.closest?.('a[data-id]');
-    if (a) show(a);
+    if (a && a.matches(':focus-visible')) show(a);
   });
   document.addEventListener('focusout', (e) => {
     const a = e.target.closest?.('a[data-id]');
