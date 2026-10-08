@@ -2,6 +2,8 @@
 -- Recreates only the platform objects hosted Supabase provides, so migrations and RLS behave
 -- the same as in production. Never deployed; migrations must not depend on anything else here.
 
+set client_min_messages = warning;
+
 -- Roles (cluster-wide, so create them only once)
 do $$
 begin

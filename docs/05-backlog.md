@@ -214,7 +214,7 @@ flowchart LR
 ### WP-02 — Tenancy schema and RLS
 **Phase:** P0 · **Size:** M · **Depends on:** WP-01 · **Reqs:** ACC-01, NFR-04, NFR-09, NFR-12
 - Tables from `02` §3.1 (`household`, `household_user`, `member`, `invite`, `device`, `device_pairing`, `household_settings`, `job_run`) with `household_id` everywhere, RLS enabled, and the helpers in `02` §4.5.
-- Migration lint that fails CI if a `public` table lacks RLS or `household_id`.
+- Migration lint that fails CI if a `public` table lacks RLS or `household_id` (a pgTAP test over the catalog after all migrations, `supabase/tests/001_schema_lint.test.sql`).
 - pgTAP: cross-tenant read and write denied for admin and device; revoked device denied immediately.
 - **Done when:** the isolation suite is green and the lint blocks a deliberately broken migration.
 

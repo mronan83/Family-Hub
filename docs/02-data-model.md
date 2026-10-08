@@ -14,7 +14,7 @@
 - Enumerations are `text` with `CHECK` constraints (easier to migrate than Postgres enums).
 - Config entities are archived (`archived_at`), not deleted. Events and ledger rows are never updated or deleted.
 - **Truth vs projection (v0.2):** `chore_completion_event` and `points_ledger` are append-only truth. `chore_occurrence.status`, `member_daily_summary`, `streak_segment` and all `*_progress` tables are **persisted projections** that can be rebuilt from truth at any time (§4.2).
-- RLS enabled on **every** table in `public`; policies per `01-technical-architecture.md` §6.3.
+- RLS enabled on **every** table in `public`; policies per `01-technical-architecture.md` §6.3. `supabase/tests/001_schema_lint.test.sql` fails CI if a public table lacks RLS or a non-null `household_id`, or if `anon` can execute a `private` function.
 - Naming: snake_case, singular table names.
 
 ---
@@ -248,15 +248,15 @@ erDiagram
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `household` | `name`, `timezone` (IANA), `week_start` (0–6), `locale` | `timezone` is authoritative for all business dates. |
+| `household` | `name`, `timezone` (IANA), `week_start` (0–6), `locale` | `timezone` is authoritative for all business dates; an unknown zone is rejected by trigger (`private.check_timezone`). Its `id` is the tenant key, so it is the one table without a `household_id` column. |
 | `household_user` | `household_id`, `user_id → auth.users`, `role` (`owner`/`admin`) | PK `(household_id, user_id)`. Defines admins. |
-| `member` | `display_name`, `role` (`child`/`adult`), `avatar_key`, `color`, `birth_year?`, `user_id?`, `archived_at` | Children have no `user_id`. Supports multiple children. |
+| `member` | `display_name`, `role` (`child`/`adult`), `avatar_key` (one of the 8 brand avatars), `color` (brand token key `member-1`..`member-6`, never hex, D-18), `birth_year?`, `user_id?`, `archived_at` | Children have no `user_id` (enforced by check). Supports multiple children. |
 | `invite` | `email`, `token_hash`, `role`, `expires_at`, `accepted_at` | Token stored hashed. |
 | `device` | `name`, `auth_user_id → auth.users`, `status` (`active`/`revoked`), `last_seen_at`, `app_version`, `board_config jsonb`, `revoked_at` | One auth user per device. |
-| `device_pairing` | `code_hash`, `expires_at`, `consumed_at`, `created_by` | Single-use, 10-minute TTL. |
+| `device_pairing` | `code_hash`, `expires_at`, `consumed_at`, `device_id?`, `created_by` | Single-use; TTL capped at 10 minutes by check. |
 | `household_settings` | `quiet_hours`, `celebration`, `streak_defaults`, `approval_mode` (`off`/`on`; household switch, changeable at any time), `undo_window_seconds`, `board_layout`, `points_settings` (all `jsonb`, zod-validated) | 1:1 with `household`. |
 | `audit_log` | `actor_type`, `actor_id`, `action`, `entity_type`, `entity_id`, `diff jsonb`, `at` | Written by API for admin and device actions. |
-| `job_run` | `job_type`, `target_id`, `started_at`, `finished_at`, `status`, `stats jsonb`, `error` | Feeds sync-health UI and stale indicators. |
+| `job_run` | `job_type`, `target_id`, `started_at`, `finished_at`, `status` (`running`/`ok`/`error`/`skipped`), `stats jsonb`, `error` | One row per job per household. Feeds sync-health UI and stale indicators; written by jobs as service role, read by admins and the board. |
 
 ### 3.2 Chores
 

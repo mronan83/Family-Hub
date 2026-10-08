@@ -346,6 +346,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.4.1 | WP-02: `member.color` stores a brand token key (`member-1`..`member-6`) and `avatar_key` one of the 8 brand avatars; the migration lint is a pgTAP catalog test; `household` is the only table without `household_id`. |
 | 0.4 | Decisions D-19..D-28 from the build kickoff. Single launch after P3; milestones replace family-use gates; launch acceptance checklist (§E). ACC-02 is now magic link + password; Sign in with Apple and passkeys move to new ACC-06 (US-106, WP-38); passkey clause removed from NFR-04. New NFR-14 delivery pipeline (US-911, WP-01). Event-time conflict resolution, today-only board, approval switch, rejected → missed, closures spare today. WP-19 split (payouts and preview move to WP-39); missing dependencies fixed; spikes added to the backlog. Docs renamed: `01-technical-architecture.md`, `05-backlog.md`. Risks R-16..R-18. |
 | 0.3 | Brand: product name FamilyWise; NFR-13 and WP-37 added; brand and style guide `06` and asset kit `brand/` |
 | 0.2.1 | Goal achievement is not sticky: reversals un-achieve goals and reverse payouts (RWD-04); approval workflow is a household on/off switch with per-chore override (CHR-05, now Must); negative balance after a reversal accepted; trust metrics added to insights (RWD-12); nothing is cut from scope |
