@@ -102,6 +102,7 @@ brand/                   brand asset kit
 | OQ-09 | Goals are not sticky: a reversed completion un-achieves the goal and reverses its payout. |
 | OQ-10 | Offline conflicts resolve by event timestamp (D-20). |
 | OQ-11 | Why the school name matters: only to pick the lunch-menu adapter (SPIKE-04). The platform name alone is enough; no school name needs to be stored in the docs. |
+| OQ-12 | The lunch menu is on Nutrislice, which has a public JSON API (SPIKE-04 done, `01` §5.5). The school is chosen in the admin portal. |
 
 ## Open questions
 
@@ -109,4 +110,3 @@ brand/                   brand asset kit
 |---|---|---|
 | OQ-05b | Exact panel model and mounting (touch driver, height)? Hardware is being sourced. | SPIKE-03, WP-14, WP-34 |
 | OQ-06b | Production domain name (after a trademark/domain check against "FamilyWize")? | ACC-06 / WP-38, custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
-| OQ-12 | Which platform publishes the school lunch menu (for example Nutrislice, SchoolCafe, Linq Connect, or a PDF)? | SPIKE-04, WP-27 |

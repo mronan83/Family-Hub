@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.5 · Status: build baseline · Maintained by Claude Code
+> v0.5.1: Supabase publishable/secret API keys (§9.8); SPIKE-04 result: Nutrislice public menu API (§5.5).
 > v0.5: free plans only (D-29): one shared Supabase preview project instead of per-PR branches, keepalive against inactivity pausing, migrations over the session pooler, own nightly backups, email limits (§9.10).
 > v0.4: event-time ordering for completion events (D-20), today-only board with parent-only late credit (D-21), magic link + password sign-in (D-25), `UI` and `CICD` components, delivery pipeline without Docker or staging (§9, D-26).
 > Companions: `00-README.md` · `02-data-model.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-backlog.md` · `06-brand-and-style-guide.md`
@@ -258,6 +259,12 @@ sequenceDiagram
   end
 ```
 
+**SPIKE-04 result (Nutrislice).** The district's menus are on Nutrislice, which serves a public, unauthenticated JSON API:
+
+- `https://{district}.api.nutrislice.com/menu/api/schools/` lists the district's schools with their slugs and active menu types (`breakfast`, `lunch`), so the admin portal can offer a picker instead of asking for identifiers.
+- `https://{district}.api.nutrislice.com/menu/api/weeks/school/{school}/menu-type/{type}/{yyyy}/{mm}/{dd}/` returns one Sunday-to-Saturday week: `days[].menu_items[]`, where section titles (`is_section_title`) group entrées and sides, `food.name` is the item, and `is_holiday` marks closures. A week is about 250 KB, mostly nutrition data the adapter discards; a 28-day refresh is four requests.
+- `menu_source.config` for this adapter is `{district, school, menu_type}`. The household's actual identifiers are entered in the admin portal and are kept out of the repo and fixtures (NFR-05).
+
 ### 5.6 Background jobs
 
 | Job | Cadence | Target | Notes |
@@ -482,8 +489,8 @@ No secret is committed or pasted into chat. Database URLs are the **session pool
 | `PRODUCTION_URL` = `https://family-wise-topaz.vercel.app` | variable | GitHub repository | smoke check |
 | `DEPLOY_ENABLED` = `true` | variable | GitHub repository | turns on production deploys |
 | `BACKUP_PASSPHRASE` | secret | GitHub, environment `production` | nightly backup encryption (WP-24) |
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | env | Vercel: Production → production project; Preview → preview project | app |
-| `SUPABASE_SERVICE_ROLE_KEY` | env, server only | Vercel: Production and Preview, per project | jobs, derived tables |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (`sb_publishable_…`) | env | Vercel: Production → production project; Preview → preview project | app (browser-safe; RLS applies) |
+| `SUPABASE_SECRET_KEY` (`sb_secret_…`, marked Sensitive) | env, server only | Vercel: Production → production project; Preview → preview project | jobs, derived tables (bypasses RLS; never `NEXT_PUBLIC_`) |
 | `JOB_SIGNING_SECRET` | env | Vercel and Supabase Vault | `pg_net` → job endpoints |
 
 ### 9.9 Cost ceiling (NFR-08)

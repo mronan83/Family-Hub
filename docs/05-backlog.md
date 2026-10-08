@@ -17,7 +17,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | SPIKE-01 | Device sessions + Realtime under RLS | P0 | S | WP-02 | Queued |
 | SPIKE-05 | `pg_cron`/`pg_net` → Vercel job limits | P0 | S | WP-01 | Queued (needs Supabase + Vercel secrets, `01` §9.8) |
 | SPIKE-02 | iCloud ICS fidelity; CalDAV with a secondary Apple ID | P1d | S | — | Blocked: needs a published iCloud calendar link |
-| SPIKE-04 | School menu platform and feed | P2 | S | — | Blocked: needs the menu platform name (OQ-12) |
+| SPIKE-04 | School menu platform and feed | P2 | S | — | Done: Nutrislice public JSON API (`01` §5.5) |
 | SPIKE-03 | Pi 5 + 32" 4K panel: touch, kiosk flags, power, animation budget | P1a | S | — | Blocked: hardware being sourced (OQ-05b) |
 | WP-01 | Repo, CI/CD pipeline, environments | P0 | M | — | In progress (`claude/p0-foundation`) |
 | WP-37 | Brand system and design tokens | P0 | M | WP-01 | Queued |
@@ -47,7 +47,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Queued |
 | WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Queued |
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Queued |
-| WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Blocked: SPIKE-04 |
+| WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Queued |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Queued |
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Queued |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Queued |
@@ -381,8 +381,7 @@ flowchart LR
 
 ### WP-27 — School menu adapters and import
 **Phase:** P2 · **Size:** L · **Depends on:** WP-21, WP-07 · **Reqs:** MENU-01, MENU-02, MENU-03, MENU-04, MENU-05, MEAL-05
-- SPIKE-04 first.
-- `menu_source`, `school_menu_day`; adapter interface with CSV and manual first, then the platform the admin selects; overrides never overwritten; 28-day daily refresh; failure surfacing; menu shown on buy days.
+- `menu_source`, `school_menu_day`; adapter interface with CSV and manual, plus the Nutrislice adapter (SPIKE-04, `01` §5.5) with a district → school → menu-type picker; overrides never overwritten; 28-day daily refresh; failure surfacing; menu shown on buy days.
 - **Done when:** four weeks load via CSV, and a failing adapter leaves cached menus and a visible warning.
 
 ### WP-28 — Board meals panel

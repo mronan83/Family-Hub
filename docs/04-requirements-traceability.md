@@ -292,7 +292,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | R-02 | Rule engine complexity creep | Med | Med | Four rule types only; goal templates; keep engine pure and property-tested |
 | R-03 | Device session longevity / Realtime under RLS unproven | Med | High | SPIKE-01 before building on it |
 | R-04 | iCloud published-calendar behavior changes or lacks fidelity | Med | Med | SPIKE-02; CalDAV fallback; last-good retention |
-| R-05 | School menu feed unavailable or unofficial | High | Med | Adapter + CSV/manual; SPIKE-04 on the actual district |
+| R-05 | School menu feed unavailable or unofficial | Med | Med | The district's Nutrislice feed is public but undocumented, so it could change: adapter isolated behind the interface, last good menu cached, CSV/manual fallback, failures surfaced (MENU-04) |
 | R-06 | Supabase Free project paused for inactivity, or vendor outage | Med | High | Keepalive heartbeat four times a day to both projects; failure email; restore runbook; offline cache keeps the board usable |
 | R-07 | Pi hardware (SD corruption, touch driver, panel latency) | Med | High | NVMe/SSD boot; SPIKE-03 on the real panel |
 | R-08 | Maintenance burden on a single builder | High | High | Automated PR gates and ordered deploys; no feature that needs weekly care; health page and alerts |
@@ -317,7 +317,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | SPIKE-01 | Do device-as-Supabase-Auth-user sessions stay valid for months on a kiosk, and do Realtime + RLS behave with the `device_household_id()` check? | DEV-01, DEV-02, DEV-05 |
 | SPIKE-02 | Does a published iCloud ICS link give correct recurrence/DST/all-day results through `ical.js`? Does a secondary read-only Apple ID work with CalDAV? | CAL-01, CAL-07, CAL-08 |
 | SPIKE-03 | On the real 4K 32" panel and Pi 5: touch latency, calibration, Chromium kiosk flags, screen power control, and **4K animation frame rate** (celebrations, scrolling) at 1920×1080 logical / DPR 2 versus a 1080p fallback | DEV-04, DEV-07, NFR-02, NFR-03 |
-| SPIKE-04 | Which platform does the school's menu use, and is there a stable machine-readable feed? | MENU-02 |
+| SPIKE-04 | Which platform does the school's menu use, and is there a stable machine-readable feed? **Answered:** Nutrislice, public JSON API (`01` §5.5). | MENU-02 |
 | SPIKE-05 | Do `pg_cron`/`pg_net` → Vercel job calls fit within function time limits for the sync workload? | CAL-02, CHR-03 |
 
 ### Assumptions
@@ -350,6 +350,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.5.1 | SPIKE-04 done: Nutrislice public JSON API; WP-27 unblocked. Supabase publishable and secret API keys replace anon and service-role key names. |
 | 0.5 | Free plans only (D-29): NFR-08 and NFR-10 reworded; NFR-14 uses a shared preview database rebuilt per e2e run instead of per-PR branches; risks R-06 and R-16 updated, R-19..R-21 added; A-09. |
 | 0.4.1 | WP-02: `member.color` stores a brand token key (`member-1`..`member-6`) and `avatar_key` one of the 8 brand avatars; the migration lint is a pgTAP catalog test; `household` is the only table without `household_id`. |
 | 0.4 | Decisions D-19..D-28 from the build kickoff. Single launch after P3; milestones replace family-use gates; launch acceptance checklist (§E). ACC-02 is now magic link + password; Sign in with Apple and passkeys move to new ACC-06 (US-106, WP-38); passkey clause removed from NFR-04. New NFR-14 delivery pipeline (US-911, WP-01). Event-time conflict resolution, today-only board, approval switch, rejected → missed, closures spare today. WP-19 split (payouts and preview move to WP-39); missing dependencies fixed; spikes added to the backlog. Docs renamed: `01-technical-architecture.md`, `05-backlog.md`. Risks R-16..R-18. |
