@@ -1,0 +1,268 @@
+# 06 — FamilyWise Brand and Style Guide
+
+> Version 1.0 · Status: draft for build
+> Companions: `01-target-architecture.md` · `02-data-model.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-work-breakdown.md`
+> Assets live in `brand/`. Open `brand/specimen.html` to see everything rendered. Implementation lands in WP-37.
+
+---
+
+## 1. Brand essence
+
+**FamilyWise** is the calm center of a busy house: the place where a child sees what's next, gets credit for it, and a parent can trust the record.
+
+| | |
+|---|---|
+| **Promise** | Everyone knows what's next, and effort gets noticed. |
+| **Personality** | Warm, capable, encouraging, fair. A kind coach, not a game show and not a nag. |
+| **Principles** | **1. Kid-first, parent-trusted.** The board is for a child. The admin is for adults. Same brand, two registers. **2. Honest, never shaming.** Trust and accountability are the point, so misses and reversals are stated plainly and kindly. **3. Calm by default, joyful on purpose.** Quiet surfaces; celebration is rare and earned. **4. Legible from across the room.** Large, simple, high contrast. |
+| **Name** | One word, capital F and W: **FamilyWise**. Never "Family Wise", "Familywise", or "FW" in user-facing text. "Wise" refers to being smart with time and effort, not a mascot. |
+
+**Name clearance (action for you).** I could not verify availability. A similarly named product, FamilyWize (a prescription discount card), exists in an unrelated category. For a private household app this is low risk, but run a USPTO and domain check before you register a domain or publish an app-store listing.
+
+---
+
+## 2. Voice and tone
+
+**Board (to the child):** short, positive, concrete, present tense. Second person. Never sarcasm, never guilt.
+**Admin (to parents):** clear, brief, neutral. Say what happened and what the next step is.
+
+| Situation | Board | Admin |
+|---|---|---|
+| Chore done | "Done! +5" | "Sam checked off *Make bed* at 7:42 am." |
+| Waiting for approval | "Waiting for a parent" | "3 check-offs need review." |
+| Rejected | "Try again" | "You sent *Dishes* back. Sam sees it as open." |
+| Missed day | "Missed" (history only) | "Missed 2 of 6 on Tue." |
+| Reversal took points | "−5. A parent changed this one." | "Reversed *Make bed*. −5 points." |
+| Balance below zero | "−5 to earn back" | "Balance is −5 after a reversal." |
+| Goal un-achieved | "Almost there again: 4 of 5" | "*Movie night* dropped from achieved to 80% because *Dishes* was reversed." |
+| Offline | "Offline: your check-offs are saved" | "Board offline since 6:10 pm. 3 changes queued." |
+| Stale data | "Updated 12 minutes ago" | "Calendar sync failed at 5:55 pm. Showing last good data." |
+| Empty chores | "All done today. Nice work!" | "No chores yet. Add the first one." |
+
+**Rules**
+- No red, no exclamation on bad news, no "failed", "wrong", "lazy", "bad".
+- Use "bad streak" only in parent insights. On the board it is "a rough patch" or just a plain count.
+- Points are "points" in the app. Arcade-style tickets are an *icon style* for the shop, not different currency.
+- Sentence case everywhere. No ALL CAPS except tiny labels in admin tables.
+- Numbers: digits always ("5 chores", "120 points"). Dates: "Tue, Oct 7". Times: "7:42 am".
+- Contractions are fine. Emoji are not used in UI copy; icons do that job.
+
+---
+
+## 3. Logo
+
+### 3.1 Construction
+The mark is a rounded square (the app tile) holding a **roof line** (home and family) over a **check** (done). The check is the only warm element, so the eye lands on completion. The wordmark is **Family** in Nunito 600 followed by **Wise** in Nunito 800, which makes "Wise" the emphasis.
+
+### 3.2 Files (`brand/logo/`)
+
+| File | Use |
+|---|---|
+| `familywise-horizontal-color.svg` | Default lockup on light backgrounds (admin header, emails, docs) |
+| `familywise-horizontal-reversed.svg` | On Evening (dark) backgrounds |
+| `familywise-horizontal-mono-light.svg` | White on brand teal or photos |
+| `familywise-horizontal-mono-dark.svg` | One-color print, fax-style, stamps |
+| `familywise-stacked-*.svg` | Square spaces: login, pairing screen, splash |
+| `familywise-wordmark-*.svg` | Text-only, when the mark already appears nearby |
+| `familywise-mark*.svg` | App tile, avatars, favicons, small spaces |
+| `familywise-glyph-on-teal.svg`, `-glyph-ink.svg` | The roof and check without the tile, for use on teal or as a watermark |
+| `*.png` | 160 px and 360 px renders for slide decks and documents |
+
+All text is outlined, so the logo renders correctly without the font installed.
+
+### 3.3 Rules
+- **Clear space:** keep a margin equal to the height of the check (about 1/4 of the tile) on all sides.
+- **Minimum size:** mark 24 px; horizontal lockup 112 px wide; stacked lockup 72 px wide. Below that, use the mark alone.
+- **Backgrounds:** color lockup on Paper, white, or light tints only. Reversed lockup on Evening or ink. Mono-light on brand teal.
+- **Don't:** recolor outside the files provided, stretch, rotate, add shadows or gradients, outline, place on busy photos, replace the check with another symbol, or set the name in another typeface.
+
+---
+
+## 4. Color
+
+Defined once in `brand/familywise-tokens.css`. Use the **role** tokens (`--primary`, `--text`, `--surface`) in components, never raw hex.
+
+### 4.1 Palette
+
+| Name | Hex | Role | Contrast |
+|---|---|---|---|
+| **Teal 600** | `#0F766E` | Primary actions, brand | White on it **5.47:1** |
+| Teal 700 | `#115E59` | Primary text on light | On Paper **7.10:1** |
+| Teal 300 | `#5EEAD4` | Primary in Evening theme | On Evening bg **11.30:1** |
+| Teal 100 | `#CCFBF1` | Primary tint (done, selected) | Teal 700 on it **6.73:1** |
+| **Sun 400** | `#FBBF24` | Points, rewards, celebration | Ink on it **8.79:1** |
+| Sun 800 | `#92400E` | Reward text on tint | On Sun 100 **6.37:1** |
+| Sun 100 | `#FEF3C7` | Reward tint, "waiting" | |
+| Leaf 600 | `#15803D` | Success (admin) | White on it **5.02:1** |
+| **Plum 600** | `#7E4F8F` | Missed, reversed: calm, never alarm red | White on it **6.17:1** |
+| Plum 700 / 100 | `#5B3A68` / `#F1E8F5` | Missed text / tint | **7.82:1** |
+| Sky 600 | `#0369A1` | Info, "try again", focus ring | White on it **5.93:1** |
+| **Paper** | `#FAF7F2` | App background | Ink on it **13.74:1** |
+| Surface | `#FFFFFF` | Cards | Ink on it **14.68:1** |
+| **Ink** | `#1F2937` | Text | |
+| Ink soft | `#4B5563` | Secondary text | On Paper **7.07:1** |
+| Line | `#E7E1D6` | Borders and dividers | |
+
+**Evening theme** (board switches automatically by time of day and ambient setting; admin follows the OS): background `#14201F`, surface `#1D2C2B`, text `#F3EFE8` (14.59:1), soft text `#B7C2BE` (9.13:1), primary `#5EEAD4`, reward `#FCD34D` (10.06:1 on surface). All pairs verified at AA or better.
+
+### 4.2 Usage
+- **Ratio:** about 80% Paper/Surface and Ink, 15% Teal, 5% Sun. Sun is a reward signal; if everything is gold, nothing is.
+- **Never use red** for a child-visible state. A miss is Plum, a warning is Sun, an error in admin forms is Plum with an icon and text.
+- **Never rely on color alone.** Every state pairs color with an icon and a label (see 7.1).
+- **Family member colors** (`--member-1..6`, all ≥ 5.18:1 with white) are assigned per person. Always pair with the member's avatar or initial; never color-code alone.
+- **Burn-in:** the board avoids large static bright fills. Use tints for large areas; reserve saturated teal and sun for small controls and chips.
+
+---
+
+## 5. Typography
+
+| Role | Family | Weights | Where |
+|---|---|---|---|
+| Display and UI | **Nunito** | 600, 700, 800 | Board everything; admin headings and buttons |
+| Body | **Inter** | 400, 500, 600, 700 | Admin body, tables, forms |
+
+Both are open source (SIL OFL), **self-hosted** in `brand/fonts/` and loaded by `brand/fonts.css` so the kiosk works offline. Precache them in the service worker. Do not use Google Fonts at runtime.
+
+### 5.1 Type scales (logical px)
+
+| Token | Board (1920×1080 @ DPR 2) | Admin (phone/laptop) | Weight |
+|---|---|---|---|
+| `--t-hero` | 96 | 40 | Nunito 800 |
+| `--t-title` | 56 | 28 | Nunito 800 |
+| `--t-heading` | 40 | 20 | Nunito 700 |
+| `--t-body` | **32** | 16 | Nunito 600 / Inter 400 |
+| `--t-small` | 28 (minimum) | 14 | Nunito 600 / Inter 500 |
+
+Why the board is large: one logical pixel is about 0.37 mm on the 32" 4K panel, so 32 px gives a cap height near 8 mm, comfortable at 2 m. **No child-facing text below 28 px.** Line height 1.25 for headings, 1.4 for body. Numbers in points chips use Nunito 800 with tabular figures.
+
+---
+
+## 6. Layout, shape, motion
+
+**Grid and spacing.** 8 px base unit (`--s-1..12`). Board safe margin 48 px; no essential control within 24 px of the screen edge. Admin uses a 4-column phone, 12-column desktop grid, max content width 1180 px.
+
+**Shape.** Cards `--r-lg` 24 px, controls `--r-md` 16 px, chips and primary buttons `--r-pill`. Borders 2 px on the board, 1 px in admin. Shadows are soft and used only to separate layers (`--shadow-1`, `--shadow-2`).
+
+**Touch (board).** Minimum target 56 logical px (about 21 mm); primary actions 96 px tall. 16 px minimum gap between targets. Debounce taps; destructive actions need a confirm step. No hover-only behavior anywhere on the board.
+
+**Motion.** Fast and small: 120 ms feedback, 220 ms transitions, 1.4 s celebrations. Animate `transform` and `opacity` only (the 4K Pi budget from SPIKE-03). Honor `prefers-reduced-motion` and the in-app setting: replace motion with a static state change plus a sound or icon swap. A celebration never blocks input and never plays more than once per achievement.
+
+**Celebration ladder**
+1. *Chore done:* check pops, tile tint fades in, points count up (about 600 ms).
+2. *Streak milestone:* flame glows, short confetti burst in Sun and Teal (about 1.4 s).
+3. *Goal achieved:* full-screen moment, once per achievement, dismissible by touch.
+4. *Reward approved:* the prize card flips to a "Yours!" state.
+
+---
+
+## 7. Components
+
+### 7.1 Chore tile states (icon + label + color; all seven statuses)
+
+| Status | Icon | Board label | Style |
+|---|---|---|---|
+| `scheduled` | `circle` | To do | Surface, line border |
+| `completed` | `check-circle` | Done! | Teal tint, teal border |
+| `pending_approval` | `clock` | Waiting for a parent | Sun tint, sun border |
+| `approved` | `shield-check` | Approved | Teal tint, teal border |
+| `rejected` | `retry` | Try again | Surface, sky border |
+| `skipped` | `moon` | Skipped today | Dashed border, no fill |
+| `missed` | `minus-circle` | Missed | Plum tint, plum border |
+
+`missed` appears only on past days (history, calendar, insights), never on today's list.
+
+### 7.2 Other board components
+- **Points chip:** Sun pill with `star`, Nunito 800, minimum height 56. Negative balance: Plum pill, "−5 to earn back".
+- **Streak flame:** `flame` plus count; one flame size per milestone tier, no animation unless a milestone was just reached.
+- **Goal meter:** 28 px tall pill, teal-to-sun fill, percentage label always visible, never color-only.
+- **Shop card:** 280 px wide, image on tint, title, cost chip with `ticket`, one "Ask" button. Unaffordable items stay visible with "Need 40 more".
+- **Banners:** `hourglass` for stale, `wifi-off` for offline. Sun tint and Plum tint respectively; never red; never cover chores.
+- **Buttons:** primary (teal, white text), secondary (teal tint), ghost (line border). Minimum height 56, label Nunito 800, always icon + word on the board.
+
+### 7.3 Admin conventions
+- Top app bar with the horizontal logo (112 px) and household name; bottom tab bar on phones (Today, Chores, Rewards, Calendar, More).
+- Approval queue is a badge on Chores, not a modal.
+- Insights uses the trust panel and heatmap; heatmap cells use Teal (good), Plum (missed), empty (neutral), plus a text legend.
+- Destructive actions: ghost button, confirm dialog stating the consequence ("This reverses 4 chores and 20 points").
+
+---
+
+## 8. Iconography
+
+**Set:** 85 custom icons in `brand/icons/` (`ui/` and `chores/`), drawn on a 24 px grid, **2 px stroke, round caps and joins**, `currentColor`, no fills except tiny dots. They inherit text color and size with the font. See `icons/index.json` for names, categories, and search keywords, and `icons/sprite.svg` for the sprite (`<use href="#fw-check"/>`).
+
+| Category | Icons |
+|---|---|
+| Status | circle, check, check-circle, clock, shield-check, retry, moon, minus-circle, x-circle, info, warning, sparkles |
+| Navigation | home, sun, list-check, calendar, view-day, view-week, view-month, utensils, gift, target, chart, settings, board, person, family, logout, menu |
+| Rewards | star (points), ticket (shop cost), flame (streak), trophy (achieved), bookmark (wishlist) |
+| School | backpack, buy, bring |
+| Meals | breakfast, snack, lunch, dinner |
+| System | plus, minus, close, edit, trash, undo, copy, select-multiple, chevrons, more, search, image, link, download, heatmap, lock, bell, sync, wifi, wifi-off, hourglass |
+| Weather | cloud, rain (sun is shared) |
+| Chores (picker) | bed, dishes, table, bin, teeth, laundry, pet, plant, toys, shoes, broom, bath, read, homework, outdoors, music, exercise, pack |
+
+**Sizes (logical px):** board 56 (tiles), 36 (chips and rows), 28 (inline); admin 24 and 20. Touch targets are never the icon size; pad to 56 (board) or 44 (admin).
+**Rules:** one icon per meaning; don't mix in other icon sets; don't fill the outline icons; for new icons keep the grid, stroke, and 2 px minimum gaps.
+**Chore icon picker:** show the 18 chore icons first; allow search by keyword; store the icon name in `chore.icon`.
+
+### 8.1 Avatars
+Eight friendly characters (`brand/avatars/`): owl, bear, fox, cat, bunny, dog, frog, panda, in 64 px circles on soft tints. Store the file stem in `member.avatar_key` (for example `owl`). Adults can use initials on their member color. The owl is the default and nods to the "Wise" in the name; it is **not** a mascot and does not appear in UI chrome.
+
+---
+
+## 9. App identity and surfaces
+
+| Asset | File | Notes |
+|---|---|---|
+| Favicon | `app-icons/favicon.svg`, `favicon.ico`, `favicon-16/32/48.png` | SVG adapts to dark mode |
+| Apple touch | `app-icons/apple-touch-icon.png` (180) | Full-bleed teal; iOS rounds the corners |
+| PWA icons | `icon-192.png`, `icon-512.png`, `icon-maskable-192.png`, `icon-maskable-512.png` | Maskable has a safe zone for circle and squircle crops |
+| Manifest | `app-icons/manifest.webmanifest` | `fullscreen`, landscape, `start_url: /board`, theme teal, background Evening |
+| Head tags | `app-icons/head-snippet.html` | Copy into the root layout |
+| Board splash | `app-icons/board-splash-3840x2160.png` | Shown while the board loads; Evening background, stacked reversed logo |
+
+**Surfaces**
+- **Board boot and pairing:** Evening background, stacked reversed logo, one short line of text ("Getting your day ready").
+- **Admin sign-in:** Paper background, stacked color logo, "Sign in with Apple" first.
+- **Emails:** horizontal color logo, 560 px wide layout, Inter 16 px, one teal button.
+- **Browser tab:** "FamilyWise" on admin pages; "FamilyWise Board" on `/board`.
+
+---
+
+## 10. Accessibility (ties to NFR-11, NFR-03, BRD-03)
+
+- Text and meaningful graphics meet WCAG AA (4.5:1 text, 3:1 large text and icons). All token pairs in 4.1 are verified.
+- Color is never the only cue; every state has an icon and a word.
+- Focus ring: 3 px sky (`--focus`) with 2 px offset, always visible for keyboard and switch access in admin.
+- Reduced motion is honored globally (tokens file) and by the in-app setting.
+- Touch targets and spacing per section 6.
+- Screen reader names for icon-only controls come from `icons/index.json` names; icons inside labeled buttons are `aria-hidden`.
+
+---
+
+## 11. Implementation notes (for Claude Code)
+
+- **Where it goes:** `packages/ui` holds tokens, `Icon`, `Avatar`, `ChoreTile`, `PointsChip`, `GoalMeter`, `Banner`, `Button`. `apps/web/public/icons` holds the PNG/SVG app icons; `apps/web/public/manifest.webmanifest` the manifest.
+- **Tokens:** import `brand/familywise-tokens.css` once at the root. Map Tailwind (or CSS modules) to the role tokens; do not hardcode hex in components. A lint rule or a test greps for raw hex outside the tokens file.
+- **Icons:** generate a typed `IconName` union from `icons/index.json` and render with `<Icon name="check-circle" size={36} />` using the sprite or inline SVG. Add new icons by adding an SVG file and rebuilding the index.
+- **Theme switching:** `data-theme="evening"` on `<html>`; the board switches by household-local time and a manual override; admin uses `prefers-color-scheme`.
+- **Fonts:** load `brand/fonts.css`; add the eight `.woff2` files to the service worker precache.
+- **Tests:** a Playwright visual snapshot of the chore tile in all seven states in both themes; an axe contrast check on the board and admin shells; a unit test that every `OccurrenceStatus` has a tile mapping.
+- **Source of truth:** if this guide and `familywise-tokens.css` disagree, the tokens file wins; fix the guide.
+
+---
+
+## 12. Asset index
+
+```
+brand/
+├── familywise-tokens.css        design tokens (light + Evening)
+├── fonts.css, fonts/            self-hosted Nunito and Inter
+├── specimen.html                everything rendered (open in a browser)
+├── logo/                        lockups, wordmarks, marks, glyphs (SVG + PNG)
+├── app-icons/                   favicon, touch icon, PWA icons, manifest, splash
+├── icons/ui, icons/chores       85 SVG icons
+├── icons/sprite.svg, index.json sprite and searchable index
+└── avatars/                     8 member avatars
+```

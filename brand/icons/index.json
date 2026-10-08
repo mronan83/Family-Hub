@@ -1,0 +1,764 @@
+[
+ {
+  "name": "circle",
+  "category": "status",
+  "keywords": [
+   "open",
+   "scheduled",
+   "todo"
+  ],
+  "file": "icons/ui/circle.svg"
+ },
+ {
+  "name": "check",
+  "category": "status",
+  "keywords": [
+   "done",
+   "tick"
+  ],
+  "file": "icons/ui/check.svg"
+ },
+ {
+  "name": "check-circle",
+  "category": "status",
+  "keywords": [
+   "completed",
+   "done"
+  ],
+  "file": "icons/ui/check-circle.svg"
+ },
+ {
+  "name": "clock",
+  "category": "status",
+  "keywords": [
+   "pending",
+   "waiting",
+   "approval"
+  ],
+  "file": "icons/ui/clock.svg"
+ },
+ {
+  "name": "shield-check",
+  "category": "status",
+  "keywords": [
+   "approved",
+   "verified"
+  ],
+  "file": "icons/ui/shield-check.svg"
+ },
+ {
+  "name": "retry",
+  "category": "status",
+  "keywords": [
+   "try",
+   "again",
+   "rejected",
+   "redo"
+  ],
+  "file": "icons/ui/retry.svg"
+ },
+ {
+  "name": "moon",
+  "category": "status",
+  "keywords": [
+   "skipped",
+   "quiet",
+   "hours",
+   "sleep"
+  ],
+  "file": "icons/ui/moon.svg"
+ },
+ {
+  "name": "minus-circle",
+  "category": "status",
+  "keywords": [
+   "missed"
+  ],
+  "file": "icons/ui/minus-circle.svg"
+ },
+ {
+  "name": "x-circle",
+  "category": "status",
+  "keywords": [
+   "reject",
+   "cancel"
+  ],
+  "file": "icons/ui/x-circle.svg"
+ },
+ {
+  "name": "info",
+  "category": "status",
+  "keywords": [
+   "information"
+  ],
+  "file": "icons/ui/info.svg"
+ },
+ {
+  "name": "warning",
+  "category": "status",
+  "keywords": [
+   "alert",
+   "caution"
+  ],
+  "file": "icons/ui/warning.svg"
+ },
+ {
+  "name": "sparkles",
+  "category": "status",
+  "keywords": [
+   "celebrate",
+   "magic"
+  ],
+  "file": "icons/ui/sparkles.svg"
+ },
+ {
+  "name": "home",
+  "category": "nav",
+  "keywords": [
+   "today",
+   "home"
+  ],
+  "file": "icons/ui/home.svg"
+ },
+ {
+  "name": "sun",
+  "category": "nav",
+  "keywords": [
+   "today",
+   "day",
+   "weather",
+   "sunny"
+  ],
+  "file": "icons/ui/sun.svg"
+ },
+ {
+  "name": "list-check",
+  "category": "nav",
+  "keywords": [
+   "chores",
+   "tasks"
+  ],
+  "file": "icons/ui/list-check.svg"
+ },
+ {
+  "name": "calendar",
+  "category": "nav",
+  "keywords": [
+   "calendar",
+   "events"
+  ],
+  "file": "icons/ui/calendar.svg"
+ },
+ {
+  "name": "view-day",
+  "category": "nav",
+  "keywords": [
+   "day",
+   "view"
+  ],
+  "file": "icons/ui/view-day.svg"
+ },
+ {
+  "name": "view-week",
+  "category": "nav",
+  "keywords": [
+   "week",
+   "view"
+  ],
+  "file": "icons/ui/view-week.svg"
+ },
+ {
+  "name": "view-month",
+  "category": "nav",
+  "keywords": [
+   "month",
+   "view"
+  ],
+  "file": "icons/ui/view-month.svg"
+ },
+ {
+  "name": "utensils",
+  "category": "nav",
+  "keywords": [
+   "meals",
+   "food"
+  ],
+  "file": "icons/ui/utensils.svg"
+ },
+ {
+  "name": "gift",
+  "category": "nav",
+  "keywords": [
+   "shop",
+   "rewards",
+   "prizes"
+  ],
+  "file": "icons/ui/gift.svg"
+ },
+ {
+  "name": "target",
+  "category": "nav",
+  "keywords": [
+   "goals"
+  ],
+  "file": "icons/ui/target.svg"
+ },
+ {
+  "name": "chart",
+  "category": "nav",
+  "keywords": [
+   "insights",
+   "reports"
+  ],
+  "file": "icons/ui/chart.svg"
+ },
+ {
+  "name": "settings",
+  "category": "nav",
+  "keywords": [
+   "settings",
+   "preferences"
+  ],
+  "file": "icons/ui/settings.svg"
+ },
+ {
+  "name": "board",
+  "category": "nav",
+  "keywords": [
+   "device",
+   "display",
+   "monitor"
+  ],
+  "file": "icons/ui/board.svg"
+ },
+ {
+  "name": "person",
+  "category": "nav",
+  "keywords": [
+   "member",
+   "profile"
+  ],
+  "file": "icons/ui/person.svg"
+ },
+ {
+  "name": "family",
+  "category": "nav",
+  "keywords": [
+   "members",
+   "household"
+  ],
+  "file": "icons/ui/family.svg"
+ },
+ {
+  "name": "logout",
+  "category": "nav",
+  "keywords": [
+   "sign",
+   "out"
+  ],
+  "file": "icons/ui/logout.svg"
+ },
+ {
+  "name": "menu",
+  "category": "nav",
+  "keywords": [
+   "list",
+   "menu",
+   "hamburger"
+  ],
+  "file": "icons/ui/menu.svg"
+ },
+ {
+  "name": "star",
+  "category": "rewards",
+  "keywords": [
+   "points"
+  ],
+  "file": "icons/ui/star.svg"
+ },
+ {
+  "name": "ticket",
+  "category": "rewards",
+  "keywords": [
+   "tickets",
+   "arcade"
+  ],
+  "file": "icons/ui/ticket.svg"
+ },
+ {
+  "name": "flame",
+  "category": "rewards",
+  "keywords": [
+   "streak"
+  ],
+  "file": "icons/ui/flame.svg"
+ },
+ {
+  "name": "trophy",
+  "category": "rewards",
+  "keywords": [
+   "achieved",
+   "win"
+  ],
+  "file": "icons/ui/trophy.svg"
+ },
+ {
+  "name": "bookmark",
+  "category": "rewards",
+  "keywords": [
+   "wishlist",
+   "saving"
+  ],
+  "file": "icons/ui/bookmark.svg"
+ },
+ {
+  "name": "backpack",
+  "category": "school",
+  "keywords": [
+   "school"
+  ],
+  "file": "icons/ui/backpack.svg"
+ },
+ {
+  "name": "buy",
+  "category": "school",
+  "keywords": [
+   "buy",
+   "lunch",
+   "cart"
+  ],
+  "file": "icons/ui/buy.svg"
+ },
+ {
+  "name": "bring",
+  "category": "school",
+  "keywords": [
+   "bring",
+   "lunch",
+   "lunchbox"
+  ],
+  "file": "icons/ui/bring.svg"
+ },
+ {
+  "name": "breakfast",
+  "category": "meals",
+  "keywords": [
+   "sunrise",
+   "morning"
+  ],
+  "file": "icons/ui/breakfast.svg"
+ },
+ {
+  "name": "snack",
+  "category": "meals",
+  "keywords": [
+   "apple",
+   "fruit"
+  ],
+  "file": "icons/ui/snack.svg"
+ },
+ {
+  "name": "lunch",
+  "category": "meals",
+  "keywords": [
+   "sandwich"
+  ],
+  "file": "icons/ui/lunch.svg"
+ },
+ {
+  "name": "dinner",
+  "category": "meals",
+  "keywords": [
+   "bowl",
+   "steam"
+  ],
+  "file": "icons/ui/dinner.svg"
+ },
+ {
+  "name": "plus",
+  "category": "system",
+  "keywords": [
+   "add"
+  ],
+  "file": "icons/ui/plus.svg"
+ },
+ {
+  "name": "minus",
+  "category": "system",
+  "keywords": [
+   "remove"
+  ],
+  "file": "icons/ui/minus.svg"
+ },
+ {
+  "name": "close",
+  "category": "system",
+  "keywords": [
+   "dismiss"
+  ],
+  "file": "icons/ui/close.svg"
+ },
+ {
+  "name": "edit",
+  "category": "system",
+  "keywords": [
+   "pencil"
+  ],
+  "file": "icons/ui/edit.svg"
+ },
+ {
+  "name": "trash",
+  "category": "system",
+  "keywords": [
+   "delete"
+  ],
+  "file": "icons/ui/trash.svg"
+ },
+ {
+  "name": "undo",
+  "category": "system",
+  "keywords": [
+   "undo"
+  ],
+  "file": "icons/ui/undo.svg"
+ },
+ {
+  "name": "copy",
+  "category": "system",
+  "keywords": [
+   "duplicate"
+  ],
+  "file": "icons/ui/copy.svg"
+ },
+ {
+  "name": "select-multiple",
+  "category": "system",
+  "keywords": [
+   "bulk",
+   "select"
+  ],
+  "file": "icons/ui/select-multiple.svg"
+ },
+ {
+  "name": "chevron-left",
+  "category": "system",
+  "keywords": [
+   "back"
+  ],
+  "file": "icons/ui/chevron-left.svg"
+ },
+ {
+  "name": "chevron-right",
+  "category": "system",
+  "keywords": [
+   "next"
+  ],
+  "file": "icons/ui/chevron-right.svg"
+ },
+ {
+  "name": "chevron-up",
+  "category": "system",
+  "keywords": [
+   "up"
+  ],
+  "file": "icons/ui/chevron-up.svg"
+ },
+ {
+  "name": "chevron-down",
+  "category": "system",
+  "keywords": [
+   "down"
+  ],
+  "file": "icons/ui/chevron-down.svg"
+ },
+ {
+  "name": "more",
+  "category": "system",
+  "keywords": [
+   "overflow"
+  ],
+  "file": "icons/ui/more.svg"
+ },
+ {
+  "name": "search",
+  "category": "system",
+  "keywords": [
+   "find"
+  ],
+  "file": "icons/ui/search.svg"
+ },
+ {
+  "name": "image",
+  "category": "system",
+  "keywords": [
+   "photo",
+   "picture"
+  ],
+  "file": "icons/ui/image.svg"
+ },
+ {
+  "name": "link",
+  "category": "system",
+  "keywords": [
+   "ics",
+   "url"
+  ],
+  "file": "icons/ui/link.svg"
+ },
+ {
+  "name": "download",
+  "category": "system",
+  "keywords": [
+   "export"
+  ],
+  "file": "icons/ui/download.svg"
+ },
+ {
+  "name": "heatmap",
+  "category": "system",
+  "keywords": [
+   "history",
+   "grid"
+  ],
+  "file": "icons/ui/heatmap.svg"
+ },
+ {
+  "name": "lock",
+  "category": "system",
+  "keywords": [
+   "secure",
+   "kiosk"
+  ],
+  "file": "icons/ui/lock.svg"
+ },
+ {
+  "name": "bell",
+  "category": "system",
+  "keywords": [
+   "notifications"
+  ],
+  "file": "icons/ui/bell.svg"
+ },
+ {
+  "name": "sync",
+  "category": "system",
+  "keywords": [
+   "refresh",
+   "calendar",
+   "sync"
+  ],
+  "file": "icons/ui/sync.svg"
+ },
+ {
+  "name": "wifi",
+  "category": "system",
+  "keywords": [
+   "online"
+  ],
+  "file": "icons/ui/wifi.svg"
+ },
+ {
+  "name": "wifi-off",
+  "category": "system",
+  "keywords": [
+   "offline"
+  ],
+  "file": "icons/ui/wifi-off.svg"
+ },
+ {
+  "name": "hourglass",
+  "category": "system",
+  "keywords": [
+   "stale",
+   "waiting"
+  ],
+  "file": "icons/ui/hourglass.svg"
+ },
+ {
+  "name": "cloud",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "cloudy"
+  ],
+  "file": "icons/ui/cloud.svg"
+ },
+ {
+  "name": "rain",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "rain"
+  ],
+  "file": "icons/ui/rain.svg"
+ },
+ {
+  "name": "chore-bed",
+  "category": "chores",
+  "keywords": [
+   "bed",
+   "make",
+   "bed",
+   "sleep"
+  ],
+  "file": "icons/chores/chore-bed.svg"
+ },
+ {
+  "name": "chore-dishes",
+  "category": "chores",
+  "keywords": [
+   "dishes",
+   "plate",
+   "wash"
+  ],
+  "file": "icons/chores/chore-dishes.svg"
+ },
+ {
+  "name": "chore-table",
+  "category": "chores",
+  "keywords": [
+   "set",
+   "table"
+  ],
+  "file": "icons/chores/chore-table.svg"
+ },
+ {
+  "name": "chore-bin",
+  "category": "chores",
+  "keywords": [
+   "trash",
+   "garbage"
+  ],
+  "file": "icons/chores/chore-bin.svg"
+ },
+ {
+  "name": "chore-teeth",
+  "category": "chores",
+  "keywords": [
+   "brush",
+   "teeth",
+   "tooth",
+   "dentist"
+  ],
+  "file": "icons/chores/chore-teeth.svg"
+ },
+ {
+  "name": "chore-laundry",
+  "category": "chores",
+  "keywords": [
+   "laundry",
+   "clothes"
+  ],
+  "file": "icons/chores/chore-laundry.svg"
+ },
+ {
+  "name": "chore-pet",
+  "category": "chores",
+  "keywords": [
+   "pet",
+   "paw",
+   "feed"
+  ],
+  "file": "icons/chores/chore-pet.svg"
+ },
+ {
+  "name": "chore-plant",
+  "category": "chores",
+  "keywords": [
+   "water",
+   "plants"
+  ],
+  "file": "icons/chores/chore-plant.svg"
+ },
+ {
+  "name": "chore-toys",
+  "category": "chores",
+  "keywords": [
+   "tidy",
+   "toys"
+  ],
+  "file": "icons/chores/chore-toys.svg"
+ },
+ {
+  "name": "chore-shoes",
+  "category": "chores",
+  "keywords": [
+   "shoes"
+  ],
+  "file": "icons/chores/chore-shoes.svg"
+ },
+ {
+  "name": "chore-broom",
+  "category": "chores",
+  "keywords": [
+   "sweep",
+   "clean"
+  ],
+  "file": "icons/chores/chore-broom.svg"
+ },
+ {
+  "name": "chore-bath",
+  "category": "chores",
+  "keywords": [
+   "bath",
+   "shower",
+   "wash"
+  ],
+  "file": "icons/chores/chore-bath.svg"
+ },
+ {
+  "name": "chore-read",
+  "category": "chores",
+  "keywords": [
+   "read",
+   "book"
+  ],
+  "file": "icons/chores/chore-read.svg"
+ },
+ {
+  "name": "chore-homework",
+  "category": "chores",
+  "keywords": [
+   "homework",
+   "paper"
+  ],
+  "file": "icons/chores/chore-homework.svg"
+ },
+ {
+  "name": "chore-outdoors",
+  "category": "chores",
+  "keywords": [
+   "outside",
+   "play",
+   "tree"
+  ],
+  "file": "icons/chores/chore-outdoors.svg"
+ },
+ {
+  "name": "chore-music",
+  "category": "chores",
+  "keywords": [
+   "practice",
+   "music"
+  ],
+  "file": "icons/chores/chore-music.svg"
+ },
+ {
+  "name": "chore-exercise",
+  "category": "chores",
+  "keywords": [
+   "exercise",
+   "sport"
+  ],
+  "file": "icons/chores/chore-exercise.svg"
+ },
+ {
+  "name": "chore-pack",
+  "category": "chores",
+  "keywords": [
+   "pack",
+   "backpack"
+  ],
+  "file": "icons/chores/chore-pack.svg"
+ }
+]

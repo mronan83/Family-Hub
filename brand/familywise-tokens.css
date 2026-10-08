@@ -1,0 +1,101 @@
+/* FamilyWise design tokens v1.0 — single source of truth for board and admin.
+   Light = "Day" theme (default). Dark = "Evening" theme (board auto-switches, admin follows OS).
+   All text/background pairs listed in 06-brand-and-style-guide.md meet WCAG AA (verified). */
+:root {
+  /* Brand */
+  --fw-teal-100: #CCFBF1;
+  --fw-teal-300: #5EEAD4;
+  --fw-teal-600: #0F766E;   /* primary */
+  --fw-teal-700: #115E59;   /* primary text on light */
+  --fw-sun-100:  #FEF3C7;
+  --fw-sun-400:  #FBBF24;   /* points and celebration */
+  --fw-sun-800:  #92400E;
+  --fw-leaf-600: #15803D;   /* success */
+  --fw-plum-100: #F1E8F5;
+  --fw-plum-600: #7E4F8F;   /* missed, reversed: calm, never alarm red */
+  --fw-plum-700: #5B3A68;
+  --fw-sky-600:  #0369A1;   /* info, "try again" */
+
+  /* Neutrals (warm) */
+  --fw-paper:   #FAF7F2;    /* app background */
+  --fw-surface: #FFFFFF;    /* cards */
+  --fw-line:    #E7E1D6;
+  --fw-ink:     #1F2937;    /* text */
+  --fw-ink-soft:#4B5563;    /* secondary text */
+
+  /* Roles */
+  --bg: var(--fw-paper);
+  --surface: var(--fw-surface);
+  --line: var(--fw-line);
+  --text: var(--fw-ink);
+  --text-soft: var(--fw-ink-soft);
+  --primary: var(--fw-teal-600);
+  --on-primary: #FFFFFF;
+  --primary-text: var(--fw-teal-700);
+  --primary-tint: var(--fw-teal-100);
+  --reward: var(--fw-sun-400);
+  --on-reward: var(--fw-ink);
+  --reward-tint: var(--fw-sun-100);
+  --reward-text: var(--fw-sun-800);
+  --success: var(--fw-leaf-600);
+  --missed: var(--fw-plum-600);
+  --missed-tint: var(--fw-plum-100);
+  --missed-text: var(--fw-plum-700);
+  --info: var(--fw-sky-600);
+  --focus: #0369A1;
+
+  /* Family member colors (assign one per person; always pair with avatar or initial) */
+  --member-1: #0369A1;  --member-2: #BE3A5B;  --member-3: #C2410C;
+  --member-4: #6D5BD0;  --member-5: #2F6B3A;  --member-6: #0F766E;
+
+  /* Type */
+  --font-display: "Nunito", ui-rounded, system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+
+  /* Shape and space (logical px; 8px grid) */
+  --r-sm: 8px; --r-md: 16px; --r-lg: 24px; --r-pill: 999px;
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-6: 24px; --s-8: 32px; --s-12: 48px;
+  --shadow-1: 0 1px 2px rgb(31 41 55 / .08), 0 2px 8px rgb(31 41 55 / .06);
+  --shadow-2: 0 4px 16px rgb(31 41 55 / .14);
+
+  /* Touch (board) */
+  --touch-min: 56px;       /* ≈21 mm at 3840×2160 on 32" */
+  --touch-primary: 96px;
+
+  /* Motion */
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --dur-fast: 120ms; --dur-base: 220ms; --dur-celebrate: 1400ms;
+}
+
+/* Evening theme */
+:root[data-theme="evening"] {
+  --bg: #14201F;
+  --surface: #1D2C2B;
+  --line: #2C3F3D;
+  --text: #F3EFE8;
+  --text-soft: #B7C2BE;
+  --primary: var(--fw-teal-300);
+  --on-primary: #0B1F1D;
+  --primary-text: var(--fw-teal-300);
+  --primary-tint: #17403B;
+  --reward: #FCD34D;
+  --reward-tint: #3A3217;
+  --reward-text: #FCD34D;
+  --missed: #C9A3D6;
+  --missed-tint: #2E2336;
+  --missed-text: #E2C9EA;
+  --info: #7DD3FC;
+  --focus: #7DD3FC;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .4);
+  --shadow-2: 0 4px 16px rgb(0 0 0 / .5);
+}
+
+/* Board type scale (logical px at 1920×1080, DPR 2) */
+.board { --t-hero: 96px; --t-title: 56px; --t-heading: 40px; --t-body: 32px; --t-small: 28px; }
+/* Admin type scale (phone/laptop) */
+.admin { --t-hero: 40px; --t-title: 28px; --t-heading: 20px; --t-body: 16px; --t-small: 14px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
