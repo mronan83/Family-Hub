@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.1: Y-3 done (GitHub secrets and variables); SPIKE-01, SPIKE-05 and WP-41 wait only on Y-4.
 > v0.8: one database (D-37): previews run as the demo family in the production project; Y-2 dropped (nothing to do); Y-3 and Y-4 shrink; WP-41 and SPIKE-01 wait only on Y-3 and Y-4.
 > v0.7.2: branch protection is not enforced on a private repository on GitHub Free, so the deploy workflow enforces the gates (D-36). Y-1 is now the squash-only merge setting; Y-2..Y-4 give the exact steps; all GitHub secrets are repository secrets.
 > v0.7.1: PR #1 merged; WP-01 and WP-02 done. WP-01's live-environment checks move to WP-41 (blocked on Y-2..Y-4); Y-1 is now branch protection.
@@ -22,7 +23,7 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 |---|---|---|---|
 | Y-1 | Allow squash merging only, and turn on automatic deletion of head branches. Branch protection is not enforced on a private repository on GitHub Free; the deploy gate enforces the checks instead (`01` §9.3, D-36) | GitHub → Settings → General → Pull Requests | One commit per work package on `main` |
 | Y-2 | Nothing to do: dropped, because previews use the one database (D-37) | — | — |
-| Y-3 | Add the GitHub repository secrets `SUPABASE_DB_URL`, `VERCEL_TOKEN` and `VERCEL_AUTOMATION_BYPASS_SECRET`, and the variables `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` and `PRODUCTION_URL` (`01` §9.8; repository level, no environment). `DEPLOY_ENABLED` is set last, in WP-41 | GitHub → Settings → Secrets and variables → Actions | WP-41 (deploy, keepalive and e2e workflows), SPIKE-01, SPIKE-05 |
+| Y-3 | **Done.** Add the GitHub repository secrets `SUPABASE_DB_URL`, `VERCEL_TOKEN` and `VERCEL_AUTOMATION_BYPASS_SECRET`, and the variables `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` and `PRODUCTION_URL` (`01` §9.8; repository level, no environment). `DEPLOY_ENABLED` is set last, in WP-41 | GitHub → Settings → Secrets and variables → Actions | WP-41 (deploy, keepalive and e2e workflows), SPIKE-01, SPIKE-05 |
 | Y-4 | In Vercel, add `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for Production and Preview, and `SUPABASE_SECRET_KEY` and `JOB_SIGNING_SECRET` (both Sensitive) for Production only (`01` §9.8); create the protection bypass secret and a deploy token; keep Deployment Protection on Standard Protection | Vercel → family-wise → Settings; Account Settings → Tokens | WP-41, WP-03 sign-in on previews, SPIKE-01, SPIKE-05 |
 | Y-5 | Invite your spouse to the Supabase organization team, so the built-in mailer can deliver their magic links | Supabase → Organization → Team | WP-03 done-when (second admin signs in by magic link) |
 | Y-6 | Publish one iCloud calendar and save its link as the repository secret `ICS_SPIKE_URL` | iCloud Calendar → Share → Public Calendar; GitHub secrets | SPIKE-02, then WP-22 and WP-29 |
@@ -37,13 +38,13 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 
 | Item | Title | Milestone | Size | Depends on | Status |
 |---|---|---|---|---|---|
-| SPIKE-01 | Device sessions + Realtime under RLS | P0 | S | WP-02 | Blocked: Y-3 and Y-4 (secrets, `01` §9.8) |
-| SPIKE-05 | `pg_cron`/`pg_net` → Vercel job limits | P0 | S | WP-01 | Blocked: Y-3 and Y-4 (secrets, `01` §9.8) |
+| SPIKE-01 | Device sessions + Realtime under RLS | P0 | S | WP-02 | Blocked: Y-4 (Vercel keys, `01` §9.8) |
+| SPIKE-05 | `pg_cron`/`pg_net` → Vercel job limits | P0 | S | WP-01 | Blocked: Y-4 (Vercel keys, `01` §9.8) |
 | SPIKE-02 | iCloud ICS fidelity; CalDAV with a secondary Apple ID | P1d | S | — | Blocked: needs a published iCloud calendar link |
 | SPIKE-04 | School menu platform and feed | P2 | S | — | Done: Nutrislice public JSON API (`01` §5.5) |
 | SPIKE-03 | Pi 5 + 32" 4K panel: touch, kiosk flags, power, animation budget | P1a | S | — | Blocked: hardware being sourced (OQ-05b) |
 | WP-01 | Repo, CI/CD pipeline, environments | P0 | M | — | Done (PR #1) |
-| WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | Blocked: Y-3, Y-4 (owner setup) |
+| WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | Blocked: Y-4 (owner setup) |
 | WP-37 | Brand system and design tokens | P0 | M | WP-01 | Ready |
 | WP-02 | Tenancy schema and RLS | P0 | M | WP-01 | Done (PR #1) |
 | WP-03 | Admin authentication and onboarding | P0 | M | WP-02, WP-37 | Queued |

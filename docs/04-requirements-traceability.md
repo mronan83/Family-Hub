@@ -383,6 +383,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.1 | Owner setup Y-3 done: GitHub repository secrets and variables are in place, so the e2e workflow runs live on previews. |
 | 0.8 | One database (D-37): previews use the production project and run as the demo family, a separate household kept apart by RLS; previews hold only the browser-safe key; a PR's additive migrations are applied when its preview is tested, anything that removes or renames ships with the deploy; nothing wipes the database. The delivery loop includes the owner's preview and approval (NFR-14 reworded, US-911). The second Supabase project, `PREVIEW_DB_URL` and the preview project variables are gone; Y-2 dropped. R-27; R-06, R-16, R-20 and A-09 updated. |
 | 0.7.2 | GitHub Free does not enforce branch protection, environment secrets or required reviewers on a private repository (D-36). The deploy workflow now enforces the pull request gates: it ships only the head of `main`, from a merged pull request, with every CI check and e2e green. All GitHub secrets are repository secrets. Y-1 becomes the squash-only merge setting. R-25, R-26, A-12. |
 | 0.7.1 | PR #1 merged: WP-01 and WP-02 done. WP-01's live-environment checks (e2e on a preview, first production deploy, keepalive on both projects) move to new WP-41, blocked on owner setup Y-2..Y-4. Y-1 is now branch protection for `main`. |
