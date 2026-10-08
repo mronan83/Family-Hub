@@ -1,4 +1,4 @@
-# FamilyWise — Project Brief (v0.4)
+# FamilyWise — Project Brief (v0.5)
 
 A family "digital board" for a 32" 4K touch display (Raspberry Pi 5 kiosk): a child checks off chores, earns points, spends them in a rewards shop and watches progress toward goals; parents manage everything from phone or laptop. The board is only the interactive front end. Apple Calendar remains the system of record for events. Hosted on Vercel + Supabase.
 
@@ -48,9 +48,10 @@ Source of truth for IDs is `04`. CI runs `python3 docs/check_traceability.py --d
 | D-23 | Day-close finalizes both `scheduled` and `rejected` occurrences as `missed`. |
 | D-24 | A school closure added for today leaves today's occurrences untouched; only later dates are regenerated. |
 | D-25 | Admin sign-in: email magic link and email + password are required (ACC-02). Sign in with Apple and passkeys follow once the production domain is fixed (ACC-06). |
-| D-26 | **Delivery without Docker or staging.** CI tests the database on a native Postgres with a Supabase compatibility bootstrap and pgTAP. Each PR gets a Vercel preview backed by its own Supabase preview branch. Merging to `main` applies migrations, then deploys the app, to the production project, which stays dark until launch (`01` §9). |
+| D-26 | **Delivery without Docker or staging.** CI tests the database on a native Postgres with a Supabase compatibility bootstrap and pgTAP. Each PR gets a Vercel preview backed by the shared preview database, rebuilt from that PR's migrations for every e2e run. Merging to `main` applies migrations, then deploys the app, to the production project, which stays dark until launch (`01` §9). |
 | D-27 | Three reward models stay as scoped: goals (with their own achieve → redeem lifecycle), shop redemptions, and wishlist pins. |
 | D-28 | The points ledger is written only by `SECURITY DEFINER` database functions: earn and reversal by trigger; spend, refund, adjustment and bonus by named functions the API calls. |
+| D-29 | **Free plans only.** Supabase Free (a production project and a preview project), Vercel Hobby, GitHub Free. A keepalive prevents inactivity pausing, backups are our own nightly encrypted dumps, and CI reaches the database through the session pooler (`01` §9.10). |
 
 ## Repo layout
 
@@ -95,15 +96,17 @@ brand/                   brand asset kit
 | OQ-03 | Parents create chores; the child self-checks; a parent verifies in real life and can uncheck. Approval is a switch that can be turned on or off. |
 | OQ-04 | Both goals and a points economy. |
 | OQ-05 | Panel model unknown; build to 4K 32". |
-| OQ-06 | Vercel for hosting; Supabase project `jpzwmibrsvsxcimbxtmb`; no staging environment. |
+| OQ-06 | Vercel Hobby project `family-wise` (`family-wise-topaz.vercel.app`, root directory `apps/web`); Supabase Free project `jpzwmibrsvsxcimbxtmb` for production plus a second Free project for previews; no staging environment; no paid plans (D-29). |
 | OQ-07 | Magic link and password sign-in are required (D-25). |
 | OQ-08 | A reversal simply takes the points away; negative balances are allowed. No expiry or cap specified. |
 | OQ-09 | Goals are not sticky: a reversed completion un-achieves the goal and reverses its payout. |
 | OQ-10 | Offline conflicts resolve by event timestamp (D-20). |
+| OQ-11 | Why the school name matters: only to pick the lunch-menu adapter (SPIKE-04). The platform name alone is enough; no school name needs to be stored in the docs. |
 
 ## Open questions
 
 | ID | Question | Blocks |
 |---|---|---|
 | OQ-05b | Exact panel model and mounting (touch driver, height)? Hardware is being sourced. | SPIKE-03, WP-14, WP-34 |
-| OQ-06b | Production domain name (after a trademark/domain check against "FamilyWize")? | ACC-06 / WP-38, production URL, email sender |
+| OQ-06b | Production domain name (after a trademark/domain check against "FamilyWize")? | ACC-06 / WP-38, custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
+| OQ-12 | Which platform publishes the school lunch menu (for example Nutrislice, SchoolCafe, Linq Connect, or a PDF)? | SPIKE-04, WP-27 |

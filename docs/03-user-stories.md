@@ -1,6 +1,7 @@
 # 03 — User Stories
 
-> Version 0.4 · Status: build baseline · Maintained by Claude Code
+> Version 0.5 · Status: build baseline · Maintained by Claude Code
+> v0.5: free plans (D-29): backups (US-903), cost and pausing (US-909) and previews (US-911) updated.
 > v0.4: magic link + password sign-in (US-102) with Apple/passkey later (US-106); event-time conflicts (US-205); today-only board and parent-only late credit (US-303, US-307); approval switch and day-close rules (US-310, US-307); closures spare today (US-602); delivery pipeline (US-911).
 > Each story lists its `Reqs:` (defined in `04-requirements-traceability.md`). Acceptance criteria are Given/When/Then and are the basis for Playwright, Vitest, and pgTAP test names (prefix tests with the story or requirement ID, e.g. `[US-304][CHR-04]`).
 
@@ -404,7 +405,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-903 — Backups I can trust
 **As an** admin **I want** automatic backups and a documented restore **so that** a mistake or outage doesn't erase the history.
 **Priority:** Must · **Phase:** P1 · **Reqs:** NFR-10
-- Given production is on a plan with daily backups, when I follow the restore runbook in a drill, then the database is recovered to a prior point.
+- Given the nightly encrypted backup ran, when I follow the restore runbook in a drill, then the database is recovered into the preview project as of that night.
 - Given the runbook, when read, then it states RPO/RTO and steps to re-pair the board.
 
 ### US-904 — Know when something breaks
@@ -439,10 +440,12 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given the rules engine, when run with property tests on random event orderings, then results are deterministic.
 
 ### US-909 — Costs stay predictable
-**As an** admin **I want** a clear cost ceiling and no surprise pauses **so that** the board is dependable.
+**As an** admin **I want** the board to run on free plans with no surprise pauses **so that** it is dependable and costs nothing each month.
 **Priority:** Should · **Phase:** P0 · **Reqs:** NFR-08
-- Given the production project, when reviewed, then the plan avoids inactivity pausing and the monthly cost is documented.
-- Given usage, when it approaches plan limits, then a warning appears in System Health.
+- Given the production and preview projects are on Supabase Free, when a week passes with no family use, then neither project is paused because the keepalive writes a heartbeat several times a day.
+- Given a keepalive run fails, when it fails, then I receive an email and the runbook shows how to restore the project, while the board keeps showing cached data.
+- Given usage, when it approaches a Free-plan limit, then a warning appears in System Health.
+- Given the cost ceiling, when I review it, then the recurring cost is zero and any paid upgrade is a documented decision.
 
 ---
 
@@ -450,7 +453,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As an** admin **I want** every change to pass automated checks and a preview before it reaches production **so that** a mistake never breaks the family's board.
 **Priority:** Must · **Phase:** P0 · **Reqs:** NFR-14, NFR-12
 - Given a pull request, when it is opened, then lint, typecheck, unit tests, database tests, traceability and build run without Docker, and the PR cannot merge until they pass.
-- Given a pull request, when Vercel finishes its preview, then the preview uses its own Supabase preview branch and the e2e suite runs against it.
+- Given a pull request, when Vercel finishes its preview, then the preview database is rebuilt from that PR's migrations and seed, and the e2e suite runs against the preview; two PRs never test at the same time.
 - Given a merge to `main`, when the deploy runs, then migrations are applied to production before the app is deployed, and a failed migration stops the app deploy.
 - Given production before launch, when I look at it, then no board is paired and no family data exists until the launch runbook is run.
 

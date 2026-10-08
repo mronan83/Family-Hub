@@ -1,6 +1,6 @@
 # 04 — Requirements and Traceability
 
-> Version 0.4 · Status: build baseline · Maintained by Claude Code
+> Version 0.5 · Status: build baseline · Maintained by Claude Code
 > This file is the **source of truth for requirement IDs**. Stories (`03`), work packages (`05`), components (`01`), and entities (`02`) trace to these IDs. `check_traceability.py` enforces the links in CI.
 
 **ID scheme:** `<DOMAIN>-<NN>` · domains: `ACC` access · `DEV` device/board shell · `CHR` chores · `RWD` rewards · `CAL` calendar · `SCH` school year · `MEAL` meals · `MENU` school menu · `BRD` board UI · `PTS` points economy · `NFR` non-functional.
@@ -87,9 +87,9 @@
 | NFR-05 | Child PII shall be minimized, no third-party trackers used, and household data exportable and deletable. | S | P3 | Design |
 | NFR-06 | Completion events shall be append-only with UTC instants, local credit dates, and idempotency keys. | M | P1 | Design |
 | NFR-07 | The system shall provide structured logs, error tracking, and job health visibility. | S | P1 | Design |
-| NFR-08 | The system shall have a documented cost ceiling and avoid plans that pause on inactivity in production. | S | P0 | Design |
+| NFR-08 | The system shall run on free plans with a documented cost ceiling, and production shall be kept from pausing on inactivity (keepalive with failure alerts). | S | P0 | User |
 | NFR-09 | Every table shall carry `household_id` and isolate tenants (multi-tenant-ready). | M | P0 | Design |
-| NFR-10 | Production data shall be backed up daily with a documented, rehearsed restore. | M | P1 | Design |
+| NFR-10 | Production data shall be backed up daily (encrypted, off the database host) with a documented, rehearsed restore. | M | P1 | Design |
 | NFR-11 | The UI shall meet WCAG AA contrast, avoid color-only cues, and honor reduced motion. | S | P2 | Design |
 | PTS-01 | Points shall be posted to an append-only ledger: earned when an occurrence enters a done status, reversed when it leaves one, with manual adjustments and idempotent dedupe keys. | M | P1 | User |
 | PTS-02 | The board shall show the member's points balance and recent activity; a negative balance shall display as a debt. | M | P1 | User |
@@ -99,7 +99,7 @@
 | PTS-06 | A child may pin a catalog item as a saving goal and see progress toward its cost. | S | P2 | Derived |
 | NFR-12 | The rules engine shall have at least 90% unit coverage, RLS shall be pgTAP-tested, and CI shall gate on e2e including offline. | M | P0 | Design |
 | NFR-13 | The product shall be branded FamilyWise and implement the brand and style guide: design tokens (light and Evening themes), self-hosted fonts, logo and app icons, the 85-icon set, member avatars, and a status-to-visual mapping with icon, label and color for every occurrence status. | M | P0 | User |
-| NFR-14 | Every change shall reach production only through a pull request that passes CI gates (lint, typecheck, unit, pgTAP, traceability, build) and e2e on its own preview environment (Vercel preview + Supabase preview branch); merging applies migrations before deploying the app. No Docker and no staging environment. | M | P0 | User |
+| NFR-14 | Every change shall reach production only through a pull request that passes CI gates (lint, typecheck, unit, pgTAP, traceability, build) and e2e on its preview deployment against a preview database rebuilt from the PR's migrations; merging applies migrations before deploying the app. No Docker and no staging environment. | M | P0 | User |
 
 ---
 
@@ -293,7 +293,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | R-03 | Device session longevity / Realtime under RLS unproven | Med | High | SPIKE-01 before building on it |
 | R-04 | iCloud published-calendar behavior changes or lacks fidelity | Med | Med | SPIKE-02; CalDAV fallback; last-good retention |
 | R-05 | School menu feed unavailable or unofficial | High | Med | Adapter + CSV/manual; SPIKE-04 on the actual district |
-| R-06 | Supabase free-tier pause or vendor outage | Med | High | Pro plan for production (also required for preview branches); offline cache |
+| R-06 | Supabase Free project paused for inactivity, or vendor outage | Med | High | Keepalive heartbeat four times a day to both projects; failure email; restore runbook; offline cache keeps the board usable |
 | R-07 | Pi hardware (SD corruption, touch driver, panel latency) | Med | High | NVMe/SSD boot; SPIKE-03 on the real panel |
 | R-08 | Maintenance burden on a single builder | High | High | Automated PR gates and ordered deploys; no feature that needs weekly care; health page and alerts |
 | R-09 | Child data privacy | Low | High | Minimal fields, no trackers, export/delete |
@@ -303,9 +303,12 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | R-13 | Self-check with parent verification in real life invites "check everything" behavior | Med | Med | Bulk uncheck (CHR-08) with a batch id; optional approval per chore; insights show override rate; no punitive wording on the board |
 | R-14 | 4K rendering on Pi 5 is too slow for animations | Med | Med | SPIKE-03; logical 1080p layout with DPR 2; compositor-only animations; documented 1080p output fallback |
 | R-15 | Day-close job skipped or late, leaving stale `scheduled` days | Low | Med | Hourly idempotent job with catch-up; stale-day alert on the health page; `rebuild_occurrence_status` drift check |
-| R-16 | Database tests run on native Postgres with a compatibility bootstrap (no Docker), which can drift from real Supabase | Med | Med | Bootstrap mirrors only platform objects; pgTAP suite also runs against each PR's Supabase preview branch; production deploy smoke check |
+| R-16 | Database tests run on native Postgres with a compatibility bootstrap (no Docker), which can drift from real Supabase | Med | Med | Bootstrap mirrors only platform objects; every e2e run applies all migrations to the real preview project; pgTAP on the preview project once role switching is verified; production deploy smoke check |
 | R-17 | Pi and panel not yet available, so the 4K budget (SPIKE-03) is validated late | Med | Med | Build to the 1920×1080 logical / DPR 2 spec; compositor-only animations; desktop Chromium at 3840×2160 DPR 2 in e2e; WP-14 and launch check L-08 run when hardware arrives |
 | R-18 | Device clock skew affects event-time conflict resolution | Low | Med | Server clamps `occurred_at` to receipt time; board events outside the due date are flagged for a parent (D-20, D-21) |
+| R-19 | Supabase's built-in email reaches only team members, about 2 per hour, so magic links and resets can fail | High | Med | Password sign-in needs no email; invites are shareable links; add both parents to the Supabase team; custom SMTP once a domain exists (OQ-06b) |
+| R-20 | No automatic backups on Supabase Free | Med | High | Nightly encrypted `pg_dump` kept 30 days; rehearsed restore into the preview project (WP-24, L-06) |
+| R-21 | Free-plan limits or policies change | Low | Med | Usage on System Health; the cost ceiling records that a paid upgrade is a deliberate decision |
 
 ### Spikes (time-boxed, before dependent work)
 
@@ -329,6 +332,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | A-06 | The panel is mounted at child-reachable height or on a stand. |
 | A-07 | Apple Calendar remains the household's event system of record. |
 | A-08 | Production stays dark until launch; there is no staging environment and no Docker in the workflow. |
+| A-09 | Free plans only: Supabase Free (two projects), Vercel Hobby, GitHub Free. |
 
 ---
 
@@ -346,6 +350,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.5 | Free plans only (D-29): NFR-08 and NFR-10 reworded; NFR-14 uses a shared preview database rebuilt per e2e run instead of per-PR branches; risks R-06 and R-16 updated, R-19..R-21 added; A-09. |
 | 0.4.1 | WP-02: `member.color` stores a brand token key (`member-1`..`member-6`) and `avatar_key` one of the 8 brand avatars; the migration lint is a pgTAP catalog test; `household` is the only table without `household_id`. |
 | 0.4 | Decisions D-19..D-28 from the build kickoff. Single launch after P3; milestones replace family-use gates; launch acceptance checklist (§E). ACC-02 is now magic link + password; Sign in with Apple and passkeys move to new ACC-06 (US-106, WP-38); passkey clause removed from NFR-04. New NFR-14 delivery pipeline (US-911, WP-01). Event-time conflict resolution, today-only board, approval switch, rejected → missed, closures spare today. WP-19 split (payouts and preview move to WP-39); missing dependencies fixed; spikes added to the backlog. Docs renamed: `01-technical-architecture.md`, `05-backlog.md`. Risks R-16..R-18. |
 | 0.3 | Brand: product name FamilyWise; NFR-13 and WP-37 added; brand and style guide `06` and asset kit `brand/` |

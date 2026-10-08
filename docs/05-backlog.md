@@ -1,6 +1,7 @@
 # 05 — Backlog
 
-> Version 0.4 · Status: build baseline · Maintained by Claude Code
+> Version 0.5 · Status: build baseline · Maintained by Claude Code
+> v0.5: free plans (D-29): WP-01 uses a shared preview database and a keepalive; WP-24 backups are our own nightly encrypted dumps; preview-branch references replaced.
 > v0.4: renamed from Work Breakdown; status board (§1); spikes are backlog items (§3); sequence changed so no finished work package needs rework (WP-37 before WP-03, WP-21 before WP-09, WP-16 before WP-11 and WP-12); WP-19 split, payouts and preview move to WP-39; WP-38 adds Sign in with Apple and passkeys; WP-01 carries the delivery pipeline (NFR-14); missing dependencies fixed.
 > Companions: `01-technical-architecture.md` · `02-data-model.md` · `03-user-stories.md` · `04-requirements-traceability.md`
 > Each work package (WP) is one branch and one pull request. Requirement links (`Reqs:`) and `Depends on:` lines are enforced by `check_traceability.py`; the Work packages column in `04` §B is generated from them.
@@ -16,7 +17,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | SPIKE-01 | Device sessions + Realtime under RLS | P0 | S | WP-02 | Queued |
 | SPIKE-05 | `pg_cron`/`pg_net` → Vercel job limits | P0 | S | WP-01 | Queued (needs Supabase + Vercel secrets, `01` §9.8) |
 | SPIKE-02 | iCloud ICS fidelity; CalDAV with a secondary Apple ID | P1d | S | — | Blocked: needs a published iCloud calendar link |
-| SPIKE-04 | School menu platform and feed | P2 | S | — | Blocked: needs the school or district name |
+| SPIKE-04 | School menu platform and feed | P2 | S | — | Blocked: needs the menu platform name (OQ-12) |
 | SPIKE-03 | Pi 5 + 32" 4K panel: touch, kiosk flags, power, animation budget | P1a | S | — | Blocked: hardware being sourced (OQ-05b) |
 | WP-01 | Repo, CI/CD pipeline, environments | P0 | M | — | In progress (`claude/p0-foundation`) |
 | WP-37 | Brand system and design tokens | P0 | M | WP-01 | Queued |
@@ -198,10 +199,11 @@ flowchart LR
 **Phase:** P0 · **Size:** M · **Depends on:** — · **Reqs:** NFR-12, NFR-08, NFR-14
 - pnpm monorepo (`apps/web`, `packages/rules-engine`, `packages/ui`, `packages/adapters`, `supabase`, `e2e`, `scripts`, `docs`, `brand`), TypeScript strict, ESLint, Prettier.
 - CI without Docker (`01` §9.3–9.4): checks (lint, format, typecheck, Vitest, migration lint, traceability), database (native Postgres + compatibility bootstrap + pgTAP), build.
-- Preview pipeline: Vercel previews per PR backed by Supabase preview branches; e2e workflow against the preview.
+- Preview pipeline: Vercel previews per PR; one shared Supabase Free preview project rebuilt from the PR's migrations for each serialized e2e run (`scripts/preview-db.sh`); e2e against the preview.
 - Production pipeline: migrate (`supabase db push`) → app (`vercel deploy --prod`) → smoke; Vercel auto production deploy off.
+- Free-plan operations (`01` §9.10): keepalive heartbeat to both projects; migrations over the session pooler.
 - Secrets inventory and cost ceiling written in `01` §9.8–9.9; PR template with the docs checklist.
-- **Done when:** a PR runs all gates green without Docker; a preview deploys against its own Supabase branch; a merge runs migrate → app → smoke against production.
+- **Done when:** a PR runs all gates green without Docker; a preview deploys and e2e passes against the rebuilt preview database; a merge runs migrate → app → smoke against production; keepalive writes to both projects.
 
 ### WP-37 — Brand system and design tokens
 **Phase:** P0 · **Size:** M · **Depends on:** WP-01 · **Reqs:** NFR-13
@@ -221,7 +223,7 @@ flowchart LR
 ### WP-03 — Admin authentication and onboarding
 **Phase:** P0 · **Size:** M · **Depends on:** WP-02, WP-37 · **Reqs:** ACC-01, ACC-02, ACC-03, ACC-05, NFR-04
 - Supabase Auth with email magic link and email + password (sign-up, sign-in, reset); session handling in Next.js with server-side verification.
-- Onboarding wizard creates the household (timezone, week start) and the owner link; invite flow for the second admin with hashed single-use tokens.
+- Onboarding wizard creates the household (timezone, week start) and the owner link; invite flow for the second admin with hashed single-use tokens, delivered as a link the inviter can copy or share (email sending is optional while Supabase's built-in mailer is limited, `01` §9.10).
 - Audit write helper in the API layer from day one (`audit_log` table and `withAudit` wrapper), so later routes never need retrofitting; the viewer stays in WP-32.
 - **Done when:** two admins can sign in, one by magic link and one by password, and see the same household; an expired or reused invite is rejected (E2E); invite and household writes produce audit rows.
 
@@ -249,7 +251,7 @@ flowchart LR
 - SPIKE-05 first.
 - `pg_cron` + `pg_net` calling signed Vercel job endpoints; `job_run` records; idempotent job wrapper with catch-up semantics.
 - Structured logs, error tracking, and a health page listing job status.
-- **Done when:** a sample hourly job runs against a preview branch, a forced failure shows on the health page, and replaying it is harmless.
+- **Done when:** a sample hourly job runs against the preview project, a forced failure shows on the health page, and replaying it is harmless.
 
 ### Phase P1a — Kid loop
 
@@ -362,7 +364,7 @@ flowchart LR
 
 ### WP-24 — Backups, runbooks, and soak
 **Phase:** P1d · **Size:** S · **Depends on:** WP-07 · **Reqs:** NFR-10
-- Daily backups on Pro, a rehearsed restore into a fresh project or branch, runbooks (device re-pair, stuck sync, day-close catch-up, launch data reset), 7-day soak checklist.
+- Nightly `backup.yml`: `pg_dump` over the session pooler, compressed and encrypted with `BACKUP_PASSPHRASE`, kept 30 days as a private artifact; a rehearsed restore into the preview project; runbooks (restore a paused Free project, device re-pair, stuck sync, day-close catch-up, launch data reset); 7-day soak checklist.
 - **Done when:** a restore drill is completed and recorded.
 
 ### Phase P2 — Meals, menu, extras
@@ -413,7 +415,7 @@ flowchart LR
 ### WP-33 — Export and delete
 **Phase:** P3 · **Size:** M · **Depends on:** WP-04 · **Reqs:** NFR-05
 - JSON/CSV export of all household data; documented deletion procedure for a child profile and a household, anonymizing events.
-- **Done when:** exported data re-imports into a fresh preview branch in a smoke test.
+- **Done when:** exported data re-imports into the preview project in a smoke test.
 
 ### WP-34 — Quiet hours and burn-in mitigation
 **Phase:** P3 · **Size:** S · **Depends on:** WP-14 · **Reqs:** DEV-07
