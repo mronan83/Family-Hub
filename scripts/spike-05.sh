@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# SPIKE-05 measurement (01 §5.6). From the production database, pg_net calls the probe on a pull
-# request's preview the way pg_cron jobs will call the job endpoints, and the results go to the job
-# summary: how long a call may run on Vercel Hobby, cold and warm latency, CPU per call, how
-# concurrent calls share instances. Meanwhile a pg_cron job calls production every 20 seconds, then is
-# removed, to show the schedule and what cron's own run history records.
+# SPIKE-05 measurement (01 §5.6). From the production database, pg_net calls the probe on a preview
+# the way pg_cron jobs will call the job endpoints, and prints a report (also to the job summary):
+# how long a call may run on Vercel Hobby, how pg_net queues calls, CPU per call and per cold start,
+# how concurrent calls share instances, and whether an instance stays warm between 5-minute jobs.
+# Meanwhile a pg_cron job calls production every 20 seconds, then is removed, to show the schedule
+# and what cron's own run history records. Run it from the spike-05 workflow.
 #
 # Leaves behind only pg_net's response log (deleted after 6 hours) and the cron run history.
 # Needs SUPABASE_DB_URL, PREVIEW_URL, VERCEL_AUTOMATION_BYPASS_SECRET, PRODUCTION_URL; psql 15+.
@@ -111,6 +112,8 @@ create temp table req as
 select split_part(x, ':', 1) as tag, split_part(x, ':', 2)::int as seconds,
        split_part(x, ':', 3)::bigint as id, split_part(x, ':', 4)::numeric as sent
 from unnest(string_to_array(:'reqs', ' ')) as x;
+-- net._http_response.created is when pg_net's worker began the batch holding the call, not when the
+-- call answered: a call waits for every call in the batch before it (01 §5.6).
 create temp table res as
 select q.*, r.status_code, r.timed_out, r.error_msg, r.created, r.content,
        case when r.content_type like 'application/json%' then r.content::jsonb end as j
@@ -120,7 +123,7 @@ select format(e'## SPIKE-05 results\n\n%s · %s · probe on `%s` (region %s)\n',
   to_char(now() at time zone 'utc', 'YYYY-MM-DD HH24:MI "UTC"'), :'versions',
   split_part(:'probe', '/', 3), coalesce((select j->>'region' from res where j is not null limit 1), '?'));
 
-select e'### Calls through pg_net (timeout 330 s)\n\n| Call | Asked | HTTP | Answered after | Ran | CPU | Instance | Note |\n|---|---|---|---|---|---|---|---|';
+select e'### Calls through pg_net (timeout 330 s)\n\n| Call | Asked | HTTP | pg_net started it after | Ran | CPU | Instance | Note |\n|---|---|---|---|---|---|---|---|';
 select format('| %s | %s s | %s | %s s | %s | %s | %s | %s |',
   tag, seconds,
   coalesce(status_code::text, case when timed_out then 'timed out' else 'no answer' end),
@@ -133,7 +136,7 @@ select format('| %s | %s s | %s | %s s | %s | %s | %s | %s |',
 from res
 order by array_position(array['cold', 'warm', 'duration', 'burst', 'idle'], tag), seconds, id;
 
-select format(e'\n**Burst:** %s of %s calls answered 200 on %s instance(s); slowest after %s s.\n',
+select format(e'\n**Burst:** %s of %s calls answered 200 on %s instance(s); pg_net started them after %s s.\n',
   count(*) filter (where status_code = 200), count(*), count(distinct j->>'instance'),
   round(max(extract(epoch from created) - sent), 1))
 from res where tag = 'burst';

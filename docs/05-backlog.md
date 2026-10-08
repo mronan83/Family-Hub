@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.6: SPIKE-05 done: job limits, the invocation pattern and the Hobby budget are in `01` §5.6 (D-38); WP-07 takes the pattern and the job-secret workflow.
 > v0.8.5: §0 lists only open owner actions; Y-1 to Y-4 move to a Done table. WP-41 done: PR #4's merge deployed on its own, and the gate's refusals are tested.
 > v0.8.4: production is live and dark: the first deploy ran gate, migrate, app and smoke after the token was rescoped; keepalive wrote its first heartbeat. WP-41 closes when its own merge deploys automatically.
 > v0.8.3: WP-37 done (PR #3); Y-4 done; WP-41 in progress: the first production deploy reached the app step, and the deploy token needs the project's team as its scope.
@@ -48,7 +49,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | Item | Title | Milestone | Size | Depends on | Status |
 |---|---|---|---|---|---|
 | SPIKE-01 | Device sessions + Realtime under RLS | P0 | S | WP-02 | Ready |
-| SPIKE-05 | `pg_cron`/`pg_net` → Vercel job limits | P0 | S | WP-01 | Ready |
+| SPIKE-05 | `pg_cron`/`pg_net` → Vercel job limits | P0 | S | WP-01 | Done (PR #6) |
 | SPIKE-02 | iCloud ICS fidelity; CalDAV with a secondary Apple ID | P1d | S | — | Blocked: needs a published iCloud calendar link |
 | SPIKE-04 | School menu platform and feed | P2 | S | — | Done: Nutrislice public JSON API (`01` §5.5) |
 | SPIKE-03 | Pi 5 + 32" 4K panel: touch, kiosk flags, power, animation budget | P1a | S | — | Blocked: hardware being sourced (OQ-05b) |
@@ -212,6 +213,7 @@ flowchart LR
 **Milestone:** P0 · **Size:** S · **Gates:** WP-07 · **Reqs:** NFR-07, CAL-02, CHR-03
 - `pg_cron` + `pg_net` call a signed Vercel endpoint; measure duration limits on the chosen Vercel plan for one-source-per-invocation sync.
 - **Done when:** limits and the invocation pattern are recorded in `01` §5.6.
+- **Outcome:** measured from the production database through pg_net (`scripts/spike-05.sh`): Hobby stops a call at 300 s; pg_net holds queued calls until its slowest call ends; a cold start costs about 0.4 s of CPU, a warm call a few ms; concurrent calls each get an instance; cron reports `succeeded` whatever the endpoint answers. Pattern: answer at once and work after the response, one minute per schedule, health from `job_run`, job secret from a workflow (D-38). Jobs fit in under 10 % of each Hobby allowance.
 
 ### SPIKE-02 — iCloud ICS and CalDAV fidelity
 **Milestone:** P1d · **Size:** S · **Gates:** WP-22, WP-29 · **Reqs:** CAL-01, CAL-07, CAL-08
@@ -298,7 +300,8 @@ flowchart LR
 ### WP-07 — Job framework and observability
 **Phase:** P0 · **Size:** M · **Depends on:** WP-01, WP-02 · **Reqs:** NFR-07
 - SPIKE-05 first.
-- `pg_cron` + `pg_net` calling signed Vercel job endpoints; `job_run` records; idempotent job wrapper with catch-up semantics.
+- `pg_cron` + `pg_net` calling signed Vercel job endpoints in the SPIKE-05 pattern (`01` §5.6): `jobAuthError`, a `job_run` row, answer 202 at once and work after the response, each schedule on its own minute; idempotent job wrapper with catch-up semantics; a nightly purge of `cron.job_run_details`.
+- Job secret workflow: generates the secret, writes it to Supabase Vault and to Vercel production, redeploys production; rotation is the same workflow. Nobody sees or pastes it (D-38).
 - Structured logs, error tracking, and a health page listing job status.
 - **Done when:** a sample hourly job runs in production (dark until launch), a forced failure shows on the health page, and replaying it is harmless.
 
