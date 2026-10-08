@@ -1,0 +1,63 @@
+# PR gates (01 §9.3). Runs on every push so the checks attach to each commit; no Docker anywhere.
+name: ci
+
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Traceability
+        run: python3 docs/check_traceability.py --docs docs --tests .
+
+  database:
+    runs-on: ubuntu-24.04
+    env:
+      PG_MAJOR: '17'
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Postgres and pgTAP (PGDG, matches Supabase's major version)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -qq "postgresql-${PG_MAJOR}" "postgresql-${PG_MAJOR}-pgtap" libtap-parser-sourcehandler-pgtap-perl
+          sudo pg_ctlcluster "${PG_MAJOR}" main start || sudo systemctl start postgresql
+          sudo -u postgres psql -p "$(pg_lsclusters -h | awk -v v="$PG_MAJOR" '$1==v {print $3}')" -c "alter user postgres password 'postgres'"
+          echo "PGPORT=$(pg_lsclusters -h | awk -v v="$PG_MAJOR" '$1==v {print $3}')" >> "$GITHUB_ENV"
+      - run: bash scripts/db-test.sh
+
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
