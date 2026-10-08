@@ -1,6 +1,7 @@
 # 03 — User Stories
 
-> Version 0.7 · Status: build baseline · Maintained by Claude Code
+> Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8: US-911 follows the delivery loop: you preview as the demo family and approve before anything merges (D-37); US-903 and US-909 for one database.
 > v0.7: reminders, switchable per person, device and item (US-317, US-318, US-319; D-35).
 > v0.6: one family list (D-30..D-34): shared items with who-did-it credit (US-311), household tags (US-312), due times (US-313), overdue tasks carry over (US-314), private items (US-315), My tasks (US-316), Family view (US-1006), earns-rewards switch (US-1109); US-301, US-303, US-304, US-307, US-401, US-1002, US-1101 updated.
 > v0.5: free plans (D-29): backups (US-903), cost and pausing (US-909) and previews (US-911) updated.
@@ -480,7 +481,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-903 — Backups I can trust
 **As an** admin **I want** automatic backups and a documented restore **so that** a mistake or outage doesn't erase the history.
 **Priority:** Must · **Phase:** P1 · **Reqs:** NFR-10
-- Given the nightly encrypted backup ran, when I follow the restore runbook in a drill, then the database is recovered into the preview project as of that night.
+- Given the nightly encrypted backup ran, when I follow the restore runbook in a drill, then the database is recovered into a throwaway database as of that night.
 - Given the runbook, when read, then it states RPO/RTO and steps to re-pair the board.
 
 ### US-904 — Know when something breaks
@@ -517,7 +518,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-909 — Costs stay predictable
 **As an** admin **I want** the board to run on free plans with no surprise pauses **so that** it is dependable and costs nothing each month.
 **Priority:** Should · **Phase:** P0 · **Reqs:** NFR-08
-- Given the production and preview projects are on Supabase Free, when a week passes with no family use, then neither project is paused because the keepalive writes a heartbeat several times a day.
+- Given the project is on Supabase Free, when a week passes with no family use, then it is not paused because the keepalive writes a heartbeat several times a day.
 - Given a keepalive run fails, when it fails, then I receive an email and the runbook shows how to restore the project, while the board keeps showing cached data.
 - Given usage, when it approaches a Free-plan limit, then a warning appears in System Health.
 - Given the cost ceiling, when I review it, then the recurring cost is zero and any paid upgrade is a documented decision.
@@ -528,9 +529,11 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As an** admin **I want** every change to pass automated checks and a preview before it reaches production **so that** a mistake never breaks the family's board.
 **Priority:** Must · **Phase:** P0 · **Reqs:** NFR-14, NFR-12
 - Given a pull request, when it is opened, then lint, typecheck, unit tests, database tests, traceability and build run without Docker, and the PR cannot merge until they pass.
-- Given a pull request, when Vercel finishes its preview, then the preview database is rebuilt from that PR's migrations and seed, and the e2e suite runs against the preview; two PRs never test at the same time.
+- Given a pull request, when Vercel finishes its preview, then the PR's new migrations are applied (unless one removes or renames something), the demo family is reset, and the e2e suite runs against the preview; two PRs never test at the same time.
+- Given a pull request with every check green, when I open its preview, then I see the demo family, and nothing I do there changes my family's data.
+- Given a pull request, when I have not approved it, then it is not merged or deployed.
 - Given a merge to `main`, when the deploy runs, then migrations are applied to production before the app is deployed, and a failed migration stops the app deploy.
-- Given production before launch, when I look at it, then no board is paired and no family data exists until the launch runbook is run.
+- Given production before launch, when I look at it, then no board is paired and the demo family is the only household until I create ours at launch.
 
 ### US-910 — It looks and feels like FamilyWise
 **As a** parent **I want** the board and admin to share one clear, friendly identity **so that** the product feels trustworthy to my family and consistent on every screen.

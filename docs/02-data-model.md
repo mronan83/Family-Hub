@@ -1,6 +1,7 @@
 # 02 — Data Model
 
-> Version 0.7 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8: seed data is the demo family (`supabase/seed.sql`, D-37), the household previews and e2e run as in the one database.
 > v0.7: reminders (D-35): `reminder_preference`, `push_subscription`, `reminder_delivery` (§2.4, §3.7); `chore_assignee.remind`, `chore.remind_lead_minutes`.
 > v0.6: one family list (D-30..D-34): one shared occurrence per due date with an assignee snapshot (`chore_occurrence_assignee`) and `done_by`/`rewarded` credit on events; per-member status view with `covered`; routines get missed, tasks carry over; `due_time`; household `tag` list referenced by id; private visibility in RLS; `member.earns_rewards`; ledger posts per rewarded member.
 > v0.4: events fold in `occurred_at` order with a receipt-time clamp (D-20); board events outside the due date are flagged (D-21); the approval switch re-resolves `scheduled` occurrences only (D-22); day-close turns `rejected` into `missed` (D-23); closures regenerate dates after today only (D-24); ledger writes only through definer functions (D-28); rebuild is report-only unless applied.
@@ -974,7 +975,7 @@ function evaluateHistory(input: HistoryInput):
 | Export | `/admin/settings/export` returns a JSON/CSV bundle of all household data (NFR-05). |
 | Delete | Household deletion cascades via a documented procedure (not raw FK cascade on append-only tables); child profile deletion removes `member` PII and anonymizes events. |
 | Migration order | tenancy → devices → tags + chores/occurrences (assignee snapshot, per-member view)/events + status projection → points ledger + catalog + redemptions → history tables + `close_past_due` → rewards (+ triggers) → school year + `resolve_day_type` → calendar (+ `device_calendar`) → meals/menu → `board_snapshot` → RLS pgTAP suite |
-| Seed data | one household, 2 admins (earns rewards off), 1 child, 4 tags, 6 chores (one shared with a parent), 4 adult tasks (one private, one overdue, one repeating), 14 days of mixed good/missed history, 5 catalog items with a points balance, 2 goals (count + streak, one with a points payout), 1 ICS fixture, 1 school year with breaks, 1 week of meals |
+| Seed data | the demo family (`supabase/seed.sql`, D-37), a household under a fixed id that previews and e2e run as; re-running the seed resets only it: 2 admins (earns rewards off), 2 children, 4 tags, 6 chores (one shared with a parent), 4 adult tasks (one private, one overdue, one repeating), 14 days of mixed good/missed history, 5 catalog items with a points balance, 2 goals (count + streak, one with a points payout), 1 ICS fixture, 1 school year with breaks, 1 week of meals |
 
 ---
 
