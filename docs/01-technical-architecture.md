@@ -476,7 +476,7 @@ flowchart LR
   smoke --> dark["Production (dark until launch)"]
 ```
 
-Approval is your word to Claude Code, here or as a comment on the pull request: GitHub does not let you formally approve a pull request opened under your own account. Claude Code merges only after it, and only with every check green.
+Claude Code opens the pull request as soon as a work package is built and its checks pass, and sends you the preview link. Approval is your word to Claude Code, here or as a comment on the pull request: GitHub does not let you formally approve a pull request opened under your own account. Claude Code merges only after it, and only with every check green.
 
 ### 9.3 Pull request gates
 
