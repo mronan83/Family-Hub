@@ -1,0 +1,46 @@
+# SPIKE-05 measurement (01 §5.6): when a claude/spike-05* branch's Vercel preview is ready, pg_net in
+# the production database calls the probe on that preview, the way pg_cron jobs will call the job
+# endpoints, and the results land in the run's summary. Runs only for those branches; to measure
+# again (for example after Vercel changes its limits), push a branch with that prefix.
+name: spike-05
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: demo-family
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment != 'Production' &&
+      startsWith(github.event.deployment.ref, 'claude/spike-05')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PREVIEW_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.117.0
+      - name: Include main's migrations
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          git checkout FETCH_HEAD -- supabase/migrations
+      # Same step as e2e: enables pg_cron and pg_net if this branch adds them, and resets the demo
+      # family, which nothing here uses.
+      - name: Apply new migrations
+        run: bash scripts/preview-db.sh
+      - name: Measure
+        run: bash scripts/spike-05.sh
