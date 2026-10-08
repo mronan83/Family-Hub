@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.7 · Status: build baseline · Maintained by Claude Code
+> v0.7.2: GitHub Free limits (D-36): the deploy workflow enforces the pull request gates (§9.2, §9.3, §9.6); all GitHub secrets are repository secrets (§9.8); GitHub Free constraints in §9.10.
 > v0.7: reminders (D-35): `NOTIFY` component, `reminders` job, flow §5.9, VAPID secrets (§9.8), failure mode and alternative.
 > v0.6: one family list (D-30..D-34): every member's chores and tasks in one model; one shared occurrence per due date with who-did-it credit; routines get missed, tasks carry over; Family view on the board and My tasks in admin; private items enforced by RLS (§4, §5.2, §5.6, §5.8, §6, §7, §11).
 > v0.5.2: `ci / docs` gate: the interactive docs pages build without broken links and pass a layout check on 13 device profiles (§9.3).
@@ -463,7 +464,8 @@ flowchart LR
   prev --> e2e{"e2e on preview<br/>(Playwright)"}
   e2e -->|green| rev["Review + docs updated"]
   rev --> merge["Squash merge to main"]
-  merge --> mig["deploy: migrate<br/>supabase db push"]
+  merge --> gate{"deploy: gate<br/>head of main · merged PR ·<br/>CI and e2e green"}
+  gate --> mig["deploy: migrate<br/>supabase db push"]
   mig --> app["deploy: app<br/>vercel --prod"]
   app --> smoke{"smoke<br/>/api/health"}
   smoke --> dark["Production (dark until launch)"]
@@ -471,7 +473,7 @@ flowchart LR
 
 ### 9.3 Pull request gates
 
-| Check | What runs | Blocks merge |
+| Check | What runs | Required |
 |---|---|---|
 | `ci / checks` | frozen-lockfile install, ESLint, Prettier check, typecheck, Vitest (rules engine ≥ 90% coverage), migration lint, `check_traceability.py` | yes |
 | `ci / database` | `scripts/db-test.sh`: throwaway database on native Postgres, compatibility bootstrap, all migrations in order, pgTAP via `pg_prove` | yes |
@@ -479,7 +481,12 @@ flowchart LR
 | `ci / build` | `next build` for `apps/web` | yes |
 | `e2e / preview` | Once Vercel reports a successful preview: rebuild the preview database from the PR's migrations and seed, then Playwright against the preview URL. Runs are serialized | yes |
 
-`main` is protected: pull request required, the five checks required, squash merge only, no force pushes. Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
+GitHub Free does not enforce branch protection on a private repository (D-36), so the five checks are required in two places:
+
+- **Before merge:** a pull request is merged only when every check on its head is green. Claude Code checks this before each merge. The repository allows squash merges only.
+- **Before deploy:** the deploy gate (§9.6) refuses to ship a commit unless it came from a merged pull request, all four CI checks passed on it, and e2e passed on its pull request's preview. A commit pushed to `main` directly, or merged with a red check, never reaches production: its deploy run fails, and GitHub emails the owner.
+
+Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 
 ### 9.4 Database tests without Docker
 
@@ -499,11 +506,12 @@ flowchart LR
 
 ### 9.6 Production deploy (ordered)
 
-`deploy.yml` runs on every push to `main`:
+`deploy.yml` runs when `ci` finishes on `main`, or by hand from `main`:
 
-1. **migrate** (GitHub environment `production`): `supabase db push --db-url` over the Supabase session pooler (IPv4; the Free plan's direct connection is IPv6-only). A failure stops the deploy.
-2. **app**: `vercel pull`, `vercel build --prod`, `vercel deploy --prebuilt --prod`.
-3. **smoke**: `GET /api/health` on production returns 200.
+1. **gate**: deploys only the current head of `main`, so production never moves backwards (an older commit is skipped). The commit must have passed `ci / checks`, `ci / database`, `ci / docs` and `ci / build`, it must have come from a merged pull request, and that pull request's head must have passed `e2e / preview`. Anything else fails the run. A missing secret from §9.8 fails here too, with its name.
+2. **migrate**: `supabase db push --db-url` over the Supabase session pooler (IPv4; the Free plan's direct connection is IPv6-only). A failure stops the deploy.
+3. **app**: `vercel pull`, `vercel build --prod`, `vercel deploy --prebuilt --prod`.
+4. **smoke**: `GET /api/health` on production returns 200.
 
 Vercel's automatic production deploy from Git is turned off (`vercel.json`), so the app never ships ahead of its schema. Migrations are forward-only and compatible with the previously deployed app; a breaking change is split into expand and contract PRs.
 
@@ -517,18 +525,20 @@ Vercel's automatic production deploy from Git is turned off (`vercel.json`), so 
 
 No secret is committed or pasted into chat. Database URLs are the **session pooler** URI from each Supabase project's Connect dialog (port 5432, user `postgres.<project-ref>`).
 
+GitHub Free keeps environment secrets to public repositories (D-36), so every GitHub secret below is a repository secret, which any workflow run in the repository can read. Only the owner and Claude Code push, and a change to a workflow is reviewed in the pull request diff like any other code (R-25).
+
 | Name | Kind | Stored in | Used by |
 |---|---|---|---|
-| `SUPABASE_DB_URL` | secret | GitHub, environment `production` | migrate, keepalive, backup |
+| `SUPABASE_DB_URL` | secret | GitHub repository | migrate, keepalive, backup |
 | `PREVIEW_DB_URL` | secret | GitHub repository | e2e (preview rebuild), keepalive |
 | `SUPABASE_PROJECT_ID` = `jpzwmibrsvsxcimbxtmb` | variable | GitHub repository | preview guard |
 | `SUPABASE_PREVIEW_PROJECT_ID` | variable | GitHub repository | preview guard |
-| `VERCEL_TOKEN` | secret | GitHub, environment `production` | app deploy |
+| `VERCEL_TOKEN` | secret | GitHub repository (a Vercel token scoped to the project's team, with an expiry) | app deploy |
 | `VERCEL_ORG_ID` = `team_A8TfHlLyTc2toipq0WsMVKvK`, `VERCEL_PROJECT_ID` = `prj_DnYxdFgs03cQOWsKZklobWGCTYqe` | variables | GitHub repository | app deploy |
 | `VERCEL_AUTOMATION_BYPASS_SECRET` | secret | GitHub repository (value from Vercel → Deployment Protection) | e2e on protected previews |
 | `PRODUCTION_URL` = `https://family-wise-topaz.vercel.app` | variable | GitHub repository | smoke check |
-| `DEPLOY_ENABLED` = `true` | variable | GitHub repository | turns on production deploys |
-| `BACKUP_PASSPHRASE` | secret | GitHub, environment `production` | nightly backup encryption (WP-24) |
+| `DEPLOY_ENABLED` = `true` | variable | GitHub repository | turns on production deploys (set last, in WP-41) |
+| `BACKUP_PASSPHRASE` | secret | GitHub repository | nightly backup encryption (WP-24) |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (`sb_publishable_…`) | env | Vercel: Production → production project; Preview → preview project | app (browser-safe; RLS applies) |
 | `SUPABASE_SECRET_KEY` (`sb_secret_…`, marked Sensitive) | env, server only | Vercel: Production → production project; Preview → preview project | jobs, derived tables (bypasses RLS; never `NEXT_PUBLIC_`) |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | env (browser-safe) | Vercel: Production and Preview | admin app subscribes to push (WP-40) |
@@ -541,7 +551,7 @@ No secret is committed or pasted into chat. Database URLs are the **session pool
 |---|---|---|
 | Supabase | Free: production project + preview project (the plan allows two active projects) | 0 |
 | Vercel | Hobby (personal, non-commercial) | 0 |
-| GitHub | Free, private repository (Actions minutes are capped per month; this pipeline uses a fraction) | 0 |
+| GitHub | Free, private repository: no branch protection or environment secrets (D-36); Actions minutes are capped per month (§9.10) | 0 |
 | Domain | optional until ACC-06 or custom email (OQ-06b) | about 1–2 if bought |
 | Web Push | Apple, Google and Mozilla push services | 0 |
 | Apple Developer Program | only for Sign in with Apple (ACC-06) | about 8 if joined |
@@ -555,6 +565,8 @@ No secret is committed or pasted into chat. Database URLs are the **session pool
 | Projects pause after about a week of low database activity | `keepalive.yml` writes a heartbeat to both projects four times a day (`private.heartbeat`). A failed run (usually a paused project) emails you; the runbook restores it from the dashboard. The board keeps working from its offline cache meanwhile (§7). After launch, pg_cron jobs and the board add activity too. |
 | No usable automatic backups | Nightly `backup.yml` (WP-24): `pg_dump` over the session pooler, compressed, encrypted with `BACKUP_PASSPHRASE`, kept as a private workflow artifact for 30 days. Restore drill: decrypt and load into the preview project. Storage files (catalog and goal images) are not in the dump; they are re-uploadable. |
 | Direct database connection is IPv6-only | All CI access uses the session pooler URI (IPv4). |
+| GitHub Free: no branch protection, environment secrets or required reviewers on a private repository | The deploy gate enforces the pull request gates (§9.6); every secret is a repository secret (§9.8); squash-only merges (D-36). |
+| GitHub Free: a monthly cap on Actions minutes for a private repository (2,000 at the time of writing), each job rounded up to the minute | A CI run is four parallel jobs of about a minute each, and a newer push cancels the older run on the same branch. If a busy month nears the cap, GitHub → Settings → Billing shows usage. |
 | No per-PR database branches | One shared preview project, rebuilt per e2e run (§9.5). |
 | Built-in auth email reaches only Supabase team members, about 2 per hour | Password sign-in needs no email. Invites are shareable links (WP-03), so they do not depend on email. Magic links and password resets reach anyone added to the Supabase organization's team until custom SMTP (a free-tier email provider, which needs a domain) is configured. |
 | Usage caps (database size, storage, egress, realtime connections) | Our expected use is a small fraction: one household, a few devices, small JSON snapshots. System Health tracks usage; check current limits on Supabase's pricing page. |

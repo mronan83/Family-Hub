@@ -1,10 +1,16 @@
-# Ordered production deploy (01 §9.6): migrations first, then the app, then a smoke check.
-# Migrations go through the Supabase session pooler (IPv4; the Free plan's direct connection is
-# IPv6-only). Enabled once the secrets in 01 §9.8 exist: set the repository variable DEPLOY_ENABLED=true.
+# Ordered production deploy (01 §9.6): gate, then migrations, then the app, then a smoke check.
+# GitHub Free does not enforce branch protection or environment secrets on a private repository
+# (D-36), so the PR gates are enforced here instead: only the head of main deploys, and only if it
+# came from a merged pull request, passed every CI check, and its pull request passed e2e on its
+# preview. Migrations go through the Supabase session pooler (IPv4; the Free plan's direct
+# connection is IPv6-only). Enabled once the secrets in 01 §9.8 exist: set the repository variable
+# DEPLOY_ENABLED=true.
 name: deploy
 
 on:
-  push:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -14,16 +20,78 @@ concurrency:
 
 permissions:
   contents: read
+  checks: read
+  pull-requests: read
 
 jobs:
-  migrate:
+  gate:
     if: vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-24.04
-    environment: production
+    outputs:
+      sha: ${{ steps.check.outputs.sha }}
+      deploy: ${{ steps.check.outputs.deploy }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      CI_CONCLUSION: ${{ github.event.workflow_run.conclusion || 'manual' }}
+      HAS_SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL != '' }}
+      HAS_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN != '' }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+    steps:
+      - id: check
+        run: |
+          set -euo pipefail
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          fail() { echo "::error::Not deploying ${SHA:0:7}: $*"; exit 1; }
+          skip() { echo "::notice::Not deploying ${SHA:0:7}: $*"; echo "deploy=false" >> "$GITHUB_OUTPUT"; exit 0; }
+
+          missing=()
+          [ "$HAS_SUPABASE_DB_URL" = true ] || missing+=(SUPABASE_DB_URL)
+          [ "$HAS_VERCEL_TOKEN" = true ] || missing+=(VERCEL_TOKEN)
+          [ -n "$VERCEL_ORG_ID" ] || missing+=(VERCEL_ORG_ID)
+          [ -n "$VERCEL_PROJECT_ID" ] || missing+=(VERCEL_PROJECT_ID)
+          [ -n "$PRODUCTION_URL" ] || missing+=(PRODUCTION_URL)
+          [ ${#missing[@]} -eq 0 ] || fail "missing configuration: ${missing[*]} (docs/01-technical-architecture.md §9.8)"
+
+          [ "$GITHUB_EVENT_NAME" != workflow_dispatch ] || [ "$GITHUB_REF" = refs/heads/main ] \
+            || fail "manual deploys run from main only"
+
+          # A newer commit on main deploys in its own run; production never moves backwards.
+          head=$(gh api "repos/$REPO/commits/main" --jq .sha)
+          [ "$head" = "$SHA" ] || skip "main has moved on to ${head:0:7}"
+          [ "$CI_CONCLUSION" != cancelled ] || skip "its ci run was cancelled"
+          [ "$CI_CONCLUSION" = success ] || [ "$CI_CONCLUSION" = manual ] || fail "ci finished '$CI_CONCLUSION'"
+
+          # Every CI gate passed on this commit.
+          for check in checks database docs build; do
+            c=$(gh api "repos/$REPO/commits/$SHA/check-runs?check_name=$check" --jq '.check_runs[0].conclusion // "missing"')
+            [ "$c" = success ] || fail "ci / $check is '$c'"
+          done
+
+          # It came from a merged pull request whose preview passed e2e.
+          pr=$(gh api "repos/$REPO/commits/$SHA/pulls" \
+            --jq '[.[] | select(.merged_at != null and .base.ref == "main")][0] | "\(.number) \(.head.sha)"')
+          read -r number head_sha <<< "$pr"
+          [ "$number" != null ] || fail "it reached main without a merged pull request"
+          e2e=$(gh api "repos/$REPO/commits/$head_sha/check-runs?check_name=preview" --jq '.check_runs[0].conclusion // "missing"')
+          [ "$e2e" = success ] || fail "e2e / preview on PR #$number is '$e2e'"
+
+          echo "deploy=true" >> "$GITHUB_OUTPUT"
+          echo "Deploying ${SHA:0:7} from PR #$number"
+
+  migrate:
+    needs: gate
+    if: needs.gate.outputs.deploy == 'true'
+    runs-on: ubuntu-24.04
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
       - uses: supabase/setup-cli@v3
         with:
           version: 2.117.0
@@ -31,15 +99,16 @@ jobs:
       - run: supabase migration list --db-url "$SUPABASE_DB_URL"
 
   app:
-    needs: migrate
+    needs: [gate, migrate]
     runs-on: ubuntu-24.04
-    environment: production
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:

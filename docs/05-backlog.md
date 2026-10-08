@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.7 · Status: build baseline · Maintained by Claude Code
+> v0.7.2: branch protection is not enforced on a private repository on GitHub Free, so the deploy workflow enforces the gates (D-36). Y-1 is now the squash-only merge setting; Y-2..Y-4 give the exact steps; all GitHub secrets are repository secrets.
 > v0.7.1: PR #1 merged; WP-01 and WP-02 done. WP-01's live-environment checks move to WP-41 (blocked on Y-2..Y-4); Y-1 is now branch protection.
 > v0.7: WP-40 reminders (web push, switchable per person, device and item; D-35).
 > v0.6: one family list (D-30..D-34): WP-08 becomes chores, tasks, tags and visibility (L); WP-09 generates one shared occurrence per due date and carries tasks over (L); WP-12 adds My tasks (L); WP-02/04 add the earns-rewards switch; WP-10, WP-11, WP-15, WP-16, WP-17, WP-19 and WP-37 take the new rules.
@@ -18,10 +19,10 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 
 | Item | Action | Where | Unblocks |
 |---|---|---|---|
-| Y-1 | Turn on branch protection for `main` as in `01` §9.3: pull request required, the CI checks required (plus e2e once WP-41 is done), squash merge only | GitHub → Settings → Branches | Every later merge passes its checks first |
-| Y-2 | Create the second Supabase Free project (`familywise-preview`) and share its project ref, the ID in its URL (not a key) | Supabase dashboard → New project | WP-41 (e2e on previews), SPIKE-01 |
-| Y-3 | Add the GitHub secrets and variables listed in `01` §9.8 | GitHub → Settings → Secrets and variables → Actions | WP-41 (deploy, keepalive and e2e workflows), SPIKE-05 |
-| Y-4 | Add the Vercel environment variables in `01` §9.8 for Production and Preview (publishable key, secret key, `JOB_SIGNING_SECRET`); create the protection bypass secret | Vercel → family-wise → Settings | WP-41, WP-03 sign-in on previews, SPIKE-05 |
+| Y-1 | Allow squash merging only, and turn on automatic deletion of head branches. Branch protection is not enforced on a private repository on GitHub Free; the deploy gate enforces the checks instead (`01` §9.3, D-36) | GitHub → Settings → General → Pull Requests | One commit per work package on `main` |
+| Y-2 | Create the second Supabase Free project (`familywise-preview`) in the same region as production, keep its database password in your password manager, and share its project ref, the ID in its URL (not a key) | Supabase dashboard → New project | WP-41 (e2e on previews), SPIKE-01 |
+| Y-3 | Add the GitHub repository secrets and variables listed in `01` §9.8 (all at repository level; no environment), except `DEPLOY_ENABLED`, which WP-41 sets last | GitHub → Settings → Secrets and variables → Actions | WP-41 (deploy, keepalive and e2e workflows), SPIKE-05 |
+| Y-4 | Add the Vercel environment variables in `01` §9.8 for Production and Preview (publishable key, secret key, `JOB_SIGNING_SECRET`); create the protection bypass secret; keep Deployment Protection on Standard Protection, so previews need a login and the production domain stays public | Vercel → family-wise → Settings | WP-41, WP-03 sign-in on previews, SPIKE-05 |
 | Y-5 | Invite your spouse to the Supabase organization team, so the built-in mailer can deliver their magic links | Supabase → Organization → Team | WP-03 done-when (second admin signs in by magic link) |
 | Y-6 | Publish one iCloud calendar and save its link as the repository secret `ICS_SPIKE_URL` | iCloud Calendar → Share → Public Calendar; GitHub secrets | SPIKE-02, then WP-22 and WP-29 |
 | Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
@@ -227,7 +228,7 @@ flowchart LR
 - pnpm monorepo (`apps/web`, `packages/rules-engine`, `packages/ui`, `packages/adapters`, `supabase`, `e2e`, `scripts`, `docs`, `brand`), TypeScript strict, ESLint, Prettier.
 - CI without Docker (`01` §9.3–9.4): checks (lint, format, typecheck, Vitest, migration lint, traceability), database (native Postgres + compatibility bootstrap + pgTAP), build.
 - Preview pipeline: Vercel previews per PR; one shared Supabase Free preview project rebuilt from the PR's migrations for each serialized e2e run (`scripts/preview-db.sh`); e2e against the preview.
-- Production pipeline: migrate (`supabase db push`) → app (`vercel deploy --prod`) → smoke; Vercel auto production deploy off.
+- Production pipeline: gate (head of `main`, from a merged PR, every CI check and e2e green; D-36) → migrate (`supabase db push`) → app (`vercel deploy --prod`) → smoke; Vercel auto production deploy off.
 - Free-plan operations (`01` §9.10): keepalive heartbeat to both projects; migrations over the session pooler.
 - Secrets inventory and cost ceiling written in `01` §9.8–9.9; PR template with the docs checklist.
 - **Done when:** a PR runs all CI gates green without Docker, and the e2e, deploy and keepalive workflows exist and stop at a clear configuration check until their secrets exist. Running them live is WP-41.
@@ -235,8 +236,8 @@ flowchart LR
 ### WP-41 — Turn on previews, production deploys, and keepalive
 **Phase:** P0 · **Size:** S · **Depends on:** WP-01 · **Reqs:** NFR-14, NFR-08
 - Starts once the owner has done Y-2 (preview project), Y-3 (GitHub secrets and variables) and Y-4 (Vercel environment variables).
-- First live runs of the WP-01 workflows: rebuild the preview database and run e2e on a preview; set `DEPLOY_ENABLED` and run migrate, then app, then smoke against production; keepalive writing to both projects. Add e2e to the required checks (Y-1).
-- **Done when:** e2e passes on a preview against the rebuilt preview database; a merge runs migrate, then app, then smoke against production; keepalive writes to both projects.
+- First live runs of the WP-01 workflows: rebuild the preview database and run e2e on a preview; set `DEPLOY_ENABLED` and run migrate, then app, then smoke against production; keepalive writing to both projects. The gate needs e2e green on the merged pull request, so the first production deploy comes from a pull request opened after Y-2..Y-4.
+- **Done when:** e2e passes on a preview against the rebuilt preview database; a merge runs gate, then migrate, then app, then smoke against production; the gate refuses a commit that did not come through a merged pull request with every check green; keepalive writes to both projects.
 
 ### WP-37 — Brand system and design tokens
 **Phase:** P0 · **Size:** M · **Depends on:** WP-01 · **Reqs:** NFR-13

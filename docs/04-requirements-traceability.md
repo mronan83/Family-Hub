@@ -333,9 +333,11 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | R-19 | Supabase's built-in email reaches only team members, about 2 per hour, so magic links and resets can fail | High | Med | Password sign-in needs no email; invites are shareable links; add both parents to the Supabase team; custom SMTP once a domain exists (OQ-06b) |
 | R-20 | No automatic backups on Supabase Free | Med | High | Nightly encrypted `pg_dump` kept 30 days; rehearsed restore into the preview project (WP-24, L-06) |
 | R-21 | Free-plan limits or policies change | Low | Med | Usage on System Health; the cost ceiling records that a paid upgrade is a deliberate decision |
-| R-22 | Parents keep their own to-dos in other apps, so the family list goes stale and the board loses trust | Med | High | My tasks on the phone with quick add (CHR-14); the Family view shows everyone's day; reminders are an open question (OQ-13) |
+| R-22 | Parents keep their own to-dos in other apps, so the family list goes stale and the board loses trust | Med | High | My tasks on the phone with quick add (CHR-14); the Family view shows everyone's day; reminders by web push, switchable per person (D-35) |
 | R-23 | A private item leaks through the board snapshot, an audit row, or the other admin's view | Low | High | One RLS rule on the item, its occurrences, events and audit rows; pgTAP proves the board and the other admin see nothing; the snapshot reads through RLS |
 | R-24 | Web push on iPhone works only for the admin app added to the Home Screen with permission granted, and Apple can change the rules | Med | Med | Onboarding step with a test notification; Settings lists each device's last delivery; My tasks and the board work without push; launch check L-10 on real phones |
+| R-25 | Production secrets are repository secrets, readable by any workflow run on any branch (GitHub Free, private repository) | Low | High | Only the owner and Claude Code push; workflow changes are reviewed in the pull request diff; the Vercel token is scoped to the team and expires; the database password and the token can be rotated from their dashboards |
+| R-26 | A commit reaches `main` without passing its checks, since GitHub Free does not enforce branch protection on a private repository | Low | Med | The deploy gate refuses to ship it and the failed run emails the owner; fix forward in a pull request or revert (D-36) |
 
 ### Spikes (time-boxed, before dependent work)
 
@@ -362,6 +364,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | A-09 | Free plans only: Supabase Free (two projects), Vercel Hobby, GitHub Free. |
 | A-10 | Family members trust each other at the board: anyone can check off any family-visible item, and each check-off records who did it and that it came from the board. |
 | A-11 | Parents use iPhones on iOS 16.4 or later and add the admin app to the Home Screen, which web push requires. |
+| A-12 | The repository stays private, and only the owner and Claude Code (acting for the owner) push to it. |
 
 ---
 
@@ -379,6 +382,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.7.2 | GitHub Free does not enforce branch protection, environment secrets or required reviewers on a private repository (D-36). The deploy workflow now enforces the pull request gates: it ships only the head of `main`, from a merged pull request, with every CI check and e2e green. All GitHub secrets are repository secrets. Y-1 becomes the squash-only merge setting. R-25, R-26, A-12. |
 | 0.7.1 | PR #1 merged: WP-01 and WP-02 done. WP-01's live-environment checks (e2e on a preview, first production deploy, keepalive on both projects) move to new WP-41, blocked on owner setup Y-2..Y-4. Y-1 is now branch protection for `main`. |
 | 0.7 | Reminders for parents (D-35, OQ-13 answered): web push, off until switched on, switchable per person, device and item; at most once per item, never after done; quiet hours, morning digest, private titles hidden. New CHR-15..CHR-17 (US-317..US-319), component `NOTIFY`, WP-40, L-10, R-24, A-11. |
 | 0.6 | One family list (D-30..D-34): chores and tasks for every member in one model; one shared occurrence per due date with `done_by` credit and `covered` for the others; routines get missed, tasks carry over as overdue; optional due time; household tag list driving goals by id; family-visible unless private; earns-rewards switch per member. New CHR-09..CHR-14, BRD-07, PTS-07 (US-311..US-316, US-1006, US-1109); CHR-01, CHR-03, CHR-04, CHR-07, BRD-02, PTS-01, RWD-02, RWD-12 reworded; R-22, R-23, A-10; WP-08, WP-09 and WP-12 grow to L. |
