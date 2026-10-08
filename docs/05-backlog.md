@@ -17,7 +17,7 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 
 | Item | Action | Where | Unblocks |
 |---|---|---|---|
-| Y-1 | Your go-ahead to open the pull request for `claude/p0-foundation` (WP-01, WP-02) | Reply in the build session | Merge to `main` and the first production deploy; WP-37, WP-07, WP-15 start from merged work |
+| Y-1 | Review and merge pull request #1 (WP-01, WP-02, docs v0.7), then turn on branch protection for `main` as in `01` §9.3 (pull request required, CI checks plus e2e, squash merge only) | GitHub → Pull requests → #1; Settings → Branches | Merge to `main`; WP-37, WP-07, WP-15 start from merged work |
 | Y-2 | Create the second Supabase Free project (`familywise-preview`) and share its project ref, the ID in its URL (not a key) | Supabase dashboard → New project | e2e on previews (WP-01 done-when), SPIKE-01 |
 | Y-3 | Add the GitHub secrets and variables listed in `01` §9.8 | GitHub → Settings → Secrets and variables → Actions | deploy, keepalive and e2e workflows; SPIKE-05 |
 | Y-4 | Add the Vercel environment variables in `01` §9.8 for Production and Preview (publishable key, secret key, `JOB_SIGNING_SECRET`); create the protection bypass secret | Vercel → family-wise → Settings | WP-03 sign-in on previews, SPIKE-05 |
