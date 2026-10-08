@@ -36,7 +36,7 @@ jobs:
       SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
       CI_CONCLUSION: ${{ github.event.workflow_run.conclusion || 'manual' }}
       HAS_SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL != '' }}
-      HAS_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN != '' }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
       PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
@@ -50,11 +50,16 @@ jobs:
 
           missing=()
           [ "$HAS_SUPABASE_DB_URL" = true ] || missing+=(SUPABASE_DB_URL)
-          [ "$HAS_VERCEL_TOKEN" = true ] || missing+=(VERCEL_TOKEN)
+          [ -n "$VERCEL_TOKEN" ] || missing+=(VERCEL_TOKEN)
           [ -n "$VERCEL_ORG_ID" ] || missing+=(VERCEL_ORG_ID)
           [ -n "$VERCEL_PROJECT_ID" ] || missing+=(VERCEL_PROJECT_ID)
           [ -n "$PRODUCTION_URL" ] || missing+=(PRODUCTION_URL)
           [ ${#missing[@]} -eq 0 ] || fail "missing configuration: ${missing[*]} (docs/01-technical-architecture.md §9.8)"
+
+          # The token must reach the project before anything touches the database.
+          status=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID?teamId=$VERCEL_ORG_ID" || true)
+          [ "$status" = 200 ] || fail "VERCEL_TOKEN cannot open the Vercel project (HTTP $status): create the token with its scope set to the project's team"
 
           [ "$GITHUB_EVENT_NAME" != workflow_dispatch ] || [ "$GITHUB_REF" = refs/heads/main ] \
             || fail "manual deploys run from main only"
