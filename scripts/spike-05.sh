@@ -14,7 +14,7 @@ DURATIONS=${DURATIONS:-30 120 240 290 310}
 BURST=${BURST:-10}
 IDLE=${IDLE:-300} # seconds without calls, as between 5-minute jobs
 CRON_JOB=spike-05-cron
-summary=${GITHUB_STEP_SUMMARY:-/dev/stdout}
+summary=${GITHUB_STEP_SUMMARY:-/dev/null} # the report also goes to the log
 export PROBE="$PREVIEW_URL/api/jobs/spike" PRODUCTION_URL VERCEL_AUTOMATION_BYPASS_SECRET
 
 sql() { psql "$SUPABASE_DB_URL" -X -A -t -q -v ON_ERROR_STOP=1 "$@"; }
@@ -99,7 +99,7 @@ sleep 15 # let the last cron calls answer
 
 # Report -------------------------------------------------------------------------------------------
 REQS=$(echo $cold $warm $timed $burst $idle) JOB="$job" FROM="$cron_from" TO="$cron_to" \
-  VERSIONS="$versions" IDLE="$IDLE" sql >> "$summary" <<'SQL'
+  VERSIONS="$versions" IDLE="$IDLE" sql <<'SQL' | tee -a "$summary"
 \getenv reqs REQS
 \getenv job JOB
 \getenv from FROM
@@ -155,4 +155,4 @@ from (select status_code as code, count(*) as n from net._http_response
       group by status_code) as answers;
 SQL
 
-echo "SPIKE-05 measured; results are in the job summary"
+echo "SPIKE-05 measured; the report above is also in the job summary"
