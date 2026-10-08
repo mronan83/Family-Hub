@@ -498,7 +498,7 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 
 ### 9.4 Database tests without Docker
 
-- `supabase/tests/bootstrap/` recreates what the hosted platform provides: the `anon`, `authenticated`, `service_role` and `authenticator` roles; an `auth` schema with `auth.users`, `auth.uid()`, `auth.jwt()` and `auth.role()` reading `request.jwt.claims`; the `extensions` schema; and stand-ins for `vault`, `pg_cron`, `pg_net` and the `supabase_realtime` publication.
+- `supabase/tests/bootstrap/` recreates what the hosted platform provides: the `anon`, `authenticated`, `service_role` and `authenticator` roles; an `auth` schema with `auth.users`, `auth.uid()`, `auth.jwt()` and `auth.role()` reading `request.jwt.claims`; the `extensions` schema; and the `supabase_realtime` publication. `pg_cron`, `pg_net` and Vault exist only on hosted Supabase: the scheduler migration enables the two extensions only where they are available, and the job path is measured and tested on the real project (SPIKE-05, then e2e in WP-07).
 - `scripts/db-test.sh` creates a throwaway database, applies the bootstrap and then every migration in filename order, runs `pg_prove` over `supabase/tests/*.test.sql`, and drops the database.
 - Tests act as a principal with `set local role authenticated` plus `set local request.jwt.claims`, exactly as PostgREST does.
 - The bootstrap is never deployed. Migrations must not depend on it beyond what Supabase itself provides.

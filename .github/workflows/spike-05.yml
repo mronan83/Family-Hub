@@ -21,7 +21,7 @@ jobs:
       github.event.deployment.environment != 'Production' &&
       startsWith(github.event.deployment.ref, 'claude/spike-05')
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     env:
       PREVIEW_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}

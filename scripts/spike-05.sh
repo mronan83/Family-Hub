@@ -12,6 +12,7 @@ set -euo pipefail
 : "${SUPABASE_DB_URL:?}" "${PREVIEW_URL:?}" "${VERCEL_AUTOMATION_BYPASS_SECRET:?}" "${PRODUCTION_URL:?}"
 DURATIONS=${DURATIONS:-30 120 240 290 310}
 BURST=${BURST:-10}
+IDLE=${IDLE:-300} # seconds without calls, as between 5-minute jobs
 CRON_JOB=spike-05-cron
 summary=${GITHUB_STEP_SUMMARY:-/dev/stdout}
 export PROBE="$PREVIEW_URL/api/jobs/spike" PRODUCTION_URL VERCEL_AUTOMATION_BYPASS_SECRET
@@ -74,7 +75,7 @@ select cron.schedule('spike-05-cron', '20 seconds', format(
 SQL
 )
 
-# Cold, then warm, then every duration and a burst at once ----------------------------------------
+# Cold, then warm, then every duration and a burst at once, then a call after an idle gap ----------------------------------------
 # (Plain assignments, so a failed call stops the script.)
 cold=$(send cold 0)
 DEADLINE=$(( $(now) + 60 )) wait_for $cold
@@ -84,20 +85,24 @@ timed=$(send duration $DURATIONS)
 burst=$(send burst $(printf '5 %.0s' $(seq "$BURST")))
 longest=$(printf '%s\n' $DURATIONS | sort -n | tail -1)
 DEADLINE=$(( $(now) + longest + 60 )) wait_for $timed $burst
+sleep "$IDLE"
+idle=$(send idle 0)
+DEADLINE=$(( $(now) + 60 )) wait_for $idle
 
 unschedule
 cron_to=$(now)
 sleep 15 # let the last cron calls answer
 
 # Report -------------------------------------------------------------------------------------------
-REQS=$(echo $cold $warm $timed $burst) JOB="$job" FROM="$cron_from" TO="$cron_to" \
-  VERSIONS="$versions" sql >> "$summary" <<'SQL'
+REQS=$(echo $cold $warm $timed $burst $idle) JOB="$job" FROM="$cron_from" TO="$cron_to" \
+  VERSIONS="$versions" IDLE="$IDLE" sql >> "$summary" <<'SQL'
 \getenv reqs REQS
 \getenv job JOB
 \getenv from FROM
 \getenv to TO
 \getenv versions VERSIONS
 \getenv probe PROBE
+\getenv idle IDLE
 create temp table req as
 select split_part(x, ':', 1) as tag, split_part(x, ':', 2)::int as seconds,
        split_part(x, ':', 3)::bigint as id, split_part(x, ':', 4)::numeric as sent
@@ -122,12 +127,15 @@ select format('| %s | %s s | %s | %s s | %s | %s | %s | %s |',
   case when (j->>'cold')::boolean then 'cold start, ' || (j->>'bootCpuMs') || ' ms CPU to boot' else
     replace(left(regexp_replace(coalesce(error_msg, case when j is null then content end, ''), '\s+', ' ', 'g'), 90), '|', '/') end)
 from res
-order by array_position(array['cold', 'warm', 'duration', 'burst'], tag), seconds, id;
+order by array_position(array['cold', 'warm', 'duration', 'burst', 'idle'], tag), seconds, id;
 
 select format(e'\n**Burst:** %s of %s calls answered 200 on %s instance(s); slowest after %s s.\n',
   count(*) filter (where status_code = 200), count(*), count(distinct j->>'instance'),
   round(max(extract(epoch from created) - sent), 1))
 from res where tag = 'burst';
+select format(e'**Idle:** after %s s without calls, the next call ran on instance %s, %s.\n',
+  :'idle', coalesce(j->>'instance', '–'), case when (j->>'cold')::boolean then 'a cold start' else 'still warm' end)
+from res where tag = 'idle';
 
 select e'### pg_cron every 20 seconds (health check and a job call on production)\n';
 select format('- Cron runs: %s, recorded as %s; first %s, last %s, %s s apart on average.',
