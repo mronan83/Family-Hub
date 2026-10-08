@@ -21,8 +21,7 @@ jobs:
   measure:
     if: >-
       github.event.deployment_status.state == 'success' &&
-      github.event.deployment.environment != 'Production' &&
-      startsWith(github.event.deployment.ref, 'claude/spike-05')
+      github.event.deployment.environment != 'Production'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -31,11 +30,27 @@ jobs:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
     steps:
-      - uses: actions/checkout@v7
+      # Vercel's deployment events do not name the branch reliably, so ask GitHub which branches
+      # point at the deployed commit.
+      - name: Only for claude/spike-05* branches
+        id: branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.deployment.sha }}
+          REF: ${{ github.event.deployment.ref }}
+        run: |
+          heads=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/branches-where-head" --jq '.[].name' || true)
+          echo "deployment ref: $REF; branches at ${SHA:0:7}: ${heads:-none}"
+          if printf '%s\n%s\n' "$REF" "$heads" | grep -q '^claude/spike-05'; then
+            echo "spike=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.branch.outputs.spike == 'true'
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.deployment.sha }}
       - name: Measure
+        if: steps.branch.outputs.spike == 'true'
         run: bash scripts/spike-05.sh
       - name: Remove the temporary cron job
-        if: always()
+        if: always() && steps.branch.outputs.spike == 'true'
         run: psql "$SUPABASE_DB_URL" -X -q -c "select cron.unschedule(jobid) from cron.job where jobname = 'spike-05-cron'" || true
