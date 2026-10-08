@@ -16,9 +16,9 @@ jobs:
   checks:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -38,24 +38,30 @@ jobs:
       PGUSER: postgres
       PGPASSWORD: postgres
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install Postgres and pgTAP (PGDG, matches Supabase's major version)
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq postgresql-common
           sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
           sudo apt-get install -y -qq "postgresql-${PG_MAJOR}" "postgresql-${PG_MAJOR}-pgtap" libtap-parser-sourcehandler-pgtap-perl
-          sudo pg_ctlcluster "${PG_MAJOR}" main start || sudo systemctl start postgresql
-          sudo -u postgres psql -p "$(pg_lsclusters -h | awk -v v="$PG_MAJOR" '$1==v {print $3}')" -c "alter user postgres password 'postgres'"
-          echo "PGPORT=$(pg_lsclusters -h | awk -v v="$PG_MAJOR" '$1==v {print $3}')" >> "$GITHUB_ENV"
+          # The runner image does not create clusters automatically
+          if ! pg_lsclusters -h | awk -v v="$PG_MAJOR" '$1==v && $2=="main" {found=1} END {exit !found}'; then
+            sudo pg_createcluster "$PG_MAJOR" main
+          fi
+          sudo pg_ctlcluster "$PG_MAJOR" main start
+          port="$(pg_lsclusters -h | awk -v v="$PG_MAJOR" '$1==v && $2=="main" {print $3}')"
+          sudo -u postgres psql -p "$port" -c "alter user postgres password 'postgres'"
+          echo "PGPORT=$port" >> "$GITHUB_ENV"
+          psql -p "$port" -h localhost -U postgres -Atc 'select version()'
       - run: bash scripts/db-test.sh
 
   build:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
