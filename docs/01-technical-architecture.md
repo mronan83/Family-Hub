@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.3: the deploy gate is `scripts/deploy-gate.sh`, and a test in `ci / checks` drives it through every refusal (§9.3, §9.6).
 > v0.8.2: WP-37 brand system: `UI` builds its assets from `brand/` (§4); `ci / build` also runs the brand checks (§9.3).
 > v0.8: one database (D-37): previews run as the demo family in the production project; the delivery loop includes your preview and approval (§9.1–9.5, §9.7–9.10, §11).
 > v0.7.2: GitHub Free limits (D-36): the deploy workflow enforces the pull request gates (§9.2, §9.3, §9.6); all GitHub secrets are repository secrets (§9.8); GitHub Free constraints in §9.10.
@@ -482,7 +483,7 @@ Claude Code opens the pull request as soon as a work package is built and its ch
 
 | Check | What runs | Required |
 |---|---|---|
-| `ci / checks` | frozen-lockfile install, ESLint, Prettier check, typecheck, Vitest (rules engine ≥ 90% coverage), migration lint, `check_traceability.py` | yes |
+| `ci / checks` | frozen-lockfile install, ESLint, Prettier check, typecheck, Vitest (rules engine ≥ 90% coverage), deploy gate refusals (`scripts/deploy-gate.test.mjs`), migration lint, `check_traceability.py` | yes |
 | `ci / database` | `scripts/db-test.sh`: throwaway database on native Postgres, compatibility bootstrap, all migrations in order, pgTAP via `pg_prove` | yes |
 | `ci / docs` | `pnpm docs:build --check` (no broken cross-link or unknown ID in the five docs pages), then `pnpm docs:layout`: each page on 13 device profiles from a 320 px phone to a 4K monitor, failing on sideways scroll, content off screen, touch targets under 44 px, or script errors | yes |
 | `ci / build` | `next build` for `apps/web`, then the brand checks against `next start` (`pnpm test:ui`): computed-style snapshots of every tile state in Day and Evening, axe contrast on the board, admin and brand pages, both manifests, self-hosted fonts and the service-worker precache | yes |
@@ -516,7 +517,7 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 
 `deploy.yml` runs when `ci` finishes on `main`, or by hand from `main`:
 
-1. **gate**: deploys only the current head of `main`, so production never moves backwards (an older commit is skipped). The commit must have passed `ci / checks`, `ci / database`, `ci / docs` and `ci / build`, it must have come from a merged pull request, and that pull request's head must have passed `e2e / preview`. Anything else fails the run. A missing secret from §9.8 fails here too, with its name, and so does a `VERCEL_TOKEN` that cannot open the project, before anything touches the database.
+1. **gate**: deploys only the current head of `main`, so production never moves backwards (an older commit is skipped). The commit must have passed `ci / checks`, `ci / database`, `ci / docs` and `ci / build`, it must have come from a merged pull request, and that pull request's head must have passed `e2e / preview`. Anything else fails the run. A missing secret from §9.8 fails here too, with its name, and so does a `VERCEL_TOKEN` that cannot open the project, before anything touches the database. The gate is `scripts/deploy-gate.sh`; `scripts/deploy-gate.test.mjs` runs it against recorded GitHub responses for each refusal, in `ci / checks`.
 2. **migrate**: `supabase db push --db-url` over the Supabase session pooler (IPv4; the Free plan's direct connection is IPv6-only). A failure stops the deploy.
 3. **app**: `vercel pull`, `vercel build --prod`, `vercel deploy --prebuilt --prod`.
 4. **smoke**: `GET /api/health` on production returns 200.

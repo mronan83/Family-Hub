@@ -117,7 +117,16 @@ export function backlog(m, ctx) {
             : ''
         }</li>`,
     )
-    .join('')}</ol></div>`;
+    .join('')}</ol>${
+    m.waitingDone.length
+      ? `<details class="yours-done"><summary>Done (${m.waitingDone.length})</summary><ul>${m.waitingDone
+          .map(
+            (y) =>
+              `<li id="${y.id.toLowerCase()}"><span class="yid">${y.id}</span><span>${mdInline(y.outcome, ctx)}</span></li>`,
+          )
+          .join('')}</ul></details>`
+      : ''
+  }</div>`;
 
   // Milestones × size ---------------------------------------------------------------
   const rows = MILESTONES.map((ms) => {

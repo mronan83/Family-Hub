@@ -71,6 +71,8 @@ function buildIndex(m) {
     add(l.id, 'requirements', l.id.toLowerCase(), l.check, '', 'Launch check');
   for (const y of m.waiting)
     add(y.id, 'backlog', y.id.toLowerCase(), y.action, '', 'Waiting on you');
+  for (const y of m.waitingDone)
+    add(y.id, 'backlog', y.id.toLowerCase(), y.outcome, 'done', 'Owner setup · done');
   for (const c of m.components)
     add(
       c.id,

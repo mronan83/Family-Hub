@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.5: §0 lists only open owner actions; Y-1 to Y-4 move to a Done table. WP-41 done: PR #4's merge deployed on its own, and the gate's refusals are tested.
 > v0.8.4: production is live and dark: the first deploy ran gate, migrate, app and smoke after the token was rescoped; keepalive wrote its first heartbeat. WP-41 closes when its own merge deploys automatically.
 > v0.8.3: WP-37 done (PR #3); Y-4 done; WP-41 in progress: the first production deploy reached the app step, and the deploy token needs the project's team as its scope.
 > v0.8.2: WP-37 in progress on `claude/wp-37-brand`.
@@ -24,14 +25,19 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 
 | Item | Action | Where | Unblocks |
 |---|---|---|---|
-| Y-1 | Allow squash merging only, and turn on automatic deletion of head branches. Branch protection is not enforced on a private repository on GitHub Free; the deploy gate enforces the checks instead (`01` §9.3, D-36) | GitHub → Settings → General → Pull Requests | One commit per work package on `main` |
-| Y-2 | Nothing to do: dropped, because previews use the one database (D-37) | — | — |
-| Y-3 | **Done.** Add the GitHub repository secrets `SUPABASE_DB_URL`, `VERCEL_TOKEN` and `VERCEL_AUTOMATION_BYPASS_SECRET`, and the variables `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` and `PRODUCTION_URL` (`01` §9.8; repository level, no environment). `DEPLOY_ENABLED` is set last, in WP-41 | GitHub → Settings → Secrets and variables → Actions | WP-41 (deploy, keepalive and e2e workflows), SPIKE-01, SPIKE-05 |
-| Y-4 | **Done.** In Vercel, add `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for Production and Preview, and `SUPABASE_SECRET_KEY` and `JOB_SIGNING_SECRET` (both Sensitive) for Production only (`01` §9.8); create the protection bypass secret and a deploy token; keep Deployment Protection on Standard Protection | Vercel → family-wise → Settings; Account Settings → Tokens | WP-41, WP-03 sign-in on previews, SPIKE-01, SPIKE-05 |
 | Y-5 | Invite your spouse to the Supabase organization team, so the built-in mailer can deliver their magic links | Supabase → Organization → Team | WP-03 done-when (second admin signs in by magic link) |
 | Y-6 | Publish one iCloud calendar and save its link as the repository secret `ICS_SPIKE_URL` | iCloud Calendar → Share → Public Calendar; GitHub secrets | SPIKE-02, then WP-22 and WP-29 |
 | Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
 | Y-8 | Choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
+
+**Done**
+
+| Item | Outcome |
+|---|---|
+| Y-1 | Squash-only merges and automatic branch deletion are on. Branch protection is not available for a private repository on GitHub Free, so the deploy gate enforces the checks (D-36). |
+| Y-2 | Dropped: previews use the one database as the demo family (D-37). |
+| Y-3 | GitHub repository secrets and variables are in place, including `DEPLOY_ENABLED`; the deploy token is scoped to the project's team. |
+| Y-4 | Vercel keys are in place: publishable key for Production and Preview, secret key and job signing secret for Production only. |
 
 ---
 
@@ -47,7 +53,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | SPIKE-04 | School menu platform and feed | P2 | S | — | Done: Nutrislice public JSON API (`01` §5.5) |
 | SPIKE-03 | Pi 5 + 32" 4K panel: touch, kiosk flags, power, animation budget | P1a | S | — | Blocked: hardware being sourced (OQ-05b) |
 | WP-01 | Repo, CI/CD pipeline, environments | P0 | M | — | Done (PR #1) |
-| WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | In review (PR #4) |
+| WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | Done (PR #4, #5) |
 | WP-37 | Brand system and design tokens | P0 | M | WP-01 | Done (PR #3) |
 | WP-02 | Tenancy schema and RLS | P0 | M | WP-01 | Done (PR #1) |
 | WP-03 | Admin authentication and onboarding | P0 | M | WP-02, WP-37 | Queued |
@@ -243,6 +249,7 @@ flowchart LR
 - Starts once the owner has done Y-3 (GitHub secrets and variables) and Y-4 (Vercel environment variables).
 - First live runs of the WP-01 workflows: apply the migrations, seed the demo family and run e2e on a preview; set `DEPLOY_ENABLED` and run migrate, then app, then smoke against production; keepalive writing to the project. The gate needs e2e green on the merged pull request, so the first production deploy comes from a pull request opened after Y-3 and Y-4.
 - **Done when:** e2e passes on a preview as the demo family; a merge runs gate, then migrate, then app, then smoke against production; the gate refuses a commit that did not come through a merged pull request with every check green; keepalive writes to the project.
+- **Outcome:** e2e passed on the previews of PRs #2 to #4; PR #4's merge ran gate, migrate, app and smoke on its own; keepalive wrote its heartbeat; the gate is `scripts/deploy-gate.sh`, and `ci / checks` tests every refusal (missing configuration, a token that cannot open the project, a manual run off `main`, a failed or missing check, no merged pull request, e2e not green on the preview).
 
 ### WP-37 — Brand system and design tokens
 **Phase:** P0 · **Size:** M · **Depends on:** WP-01 · **Reqs:** NFR-13

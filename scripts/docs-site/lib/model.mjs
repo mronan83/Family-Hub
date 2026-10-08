@@ -2,7 +2,7 @@
 // nothing here is hand-maintained, so the pages cannot drift from the markdown.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { bullets, need, parseDoc, records, slug, stripMd, table } from './md.mjs';
+import { bullets, need, parseDoc, records, slug, stripMd, table, tables } from './md.mjs';
 import {
   gitInfo,
   scanMigrations,
@@ -221,6 +221,10 @@ export function loadModel(root) {
     unblocks: r.unblocks,
     items: ids(r.unblocks, ITEM_RX),
   }));
+  // Owner actions already done or dropped: a second table in §0, kept so old references resolve.
+  m.waitingDone = (tables(need(B, '0.').md)[1] ? records(table(need(B, '0.').md, 1)) : []).map(
+    (r) => ({ id: r.item, outcome: r.outcome }),
+  );
   m.statusLegend =
     need(B, '1.')
       .md.split('\n')
