@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.4: production is live and dark: the first deploy ran gate, migrate, app and smoke after the token was rescoped; keepalive wrote its first heartbeat. WP-41 closes when its own merge deploys automatically.
 > v0.8.3: WP-37 done (PR #3); Y-4 done; WP-41 in progress: the first production deploy reached the app step, and the deploy token needs the project's team as its scope.
 > v0.8.2: WP-37 in progress on `claude/wp-37-brand`.
 > v0.8.1: Y-3 done (GitHub secrets and variables); SPIKE-01, SPIKE-05 and WP-41 wait only on Y-4.
@@ -46,7 +47,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | SPIKE-04 | School menu platform and feed | P2 | S | — | Done: Nutrislice public JSON API (`01` §5.5) |
 | SPIKE-03 | Pi 5 + 32" 4K panel: touch, kiosk flags, power, animation budget | P1a | S | — | Blocked: hardware being sourced (OQ-05b) |
 | WP-01 | Repo, CI/CD pipeline, environments | P0 | M | — | Done (PR #1) |
-| WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | In progress: deploy token scope (Y-3) |
+| WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | In review (PR #4) |
 | WP-37 | Brand system and design tokens | P0 | M | WP-01 | Done (PR #3) |
 | WP-02 | Tenancy schema and RLS | P0 | M | WP-01 | Done (PR #1) |
 | WP-03 | Admin authentication and onboarding | P0 | M | WP-02, WP-37 | Queued |

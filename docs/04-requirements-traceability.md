@@ -383,6 +383,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.4 | First production deploy: gate, migrate, app and smoke passed on `main` (production serves the build, dark until launch); keepalive wrote its first heartbeat. Pull requests open automatically when a work package is built and tested (owner's standing instruction). |
 | 0.8.3 | WP-37 merged (PR #3); owner setup Y-4 done. The first production deploy passed the gate and the migrate step, then stopped because the deploy token could not open the Vercel project; the gate now checks the token before the database is touched. |
 | 0.8.2 | WP-37 brand system: Evening `--success` is Leaf 400 (8.33:1 on the Evening surface; Leaf 600 was 2.89:1); `.theme-day` and `.theme-evening` force a theme on part of a page; brand checks join `ci / build`. NFR-13 now has tests. |
 | 0.8.1 | Owner setup Y-3 done: GitHub repository secrets and variables are in place, so the e2e workflow runs live on previews. |
