@@ -2,6 +2,7 @@ import { Banner, Button } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
+import { day } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { revokeInvite } from './actions';
 import { AdminHeader } from './header';
@@ -10,16 +11,6 @@ import { InviteForm } from './invite-form';
 export const metadata: Metadata = { title: 'Home' };
 
 const WEEK_START = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-/** "Tue, Oct 7" in the household's timezone (06 §2). */
-function day(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    timeZone,
-  }).format(new Date(iso));
-}
 
 const NOTICES: Record<string, string> = {
   welcome: 'Your household is ready. Invite another admin below when you like.',

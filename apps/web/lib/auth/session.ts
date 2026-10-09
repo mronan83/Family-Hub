@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
+import { isDeviceClaims } from '../devices';
 import { signInPath } from './next';
 
 export interface SignedIn {
@@ -24,8 +25,7 @@ export async function signedIn(db: SupabaseClient): Promise<SignedIn | null> {
   const { data, error } = await db.auth.getClaims();
   const claims = data?.claims;
   if (error || !claims?.sub) return null;
-  const appRole = (claims.app_metadata as { role?: string } | undefined)?.role;
-  if (appRole === 'device') return null;
+  if (isDeviceClaims(claims)) return null;
   return { userId: claims.sub, email: typeof claims.email === 'string' ? claims.email : null };
 }
 

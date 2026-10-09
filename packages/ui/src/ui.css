@@ -472,6 +472,70 @@ body {
   color: var(--missed-text);
 }
 
+/* Pairing (WP-05): the code an admin reads out, and the board's keypad ---------------------- */
+.fw-pairing-code {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--t-hero);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+.fw-pair {
+  display: grid;
+  gap: var(--s-6);
+  justify-items: center;
+  width: min(100%, 720px);
+}
+.fw-pair__code {
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--t-title);
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+.fw-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-3);
+  width: 100%;
+}
+.fw-keypad .fw-btn {
+  min-height: var(--touch-primary);
+  font-size: var(--t-title);
+}
+
+/* Board home until the board shell (WP-06) ------------------------------------------------- */
+.fw-board-home {
+  display: grid;
+  gap: var(--s-8);
+  min-height: 100vh;
+  padding: var(--s-8) var(--s-12);
+  align-content: start;
+}
+.fw-board-home h1 {
+  margin: 0;
+  font-size: var(--t-title);
+}
+.fw-board-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-board-members li {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-3);
+}
+.fw-live {
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+
 /* Avatar ------------------------------------------------------------------------------------ */
 .fw-avatar {
   display: inline-flex;

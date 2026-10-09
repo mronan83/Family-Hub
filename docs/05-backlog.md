@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.11: SPIKE-01 done and WP-05 in review (PR #11): boards pair in the database and heal themselves (D-40). WP-04 done (PR #10).
 > v0.8.10: WP-03 done (PR #9). WP-04 in review (PR #10).
 > v0.8.9: WP-07 done. WP-03 in review (PR #9): private by invitation (D-39); Y-5 is no longer a blocker; new Y-9 before launch.
 > v0.8.8: WP-07 in review (PR #8): the job framework, error log and job-secret workflow; the System Health page moves to new WP-42, after WP-03 (admin sign-in), so it is built once, behind sign-in.
@@ -53,7 +54,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 
 | Item | Title | Milestone | Size | Depends on | Status |
 |---|---|---|---|---|---|
-| SPIKE-01 | Device sessions + Realtime under RLS | P0 | S | WP-02 | Ready |
+| SPIKE-01 | Device sessions + Realtime under RLS | P0 | S | WP-02 | Done (PR #11, `01` §5.1) |
 | SPIKE-05 | `pg_cron`/`pg_net` → Vercel job limits | P0 | S | WP-01 | Done (PR #6) |
 | SPIKE-02 | iCloud ICS fidelity; CalDAV with a secondary Apple ID | P1d | S | — | Blocked: needs a published iCloud calendar link |
 | SPIKE-04 | School menu platform and feed | P2 | S | — | Done: Nutrislice public JSON API (`01` §5.5) |
@@ -63,8 +64,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-37 | Brand system and design tokens | P0 | M | WP-01 | Done (PR #3) |
 | WP-02 | Tenancy schema and RLS | P0 | M | WP-01 | Done (PR #1) |
 | WP-03 | Admin authentication and onboarding | P0 | M | WP-02, WP-37 | Done (PR #9) |
-| WP-04 | Members UI | P0 | S | WP-03, WP-37 | In review (PR #10) |
-| WP-05 | Device pairing and device auth | P0 | L | WP-03 | Queued |
+| WP-04 | Members UI | P0 | S | WP-03, WP-37 | Done (PR #10) |
+| WP-05 | Device pairing and device auth | P0 | L | WP-03 | In review (PR #11) |
 | WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | Queued |
 | WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Done (PR #8) |
 | WP-42 | System Health page | P0 | S | WP-03, WP-07 | Queued |
@@ -295,7 +296,8 @@ flowchart LR
 ### WP-05 — Device pairing and device auth
 **Phase:** P0 · **Size:** L · **Depends on:** WP-03 · **Reqs:** DEV-01, DEV-02, DEV-03, NFR-04
 - SPIKE-01 first.
-- Pairing code issue and redeem (single-use, 10-minute TTL, hashed), creating a Supabase Auth device user with `app_metadata` (`role=device`, `household_id`, `device_id`).
+- Pairing code issue and redeem (8 digits on the board's keypad, single-use, 10-minute TTL, hashed, wrong codes throttled), creating the board's Supabase Auth user in the database with `app_metadata` (`role=device`, `household_id`, `device_id`), so previews pair as production does (D-40).
+- The board keeps its credential and signs itself in again when its session lapses.
 - Device list, rename, revoke, last seen. Revocation takes effect through `device.status` in the RLS helper.
 - Device write scope limited to `/api/completions` and `/api/redemptions` (routes added later); reads through RLS. A board session that calls an admin route or action gets 403 (US-102); admin pages already treat it as signed out (WP-03).
 - **Done when:** a second browser pairs with a code, reads board data, and loses access within seconds of revocation (E2E).

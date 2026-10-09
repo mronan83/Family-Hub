@@ -53,6 +53,7 @@ test('[NFR-13] the page theme and a scoped theme resolve to the same tokens', as
 
 const CONTRAST_PAGES: [string, 'light' | 'dark'][] = [
   ['/board', 'light'],
+  ['/board/pair', 'dark'],
   ['/sign-in', 'light'],
   ['/sign-in', 'dark'],
   ['/setup', 'light'],
@@ -124,9 +125,11 @@ test('[NFR-13] board and admin each link their own manifest, titles and icons', 
 test('[NFR-13] the board boot splash is Evening with the reversed logo, whatever the time', async ({
   page,
 }) => {
+  // An unpaired board opens on the pairing step of the boot surface (WP-05).
   await page.goto('/board');
-  await expect(page.getByRole('heading', { name: 'Getting your day ready' })).toBeVisible();
-  await expect(page.locator('.fw-splash .fw-logo__evening')).toBeVisible();
+  await expect(page).toHaveURL(/\/board\/pair$/);
+  await expect(page.getByRole('heading', { name: 'Pair this board' })).toBeVisible();
+  await expect(page.locator('.fw-splash.theme-evening .fw-logo__evening')).toBeVisible();
 });
 
 test('[NFR-13] fonts are self-hosted and precached for offline use', async ({ page }) => {

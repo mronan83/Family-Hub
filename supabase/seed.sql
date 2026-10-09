@@ -19,6 +19,10 @@ delete from public.household h
       where hu.household_id = h.id and u.email not like '%@demo.familywise.invalid');
 delete from public.household where id = '0de00000-0000-4000-8000-000000000001';
 delete from auth.users where email like '%@demo.familywise.invalid';
+-- Boards whose device row is gone (e2e's, with the demo family): their sign-ins go too (WP-05).
+delete from auth.users u
+ where u.email like 'device-%@devices.familywise.invalid'
+   and not exists (select from public.device d where d.auth_user_id = u.id);
 -- Setup codes left behind: used by a household that is gone (e2e's), or expired unused.
 delete from private.household_setup_code
  where (used_at is not null and household_id is null) or (used_at is null and expires_at < now());

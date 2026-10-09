@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.3: US-201 and US-202: 8-digit codes on the board's keypad, a board that signs itself in again, and disconnecting for good (WP-05, D-40).
 > v0.8.2: US-104 covers the earns-rewards default, linking an adult to their sign-in, and restoring an archived member (WP-04).
 > v0.8.1: onboarding is by setup code and invite link, with no public sign-up (US-101, US-102, US-103; D-39).
 > v0.8: US-911 follows the delivery loop: you preview as the demo family and approve before anything merges (D-37); US-903 and US-909 for one database.
@@ -78,15 +79,16 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-201 — Pair the board
 **As an** admin **I want** to pair the kitchen display using a short code **so that** it shows my household without anyone signing in on it.
 **Priority:** Must · **Phase:** P0 · **Reqs:** DEV-01, DEV-02
-- Given I generate a code in admin, when the board submits it within 10 minutes, then the board receives a device session and loads the household's data.
-- Given a code was already used or expired, when it is submitted, then it is rejected.
+- Given I name a board in admin and get its 8-digit code, when it is typed on the board's keypad within 10 minutes, then the board receives a device session and loads the household's data.
+- Given a code was already used or expired, when it is submitted, then it is rejected; after 20 wrong codes in 10 minutes, pairing pauses.
+- Given a paired board loses its session (a lost refresh, cleared cookies), when it next loads, then it signs itself in again without anyone at the screen.
 - Given a paired board, when it attempts to write anything other than completions, then the request is denied.
 
 ### US-202 — Manage and revoke devices
 **As an** admin **I want** to see, rename, and revoke paired devices **so that** a lost or retired display can't access my family's data.
 **Priority:** Must · **Phase:** P0 · **Reqs:** DEV-03, DEV-02
 - Given a device is listed, when I view it, then I see name, status, and last-seen time.
-- Given I revoke a device, when it next queries or its realtime channel receives data, then access is denied immediately and it returns to the pairing screen.
+- Given I revoke a device, when it next queries or its realtime channel receives data, then access is denied immediately and it returns to the pairing screen; it cannot sign in again and is paired anew as a new board.
 
 ### US-203 — Lock the kiosk to the board
 **As an** admin **I want** the display to be locked to the board experience **so that** my child can't wander into admin or the browser.

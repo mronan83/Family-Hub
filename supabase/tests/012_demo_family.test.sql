@@ -1,7 +1,7 @@
 -- [NFR-14] The demo family seed resets only the demo household and never touches another (D-37).
 -- [ACC-02] It creates the four demo sign-ins (D-39), without passwords.
 begin;
-select plan(11);
+select plan(12);
 
 insert into public.household (id, name, timezone) values
   ('44444444-4444-4444-4444-444444444444', 'Real family', 'America/Chicago'),
@@ -19,8 +19,15 @@ insert into public.household_user (household_id, user_id, role) values
   ('66666666-6666-6666-6666-666666666666', 'a0000000-0000-0000-0000-0000000000aa', 'owner'),
   ('66666666-6666-6666-6666-666666666666', 'a0000000-0000-0000-0000-0000000000db', 'admin');
 
--- Twice: running the seed again resets the demo family rather than duplicating it.
+-- Twice: running the seed again resets the demo family rather than duplicating it. In between,
+-- e2e pairs a demo board, and a real household has one.
 \ir ../seed.sql
+insert into auth.users (id, email) values
+  ('a0000000-0000-0000-0000-0000000000b1', 'device-old@devices.familywise.invalid'),
+  ('a0000000-0000-0000-0000-0000000000b2', 'device-kept@devices.familywise.invalid');
+insert into public.device (household_id, name, auth_user_id) values
+  ('0de00000-0000-4000-8000-000000000001', 'Demo board', 'a0000000-0000-0000-0000-0000000000b1'),
+  ('44444444-4444-4444-4444-444444444444', 'Real board', 'a0000000-0000-0000-0000-0000000000b2');
 \ir ../seed.sql
 
 select is((select count(*)::int from public.household where id = '0de00000-0000-4000-8000-000000000001'), 1,
@@ -53,6 +60,10 @@ select is((select count(*)::int from auth.users where email like '%@demo.familyw
 select is((select count(*)::int from auth.identities i join auth.users u on u.id = i.user_id
             where u.email like '%@demo.familywise.invalid' and i.provider = 'email'), 4,
   '[ACC-02] each demo sign-in has its email identity');
+
+select is((select string_agg(email, ',' order by email) from auth.users where email like '%@devices.familywise.invalid'),
+  'device-kept@devices.familywise.invalid',
+  '[NFR-14] a demo board''s sign-in goes with the demo family; a real board''s stays (WP-05)');
 
 select * from finish();
 rollback;
