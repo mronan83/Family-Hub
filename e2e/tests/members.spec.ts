@@ -54,7 +54,7 @@ test.beforeAll(() => {
 
 test('[ACC-04] the demo family lists its children and adults', async ({ page }) => {
   await asAlex(page);
-  const list = page.getByRole('list', { name: 'Members' });
+  const list = page.getByRole('list', { name: 'Members', exact: true });
   for (const name of ['Maya', 'Leo', 'Alex', 'Sam']) await expect(list).toContainText(name);
   await expect(list).toContainText('Signs in as sam@demo.familywise.invalid');
   await expectContrastOk(page);
@@ -93,7 +93,7 @@ test('[PTS-07] the switch can be changed for anyone', async ({ page }) => {
   const form = page.getByRole('form', { name: 'Edit member' });
   await form.getByRole('switch', { name: 'Earns rewards' }).check();
   await form.getByRole('button', { name: 'Save changes' }).click();
-  await expect(page.getByRole('list', { name: 'Members' })).toContainText(
+  await expect(page.getByRole('list', { name: 'Members', exact: true })).toContainText(
     'Pat · Adult · Earns rewards',
   );
   expect(
@@ -121,7 +121,7 @@ test('[ACC-04] an adult is linked to an admin, and only to one member', async ({
   form = page.getByRole('form', { name: 'Edit member' });
   await form.getByLabel('Their sign-in').selectOption({ label: 'sam@demo.familywise.invalid' });
   await form.getByRole('button', { name: 'Save changes' }).click();
-  await expect(page.getByRole('list', { name: 'Members' })).toContainText(
+  await expect(page.getByRole('list', { name: 'Members', exact: true })).toContainText(
     'Signs in as sam@demo.familywise.invalid',
   );
   expect(
@@ -147,7 +147,7 @@ test('[ACC-04] archiving takes a member off the list and keeps them; restoring b
   await asAlex(page);
   await page.getByRole('link', { name: 'Edit Ava' }).click();
   await page.getByRole('button', { name: 'Archive Ava' }).click();
-  await expect(page.getByRole('list', { name: 'Members' })).not.toContainText('Ava');
+  await expect(page.getByRole('list', { name: 'Members', exact: true })).not.toContainText('Ava');
   await expect(page.getByRole('list', { name: 'Archived members' })).toContainText('Ava');
   expect(
     sql(
@@ -156,7 +156,7 @@ test('[ACC-04] archiving takes a member off the list and keeps them; restoring b
   ).toBe('t');
 
   await page.getByRole('button', { name: 'Restore Ava' }).click();
-  await expect(page.getByRole('list', { name: 'Members' })).toContainText('Ava');
+  await expect(page.getByRole('list', { name: 'Members', exact: true })).toContainText('Ava');
   expect(
     sql(`select count(*) from public.audit_log where household_id = '${DEMO}' and entity_type = 'member'
            and actor_id = '0de00000-0000-4000-8000-0000000000a1' and action = 'update' and diff ? 'archived_at' and at >= '${since}'`),
