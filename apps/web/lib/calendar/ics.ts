@@ -174,7 +174,8 @@ export function scrubIcs(text: string): string {
   for (const v of vevents) {
     const n = label.get(String(v.getFirstPropertyValue('uid')));
     for (const name of PERSONAL) v.removeAllProperties(name);
-    for (const p of v.getAllProperties()) if (p.name.startsWith('x-')) v.removeProperty(p);
+    // Copy first: removing from the live list while walking it would skip the next property.
+    for (const p of [...v.getAllProperties()]) if (p.name.startsWith('x-')) v.removeProperty(p);
     v.removeAllSubcomponents('valarm');
     v.updatePropertyWithValue('uid', `event-${n}@familywise.test`);
     v.updatePropertyWithValue('summary', `Event ${n}`);

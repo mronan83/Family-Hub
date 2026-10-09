@@ -1,14 +1,10 @@
-// SPIKE-02 (01 §5.4): reads the published iCloud test calendar (ICS_SPIKE_URL, owner item Y-6) the
-// way calendar sync will, and reports what iCloud serves (headers, caching, structure) and how the
-// calendar expands with lib/calendar/ics.ts. Writes the calendar with personal details removed, and
-// its expansion, to the folder given, for fixtures. Prints no link and no event text: event titles
-// in the report are the scrubbed "Event n". Run it from the spike-02 workflow.
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+// SPIKE-02 (01 §5.4): reads the published calendar in ICS_SPIKE_URL (owner item Y-6) the way
+// calendar sync will, and reports what iCloud serves (headers, caching, structure) and whether it
+// expands correctly with lib/calendar/ics.ts. The link may be a real family calendar, so the report
+// holds counts and checks only: no link, no event text, no dates. Run it from the spike-02 workflow.
 import ICAL from 'ical.js';
-import { expandIcs, icsUrl, scrubIcs } from '../lib/calendar/ics.ts';
+import { expandIcs, icsUrl } from '../lib/calendar/ics.ts';
 
-const out = process.argv[2] ?? 'spike-02';
 if (!process.env.ICS_SPIKE_URL) {
   console.log(
     'ICS_SPIKE_URL is not set: save the published calendar link as that repository secret (Y-6).',
@@ -99,13 +95,17 @@ for (const n of [
 say(
   `| VEVENTs | ${vevents.length}: ${masters.length} series or single events, ${overrides.length} overrides (RECURRENCE-ID) |`,
 );
+// Rule parts only (FREQ, INTERVAL, BYDAY…), never their values.
+const ruleShape = (r) =>
+  r
+    .toString()
+    .replace(/=[^;]*/g, '')
+    .replace(/;/g, '+');
+const shapes = masters
+  .filter((v) => v.hasProperty('rrule'))
+  .map((v) => ruleShape(v.getFirstPropertyValue('rrule')));
 say(
-  `| Recurring | ${masters.filter((v) => v.hasProperty('rrule')).length}; rules: ${
-    masters
-      .filter((v) => v.hasProperty('rrule'))
-      .map((v) => `\`${v.getFirstPropertyValue('rrule').toString()}\``)
-      .join(', ') || '–'
-  } |`,
+  `| Recurring | ${shapes.length}; rule parts: ${[...new Set(shapes)].map((x) => `\`${x}\``).join(', ') || '–'} |`,
 );
 say(`| EXDATE values | ${vevents.flatMap((v) => v.getAllProperties('exdate')).length} |`);
 say(`| STATUS values | ${statuses.length ? [...new Set(statuses)].join(', ') : 'none'} |`);
@@ -116,7 +116,7 @@ say(
 say(
   `| VTIMEZONE blocks | ${[...zones].join(', ') || 'none'} (every zone used is defined: ${[...tzids].every((z) => zones.has(z))}) |`,
 );
-say(`| Event years | ${years[0] ?? '–'} to ${years.at(-1) ?? '–'} |`);
+say(`| Years spanned | ${years.length ? Number(years.at(-1)) - Number(years[0]) + 1 : 0} |`);
 say(`| Event properties seen | ${[...names].sort().join(', ')} |`);
 
 // Expansion -------------------------------------------------------------------------------------
@@ -128,34 +128,49 @@ const window = {
   to: day(new Date(today.getTime() + 90 * 864e5)),
   timeZone,
 };
-const scrubbed = scrubIcs(first.body);
-const instances = expandIcs(scrubbed, window);
-const local = (iso) =>
+const t0 = performance.now();
+const instances = expandIcs(first.body, window);
+const expandMs = Math.round(performance.now() - t0);
+const hm = (iso) =>
   new Intl.DateTimeFormat('en-US', {
     timeZone,
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
+    hour: '2-digit',
     minute: '2-digit',
-    timeZoneName: 'short',
+    hourCycle: 'h23',
   }).format(new Date(iso));
+const offset = (iso) =>
+  new Intl.DateTimeFormat('en-US', { timeZone, timeZoneName: 'shortOffset' })
+    .formatToParts(new Date(iso))
+    .find((p) => p.type === 'timeZoneName')?.value;
 
-say();
-say(`### Expanded, ${window.from} to ${window.to} (${timeZone})`);
-say();
-say('| Event | Starts | Ends | All-day | Moved or edited |');
-say('|---|---|---|---|---|');
-for (const i of instances) {
-  say(
-    `| ${i.title} | ${i.allDay ? i.start : local(i.start)} | ${i.allDay ? `${i.end} (exclusive)` : local(i.end)} | ${i.allDay ? 'yes' : ''} | ${i.changed ? 'yes' : ''} |`,
-  );
-}
-
-mkdirSync(out, { recursive: true });
-writeFileSync(join(out, 'icloud-test.ics'), scrubbed);
-writeFileSync(
-  join(out, 'icloud-test.expanded.json'),
-  `${JSON.stringify({ window, instances }, null, 2)}\n`,
+// Weekly-or-faster timed series with instances on both sides of a clock change keep their local time.
+const bySeries = new Map();
+for (const i of instances.filter((x) => !x.allDay && !x.changed))
+  bySeries.set(i.uid, [...(bySeries.get(i.uid) ?? []), i]);
+const crossing = [...bySeries.values()].filter(
+  (list) => new Set(list.map((i) => offset(i.start))).size > 1,
 );
+const kept = crossing.filter((list) => new Set(list.map((i) => hm(i.start))).size === 1);
+const allDay = instances.filter((i) => i.allDay);
+const multiDay = allDay.filter((i) => Date.parse(i.end) - Date.parse(i.start) > 864e5);
+
+say();
+say(
+  `### Expanded over ${Math.round((Date.parse(window.to) - Date.parse(window.from)) / 864e5)} days (${timeZone})`,
+);
+say();
+say('| Check | Result |');
+say('|---|---|');
+say(`| Instances in the window | ${instances.length}, expanded in ${expandMs} ms |`);
+say(
+  `| Series that cross a clock change | ${crossing.length}; keep their local time: ${kept.length} of ${crossing.length} |`,
+);
+say(`| Moved or edited instances (overrides) | ${instances.filter((i) => i.changed).length} |`);
+say(
+  `| All-day instances | ${allDay.length}; spanning several days: ${multiDay.length}; every end after its start: ${allDay.every((i) => i.end > i.start)} |`,
+);
+say(
+  `| Timed instances with an end after their start | ${instances.filter((i) => !i.allDay).every((i) => i.end > i.start)} |`,
+);
+
 console.log(lines.join('\n'));

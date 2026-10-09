@@ -2,7 +2,11 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { expandIcs, icsUrl, scrubIcs } from './ics';
 
-const synthetic = readFileSync(new URL('./__fixtures__/synthetic.ics', import.meta.url), 'utf8');
+const fixture = (name: string) =>
+  readFileSync(new URL(`./__fixtures__/${name}`, import.meta.url), 'utf8');
+const synthetic = fixture('synthetic.ics');
+// The shape iCloud publishes (SPIKE-02: its properties, zone block and rule kinds), made-up events.
+const icloud = fixture('icloud-shape.ics');
 const AUTUMN = { from: '2026-10-01', to: '2027-01-01', timeZone: 'America/Chicago' };
 
 describe('published calendar links', () => {
@@ -82,5 +86,52 @@ describe('fixtures from a real calendar', () => {
       'Event 4',
     ]);
     expect(after[0]).toMatchObject({ uid: 'event-1@familywise.test', title: 'Event 1' });
+  });
+});
+
+describe('the shape iCloud publishes (SPIKE-02)', () => {
+  const detroit = { from: '2026-10-01', to: '2027-01-01', timeZone: 'America/Detroit' };
+  const all = expandIcs(icloud, detroit);
+  const of = (title: string) => all.filter((i) => i.title === title);
+
+  it('[CAL-07] a weekly series from last year keeps 8 pm across the Nov 1 change; the moved one moves', () => {
+    const weekly = of('Weekly evening');
+    expect(weekly.find((i) => i.start === '2026-10-21T00:00:00.000Z')).toBeTruthy(); // Oct 20, 8 pm EDT
+    expect(weekly.find((i) => i.start === '2026-11-04T01:00:00.000Z')).toBeTruthy(); // Nov 3, 8 pm EST
+    expect(weekly.filter((i) => i.changed).map((i) => i.start)).toEqual([
+      '2026-10-28T23:30:00.000Z', // Oct 28, 7:30 pm EDT instead of Oct 27
+    ]);
+    expect(weekly.some((i) => i.start === '2026-10-28T00:00:00.000Z')).toBe(false);
+  });
+
+  it('[CAL-07] yearly all-day events, ordinal and set-position monthly rules, and UTC times', () => {
+    expect(of('Yearly day').map((i) => [i.start, i.end])).toEqual([['2026-11-12', '2026-11-13']]);
+    expect(of('Every other month, second Monday').map((i) => i.start)).toEqual([
+      '2026-11-09T23:00:00.000Z',
+    ]);
+    expect(of('Twice a year, first Saturday').map((i) => i.start)).toEqual([
+      '2026-11-07T15:00:00.000Z',
+    ]);
+    expect(of('Set in UTC').map((i) => [i.start, i.end])).toEqual([
+      ['2026-10-29T16:30:00.000Z', '2026-10-29T17:30:00.000Z'],
+    ]);
+    expect(of('Several days').map((i) => [i.start, i.end])).toEqual([['2026-12-26', '2026-12-30']]);
+  });
+
+  it('scrubbing drops everything personal Apple adds: place, travel, notes, people, links', () => {
+    const scrubbed = scrubIcs(icloud);
+    for (const gone of [
+      'Example Place',
+      'Example Street',
+      'never reach',
+      'person@example.com',
+      'example.com/meeting',
+      'X-APPLE-STRUCTURED-LOCATION',
+      'X-APPLE-TRAVEL-START',
+      'geo:',
+    ]) {
+      expect(scrubbed).not.toContain(gone);
+    }
+    expect(expandIcs(scrubbed, detroit)).toHaveLength(all.length);
   });
 });

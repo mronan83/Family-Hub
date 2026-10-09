@@ -1,7 +1,7 @@
-# SPIKE-02 (01 §5.4), run by hand: reads the published iCloud test calendar (repository secret
-# ICS_SPIKE_URL, owner item Y-6) the way calendar sync will. The report (what iCloud serves, and how
-# the calendar expands across the clock change) lands in the run summary, and the calendar with
-# personal details removed is kept 7 days as the artifact spike-02, for fixtures. Prints no link.
+# SPIKE-02 (01 §5.4), run by hand: reads the published calendar in the repository secret
+# ICS_SPIKE_URL (owner item Y-6) the way calendar sync will. The report (what iCloud serves, and
+# whether the calendar expands correctly across the clock change) lands in the run summary as counts
+# and checks only: no link, no event text, no dates, so a real family calendar is safe to point at.
 # Actions → spike-02 → Run workflow.
 name: spike-02
 
@@ -29,9 +29,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Read the calendar
         shell: bash # pipefail: a failed read fails the step despite tee
-        run: node apps/web/scripts/spike-02.mjs "$RUNNER_TEMP/spike-02" | tee -a "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v7
-        with:
-          name: spike-02
-          path: ${{ runner.temp }}/spike-02
-          retention-days: 7
+        run: node apps/web/scripts/spike-02.mjs | tee -a "$GITHUB_STEP_SUMMARY"
