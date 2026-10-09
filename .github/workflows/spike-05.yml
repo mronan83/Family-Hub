@@ -1,0 +1,41 @@
+# SPIKE-05 measurement (01 §5.6), run by hand: pg_net in the production database calls the probe on
+# the preview you name, the way pg_cron jobs will call the job endpoints, and the report lands in the
+# log and the run summary. Use it to measure again, for example after Vercel changes its limits:
+# Actions → spike-05 → Run workflow, with the preview URL of any open pull request.
+name: spike-05
+
+on:
+  workflow_dispatch:
+    inputs:
+      preview_url:
+        description: 'Preview deployment URL, like https://family-wise-abc123-mronan83s-projects.vercel.app'
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spike-05
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PREVIEW_URL: ${{ inputs.preview_url }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+    steps:
+      # The bypass secret goes to this URL, so only a Vercel preview of this project is accepted.
+      - name: Check the preview URL
+        run: |
+          [[ "$PREVIEW_URL" =~ ^https://family-wise-[a-z0-9-]+\.vercel\.app$ ]] \
+            || { echo "::error::not a family-wise preview URL: $PREVIEW_URL"; exit 1; }
+      - uses: actions/checkout@v7
+      - name: Measure
+        run: bash scripts/spike-05.sh
+      - name: Remove the temporary cron job
+        if: always()
+        run: psql "$SUPABASE_DB_URL" -X -q -c "select cron.unschedule(jobid) from cron.job where jobname = 'spike-05-cron'" || true
