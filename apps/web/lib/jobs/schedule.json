@@ -1,0 +1,20 @@
+{
+  "$comment": "Job schedules (01 §5.6, D-38). The deploy turns this into pg_cron jobs named familywise-<name> (scripts/job-schedules.mjs) and into private.job_schedule rows for job_health. Cron times are UTC. HTTP jobs call /api/jobs/<name in kebab-case> and each owns its minutes: no two HTTP jobs share a minute (schedule.test.ts). SQL jobs run inside the database.",
+  "jobs": [
+    {
+      "name": "heartbeat",
+      "kind": "http",
+      "cron": "17 * * * *",
+      "everyMinutes": 60,
+      "purpose": "Sample job: proves pg_cron, pg_net, the job endpoint and job_run end to end, and reports scheduling lag."
+    },
+    {
+      "name": "purge_history",
+      "kind": "sql",
+      "cron": "43 3 * * *",
+      "everyMinutes": 1440,
+      "purpose": "Keeps history small: pg_cron run details 7 days, job_run 90 days, app_error 30 days.",
+      "sql": "delete from cron.job_run_details where end_time < now() - interval '7 days'; delete from public.job_run where started_at < now() - interval '90 days'; delete from private.app_error where occurred_at < now() - interval '30 days';"
+    }
+  ]
+}

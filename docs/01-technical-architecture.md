@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.6: WP-07 job framework: schedules as code synced by the deploy, `private.call_job`, `POST /api/jobs/[job]`, `job_health()`, the job-secret and job-run workflows, structured logs and `private.app_error` (§3, §5.6, §9.6, §9.8, §9.10).
 > v0.8.5: migrations run through `scripts/db-migrate.sh` in the deploy, e2e and CI: one database means it can hold an open pull request's migration that `main` lacks, which `supabase db push` refuses (§9.4–9.6).
 > v0.8.4: SPIKE-05 measured job calls on Vercel Hobby: the invocation pattern, the limits and the monthly budget are in §5.6; the job secret comes from a workflow (§9.8, D-38).
 > v0.8.3: the deploy gate is `scripts/deploy-gate.sh`, and a test in `ci / checks` drives it through every refusal (§9.3, §9.6).
@@ -136,7 +137,7 @@ flowchart TB
 | `VAULT` | Secrets | Calendar URLs/credentials, job signing secret. | Supabase Vault | CAL-01/08, NFR-04 |
 | `SAUTH` | Admin identity | Email magic link and email + password (required); Sign in with Apple and passkeys once the production domain exists; device principals live here too. | Supabase Auth | ACC-02, ACC-06, DEV-02 |
 | `PI` | Kiosk host | Raspberry Pi OS, Chromium kiosk, watchdog, screen power. | systemd, Chromium | DEV-04/07, NFR-02 |
-| `OBS` | Observability | Structured logs, error tracking, `job_run` table surfaced in admin. | Vercel logs, Sentry (optional) | NFR-07, CAL-06 |
+| `OBS` | Observability | Structured JSON logs without PII (`lib/log.ts`); server errors and failed jobs kept 30 days in `private.app_error` (`onRequestError`); `job_run` and `job_health()`; all shown on System Health (WP-42). | Vercel runtime logs, Postgres | NFR-07, CAL-06 |
 | `UI` | Design system | FamilyWise tokens (Day and Evening), self-hosted fonts, typed icon set, avatars and brand components (`ChoreTile`, `PointsChip`, `GoalMeter`, `Banner`, `Button`, `Logo`, `BootSplash`) shared by board and admin. `brand/` is the source of truth: `packages/ui/scripts/brand.mjs` generates the typed icons and theme colors (committed, checked in CI) and, before every dev run and build, copies fonts, logos, avatars and app icons into `apps/web/public` and writes the two manifests and the font-precaching service worker. | `packages/ui`, `brand/` | NFR-13, NFR-11 |
 | `CICD` | Delivery pipeline | Pull-request gates, preview environments, ordered production deploys (migrations, then app), docs traceability. No Docker, no staging. | GitHub Actions, Vercel, Supabase CLI, `psql`/`pg_dump` | NFR-14, NFR-12, NFR-08, NFR-10 |
 
@@ -287,6 +288,8 @@ sequenceDiagram
 
 | Job | Cadence | Target | Notes |
 |---|---|---|---|
+| `heartbeat` | hourly (minute 17) | `/api/jobs/heartbeat` | sample job (WP-07): counts members, reports how late the call arrived; reads only |
+| `purge_history` | daily 03:43 UTC (SQL, no call) | — | deletes cron run history after 7 days, `job_run` after 90, `private.app_error` after 30 |
 | `calendar_sync` | every 15 min per source, each source on its own minute | `/api/jobs/calendar-sync` | one source per invocation; advisory lock per source |
 | `menu_import` | daily | `/api/jobs/menu-import` | window 28 days ahead; skips override rows |
 | `occurrence_gen` | hourly + on chore edit | `/api/jobs/occurrence-gen` | one occurrence per item per due date, `UNIQUE (chore_id, due_date)` + `ON CONFLICT DO NOTHING`, with its `chore_occurrence_assignee` snapshot; rolling 14 days |
@@ -296,13 +299,15 @@ sequenceDiagram
 
 No two job calls are scheduled in the same minute: each schedule has its own minute (and the hourly and daily jobs avoid the 5-minute ones), so calls reach Vercel one at a time.
 
-#### Invocation pattern (SPIKE-05)
+#### Invocation pattern (SPIKE-05, built in WP-07)
 
-1. **pg_cron** starts the job on its schedule. Its command is one `net.http_post` to `/api/jobs/<job>` with `Authorization: Bearer <job secret>`, read from `vault.decrypted_secrets` inside the command, and `timeout_milliseconds := 30000`.
-2. **pg_net** sends the call after the cron command commits. pg_cron records the run as `succeeded` as soon as the call is queued, whatever the endpoint answers, so cron's history only says the job was started. `cron.job_run_details` is never purged on its own: a nightly job deletes rows older than 7 days.
-3. **The endpoint** checks the bearer (`jobAuthError`: constant-time compare, 503 where the secret is not set, 401 otherwise), writes a `job_run` row (`running`), **answers 202 at once**, and does the work after the response with Next.js `after()`, inside the same invocation. The work finishes well inside 300 s (one source or one household per call, a cursor for the rest), then sets `job_run` to `ok`, `error` or `skipped`.
-4. **Health** comes from `job_run`, not from cron: a job whose last `ok` is older than twice its cadence, or a `running` row older than 5 minutes, shows as failing on the health page (WP-07). Every job is idempotent with catch-up, so a missed or repeated call is harmless.
-5. **The job secret** is generated by a workflow and written straight to Vault and to Vercel's production environment, then production is redeployed; nobody sees or pastes it, and rotating it is the same workflow (WP-07). Previews never hold it (D-37).
+1. **Schedules are code.** `apps/web/lib/jobs/schedule.json` lists every job: its name, `http` or `sql`, a UTC cron expression and its cadence. After each production deploy's smoke check, `scripts/job-schedules.mjs` turns it into pg_cron jobs named `familywise-<name>` (created, updated, and removed when no longer listed) and into `private.job_schedule` rows. A test refuses two HTTP jobs that share a minute.
+2. **pg_cron** runs an HTTP job's command, `select private.call_job('<name>')`. `call_job` reads `job_signing_secret` and `job_base_url` from Vault and queues one `net.http_post` to `<base>/api/jobs/<name in kebab-case>` with `Authorization: Bearer <secret>`, `{scheduled_at}` and a 30 s timeout. Until both Vault secrets exist it does nothing, so jobs stay off until the job-secret workflow has run. An SQL job (`purge_history`) runs inside the database and makes no call.
+3. **pg_net** sends the call after the command commits. pg_cron records the run as `succeeded` as soon as the call is queued, whatever the endpoint answers, so cron's history only says the job was started. `purge_history` deletes cron's run history after 7 days, `job_run` after 90 and `private.app_error` after 30.
+4. **The endpoint** `POST /api/jobs/[job]` (`handleJob`, `lib/jobs/run.ts`) checks the bearer (`jobAuthError`: constant-time compare, 503 where the secret is not set, 401 otherwise), writes one `running` `job_run` row per household, **answers 202 at once**, and does the work after the response with Next.js `after()`, inside the same invocation: household by household, each told when it last succeeded (`since`) so it can catch up, within a 60 s budget (households left over are `skipped` and the next call catches up). Each row ends `ok`, `skipped` or `error`; a failure in one household does not stop the others, and is also kept in `private.app_error`.
+5. **Health** comes from `job_run`, never from cron: `public.job_health(household)` gives each HTTP job's state (`ok`, `running`, `stale` when nothing succeeded within twice its cadence, `failing` when the last run errored or ran 5 minutes without a result, `never`). The System Health page shows it (WP-42). Every job is idempotent, so a missed or repeated call is harmless.
+6. **The job secret** is generated by the `job-secret` workflow (`scripts/job-secret.sh`): written to Vercel's production environment, production redeployed and checked to accept it, then written to Vault with the app's address, then a heartbeat run through pg_cron's own path. Nobody sees or pastes it, and rotating it is the same workflow. Previews never hold it (D-37), so every job call to a preview answers 503.
+7. **Running a job by hand**: the `job-run` workflow calls `private.call_job` for a named job, optionally with `force_failure` (the run fails on purpose, to check it shows as failing), then prints the runs and the job's health.
 
 Answering at once matters because pg_net works through its queue in batches and starts the next batch only when every call in the current one has finished (measured below): a job that kept its call open for a minute would hold every other job call, and anything else using pg_net, for that minute.
 
@@ -514,7 +519,8 @@ flowchart LR
   gate --> mig["deploy: migrate<br/>scripts/db-migrate.sh"]
   mig --> app["deploy: app<br/>vercel --prod"]
   app --> smoke{"smoke<br/>/api/health"}
-  smoke --> dark["Production (dark until launch)"]
+  smoke --> sched["deploy: schedule<br/>pg_cron from schedule.json"]
+  sched --> dark["Production (dark until launch)"]
 ```
 
 Claude Code opens the pull request as soon as a work package is built and its checks pass, and sends you the preview link. Approval is your word to Claude Code, here or as a comment on the pull request: GitHub does not let you formally approve a pull request opened under your own account. Claude Code merges only after it, and only with every check green.
@@ -561,6 +567,7 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 2. **migrate**: `scripts/db-migrate.sh` over the Supabase session pooler (IPv4; the Free plan's direct connection is IPv6-only). It applies the commit's pending migrations in filename order, each in its own transaction together with its row in `supabase_migrations.schema_migrations`, so a failed migration leaves nothing behind, and reports migrations in the database that the commit lacks (an open pull request's preview applied them, §9.5). It refuses a migration file that commits part of itself (`BEGIN`/`COMMIT`). A failure stops the deploy. Tested in `ci / database` (`scripts/db-migrate.test.sh`).
 3. **app**: `vercel pull`, `vercel build --prod`, `vercel deploy --prebuilt --prod`.
 4. **smoke**: `GET /api/health` on production returns 200.
+5. **schedule**: `scripts/job-schedules.mjs` syncs the pg_cron jobs and `private.job_schedule` with `schedule.json` (§5.6), after the smoke check so no schedule calls an app that cannot answer it.
 
 Vercel's automatic production deploy from Git is turned off (`vercel.json`), so the app never ships ahead of its schema. Migrations are forward-only and compatible with the previously deployed app; a breaking change is split into expand and contract PRs.
 
@@ -590,6 +597,7 @@ GitHub Free keeps environment secrets to public repositories (D-36), so every Gi
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | env (browser-safe) | Vercel: Production and Preview | admin app subscribes to push (WP-40) |
 | `VAPID_PRIVATE_KEY` (Sensitive), `VAPID_SUBJECT` (`mailto:` contact) | env, server only | Vercel: Production only | reminders job (WP-40) |
 | `JOB_SIGNING_SECRET` | env | Vercel Production only, and Supabase Vault (`job_signing_secret`); generated and written by the job-secret workflow, never by hand (WP-07, D-38) | `pg_net` → job endpoints |
+| `job_base_url` = `PRODUCTION_URL` | Vault secret | Supabase Vault; written by the job-secret workflow | `private.call_job`: where job calls go |
 
 ### 9.9 Cost ceiling (NFR-08)
 
@@ -615,6 +623,7 @@ GitHub Free keeps environment secrets to public repositories (D-36), so every Gi
 | GitHub Free: a monthly cap on Actions minutes for a private repository (2,000 at the time of writing), each job rounded up to the minute | A CI run is four parallel jobs of about a minute each, and a newer push cancels the older run on the same branch. If a busy month nears the cap, GitHub → Settings → Billing shows usage. |
 | No per-PR database branches | Previews run as the demo family in the one database (§9.5, D-37). |
 | Built-in auth email reaches only Supabase team members, about 2 per hour | Password sign-in needs no email. Invites are shareable links (WP-03), so they do not depend on email. Magic links and password resets reach anyone added to the Supabase organization's team until custom SMTP (a free-tier email provider, which needs a domain) is configured. |
+| Vercel Hobby keeps runtime logs for one hour | Logs are structured JSON (`lib/log.ts`: no PII, emails and tokens scrubbed); every server error and failed job is also kept 30 days in `private.app_error` (`onRequestError` in `instrumentation.ts`), for System Health. |
 | Usage caps (database size, storage, egress, realtime connections) | Our expected use is a small fraction: one household, a few devices, small JSON snapshots. System Health tracks usage; check current limits on Supabase's pricing page. |
 
 ---

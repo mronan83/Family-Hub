@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.8: WP-07 in review (PR #8): the job framework, error log and job-secret workflow; the System Health page moves to new WP-42, after WP-03 (admin sign-in), so it is built once, behind sign-in.
 > v0.8.7: migrations run through `scripts/db-migrate.sh` (PR #7): PR #5's deploy stopped because PR #6's preview had applied a migration `main` did not have yet.
 > v0.8.6: SPIKE-05 done: job limits, the invocation pattern and the Hobby budget are in `01` §5.6 (D-38); WP-07 takes the pattern and the job-secret workflow.
 > v0.8.5: §0 lists only open owner actions; Y-1 to Y-4 move to a Done table. WP-41 done: PR #4's merge deployed on its own, and the gate's refusals are tested.
@@ -62,7 +63,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-04 | Members UI | P0 | S | WP-03, WP-37 | Queued |
 | WP-05 | Device pairing and device auth | P0 | L | WP-03 | Queued |
 | WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | Queued |
-| WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Queued |
+| WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | In review (PR #8) |
+| WP-42 | System Health page | P0 | S | WP-03, WP-07 | Queued |
 | WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Queued |
 | WP-21 | School year and day types | P1a | M | WP-04 | Queued |
 | WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | Queued |
@@ -130,6 +132,8 @@ flowchart LR
     WP01 --> WP07[WP-07 Jobs and observability]
     WP01 --> WP41[WP-41 Turn on environments]
     WP02 --> WP07
+    WP03 --> WP42[WP-42 System Health]
+    WP07 --> WP42
   end
   subgraph P1a[P1a Kid loop]
     WP04 --> WP08[WP-08 Chores, tasks, tags]
@@ -301,10 +305,21 @@ flowchart LR
 ### WP-07 — Job framework and observability
 **Phase:** P0 · **Size:** M · **Depends on:** WP-01, WP-02 · **Reqs:** NFR-07
 - SPIKE-05 first.
-- `pg_cron` + `pg_net` calling signed Vercel job endpoints in the SPIKE-05 pattern (`01` §5.6): `jobAuthError`, a `job_run` row, answer 202 at once and work after the response, each schedule on its own minute; idempotent job wrapper with catch-up semantics; a nightly purge of `cron.job_run_details`.
-- Job secret workflow: generates the secret, writes it to Supabase Vault and to Vercel production, redeploys production; rotation is the same workflow. Nobody sees or pastes it (D-38).
-- Structured logs, error tracking, and a health page listing job status.
-- **Done when:** a sample hourly job runs in production (dark until launch), a forced failure shows on the health page, and replaying it is harmless.
+- Schedules as code (`apps/web/lib/jobs/schedule.json`), synced to pg_cron and `private.job_schedule` by the deploy; a test refuses two HTTP jobs in the same minute.
+- `private.call_job`: the pg_cron command for an HTTP job; reads the job secret and the app's address from Vault; off until both exist.
+- `POST /api/jobs/[job]` in the SPIKE-05 pattern (`01` §5.6): `jobAuthError`, one `job_run` row per household, answer 202 at once and work after the response, catch-up from the last success, a 60 s budget per call; idempotent jobs.
+- `public.job_health(household)`: each job's state from `job_run` (`ok`, `running`, `stale`, `failing`, `never`), for System Health (WP-42).
+- Sample hourly job `heartbeat`; `purge_history` (SQL) keeps cron history 7 days, `job_run` 90, errors 30.
+- Job secret workflow: generates the secret, writes it to Vercel production, redeploys, checks production accepts it, writes Vault, then runs a heartbeat through pg_cron's path; rotation is the same workflow. Nobody sees or pastes it (D-38). Job-run workflow: runs a job now, optionally failing on purpose.
+- Structured JSON logs without PII; server errors and failed jobs kept in `private.app_error` (Next.js `onRequestError`), past Hobby's one hour of logs.
+- The System Health page itself needs admin sign-in, so it is WP-42, after WP-03.
+- **Done when:** the hourly `heartbeat` runs in production (dark until launch) on its own schedule; a forced failure (job-run workflow) shows as `failing` in `job_health`; replaying the job is harmless and returns it to `ok`.
+
+### WP-42 — System Health page
+**Phase:** P0 · **Size:** S · **Depends on:** WP-03, WP-07 · **Reqs:** NFR-07, NFR-08
+- `/admin/health` for signed-in admins: each job's state, last success and message from `job_health()`; recent server errors from `private.app_error` (time, route, message; through a service-role server read, never to the browser directly).
+- Usage against the Free-plan limits (`01` §9.9, US-909): database size, and Vercel invocations, Active CPU and provisioned memory where the API reports them; a warning when one nears its limit.
+- **Done when:** a signed-in admin sees a forced failure (job-run workflow) on the page with its message, sees it clear after a good run, and sees a seeded server error; another household's admin sees none of it (E2E and pgTAP).
 
 ### Phase P1a — Kid loop
 
@@ -509,7 +524,7 @@ flowchart LR
 
 | Milestone | Items | Notes |
 |---|---|---|
-| P0 | SPIKE-01, SPIKE-05, WP-01 – WP-07, WP-37, WP-41 | One L (device auth) |
+| P0 | SPIKE-01, SPIKE-05, WP-01 – WP-07, WP-37, WP-41, WP-42 | One L (device auth) |
 | P1a | SPIKE-03, WP-08 – WP-14, WP-16, WP-21 | Five L (chores/tasks, generator, events/status, board Today, admin ops) |
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
