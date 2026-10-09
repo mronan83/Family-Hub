@@ -1,6 +1,7 @@
 # Issues a one-time code for creating a household at /setup (WP-03, D-39). FamilyWise has no public
 # sign-up: the first household (at launch) and any later one start from a code like this. The code
-# is shown on this run's summary page only, works once, and expires after 24 hours.
+# is shown on this run's summary page only, works once, and expires after 24 hours. A public
+# repository's run pages are public too (D-48), so while the repository is public it issues none.
 # Actions → setup-code → Run workflow.
 name: setup-code
 
@@ -11,8 +12,15 @@ permissions:
   contents: read
 
 jobs:
+  refuse:
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-24.04
+    steps:
+      - run: |
+          echo "::error::This repository is public, so this run's page is public and a setup code shown on it could be used by anyone. Make the repository private while you issue a code, then public again (D-48)."
+          exit 1
   issue:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event.repository.private
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
