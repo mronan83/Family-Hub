@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.5: migrations run through `scripts/db-migrate.sh` in the deploy, e2e and CI: one database means it can hold an open pull request's migration that `main` lacks, which `supabase db push` refuses (§9.4–9.6).
 > v0.8.4: SPIKE-05 measured job calls on Vercel Hobby: the invocation pattern, the limits and the monthly budget are in §5.6; the job secret comes from a workflow (§9.8, D-38).
 > v0.8.3: the deploy gate is `scripts/deploy-gate.sh`, and a test in `ci / checks` drives it through every refusal (§9.3, §9.6).
 > v0.8.2: WP-37 brand system: `UI` builds its assets from `brand/` (§4); `ci / build` also runs the brand checks (§9.3).
@@ -510,7 +511,7 @@ flowchart LR
   ok -->|changes| dev
   ok -->|approved| merge["Claude Code: squash merge"]
   merge --> gate{"deploy: gate<br/>head of main · merged PR ·<br/>CI and e2e green"}
-  gate --> mig["deploy: migrate<br/>supabase db push"]
+  gate --> mig["deploy: migrate<br/>scripts/db-migrate.sh"]
   mig --> app["deploy: app<br/>vercel --prod"]
   app --> smoke{"smoke<br/>/api/health"}
   smoke --> dark["Production (dark until launch)"]
@@ -523,7 +524,7 @@ Claude Code opens the pull request as soon as a work package is built and its ch
 | Check | What runs | Required |
 |---|---|---|
 | `ci / checks` | frozen-lockfile install, ESLint, Prettier check, typecheck, Vitest (rules engine ≥ 90% coverage), deploy gate refusals (`scripts/deploy-gate.test.mjs`), migration lint, `check_traceability.py` | yes |
-| `ci / database` | `scripts/db-test.sh`: throwaway database on native Postgres, compatibility bootstrap, all migrations in order, pgTAP via `pg_prove` | yes |
+| `ci / database` | `scripts/db-test.sh`: throwaway database on native Postgres, compatibility bootstrap, all migrations through the deploy's runner, pgTAP via `pg_prove`; `scripts/db-migrate.test.sh`: the runner itself | yes |
 | `ci / docs` | `pnpm docs:build --check` (no broken cross-link or unknown ID in the five docs pages), then `pnpm docs:layout`: each page on 13 device profiles from a 320 px phone to a 4K monitor, failing on sideways scroll, content off screen, touch targets under 44 px, or script errors | yes |
 | `ci / build` | `next build` for `apps/web`, then the brand checks against `next start` (`pnpm test:ui`): computed-style snapshots of every tile state in Day and Evening, axe contrast on the board, admin and brand pages, both manifests, self-hosted fonts and the service-worker precache | yes |
 | `e2e / preview` | Once Vercel reports a successful preview: apply the PR's new migrations unless one removes or renames something, reset the demo family, then Playwright against the preview URL. Runs are serialized | yes |
@@ -538,7 +539,7 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 ### 9.4 Database tests without Docker
 
 - `supabase/tests/bootstrap/` recreates what the hosted platform provides: the `anon`, `authenticated`, `service_role` and `authenticator` roles; an `auth` schema with `auth.users`, `auth.uid()`, `auth.jwt()` and `auth.role()` reading `request.jwt.claims`; the `extensions` schema; and the `supabase_realtime` publication. `pg_cron`, `pg_net` and Vault exist only on hosted Supabase: the scheduler migration enables the two extensions only where they are available, and the job path is measured and tested on the real project (SPIKE-05, then e2e in WP-07).
-- `scripts/db-test.sh` creates a throwaway database, applies the bootstrap and then every migration in filename order, runs `pg_prove` over `supabase/tests/*.test.sql`, and drops the database.
+- `scripts/db-test.sh` creates a throwaway database, applies the bootstrap and then every migration through `scripts/db-migrate.sh` (the deploy's runner), runs `pg_prove` over `supabase/tests/*.test.sql`, and drops the database.
 - Tests act as a principal with `set local role authenticated` plus `set local request.jwt.claims`, exactly as PostgREST does.
 - The bootstrap is never deployed. Migrations must not depend on it beyond what Supabase itself provides.
 - Fidelity: the e2e workflow applies a pull request's new migrations to the real Supabase project before its preview is tested, so a migration that only works against the bootstrap fails before merge. A migration that removes or renames something is first applied by the deploy, where a failure stops the deploy before the app ships (R-16).
@@ -547,8 +548,8 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 
 - Vercel builds every PR branch as a preview. Previews use the production Supabase project with the browser-safe keys only (URL and publishable key), so every query goes through RLS. They hold no secret key and no job signing secret; scheduled jobs call production only.
 - Previews and e2e run as the **demo family**: a separate household with made-up members, defined in `supabase/seed.sql` under a fixed id. RLS keeps it apart from your household exactly as it keeps any two households apart (the pgTAP isolation suite), so nothing done in a preview reaches your family's data, and your family never sees the demo family. Re-running the seed resets the demo family and touches no other household (pgTAP, `012_demo_family`).
-- When Vercel reports a successful preview, the e2e workflow (`scripts/preview-db.sh`) applies the PR's new migrations, resets the demo family, and runs Playwright against the preview. Runs are serialized.
-- New migrations that only add (tables, columns, functions, policies) are applied before approval; the running app ignores them by design (§9.6). If any new migration drops, renames, retypes, truncates or deletes, none of the PR's migrations are applied before approval: they ship with the deploy, and the preview runs on the current schema. If you reject a change whose additions were applied, a follow-up migration removes them.
+- When Vercel reports a successful preview, the e2e workflow (`scripts/preview-db.sh`) applies the PR's new migrations (`scripts/db-migrate.sh --additive-only`), resets the demo family, and runs Playwright against the preview. Runs are serialized.
+- New migrations that only add (tables, columns, functions, policies) are applied before approval; the running app ignores them by design (§9.6). If any new migration drops, renames, retypes, truncates or deletes, none of the PR's migrations are applied before approval: they ship with the deploy, and the preview runs on the current schema. So the database can hold a migration that `main` does not have yet: an open pull request's, applied at its preview. The migration runner reports such migrations on every deploy and carries on (`supabase db push` refuses to run then, which stopped the deploy of PR #5 while PR #6 was open). If you reject a change whose additions were applied, a follow-up migration removes them and its history row stays as a record.
 - Nothing in the pipeline wipes the database, so nothing depends on remembering a switch at launch.
 - Previews sit behind Vercel Authentication: sign in to Vercel once on each device you preview from. The e2e workflow uses the automation bypass secret. The production domain is public, so the kiosk and the smoke check reach it without a Vercel login.
 
@@ -557,7 +558,7 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 `deploy.yml` runs when `ci` finishes on `main`, or by hand from `main`:
 
 1. **gate**: deploys only the current head of `main`, so production never moves backwards (an older commit is skipped). The commit must have passed `ci / checks`, `ci / database`, `ci / docs` and `ci / build`, it must have come from a merged pull request, and that pull request's head must have passed `e2e / preview`. Anything else fails the run. A missing secret from §9.8 fails here too, with its name, and so does a `VERCEL_TOKEN` that cannot open the project, before anything touches the database. The gate is `scripts/deploy-gate.sh`; `scripts/deploy-gate.test.mjs` runs it against recorded GitHub responses for each refusal, in `ci / checks`.
-2. **migrate**: `supabase db push --db-url` over the Supabase session pooler (IPv4; the Free plan's direct connection is IPv6-only). A failure stops the deploy.
+2. **migrate**: `scripts/db-migrate.sh` over the Supabase session pooler (IPv4; the Free plan's direct connection is IPv6-only). It applies the commit's pending migrations in filename order, each in its own transaction together with its row in `supabase_migrations.schema_migrations`, so a failed migration leaves nothing behind, and reports migrations in the database that the commit lacks (an open pull request's preview applied them, §9.5). It refuses a migration file that commits part of itself (`BEGIN`/`COMMIT`). A failure stops the deploy. Tested in `ci / database` (`scripts/db-migrate.test.sh`).
 3. **app**: `vercel pull`, `vercel build --prod`, `vercel deploy --prebuilt --prod`.
 4. **smoke**: `GET /api/health` on production returns 200.
 

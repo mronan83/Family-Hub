@@ -55,6 +55,8 @@ jobs:
           echo "PGPORT=$port" >> "$GITHUB_ENV"
           psql -p "$port" -h localhost -U postgres -Atc 'select version()'
       - run: bash scripts/db-test.sh
+      - name: Migration runner
+        run: bash scripts/db-migrate.test.sh
 
   docs:
     runs-on: ubuntu-24.04

@@ -38,15 +38,6 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.deployment.sha }}
-      - uses: supabase/setup-cli@v3
-        with:
-          version: 2.117.0
-      - name: Include main's migrations
-        # The database already has main's migrations; a branch behind main must not look like it
-        # is missing them.
-        run: |
-          git fetch --no-tags --depth=1 origin main
-          git checkout FETCH_HEAD -- supabase/migrations
       - name: Apply new migrations and reset the demo family
         run: bash scripts/preview-db.sh
       - uses: pnpm/action-setup@v6
