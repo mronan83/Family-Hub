@@ -2,6 +2,7 @@
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
 > v0.8.7: System Health (WP-42, D-42): `private.app_error.household_id`, `private.usage_sample`, `household_errors()`, `system_usage()` and the 7-argument `record_app_error()` (§3.1, §4.7, §6).
+> v0.8.6: `calendar_source.content_hash` and how the sync uses `etag` (SPIKE-02, §3.1).
 > v0.8.5: board snapshot (WP-06, D-41): `public.board_snapshot` as built (members slice, defaults, who gets null) and `device.board_config.theme` (§3.1, §4.6, §4.8).
 > v0.8.4: boards (WP-05, D-40): `device_pairing.device_name`, `private.pairing_failure`, and the pairing, revoke and heartbeat functions (§3.1, §4.8); a board's status changes only through `revoke_device` (§3.1); retention (§6).
 > v0.8.3: members (WP-04): `member.user_id` links only to an admin of the same household and is cleared when that admin leaves (§3.1, §4.8).
@@ -405,7 +406,7 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `calendar_source` | `name`, `type` (`ics`/`caldav`), `url_secret_id`, `username_secret_id?`, `color`, `member_id?`, `show_on_board`, `sync_interval_minutes` (default 15), `status` (`ok`/`error`/`disabled`), `last_synced_at`, `last_success_at`, `last_error`, `etag?`, `sync_token?` | Secrets only by Vault ID. |
+| `calendar_source` | `name`, `type` (`ics`/`caldav`), `url_secret_id`, `username_secret_id?`, `color`, `member_id?`, `show_on_board`, `sync_interval_minutes` (default 15), `status` (`ok`/`error`/`disabled`), `last_synced_at`, `last_success_at`, `last_error`, `etag?`, `content_hash?`, `sync_token?` | Secrets only by Vault ID. iCloud ignores conditional requests, so the sync compares `etag` (or `content_hash` of the body) itself to skip unchanged files (SPIKE-02). |
 | `calendar_event` | `source_id`, `ical_uid`, `recurrence_id?`, `title`, `location`, `start_at`, `end_at`, `all_day`, `tz`, `rrule?`, `is_cancelled`, `content_hash` | `UNIQUE (source_id, ical_uid, recurrence_id)`. Event descriptions/notes and attendees are **not stored**. |
 | `device_calendar` | PK `(device_id, calendar_source_id)`, `visible`, `color_override?` | Which calendars each board shows (CAL-05). `calendar_source.show_on_board` is the default for new devices. |
 | `calendar_event_instance` | `event_id`, `source_id`, `instance_start`, `instance_end`, `all_day`, `local_start_date`, `local_end_date`, `title`, `location` | Expanded window (today−7d .. today+120d). Board queries only this table. |

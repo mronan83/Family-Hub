@@ -2,6 +2,7 @@
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
 > v0.8.13: WP-42 System Health (D-42): errors kept per household, usage read daily by the usage workflow (§4, §9.8, §9.10).
+> v0.8.12: SPIKE-02 (ICS part): what iCloud publishes and how the sync reads it (§5.4).
 > v0.8.11: Supabase's own sign-up is off (Y-9 done, §5.10).
 > v0.8.10: WP-06 board shell (D-41): `board_snapshot` is the board's one read; the board keeps it live itself (notify, then read the snapshot from the browser), catches up on reconnect, and follows the household's time or an admin's theme hold (§7).
 > v0.8.9: WP-05 and SPIKE-01 (D-40): boards pair in the database with an 8-digit code, keep a credential to sign in again unattended, and are disconnected for good; Realtime under RLS confirmed (§4, §5.1, §6.1).
@@ -261,8 +262,8 @@ sequenceDiagram
   C->>D: pick sources due, take per-source lock
   loop each source (one invocation per source)
     C->>V: read URL / credentials
-    C->>I: fetch (ETag / sync-token if available)
-    alt 304 or unchanged hash
+    C->>I: fetch (iCloud always sends the whole file)
+    alt same ETag or body hash as last time
       C->>D: touch last_synced_at
     else changed
       C->>C: parse + expand recurrences (today-7d .. today+120d)
@@ -273,6 +274,22 @@ sequenceDiagram
 ```
 
 On failure the last good instances remain; only `last_error` and the board's stale indicator change.
+
+**What iCloud publishes (SPIKE-02, ICS part).** Measured on a real published family calendar with the `spike-02` workflow, which reports counts and checks only:
+
+- **Fetch.** A `webcal://` link is fetched over https from a `pNN-caldav.icloud.com` host, with no redirect, as `text/calendar; charset=UTF-8`. About 57 KB for a decade of events: 0.3–0.5 s the first time, about 0.1 s after.
+- **No conditional requests.** iCloud sends an `ETag`, stable while the calendar is unchanged and new when it changes. It ignores `If-None-Match` (a full 200 again) and sends no `Last-Modified`, `Cache-Control` or `X-PUBLISHED-TTL`. So every sync downloads the file, and the sync compares the ETag (or a hash of the body) with the last one to skip parsing and writing (`02` §3.1 `calendar_source.etag`).
+- **The whole history.** Every event ever is in the file (12 years), with no `X-WR-TIMEZONE`. The sync parses it all and expands only its window; with ical.js that took 0.16 s for 101 events.
+- **Zones.** A `VTIMEZONE` comes for every zone used; a few events are in UTC; none are floating. The file's zones are registered before expanding (`lib/calendar/ics.ts`).
+- **Recurrence.**
+  - Rules use `FREQ`, `INTERVAL`, `BYDAY` with ordinals (`2MO`) and `BYSETPOS`.
+  - A moved instance is its own `VEVENT` with `RECURRENCE-ID`.
+  - All expand correctly, and a weekly series keeps its local time across the November clock change.
+  - Deleted instances (`EXDATE`, per RFC 5545) were not in the calendar, so they are covered by a synthetic test until WP-22 sees one.
+- **Personal fields.** Events carry `DESCRIPTION`, `LOCATION`, `URL`, `ORGANIZER`, `X-APPLE-STRUCTURED-LOCATION` and `X-APPLE-TRAVEL-START` (map coordinates).
+  - The sync keeps only what the board shows: title, times, all-day, and the series identity (NFR-05).
+  - Test fixtures are never made from a real calendar. `icloud-shape.ics` has iCloud's properties and rule kinds with made-up events.
+- **CalDAV.** The CalDAV part of SPIKE-02 (a secondary read-only Apple ID) runs before WP-29.
 
 ### 5.5 School menu import (MENU-02..05)
 
