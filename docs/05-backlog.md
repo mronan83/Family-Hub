@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.16: WP-42 in review (PR #17): System Health, with errors kept per household and usage read daily (D-42).
 > v0.8.14: Y-6 done, so SPIKE-02 is ready (its iCloud part; the CalDAV part waits for WP-29). Y-8 is not needed before P3.
 > v0.8.13: WP-06 done (PR #12), live in production. Y-9 done. The setup code shows on the setup-code run's summary page again (PR #13).
 > v0.8.12: WP-05 done (PR #11). WP-06 in review (PR #12): the board keeps its own snapshot live (D-41). Your household can start in production before launch, so Y-9 is due now.
@@ -71,7 +72,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-05 | Device pairing and device auth | P0 | L | WP-03 | Done (PR #11) |
 | WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | Done (PR #12) |
 | WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Done (PR #8) |
-| WP-42 | System Health page | P0 | S | WP-03, WP-07 | Queued |
+| WP-42 | System Health page | P0 | S | WP-03, WP-07 | In review (PR #17) |
 | WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Queued |
 | WP-21 | School year and day types | P1a | M | WP-04 | Queued |
 | WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | Queued |
@@ -329,9 +330,13 @@ flowchart LR
 
 ### WP-42 — System Health page
 **Phase:** P0 · **Size:** S · **Depends on:** WP-03, WP-07 · **Reqs:** NFR-07, NFR-08
-- `/admin/health` for signed-in admins: each job's state, last success and message from `job_health()`; recent server errors from `private.app_error` (time, route, message; through a service-role server read, never to the browser directly).
+- `/admin/health` for signed-in admins: each job's state, last success and message from `job_health()`; recent server errors from `private.app_error` (time, route, message; through an admin-checked database function, never to the browser directly).
 - Usage against the Free-plan limits (`01` §9.9, US-909): database size, and Vercel invocations, Active CPU and provisioned memory where the API reports them; a warning when one nears its limit.
 - **Done when:** a signed-in admin sees a forced failure (job-run workflow) on the page with its message, sees it clear after a good run, and sees a seeded server error; another household's admin sees none of it (E2E and pgTAP).
+- As built (D-42):
+  - Errors are kept with their household, and `household_errors()` and `system_usage()` check the caller is an admin, so previews show the page without the secret key.
+  - The `usage` workflow reads the Vercel account's last 30 days daily (deploy token), and the page shows the account total and FamilyWise's share.
+  - Supabase usage beyond the database size needs the management API, so it is not shown.
 
 ### Phase P1a — Kid loop
 

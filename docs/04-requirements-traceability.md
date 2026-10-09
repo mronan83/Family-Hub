@@ -203,7 +203,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-05 | US-902 | WP-33 | ADM, API, DB | household, member | E2E, INT |
 | NFR-06 | US-907 | WP-10 | DB, API | chore_completion_event | DB, U |
 | NFR-07 | US-904 | WP-07, WP-42 | OBS, API, SCHED | job_run, private.job_schedule, private.app_error | U, DB, E2E, REV |
-| NFR-08 | US-909 | WP-01, WP-41, WP-42 | CICD | — | REV |
+| NFR-08 | US-909 | WP-01, WP-41, WP-42 | CICD, OBS | private.usage_sample | U, DB, E2E, REV |
 | NFR-09 | US-101, US-901 | WP-02 | DB | all tables | DB |
 | NFR-10 | US-903 | WP-24 | DB | — | REV |
 | NFR-11 | US-906 | WP-31 | BRD, ADM, UI | — | E2E, REV |
@@ -392,6 +392,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.16 | WP-42 System Health (D-42): `/admin/health` shows the household's background jobs, its server errors from the last 30 days, and usage against the Free-plan limits with a warning at 80 %. Errors are kept with their household and read through admin-checked functions, so previews show the page and no household sees another's. The usage workflow reads the Vercel account's usage daily; the account total and FamilyWise's share are shown. NFR-07 and NFR-08 trace to `private.usage_sample`, and NFR-08 is tested by unit, pgTAP and e2e tests. |
 | 0.8.14 | Y-6 done: a test iCloud calendar with the cases SPIKE-02 needs is published, so SPIKE-02's ICS part is ready; its CalDAV part runs before WP-29. Y-8 (production domain, Apple Developer Program) is not needed before P3: only WP-38 and custom email wait on it. |
 | 0.8.13 | WP-06 merged (PR #12) and deployed: the board's snapshot and live updates run in production. Y-9 done: Supabase Auth points at production and its own sign-up is off; L-12 stays the end-to-end launch check. PR #13: the setup-code run's summary page shows the code again (a GitHub mask had hidden it there too) and links to production's `/setup`. |
 | 0.8.12 | WP-06 board shell (D-41): `public.board_snapshot` is the board's one read (members for now; null for anyone but an active board, and at once on disconnect). The server draws the first snapshot and the board keeps it live itself: Realtime on every board-readable table, then a coalesced read straight from Supabase, and a catch-up read on every (re)connect and when the network returns. DEV-05's p95 under 3 s is measured by e2e on every pull request (20 admin renames). An admin can hold a board on Day or Evening. DEV-05 traces to `board_snapshot` and is tested by unit, pgTAP and e2e tests. |
