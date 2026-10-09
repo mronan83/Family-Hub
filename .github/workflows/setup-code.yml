@@ -17,6 +17,7 @@ jobs:
     timeout-minutes: 5
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
     steps:
       - uses: actions/checkout@v7
       - run: SETUP_CODE_OUT="$GITHUB_STEP_SUMMARY" bash scripts/setup-code.sh
