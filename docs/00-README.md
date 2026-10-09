@@ -124,4 +124,4 @@ brand/                   brand asset kit
 | ID | Question | Blocks |
 |---|---|---|
 | OQ-05b | Exact panel model and mounting (touch driver, height)? Hardware is being sourced. | SPIKE-03, WP-14, WP-34 |
-| OQ-06b | Production domain name (after a trademark/domain check against "FamilyWize")? | ACC-06 / WP-38, custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
+| OQ-06b | Production domain name (after a trademark/domain check against "FamilyWize")? Not needed before P3. | ACC-06 / WP-38, custom SMTP for magic links beyond the Supabase team (`01` §9.10) |

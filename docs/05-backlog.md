@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.14: Y-6 done, so SPIKE-02 is ready (its iCloud part; the CalDAV part waits for WP-29). Y-8 is not needed before P3.
 > v0.8.13: WP-06 done (PR #12), live in production. Y-9 done. The setup code shows on the setup-code run's summary page again (PR #13).
 > v0.8.12: WP-05 done (PR #11). WP-06 in review (PR #12): the board keeps its own snapshot live (D-41). Your household can start in production before launch, so Y-9 is due now.
 > v0.8.11: SPIKE-01 done and WP-05 in review (PR #11): boards pair in the database and heal themselves (D-40). WP-04 done (PR #10).
@@ -33,9 +34,8 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 
 | Item | Action | Where | Unblocks |
 |---|---|---|---|
-| Y-6 | Publish one iCloud calendar and save its link as the repository secret `ICS_SPIKE_URL` | iCloud Calendar → Share → Public Calendar; GitHub secrets | SPIKE-02, then WP-22 and WP-29 |
 | Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
-| Y-8 | Choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
+| Y-8 | Not before P3 (nothing earlier waits on it): choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
 
 **Done**
 
@@ -46,6 +46,7 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 | Y-3 | GitHub repository secrets and variables are in place, including `DEPLOY_ENABLED`; the deploy token is scoped to the project's team. |
 | Y-4 | Vercel keys are in place: publishable key for Production and Preview, secret key and job signing secret for Production only. |
 | Y-5 | Dropped as a blocker: the second admin joins by invite link and signs in with a password, so nobody needs to join the Supabase team. Adding them later is optional, for magic links before custom email (Y-8). |
+| Y-6 | A test iCloud calendar, "FamilyWise test", is published: weekly events across the Nov 1 clock change, one moved and one cancelled instance, and one-day and multi-day all-day events. Its link is the repository secret `ICS_SPIKE_URL`. |
 | Y-9 | Supabase Auth points at production (Site URL `https://family-wise-topaz.vercel.app`, redirects `https://family-wise-topaz.vercel.app/**`), and "Allow new users to sign up" is off, so nobody can sign up through Supabase directly. Launch check L-12 confirms it end to end. |
 
 ---
@@ -58,7 +59,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 |---|---|---|---|---|---|
 | SPIKE-01 | Device sessions + Realtime under RLS | P0 | S | WP-02 | Done (PR #11, `01` §5.1) |
 | SPIKE-05 | `pg_cron`/`pg_net` → Vercel job limits | P0 | S | WP-01 | Done (PR #6) |
-| SPIKE-02 | iCloud ICS fidelity; CalDAV with a secondary Apple ID | P1d | S | — | Blocked: needs a published iCloud calendar link |
+| SPIKE-02 | iCloud ICS fidelity; CalDAV with a secondary Apple ID | P1d | S | — | Ready: the iCloud calendar is published (Y-6); the CalDAV part waits for WP-29 |
 | SPIKE-04 | School menu platform and feed | P2 | S | — | Done: Nutrislice public JSON API (`01` §5.5) |
 | SPIKE-03 | Pi 5 + 32" 4K panel: touch, kiosk flags, power, animation budget | P1a | S | — | Blocked: hardware being sourced (OQ-05b) |
 | WP-01 | Repo, CI/CD pipeline, environments | P0 | M | — | Done (PR #1) |
@@ -229,6 +230,7 @@ flowchart LR
 ### SPIKE-02 — iCloud ICS and CalDAV fidelity
 **Milestone:** P1d · **Size:** S · **Gates:** WP-22, WP-29 · **Reqs:** CAL-01, CAL-07, CAL-08
 - Run a real published iCloud calendar through `ical.js` (recurrence across DST, all-day, cancelled and moved instances); test CalDAV with a secondary read-only Apple ID.
+- The ICS part uses the test calendar from Y-6 (`ICS_SPIKE_URL`); fixtures keep its structure with made-up titles. The CalDAV part runs before WP-29, when a secondary Apple ID becomes an owner item.
 - **Done when:** fixtures captured in the repo and findings recorded in `01` §5.4.
 
 ### SPIKE-04 — School menu platform
