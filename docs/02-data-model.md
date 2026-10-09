@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.2: admin access (WP-03, D-39): `audit_log` written by triggers, `private.household_setup_code`, and the onboarding and invite functions (§3.1, §4.8).
 > v0.8.1: job framework (WP-07): `private.job_schedule`, `private.app_error`, `public.job_health()`, `public.record_app_error()`, `private.call_job()` (§3.1, §4.7); retention for job history and errors (§6).
 > v0.8: seed data is the demo family (`supabase/seed.sql`, D-37), the household previews and e2e run as in the one database.
 > v0.7: reminders (D-35): `reminder_preference`, `push_subscription`, `reminder_delivery` (§2.4, §3.7); `chore_assignee.remind`, `chore.remind_lead_minutes`.
@@ -323,11 +324,12 @@ erDiagram
 | `household` | `name`, `timezone` (IANA), `week_start` (0–6), `locale` | `timezone` is authoritative for all business dates; an unknown zone is rejected by trigger (`private.check_timezone`). Its `id` is the tenant key, so it is the one table without a `household_id` column. |
 | `household_user` | `household_id`, `user_id → auth.users`, `role` (`owner`/`admin`) | PK `(household_id, user_id)`. Defines admins. |
 | `member` | `display_name`, `role` (`child`/`adult`), `avatar_key` (one of the 8 brand avatars), `color` (brand token key `member-1`..`member-6`, never hex, D-18), `birth_year?`, `user_id?`, `earns_rewards`, `archived_at` | Children have no `user_id` (enforced by check). Supports multiple children. `earns_rewards` is set from the role on insert (on for a child, off for an adult) and can be changed per person (D-32). |
-| `invite` | `email`, `token_hash`, `role`, `expires_at`, `accepted_at` | Token stored hashed. |
+| `invite` | `email`, `token_hash`, `role`, `invited_by`, `expires_at`, `accepted_at`, `accepted_by`, `revoked_at` | Token stored only as its SHA-256 (D-39). One use, 7 days, accepted only by an account with its email; a new invite to the same email revokes the open one; admins can cancel. |
 | `device` | `name`, `auth_user_id → auth.users`, `status` (`active`/`revoked`), `last_seen_at`, `app_version`, `board_config jsonb`, `revoked_at` | One auth user per device. |
 | `device_pairing` | `code_hash`, `expires_at`, `consumed_at`, `device_id?`, `created_by` | Single-use; TTL capped at 10 minutes by check. |
 | `household_settings` | `quiet_hours`, `celebration`, `streak_defaults`, `approval_mode` (`off`/`on`; household switch, changeable at any time), `undo_window_seconds`, `board_layout`, `points_settings` (all `jsonb`, zod-validated) | 1:1 with `household`. |
-| `audit_log` | `actor_type`, `actor_id`, `action`, `entity_type`, `entity_id`, `chore_id?`, `diff jsonb`, `at` | Written by API for admin and device actions. Rows about an item carry its `chore_id`, so a private item's history is visible only to those who can see the item (D-34). |
+| `audit_log` | `actor_type` (`admin`/`device`/`system`), `actor_id`, `action` (`insert`/`update`/`delete`), `entity_type`, `entity_id`, `chore_id?`, `diff jsonb`, `at` | Written only by the `trg_audit` triggers (`private.audit_row()`, §4.8) on every household table, so no route can skip it (D-39): inserts and deletes keep the row, updates keep the changed columns as `{from, to}`; hashes and timestamps are never copied. Admins of the household read it; nobody writes it directly. Rows about an item carry its `chore_id`, so a private item's history is visible only to those who can see the item (D-34). |
+| `private.household_setup_code` | `code_hash` (PK), `created_at`, `expires_at`, `used_at`, `used_by`, `household_id` | One-time codes for creating a household (D-39), issued by the setup-code workflow for 24 hours. Only the SHA-256 of the code (upper-cased, separators removed) is stored. Not exposed through the API. |
 | `job_run` | `job_type`, `target_id`, `started_at`, `finished_at`, `status` (`running`/`ok`/`error`/`skipped`), `stats jsonb`, `error` | One row per job per household per call, written by the job endpoint as service role (`running` before it answers, then the outcome); read by admins and the board, and summarized by `job_health()` (§4.7). `skipped` means nothing to do yet, or out of time with the rest left for the next call. |
 | `private.heartbeat` | `source` (PK), `beat_at`, `beats` | Infrastructure only: the keepalive target that stops Supabase Free from pausing the project (`01` §9.10). Not exposed through the API; not tenant data. |
 | `private.job_schedule` | `job_type` (PK), `cron`, `kind` (`http`/`sql`), `every_minutes`, `updated_at` | Infrastructure: mirrors `apps/web/lib/jobs/schedule.json`, written by the deploy with the pg_cron jobs (`01` §5.6); gives `job_health()` each job's cadence. Readable by signed-in users (schedules only, no data). |
@@ -898,6 +900,20 @@ create policy occurrence_device_read on public.chore_occurrence for select to au
 | `public.job_health(household_id)` | admins, devices, service role (security invoker, so `job_run`'s RLS applies) | One row per HTTP job in `private.job_schedule`: `state` is `never` (no run), `failing` (last run errored, or ran 5 minutes without a result), `running`, `stale` (no `ok`/`skipped` run within twice its cadence) or `ok`; with `last_ok_at`, `last_run_at` and the error `message`. |
 | `public.record_app_error(…)` | service role only | Inserts into `private.app_error`, trimming each field. |
 
+### 4.8 Admin access functions (WP-03)
+
+All are `SECURITY DEFINER` with `search_path = ''`, and errors carry a stable code in `HINT` that the app maps to a message: `not_signed_in`, `setup_code_invalid`, `household_exists`, `not_admin`, `bad_email`, `admin_exists`, `invite_unknown`, `invite_used`, `invite_revoked`, `invite_expired`, `invite_other_email`, `other_household`.
+
+| Function | Who may call it | What it does |
+|---|---|---|
+| `public.create_household(code, name, timezone, week_start)` | signed-in users | Uses a setup code (case and separators do not matter), then creates the household, its settings and the caller's `owner` link. One household per admin. |
+| `public.create_invite(household_id, email)` | that household's admins | Returns a new token (shown once) and stores its hash, for 7 days; revokes an open invite to the same email; refuses an email that is already an admin. |
+| `public.invite_preview(token)` | anyone | The household's name, the invited email and the state (`valid`, `used`, `revoked`, `expired`); nothing for an unknown token. |
+| `public.accept_invite(token)` | signed-in users | Adds the caller as `admin` and marks the invite used. Refuses an unknown, used, revoked or expired invite, an account with another email, and an admin of another household. |
+| `public.household_admins(household_id)` | that household's admins | Its admins with their sign-in emails, roles and when they joined. |
+| `public.setup_code_usable(code)` | service role only | Whether a code would work, so the server can check it before creating an account. |
+| `private.audit_row()` | triggers only | Writes one `audit_log` row per changed row (§3.1); skips rows whose household is being deleted. |
+
 ## 5. Rules-engine contract (`packages/rules-engine`)
 
 Pure functions, no I/O, no `Date.now()` (the clock is an input).
@@ -997,6 +1013,7 @@ function evaluateHistory(input: HistoryInput):
 | `household`, `household_settings`, `household_user`, `invite`, `member` | ACC-01..04, NFR-09, PTS-07 |
 | `device`, `device_pairing` | DEV-01..03, NFR-04 |
 | `audit_log` | ACC-05, CHR-13 |
+| `private.household_setup_code` | ACC-01 |
 | `job_run`, `private.job_schedule`, `private.app_error` | DEV-08, CAL-06, MENU-04, NFR-07 |
 | `chore`, `chore_assignee`, `chore_occurrence` (incl. `status`), `chore_occurrence_assignee`, `v_member_occurrence` | CHR-01..03, CHR-07, CHR-09, CHR-11..14, SCH-03 |
 | `tag`, `chore_tag` | CHR-10, RWD-02 |

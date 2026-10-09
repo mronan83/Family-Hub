@@ -1,0 +1,22 @@
+# Issues a one-time code for creating a household at /setup (WP-03, D-39). FamilyWise has no public
+# sign-up: the first household (at launch) and any later one start from a code like this. The code
+# is shown on this run's summary page only, works once, and expires after 24 hours.
+# Actions → setup-code → Run workflow.
+name: setup-code
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  issue:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - run: SETUP_CODE_OUT="$GITHUB_STEP_SUMMARY" bash scripts/setup-code.sh

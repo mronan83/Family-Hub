@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.9: WP-07 done. WP-03 in review (PR #9): private by invitation (D-39); Y-5 is no longer a blocker; new Y-9 before launch.
 > v0.8.8: WP-07 in review (PR #8): the job framework, error log and job-secret workflow; the System Health page moves to new WP-42, after WP-03 (admin sign-in), so it is built once, behind sign-in.
 > v0.8.7: migrations run through `scripts/db-migrate.sh` (PR #7): PR #5's deploy stopped because PR #6's preview had applied a migration `main` did not have yet.
 > v0.8.6: SPIKE-05 done: job limits, the invocation pattern and the Hobby budget are in `01` §5.6 (D-38); WP-07 takes the pattern and the job-secret workflow.
@@ -28,10 +29,10 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 
 | Item | Action | Where | Unblocks |
 |---|---|---|---|
-| Y-5 | Invite your spouse to the Supabase organization team, so the built-in mailer can deliver their magic links | Supabase → Organization → Team | WP-03 done-when (second admin signs in by magic link) |
 | Y-6 | Publish one iCloud calendar and save its link as the repository secret `ICS_SPIKE_URL` | iCloud Calendar → Share → Public Calendar; GitHub secrets | SPIKE-02, then WP-22 and WP-29 |
 | Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
 | Y-8 | Choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
+| Y-9 | Before launch, not now: in Supabase Auth set the Site URL to `https://family-wise-topaz.vercel.app`, add `https://family-wise-topaz.vercel.app/**` to the redirect URLs, and turn off "Allow new users to sign up" | Supabase → Authentication → URL Configuration, and Sign In / Providers | Launch check L-12 (magic links and resets land on production; nobody can sign up through the API) |
 
 **Done**
 
@@ -41,6 +42,7 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 | Y-2 | Dropped: previews use the one database as the demo family (D-37). |
 | Y-3 | GitHub repository secrets and variables are in place, including `DEPLOY_ENABLED`; the deploy token is scoped to the project's team. |
 | Y-4 | Vercel keys are in place: publishable key for Production and Preview, secret key and job signing secret for Production only. |
+| Y-5 | Dropped as a blocker: the second admin joins by invite link and signs in with a password, so nobody needs to join the Supabase team. Adding them later is optional, for magic links before custom email (Y-8). |
 
 ---
 
@@ -59,11 +61,11 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | Done (PR #4, #5) |
 | WP-37 | Brand system and design tokens | P0 | M | WP-01 | Done (PR #3) |
 | WP-02 | Tenancy schema and RLS | P0 | M | WP-01 | Done (PR #1) |
-| WP-03 | Admin authentication and onboarding | P0 | M | WP-02, WP-37 | Queued |
+| WP-03 | Admin authentication and onboarding | P0 | M | WP-02, WP-37 | In review (PR #9) |
 | WP-04 | Members UI | P0 | S | WP-03, WP-37 | Queued |
 | WP-05 | Device pairing and device auth | P0 | L | WP-03 | Queued |
 | WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | Queued |
-| WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | In review (PR #8) |
+| WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Done (PR #8) |
 | WP-42 | System Health page | P0 | S | WP-03, WP-07 | Queued |
 | WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Queued |
 | WP-21 | School year and day types | P1a | M | WP-04 | Queued |
@@ -276,11 +278,11 @@ flowchart LR
 
 ### WP-03 — Admin authentication and onboarding
 **Phase:** P0 · **Size:** M · **Depends on:** WP-02, WP-37 · **Reqs:** ACC-01, ACC-02, ACC-03, ACC-05, NFR-04
-- Supabase Auth with email magic link and email + password (sign-up, sign-in, reset); session handling in Next.js with server-side verification.
-- Onboarding wizard creates the household (timezone, week start) and the owner link; invite flow for the second admin with hashed single-use tokens, delivered as a link the inviter can copy or share (email sending is optional while Supabase's built-in mailer is limited, `01` §9.10).
-- On previews only, a one-tap way into the demo family, without giving previews a key that bypasses RLS (D-37).
-- Audit write helper in the API layer from day one (`audit_log` table and `withAudit` wrapper), so later routes never need retrofitting; the viewer stays in WP-32.
-- **Done when:** two admins can sign in, one by magic link and one by password, and see the same household; an expired or reused invite is rejected (E2E); invite and household writes produce audit rows.
+- Supabase Auth with email + password and magic links for existing accounts, and reset by link; `@supabase/ssr` sessions, refreshed by `proxy.ts` and verified on the server on every page and action (`01` §5.10).
+- No public sign-up (D-39). Setup: a one-time code from the setup-code workflow creates the household (name, timezone, week start) and its owner. Invites: a link the inviter copies or shares, token hashed and carried after `#`, one use, 7 days, the invited email only. The server creates accounts, confirmed, for a valid code or invite (production only).
+- On previews only, one-tap sign-in as four demo parents (Alex, Sam, Jordan, Riley), with passwords derived from the bypass secret, so previews still hold no key that bypasses RLS (D-37).
+- Audit from day one: `audit_log` written by triggers on every household table (replacing the planned `withAudit` wrapper, which a route could forget); the viewer stays in WP-32.
+- **Done when:** on a preview, two demo admins sign in by password and see the same household; Alex invites Jordan, Jordan joins, and the reused link and an expired one are refused; Riley creates a household with a setup code; invite, join and household writes produce audit rows (E2E, pgTAP). The magic link and production account creation are unit-tested and checked in production at launch (L-12).
 
 ### WP-04 — Members UI
 **Phase:** P0 · **Size:** S · **Depends on:** WP-03, WP-37 · **Reqs:** ACC-04, PTS-07
@@ -293,7 +295,7 @@ flowchart LR
 - SPIKE-01 first.
 - Pairing code issue and redeem (single-use, 10-minute TTL, hashed), creating a Supabase Auth device user with `app_metadata` (`role=device`, `household_id`, `device_id`).
 - Device list, rename, revoke, last seen. Revocation takes effect through `device.status` in the RLS helper.
-- Device write scope limited to `/api/completions` and `/api/redemptions` (routes added later); reads through RLS.
+- Device write scope limited to `/api/completions` and `/api/redemptions` (routes added later); reads through RLS. A board session that calls an admin route or action gets 403 (US-102); admin pages already treat it as signed out (WP-03).
 - **Done when:** a second browser pairs with a code, reads board data, and loses access within seconds of revocation (E2E).
 
 ### WP-06 — Board shell, snapshot, and realtime

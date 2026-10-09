@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.1: onboarding is by setup code and invite link, with no public sign-up (US-101, US-102, US-103; D-39).
 > v0.8: US-911 follows the delivery loop: you preview as the demo family and approve before anything merges (D-37); US-903 and US-909 for one database.
 > v0.7: reminders, switchable per person, device and item (US-317, US-318, US-319; D-35).
 > v0.6: one family list (D-30..D-34): shared items with who-did-it credit (US-311), household tags (US-312), due times (US-313), overdue tasks carry over (US-314), private items (US-315), My tasks (US-316), Family view (US-1006), earns-rewards switch (US-1109); US-301, US-303, US-304, US-307, US-401, US-1002, US-1101 updated.
@@ -27,7 +28,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-101 — Create the household
 **As an** admin **I want** to create my household with a name and timezone **so that** all dates, schedules, and day boundaries are correct.
 **Priority:** Must · **Phase:** P0 · **Reqs:** ACC-01, NFR-09
-- Given I have signed in for the first time, when I save a household with timezone `America/Detroit`, then a household and settings row exist and every later record I create carries that `household_id`.
+- Given I hold a setup code from the setup-code workflow, when I enter it with a household name, timezone `America/Detroit` and week start, then the household and its settings exist with me as owner, and every later record I create carries that `household_id`.
+- Given a setup code was already used or is older than 24 hours, when I enter it, then it is refused and nothing is created.
 - Given a second household exists, when I query as a member of the first, then I see zero rows from the second.
 
 ### US-102 — Sign in securely
@@ -37,13 +39,15 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given I have set a password, when I sign in with my email and password, then I land on `/admin` for my household; a wrong password shows a neutral error and does not reveal whether the email exists.
 - Given I forgot my password, when I request a reset, then I receive a reset link and can set a new password.
 - Given I am not signed in, when I request any `/admin` route, then I am redirected to sign-in.
+- Given I have no account, when I look for a way to sign up, then there is none: accounts come from a setup code or an invite (D-39).
 - Given a paired board session, when it calls an admin route, then it receives 403.
 
 ### US-103 — Invite my spouse
 **As an** admin **I want** to invite another parent by email **so that** we can both manage the board.
 **Priority:** Must · **Phase:** P0 · **Reqs:** ACC-03
-- Given I send an invite, when the recipient opens the link before expiry and signs in, then they become an admin of my household.
-- Given an invite is expired or already used, when it is opened, then it is rejected and I can resend.
+- Given I enter their email, when I create the invite, then I get a link to copy or share that works once, for 7 days.
+- Given the recipient opens the link before expiry and signs in with that email, or is new and chooses a password, when they join, then they become an admin of my household.
+- Given an invite is expired, cancelled or already used, or the signed-in account has another email, when it is opened, then it is refused and I can create a new one.
 
 ### US-104 — Manage family members
 **As an** admin **I want** to add children and adults with a name, avatar, and color **so that** chores, goals, and meals can be assigned per person.
