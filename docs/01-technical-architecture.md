@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.10: WP-06 board shell (D-41): `board_snapshot` is the board's one read; the board keeps it live itself (notify, then read the snapshot from the browser), catches up on reconnect, and follows the household's time or an admin's theme hold (§7).
 > v0.8.9: WP-05 and SPIKE-01 (D-40): boards pair in the database with an 8-digit code, keep a credential to sign in again unattended, and are disconnected for good; Realtime under RLS confirmed (§4, §5.1, §6.1).
 > v0.8.8: WP-04 members: an adult member links only to an admin of the same household, enforced by the database (§6.2).
 > v0.8.7: WP-03 admin sign-in and onboarding (D-39): no public sign-up; setup codes and invite links; accounts created by the server; demo sign-ins on previews; audit by triggers (§4, §5.10, §6.1, §6.2, §9.4, §9.5, §9.7, §9.8, §9.10).
@@ -511,7 +512,15 @@ sequenceDiagram
 
 ## 7. Realtime and offline design
 
-**Notify-then-refetch.** Realtime events only say "something changed in table X for household H". The board refetches the affected slice via `board_snapshot(from, to)`. This avoids trusting partial payloads for derived data and keeps the client logic simple.
+**Notify-then-refetch (D-41).** Realtime events only say "something changed in table X for household H". The board then reads its whole snapshot again with `board_snapshot(from, to)`. This avoids trusting partial payloads for derived data and keeps the client logic simple.
+
+- **Who reads.** The server draws the first snapshot (`/board`, one RPC alongside the heartbeat). After that the board reads it from the browser, straight from Supabase with its own session. No Vercel invocation is spent per change, and the snapshot lives in the browser, where check-off (WP-11) and the offline cache (WP-13) need it.
+- **What it listens to.** Every table in the `supabase_realtime` publication (`household`, `household_settings`, `member`, `device`), each filtered to the board's household or to the board itself (`apps/web/lib/live.ts`). A pgTAP test pins the publication, so a work package that publishes a new table adds it to the listener too.
+- **Bursts.** Reads are coalesced: a change heard while a read is in flight costs one more read after it, so a burst means at most two reads, and the last read always starts after the last change.
+- **Catch-up.** The board reads again each time its channel is (re)joined and when the browser reports the network is back (US-204). The first join after a quiet spell can take seconds while Realtime starts (SPIKE-01), and this read covers it.
+- **Losing access.** A null snapshot (disconnected) or a sign-out (its refresh refused) sends the board to `/board`, where the server resumes it with its credential or shows the pairing screen (§5.1). RLS applies to both reads and Realtime, so a disconnected board hears nothing and reads nothing from that moment.
+- **Budget.** DEV-05's p95 under 3 s is measured by e2e on every pull request: 20 renames in the admin app, each timed from pressing Save to the name showing on a paired board.
+- **Theme.** The board follows household-local time (Day 06:30–19:00) unless an admin holds it on Day or Evening (`device.board_config.theme`, set in Boards), and switches when the snapshot changes.
 
 **Board snapshot** (single RPC, RLS-invoker): day type, every member's family-visible occurrences for today plus open overdue tasks (with assignees, due time, status and who did it), goals + progress, points balance + active catalog + open redemption requests and streak summary for each member who earns rewards, calendar instances (today-1 .. today+14) **limited to the calendars selected for that device**, meal plan (7 days), school menu for buy days. It is the unit cached in IndexedDB.
 
