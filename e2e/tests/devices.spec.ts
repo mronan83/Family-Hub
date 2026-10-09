@@ -224,7 +224,10 @@ test('[DEV-02] a board whose session is lost signs itself in again', async () =>
 test('[DEV-01] a used code is refused', async ({ browser }) => {
   const other = await (await browser.newContext()).newPage();
   await pair(other, code);
-  await expect(other.getByRole('status')).toContainText('That code didn’t match.');
+  // A server round trip on a preview: allow for a slow first answer (it once took over 5 s).
+  await expect(other.getByRole('status')).toContainText('That code didn’t match.', {
+    timeout: 15_000,
+  });
   await other.context().close();
 });
 
@@ -273,7 +276,9 @@ test('[DEV-03] the admin sees the board, renames it and disconnects it; the boar
                            coalesce(a.diff -> 'status' ->> 'to', a.diff -> 'board_config' -> 'to' ->> 'theme', a.diff ->> 'status'),
                            ',' order by a.id)
            from public.audit_log a
-          where a.household_id = '${DEMO}' and a.entity_type = 'device'`),
+          where a.household_id = '${DEMO}' and a.entity_type = 'device'
+            -- Only the board paired in this run: a retry pairs a new one, and earlier rows stay.
+            and a.entity_id = (select id from public.device where household_id = '${DEMO}' and name = '${BOARD}')`),
   ).toBe(
     'system:insert:active,admin:update:evening,admin:update:day,admin:update:auto,admin:update:revoked',
   );
