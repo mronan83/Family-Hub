@@ -7,7 +7,13 @@ const RAW = {
   fetched_at: '2026-10-09T14:02:03.123+00:00',
   today: '2026-10-09',
   range: { from: '2026-10-08', to: '2026-10-23' },
-  household: { id: 'h1', name: 'Demo family', timezone: 'America/Chicago', week_start: 0 },
+  household: {
+    id: 'h1',
+    name: 'Demo family',
+    timezone: 'America/Chicago',
+    week_start: 0,
+    undo_window_seconds: 120,
+  },
   device: { id: 'd1', name: 'Kitchen', theme: 'auto' },
   members: [
     {
@@ -35,6 +41,25 @@ const RAW = {
       points: null,
     },
   ],
+  occurrences: [
+    {
+      id: 'o1',
+      chore_id: 'c1',
+      title: 'Make bed',
+      icon: 'chore-bed',
+      kind: 'chore',
+      due_date: '2026-10-09',
+      due_time: '07:30',
+      member_id: 'm1',
+      assignees: ['m1'],
+      status: 'completed',
+      done_by: ['m1'],
+      rewarded: ['m1'],
+      points: 5,
+      requires_approval: false,
+      checked_at: '2026-10-09T12:31:00Z',
+    },
+  ],
 };
 
 describe('board snapshot', () => {
@@ -44,7 +69,13 @@ describe('board snapshot', () => {
       fetchedAt: '2026-10-09T14:02:03.123+00:00',
       today: '2026-10-09',
       range: { from: '2026-10-08', to: '2026-10-23' },
-      household: { id: 'h1', name: 'Demo family', timezone: 'America/Chicago', weekStart: 0 },
+      household: {
+        id: 'h1',
+        name: 'Demo family',
+        timezone: 'America/Chicago',
+        weekStart: 0,
+        undoWindowSeconds: 120,
+      },
       device: { id: 'd1', name: 'Kitchen', theme: 'auto' },
       members: [
         {
@@ -72,7 +103,32 @@ describe('board snapshot', () => {
           points: null,
         },
       ],
+      occurrences: [
+        {
+          id: 'o1',
+          choreId: 'c1',
+          title: 'Make bed',
+          icon: 'chore-bed',
+          kind: 'chore',
+          dueDate: '2026-10-09',
+          dueTime: '07:30',
+          memberId: 'm1',
+          assignees: ['m1'],
+          status: 'completed',
+          doneBy: ['m1'],
+          rewarded: ['m1'],
+          points: 5,
+          requiresApproval: false,
+          checkedAt: '2026-10-09T12:31:00Z',
+        },
+      ],
     });
+  });
+
+  it('[BRD-01] refuses an item in a status it does not know; an older snapshot has no items', () => {
+    const odd = { ...RAW, occurrences: [{ ...RAW.occurrences[0], status: 'lost' }] };
+    expect(() => readSnapshot(odd)).toThrow('unknown occurrence');
+    expect(readSnapshot({ ...RAW, occurrences: undefined })?.occurrences).toEqual([]);
   });
 
   it("[PTS-02] reads each rewarded member's points; refuses an entry it does not know", () => {
@@ -123,6 +179,8 @@ describe('notify, then refetch', () => {
       { table: 'member', filter: 'household_id=eq.h1' },
       { table: 'device', filter: 'id=eq.d1' },
       { table: 'points_ledger', filter: 'household_id=eq.h1' },
+      { table: 'chore_occurrence', filter: 'household_id=eq.h1' },
+      { table: 'chore', filter: 'household_id=eq.h1' },
     ]);
   });
 

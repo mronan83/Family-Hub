@@ -50,6 +50,13 @@ describe('ChoreTile', () => {
     ).not.toContain('Private');
   });
 
+  it('[NFR-11] titles sit one level below the heading they are under', () => {
+    expect(html(<ChoreTile title="Dishes" status="scheduled" />)).toContain('<h3');
+    expect(html(<ChoreTile title="Dishes" status="scheduled" headingLevel={4} />)).toContain(
+      '<h4 class="fw-tile__title">Dishes</h4>',
+    );
+  });
+
   it('[NFR-13] uses admin words in admin views', () => {
     expect(html(<ChoreTile title="Dishes" status="pending_approval" view="admin" />)).toContain(
       'Needs review',

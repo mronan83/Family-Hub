@@ -732,20 +732,6 @@ html:has(.board) {
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
-.fw-board-members {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: start;
-  gap: var(--s-8);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.fw-board-members li {
-  display: grid;
-  justify-items: center;
-  gap: var(--s-3);
-}
 .fw-board__foot {
   color: var(--text-soft);
   font-size: var(--t-small);
@@ -756,6 +742,234 @@ html:has(.board) {
   gap: var(--s-2);
   font-size: var(--t-small);
   color: var(--text-soft);
+}
+
+/* Board Today (WP-11) ------------------------------------------------------------------------ */
+.fw-today {
+  display: grid;
+  align-content: start;
+  gap: var(--s-6);
+  min-width: 0;
+}
+.fw-today__people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-today__person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--touch-primary);
+  padding: var(--s-2) var(--s-6) var(--s-2) var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: var(--t-body);
+  font-weight: 800;
+  cursor: pointer;
+}
+.fw-today__person--all {
+  padding-left: var(--s-4);
+}
+.fw-today__person[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-today__notice:empty {
+  display: none;
+}
+.fw-today__family {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: var(--s-6);
+  align-items: start;
+}
+/* In a column the points sit under the words, so a narrow tile never squeezes them. */
+.fw-today__family .fw-tile {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--s-4);
+  row-gap: var(--s-2);
+}
+.fw-today__family .fw-tile .fw-points {
+  grid-column: 2;
+  justify-self: start;
+}
+.fw-today__me,
+.fw-today__col,
+.fw-today__list,
+.fw-today__side {
+  display: grid;
+  align-content: start;
+  gap: var(--s-6);
+  min-width: 0;
+}
+.fw-today__col-head,
+.fw-today__me-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+.fw-today__col-head h2,
+.fw-today__me-head h2 {
+  margin: 0;
+  font-size: var(--t-heading);
+}
+.fw-today__col-head .fw-today__balance,
+.fw-today__me-head .fw-today__balance {
+  margin-left: auto;
+}
+.fw-today__progress {
+  margin: var(--s-1) 0 0;
+  color: var(--text-soft);
+}
+.fw-today__part {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-today__part-title {
+  margin: 0;
+  font-size: var(--t-small);
+  font-weight: 700;
+  color: var(--text-soft);
+}
+.fw-today__tiles {
+  display: grid;
+  gap: var(--s-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-today__list .fw-today__tiles {
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+}
+/* The whole tile is the button while it can be checked off; Undo sits on top of it. */
+.fw-today__tile {
+  position: relative;
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-today__hit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  border-radius: var(--r-lg);
+  background: transparent;
+  cursor: pointer;
+}
+.fw-today__tile:has(.fw-today__hit:active) .fw-tile {
+  transform: scale(0.98);
+}
+.fw-today__undo {
+  justify-self: start;
+}
+.fw-today__me-body {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--s-8);
+  align-items: start;
+}
+.fw-today__card {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-6);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.fw-today__card h3 {
+  margin: 0;
+  font-size: var(--t-heading);
+}
+.fw-today__activity {
+  display: grid;
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-today__activity li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-4);
+  font-size: var(--t-small);
+}
+.fw-today__empty,
+.fw-today__muted {
+  margin: 0;
+  color: var(--text-soft);
+}
+.fw-today__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--text) 45%, transparent);
+}
+.fw-today__picker {
+  display: grid;
+  gap: var(--s-6);
+  width: min(1200px, 90vw);
+  padding: var(--s-8);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-2);
+}
+.fw-today__picker h2 {
+  margin: 0;
+  font-size: var(--t-title);
+}
+.fw-today__picked {
+  color: var(--primary);
+}
+.fw-today__picker-actions {
+  display: flex;
+  gap: var(--s-4);
+}
+.fw-today__picker-actions .fw-btn {
+  min-height: var(--touch-primary);
+  padding: 0 var(--s-8);
+  font-size: var(--t-body);
+}
+/* [RWD-08] A check-off celebrates: the check pops and the tile settles (06 §6, transform and opacity
+   only). Reduced motion turns both into the plain change of state (tokens). */
+@keyframes fw-pop {
+  0% {
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes fw-settle {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.fw-today__tile[data-celebrate] .fw-tile {
+  animation: fw-settle 600ms var(--ease);
+}
+.fw-today__tile[data-celebrate] .fw-tile__status-icon {
+  animation: fw-pop 600ms var(--ease);
 }
 
 /* System Health (WP-42) --------------------------------------------------------------------- */

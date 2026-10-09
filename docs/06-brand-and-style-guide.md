@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.3 · Status: built (WP-37, WP-06)
+> Version 1.4 · Status: built (WP-37, WP-06, WP-11)
+> v1.4: the board's points list says what each entry was for; points a parent took away read "A parent changed your points", never the reason (D-50, § Voice).
 > v1.3: every board action works by touch, mouse click and keyboard; no gesture is the only way to do anything (§ Touch).
 > v1.2: the board's manual theme override is a per-board hold an admin sets in Boards (Always Day or Always Evening); the board's live status uses `wifi` and `wifi-off`.
 > v1.1: Evening success is Leaf 400; display states (overdue, past its time, covered, done by, private) and admin words for each status; `.theme-day`/`.theme-evening` force a theme on part of a page; board theme times; two manifests; implementation notes match the code. The brand page `/dev/brand` renders everything from the real components.
@@ -35,7 +36,8 @@
 | Waiting for approval | "Waiting for a parent" | "3 check-offs need review." |
 | Rejected | "Try again" | "You sent *Dishes* back. Sam sees it as open." |
 | Missed day | "Missed" (history only) | "Missed 2 of 6 on Tue." |
-| Reversal took points | "−5. A parent changed this one." | "Reversed *Make bed*. −5 points." |
+| Reversal took points | "Make bed, undone −5" | "Reversed *Make bed*. −5 points." |
+| Points taken away | "A parent changed your points −5" (never the reason) | "Took away 5 points." The reason shows in the member's history. |
 | Balance below zero | "−5 to earn back" | "Balance is −5 after a reversal." |
 | Goal un-achieved | "Almost there again: 4 of 5" | "*Movie night* dropped from achieved to 80% because *Dishes* was reversed." |
 | Offline | "Offline: your check-offs are saved" | "Board offline since 6:10 pm. 3 changes queued." |

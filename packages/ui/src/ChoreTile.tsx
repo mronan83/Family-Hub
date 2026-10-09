@@ -20,6 +20,8 @@ export interface ChoreTileProps {
   /** Private items show a badge in admin views only (D-34). */
   isPrivate?: boolean;
   view?: 'board' | 'admin';
+  /** The title's heading level, one below the heading it sits under (3 by default). */
+  headingLevel?: 3 | 4;
 }
 
 export function ChoreTile({
@@ -32,11 +34,13 @@ export function ChoreTile({
   coveredBy,
   isPrivate,
   view = 'board',
+  headingLevel = 3,
 }: ChoreTileProps) {
   const state = tileState(status, display);
   const label = view === 'board' ? state.label : state.adminLabel;
   const who = display === 'covered' ? coveredBy : doneBy;
   const board = view === 'board';
+  const Title = headingLevel === 4 ? 'h4' : 'h3';
   return (
     <article
       className={`fw-tile fw-tile--${state.tone}`}
@@ -46,7 +50,7 @@ export function ChoreTile({
     >
       {icon ? <Icon name={icon} size={board ? 56 : 24} className="fw-tile__icon" /> : null}
       <div className="fw-tile__body">
-        <h3 className="fw-tile__title">{title}</h3>
+        <Title className="fw-tile__title">{title}</Title>
         <p className="fw-tile__status">
           <Icon name={state.icon} size={board ? 36 : 20} className="fw-tile__status-icon" />
           <span>

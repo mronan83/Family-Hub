@@ -45,8 +45,9 @@ grant all on snap to authenticated;
 select pg_temp.as_board();
 insert into snap select public.board_snapshot();
 select is((select s -> 'household' from snap),
-  '{"id": "bbbbbbbb-0000-4000-8000-000000000001", "name": "Snapshots", "timezone": "Pacific/Kiritimati", "week_start": 1}'::jsonb,
-  '[DEV-05] the snapshot carries the board''s household, its timezone and week start');
+  '{"id": "bbbbbbbb-0000-4000-8000-000000000001", "name": "Snapshots", "timezone": "Pacific/Kiritimati", "week_start": 1,
+    "undo_window_seconds": 120}'::jsonb,
+  '[DEV-05][CHR-04] the snapshot carries the board''s household, its timezone, week start and undo window');
 select is((select s -> 'device' from snap),
   '{"id": "dddddddd-0000-4000-8000-000000000001", "name": "Kitchen", "theme": "auto"}'::jsonb,
   '[DEV-05] and the board itself, with its theme');
@@ -101,7 +102,7 @@ select pg_temp.act_as_owner();
 select is(
   (select array_agg(tablename::text order by tablename::text) from pg_publication_tables
     where pubname = 'supabase_realtime' and schemaname = 'public'),
-  array['device', 'household', 'household_settings', 'member', 'points_ledger'],
+  array['chore', 'chore_occurrence', 'device', 'household', 'household_settings', 'member', 'points_ledger'],
   '[DEV-05] the board-readable tables notify the board (apps/web/lib/live.ts listens to each)');
 select ok((select bool_and(has_table_privilege('authenticated', format('public.%I', tablename), 'select'))
              from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public'),

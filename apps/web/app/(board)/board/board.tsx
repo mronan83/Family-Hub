@@ -1,11 +1,13 @@
 'use client';
 
-import { Avatar, BoardThemeController, Icon } from '@familywise/ui';
-import { useEffect, useState } from 'react';
-import { day, time } from '@/lib/format';
+import { BoardThemeController, Icon } from '@familywise/ui';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { day, isoDay, time } from '@/lib/format';
 import { boardTables, coalesce, untilNextMinute } from '@/lib/live';
+import { postCompletions } from '@/lib/outbox';
 import { readSnapshot, type BoardSnapshot } from '@/lib/snapshot';
 import { browserClient } from '@/lib/supabase/browser';
+import { Today } from './today';
 
 type Link = 'connecting' | 'live' | 'offline';
 
@@ -24,6 +26,8 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string) {
   const [link, setLink] = useState<Link>('connecting');
   // Changes heard, shown as data-events for e2e (a disconnected board must hear none).
   const [events, setEvents] = useState(0);
+  // Read again on demand (a new day), through the same coalesced read.
+  const refresh = useRef<() => void>(() => undefined);
   const householdId = initial.household.id;
   const deviceId = initial.device.id;
 
@@ -42,6 +46,7 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string) {
       if (next) setSnapshot(next);
       else leave();
     });
+    refresh.current = () => void reload();
 
     // `wait`: report SUBSCRIBED only once the server streams changes. By default it reports on
     // joining, before the replication stream is up after a quiet spell, and a change made in that
@@ -97,7 +102,8 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string) {
     };
   }, [householdId, deviceId, appVersion]);
 
-  return { snapshot, link, events };
+  const again = useCallback(() => refresh.current(), []);
+  return { snapshot, link, events, refresh: again };
 }
 
 /** The current minute, ticking on the minute. */
@@ -125,12 +131,18 @@ function LiveStatus({ link, events }: { link: Link; events: number }) {
   );
 }
 
-/** [DEV-05] The board shell: household, date and time, connection, and the family. */
+/** [DEV-05][BRD-01] The board: household, date and time, connection, and the family's Today. */
 export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVersion: string }) {
-  const { snapshot, link, events } = useLiveSnapshot(initial, appVersion);
+  const { snapshot, link, events, refresh } = useLiveSnapshot(initial, appVersion);
   const now = useMinute();
-  const { household, device, members } = snapshot;
+  const { household, device } = snapshot;
   const tz = household.timezone;
+  // A new day in the household: read today's items (nothing changed in the database to say so).
+  // Checked each minute, so a read that reached the server a moment before its midnight tries again.
+  const localDay = isoDay(tz, now);
+  useEffect(() => {
+    if (localDay !== snapshot.today) refresh();
+  }, [now, localDay, snapshot.today, refresh]);
 
   return (
     <main className="fw-board" data-fetched-at={snapshot.fetchedAt}>
@@ -149,20 +161,7 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
           <LiveStatus link={link} events={events} />
         </div>
       </header>
-      <ul className="fw-board-members" aria-label="Family">
-        {members.map((m) => (
-          <li key={m.id}>
-            <Avatar
-              name={m.displayName}
-              avatarKey={m.avatarKey}
-              color={m.color}
-              size={128}
-              decorative
-            />
-            <span className="fw-board-members__name">{m.displayName}</span>
-          </li>
-        ))}
-      </ul>
+      <Today snapshot={snapshot} now={now} post={postCompletions} />
       <footer className="fw-board__foot">{device.name}</footer>
     </main>
   );

@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.12: US-303, US-304, US-305, US-404 (a chore's celebration), US-905, US-1001 (chores and points; events, meals and the goal meter come with their work packages), US-1002, US-1006 and US-1102 as built on the board (WP-11, D-50): undo is its own button with a second tap, and points a parent took away read "A parent changed your points".
 > v0.8.11: US-1101, US-1106 and US-1109 as built (WP-16, D-49): earns and reversals follow each item's status, a parent adds or takes away points on the member's page, and a double tap posts once. US-1102's balance and latest entries are on the board's snapshot; the board draws them with WP-11.
 > v0.8.10: US-320 everyone does their own (WP-43, D-47).
 > v0.8.9: US-304, US-305 and US-307 as built in the database and API (WP-10, D-46); the board's screen comes with WP-11.
@@ -173,8 +174,9 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-305 — Undo an accidental tap
 **As a** kid **I want** to undo a mistaken tap right away **so that** I'm not credited for something I didn't do.
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-04
-- Given I completed a chore less than the undo window ago (default 2 minutes), when I tap it again, then it returns to `scheduled` via a compensating `undo` event.
-- Given the undo window has passed, when I tap, then I cannot undo; an admin can. The window is judged by when each tap happened, so an offline board's undo is judged as it happened (D-46).
+- Given I completed a chore less than the undo window ago (default 2 minutes), when I tap Undo under it and tap again to confirm, then it returns to `scheduled` via a compensating `undo` event and its points come back off my balance.
+- Given I tap Undo once, when I don't tap again within 4 seconds, then nothing changes.
+- Given the undo window has passed, when I look, then there is no Undo button; an admin can undo it. The window is judged by when each tap happened, so an offline board's undo is judged as it happened (D-46).
 
 ### US-310 — Turn approval on or off
 **As an** admin **I want** to switch the approval workflow on or off, and override it per chore **so that** we can tighten or relax oversight as trust builds.
@@ -599,7 +601,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As a** kid **I want** to pick my own profile **so that** I only see my items and goals.
 **Priority:** Must · **Phase:** P1 · **Reqs:** BRD-02
 - Given several family members, when I tap my avatar, then the screen filters to my items, and to my points and goals if I earn rewards.
-- Given the board is idle, when the idle timer elapses, then it returns to the household default view.
+- Given the board is idle, when the idle timer elapses (90 seconds untouched), then it returns to the household default view: everyone's day.
 
 ### US-1003 — Weather at a glance
 **As a** parent **I want** the board to show local weather **so that** we dress for the day.
@@ -644,6 +646,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As a** kid **I want** to see my points on the board **so that** I know what I can afford.
 **Priority:** Must · **Phase:** P1 · **Reqs:** PTS-02
 - Given a balance of 35, when I open Today or the Shop, then I see 35 with a recent-earnings list.
+- Given a parent took points away with a reason, when I see my list on the board, then it says "A parent changed your points" and not the reason, which stays in the admin app (D-50).
 - Given a reversal takes points away that were already spent, when the balance goes below zero, then it is shown in neutral wording as points to earn back, not as an error.
 - Given the board is offline, when I check off a chore, then the balance shows a clearly marked projected value until sync.
 
