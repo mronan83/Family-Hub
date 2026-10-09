@@ -60,3 +60,71 @@ values
   ('0de00000-0000-4000-8000-000000000001', 'Sam', 'adult', 'bear', 'member-2', 1987, '0de00000-0000-4000-8000-0000000000a2'),
   ('0de00000-0000-4000-8000-000000000001', 'Maya', 'child', 'fox', 'member-3', 2016, null),
   ('0de00000-0000-4000-8000-000000000001', 'Leo', 'child', 'frog', 'member-4', 2019, null);
+
+
+-- The family list (WP-08): household tags, six routines and three tasks. Sam's anniversary gift is
+-- private, so Alex and the board never see it. Due dates count from today in the family's time zone,
+-- so the list always looks current.
+insert into public.tag (id, household_id, name, color, icon, sort_order)
+values
+  ('0de00000-0000-4000-8000-0000000a0001', '0de00000-0000-4000-8000-000000000001', 'Morning', 'member-6', 'sun', 1),
+  ('0de00000-0000-4000-8000-0000000a0002', '0de00000-0000-4000-8000-000000000001', 'Kitchen', 'member-3', 'chore-dishes', 2),
+  ('0de00000-0000-4000-8000-0000000a0003', '0de00000-0000-4000-8000-000000000001', 'Bedroom', 'member-4', 'chore-bed', 3),
+  ('0de00000-0000-4000-8000-0000000a0004', '0de00000-0000-4000-8000-000000000001', 'School', 'member-1', 'backpack', 4);
+
+with today as (select (now() at time zone 'America/New_York')::date as d)
+insert into public.chore (id, household_id, title, icon, kind, points, approval, schedule, due_time,
+                          day_types, visibility, created_by)
+select id::uuid, '0de00000-0000-4000-8000-000000000001', title, icon, kind, points, approval, schedule,
+       due_time::time, coalesce(day_types::text[], array['school_day', 'no_school', 'break', 'weekend', 'summer']),
+       visibility, created_by::uuid
+  from today, lateral (values
+    ('0de00000-0000-4000-8000-0000000c0001', 'Make bed', 'chore-bed', 'chore', 5, 'inherit',
+     '{"freq": "daily"}'::jsonb, '07:30', null, 'family', '0de00000-0000-4000-8000-0000000000a1'),
+    ('0de00000-0000-4000-8000-0000000c0002', 'Brush teeth', 'chore-teeth', 'chore', 2, 'inherit',
+     '{"freq": "daily"}', '07:45', null, 'family', '0de00000-0000-4000-8000-0000000000a1'),
+    ('0de00000-0000-4000-8000-0000000c0003', 'Feed the dog', 'chore-pet', 'chore', 5, 'inherit',
+     '{"freq": "daily"}', '17:00', null, 'family', '0de00000-0000-4000-8000-0000000000a1'),
+    ('0de00000-0000-4000-8000-0000000c0004', 'Set the table', 'chore-table', 'chore', 5, 'inherit',
+     '{"freq": "daily"}', '17:30', null, 'family', '0de00000-0000-4000-8000-0000000000a2'),
+    ('0de00000-0000-4000-8000-0000000c0005', 'Homework', 'chore-homework', 'chore', 10, 'required',
+     '{"freq": "weekly", "by_weekday": [1, 2, 3, 4, 5]}', '16:00', '{school_day}', 'family',
+     '0de00000-0000-4000-8000-0000000000a1'),
+    ('0de00000-0000-4000-8000-0000000c0006', 'Take out the bins', 'chore-bin', 'chore', 0, 'inherit',
+     '{"freq": "weekly", "by_weekday": [4]}', '19:00', null, 'family', '0de00000-0000-4000-8000-0000000000a2'),
+    ('0de00000-0000-4000-8000-0000000c0007', 'Pay the school trip fee', 'buy', 'task', 0, 'inherit',
+     jsonb_build_object('freq', 'once', 'on_date', to_char(d + 3, 'YYYY-MM-DD')), null, null, 'family',
+     '0de00000-0000-4000-8000-0000000000a1'),
+    ('0de00000-0000-4000-8000-0000000c0008', 'Book the dentist', 'calendar', 'task', 0, 'inherit',
+     jsonb_build_object('freq', 'once', 'on_date', to_char(d + 7, 'YYYY-MM-DD')), null, null, 'family',
+     '0de00000-0000-4000-8000-0000000000a2'),
+    ('0de00000-0000-4000-8000-0000000c0009', 'Buy anniversary gift', 'gift', 'task', 0, 'inherit',
+     jsonb_build_object('freq', 'once', 'on_date', to_char(d + 10, 'YYYY-MM-DD')), null, null, 'private',
+     '0de00000-0000-4000-8000-0000000000a2')
+  ) as item (id, title, icon, kind, points, approval, schedule, due_time, day_types, visibility, created_by);
+
+insert into public.chore_assignee (household_id, chore_id, member_id)
+select m.household_id, a.chore_id::uuid, m.id
+  from (values
+    ('0de00000-0000-4000-8000-0000000c0001', 'Maya'), ('0de00000-0000-4000-8000-0000000c0001', 'Leo'),
+    ('0de00000-0000-4000-8000-0000000c0002', 'Maya'), ('0de00000-0000-4000-8000-0000000c0002', 'Leo'),
+    ('0de00000-0000-4000-8000-0000000c0003', 'Maya'), ('0de00000-0000-4000-8000-0000000c0003', 'Alex'),
+    ('0de00000-0000-4000-8000-0000000c0004', 'Leo'),
+    ('0de00000-0000-4000-8000-0000000c0005', 'Maya'),
+    ('0de00000-0000-4000-8000-0000000c0006', 'Alex'),
+    ('0de00000-0000-4000-8000-0000000c0007', 'Alex'),
+    ('0de00000-0000-4000-8000-0000000c0008', 'Sam'),
+    ('0de00000-0000-4000-8000-0000000c0009', 'Sam')
+  ) as a (chore_id, name)
+  join public.member m on m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = a.name;
+
+insert into public.chore_tag (household_id, chore_id, tag_id)
+select '0de00000-0000-4000-8000-000000000001', chore_id::uuid, tag_id::uuid
+  from (values
+    ('0de00000-0000-4000-8000-0000000c0001', '0de00000-0000-4000-8000-0000000a0001'),
+    ('0de00000-0000-4000-8000-0000000c0001', '0de00000-0000-4000-8000-0000000a0003'),
+    ('0de00000-0000-4000-8000-0000000c0002', '0de00000-0000-4000-8000-0000000a0001'),
+    ('0de00000-0000-4000-8000-0000000c0003', '0de00000-0000-4000-8000-0000000a0002'),
+    ('0de00000-0000-4000-8000-0000000c0004', '0de00000-0000-4000-8000-0000000a0002'),
+    ('0de00000-0000-4000-8000-0000000c0005', '0de00000-0000-4000-8000-0000000a0004')
+  ) as t (chore_id, tag_id);

@@ -49,12 +49,12 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm e2e
         env:
-          DEV05_LOG: ${{ runner.temp }}/dev-05-latency.txt
-      - name: DEV-05 latency
+          E2E_REPORT: ${{ runner.temp }}/e2e-report.txt
+      - name: Measurements (DEV-05 latency, WP-08 list entry)
         if: always()
         run: |
-          if [ -f "$RUNNER_TEMP/dev-05-latency.txt" ]; then
-            tee -a "$GITHUB_STEP_SUMMARY" < "$RUNNER_TEMP/dev-05-latency.txt"
+          if [ -f "$RUNNER_TEMP/e2e-report.txt" ]; then
+            tee -a "$GITHUB_STEP_SUMMARY" < "$RUNNER_TEMP/e2e-report.txt"
           fi
       - if: failure()
         uses: actions/upload-artifact@v7

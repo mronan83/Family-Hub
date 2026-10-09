@@ -134,7 +134,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | DEV-06 | US-205 | WP-13 | OUTBOX, BRD, API | chore_completion_event | E2E, U |
 | DEV-07 | US-207 | WP-34 | PI, BRD | household_settings | HW |
 | DEV-08 | US-206 | WP-13 | BRD, OBS | job_run | E2E |
-| CHR-01 | US-301 | WP-08 | ADM, API | chore, chore_assignee | E2E, DB |
+| CHR-01 | US-301 | WP-08 | ADM, API | chore, chore_assignee | U, DB, E2E |
 | CHR-02 | US-302 | WP-09 | OCCGEN, DB | chore, school_closure | U, INT |
 | CHR-03 | US-303, US-308, US-311 | WP-09 | OCCGEN, SCHED, DB | chore_occurrence | INT, DB |
 | CHR-04 | US-304, US-305, US-1006 | WP-10, WP-11 | BRD, OUTBOX, API, DB | chore_completion_event, chore_occurrence | E2E, DB |
@@ -146,7 +146,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CHR-10 | US-312 | WP-08, WP-15, WP-19 | ADM, RULES, DB | tag, chore_tag, reward_rule | DB, U, E2E |
 | CHR-11 | US-313 | WP-08, WP-09, WP-11 | ADM, BRD, OCCGEN | chore, chore_occurrence | E2E, U |
 | CHR-12 | US-303, US-314 | WP-09, WP-10, WP-11 | OCCGEN, SCHED, DB, BRD | chore_occurrence | DB, INT, E2E |
-| CHR-13 | US-315 | WP-08 | ADM, BRD, API, DB | chore, audit_log | DB, E2E |
+| CHR-13 | US-315 | WP-08 | ADM, BRD, API, DB | chore, chore_assignee, chore_tag, audit_log | U, DB, E2E |
 | CHR-14 | US-316 | WP-12 | ADM | chore_occurrence_assignee | E2E |
 | CHR-15 | US-317 | WP-40 | NOTIFY, ADM, DB | push_subscription, reminder_preference | E2E, DB |
 | CHR-16 | US-318 | WP-40 | NOTIFY, SCHED, ADM, DB | chore_assignee, reminder_delivery | DB, INT, E2E |
@@ -392,6 +392,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.18 | WP-08 the family list (D-43), in review: chores and tasks for any member with several assignees, schedules checked by zod and by the database, optional due times grouped into Morning, After school, Evening and Anytime, household tags by id, and private items that the board and the other admin never receive, down to their audit rows. Only an item's creator changes who sees it. Traced by pgTAP (`090_chores`), unit tests (`lib/chores`, `lib/tags`) and e2e (`chores.spec.ts`, which also times entering six chores and two tasks on a phone screen). |
 | 0.8.17 | P0 done: WP-42 merged (PR #17) and every P0 exit criterion passes: all PR gates green; pgTAP isolation and revoked-device tests green; on a preview an admin signs in by password, starts a household with a setup code, adds a child, pairs a browser as a board and sees a rename in 0.84 s (p95); the production deploy pipeline is green. Next is P1a. |
 | 0.8.16 | WP-42 System Health (D-42): `/admin/health` shows the household's background jobs, its server errors from the last 30 days, and usage against the Free-plan limits with a warning at 80 %. Errors are kept with their household and read through admin-checked functions, so previews show the page and no household sees another's. The usage workflow reads the Vercel account's usage daily; the account total and FamilyWise's share are shown. NFR-07 and NFR-08 trace to `private.usage_sample`, and NFR-08 is tested by unit, pgTAP and e2e tests. |
 | 0.8.15 | SPIKE-02 (ICS part) done: iCloud serves the whole history with an ETag but ignores conditional requests, so the sync compares the ETag itself; zones, rules (BYDAY ordinals, BYSETPOS), moved instances and all-day events expand correctly with ical.js, and local times hold across the clock change. WP-22 is queued; the CalDAV part runs before WP-29. CAL-07's unit tests start here. |

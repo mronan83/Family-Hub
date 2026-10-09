@@ -1,7 +1,7 @@
 -- [NFR-14] The demo family seed resets only the demo household and never touches another (D-37).
 -- [ACC-02] It creates the four demo sign-ins (D-39), without passwords.
 begin;
-select plan(12);
+select plan(14);
 
 insert into public.household (id, name, timezone) values
   ('44444444-4444-4444-4444-444444444444', 'Real family', 'America/Chicago'),
@@ -64,6 +64,18 @@ select is((select count(*)::int from auth.identities i join auth.users u on u.id
 select is((select string_agg(email, ',' order by email) from auth.users where email like '%@devices.familywise.invalid'),
   'device-kept@devices.familywise.invalid',
   '[NFR-14] a demo board''s sign-in goes with the demo family; a real board''s stays (WP-05)');
+
+select results_eq(
+  $$ select count(*)::int, count(*) filter (where kind = 'task')::int,
+            string_agg(title || '/' || u.email, ',') filter (where visibility = 'private')
+       from public.chore c join auth.users u on u.id = c.created_by
+      where c.household_id = '0de00000-0000-4000-8000-000000000001' $$,
+  $$ values (9, 3, 'Buy anniversary gift/sam@demo.familywise.invalid'::text) $$,
+  '[CHR-01][CHR-13] the demo family has six routines and three tasks; Sam''s gift is private, after two runs');
+select is((select count(*)::int from public.chore c
+            where c.household_id = '0de00000-0000-4000-8000-000000000001'
+              and not exists (select from public.chore_assignee a where a.chore_id = c.id)), 0,
+  '[CHR-09] every demo item is for someone');
 
 select * from finish();
 rollback;

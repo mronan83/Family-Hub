@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.8: the family list (WP-08, D-43): `chore`, `chore_assignee`, `tag` and `chore_tag` as built, `save_chore()`, private items in RLS and in `audit_log` (§3.2, §4.5, §4.8).
 > v0.8.7: System Health (WP-42, D-42): `private.app_error.household_id`, `private.usage_sample`, `household_errors()`, `system_usage()` and the 7-argument `record_app_error()` (§3.1, §4.7, §6).
 > v0.8.6: `calendar_source.content_hash` and how the sync uses `etag` (SPIKE-02, §3.1).
 > v0.8.5: board snapshot (WP-06, D-41): `public.board_snapshot` as built (members slice, defaults, who gets null) and `device.board_config.theme` (§3.1, §4.6, §4.8).
@@ -380,6 +381,14 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 ```
 
 `day_types` is the allow-list of day types on which the chore applies (default: all). Example: homework chore = `{school_day}`.
+
+**As built (WP-08, D-43):**
+- `schedule`: `by_weekday` is ISO (1 = Monday … 7 = Sunday, as `resolve_day_type` uses), `by_month_day` 1–31, `interval` 1–52, `on_date` a real calendar date, and only the keys the frequency uses. The app checks it with zod (`lib/chores.ts`) and the database with `private.valid_schedule()`, a check constraint.
+- `day_types` defaults to all five (`school_day`, `no_school`, `break`, `weekend`, `summer`); `due_time` is whole minutes; `title` 1–80 characters; `points` 0–1000; `icon` a brand icon name (default `list-check`).
+- `created_by` is set from the session on insert (the seed names one) and never changes, except to clear it when that sign-in is deleted. `start_date` defaults to today in the household's time zone. Both by `private.chore_guard()`, which also lets only the creator change `visibility`; an item with no creator is claimed by the admin who changes it.
+- `chore_assignee` and `chore_tag` carry `household_id` and reference `chore (household_id, id)`, `member (household_id, id)` and `tag (household_id, id)`, so a link never crosses households.
+- `tag.name` is unique per household ignoring case, archived tags included; `color` is one of the six categorical tokens (`member-1`…`member-6`); `icon` is optional.
+- An item, its assignees and its tags are saved by `public.save_chore()` (§4.8). Items and tags are archived, never deleted.
 
 ### 3.3 Rewards
 
@@ -846,29 +855,55 @@ language sql stable security definer set search_path = '' as $$
   where auth_user_id = (select auth.uid()) and status = 'active'
 $$;
 
+-- Whether the signed-in admin is an assignee of the item, through their linked member (WP-04).
+create function private.is_chore_assignee(p_chore uuid) returns boolean
+language sql stable security definer set search_path = '' as $$
+  select exists (
+    select from public.chore_assignee a
+      join public.member m on m.id = a.member_id
+     where a.chore_id = p_chore and m.user_id = (select auth.uid()))
+$$;
+
 -- Visibility of an item (D-34): family items to everyone in the household; private items only to
--- their creator and to assignees who sign in. Derived tables (occurrences, assignee snapshots,
--- events, audit rows with a chore_id) call it with their chore_id. created_by is set from auth.uid()
--- on insert and cannot be changed.
+-- their creator and to assignees who sign in. Derived tables (assignees, tags, occurrences, events,
+-- audit rows with a chore_id) call it with their chore_id. created_by is set from auth.uid() on
+-- insert and never changes; only the creator changes visibility (private.chore_guard, D-43).
 create function private.can_see_chore(p_chore uuid) returns boolean
 language sql stable security definer set search_path = '' as $$
   select exists (
-    select 1 from public.chore c
-    where c.id = p_chore
-      and (c.visibility = 'family'
-           or c.created_by = (select auth.uid())
-           or exists (select 1 from public.chore_assignee a
-                      join public.member m on m.id = a.member_id
-                      where a.chore_id = c.id and m.user_id = (select auth.uid())))
-  )
+    select from public.chore c
+     where c.id = p_chore
+       and (c.visibility = 'family'
+            or c.created_by = (select auth.uid())
+            or private.is_chore_assignee(c.id)))
 $$;
 
--- example policies on a board-readable table
-create policy chore_admin_all on public.chore for all to authenticated
-  using (household_id in (select private.admin_household_ids()) and private.can_see_chore(id))
+-- The item itself: the same rule on the row's own columns. can_see_chore reads the table again, and
+-- a statement does not see the row it is inserting, so a private item would be unreadable to its
+-- creator at insert. No delete policy: items are archived.
+create policy chore_admin_select on public.chore for select to authenticated
+  using (household_id in (select private.admin_household_ids())
+         and (visibility = 'family' or created_by = (select auth.uid()) or private.is_chore_assignee(id)));
+create policy chore_admin_insert on public.chore for insert to authenticated
   with check (household_id in (select private.admin_household_ids()));
-create policy chore_device_read on public.chore for select to authenticated
+create policy chore_admin_update on public.chore for update to authenticated
+  using (household_id in (select private.admin_household_ids())
+         and (visibility = 'family' or created_by = (select auth.uid()) or private.is_chore_assignee(id)))
+  with check (household_id in (select private.admin_household_ids()));
+create policy chore_device_select on public.chore for select to authenticated
   using (household_id = (select private.device_household_id()) and visibility = 'family');
+
+-- links follow the item (chore_tag the same)
+create policy chore_assignee_admin_all on public.chore_assignee for all to authenticated
+  using (household_id in (select private.admin_household_ids()) and private.can_see_chore(chore_id))
+  with check (household_id in (select private.admin_household_ids()) and private.can_see_chore(chore_id));
+create policy chore_assignee_device_select on public.chore_assignee for select to authenticated
+  using (household_id = (select private.device_household_id()) and private.can_see_chore(chore_id));
+
+-- audit rows about an item follow it
+alter policy audit_log_admin_select on public.audit_log
+  using (household_id in (select private.admin_household_ids())
+         and (chore_id is null or private.can_see_chore(chore_id)));
 
 -- derived tables follow the item (the board never sees a private one: the device user is neither
 -- its creator nor an assignee)
@@ -931,7 +966,9 @@ All are `SECURITY DEFINER` with `search_path = ''`, and errors carry a stable co
 | `public.device_heartbeat(app_version)` | the board itself | Records `last_seen_at` (at most once a minute) and the app version. |
 | `public.board_snapshot(from, to)` | the board itself (security invoker) | Everything the board shows, in one read (§4.6); null for anyone but an active board. |
 | `private.check_member_user()`, `private.unlink_departed_admin()` | triggers only | Refuse a member linked to anyone but an admin of its household; unlink the member when its admin leaves (WP-04). |
-| `private.audit_row()` | triggers only | Writes one `audit_log` row per changed row (§3.1); skips rows whose household is being deleted. |
+| `public.save_chore(household_id, id, item, assignees, tags)` | admins (security invoker, under their RLS) | Adds (`id` null) or edits an item, replaces its assignees and its active tags, in one transaction (WP-08). Assignees must be active members of the household (at least one, else `chore_needs_assignee`); archived tags already on the item stay. On an edit, a field left out of `item` keeps its value. An item the caller cannot see is `chore_not_found`. |
+| `private.chore_guard()` | triggers only | Sets `created_by` and `start_date` on insert; keeps `created_by`; lets only the creator change `visibility` (`visibility_creator_only`, D-43). |
+| `private.audit_row()` | triggers only | Writes one `audit_log` row per changed row (§3.1); skips rows whose household is being deleted. Rows about an item (`chore`, `chore_assignee`, `chore_tag`, and later its occurrences and events) carry its `chore_id`; an assignee or tag row names the member or tag as `entity_id`. |
 
 ## 5. Rules-engine contract (`packages/rules-engine`)
 

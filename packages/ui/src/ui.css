@@ -472,6 +472,74 @@ body {
   color: var(--missed-text);
 }
 
+/* The family list (WP-08): items, tags, filters --------------------------------------------- */
+.fw-swatch--small {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+.fw-picker__item--icon {
+  justify-content: center;
+  min-width: var(--touch);
+}
+/* An outline pill: Private (06 §7.1 display states) and tags, always with words. */
+.fw-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 2px var(--s-2);
+  border: var(--border-w) solid var(--text-soft);
+  border-radius: var(--r-pill);
+  font-size: var(--t-small);
+  color: var(--text);
+}
+.fw-pill--tag {
+  border-color: var(--line);
+}
+.fw-item {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+  min-width: 0;
+  flex: 1;
+}
+.fw-item > .fw-icon {
+  flex: none;
+  color: var(--primary-text);
+}
+.fw-item__body {
+  display: grid;
+  gap: var(--s-1);
+  min-width: 0;
+}
+.fw-item__people {
+  gap: var(--s-1);
+  font-size: var(--t-small);
+}
+.fw-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--s-3);
+  align-items: end;
+}
+.fw-list__row--stack {
+  display: grid;
+  justify-content: stretch;
+}
+.fw-more > summary,
+.fw-list__row--stack summary,
+.fw-field details > summary {
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--primary-text);
+}
+.fw-more[open] > .fw-form {
+  padding-top: var(--s-2);
+}
+
 /* Pairing (WP-05): the code an admin reads out, and the board's keypad ---------------------- */
 .fw-pairing-code {
   margin: 0;

@@ -17,3 +17,8 @@ export function time(at: string | Date, timeZone: string): string {
 export function dayAndTime(at: string | Date, timeZone: string): string {
   return `${day(at, timeZone)} at ${time(at, timeZone)}`;
 }
+
+/** Today's date in a timezone, as "YYYY-MM-DD" (a household's business date, 02 §1). */
+export function isoDay(timeZone: string, at: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone }).format(at);
+}

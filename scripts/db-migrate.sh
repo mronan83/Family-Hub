@@ -10,7 +10,9 @@
 # than the newest one already applied (migrations are forward-only and independent; §9.6).
 #
 # --additive-only: if any pending migration drops, renames, retypes, truncates or deletes, apply
-# none; they wait for approval and ship with the deploy.
+# none; they wait for approval and ship with the deploy. Only what runs when the migration is applied
+# counts: comments and function bodies (`create function ... as $$ ... $$`, which run when called)
+# are ignored; DO blocks run at once, so they are checked.
 #
 # Needs SUPABASE_DB_URL (session pooler URI) and psql. MIGRATIONS_DIR overrides the directory (tests).
 set -euo pipefail
@@ -22,8 +24,10 @@ dir="${MIGRATIONS_DIR:-$root/supabase/migrations}"
 additive_only=false
 [ "${1:-}" = --additive-only ] && additive_only=true
 
-# Statements that remove or change what the running app may use (comments are ignored).
+# Statements that remove or change what the running app may use.
 CHANGES='drop[[:space:]]+(table|column|schema|type|view|materialized)|truncate[[:space:]]|rename[[:space:]]+(to|column|constraint)|alter[[:space:]]+column[^;]*[[:space:]]type[[:space:]]|delete[[:space:]]+from'
+# A migration as it runs when applied: without comments and without function bodies.
+applied_text() { perl -0777 -pe 's/--[^\n]*//g; s/\bas(\s+)\$(\w*)\$.*?\$\2\$/as$1\x27\x27/gsi' "$1"; }
 
 psql_q=(psql "$SUPABASE_DB_URL" -X -A -t -q -v ON_ERROR_STOP=1)
 
@@ -66,7 +70,7 @@ fi
 if $additive_only; then
   changing=()
   for f in "${pending[@]}"; do
-    if sed 's/--.*$//' "$f" | grep -qiE "$CHANGES"; then changing+=("$(basename "$f")"); fi
+    if applied_text "$f" | grep -qiE "$CHANGES"; then changing+=("$(basename "$f")"); fi
   done
   if [ ${#changing[@]} -gt 0 ]; then
     echo "::notice::not applying ${#pending[@]} pending migration(s) before approval; they ship with the deploy: ${changing[*]}"

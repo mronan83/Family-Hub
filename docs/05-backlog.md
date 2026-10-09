@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.18: WP-08 in review (PR #19): the family list, tags and private items (D-43).
 > v0.8.17: WP-42 done (PR #17), so P0 is done: every P0 item is merged and its exit criteria pass (`04` §E). Ready now: WP-08, WP-21, WP-22, WP-24, WP-25, WP-32, WP-33.
 > v0.8.16: WP-42 in review (PR #17): System Health, with errors kept per household and usage read daily (D-42).
 > v0.8.15: SPIKE-02's ICS part done (`01` §5.4), so WP-22 is queued; its CalDAV part runs before WP-29. Y-6's calendar is a real one, so the spike reports counts only and its fixture is made up.
@@ -75,7 +76,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | Done (PR #12) |
 | WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Done (PR #8) |
 | WP-42 | System Health page | P0 | S | WP-03, WP-07 | Done (PR #17) |
-| WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Ready |
+| WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | In review (PR #19) |
 | WP-21 | School year and day types | P1a | M | WP-04 | Ready |
 | WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | Queued |
 | WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | Queued |
@@ -349,6 +350,13 @@ flowchart LR
 - Private visibility enforced by RLS on the item and everything derived from it, including audit rows (`private.can_see_chore`, `02` §4.5, D-34).
 - Zod validation of `schedule jsonb`.
 - **Done when:** a parent can create the seed list (six chores plus adult tasks) on a phone in under five minutes; pgTAP proves a private item is invisible to the board and to the other admin, and visible to an assignee who signs in.
+- As built (D-43):
+  - `/admin/chores` lists every item the admin can see, filtered by person, tag, kind, time of day (Morning, After school, Evening, Anytime) and active or archived. Filters by an occurrence's status and due date come with occurrences (WP-09, WP-12).
+  - The form is built for a phone: the common fields first, approval and day types under "More options", and "Save and add another". e2e times six chores and two adult tasks on a 390 px screen and reports it on the run's summary page.
+  - `/admin/tags` adds, renames, recolors and archives tags. Tags use the six categorical colors and always show their name.
+  - `save_chore()` saves an item with its assignees and tags in one transaction; only an item's creator changes who sees it.
+  - The demo family has six routines, three tasks and four tags; Sam's anniversary gift is private, so Alex and the board never see it.
+  - The migration runner's additive check now ignores function bodies (they run when called), so a function that deletes rows ships to previews; a `DO` block that deletes still waits for the deploy.
 
 ### WP-21 — School year and day types
 **Phase:** P1a · **Size:** M · **Depends on:** WP-04 · **Reqs:** SCH-01, SCH-02, SCH-03

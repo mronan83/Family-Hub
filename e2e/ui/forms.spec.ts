@@ -27,3 +27,14 @@ test('[DEV-01] boards pages need a signed-in admin', async ({ page }) => {
   await page.goto('/admin/devices');
   await expect(page).toHaveURL(/\/sign-in\?next=%2Fadmin%2Fdevices$/);
 });
+
+test('[CHR-01][CHR-10] the family list and tags pages need a signed-in admin', async ({ page }) => {
+  for (const [path, next] of [
+    ['/admin/chores', '%2Fadmin%2Fchores'],
+    ['/admin/chores/new', '%2Fadmin%2Fchores%2Fnew'],
+    ['/admin/tags', '%2Fadmin%2Ftags'],
+  ]) {
+    await page.goto(path!);
+    await expect(page).toHaveURL(new RegExp(`/sign-in\\?next=${next}$`));
+  }
+});
