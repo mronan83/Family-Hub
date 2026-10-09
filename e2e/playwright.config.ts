@@ -6,7 +6,11 @@ const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 
 export default defineConfig({
   testDir: './tests',
-  fullyParallel: true,
+  // Every spec works on the one demo family (D-37) and resets only what it changes, so two files at
+  // once race: the board's live-update test renames Maya while the list tests pick her by name.
+  // Files run one after another.
+  fullyParallel: false,
+  workers: 1,
   retries: process.env.CI ? 1 : 0,
   // Assertions that wait on a server round trip allow 15 s: on a preview, a server action now and
   // then takes over 5 s to answer (seen in pairing and in saving an item). Speed itself is measured

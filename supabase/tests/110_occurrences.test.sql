@@ -58,25 +58,31 @@ create function pg_temp.history(p_through date) returns text language sql as $$
     from public.chore_occurrence o
    where o.household_id = '0c000000-0000-0000-0000-000000000001' and o.due_date <= p_through
 $$;
--- Today's untouched occurrences that do not match their item as it is now: archived, or other points,
--- time, kind, approval or assignees. An item's own edit keeps this at zero (D-45).
+-- Today's untouched occurrences that do not match their item as it is now: archived, the other mode
+-- (D-47), or other points, time, kind, approval or people (a shared one: the active assignees; an
+-- "each" one: its own person, still an active assignee). An item's own edit keeps this at zero (D-45).
 create function pg_temp.today_drift() returns int language sql as $$
   select count(*)::int
     from public.chore_occurrence o join public.chore c on c.id = o.chore_id
    where o.household_id = '0c000000-0000-0000-0000-000000000001' and o.due_date = pg_temp.today()
      and o.status = 'scheduled' and o.status_event_id is null
      and (c.archived_at is not null
+          or (o.member_id is null) <> (c.assignment = 'shared')
           or (o.due_time, o.kind, o.points_snapshot, o.requires_approval_snapshot)
              is distinct from (c.due_time, c.kind, c.points, private.chore_requires_approval(c.id))
           or (select array_agg(a.member_id order by a.member_id) from public.chore_occurrence_assignee a
                where a.occurrence_id = o.id)
-             is distinct from (select array_agg(a.member_id order by a.member_id) from public.chore_assignee a
-                                 join public.member m on m.id = a.member_id and m.archived_at is null
-                                where a.chore_id = c.id))
+             is distinct from (case when o.member_id is not null then array[o.member_id]
+                                    else (select array_agg(a.member_id order by a.member_id) from public.chore_assignee a
+                                            join public.member m on m.id = a.member_id and m.archived_at is null
+                                           where a.chore_id = c.id) end)
+          or (o.member_id is not null and not exists (
+                select from public.chore_assignee a join public.member m on m.id = a.member_id and m.archived_at is null
+                 where a.chore_id = c.id and a.member_id = o.member_id)))
 $$;
--- Today's occurrence of each item, as {chore_id: id}.
+-- Today's occurrences, as {"chore_id:person": id} (person "-" for a shared one).
 create function pg_temp.today_ids() returns jsonb language sql as $$
-  select coalesce(jsonb_object_agg(chore_id, id), '{}') from public.chore_occurrence
+  select coalesce(jsonb_object_agg(chore_id || ':' || coalesce(member_id::text, '-'), id), '{}') from public.chore_occurrence
    where household_id = '0c000000-0000-0000-0000-000000000001' and due_date = pg_temp.today()
 $$;
 
@@ -213,8 +219,9 @@ select ok(not exists (select from public.chore_occurrence o join public.chore_oc
                          and a.member_id = '0c110000-0000-0000-0000-000000000003'),
   '[CHR-09] after today, the snapshot has the new assignees');
 
--- Property test: 40 random edits of every kind; after each, the past is unchanged, today's untouched
--- occurrences match their items and keep their ids, and generating again adds nothing.
+-- Property test: 40 random edits of every kind, switching items between shared and each (D-47)
+-- included; after each, the past is unchanged, today's untouched occurrences match their items and
+-- keep their ids, and generating again adds nothing.
 create function pg_temp.random_edits(p_n int) returns text language plpgsql as $$
 declare
   v_items uuid[] := array['0c4e0000-0000-0000-0000-000000000001', '0c4e0000-0000-0000-0000-000000000002',
@@ -231,7 +238,7 @@ begin
     v_item := v_items[1 + floor(random() * 3)::int];
     v_member := v_members[1 + floor(random() * 3)::int];
     v_ids := pg_temp.today_ids();
-    case floor(random() * 7)::int
+    case floor(random() * 8)::int
       when 0 then update public.chore set schedule = v_schedules[1 + floor(random() * 4)::int], kind = 'chore' where id = v_item;
       when 1 then update public.chore set day_types = (select array_agg(t) from unnest(v_types) t where random() < 0.6 or t = 'weekend') where id = v_item;
       when 2 then update public.chore set points = floor(random() * 20)::int, due_time = case when random() < 0.5 then null else '16:00'::time end where id = v_item;
@@ -244,6 +251,7 @@ begin
           values ('0c000000-0000-0000-0000-000000000001', v_item, v_member) on conflict do nothing;
         end if;
       when 4 then update public.chore set archived_at = case when archived_at is null then now() end where id = v_item;
+      when 6 then update public.chore set assignment = case when assignment = 'shared' then 'each' else 'shared' end where id = v_item;
       when 5 then
         insert into public.school_closure (household_id, school_year_id, name, closure_type, start_date, end_date)
         values ('0c000000-0000-0000-0000-000000000001', '0c5e0000-0000-0000-0000-000000000001', 'Random',

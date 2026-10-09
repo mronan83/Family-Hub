@@ -191,7 +191,10 @@ export default async function ChoresPage({
                             decorative
                           />
                         ))}
-                        <span>{names(people.map((m) => m.displayName))}</span>
+                        <span>
+                          {names(people.map((m) => m.displayName))}
+                          {c.assignment === 'each' && people.length > 1 ? ', each their own' : ''}
+                        </span>
                       </span>
                       {itemTags.length > 0 ? (
                         <span className="fw-actions" aria-label="Tags">

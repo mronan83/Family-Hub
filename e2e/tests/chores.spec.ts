@@ -197,7 +197,7 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
 
   expect(
     sql(`select string_agg(c.title || ':' || c.kind || ':' || c.points || ':' || coalesce(left(c.due_time::text, 5), '-')
-                           || ':' || (c.schedule ->> 'freq') || ':' || c.icon || ':'
+                           || ':' || (c.schedule ->> 'freq') || ':' || c.icon || ':' || c.assignment || ':'
                            || (select string_agg(m.display_name, '+' order by m.display_name)
                                  from public.chore_assignee a join public.member m on m.id = a.member_id
                                 where a.chore_id = c.id), ',' order by c.title)
@@ -205,14 +205,14 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
           where c.household_id = '${DEMO}' and c.id::text not like '${SEEDED_CHORES}'`),
   ).toBe(
     [
-      'Order school uniform:task:0:-:once:backpack:Sam',
-      'Pack school bag:chore:5:07:15:weekly:chore-pack:Maya',
-      'Practice piano:chore:5:16:30:daily:chore-music:Maya',
-      'Put shoes away:chore:5:-:daily:chore-shoes:Leo+Maya',
-      'Renew car insurance:task:0:-:once:calendar:Alex',
-      'Tidy toys:chore:5:19:00:daily:chore-toys:Leo',
-      'Unload the dishwasher:chore:5:18:00:daily:chore-dishes:Maya',
-      'Water the plants:chore:5:-:weekly:chore-plant:Leo',
+      'Order school uniform:task:0:-:once:backpack:shared:Sam',
+      'Pack school bag:chore:5:07:15:weekly:chore-pack:each:Maya',
+      'Practice piano:chore:5:16:30:daily:chore-music:each:Maya',
+      'Put shoes away:chore:5:-:daily:chore-shoes:each:Leo+Maya',
+      'Renew car insurance:task:0:-:once:calendar:shared:Alex',
+      'Tidy toys:chore:5:19:00:daily:chore-toys:each:Leo',
+      'Unload the dishwasher:chore:5:18:00:daily:chore-dishes:each:Maya',
+      'Water the plants:chore:5:-:weekly:chore-plant:each:Leo',
     ].join(','),
   );
   expect(
@@ -436,21 +436,58 @@ test('[CHR-01] an item is archived and restored, never deleted', async ({ page }
   ).toBe('2');
 });
 
-test('[CHR-07][CHR-09] an item’s page shows its last seven days: who did it, and the day it was missed', async ({
+test('[CHR-07][CHR-18] an item’s page shows its last seven days: each child’s own bed, and the days each missed', async ({
   page,
 }) => {
-  // The demo family's seeded week (supabase/seed.sql): Make bed was missed three days ago, and done
-  // by Maya on odd days back and Leo on even ones.
+  // The demo family's seeded week (supabase/seed.sql): each makes their own bed (D-47); Leo missed
+  // yesterday and Maya three days ago.
   await signIn(page, 'Alex');
   await page.goto('/admin/chores/0de00000-0000-4000-8000-0000000c0001');
   const week = page.getByRole('list', { name: 'Last 7 days', exact: true });
   await expect(week.getByRole('listitem')).toHaveCount(7);
-  await expect(week.getByRole('listitem').first()).toContainText(/Yesterday\s*Done by Maya/);
-  await expect(week.getByRole('listitem').nth(1)).toContainText('Done by Leo');
-  await expect(week.getByRole('listitem').nth(2)).toContainText('Missed');
+  const yesterday = week.getByRole('listitem').first();
+  await expect(yesterday).toContainText('Yesterday');
+  await expect(yesterday).toContainText('Maya: done');
+  await expect(yesterday).toContainText('Leo: missed');
+  await expect(week.getByRole('listitem').nth(2)).toContainText('Maya: missed');
+  await expect(week.getByRole('listitem').nth(2)).toContainText('Leo: done');
   expect(
-    sql(`select string_agg(status, ',' order by due_date desc) from public.chore_occurrence
-          where chore_id = '0de00000-0000-4000-8000-0000000c0001' and due_date between ${TODAY} - 7 and ${TODAY} - 1`),
-  ).toBe('completed,completed,missed,completed,completed,completed,completed');
+    sql(`select string_agg(m.display_name || '=' || o.status, ',' order by o.due_date desc, m.display_name)
+           from public.chore_occurrence o join public.member m on m.id = o.member_id
+          where o.chore_id = '0de00000-0000-4000-8000-0000000c0001' and o.due_date in (${TODAY} - 1, ${TODAY} - 3)`),
+  ).toBe('Leo=missed,Maya=completed,Leo=completed,Maya=missed');
   await expectContrastOk(page);
+});
+
+test('[CHR-18] several people: everyone does their own by default for a chore; switching to any one of them makes one a day', async ({
+  page,
+}) => {
+  // Put shoes away (Maya and Leo) was entered above, as a chore: each their own.
+  const perDay = () =>
+    sql(`select count(*) || ':' || count(distinct o.due_date) from public.chore_occurrence o join public.chore c on c.id = o.chore_id
+          where c.household_id = '${DEMO}' and c.title = 'Put shoes away' and o.due_date between ${TODAY} and ${TODAY} + 14`);
+  expect(perDay()).toBe('30:15');
+  await signIn(page, 'Alex');
+  await expect(
+    list(page).getByRole('listitem').filter({ hasText: 'Put shoes away' }),
+  ).toContainText('each their own');
+  await page.getByRole('link', { name: 'Edit Put shoes away' }).click();
+  await expect(
+    page.getByRole('list', { name: 'Coming up' }).getByRole('listitem').first(),
+  ).toContainText('each their own');
+  const form = page.getByRole('form', { name: 'Edit item' });
+  await expect(form.getByRole('radio', { name: 'Everyone does their own' })).toBeChecked();
+  await form.getByRole('radio', { name: 'Any one of them' }).check();
+  await form.getByRole('button', { name: 'Save changes' }).click();
+  await expect(page.getByRole('status')).toHaveText('Saved Put shoes away.');
+  expect(perDay()).toBe('15:15');
+  await expect(
+    list(page).getByRole('listitem').filter({ hasText: 'Put shoes away' }),
+  ).not.toContainText('each their own');
+
+  // With one person the question is not asked.
+  await page.getByRole('link', { name: 'Edit Tidy toys' }).click();
+  await expect(
+    page.getByRole('form', { name: 'Edit item' }).getByRole('radio', { name: 'Any one of them' }),
+  ).toHaveCount(0);
 });

@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.12: everyone does their own (WP-43, D-47): `chore.assignment` (`each` or `shared`) and `chore_occurrence.member_id`, one occurrence per item, day and person (§3.2).
 > v0.8.11: completion events (WP-10, D-46): `chore_completion_event` as built, with who recorded it taken from the session; the fold, day close, rebuild and drift check; `record_completions()` (§4.1, §4.2, §4.5, §4.7).
 > v0.8.10: occurrences (WP-09, D-45): `chore_occurrence` and `chore_occurrence_assignee` as built, with each assignee's day type in the snapshot; the generator, re-planning triggers and `v_member_occurrence` (§3.2, §4.2, §4.5, §4.7).
 > v0.8.9: school years (WP-21, D-44): `school_year`, `school_term`, `school_closure` and `member_school_profile` as built; `resolve_day_type` and the day-type functions (§3.5, §4.4, §4.8).
@@ -127,6 +128,7 @@ erDiagram
     uuid id PK
     uuid chore_id FK
     date due_date
+    uuid member_id FK
     time due_time
     text kind
     int points_snapshot
@@ -401,6 +403,13 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 - Re-planning changes only occurrences nothing has happened to (`scheduled`, `status_event_id` null), never a past one. After today they are replaced. Today's follow an item's own edit, or a member archived or restored, in place: same id, new points, time, approval and assignees, or removed if the item is no longer due today. A school-year change starts tomorrow (D-24). An open one-off task follows its date, so one entered after its date is made on that date and shows as overdue.
 - Changing the household's approval switch re-resolves `requires_approval_snapshot` on occurrences nothing has happened to (D-22).
 - Both tables carry `household_id` and reference `chore (household_id, id)`, `chore_occurrence (household_id, id)` and `member (household_id, id)`. Admins and the board read them under the item's visibility; nobody writes them directly; they are not audited.
+
+**As built (WP-43, D-47):**
+- `chore.assignment` is `each` (everyone does their own) or `shared` (any one of them, D-30). The column defaults to `shared`, so items saved before WP-43 keep their behaviour. The item form starts a new chore as `each` and a new task as `shared` and always sends the mode; `save_chore()` given none keeps an item's mode (`shared` for a new one), so the app already in production behaves as before while a preview of this waits for approval (D-37).
+- `chore_occurrence.member_id` is the person an `each` occurrence belongs to, and null for a shared one; it references `member (household_id, id)`. The key is `UNIQUE NULLS NOT DISTINCT (chore_id, due_date, member_id)`: one occurrence per item, day and person.
+- An `each` item is due for a person on a date when its schedule and dates fall on it and that person's own day type is in its `day_types`, while they are an active assignee (`private.occurrence_due()`); a shared item is due as before (`chore_due_on`, any active assignee's day type). An `each` occurrence's snapshot is its own person.
+- Re-planning (D-45) treats an occurrence of the other mode like one no longer due: after a mode change, today's untouched ones are replaced; one someone acted on stays, and the other mode is not added for that day, so it is never counted twice.
+- Events, the fold, day close and `v_member_occurrence` are unchanged: an `each` occurrence is simply its person's. When someone else does it (an older sister makes her brother's bed), she is credited and it is `covered` for him.
 
 ### 3.3 Rewards
 

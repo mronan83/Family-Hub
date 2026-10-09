@@ -15,11 +15,15 @@ import Link from 'next/link';
 import { useState } from 'react';
 import type { FormState } from '@/lib/auth/messages';
 import {
+  ASSIGNMENT_LABELS,
+  ASSIGNMENTS,
   CHORE_ICONS,
   DAY_TYPE_LABELS,
   DAY_TYPES,
+  defaultAssignment,
   WEEKDAY_LABELS,
   WEEKDAYS,
+  type Assignment,
   type ChoreInput,
   type Freq,
   type Kind,
@@ -96,13 +100,22 @@ export function ChoreForm({
     initial?.schedule.freq ?? (defaultKind === 'task' ? 'once' : 'daily'),
   );
   const [points, setPoints] = useState(String(initial?.points ?? (defaultKind === 'task' ? 0 : 5)));
-  const [touched, setTouched] = useState({ points: Boolean(initial), freq: Boolean(initial) });
+  const [assignment, setAssignment] = useState<Assignment>(
+    initial?.assignment ?? defaultAssignment(initial?.kind ?? defaultKind),
+  );
+  const [people, setPeople] = useState(initial?.assignees.length ?? 0);
+  const [touched, setTouched] = useState({
+    points: Boolean(initial),
+    freq: Boolean(initial),
+    assignment: Boolean(initial),
+  });
   const s = initial?.schedule;
 
   function chooseKind(next: Kind) {
     setKind(next);
     if (!touched.points) setPoints(next === 'task' ? '0' : '5');
     if (!touched.freq) setFreq(next === 'task' ? 'once' : 'daily');
+    if (!touched.assignment) setAssignment(defaultAssignment(next));
   }
 
   return (
@@ -155,6 +168,11 @@ export function ChoreForm({
                 name="assignees"
                 value={m.id}
                 defaultChecked={initial?.assignees.includes(m.id) ?? false}
+                onChange={(e) => {
+                  // Read it now: React clears currentTarget before a queued update runs.
+                  const on = e.currentTarget.checked;
+                  setPeople((n) => n + (on ? 1 : -1));
+                }}
               />
               <Avatar
                 name={m.displayName}
@@ -167,10 +185,39 @@ export function ChoreForm({
             </label>
           ))}
         </div>
-        <span className="fw-field__help">
-          Anyone in the family. Shared items are done once, by whoever gets to it.
-        </span>
+        <span className="fw-field__help">Anyone in the family.</span>
       </fieldset>
+
+      {/* [CHR-18] Only a question once there are several people (D-47). */}
+      {people > 1 ? (
+        <fieldset className="fw-field fw-fieldset">
+          <legend className="fw-field__label">With several people</legend>
+          <div className="fw-actions">
+            {ASSIGNMENTS.map((a) => (
+              <label key={a} className="fw-choice">
+                <input
+                  type="radio"
+                  name="assignment"
+                  value={a}
+                  checked={assignment === a}
+                  onChange={() => {
+                    setAssignment(a);
+                    setTouched((t) => ({ ...t, assignment: true }));
+                  }}
+                />
+                {ASSIGNMENT_LABELS[a]}
+              </label>
+            ))}
+          </div>
+          <span className="fw-field__help">
+            {assignment === 'each'
+              ? 'Each person has their own to check off, like making their own bed.'
+              : 'Done once, by whoever gets to it, like feeding the dog.'}
+          </span>
+        </fieldset>
+      ) : (
+        <input type="hidden" name="assignment" value={assignment} />
+      )}
 
       <fieldset className="fw-field fw-fieldset">
         <legend className="fw-field__label">How often</legend>

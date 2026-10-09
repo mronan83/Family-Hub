@@ -9,6 +9,7 @@ import {
   filterItems,
   parseChore,
   parseFilters,
+  defaultAssignment,
   historyLine,
   relativeDay,
   scheduleSchema,
@@ -90,10 +91,22 @@ describe('parseChore', () => {
         dayTypes: ALL_DAYS,
         points: 5,
         approval: 'inherit',
+        assignment: 'each',
         tags: [KITCHEN],
         visibility: 'family',
       },
     });
+  });
+
+  it('[CHR-18] reads the choice for several people, and falls back to the kind’s default', () => {
+    const read = (fields: Record<string, string | string[]>) => {
+      const parsed = parseChore(form({ ...base, ...fields }), { canSetVisibility: true });
+      return parsed.ok ? parsed.value.assignment : null;
+    };
+    expect(read({ assignment: 'shared' })).toBe('shared');
+    expect(read({ assignment: 'each' })).toBe('each');
+    expect(read({ assignment: 'nonsense' })).toBe('each');
+    expect(read({ kind: 'task', freq: 'once', onDate: '2026-11-20' })).toBe('shared');
   });
 
   it('[CHR-01][CHR-13] reads a private one-off task with no time and no points', () => {
@@ -182,6 +195,7 @@ describe('parseChore', () => {
       icon: 'chore-bed',
       points: 5,
       approval: 'inherit',
+      assignment: 'each',
       schedule: { freq: 'daily' },
       due_time: '07:30',
       day_types: ALL_DAYS,
@@ -341,6 +355,23 @@ describe('occurrences', () => {
       text: 'Overdue',
       tone: 'late',
     });
+  });
+
+  it('[CHR-18] a person’s own day leads with their name, and says who did it only when someone else did', () => {
+    const names = (id: string) => ({ [MAYA]: 'Maya', [ALEX]: 'Alex' })[id] ?? 'Someone';
+    const own = (status: Parameters<typeof historyLine>[0]['status'], doneBy: string[] = []) =>
+      historyLine({ status, doneBy, memberId: MAYA }, 'chore', names).text;
+    expect(own('completed', [MAYA])).toBe('Maya: done');
+    expect(own('completed', [ALEX])).toBe('Maya: done by Alex');
+    expect(own('approved', [MAYA])).toBe('Maya: approved · done');
+    expect(own('pending_approval', [MAYA])).toBe('Maya: needs review · checked off');
+    expect(own('missed')).toBe('Maya: missed');
+    expect(own('scheduled')).toBe('Maya: open');
+  });
+
+  it('[CHR-18] a new chore starts as everyone does their own, a new task as any one of them', () => {
+    expect(defaultAssignment('chore')).toBe('each');
+    expect(defaultAssignment('task')).toBe('shared');
   });
 
   it('[CHR-03][CHR-12] finds each item’s next date and how long a task has been left open', () => {

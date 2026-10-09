@@ -9,6 +9,19 @@ export const KINDS = ['chore', 'task'] as const;
 export type Kind = (typeof KINDS)[number];
 export const KIND_LABELS: Record<Kind, string> = { chore: 'Chore', task: 'Task' };
 
+/**
+ * [CHR-18] With several people (D-47): "each" makes one occurrence per person, so everyone does
+ * their own; "shared" makes one, done by whoever gets to it (D-30). A new chore starts as each, a
+ * new task as shared.
+ */
+export const ASSIGNMENTS = ['each', 'shared'] as const;
+export type Assignment = (typeof ASSIGNMENTS)[number];
+export const ASSIGNMENT_LABELS: Record<Assignment, string> = {
+  each: 'Everyone does their own',
+  shared: 'Any one of them',
+};
+export const defaultAssignment = (kind: Kind): Assignment => (kind === 'chore' ? 'each' : 'shared');
+
 export const APPROVALS = ['inherit', 'required', 'none'] as const;
 export type Approval = (typeof APPROVALS)[number];
 
@@ -75,6 +88,7 @@ export interface ChoreInput {
   dayTypes: DayType[];
   points: number;
   approval: Approval;
+  assignment: Assignment;
   tags: string[];
   /** Left out when the form does not offer it (only an item's creator changes who sees it). */
   visibility?: 'family' | 'private';
@@ -129,6 +143,10 @@ export function parseChore(
   const approval = (APPROVALS as readonly string[]).includes(approvalText)
     ? (approvalText as Approval)
     : 'inherit';
+  const assignmentText = String(form.get('assignment') ?? '');
+  const assignment = (ASSIGNMENTS as readonly string[]).includes(assignmentText)
+    ? (assignmentText as Assignment)
+    : defaultAssignment(kind);
 
   return {
     ok: true,
@@ -142,6 +160,7 @@ export function parseChore(
       dayTypes,
       points,
       approval,
+      assignment,
       tags: ids(form, 'tags'),
       ...(canSetVisibility
         ? { visibility: form.get('private') === 'on' ? ('private' as const) : ('family' as const) }
@@ -182,6 +201,7 @@ export function chorePayload(input: ChoreInput): Record<string, unknown> {
     icon: input.icon,
     points: input.points,
     approval: input.approval,
+    assignment: input.assignment,
     schedule: input.schedule,
     due_time: input.dueTime,
     day_types: input.dayTypes,
@@ -368,7 +388,7 @@ export function relativeDay(date: string, today: string): string {
  * (D-31); an open routine from before today is open until day close marks it missed.
  */
 export function historyLine(
-  o: { status: OccurrenceStatus; doneBy: string[] },
+  o: { status: OccurrenceStatus; doneBy: string[]; memberId?: string | null },
   kind: Kind,
   names: (id: string) => string,
 ): { icon: IconName; text: string; tone: TileTone } {
@@ -377,6 +397,20 @@ export function historyLine(
     o.status === 'scheduled' && kind === 'task' ? 'overdue' : undefined,
   );
   const who = o.doneBy.map(names).join(' and ');
+  // A person's own occurrence (D-47) leads with their name; "by" only when someone else did it.
+  if (o.memberId) {
+    const own = names(o.memberId);
+    const by = o.doneBy.length === 1 && o.doneBy[0] === o.memberId ? '' : ` by ${who}`;
+    const words =
+      o.status === 'completed'
+        ? `done${by}`
+        : o.status === 'approved'
+          ? `approved · done${by}`
+          : o.status === 'pending_approval'
+            ? `needs review · checked off${by}`
+            : state.adminLabel.toLowerCase();
+    return { icon: state.icon, text: `${own}: ${words}`, tone: state.tone };
+  }
   const text =
     o.status === 'completed'
       ? `Done by ${who}`
