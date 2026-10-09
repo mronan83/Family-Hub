@@ -26,8 +26,9 @@ additive_only=false
 
 # Statements that remove or change what the running app may use.
 CHANGES='drop[[:space:]]+(table|column|schema|type|view|materialized)|truncate[[:space:]]|rename[[:space:]]+(to|column|constraint)|alter[[:space:]]+column[^;]*[[:space:]]type[[:space:]]|delete[[:space:]]+from'
-# A migration as it runs when applied: without comments and without function bodies.
-applied_text() { perl -0777 -pe 's/--[^\n]*//g; s/\bas(\s+)\$(\w*)\$.*?\$\2\$/as$1\x27\x27/gsi' "$1"; }
+# A migration as it runs when applied: without comments, without function bodies, and without grants
+# and revokes (they change privileges, not data or shape, so `revoke truncate` is not a truncate).
+applied_text() { perl -0777 -pe 's/--[^\n]*//g; s/\bas(\s+)\$(\w*)\$.*?\$\2\$/as$1\x27\x27/gsi; s/\b(grant|revoke)\b[^;]*;//gsi' "$1"; }
 
 psql_q=(psql "$SUPABASE_DB_URL" -X -A -t -q -v ON_ERROR_STOP=1)
 

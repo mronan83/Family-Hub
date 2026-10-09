@@ -1,7 +1,7 @@
 -- [NFR-14] The demo family seed resets only the demo household and never touches another (D-37).
 -- [ACC-02] It creates the four demo sign-ins (D-39), without passwords.
 begin;
-select plan(17);
+select plan(19);
 
 insert into public.household (id, name, timezone) values
   ('44444444-4444-4444-4444-444444444444', 'Real family', 'America/Chicago'),
@@ -91,10 +91,30 @@ select is((select count(*)::int from public.school_closure c join public.school_
 select results_eq(
   $$ select count(distinct o.id)::int, count(*)::int, min(o.due_date) = private.household_today(o.household_id)
        from public.chore_occurrence o join public.chore_occurrence_assignee a on a.occurrence_id = o.id
-      where o.chore_id = '0de00000-0000-4000-8000-0000000c0001'
+      where o.chore_id = '0de00000-0000-4000-8000-0000000c0001' and o.due_date >= private.household_today(o.household_id)
       group by o.household_id $$,
   $$ values (15, 30, true) $$,
   '[CHR-03] the demo family''s Make bed is planned from today for 15 days, shared by Maya and Leo, after two runs');
+
+select results_eq(
+  $$ select o.status, count(*)::int from public.chore_occurrence o
+      where o.chore_id = '0de00000-0000-4000-8000-0000000c0001' and o.due_date < private.household_today(o.household_id)
+      group by 1 order by 1 $$,
+  $$ values ('completed'::text, 6), ('missed', 1) $$,
+  '[CHR-07] the demo family''s last week: Make bed done six days and missed one, after two runs');
+-- Homework is on school days only, so in a break or the summer last week may have none.
+select ok((select count(*) filter (where o.status = 'pending_approval')
+                    = least(count(*), 1)
+                  and bool_and(o.status <> 'pending_approval'
+                               or (o.due_date = max_due and o.done_by = (select array[id] from public.member
+                                                                          where household_id = o.household_id and display_name = 'Maya')))
+             from (select o.*, max(o.due_date) over () as max_due from public.chore_occurrence o
+                    where o.chore_id = '0de00000-0000-4000-8000-0000000c0005'
+                      and o.due_date < private.household_today(o.household_id)) o)
+          and not exists (select from public.chore_occurrence o
+                           where o.household_id = '0de00000-0000-4000-8000-000000000001' and o.kind = 'chore'
+                             and o.due_date < private.household_today(o.household_id) and o.finalized_at is null),
+  '[CHR-05][CHR-07] the latest homework waits for a parent, and every past day is closed');
 
 select * from finish();
 rollback;

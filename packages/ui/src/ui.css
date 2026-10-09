@@ -546,6 +546,27 @@ body {
   color: var(--reward-text);
 }
 
+/* An item's last week (WP-10): a status icon and words in the status's tone ---------------- */
+.fw-history {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  color: var(--text-soft);
+}
+.fw-history--done {
+  color: var(--primary-text);
+}
+.fw-history--waiting,
+.fw-history--late {
+  color: var(--reward-text);
+}
+.fw-history--retry {
+  color: var(--info);
+}
+.fw-history--missed {
+  color: var(--missed-text);
+}
+
 /* School year (WP-21): date pairs, and the year as month grids shaded by day type ------------ */
 .fw-subhead {
   margin: 0;

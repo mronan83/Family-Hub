@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.2 · Status: built (WP-37, WP-06)
+> Version 1.3 · Status: built (WP-37, WP-06)
+> v1.3: every board action works by touch, mouse click and keyboard; no gesture is the only way to do anything (§ Touch).
 > v1.2: the board's manual theme override is a per-board hold an admin sets in Boards (Always Day or Always Evening); the board's live status uses `wifi` and `wifi-off`.
 > v1.1: Evening success is Leaf 400; display states (overdue, past its time, covered, done by, private) and admin words for each status; `.theme-day`/`.theme-evening` force a theme on part of a page; board theme times; two manifests; implementation notes match the code. The brand page `/dev/brand` renders everything from the real components.
 > Companions: `01-technical-architecture.md` · `02-data-model.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-backlog.md`
@@ -148,7 +149,7 @@ Why the board is large: one logical pixel is about 0.37 mm on the 32" 4K panel, 
 
 **Shape.** Cards `--r-lg` 24 px, controls `--r-md` 16 px, chips and primary buttons `--r-pill`. Borders 2 px on the board, 1 px in admin. Shadows are soft and used only to separate layers (`--shadow-1`, `--shadow-2`).
 
-**Touch (board).** Minimum target 56 logical px (about 21 mm); primary actions 96 px tall. 16 px minimum gap between targets. Debounce taps; destructive actions need a confirm step. No hover-only behavior anywhere on the board.
+**Touch (board).** Minimum target 56 logical px (about 21 mm); primary actions 96 px tall. 16 px minimum gap between targets. Debounce taps; destructive actions need a confirm step. No hover-only behavior anywhere on the board. Every action is a real button: it works by touch, mouse click and keyboard (Enter or Space) alike, and no gesture (long-press, swipe, pinch) is the only way to do anything. Those gestures are blocked on the kiosk (US-203); the Pi hides the cursor.
 
 **Motion.** Fast and small: 120 ms feedback, 220 ms transitions, 1.4 s celebrations. Animate `transform` and `opacity` only (the 4K Pi budget from SPIKE-03). Honor `prefers-reduced-motion` and the in-app setting: replace motion with a static state change plus a sound or icon swap. A celebration never blocks input and never plays more than once per achievement.
 

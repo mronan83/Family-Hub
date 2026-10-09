@@ -16,7 +16,7 @@ export type Job = (ctx: JobContext) => Promise<JobResult>;
 
 /**
  * Every job the endpoint runs, keyed by its schedule name (schedule.json; a test keeps the two in
- * step). Later work packages add calendar_sync, day_close, reminders and the rest.
+ * step). Later work packages add calendar_sync, reminders and the rest.
  */
 export const JOBS: Record<string, Job> = {
   // [NFR-07] Sample job (WP-07): proves the path end to end and reports how late pg_cron's call
@@ -42,5 +42,31 @@ export const JOBS: Record<string, Job> = {
     });
     if (error) throw new Error(`generate occurrences: ${error.message}`);
     return { status: 'ok', stats: data as Record<string, unknown> };
+  },
+
+  // [CHR-07] Day close (WP-10): once the household's local day has ended, its routines are finalized
+  // and those not done become missed; tasks carry over (D-31). Catches up every earlier day at once,
+  // and repeating it changes nothing.
+  async day_close({ db, householdId }) {
+    const { data, error } = await db.rpc('close_household_day', { p_household_id: householdId });
+    if (error) throw new Error(`close the day: ${error.message}`);
+    return { status: 'ok', stats: data as Record<string, unknown> };
+  },
+
+  // [NFR-06] The nightly check (WP-10): re-folds the last 14 days of events and compares them with
+  // the stored statuses, report-only. Any drift fails the run, so System Health shows it; correcting
+  // it is a parent's explicit action.
+  async status_check({ db, householdId }) {
+    const { data, error } = await db.rpc('occurrence_status_drift', {
+      p_household_id: householdId,
+    });
+    if (error) throw new Error(`check statuses: ${error.message}`);
+    const report = data as { drift: number; sample: unknown[] } & Record<string, unknown>;
+    if (report.drift > 0) {
+      throw new Error(
+        `${report.drift} occurrence status(es) differ from their events: ${JSON.stringify(report.sample)}`,
+      );
+    }
+    return { status: 'ok', stats: report };
   },
 };

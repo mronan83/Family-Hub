@@ -9,6 +9,7 @@ import {
   filterItems,
   parseChore,
   parseFilters,
+  historyLine,
   relativeDay,
   scheduleSchema,
   type ListItem,
@@ -310,6 +311,36 @@ describe('occurrences', () => {
     expect(relativeDay('2026-10-10', '2026-10-09')).toBe('Tomorrow');
     expect(relativeDay('2026-10-12', '2026-10-09')).toBe('Mon, Oct 12');
     expect(relativeDay('2026-11-01', '2026-10-31')).toBe('Tomorrow');
+    expect(relativeDay('2026-10-08', '2026-10-09')).toBe('Yesterday');
+    expect(relativeDay('2026-02-28', '2026-03-01')).toBe('Yesterday');
+  });
+
+  it('[CHR-07][CHR-09] a past day says what happened and who did it, in words', () => {
+    const names = (id: string) => ({ [MAYA]: 'Maya', [ALEX]: 'Alex' })[id] ?? 'Someone';
+    const line = (
+      status: Parameters<typeof historyLine>[0]['status'],
+      doneBy: string[] = [],
+      kind: 'chore' | 'task' = 'chore',
+    ) => historyLine({ status, doneBy }, kind, names);
+    expect(line('completed', [MAYA, ALEX])).toEqual({
+      icon: 'check-circle',
+      text: 'Done by Maya and Alex',
+      tone: 'done',
+    });
+    expect(line('approved', [MAYA]).text).toBe('Approved · done by Maya');
+    expect(line('pending_approval', [MAYA])).toMatchObject({
+      text: 'Needs review · checked off by Maya',
+      tone: 'waiting',
+    });
+    expect(line('missed')).toEqual({ icon: 'minus-circle', text: 'Missed', tone: 'missed' });
+    expect(line('skipped').text).toBe('Skipped');
+    expect(line('rejected').text).toBe('Sent back');
+    expect(line('scheduled').text).toBe('Open');
+    expect(line('scheduled', [], 'task')).toEqual({
+      icon: 'hourglass',
+      text: 'Overdue',
+      tone: 'late',
+    });
   });
 
   it('[CHR-03][CHR-12] finds each item’s next date and how long a task has been left open', () => {

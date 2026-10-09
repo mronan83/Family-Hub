@@ -50,4 +50,44 @@ describe('[NFR-07] schedule and job registry', () => {
       JOBS.occurrence_gen!({ db, householdId: 'h1', scheduledAt: new Date(), since: null }),
     ).rejects.toThrow('generate occurrences: permission denied');
   });
+
+  it('[CHR-07] day_close asks the database to finalize the household’s past days', async () => {
+    const rpc = vi.fn(async () => ({ data: { closed: 4, through: '2026-10-08' }, error: null }));
+    const db = { rpc } as unknown as SupabaseClient;
+    const result = await JOBS.day_close!({
+      db,
+      householdId: 'h1',
+      scheduledAt: new Date(),
+      since: null,
+    });
+    expect(rpc).toHaveBeenCalledWith('close_household_day', { p_household_id: 'h1' });
+    expect(result).toEqual({ status: 'ok', stats: { closed: 4, through: '2026-10-08' } });
+  });
+
+  it('[NFR-06] status_check passes when every status matches its events, and fails on drift', async () => {
+    const report = (drift: number) => ({
+      data: {
+        from: '2026-09-25',
+        through: '2026-10-23',
+        drift,
+        sample: drift ? [{ was: 'completed', now_is: 'scheduled' }] : [],
+      },
+      error: null,
+    });
+    const ok = { rpc: vi.fn(async () => report(0)) } as unknown as SupabaseClient;
+    expect(
+      (
+        await JOBS.status_check!({
+          db: ok,
+          householdId: 'h1',
+          scheduledAt: new Date(),
+          since: null,
+        })
+      ).status,
+    ).toBe('ok');
+    const drifted = { rpc: vi.fn(async () => report(1)) } as unknown as SupabaseClient;
+    await expect(
+      JOBS.status_check!({ db: drifted, householdId: 'h1', scheduledAt: new Date(), since: null }),
+    ).rejects.toThrow(/1 occurrence status\(es\) differ from their events/);
+  });
 });

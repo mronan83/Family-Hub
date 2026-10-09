@@ -1,4 +1,5 @@
-import { ICON_NAMES, type IconName } from '@familywise/ui';
+import { ICON_NAMES, tileState, type IconName, type TileTone } from '@familywise/ui';
+import type { OccurrenceStatus } from '@familywise/rules-engine';
 import { z } from 'zod';
 
 // The family list (WP-08, D-30..D-34): chores (routines) and tasks (to-dos) for any member, with
@@ -354,11 +355,37 @@ export interface OccurrenceDate {
 /** "Today", "Tomorrow", or the brand's date: "Mon, Oct 12" (dates are "YYYY-MM-DD"). */
 export function relativeDay(date: string, today: string): string {
   if (date === today) return 'Today';
-  const tomorrow = new Date(Date.parse(`${today}T12:00:00Z`) + 86_400_000)
-    .toISOString()
-    .slice(0, 10);
-  if (date === tomorrow) return 'Tomorrow';
+  const day = (offset: number) =>
+    new Date(Date.parse(`${today}T12:00:00Z`) + offset * 86_400_000).toISOString().slice(0, 10);
+  if (date === day(1)) return 'Tomorrow';
+  if (date === day(-1)) return 'Yesterday';
   return calendarDay(date);
+}
+
+/**
+ * [CHR-07][CHR-09] One past day of an item, for a parent: its status in plain words (06 §7.1: an
+ * icon and a word, never color alone) and who did it. An open task from before today is overdue
+ * (D-31); an open routine from before today is open until day close marks it missed.
+ */
+export function historyLine(
+  o: { status: OccurrenceStatus; doneBy: string[] },
+  kind: Kind,
+  names: (id: string) => string,
+): { icon: IconName; text: string; tone: TileTone } {
+  const state = tileState(
+    o.status,
+    o.status === 'scheduled' && kind === 'task' ? 'overdue' : undefined,
+  );
+  const who = o.doneBy.map(names).join(' and ');
+  const text =
+    o.status === 'completed'
+      ? `Done by ${who}`
+      : o.status === 'approved'
+        ? `Approved · done by ${who}`
+        : o.status === 'pending_approval'
+          ? `Needs review · checked off by ${who}`
+          : state.adminLabel;
+  return { icon: state.icon, text, tone: state.tone };
 }
 
 /**

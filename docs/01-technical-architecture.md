@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.17: completion events (WP-10, D-46): `POST /api/completions` records a batch as the caller, each event answered on its own; the `day_close` and `status_check` jobs (§5.2, §5.6).
 > v0.8.16: occurrences (WP-09, D-45): planned in the database two weeks ahead; edits re-plan at once by trigger, and the hourly `occurrence_gen` job fills the window (§3, §5.6). Vercel no longer skips previews of commits that change no app code (§9.5).
 > v0.8.15: school years (WP-21, D-44): day types worked out in the database, each member's school year with the default as fallback (§6.3).
 > v0.8.14: the family list (WP-08, D-43): private items in RLS as built, and only an item's creator changes who sees it (§6.3). The migration runner's additive check ignores function bodies (§9.5).
@@ -215,6 +216,8 @@ sequenceDiagram
   B->>D: refetch changed slice
 ```
 
+**As built (WP-10, D-46).** `POST /api/completions` takes `{events: [...]}` (at most 100; JSON only, so no form on another site can post with the caller's cookies), checks the shape (`lib/completions.ts`) and calls `record_completions()` as the caller under RLS. Each event is answered on its own, with the occurrence as the caller now sees it: `recorded`, `duplicate` (a replay; nothing new), `gone` (a parent's edit removed its occurrence, D-45), `refused` (with a reason such as `undo_window_passed` or `not_allowed`) or `invalid`. The database works out who recorded it from the session, the credit date, the flag and who is rewarded. Points (WP-16) and goal evaluation (WP-19) join this path when they are built.
+
 If `RULES` evaluation fails after the insert, the completion still stands and the goal stays `dirty`; `progress_reconcile` (5.6) repairs it within minutes.
 
 On a member's own screen `done_by` is that member; on the Family view the picker lists the item's assignees first and allows anyone in the family, or several people (D-30). Only members who earn rewards get points, approval and celebrations (D-32).
@@ -327,7 +330,8 @@ sequenceDiagram
 | `calendar_sync` | every 15 min per source, each source on its own minute | `/api/jobs/calendar-sync` | one source per invocation; advisory lock per source |
 | `menu_import` | daily | `/api/jobs/menu-import` | window 28 days ahead; skips override rows |
 | `occurrence_gen` | hourly (minute 23); edits re-plan at once in the database | `/api/jobs/occurrence-gen` | calls `generate_household_occurrences()`: tomorrow to 14 days ahead, one occurrence per item per due date (`UNIQUE (chore_id, due_date)` + `ON CONFLICT DO NOTHING`) with its `chore_occurrence_assignee` snapshot; idempotent. Triggers re-plan on edits (D-45): an item, its assignees or a member from today, in place; a school year, closure or school profile from tomorrow (D-24) |
-| `day_close` | hourly (acts once a household's local day has ended) | `/api/jobs/day-close` | `close_past_due()` marks unresolved routines `missed` and stamps `finalized_at` (tasks stay open, D-31); writes `member_daily_summary` for every member; rebuilds `streak_segment` for affected members; idempotent |
+| `day_close` | hourly (minute 4; acts once a household's local day has ended) | `/api/jobs/day-close` | `close_household_day()` → `close_past_due()` marks unresolved routines `missed` and stamps `finalized_at` (tasks stay open, D-31); catches up every earlier day; idempotent (WP-10). Writing `member_daily_summary` and rebuilding `streak_segment` join it with WP-17 |
+| `status_check` | daily 09:38 UTC | `/api/jobs/status-check` | `occurrence_status_drift()`: re-folds the past 14 days and the planned 14 ahead, report-only; any drift fails the run, so System Health shows it (NFR-06, WP-10) |
 | `reminders` | every 5 min (minutes 0, 5, 10 …) | `/api/jobs/reminders` | household-local schedule; skips done items and people, items or devices with reminders off; inserts `reminder_delivery` (dedupe key) before sending; holds during quiet hours; daily digest at each person's chosen time |
 | `progress_reconcile` | every 5 min (minutes 2, 7, 12 …) | `/api/jobs/progress-reconcile` | recompute dirty goals; apply time-based transitions (scheduled→active, active→expired at household-local midnight); post goal payouts and points bonus rules idempotently; nightly full recompute |
 

@@ -1,6 +1,8 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.24: WP-10 in review (PR #23): completion events, the status they drive, day close and the nightly drift check (D-46).
+> v0.8.23: WP-09 done (PR #22), live in production.
 > v0.8.22: WP-09 in review (PR #22): occurrences planned two weeks ahead by the database, and re-planned at once on edits without touching history (D-45).
 > v0.8.21: WP-21 done (PR #21), live in production. WP-27 is ready.
 > v0.8.20: WP-21 in review (PR #21): school years and day types (D-44). Regenerating occurrences when a closure changes moves to WP-09 with occurrences.
@@ -82,8 +84,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-42 | System Health page | P0 | S | WP-03, WP-07 | Done (PR #17) |
 | WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Done (PR #19) |
 | WP-21 | School year and day types | P1a | M | WP-04 | Done (PR #21) |
-| WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | In review (PR #22) |
-| WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | Queued |
+| WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | Done (PR #22) |
+| WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | In review (PR #23) |
 | WP-16 | Points ledger | P1a | M | WP-10 | Queued |
 | WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37 | Queued |
 | WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Queued |
@@ -397,6 +399,13 @@ flowchart LR
 - `day_close` job (hourly, idempotent, catch-up) writing `missed` and `finalized_at`; nightly drift report.
 - A queued check-off can arrive for an occurrence that a parent's edit removed today (the item was archived, or nobody is left assigned): the API answers that one as gone, without failing the rest of its batch (D-45).
 - **Done when:** pgTAP proves immutability, replay idempotency, event-time ordering (a late-arriving earlier event never overrides a later one), the clamp, the flag rule, and that rebuild equals the stored projection after random event sequences; a closed day has no `scheduled` or `rejected` routines while open tasks survive it; a shared item credits only `done_by`.
+- As built (D-46):
+  - `chore_completion_event` is append-only; who recorded each event comes from the session (the board, an admin of the household, or the database itself), never the request. A board may only check off and undo, and undo only within the household's undo window, judged by event time.
+  - `POST /api/completions` records a batch (up to 100) as the caller through `record_completions()`, answering each event on its own: recorded, duplicate (a replay), gone (D-45), refused (with the reason) or invalid, with the occurrence's state for the board to rebase on.
+  - The fold, day close and rebuild follow `02` §4.2. `day_close` runs hourly at minute 4 and catches up; `status_check` runs nightly and fails on any drift (System Health shows it). Daily summaries and streaks join day close in WP-17; points in WP-16.
+  - An item's page shows its last seven days (who did it, missed, skipped, needs review) and today's check-off under "Coming up". The demo family has a seeded week of history.
+  - pgTAP `120_completion_events` (49 tests) includes a property test over 200 random events, checking each stored status against an independent fold; breaking the event-time rule fails it.
+  - The migration runner's additive check now ignores grants and revokes, which read as a `truncate` before and would have held back this migration on the preview.
 
 ### WP-16 — Points ledger
 **Phase:** P1a · **Size:** M · **Depends on:** WP-10 · **Reqs:** PTS-01, PTS-02, PTS-07
@@ -408,6 +417,7 @@ flowchart LR
 - Today screen per member (today's items plus open overdue tasks, D-21) grouped by part of day from due times, and a Family view with a column per person; who-did-it picker for shared items (assignees first, anyone selectable, several allowed); points chip with live balance for members who earn rewards, tap to check off with optimistic UI (feedback under 100 ms), chore-done celebration (check pop, tint, points count-up; reduced motion honoured), time-boxed undo, member selector; private items never reach the board.
 - Layout reserves the slots that later WPs fill (events, meals, goal meter, streak flame), so adding them is additive.
 - Debounce and confirm for destructive actions; icon-first layout on the 1920×1080 logical grid with 56 px minimum targets.
+- Every action works by touch, mouse click and keyboard alike; no gesture is the only way (`06` § Touch). The Playwright flow checks off once by click and once by touch.
 - **Done when:** the Playwright check-off flow passes, including a rapid double tap resulting in one effective completion and the balance updating once.
 
 ### WP-12 — Admin chore operations and My tasks
