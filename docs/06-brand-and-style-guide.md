@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.1 · Status: built (WP-37)
+> Version 1.2 · Status: built (WP-37, WP-06)
+> v1.2: the board's manual theme override is a per-board hold an admin sets in Boards (Always Day or Always Evening); the board's live status uses `wifi` and `wifi-off`.
 > v1.1: Evening success is Leaf 400; display states (overdue, past its time, covered, done by, private) and admin words for each status; `.theme-day`/`.theme-evening` force a theme on part of a page; board theme times; two manifests; implementation notes match the code. The brand page `/dev/brand` renders everything from the real components.
 > Companions: `01-technical-architecture.md` · `02-data-model.md` · `03-user-stories.md` · `04-requirements-traceability.md` · `05-backlog.md`
 > Assets live in `brand/`. Open `brand/specimen.html` to see everything rendered. Implementation lands in WP-37.
@@ -107,7 +108,7 @@ Defined once in `brand/familywise-tokens.css`. Use the **role** tokens (`--prima
 
 **Evening theme** (board switches automatically by time of day and ambient setting; admin follows the OS): background `#14201F`, surface `#1D2C2B`, text `#F3EFE8` (14.59:1), soft text `#B7C2BE` (9.13:1), primary `#5EEAD4`, reward `#FCD34D` (10.06:1 on surface), success `#4ADE80` (8.33:1 on surface; Leaf 600 was only 2.89:1). All pairs verified at AA or better, by a unit test over every role pair the components use and by axe in CI.
 
-**When the theme changes.** The board is Day from 06:30 to 19:00 household-local time and Evening otherwise, with a manual override; the admin app follows the device's dark mode. The theme is `data-theme` on `<html>`; `.theme-day` and `.theme-evening` force one theme on part of a page (the boot splash is always Evening).
+**When the theme changes.** The board is Day from 06:30 to 19:00 household-local time and Evening otherwise, unless an admin holds that board on Day or Evening (Boards in the admin app); the admin app follows the device's dark mode. The theme is `data-theme` on `<html>`; `.theme-day` and `.theme-evening` force one theme on part of a page (the boot splash is always Evening).
 
 ### 4.2 Usage
 - **Ratio:** about 80% Paper/Surface and Ink, 15% Teal, 5% Sun. Sun is a reward signal; if everything is gold, nothing is.
@@ -262,7 +263,7 @@ Eight friendly characters (`brand/avatars/`): owl, bear, fox, cat, bunny, dog, f
 - **Where it goes:** `packages/ui` holds the components (`Icon`, `Avatar`, `ChoreTile`, `PointsChip`, `GoalMeter`, `Banner`, `Button`, `Logo`, `BootSplash`) and `ui.css`. `packages/ui/scripts/brand.mjs` generates the typed icons, theme colors and a copy of the tokens (committed; CI fails if stale), and before every dev run and build copies fonts, logos, avatars and app icons into `apps/web/public` and writes the two manifests and the service worker (not committed).
 - **Tokens:** import `brand/familywise-tokens.css` once at the root. Map Tailwind (or CSS modules) to the role tokens; do not hardcode hex in components. A lint rule or a test greps for raw hex outside the tokens file.
 - **Icons:** a typed `IconName` union is generated from `icons/index.json`; `<Icon name="check-circle" size={36} />` renders inline SVG, and the generator accepts only drawing elements. Add new icons by adding an SVG file, rebuilding the index, and running `pnpm --filter @familywise/ui brand`.
-- **Theme switching:** `data-theme="evening"` on `<html>`, set before first paint by a small boot script; the board switches by household-local time (06:30 and 19:00) and a manual override; admin uses `prefers-color-scheme`. `.theme-day` and `.theme-evening` force a theme on part of a page.
+- **Theme switching:** `data-theme="evening"` on `<html>`, set before first paint by a small boot script; the board switches by household-local time (06:30 and 19:00) unless an admin holds it on one theme (`device.board_config.theme`); admin uses `prefers-color-scheme`. `.theme-day` and `.theme-evening` force a theme on part of a page.
 - **Fonts:** load `brand/fonts.css`; add the eight `.woff2` files to the service worker precache.
 - **Tests:** Playwright snapshots of the chore tile in all seven states and the display states, in both themes and both surfaces, taken as computed styles (icon, word, colors, borders) so they match on every machine; an axe contrast check on the board, admin and brand pages; a unit test that every `OccurrenceStatus` has a tile mapping; a contrast test over the token pairs; a test that fails on raw hex outside the tokens file.
 - **Source of truth:** if this guide and `familywise-tokens.css` disagree, the tokens file wins; fix the guide.

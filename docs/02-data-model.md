@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.5: board snapshot (WP-06, D-41): `public.board_snapshot` as built (members slice, defaults, who gets null) and `device.board_config.theme` (§3.1, §4.6, §4.8).
 > v0.8.4: boards (WP-05, D-40): `device_pairing.device_name`, `private.pairing_failure`, and the pairing, revoke and heartbeat functions (§3.1, §4.8); a board's status changes only through `revoke_device` (§3.1); retention (§6).
 > v0.8.3: members (WP-04): `member.user_id` links only to an admin of the same household and is cleared when that admin leaves (§3.1, §4.8).
 > v0.8.2: admin access (WP-03, D-39): `audit_log` written by triggers, `private.household_setup_code`, and the onboarding and invite functions (§3.1, §4.8).
@@ -327,7 +328,7 @@ erDiagram
 | `household_user` | `household_id`, `user_id → auth.users`, `role` (`owner`/`admin`) | PK `(household_id, user_id)`. Defines admins. |
 | `member` | `display_name`, `role` (`child`/`adult`), `avatar_key` (one of the 8 brand avatars), `color` (brand token key `member-1`..`member-6`, never hex, D-18), `birth_year?`, `user_id?`, `earns_rewards`, `archived_at` | Children have no `user_id` (enforced by check). An adult's `user_id` must be an admin of the same household (`trg_member_user`), and is cleared when that admin leaves it (WP-04). Archived, never deleted, from the admin app. Supports multiple children. `earns_rewards` is set from the role on insert (on for a child, off for an adult) and can be changed per person (D-32). |
 | `invite` | `email`, `token_hash`, `role`, `invited_by`, `expires_at`, `accepted_at`, `accepted_by`, `revoked_at` | Token stored only as its SHA-256 (D-39). One use, 7 days, accepted only by an account with its email; a new invite to the same email revokes the open one; admins can cancel. |
-| `device` | `name`, `auth_user_id → auth.users`, `status` (`active`/`revoked`), `last_seen_at`, `app_version`, `board_config jsonb`, `revoked_at` | One auth user per device, created by `redeem_pairing_code` (D-40). Admins update only `name` and `board_config` (column grants); `status` changes only through `revoke_device`, and a revoked board is never reactivated (trigger). `last_seen_at` and `app_version` are left out of the audit. |
+| `device` | `name`, `auth_user_id → auth.users`, `status` (`active`/`revoked`), `last_seen_at`, `app_version`, `board_config jsonb`, `revoked_at` | One auth user per device, created by `redeem_pairing_code` (D-40). Admins update only `name` and `board_config` (column grants); `status` changes only through `revoke_device`, and a revoked board is never reactivated (trigger). `last_seen_at` and `app_version` are left out of the audit. `board_config.theme` is `auto` (or absent), `day` or `evening` (check constraint; an admin's hold, WP-06). |
 | `device_pairing` | `code_hash`, `device_name`, `expires_at`, `consumed_at`, `device_id?`, `created_by` | 8 digits, stored as the SHA-256 of the digits; single use; TTL capped at 10 minutes by check. |
 | `private.pairing_failure` | `at` | One row per wrong code, across all households; 20 within 10 minutes pause pairing. Pruned after a day. |
 | `household_settings` | `quiet_hours`, `celebration`, `streak_defaults`, `approval_mode` (`off`/`on`; household switch, changeable at any time), `undo_window_seconds`, `board_layout`, `points_settings` (all `jsonb`, zod-validated) | 1:1 with `household`. |
@@ -876,7 +877,11 @@ create policy occurrence_device_read on public.chore_occurrence for select to au
 
 ### 4.6 Board snapshot contract
 
-`board_snapshot(p_from date, p_to date) returns jsonb` (SECURITY INVOKER, so RLS applies). Resolves the household from the caller, then returns:
+`board_snapshot(p_from date default null, p_to date default null) returns jsonb` (SECURITY INVOKER, so RLS applies; `authenticated` only). It answers only an active board: it finds the caller's own `device` row (RLS shows a board its row while it is active) and returns null for anyone else, and for a board from the moment it is disconnected. `p_from` defaults to yesterday and `p_to` to two weeks ahead, both household-local; a window that ends before it starts or spans more than 32 days is refused (`22023`, hint `bad_range`).
+
+**Built so far (WP-06, `v: 1`):** `v`, `fetched_at`, `today` (household-local), `range {from, to}`, `household {id, name, timezone, week_start}`, `device {id, name, theme}` (`auto`, `day` or `evening`) and `members` (not archived; children first, then by name: `id, display_name, role, avatar_key, color, earns_rewards`). The board reads it through `apps/web/lib/snapshot.ts`, which refuses a shape it does not know. Each later work package adds its slice to the same object and bumps `v` only for a breaking change.
+
+**Full shape**, as the slices arrive:
 
 ```
 { fetched_at, household: {timezone, week_start},
@@ -919,6 +924,7 @@ All are `SECURITY DEFINER` with `search_path = ''`, and errors carry a stable co
 | `public.redeem_pairing_code(code)` | anyone (the board, signed out) | Creates the board's auth user (`role=device`), its email identity and its `device` row, consumes the code, and returns the board's credential once. A wrong or used code answers `{ok: false, reason: invalid}` and is counted; past 20 in 10 minutes, `{reason: paused}`. |
 | `public.revoke_device(device_id)` | that household's admins | Final: `status = revoked`, and the board's sign-in is banned. |
 | `public.device_heartbeat(app_version)` | the board itself | Records `last_seen_at` (at most once a minute) and the app version. |
+| `public.board_snapshot(from, to)` | the board itself (security invoker) | Everything the board shows, in one read (§4.6); null for anyone but an active board. |
 | `private.check_member_user()`, `private.unlink_departed_admin()` | triggers only | Refuse a member linked to anyone but an admin of its household; unlink the member when its admin leaves (WP-04). |
 | `private.audit_row()` | triggers only | Writes one `audit_log` row per changed row (§3.1); skips rows whose household is being deleted. |
 

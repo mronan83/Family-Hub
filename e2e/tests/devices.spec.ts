@@ -1,9 +1,12 @@
 import { execFileSync } from 'node:child_process';
+import { appendFileSync } from 'node:fs';
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 
-// [DEV-01][DEV-02][DEV-03][DEV-05] Pairing a board on the preview (WP-05, SPIKE-01, D-40): Alex gets
-// a code, a second browser pairs with it, reads the demo family, hears changes live, signs itself
-// in again after its session is lost, and stops reading the moment Alex disconnects it.
+// [DEV-01][DEV-02][DEV-03][DEV-05] A board on the preview (WP-05, WP-06, SPIKE-01, D-40): Alex gets
+// a code, a second browser pairs with it and reads the demo family, admin changes reach it within
+// the 3-second budget, it catches up after the network drops, follows the theme Alex sets, signs
+// itself in again after its session is lost, and stops reading the moment Alex disconnects it.
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const BOARD = 'Kitchen e2e';
@@ -33,6 +36,25 @@ async function newCode(admin: Page): Promise<string> {
   return code;
 }
 
+async function expectContrastOk(page: Page) {
+  const { violations } = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze();
+  expect(violations.flatMap((v) => v.nodes.map((n) => `${n.target}: ${n.failureSummary}`))).toEqual(
+    [],
+  );
+}
+
+/** Nearest-rank percentile. */
+function percentile(samples: number[], p: number): number {
+  const sorted = [...samples].sort((a, b) => a - b);
+  return sorted[Math.ceil((p / 100) * sorted.length) - 1]!;
+}
+
+/** A line for the DEV-05 latency report: the e2e workflow prints it to the log and the run summary. */
+function report(line: string) {
+  console.log(line);
+  if (process.env.DEV05_LOG) appendFileSync(process.env.DEV05_LOG, `${line}\n`);
+}
+
 async function pair(board: Page, code: string) {
   await board.goto('/board');
   await expect(board).toHaveURL(/\/board\/pair/);
@@ -47,10 +69,14 @@ let code = '';
 let admin: Page;
 let board: Page;
 
+// The seeded names, put back before a retry and after the run.
+const RESET_NAMES = `update public.member set display_name = 'Maya' where household_id = '${DEMO}' and display_name like 'Maya%';
+     update public.member set display_name = 'Leo' where household_id = '${DEMO}' and display_name like 'Leo%';`;
+
 test.beforeAll(async ({ browser }) => {
-  // A retry starts with no demo boards and the seeded member name (their sign-ins go at the next
+  // A retry starts with no demo boards and the seeded member names (their sign-ins go at the next
   // demo family reset).
-  sql(`update public.member set display_name = 'Maya' where household_id = '${DEMO}' and display_name like 'Maya%';
+  sql(`${RESET_NAMES}
        delete from public.device_pairing where household_id = '${DEMO}';
        delete from public.device where household_id = '${DEMO}';`);
   admin = await alexOnBoards(browser);
@@ -58,9 +84,7 @@ test.beforeAll(async ({ browser }) => {
 });
 
 test.afterAll(() => {
-  sql(
-    `update public.member set display_name = 'Maya' where household_id = '${DEMO}' and display_name like 'Maya%';`,
-  );
+  sql(RESET_NAMES);
 });
 
 test('[DEV-01] an admin gets an 8-digit code for a named board', async () => {
@@ -87,15 +111,105 @@ test('[DEV-01][DEV-02] a second browser pairs with the code and reads the family
 });
 
 test('[DEV-05] a change in the household reaches the board live (Realtime under RLS)', async () => {
-  await expect(board.getByRole('status')).toHaveText('Live', { timeout: 15_000 });
+  // Live means changes stream: the board waits for the server to confirm the subscription, which
+  // can take up to about 20 seconds after a quiet spell.
+  await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
   sql(
     `update public.member set display_name = 'Maya R' where household_id = '${DEMO}' and display_name = 'Maya'`,
   );
-  // Generous for the first change after a quiet spell, while Realtime starts its replication;
-  // WP-06 measures the steady-state budget (DEV-05, p95 under 3 s).
+  // The budget is measured in the next test (DEV-05, p95 under 3 s).
   await expect(board.getByRole('list', { name: 'Family', exact: true })).toContainText('Maya R', {
     timeout: 15_000,
   });
+});
+
+test('[DEV-05] a rename in the admin app reaches the board within 3 seconds (p95 of 20)', async () => {
+  // Steady state: the board is live and Realtime has already delivered a change (the test above).
+  test.setTimeout(300_000);
+  const leo = sql(
+    `select id from public.member where household_id = '${DEMO}' and display_name = 'Leo'`,
+  );
+  const live = board.getByRole('status');
+  const samples: number[] = [];
+  for (let i = 1; i <= 20; i++) {
+    const name = `Leo ${i}`;
+    const opened = Date.now();
+    await admin.goto(`/admin/members/${leo}`);
+    const form = admin.getByRole('form', { name: 'Edit member', exact: true });
+    // The field's name includes its help text, so match by substring (as members.spec does).
+    await form.getByLabel('Name').fill(name);
+    const heard = await live.getAttribute('data-events');
+    const saved = Date.now();
+    await form.getByRole('button', { name: 'Save changes', exact: true }).click();
+    // Timed in the board's own page, checked every 50 ms, from the moment Save is pressed. A
+    // sample that never shows counts as 15 s, and measuring goes on, so a slow run still reports.
+    const shown = await board
+      .waitForFunction(
+        (want) =>
+          [...document.querySelectorAll('[aria-label="Family"] .fw-board-members__name')].some(
+            (el) => el.textContent === want,
+          ) && Date.now(),
+        name,
+        { polling: 50, timeout: 15_000 },
+      )
+      .then(
+        async (handle) => ((await handle.jsonValue()) as number) - saved,
+        () => 15_000,
+      );
+    samples.push(shown);
+    await admin.waitForURL(/\/admin\/members\?saved=/);
+    report(
+      `[DEV-05] #${i}: board ${shown} ms (admin page ${saved - opened} ms, save ${Date.now() - saved} ms, changes heard ${heard} → ${await live.getAttribute('data-events')})`,
+    );
+  }
+  const p95 = percentile(samples, 95);
+  const summary = `p50 ${percentile(samples, 50)} ms, p95 ${p95} ms, max ${Math.max(...samples)} ms; samples ${samples.join(', ')}`;
+  test.info().annotations.push({ type: 'DEV-05 latency', description: summary });
+  report(`[DEV-05] admin rename to board: ${summary}`);
+  expect(p95).toBeLessThan(3_000);
+});
+
+test('[DEV-05] after the network drops and comes back, the board catches up on its own', async () => {
+  const status = board.getByRole('status');
+  await board.context().setOffline(true);
+  await expect(status).toHaveText('Reconnecting…');
+  sql(
+    `update public.member set display_name = 'Leo again' where household_id = '${DEMO}' and display_name like 'Leo%'`,
+  );
+  await board.context().setOffline(false);
+  await expect(board.getByRole('list', { name: 'Family', exact: true })).toContainText(
+    'Leo again',
+    { timeout: 15_000 },
+  );
+  await expect(status).toHaveText('Live', { timeout: 30_000 });
+});
+
+test('[DEV-05] an admin holds the board on Evening or Day; it switches at once and stays legible', async () => {
+  const html = board.locator('html');
+  for (const [label, theme] of [
+    ['Always Evening', 'evening'],
+    ['Always Day', 'day'],
+  ] as const) {
+    // A fresh load each time, so no earlier save is still settling on the admin page.
+    await admin.goto('/admin/devices');
+    const form = admin.getByRole('form', { name: `Theme for ${BOARD}`, exact: true });
+    await form.getByLabel(`Theme for ${BOARD}`, { exact: true }).selectOption({ label });
+    await form.getByRole('button', { name: 'Set theme', exact: true }).click();
+    await expect(html).toHaveAttribute('data-theme', theme, { timeout: 5_000 });
+    await expectContrastOk(board);
+  }
+  await admin.goto('/admin/devices');
+  const form = admin.getByRole('form', { name: `Theme for ${BOARD}`, exact: true });
+  await form
+    .getByLabel(`Theme for ${BOARD}`, { exact: true })
+    .selectOption({ label: 'Automatic, by time of day' });
+  await form.getByRole('button', { name: 'Set theme', exact: true }).click();
+  await expect
+    .poll(() =>
+      sql(`select coalesce(board_config ->> 'theme', 'auto') from public.device
+            where household_id = '${DEMO}' and name = '${BOARD}'`),
+    )
+    .toBe('auto');
 });
 
 test('[DEV-02] a board whose session is lost signs itself in again', async () => {
@@ -121,7 +235,7 @@ test('[DEV-02] a board cannot open the admin app', async () => {
 });
 
 test('[DEV-03] the admin sees the board, renames it and disconnects it; the board loses access at once', async () => {
-  await admin.reload();
+  await admin.goto('/admin/devices');
   const boards = admin.getByRole('list', { name: 'Paired boards', exact: true });
   await expect(boards).toContainText(BOARD);
   await expect(boards).toContainText('Last seen');
@@ -155,7 +269,12 @@ test('[DEV-03] the admin sees the board, renames it and disconnects it; the boar
           where d.household_id = '${DEMO}' and d.name = '${BOARD}'`),
   ).toBe('revoked:true');
   expect(
-    sql(`select string_agg(a.actor_type || ':' || a.action, ',' order by a.id) from public.audit_log a
+    sql(`select string_agg(a.actor_type || ':' || a.action || ':' ||
+                           coalesce(a.diff -> 'status' ->> 'to', a.diff -> 'board_config' -> 'to' ->> 'theme', a.diff ->> 'status'),
+                           ',' order by a.id)
+           from public.audit_log a
           where a.household_id = '${DEMO}' and a.entity_type = 'device'`),
-  ).toBe('system:insert,admin:update');
+  ).toBe(
+    'system:insert:active,admin:update:evening,admin:update:day,admin:update:auto,admin:update:revoked',
+  );
 });

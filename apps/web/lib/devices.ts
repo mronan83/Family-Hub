@@ -57,3 +57,17 @@ export const PAIRING_MESSAGES = {
 export function isDeviceClaims(claims: { app_metadata?: unknown } | null | undefined): boolean {
   return (claims?.app_metadata as { role?: string } | undefined)?.role === 'device';
 }
+
+/** [DEV-05] A board's theme (06 §4.1): follow the household's time, or held on Day or Evening. */
+export const BOARD_THEMES = [
+  { value: 'auto', label: 'Automatic, by time of day' },
+  { value: 'day', label: 'Always Day' },
+  { value: 'evening', label: 'Always Evening' },
+] as const;
+export type BoardThemeSetting = (typeof BOARD_THEMES)[number]['value'];
+
+/** The theme a board's settings hold; anything else is automatic. */
+export function boardThemeSetting(config: unknown): BoardThemeSetting {
+  const theme = (config as { theme?: unknown } | null)?.theme;
+  return BOARD_THEMES.find((t) => t.value === theme)?.value ?? 'auto';
+}

@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.12: WP-05 done (PR #11). WP-06 in review (PR #12): the board keeps its own snapshot live (D-41). Your household can start in production before launch, so Y-9 is due now.
 > v0.8.11: SPIKE-01 done and WP-05 in review (PR #11): boards pair in the database and heal themselves (D-40). WP-04 done (PR #10).
 > v0.8.10: WP-03 done (PR #9). WP-04 in review (PR #10).
 > v0.8.9: WP-07 done. WP-03 in review (PR #9): private by invitation (D-39); Y-5 is no longer a blocker; new Y-9 before launch.
@@ -34,7 +35,7 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 | Y-6 | Publish one iCloud calendar and save its link as the repository secret `ICS_SPIKE_URL` | iCloud Calendar → Share → Public Calendar; GitHub secrets | SPIKE-02, then WP-22 and WP-29 |
 | Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
 | Y-8 | Choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
-| Y-9 | Before launch, not now: in Supabase Auth set the Site URL to `https://family-wise-topaz.vercel.app`, add `https://family-wise-topaz.vercel.app/**` to the redirect URLs, and turn off "Allow new users to sign up" | Supabase → Authentication → URL Configuration, and Sign In / Providers | Launch check L-12 (magic links and resets land on production; nobody can sign up through the API) |
+| Y-9 | Due now that your own household is in production (it was planned for launch): in Supabase Auth set the Site URL to `https://family-wise-topaz.vercel.app`, add `https://family-wise-topaz.vercel.app/**` to the redirect URLs, and turn off "Allow new users to sign up" | Supabase → Authentication → URL Configuration, and Sign In / Providers | Launch check L-12 (magic links and resets land on production; nobody can sign up through the API) |
 
 **Done**
 
@@ -65,8 +66,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-02 | Tenancy schema and RLS | P0 | M | WP-01 | Done (PR #1) |
 | WP-03 | Admin authentication and onboarding | P0 | M | WP-02, WP-37 | Done (PR #9) |
 | WP-04 | Members UI | P0 | S | WP-03, WP-37 | Done (PR #10) |
-| WP-05 | Device pairing and device auth | P0 | L | WP-03 | In review (PR #11) |
-| WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | Queued |
+| WP-05 | Device pairing and device auth | P0 | L | WP-03 | Done (PR #11) |
+| WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | In review (PR #12) |
 | WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Done (PR #8) |
 | WP-42 | System Health page | P0 | S | WP-03, WP-07 | Queued |
 | WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Queued |
@@ -306,6 +307,8 @@ flowchart LR
 **Phase:** P0 · **Size:** M · **Depends on:** WP-05, WP-37 · **Reqs:** DEV-05
 - `/board` route, PWA scaffolding, `board_snapshot` function (shape from `02` §4.6, initially members only), Realtime subscription with notify-then-refetch.
 - Measure admin-change-to-board latency in an E2E budget test (p95 under 3 s).
+- As built (D-41): the server draws the first snapshot; the board then reads it itself on every Realtime notice (coalesced), on every (re)connect and when the network returns, and goes back to the server when it is signed out or disconnected. The shell shows the household, date and clock in household time, the connection, and the family. The theme follows household time or an admin's hold (Boards). Kiosk viewport (no pinch zoom, bounce or selection), and an error screen that retries every 30 s.
+- PWA scaffolding here is the kiosk manifest, the viewport and the font-precaching service worker (WP-37); the offline app shell and the cached snapshot are WP-13.
 - **Done when:** renaming a member in the admin portal shows on the paired board within the budget.
 
 ### WP-07 — Job framework and observability

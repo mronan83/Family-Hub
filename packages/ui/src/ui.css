@@ -506,21 +506,56 @@ body {
   font-size: var(--t-title);
 }
 
-/* Board home until the board shell (WP-06) ------------------------------------------------- */
-.fw-board-home {
+/* Board shell (WP-06) ------------------------------------------------------------------------ */
+/* A touch kiosk: no bounce, no text selection, no tap flash, no double-tap zoom. */
+html:has(.board) {
+  overscroll-behavior: none;
+}
+.board {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.fw-board {
+  box-sizing: border-box;
   display: grid;
+  grid-template-rows: auto 1fr auto;
   gap: var(--s-8);
   min-height: 100vh;
+  min-height: 100dvh;
   padding: var(--s-8) var(--s-12);
-  align-content: start;
 }
-.fw-board-home h1 {
+.fw-board__bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-8);
+}
+.fw-board__title h1 {
   margin: 0;
   font-size: var(--t-title);
+  line-height: 1.1;
+}
+.fw-board__date {
+  margin: var(--s-2) 0 0;
+  color: var(--text-soft);
+}
+.fw-board__status {
+  display: grid;
+  justify-items: end;
+  gap: var(--s-2);
+}
+.fw-board__clock {
+  font-size: var(--t-hero);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 .fw-board-members {
   display: flex;
   flex-wrap: wrap;
+  align-content: start;
   gap: var(--s-8);
   margin: 0;
   padding: 0;
@@ -531,7 +566,14 @@ body {
   justify-items: center;
   gap: var(--s-3);
 }
+.fw-board__foot {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
 .fw-live {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
   font-size: var(--t-small);
   color: var(--text-soft);
 }

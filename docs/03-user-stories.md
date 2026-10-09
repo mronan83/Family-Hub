@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.4: US-204: the 3-second budget is measured on every pull request, and a board an admin holds on Day or Evening switches live (WP-06, D-41). US-911: our own household may start in production before launch.
 > v0.8.3: US-201 and US-202: 8-digit codes on the board's keypad, a board that signs itself in again, and disconnecting for good (WP-05, D-40).
 > v0.8.2: US-104 covers the earns-rewards default, linking an adult to their sign-in, and restoring an archived member (WP-04).
 > v0.8.1: onboarding is by setup code and invite link, with no public sign-up (US-101, US-102, US-103; D-39).
@@ -101,6 +102,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P0 · **Reqs:** DEV-05
 - Given the board is online, when I add a chore from my phone, then the board shows it within 3 seconds (p95).
 - Given realtime disconnects, when the connection returns, then the board refetches and reconciles without a manual refresh.
+- Given I rename a family member in admin, when I save, then the paired board shows the new name within 3 seconds (p95, measured by e2e on every pull request).
+- Given I hold a board on Day or Evening in Boards, when I save, then the board switches at once; set back to automatic, it follows household time (Day from 6:30 am to 7:00 pm).
 
 ### US-205 — Keep working offline
 **As a** parent **I want** the board to keep working when wifi drops **so that** the habit doesn't break.
@@ -542,7 +545,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a pull request with every check green, when I open its preview, then I see the demo family, and nothing I do there changes my family's data.
 - Given a pull request, when I have not approved it, then it is not merged or deployed.
 - Given a merge to `main`, when the deploy runs, then migrations are applied to production before the app is deployed, and a failed migration stops the app deploy.
-- Given production before launch, when I look at it, then no board is paired and the demo family is the only household until I create ours at launch.
+- Given production before launch, when I look at it, then it holds only the demo family and any household I started with a setup code (ours may start early); a preview's demo reset never touches a household with a real admin.
 
 ### US-910 — It looks and feels like FamilyWise
 **As a** parent **I want** the board and admin to share one clear, friendly identity **so that** the product feels trustworthy to my family and consistent on every screen.
