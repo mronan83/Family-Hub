@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.6: US-301, US-313 and US-315 as built (WP-08, D-43): save and add another; the day's parts; only an item's creator changes who sees it.
 > v0.8.5: US-904 and US-909: System Health shows a household only its own errors, and usage against the Free-plan limits (WP-42, D-42).
 > v0.8.4: US-204: the 3-second budget is measured on every pull request, and a board an admin holds on Day or Evening switches live (WP-06, D-41). US-911: our own household may start in production before launch.
 > v0.8.3: US-201 and US-202: 8-digit codes on the board's keypad, a board that signs itself in again, and disconnecting for good (WP-05, D-40).
@@ -138,6 +139,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given I save an item assigned only to an adult who does not earn rewards, when it is completed, then no points are posted, whatever its points value.
 - Given I choose Task and a due date, when I save, then it behaves as a to-do that stays open until done (US-314).
 - Given I set "requires approval", when the child completes it, then its state is `pending_approval`.
+- Given I'm entering the family's list on my phone, when I choose "Save and add another", then the form comes back empty for the next item of the same kind, and six chores and two tasks take under five minutes.
 
 ### US-302 — Schedule chores around the school year
 **As an** admin **I want** chores to recur on chosen days and only on certain day types **so that** school-day routines differ from weekends and summer.
@@ -226,6 +228,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given "Make bed" is due at 7:30 and "Homework" at 16:00, when the board shows today, then "Make bed" is under Morning and "Homework" under After school; items without a time appear under Anytime.
 - Given it is 7:45 and "Make bed" is open, when the board renders, then the item is marked as past its time in a calm style, never red.
 - Given "Make bed" is done at 8:05, when the day closes, then it is done, not missed; the due time does not change scoring.
+- Given due times, when the day is grouped, then Morning is before noon, After school from noon, and Evening from 5 pm.
 
 ### US-314 — Overdue tasks carry over
 **As a** parent **I want** a task that wasn't done by its due date to stay on the list **so that** to-dos are not lost at midnight.
@@ -241,6 +244,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given I create a private task "Buy anniversary gift" assigned to me, when the board or my spouse's account loads, then the item, its occurrences, and its audit history are not returned.
 - Given a private task is assigned to my spouse, when my spouse signs in, then they see it because they are responsible for it.
 - Given an item is family-visible (the default), when anyone opens the board, then it appears under its assignees.
+- Given my spouse created an item, when I edit it, then I can't change who sees it; only its creator can (D-43).
 
 ### US-316 — My tasks on my phone
 **As a** parent **I want** a My tasks view on my phone **so that** I can run my own day from the same family list.

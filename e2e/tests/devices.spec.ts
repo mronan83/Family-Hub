@@ -52,7 +52,7 @@ function percentile(samples: number[], p: number): number {
 /** A line for the DEV-05 latency report: the e2e workflow prints it to the log and the run summary. */
 function report(line: string) {
   console.log(line);
-  if (process.env.DEV05_LOG) appendFileSync(process.env.DEV05_LOG, `${line}\n`);
+  if (process.env.E2E_REPORT) appendFileSync(process.env.E2E_REPORT, `${line}\n`);
 }
 
 async function pair(board: Page, code: string) {

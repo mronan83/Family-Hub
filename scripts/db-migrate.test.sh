@@ -60,6 +60,24 @@ run --additive-only; rc=$?
 check "[NFR-14] --additive-only applies additive migrations (comments are ignored)" \
   "$(is "$rc:$(q "select to_regclass('three') is not null and to_regclass('four') is not null")" "0:t")"
 
+migration 20260105000003_fn_deletes "create function clear_three() returns void language sql as \$fn\$
+  delete from three;
+\$fn\$;
+create table five (id int);"
+run --additive-only; rc=$?
+check "[NFR-14] --additive-only applies a function whose body deletes (it runs when called, not now)" \
+  "$(is "$rc:$(q "select to_regclass('five') is not null")" "0:t")"
+migration 20260105000004_do_deletes "do \$\$ begin delete from three; end \$\$;
+create table six (id int);"
+run --additive-only; rc=$?
+check "[NFR-14] --additive-only still holds back a DO block that deletes (it runs when applied)" \
+  "$(is "$rc:$(q "select to_regclass('six') is null")" "0:t")"
+migration 20260105000005_fn_then_delete "create function noop() returns int language sql as \$\$ select 1 \$\$;
+delete from three;"
+run --additive-only; rc=$?
+check "[NFR-14] --additive-only holds back a delete that follows a function body" \
+  "$(is "$rc:$(grep -c '20260105000005_fn_then_delete' "$work/out")" "0:1")"
+
 fresh
 migration 20260101000000_own_tx "begin;
 create table x (id int);
