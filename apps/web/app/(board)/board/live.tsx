@@ -14,6 +14,8 @@ type Link = 'connecting' | 'live' | 'offline';
 export function LiveRefresh({ householdId }: { householdId: string }) {
   const router = useRouter();
   const [link, setLink] = useState<Link>('connecting');
+  // Changes heard, shown as data-events for e2e (a disconnected board must hear none).
+  const [events, setEvents] = useState(0);
 
   useEffect(() => {
     const db = browserClient();
@@ -23,7 +25,10 @@ export function LiveRefresh({ householdId }: { householdId: string }) {
     db.auth.getSession().then(({ data }) => {
       if (cancelled) return;
       if (data.session) db.realtime.setAuth(data.session.access_token);
-      const refresh = () => router.refresh();
+      const refresh = () => {
+        setEvents((n) => n + 1);
+        router.refresh();
+      };
       channel
         .on(
           'postgres_changes',
@@ -41,8 +46,12 @@ export function LiveRefresh({ householdId }: { householdId: string }) {
           refresh,
         )
         .subscribe((status) => {
-          if (status === 'SUBSCRIBED') setLink('live');
-          else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED')
+          if (status === 'SUBSCRIBED') {
+            setLink('live');
+            // Catch up on anything changed while connecting (the first connection after a quiet
+            // spell can take a few seconds while Realtime starts, SPIKE-01).
+            router.refresh();
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED')
             setLink('offline');
         });
     });
@@ -53,7 +62,7 @@ export function LiveRefresh({ householdId }: { householdId: string }) {
   }, [householdId, router]);
 
   return (
-    <span className="fw-live" role="status" data-link={link}>
+    <span className="fw-live" role="status" data-link={link} data-events={events}>
       {link === 'live' ? 'Live' : link === 'offline' ? 'Reconnecting…' : 'Connecting…'}
     </span>
   );

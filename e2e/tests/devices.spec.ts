@@ -91,8 +91,10 @@ test('[DEV-05] a change in the household reaches the board live (Realtime under 
   sql(
     `update public.member set display_name = 'Maya R' where household_id = '${DEMO}' and display_name = 'Maya'`,
   );
+  // Generous for the first change after a quiet spell, while Realtime starts its replication;
+  // WP-06 measures the steady-state budget (DEV-05, p95 under 3 s).
   await expect(board.getByRole('list', { name: 'Family', exact: true })).toContainText('Maya R', {
-    timeout: 5_000,
+    timeout: 15_000,
   });
 });
 
@@ -113,8 +115,9 @@ test('[DEV-01] a used code is refused', async ({ browser }) => {
 });
 
 test('[DEV-02] a board cannot open the admin app', async () => {
-  const res = await board.goto('/admin');
-  expect(res?.status()).toBe(403);
+  // Sent with the board's cookies, without navigating its page away from the board.
+  const res = await board.context().request.get('/admin', { maxRedirects: 0 });
+  expect(res.status()).toBe(403);
 });
 
 test('[DEV-03] the admin sees the board, renames it and disconnects it; the board loses access at once', async () => {
@@ -128,11 +131,16 @@ test('[DEV-03] the admin sees the board, renames it and disconnects it; the boar
     BOARD,
   );
 
-  // Realtime stops: a change made now never reaches the disconnected board.
+  // Realtime stops: a change made now never reaches the disconnected board (RLS, SPIKE-01).
+  await expect(board).toHaveURL(/\/board$/);
+  const live = board.getByRole('status');
+  await expect(live).toHaveText('Live');
+  const heard = await live.getAttribute('data-events');
   sql(
     `update public.member set display_name = 'Maya Q' where household_id = '${DEMO}' and display_name = 'Maya R'`,
   );
-  await board.waitForTimeout(4_000);
+  await board.waitForTimeout(6_000);
+  await expect(live).toHaveAttribute('data-events', heard ?? '0');
   await expect(board.getByRole('list', { name: 'Family', exact: true })).not.toContainText(
     'Maya Q',
   );

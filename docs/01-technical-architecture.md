@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.9: WP-05 and SPIKE-01 (D-40): boards pair in the database with an 8-digit code, keep a credential to sign in again unattended, and are disconnected for good; Realtime under RLS confirmed (§4, §5.1, §6.1).
 > v0.8.8: WP-04 members: an adult member links only to an admin of the same household, enforced by the database (§6.2).
 > v0.8.7: WP-03 admin sign-in and onboarding (D-39): no public sign-up; setup codes and invite links; accounts created by the server; demo sign-ins on previews; audit by triggers (§4, §5.10, §6.1, §6.2, §9.4, §9.5, §9.7, §9.8, §9.10).
 > v0.8.6: WP-07 job framework: schedules as code synced by the deploy, `private.call_job`, `POST /api/jobs/[job]`, `job_health()`, the job-secret and job-run workflows, structured logs and `private.app_error` (§3, §5.6, §9.6, §9.8, §9.10).
@@ -126,7 +127,7 @@ flowchart TB
 | `BRD` | Board App | Family-facing UI: Today per member and a Family view of everyone's day, Calendar, Goals, Meals. Optimistic check-off with a who-did-it picker for shared items, notify-then-refetch realtime, idle auto-return, offline cache. Never shows private items. | Next.js route group `(board)`, PWA (Serwist), Dexie (IndexedDB), Tailwind | BRD-*, DEV-04..08, CHR-04, RWD-07/08, CAL-04, MEAL-06 |
 | `ADM` | Admin App | Responsive parent portal: members (incl. the earns-rewards switch), devices, the family list of chores and tasks with tags and visibility, My tasks on the phone, goals, calendars, school year, meal plan, menu, audit. | Next.js route group `(admin)`, server actions, shadcn/ui | ACC-*, DEV-03, CHR-01/05/06, RWD-01/09/10, CAL-05/06, SCH-*, MEAL-*, MENU-* |
 | `API` | API layer | Validated writes (zod), derives `household_id` from the verified session (never from the body), passes `done_by` for check-offs (the database validates it and fixes `rewarded`), invokes `RULES`, uses service role only for derived tables. Owns the redemption workflow (request, approve, deny, fulfill). | Next.js route handlers | CHR-04, RWD-04, DEV-06, PTS-04 |
-| `AUTH` | Pairing + device auth | Pairing codes, creates device principals, issues/revokes device sessions. | Route handlers + Supabase Admin API | DEV-01/02/03 |
+| `AUTH` | Pairing + device auth | Pairing codes; `redeem_pairing_code` creates the board's own sign-in in the database; the board's credential cookie and unattended sign-in; disconnecting (D-40, §5.1). | Database functions, server actions, `/board/resume` | DEV-01/02/03 |
 | `RULES` | Rules engine | Pure functions over per-member facts (`covered` is neutral; tags by id): evaluate goals (COUNT, STREAK, DAILY_ALL_DONE, POINTS), AND/OR composition, grace days; computes streak history (good and bad segments, routines only) and daily summaries. Isomorphic (runs on server and board). | `packages/rules-engine`, TypeScript, Vitest | RWD-02..06, RWD-10, RWD-11, NFR-12 |
 | `OCCGEN` | Occurrence generator + day close | Materializes one `chore_occurrence` per item per due date for a rolling window, with a snapshot of its assignees, from schedules + day types; regenerates future rows on edits. Day close finalizes unresolved past-due routines as `missed` (tasks carry over), writes daily summaries for every member, and rebuilds streak segments. | Route handler jobs | CHR-02/03/07, SCH-03, RWD-11 |
 | `CALSYNC` | Calendar sync | Fetch ICS/CalDAV, parse, expand recurrences into a window, upsert events/instances, record health. | `ical.js`, `tsdav` | CAL-01..03, CAL-06..08 |
@@ -147,31 +148,39 @@ flowchart TB
 
 ## 5. Runtime flows
 
-### 5.1 Device pairing (DEV-01, DEV-02)
+### 5.1 Device pairing (DEV-01, DEV-02, DEV-03, D-40)
 
 ```mermaid
 sequenceDiagram
   actor A as Admin
-  participant ADM
-  participant API
+  participant ADM as ADM (Boards)
+  participant BRD as Board (Pi)
   participant DB
   participant SAUTH
-  participant BRD as Board (Pi)
 
-  A->>ADM: Add device
-  ADM->>API: create pairing code
-  API->>DB: insert device_pairing (code_hash, expires in 10 min)
-  API-->>ADM: 6-character code
-  A->>BRD: type code on first-boot screen
-  BRD->>API: POST /api/devices/pair {code}
-  API->>DB: verify unexpired, unconsumed code
-  API->>SAUTH: create device user (app_metadata: role=device, household_id, device_id)
-  API->>DB: insert device (auth_user_id, status=active), consume code
-  API-->>BRD: session (access + refresh token)
-  BRD->>DB: select board_snapshot + subscribe (RLS: active device only)
+  A->>ADM: Add a board, named Kitchen
+  ADM->>DB: create_pairing_code: 8 digits, hash stored, 10 minutes
+  ADM-->>A: 1234 5678
+  A->>BRD: types it on the board's keypad (/board/pair)
+  BRD->>DB: redeem_pairing_code (browser-safe key)
+  Note over DB: wrong code: counted; 20 in 10 minutes pauses pairing
+  DB->>DB: auth user (role=device, household, device), email identity, device row active, code consumed
+  DB-->>BRD: the board's credential (once)
+  BRD->>SAUTH: sign in with it; keep it in an httpOnly cookie
+  BRD->>DB: reads through RLS (device_household_id); Realtime under RLS
+  Note over BRD,SAUTH: session lapses (lost refresh, cleared cookies): /board/resume signs in again
+  A->>ADM: Disconnect Kitchen
+  ADM->>DB: revoke_device: status revoked (RLS stops reads now), sign-in banned
+  BRD->>DB: next read: nothing; resume refused; back to the pairing screen
 ```
 
-Revocation: admin sets `device.status = 'revoked'`. The RLS helper checks device status on every query, so access ends immediately even though the access token has not expired. The auth user is also banned.
+- **The board is a sign-in of its own,** created by `redeem_pairing_code` in the database, not by Supabase's admin API, so pairing needs only the browser-safe key and previews pair the same way as production (D-37, D-40). `app_metadata` says `role=device` with its household and device; what it may read is decided by `device.status` through `private.device_household_id()` on every query.
+- **Codes are 8 digits**, one use, 10 minutes, stored as a hash, typed on the board's own keypad (the kiosk has no keyboard). Wrong codes are counted across all households: after 20 in 10 minutes pairing pauses until the window passes, which caps an attacker at about 3 in 10 million chances per window. An attacker can pause pairing for everyone for 10 minutes; that is the accepted cost (R-34).
+- **Sessions (SPIKE-01).** Supabase Free has no session time-box or inactivity timeout (Pro features), so a board's refresh token does not expire; its access token lasts an hour and is refreshed by `proxy.ts` on every page. The real risk to a kiosk is refresh-token reuse detection: a refresh whose response is lost on flaky wifi, retried after the reuse window, revokes the whole session. The board therefore keeps its credential in an httpOnly cookie (path `/board`, 400 days) and `/board/resume` signs it in again unattended; e2e clears the session cookies and checks the board recovers on its own.
+- **Realtime under RLS (SPIKE-01).** `postgres_changes` delivers a change only if the board's session can read the row, so a board hears its own household and nothing else, and hears nothing once disconnected. e2e checks both: a rename reaches the board live, and after disconnecting the board hears no event at all (it counts what it hears). The first change after a quiet spell can take several seconds while Realtime starts its replication, so the board refetches once whenever its channel (re)connects; WP-06 measures the steady-state budget (DEV-05).
+- **Disconnecting is final.** `revoke_device` sets `device.status = 'revoked'`, so the next query and every Realtime check see nothing, and bans the board's sign-in, so it cannot sign in or refresh again. A disconnected board returns to the pairing screen; it is paired again as a new board. Admins can rename a board but never change its status directly (column grants).
+- **Admin routes are closed to boards.** `proxy.ts` answers 403 when a board session asks for `/admin`; admin pages and actions also treat it as signed out.
+- **Last seen.** The board calls `device_heartbeat` when it loads (written at most once a minute, and not audited); the Boards page shows it.
 
 ### 5.2 Check-off online (CHR-04, RWD-04)
 
@@ -461,7 +470,7 @@ sequenceDiagram
 | Principal | AuthN | Reads | Writes |
 |---|---|---|---|
 | Admin | Supabase Auth: email magic link or email + password (ACC-02); Sign in with Apple or passkey later (ACC-06). Accounts only from a setup code or an invite (D-39) | all rows of own household, except another admin's private items (D-34) | config tables via server actions under the user's session (RLS enforced) |
-| Board device | Device auth user, `app_metadata.role=device` | family-visible board tables of own household while `device.status='active'` | none direct; `POST /api/completions` (with `done_by`) and `POST /api/redemptions` only |
+| Board device | Its own Supabase Auth user (`app_metadata.role=device`), created by `redeem_pairing_code`; signs itself in again with the credential it keeps (D-40) | family-visible board tables of own household while `device.status='active'` | none direct; `POST /api/completions` (with `done_by`) and `POST /api/redemptions` only |
 | Jobs | Signed bearer secret + service role | all | derived tables, instances, menu rows |
 | Child | not a principal | n/a | acts only through the device |
 
