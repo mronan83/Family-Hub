@@ -136,7 +136,8 @@ test('[DEV-05] a rename in the admin app reaches the board within 3 seconds (p95
     const opened = Date.now();
     await admin.goto(`/admin/members/${leo}`);
     const form = admin.getByRole('form', { name: 'Edit member', exact: true });
-    await form.getByLabel('Name', { exact: true }).fill(name);
+    // The field's name includes its help text, so match by substring (as members.spec does).
+    await form.getByLabel('Name').fill(name);
     const heard = await live.getAttribute('data-events');
     const saved = Date.now();
     await form.getByRole('button', { name: 'Save changes', exact: true }).click();
