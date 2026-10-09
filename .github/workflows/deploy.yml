@@ -59,11 +59,9 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.gate.outputs.sha }}
-      - uses: supabase/setup-cli@v3
-        with:
-          version: 2.117.0
-      - run: supabase db push --db-url "$SUPABASE_DB_URL" --yes
-      - run: supabase migration list --db-url "$SUPABASE_DB_URL"
+      # Not `supabase db push`: it refuses when an open pull request's preview has applied a
+      # migration this commit lacks (one database, D-37). The runner reports those and carries on.
+      - run: bash scripts/db-migrate.sh
 
   app:
     needs: [gate, migrate]
