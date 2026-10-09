@@ -70,7 +70,7 @@ test('[PTS-01] a parent adds and takes away points with a reason; each is kept, 
 
   let form = page.getByRole('form', { name: 'Change Leo’s points' });
   await form.getByLabel('Add', { exact: true }).check();
-  await form.getByLabel('Points').fill('5');
+  await form.getByLabel('Points', { exact: true }).fill('5');
   await form.getByLabel('Why').fill(reason);
   await form.getByRole('button', { name: 'Add points' }).click();
   const section = page.getByRole('region', { name: 'Points' });
@@ -85,8 +85,8 @@ test('[PTS-01] a parent adds and takes away points with a reason; each is kept, 
   ).toBe(`adjustment:5:admin:${ALEX}`);
 
   form = page.getByRole('form', { name: 'Change Leo’s points' });
-  await form.getByLabel('Take away').check();
-  await form.getByLabel('Points').fill('3');
+  await form.getByLabel('Take away', { exact: true }).check();
+  await form.getByLabel('Points', { exact: true }).fill('3');
   await form.getByLabel('Why').fill(`${reason}, but left the rake out`);
   await form.getByRole('button', { name: 'Take away points' }).click();
   await expect(section).toContainText('Took away 3 points.');
@@ -107,7 +107,7 @@ test('[PTS-01] a reason is required, and an empty one is caught before anything 
   await asAlex(page);
   await page.getByRole('link', { name: 'Edit Leo' }).click();
   const form = page.getByRole('form', { name: 'Change Leo’s points' });
-  await form.getByLabel('Points').fill('4');
+  await form.getByLabel('Points', { exact: true }).fill('4');
   await form.getByLabel('Why').fill('   ');
   await form.getByRole('button', { name: 'Add points' }).click();
   await expect(form).toContainText('Say why, in up to 200 characters.');
