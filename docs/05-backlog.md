@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.25: WP-10 done (PR #23), live in production: day close runs hourly and the status check nightly. WP-16 is ready.
 > v0.8.24: WP-10 in review (PR #23): completion events, the status they drive, day close and the nightly drift check (D-46).
 > v0.8.23: WP-09 done (PR #22), live in production.
 > v0.8.22: WP-09 in review (PR #22): occurrences planned two weeks ahead by the database, and re-planned at once on edits without touching history (D-45).
@@ -85,8 +86,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Done (PR #19) |
 | WP-21 | School year and day types | P1a | M | WP-04 | Done (PR #21) |
 | WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | Done (PR #22) |
-| WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | In review (PR #23) |
-| WP-16 | Points ledger | P1a | M | WP-10 | Queued |
+| WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | Done (PR #23) |
+| WP-16 | Points ledger | P1a | M | WP-10 | Ready |
 | WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37 | Queued |
 | WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Queued |
 | WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | Queued |
