@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { GENERIC, hintMessage } from '@/lib/auth/messages';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
+import { BOARD_THEMES } from '@/lib/devices';
 import { log } from '@/lib/log';
 import { serverClient } from '@/lib/supabase/server';
 
@@ -48,6 +49,34 @@ export async function renameDevice(form: FormData): Promise<void> {
       .eq('id', String(form.get('id') ?? ''))
       .eq('household_id', household.id);
     if (error) log('warn', 'board not renamed', { code: error.code });
+  }
+  revalidatePath('/admin/devices');
+  redirect('/admin/devices');
+}
+
+/**
+ * [DEV-05] Holds a board on Day or Evening, or lets it follow the household's time (06 §4.1). The
+ * board hears the change through Realtime and switches at once.
+ */
+export async function setBoardTheme(form: FormData): Promise<void> {
+  const { db, household } = await context();
+  const id = String(form.get('id') ?? '');
+  const theme = BOARD_THEMES.find((t) => t.value === form.get('theme'))?.value;
+  if (theme) {
+    const { data } = await db
+      .from('device')
+      .select('board_config')
+      .eq('id', id)
+      .eq('household_id', household.id)
+      .maybeSingle();
+    if (data) {
+      const { error } = await db
+        .from('device')
+        .update({ board_config: { ...(data.board_config as object), theme } })
+        .eq('id', id)
+        .eq('household_id', household.id);
+      if (error) log('warn', 'board theme not set', { code: error.code });
+    }
   }
   revalidatePath('/admin/devices');
   redirect('/admin/devices');

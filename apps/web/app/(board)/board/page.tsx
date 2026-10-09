@@ -1,64 +1,32 @@
-import { Avatar, type AvatarKey, type MemberColor } from '@familywise/ui';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { boardState } from '@/lib/board';
-import { BOARD_CREDENTIAL_COOKIE } from '@/lib/devices';
+import { BOARD_CREDENTIAL_COOKIE, isDeviceClaims } from '@/lib/devices';
+import { readSnapshot } from '@/lib/snapshot';
 import { serverClient } from '@/lib/supabase/server';
-import { LiveRefresh } from './live';
+import { Board } from './board';
 
-// [DEV-01][DEV-02] The board for a paired device: its household and family, read through RLS with
-// the board's own session, kept live by Realtime. WP-06 replaces this with the board shell.
+const APP_VERSION = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? 'dev';
+
+// [DEV-02][DEV-05] The board for a paired device. The server draws the first snapshot (one read,
+// through RLS with the board's own session); the board then keeps it live in the browser.
 export default async function BoardHome() {
   const db = await serverClient();
   if (!db) redirect('/board/pair');
-  const state = await boardState(db);
-  if (state.kind === 'unpaired') {
+  const { data } = await db.auth.getClaims();
+  if (!isDeviceClaims(data?.claims)) {
     // A board whose session lapsed signs in again with its stored credential.
     const credential = (await cookies()).get(BOARD_CREDENTIAL_COOKIE)?.value;
     redirect(credential ? '/board/resume' : '/board/pair');
   }
-  if (state.kind === 'revoked') redirect('/board/resume?revoked=1');
 
-  const { device } = state;
-  await db.rpc('device_heartbeat', {
-    p_app_version: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? 'dev',
-  });
-  const { data } = await db
-    .from('member')
-    .select('id, display_name, avatar_key, color')
-    .is('archived_at', null)
-    .order('role', { ascending: false })
-    .order('display_name');
-  const members = (data ?? []) as {
-    id: string;
-    display_name: string;
-    avatar_key: AvatarKey | null;
-    color: MemberColor;
-  }[];
+  const [snapshot] = await Promise.all([
+    db.rpc('board_snapshot'),
+    db.rpc('device_heartbeat', { p_app_version: APP_VERSION }),
+  ]);
+  if (snapshot.error) throw new Error(`board snapshot: ${snapshot.error.message}`);
+  const initial = readSnapshot(snapshot.data);
+  // A board session with no snapshot was disconnected (RLS shows it nothing).
+  if (!initial) redirect('/board/resume?revoked=1');
 
-  return (
-    <main className="fw-board-home">
-      <header className="fw-bar">
-        <h1>{device.householdName}</h1>
-        <span className="fw-actions">
-          <span className="fw-muted">{device.name}</span>
-          <LiveRefresh householdId={device.householdId} />
-        </span>
-      </header>
-      <ul className="fw-board-members" aria-label="Family">
-        {members.map((m) => (
-          <li key={m.id}>
-            <Avatar
-              name={m.display_name}
-              avatarKey={m.avatar_key}
-              color={m.color}
-              size={128}
-              decorative
-            />
-            <span>{m.display_name}</span>
-          </li>
-        ))}
-      </ul>
-    </main>
-  );
+  return <Board initial={initial} appVersion={APP_VERSION} />;
 }

@@ -132,6 +132,24 @@ test('[NFR-13] the board boot splash is Evening with the reversed logo, whatever
   await expect(page.locator('.fw-splash.theme-evening .fw-logo__evening')).toBeVisible();
 });
 
+test('[NFR-02][NFR-03] the board is a fixed-scale touch kiosk: no pinch zoom, bounce or selection', async ({
+  page,
+}) => {
+  await page.goto('/board');
+  const viewport = await page.locator('meta[name="viewport"]').getAttribute('content');
+  expect(viewport).toContain('maximum-scale=1');
+  expect(viewport).toContain('user-scalable=no');
+  const style = await page.locator('.board').evaluate((el) => {
+    const s = getComputedStyle(el);
+    return [
+      s.touchAction,
+      s.userSelect,
+      getComputedStyle(document.documentElement).overscrollBehaviorY,
+    ];
+  });
+  expect(style).toEqual(['manipulation', 'none', 'none']);
+});
+
 test('[NFR-13] fonts are self-hosted and precached for offline use', async ({ page }) => {
   const external: string[] = [];
   page.on('request', (r) => {

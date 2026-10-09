@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  boardThemeSetting,
   decodeCredential,
   encodeCredential,
   formatCode,
@@ -54,5 +55,15 @@ describe('format', () => {
     expect(time(at, 'America/Chicago')).toBe('6:42 pm');
     expect(time('2026-10-07T12:05:00Z', 'UTC')).toBe('12:05 pm');
     expect(dayAndTime(at, 'Europe/London')).toBe('Thu, Oct 8 at 12:42 am');
+  });
+});
+
+describe('board theme', () => {
+  it('[DEV-05] a board follows the time of day unless an admin holds it on Day or Evening', () => {
+    expect(boardThemeSetting({})).toBe('auto');
+    expect(boardThemeSetting(null)).toBe('auto');
+    expect(boardThemeSetting({ theme: 'evening' })).toBe('evening');
+    expect(boardThemeSetting({ theme: 'day', other: 1 })).toBe('day');
+    expect(boardThemeSetting({ theme: 'dusk' })).toBe('auto');
   });
 });

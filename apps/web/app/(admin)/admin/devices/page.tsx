@@ -2,10 +2,11 @@ import { Banner, Button } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
+import { BOARD_THEMES, boardThemeSetting } from '@/lib/devices';
 import { dayAndTime } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../header';
-import { disconnectDevice, renameDevice } from './actions';
+import { disconnectDevice, renameDevice, setBoardTheme } from './actions';
 import { PairingForm } from './pairing-form';
 
 export const metadata: Metadata = { title: 'Boards' };
@@ -17,10 +18,11 @@ interface DeviceRow {
   last_seen_at: string | null;
   created_at: string;
   revoked_at: string | null;
+  board_config: unknown;
 }
 
-// [DEV-01][DEV-03] The household's boards: pair a new one, rename, see when each was last seen,
-// and disconnect one that is lost or retired. Disconnected boards stay listed.
+// [DEV-01][DEV-03][DEV-05] The household's boards: pair a new one, rename, set its theme, see when
+// each was last seen, and disconnect one that is lost or retired. Disconnected boards stay listed.
 export default async function DevicesPage() {
   const db = await serverClient();
   const user = await requireSignedIn(db, '/admin/devices');
@@ -28,7 +30,7 @@ export default async function DevicesPage() {
   if (!household) redirect('/setup');
   const { data, error } = await db!
     .from('device')
-    .select('id, name, status, last_seen_at, created_at, revoked_at')
+    .select('id, name, status, last_seen_at, created_at, revoked_at, board_config')
     .eq('household_id', household.id)
     .order('created_at');
   if (error) throw new Error(`devices: ${error.message}`);
@@ -77,6 +79,31 @@ export default async function DevicesPage() {
                     />
                     <Button type="submit" variant="secondary">
                       Rename
+                    </Button>
+                  </form>
+                  <form
+                    action={setBoardTheme}
+                    className="fw-actions"
+                    aria-label={`Theme for ${d.name}`}
+                  >
+                    <input type="hidden" name="id" value={d.id} />
+                    <label className="fw-visually-hidden" htmlFor={`theme-${d.id}`}>
+                      Theme for {d.name}
+                    </label>
+                    <select
+                      id={`theme-${d.id}`}
+                      className="fw-input"
+                      name="theme"
+                      defaultValue={boardThemeSetting(d.board_config)}
+                    >
+                      {BOARD_THEMES.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                    <Button type="submit" variant="secondary">
+                      Set theme
                     </Button>
                   </form>
                   <form action={disconnectDevice}>
