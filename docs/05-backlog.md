@@ -1,7 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.12: WP-05 done (PR #11). WP-06 in review (PR #12): the board keeps its own snapshot live (D-41).
+> v0.8.12: WP-05 done (PR #11). WP-06 in review (PR #12): the board keeps its own snapshot live (D-41). Your household can start in production before launch, so Y-9 is due now.
 > v0.8.11: SPIKE-01 done and WP-05 in review (PR #11): boards pair in the database and heal themselves (D-40). WP-04 done (PR #10).
 > v0.8.10: WP-03 done (PR #9). WP-04 in review (PR #10).
 > v0.8.9: WP-07 done. WP-03 in review (PR #9): private by invitation (D-39); Y-5 is no longer a blocker; new Y-9 before launch.
@@ -35,7 +35,7 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 | Y-6 | Publish one iCloud calendar and save its link as the repository secret `ICS_SPIKE_URL` | iCloud Calendar → Share → Public Calendar; GitHub secrets | SPIKE-02, then WP-22 and WP-29 |
 | Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
 | Y-8 | Choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
-| Y-9 | Before launch, not now: in Supabase Auth set the Site URL to `https://family-wise-topaz.vercel.app`, add `https://family-wise-topaz.vercel.app/**` to the redirect URLs, and turn off "Allow new users to sign up" | Supabase → Authentication → URL Configuration, and Sign In / Providers | Launch check L-12 (magic links and resets land on production; nobody can sign up through the API) |
+| Y-9 | Due now that your own household is in production (it was planned for launch): in Supabase Auth set the Site URL to `https://family-wise-topaz.vercel.app`, add `https://family-wise-topaz.vercel.app/**` to the redirect URLs, and turn off "Allow new users to sign up" | Supabase → Authentication → URL Configuration, and Sign In / Providers | Launch check L-12 (magic links and resets land on production; nobody can sign up through the API) |
 
 **Done**
 
