@@ -48,6 +48,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm e2e
+        env:
+          DEV05_LOG: ${{ runner.temp }}/dev-05-latency.txt
+      - name: DEV-05 latency
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/dev-05-latency.txt" ]; then
+            tee -a "$GITHUB_STEP_SUMMARY" < "$RUNNER_TEMP/dev-05-latency.txt"
+          fi
       - if: failure()
         uses: actions/upload-artifact@v7
         with:

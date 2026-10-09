@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { appendFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 
@@ -46,6 +47,12 @@ async function expectContrastOk(page: Page) {
 function percentile(samples: number[], p: number): number {
   const sorted = [...samples].sort((a, b) => a - b);
   return sorted[Math.ceil((p / 100) * sorted.length) - 1]!;
+}
+
+/** A line for the DEV-05 latency report: the e2e workflow prints it to the log and the run summary. */
+function report(line: string) {
+  console.log(line);
+  if (process.env.DEV05_LOG) appendFileSync(process.env.DEV05_LOG, `${line}\n`);
 }
 
 async function pair(board: Page, code: string) {
@@ -104,12 +111,13 @@ test('[DEV-01][DEV-02] a second browser pairs with the code and reads the family
 });
 
 test('[DEV-05] a change in the household reaches the board live (Realtime under RLS)', async () => {
-  await expect(board.getByRole('status')).toHaveText('Live', { timeout: 15_000 });
+  // Live means changes stream: the board waits for the server to confirm the subscription, which
+  // can take up to about 20 seconds after a quiet spell.
+  await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
   sql(
     `update public.member set display_name = 'Maya R' where household_id = '${DEMO}' and display_name = 'Maya'`,
   );
-  // Generous for the first change after a quiet spell, while Realtime starts its replication;
-  // WP-06 measures the steady-state budget (DEV-05, p95 under 3 s).
+  // The budget is measured in the next test (DEV-05, p95 under 3 s).
   await expect(board.getByRole('list', { name: 'Family', exact: true })).toContainText('Maya R', {
     timeout: 15_000,
   });
@@ -117,34 +125,46 @@ test('[DEV-05] a change in the household reaches the board live (Realtime under 
 
 test('[DEV-05] a rename in the admin app reaches the board within 3 seconds (p95 of 20)', async () => {
   // Steady state: the board is live and Realtime has already delivered a change (the test above).
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   const leo = sql(
     `select id from public.member where household_id = '${DEMO}' and display_name = 'Leo'`,
   );
+  const live = board.getByRole('status');
   const samples: number[] = [];
   for (let i = 1; i <= 20; i++) {
     const name = `Leo ${i}`;
+    const opened = Date.now();
     await admin.goto(`/admin/members/${leo}`);
     const form = admin.getByRole('form', { name: 'Edit member', exact: true });
     await form.getByLabel('Name', { exact: true }).fill(name);
+    const heard = await live.getAttribute('data-events');
     const saved = Date.now();
     await form.getByRole('button', { name: 'Save changes', exact: true }).click();
-    // Timed in the board's own page, checked every 50 ms, from the moment Save is pressed.
-    const shown = await board.waitForFunction(
-      (want) =>
-        [...document.querySelectorAll('[aria-label="Family"] .fw-board-members__name')].some(
-          (el) => el.textContent === want,
-        ) && Date.now(),
-      name,
-      { polling: 50, timeout: 15_000 },
-    );
-    samples.push(((await shown.jsonValue()) as number) - saved);
+    // Timed in the board's own page, checked every 50 ms, from the moment Save is pressed. A
+    // sample that never shows counts as 15 s, and measuring goes on, so a slow run still reports.
+    const shown = await board
+      .waitForFunction(
+        (want) =>
+          [...document.querySelectorAll('[aria-label="Family"] .fw-board-members__name')].some(
+            (el) => el.textContent === want,
+          ) && Date.now(),
+        name,
+        { polling: 50, timeout: 15_000 },
+      )
+      .then(
+        async (handle) => ((await handle.jsonValue()) as number) - saved,
+        () => 15_000,
+      );
+    samples.push(shown);
     await admin.waitForURL(/\/admin\/members\?saved=/);
+    report(
+      `[DEV-05] #${i}: board ${shown} ms (admin page ${saved - opened} ms, save ${Date.now() - saved} ms, changes heard ${heard} → ${await live.getAttribute('data-events')})`,
+    );
   }
   const p95 = percentile(samples, 95);
   const summary = `p50 ${percentile(samples, 50)} ms, p95 ${p95} ms, max ${Math.max(...samples)} ms; samples ${samples.join(', ')}`;
   test.info().annotations.push({ type: 'DEV-05 latency', description: summary });
-  console.log(`[DEV-05] admin rename to board: ${summary}`);
+  report(`[DEV-05] admin rename to board: ${summary}`);
   expect(p95).toBeLessThan(3_000);
 });
 

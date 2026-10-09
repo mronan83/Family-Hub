@@ -43,7 +43,12 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string) {
       else leave();
     });
 
-    const channel = db.channel(`board:${householdId}`);
+    // `wait`: report SUBSCRIBED only once the server streams changes. By default it reports on
+    // joining, before the replication stream is up after a quiet spell, and a change made in that
+    // gap would be lost after the catch-up read had already run.
+    const channel = db.channel(`board:${householdId}`, {
+      config: { postgres_changes_options: { wait: true } },
+    });
     void db.auth.getSession().then(({ data }) => {
       if (cancelled) return;
       // Join with the board's token, so Realtime applies RLS as this board.
@@ -57,8 +62,8 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string) {
       channel.subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           setLink('live');
-          // Catch up on anything changed while connecting or disconnected (the first connection
-          // after a quiet spell can take a few seconds while Realtime starts, SPIKE-01).
+          // Changes stream from here on; catch up on anything changed while connecting or
+          // disconnected (the first connection after a quiet spell takes seconds, SPIKE-01).
           void reload();
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
           setLink('offline');
