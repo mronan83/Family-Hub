@@ -578,6 +578,42 @@ html:has(.board) {
   color: var(--text-soft);
 }
 
+/* System Health (WP-42) --------------------------------------------------------------------- */
+.fw-health__message {
+  display: block;
+  margin-top: var(--s-1);
+  font-size: var(--t-small);
+  overflow-wrap: anywhere;
+}
+.fw-health__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  font-weight: 600;
+}
+.fw-health__row[data-state='failing'] .fw-health__state,
+.fw-health__row[data-state='stale'] .fw-health__state {
+  color: var(--missed-text);
+}
+.fw-health__row[data-state='ok'] .fw-health__state {
+  color: var(--primary-text);
+}
+.fw-usage__bar {
+  flex: 0 0 160px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--primary-tint);
+  overflow: hidden;
+}
+.fw-usage__bar > span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+}
+.fw-usage[data-warn] .fw-usage__bar > span {
+  background: var(--reward);
+}
+
 /* Avatar ------------------------------------------------------------------------------------ */
 .fw-avatar {
   display: inline-flex;

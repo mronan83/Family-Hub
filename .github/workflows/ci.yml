@@ -61,6 +61,8 @@ jobs:
         run: bash scripts/preview-db.test.sh
       - name: Setup codes
         run: bash scripts/setup-code.test.sh
+      - name: Usage readings
+        run: bash scripts/usage-sample.test.sh
 
   docs:
     runs-on: ubuntu-24.04

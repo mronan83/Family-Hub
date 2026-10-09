@@ -6,6 +6,7 @@ const LINKS = [
   { href: '/admin', label: 'Home' },
   { href: '/admin/members', label: 'Members' },
   { href: '/admin/devices', label: 'Boards' },
+  { href: '/admin/health', label: 'Health' },
 ] as const;
 
 /** The admin app's header: logo, sections, sign out. `current` marks the page you are on. */

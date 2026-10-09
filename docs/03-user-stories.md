@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.5: US-904 and US-909: System Health shows a household only its own errors, and usage against the Free-plan limits (WP-42, D-42).
 > v0.8.4: US-204: the 3-second budget is measured on every pull request, and a board an admin holds on Day or Evening switches live (WP-06, D-41). US-911: our own household may start in production before launch.
 > v0.8.3: US-201 and US-202: 8-digit codes on the board's keypad, a board that signs itself in again, and disconnecting for good (WP-05, D-40).
 > v0.8.2: US-104 covers the earns-rewards default, linking an adult to their sign-in, and restoring an archived member (WP-04).
@@ -501,6 +502,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P1 · **Reqs:** NFR-07
 - Given any job fails, when I open System Health, then I see job, time, and message.
 - Given an unhandled server error, when it occurs, then it is logged with request ID and no PII.
+- Given a job failed and then ran well, when I open System Health, then it shows the job as fine again.
+- Given another household's errors and jobs, when I open System Health, then I see none of them.
 
 ### US-905 — Fast and finger-friendly
 **As a** kid **I want** big buttons that respond instantly **so that** using the board is easy.
@@ -532,7 +535,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P0 · **Reqs:** NFR-08
 - Given the project is on Supabase Free, when a week passes with no family use, then it is not paused because the keepalive writes a heartbeat several times a day.
 - Given a keepalive run fails, when it fails, then I receive an email and the runbook shows how to restore the project, while the board keeps showing cached data.
-- Given usage, when it approaches a Free-plan limit, then a warning appears in System Health.
+- Given usage, when it approaches a Free-plan limit (80 %), then a warning appears in System Health, with the Vercel account's total and FamilyWise's share, and when the reading was taken.
 - Given the cost ceiling, when I review it, then the recurring cost is zero and any paid upgrade is a documented decision.
 
 ---

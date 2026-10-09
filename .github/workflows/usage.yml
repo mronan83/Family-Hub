@@ -1,0 +1,27 @@
+# [NFR-08] Once a day, reads the Vercel account's usage over the last 30 days and keeps it for the
+# System Health page (WP-42, US-909), next to the database size it reads live. The token stays here,
+# never in the app. A failed run means the page shows an old reading, with its date.
+# Actions → usage → Run workflow reads it now.
+name: usage
+
+on:
+  schedule:
+    - cron: '41 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  read:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Read and keep the usage
+        run: bash scripts/usage-sample.sh

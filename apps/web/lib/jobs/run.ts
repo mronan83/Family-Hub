@@ -91,6 +91,7 @@ export async function handleJob(request: Request, name: string, deps?: JobDeps):
           route: `/api/jobs/${name}`,
           kind: 'job',
           error,
+          householdId,
         });
       }
     }

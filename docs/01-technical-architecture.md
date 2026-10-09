@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.13: WP-42 System Health (D-42): errors kept per household, usage read daily by the usage workflow (§4, §9.8, §9.10).
 > v0.8.12: SPIKE-02 (ICS part): what iCloud publishes and how the sync reads it (§5.4).
 > v0.8.11: Supabase's own sign-up is off (Y-9 done, §5.10).
 > v0.8.10: WP-06 board shell (D-41): `board_snapshot` is the board's one read; the board keeps it live itself (notify, then read the snapshot from the browser), catches up on reconnect, and follows the household's time or an admin's theme hold (§7).
@@ -143,7 +144,7 @@ flowchart TB
 | `VAULT` | Secrets | Calendar URLs/credentials, job signing secret. | Supabase Vault | CAL-01/08, NFR-04 |
 | `SAUTH` | Admin identity | Email magic link and email + password (required); Sign in with Apple and passkeys once the production domain exists; device principals live here too. No public sign-up: the server creates accounts, confirmed, for a setup code or an invite (D-39, §5.10). | Supabase Auth | ACC-02, ACC-06, DEV-02 |
 | `PI` | Kiosk host | Raspberry Pi OS, Chromium kiosk, watchdog, screen power. | systemd, Chromium | DEV-04/07, NFR-02 |
-| `OBS` | Observability | Structured JSON logs without PII (`lib/log.ts`); server errors and failed jobs kept 30 days in `private.app_error` (`onRequestError`); `job_run` and `job_health()`; all shown on System Health (WP-42). | Vercel runtime logs, Postgres | NFR-07, CAL-06 |
+| `OBS` | Observability | Structured JSON logs without PII (`lib/log.ts`). Server errors and failed jobs are kept 30 days in `private.app_error` (`onRequestError`), each with the household it happened for. `job_run` and `job_health()`. Usage: the database size, read live, and the Vercel account's usage, read daily by the usage workflow. All shown on System Health, where each household sees only its own jobs and errors (WP-42, D-42). | Vercel runtime logs, Postgres, GitHub Actions | NFR-07, NFR-08, CAL-06 |
 | `UI` | Design system | FamilyWise tokens (Day and Evening), self-hosted fonts, typed icon set, avatars and brand components (`ChoreTile`, `PointsChip`, `GoalMeter`, `Banner`, `Button`, `Logo`, `BootSplash`) shared by board and admin. `brand/` is the source of truth: `packages/ui/scripts/brand.mjs` generates the typed icons and theme colors (committed, checked in CI) and, before every dev run and build, copies fonts, logos, avatars and app icons into `apps/web/public` and writes the two manifests and the font-precaching service worker. | `packages/ui`, `brand/` | NFR-13, NFR-11 |
 | `CICD` | Delivery pipeline | Pull-request gates, preview environments, ordered production deploys (migrations, then app), docs traceability. No Docker, no staging. | GitHub Actions, Vercel, Supabase CLI, `psql`/`pg_dump` | NFR-14, NFR-12, NFR-08, NFR-10 |
 
@@ -664,7 +665,7 @@ GitHub Free keeps environment secrets to public repositories (D-36), so every Gi
 | Name | Kind | Stored in | Used by |
 |---|---|---|---|
 | `SUPABASE_DB_URL` | secret | GitHub repository | migrate, e2e (new migrations, demo family reset), keepalive, backup |
-| `VERCEL_TOKEN` | secret | GitHub repository (a Vercel token scoped to the project's team, with an expiry) | app deploy |
+| `VERCEL_TOKEN` | secret | GitHub repository (a Vercel token scoped to the project's team, with an expiry) | app deploy; the usage workflow reads the account's usage with it (D-42) |
 | `VERCEL_ORG_ID` = `team_A8TfHlLyTc2toipq0WsMVKvK`, `VERCEL_PROJECT_ID` = `prj_DnYxdFgs03cQOWsKZklobWGCTYqe` | variables | GitHub repository | app deploy |
 | `VERCEL_AUTOMATION_BYPASS_SECRET` | secret | GitHub repository (value from Vercel → Deployment Protection); Vercel also gives it to every deployment as a system variable | e2e on protected previews; the demo sign-ins' passwords (`scripts/preview-db.sh`, and the preview's one-tap sign-in, D-39) |
 | `PRODUCTION_URL` = `https://family-wise-topaz.vercel.app` | variable | GitHub repository | smoke check |
@@ -702,7 +703,7 @@ GitHub Free keeps environment secrets to public repositories (D-36), so every Gi
 | No per-PR database branches | Previews run as the demo family in the one database (§9.5, D-37). |
 | Built-in auth email reaches only Supabase team members, about 2 per hour | Nothing depends on it: the server creates accounts already confirmed, a password works from the first sign-in, and invites are links the inviter shares (D-39). Magic links and password resets reach the Supabase team (the owner) until custom SMTP (a free-tier email provider, which needs a domain, Y-8) is configured; the second admin uses a password until then. |
 | Vercel Hobby keeps runtime logs for one hour | Logs are structured JSON (`lib/log.ts`: no PII, emails and tokens scrubbed); every server error and failed job is also kept 30 days in `private.app_error` (`onRequestError` in `instrumentation.ts`), for System Health. |
-| Usage caps (database size, storage, egress, realtime connections) | Our expected use is a small fraction: one household, a few devices, small JSON snapshots. System Health tracks usage; check current limits on Supabase's pricing page. |
+| Usage caps (database size, storage, egress, realtime connections) | Our expected use is a small fraction: one household, a few devices, small JSON snapshots. System Health (WP-42) shows the database size, read live, and the Vercel account's function calls, Active CPU, provisioned memory, transfer and CDN requests over the last 30 days. The `usage` workflow reads those daily with the deploy token. Vercel's limits are shared by every project on the account, so the page shows the account's total and FamilyWise's share, and warns at 80 %. Supabase egress, storage and realtime connections need the management API and a personal token, so they are not shown; check them on Supabase's usage page. |
 
 ---
 
