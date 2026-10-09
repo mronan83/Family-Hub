@@ -27,12 +27,15 @@ code=$(grep -oE '[2-9A-Z]{4}-[2-9A-Z]{4}-[2-9A-Z]{4}' "$work/summary" | head -1)
 check "[ACC-01] issues a code in the form XXXX-XXXX-XXXX" "$(is "$rc:${#code}" "0:14")"
 check "[ACC-01] the code is written to the summary only, never to the log" "$(is "$(grep -c "${code:-none}" "$work/log")" "0")"
 
-# On GitHub the code is masked first (the runner consumes the ::add-mask:: line), so even a psql
-# error that echoed the statement would print *** instead.
-SUPABASE_DB_URL=$(url) SETUP_CODE_OUT="$work/summary2" GITHUB_ACTIONS=true bash "$root/scripts/setup-code.sh" > "$work/log" 2>&1
+# On GitHub too: no mask line (GitHub would mask the summary as well) and no code in the log; the
+# summary links to the app's /setup when PRODUCTION_URL is set.
+SUPABASE_DB_URL=$(url) SETUP_CODE_OUT="$work/summary2" GITHUB_ACTIONS=true PRODUCTION_URL=https://app.example/ \
+  bash "$root/scripts/setup-code.sh" > "$work/log" 2>&1
 code2=$(grep -oE '[2-9A-Z]{4}-[2-9A-Z]{4}-[2-9A-Z]{4}' "$work/summary2" | head -1)
-check "[ACC-01] on GitHub the code is masked before anything else, and appears in no other line" \
-  "$(is "$(head -1 "$work/log"):$(grep -c "${code2:-none}" "$work/log")" "::add-mask::$code2:1")"
+check "[ACC-01] on GitHub the code shows on the summary page and nowhere in the log" \
+  "$(is "${#code2}:$(grep -c "${code2:-none}" "$work/log"):$(grep -c '::add-mask::' "$work/log")" "14:0:0")"
+check "[ACC-01] the summary links straight to the app's setup page" \
+  "$(is "$(grep -c 'Open \[https://app.example/setup\](https://app.example/setup) and enter this code' "$work/summary2")" "1")"
 check "[ACC-01] only the code's hash is stored, for 24 hours" \
   "$(is "$(q "select count(*) from private.household_setup_code
               where code_hash = private.code_hash('$code') and code_hash <> '$code'
