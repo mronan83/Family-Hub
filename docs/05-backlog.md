@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.10: WP-03 done (PR #9). WP-04 in review (PR #10).
 > v0.8.9: WP-07 done. WP-03 in review (PR #9): private by invitation (D-39); Y-5 is no longer a blocker; new Y-9 before launch.
 > v0.8.8: WP-07 in review (PR #8): the job framework, error log and job-secret workflow; the System Health page moves to new WP-42, after WP-03 (admin sign-in), so it is built once, behind sign-in.
 > v0.8.7: migrations run through `scripts/db-migrate.sh` (PR #7): PR #5's deploy stopped because PR #6's preview had applied a migration `main` did not have yet.
@@ -61,8 +62,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | Done (PR #4, #5) |
 | WP-37 | Brand system and design tokens | P0 | M | WP-01 | Done (PR #3) |
 | WP-02 | Tenancy schema and RLS | P0 | M | WP-01 | Done (PR #1) |
-| WP-03 | Admin authentication and onboarding | P0 | M | WP-02, WP-37 | In review (PR #9) |
-| WP-04 | Members UI | P0 | S | WP-03, WP-37 | Queued |
+| WP-03 | Admin authentication and onboarding | P0 | M | WP-02, WP-37 | Done (PR #9) |
+| WP-04 | Members UI | P0 | S | WP-03, WP-37 | In review (PR #10) |
 | WP-05 | Device pairing and device auth | P0 | L | WP-03 | Queued |
 | WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | Queued |
 | WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Done (PR #8) |
@@ -288,6 +289,7 @@ flowchart LR
 **Phase:** P0 · **Size:** S · **Depends on:** WP-03, WP-37 · **Reqs:** ACC-04, PTS-07
 - CRUD for child and adult members (name, avatar, color), archive instead of delete, multiple children supported by the schema.
 - Earns-rewards switch on each member (D-32), defaulting from the role.
+- An adult member links to an admin's sign-in, and only to an admin of the same household (database trigger), since later work reads "who am I" from it.
 - **Done when:** the single child profile exists, an adult profile can be linked to an admin, and the switch defaults correctly and can be changed.
 
 ### WP-05 — Device pairing and device auth

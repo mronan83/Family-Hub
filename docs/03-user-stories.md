@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.2: US-104 covers the earns-rewards default, linking an adult to their sign-in, and restoring an archived member (WP-04).
 > v0.8.1: onboarding is by setup code and invite link, with no public sign-up (US-101, US-102, US-103; D-39).
 > v0.8: US-911 follows the delivery loop: you preview as the demo family and approve before anything merges (D-37); US-903 and US-909 for one database.
 > v0.7: reminders, switchable per person, device and item (US-317, US-318, US-319; D-35).
@@ -53,7 +54,9 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As an** admin **I want** to add children and adults with a name, avatar, and color **so that** chores, goals, and meals can be assigned per person.
 **Priority:** Must · **Phase:** P0 · **Reqs:** ACC-04
 - Given I add a child, when I save, then they appear on the board's child selector without any login being created.
-- Given I archive a child, when the board refreshes, then their active chores and goals no longer display but history is retained.
+- Given I archive a child, when the board refreshes, then their active chores and goals no longer display but history is retained; I can restore them later.
+- Given I add a child, the earns-rewards switch starts on; for an adult it starts off; I can change it for anyone (PTS-07).
+- Given an adult in the family is an admin, when I link their member to their sign-in, then it is saved; a sign-in that is not an admin of my household cannot be linked, and each sign-in links to one member.
 
 ### US-105 — Review the audit trail
 **As an** admin **I want** to see who changed chores, goals, and devices and when **so that** I can resolve "who changed that?" questions.

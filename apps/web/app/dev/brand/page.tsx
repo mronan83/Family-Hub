@@ -88,6 +88,10 @@ function Panel({ theme, view }: { theme: Theme; view: 'board' | 'admin' }) {
         <Button variant="ghost" icon="close">
           Cancel
         </Button>
+        {/* A link styled as a button keeps the button's colors on admin, where links are teal. */}
+        <a className="fw-btn fw-btn--primary" href="#specimen-buttons">
+          Link button
+        </a>
       </div>
       <ul className="specimen-swatches" aria-label="Role colors">
         {ROLES.map((role) => (

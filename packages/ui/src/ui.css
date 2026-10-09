@@ -44,7 +44,8 @@ body {
   font-family: var(--font-display);
   line-height: 1.25;
 }
-.admin a {
+/* Text links only: a link styled as a button keeps the button's colors. */
+.admin a:not(.fw-btn) {
   color: var(--primary-text);
   font-weight: 600;
   text-underline-offset: 2px;
@@ -277,6 +278,7 @@ body {
   font: inherit;
   font-family: var(--font-display);
   font-weight: 800;
+  text-decoration: none;
   cursor: pointer;
   transition:
     transform var(--dur-fast) var(--ease),
@@ -459,7 +461,7 @@ body {
 .fw-input--short {
   max-width: 8ch;
 }
-.admin a[aria-current='page'] {
+.admin a[aria-current='page']:not(.fw-btn) {
   text-decoration: none;
   border-bottom: 2px solid var(--primary);
 }

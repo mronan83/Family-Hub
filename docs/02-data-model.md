@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.3: members (WP-04): `member.user_id` links only to an admin of the same household and is cleared when that admin leaves (§3.1, §4.8).
 > v0.8.2: admin access (WP-03, D-39): `audit_log` written by triggers, `private.household_setup_code`, and the onboarding and invite functions (§3.1, §4.8).
 > v0.8.1: job framework (WP-07): `private.job_schedule`, `private.app_error`, `public.job_health()`, `public.record_app_error()`, `private.call_job()` (§3.1, §4.7); retention for job history and errors (§6).
 > v0.8: seed data is the demo family (`supabase/seed.sql`, D-37), the household previews and e2e run as in the one database.
@@ -323,7 +324,7 @@ erDiagram
 |---|---|---|
 | `household` | `name`, `timezone` (IANA), `week_start` (0–6), `locale` | `timezone` is authoritative for all business dates; an unknown zone is rejected by trigger (`private.check_timezone`). Its `id` is the tenant key, so it is the one table without a `household_id` column. |
 | `household_user` | `household_id`, `user_id → auth.users`, `role` (`owner`/`admin`) | PK `(household_id, user_id)`. Defines admins. |
-| `member` | `display_name`, `role` (`child`/`adult`), `avatar_key` (one of the 8 brand avatars), `color` (brand token key `member-1`..`member-6`, never hex, D-18), `birth_year?`, `user_id?`, `earns_rewards`, `archived_at` | Children have no `user_id` (enforced by check). Supports multiple children. `earns_rewards` is set from the role on insert (on for a child, off for an adult) and can be changed per person (D-32). |
+| `member` | `display_name`, `role` (`child`/`adult`), `avatar_key` (one of the 8 brand avatars), `color` (brand token key `member-1`..`member-6`, never hex, D-18), `birth_year?`, `user_id?`, `earns_rewards`, `archived_at` | Children have no `user_id` (enforced by check). An adult's `user_id` must be an admin of the same household (`trg_member_user`), and is cleared when that admin leaves it (WP-04). Archived, never deleted, from the admin app. Supports multiple children. `earns_rewards` is set from the role on insert (on for a child, off for an adult) and can be changed per person (D-32). |
 | `invite` | `email`, `token_hash`, `role`, `invited_by`, `expires_at`, `accepted_at`, `accepted_by`, `revoked_at` | Token stored only as its SHA-256 (D-39). One use, 7 days, accepted only by an account with its email; a new invite to the same email revokes the open one; admins can cancel. |
 | `device` | `name`, `auth_user_id → auth.users`, `status` (`active`/`revoked`), `last_seen_at`, `app_version`, `board_config jsonb`, `revoked_at` | One auth user per device. |
 | `device_pairing` | `code_hash`, `expires_at`, `consumed_at`, `device_id?`, `created_by` | Single-use; TTL capped at 10 minutes by check. |
@@ -912,6 +913,7 @@ All are `SECURITY DEFINER` with `search_path = ''`, and errors carry a stable co
 | `public.accept_invite(token)` | signed-in users | Adds the caller as `admin` and marks the invite used. Refuses an unknown, used, revoked or expired invite, an account with another email, and an admin of another household. |
 | `public.household_admins(household_id)` | that household's admins | Its admins with their sign-in emails, roles and when they joined. |
 | `public.setup_code_usable(code)` | service role only | Whether a code would work, so the server can check it before creating an account. |
+| `private.check_member_user()`, `private.unlink_departed_admin()` | triggers only | Refuse a member linked to anyone but an admin of its household; unlink the member when its admin leaves (WP-04). |
 | `private.audit_row()` | triggers only | Writes one `audit_log` row per changed row (§3.1); skips rows whose household is being deleted. |
 
 ## 5. Rules-engine contract (`packages/rules-engine`)
