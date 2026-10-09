@@ -9,6 +9,13 @@
       "purpose": "Sample job: proves pg_cron, pg_net, the job endpoint and job_run end to end, and reports scheduling lag."
     },
     {
+      "name": "occurrence_gen",
+      "kind": "http",
+      "cron": "23 * * * *",
+      "everyMinutes": 60,
+      "purpose": "Keeps each household's chores and tasks planned 14 days ahead (WP-09); edits re-plan at once in the database."
+    },
+    {
       "name": "purge_history",
       "kind": "sql",
       "cron": "43 3 * * *",

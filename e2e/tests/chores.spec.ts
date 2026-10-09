@@ -25,6 +25,8 @@ function demoDate(days: number): string {
   );
 }
 
+const TODAY = `(now() at time zone 'America/New_York')::date`;
+
 function report(line: string) {
   console.log(line);
   if (process.env.E2E_REPORT) appendFileSync(process.env.E2E_REPORT, `${line}\n`);
@@ -223,6 +225,60 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
       `select schedule ->> 'on_date' from public.chore where household_id = '${DEMO}' and title = 'Order school uniform'`,
     ),
   ).toBe(demoDate(2));
+});
+
+test('[CHR-03][CHR-09] a new item has its next two weeks planned, for the people it’s for', async ({
+  page,
+}) => {
+  await signIn(page, 'Alex');
+  await expect(list(page).getByRole('listitem').filter({ hasText: 'Tidy toys' })).toContainText(
+    'Next: Today',
+  );
+  await page.getByRole('link', { name: 'Edit Tidy toys' }).click();
+  const comingUp = page.getByRole('list', { name: 'Coming up' });
+  await expect(comingUp.getByRole('listitem')).toHaveCount(15);
+  await expect(comingUp.getByRole('listitem').first()).toContainText('Today');
+  await expect(comingUp.getByRole('listitem').nth(1)).toContainText('Tomorrow');
+  await expect(comingUp.getByRole('listitem').first()).toContainText('Leo');
+  expect(
+    sql(`select count(*) || ':' || count(distinct o.due_date) || ':' || bool_or(o.due_date = ${TODAY}::date)::text
+           from public.chore_occurrence o join public.chore c on c.id = o.chore_id
+          where c.household_id = '${DEMO}' and c.title = 'Tidy toys'
+            and o.due_date between ${TODAY} and ${TODAY} + 14`),
+  ).toBe('15:15:true');
+
+  // Saturdays only: the plan follows the schedule.
+  await page.goto('/admin/chores');
+  await page.getByRole('link', { name: 'Edit Water the plants' }).click();
+  const saturdays = Number(
+    sql(
+      `select count(*) from generate_series(${TODAY}, ${TODAY} + 14, interval '1 day') d where extract(isodow from d) = 6`,
+    ),
+  );
+  await expect(page.getByRole('list', { name: 'Coming up' }).getByRole('listitem')).toHaveCount(
+    saturdays,
+  );
+});
+
+test('[CHR-12] a task entered after its date is open and shows as overdue', async ({ page }) => {
+  await signIn(page, 'Alex');
+  await page.getByRole('link', { name: 'Add a task' }).click();
+  const form = page.getByRole('form', { name: 'Add an item' });
+  await enter(form, {
+    title: 'Return the library books',
+    people: ['Alex'],
+    icon: 'read',
+    onDate: demoDate(-3),
+  });
+  await form.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('Saved Return the library books.');
+  await expect(
+    list(page).getByRole('listitem').filter({ hasText: 'Return the library books' }),
+  ).toContainText('Overdue since');
+  expect(
+    sql(`select o.due_date::text || ':' || o.status from public.chore_occurrence o join public.chore c on c.id = o.chore_id
+          where c.household_id = '${DEMO}' and c.title = 'Return the library books'`),
+  ).toBe(`${demoDate(-3)}:scheduled`);
 });
 
 test('[CHR-11] the list filters by time of day, person and kind', async ({ page }) => {

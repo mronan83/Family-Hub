@@ -540,6 +540,12 @@ body {
   padding-top: var(--s-2);
 }
 
+.fw-overdue {
+  gap: var(--s-1);
+  font-size: var(--t-small);
+  color: var(--reward-text);
+}
+
 /* School year (WP-21): date pairs, and the year as month grids shaded by day type ------------ */
 .fw-subhead {
   margin: 0;

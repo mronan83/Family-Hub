@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.10: occurrences (WP-09, D-45): `chore_occurrence` and `chore_occurrence_assignee` as built, with each assignee's day type in the snapshot; the generator, re-planning triggers and `v_member_occurrence` (§3.2, §4.2, §4.5, §4.7).
 > v0.8.9: school years (WP-21, D-44): `school_year`, `school_term`, `school_closure` and `member_school_profile` as built; `resolve_day_type` and the day-type functions (§3.5, §4.4, §4.8).
 > v0.8.8: the family list (WP-08, D-43): `chore`, `chore_assignee`, `tag` and `chore_tag` as built, `save_chore()`, private items in RLS and in `audit_log` (§3.2, §4.5, §4.8).
 > v0.8.7: System Health (WP-42, D-42): `private.app_error.household_id`, `private.usage_sample`, `household_errors()`, `system_usage()` and the 7-argument `record_app_error()` (§3.1, §4.7, §6).
@@ -139,6 +140,7 @@ erDiagram
     uuid occurrence_id PK
     uuid member_id PK
     date due_date
+    text day_type
   }
   chore_completion_event {
     uuid id PK
@@ -352,8 +354,8 @@ erDiagram
 | `chore_assignee` | `chore_id`, `member_id`, `remind?` | Any member, child or adult; several per item. All assignees share one occurrence per due date. |
 | `tag` | `name` (unique per household, case-insensitive), `color` (brand token key), `icon` (brand icon key), `sort_order`, `archived_at` | Household-defined (D-33). Rules, filters and insights reference the id, so renaming or archiving never breaks a goal. |
 | `chore_tag` | PK `(chore_id, tag_id)` | Tags on an item. |
-| `chore_occurrence` | `chore_id`, `due_date`, `due_time?`, `kind`, `day_type`, `points_snapshot`, `requires_approval_snapshot` (resolved from the chore override and `approval_mode` at generation and whenever either changes, for `scheduled` occurrences only; check-offs already `pending_approval` stay in the queue, D-22), `status`, `done_by uuid[]`, `rewarded uuid[]`, `status_event_id`, `status_changed_at`, `finalized_at` | `UNIQUE (chore_id, due_date)`: one occurrence per item per due date, shared by its assignees. `done_by` and `rewarded` come from the folded event (who did it, and which of them earn rewards). **`status` is a persisted projection** of the event log, maintained by trigger and by the day-close job (§4.2). `status_event_id` has no FK (avoids a cycle). Index `(household_id, due_date, status)`. Snapshots protect history from later chore edits. |
-| `chore_occurrence_assignee` | PK `(occurrence_id, member_id)`, `due_date` | Snapshot of who was responsible on that date, written by the generator; later assignee changes affect only future occurrences. Index `(household_id, member_id, due_date)`. |
+| `chore_occurrence` | `chore_id`, `due_date`, `due_time?`, `kind`, `points_snapshot`, `requires_approval_snapshot` (resolved from the chore override and `approval_mode` at generation and whenever either changes, for `scheduled` occurrences only; check-offs already `pending_approval` stay in the queue, D-22), `status`, `done_by uuid[]`, `rewarded uuid[]`, `status_event_id`, `status_changed_at`, `finalized_at` | `UNIQUE (chore_id, due_date)`: one occurrence per item per due date, shared by its assignees. `done_by` and `rewarded` come from the folded event (who did it, and which of them earn rewards). **`status` is a persisted projection** of the event log, maintained by trigger and by the day-close job (§4.2). `status_event_id` has no FK (avoids a cycle). Index `(household_id, due_date, status)`. Snapshots protect history from later chore edits. |
+| `chore_occurrence_assignee` | PK `(occurrence_id, member_id)`, `due_date`, `day_type` | Snapshot of who was responsible on that date, and each one's day type then, written by the generator; later assignee changes affect only occurrences nothing has happened to (D-45). Index `(household_id, member_id, due_date)`. |
 | `v_member_occurrence` (view) | one row per occurrence and member: each assignee, plus anyone in `done_by` who was not assigned | `member_status` is the occurrence status, except `covered` when someone else did it; `credited` is true for members in `done_by`. Security invoker. Feeds the rules engine, daily summaries and My tasks. |
 | `chore_completion_event` | see DDL §4.1 | **Append-only.** `done_by` records who did it; `rewarded` is computed on insert from each member's earns-rewards switch, so later switch changes never rewrite history. `batch_id` groups a bulk uncheck so it can be reviewed or reversed as one action (CHR-08). |
 
@@ -390,6 +392,14 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 - `chore_assignee` and `chore_tag` carry `household_id` and reference `chore (household_id, id)`, `member (household_id, id)` and `tag (household_id, id)`, so a link never crosses households.
 - `tag.name` is unique per household ignoring case, archived tags included; `color` is one of the six categorical tokens (`member-1`…`member-6`); `icon` is optional.
 - An item, its assignees and its tags are saved by `public.save_chore()` (§4.8). Items and tags are archived, never deleted.
+
+**As built (WP-09, D-45):**
+- Occurrences are made by the database for today and the next 14 days, household-local (`private.household_today()`). The hourly `occurrence_gen` job calls `generate_household_occurrences()` for tomorrow to 14 days ahead; triggers re-plan at once when an item, its assignees, a member, a school year, a closure or a school profile changes (§4.7).
+- An item is due on a date when its schedule falls on it (`private.schedule_matches()`), the date is within `start_date`..`end_date` (a one-off ignores `start_date`), it is not archived, and the day type of at least one active assignee is in its `day_types`. Intervals count from `start_date`; weeks are ISO; a monthly day past the end of a shorter month falls on its last day.
+- Each assignee's day type on the date is kept in `chore_occurrence_assignee.day_type`, not one per occurrence, since a child at another school can have another day type on the same date (D-44).
+- Re-planning changes only occurrences nothing has happened to (`scheduled`, `status_event_id` null), never a past one. After today they are replaced. Today's follow an item's own edit, or a member archived or restored, in place: same id, new points, time, approval and assignees, or removed if the item is no longer due today. A school-year change starts tomorrow (D-24). An open one-off task follows its date, so one entered after its date is made on that date and shows as overdue.
+- Changing the household's approval switch re-resolves `requires_approval_snapshot` on occurrences nothing has happened to (D-22).
+- Both tables carry `household_id` and reference `chore (household_id, id)`, `chore_occurrence (household_id, id)` and `member (household_id, id)`. Admins and the board read them under the item's visibility; nobody writes them directly; they are not audited.
 
 ### 3.3 Rewards
 
@@ -446,7 +456,7 @@ The result is computed, never stored per day (the occurrence stores a snapshot o
 - A member's school year on a date (`member_school_year`) is the one they are assigned to that covers the date, else the household's default that covers it; none means summer. So a child with a profile for one school follows the default again outside that school's dates, and next year's default applies from its first day.
 - Default years may not overlap (`default_year_overlap`); a member follows one school year on any date (`profile_overlap`); terms and closures sit inside their year (`outside_school_year`), and a year's dates can't shrink past them (`year_excludes_dates`). Guards are triggers; errors carry the hint.
 - An archived year no longer applies; its members fall back to the default.
-- `chore_day_type_matches(chore, date)` is the day-type half of generation: true when any assignee's day type is in the item's `day_types`. The generator (WP-09) adds the schedule and regenerates future occurrences when a year, closure or profile changes (D-24).
+- `chore_day_type_matches(chore, date)` is the day-type half of generation: true when any active assignee's day type is in the item's `day_types` (WP-09 counts only active members). The generator (WP-09) adds the schedule and re-plans from tomorrow when a year, closure or profile changes (D-24, §3.2).
 
 When a closure or school year changes, the generator re-resolves and regenerates `scheduled` occurrences for dates **after today** only. Today's occurrences and the past are never touched (D-24).
 
@@ -563,6 +573,8 @@ revoke truncate on chore_completion_event from public, anon, authenticated;
 ### 4.2 Occurrence status projection (events are truth, status is persisted)
 
 `chore_occurrence.status` is written only by the three functions below. It can always be rebuilt from `chore_completion_event`.
+
+WP-09 built the status columns and both indexes with the table, and `v_member_occurrence` as below; every occurrence stays `scheduled` until WP-10 adds the events, the fold, day close and rebuild.
 
 ```sql
 alter table chore_occurrence
@@ -929,10 +941,12 @@ alter policy audit_log_admin_select on public.audit_log
 
 -- derived tables follow the item (the board never sees a private one: the device user is neither
 -- its creator nor an assignee)
-create policy occurrence_admin_read on public.chore_occurrence for select to authenticated
+create policy chore_occurrence_admin_select on public.chore_occurrence for select to authenticated
   using (household_id in (select private.admin_household_ids()) and private.can_see_chore(chore_id));
-create policy occurrence_device_read on public.chore_occurrence for select to authenticated
+create policy chore_occurrence_device_select on public.chore_occurrence for select to authenticated
   using (household_id = (select private.device_household_id()) and private.can_see_chore(chore_id));
+-- the snapshot follows its occurrence (private.can_see_occurrence); there are no write policies, and
+-- insert, update and delete are revoked from anon and authenticated (WP-09)
 ```
 
 ### 4.6 Board snapshot contract
@@ -966,6 +980,8 @@ create policy occurrence_device_read on public.chore_occurrence for select to au
 |---|---|---|
 | `private.call_job(job, payload)` | the owner only (pg_cron runs as it) | Reads `job_signing_secret` and `job_base_url` from Vault; if either is missing returns null (jobs are off), else queues `net.http_post` to `<base>/api/jobs/<job in kebab-case>` with the bearer secret, `{scheduled_at, …payload}` and a 30 s timeout. Refuses names that are not snake_case. |
 | `public.job_health(household_id)` | admins, devices, service role (security invoker, so `job_run`'s RLS applies) | One row per HTTP job in `private.job_schedule`: `state` is `never` (no run), `failing` (last run errored, or ran 5 minutes without a result), `running`, `stale` (no `ok`/`skipped` run within twice its cadence) or `ok`; with `last_ok_at`, `last_run_at` and the error `message`. |
+| `public.generate_household_occurrences(household_id)` | service role only (the `occurrence_gen` job) | Adds a household's missing occurrences from tomorrow to 14 days ahead, and late one-off tasks; returns `{added, from, through}`. Idempotent (WP-09, D-45). |
+| `private.generate_occurrences()`, `private.replan()` | the job and triggers only | Make occurrences with their snapshots for a range; replace those nothing has happened to after a change (§3.2). Triggers: `trg_chore_replan`, `trg_chore_assignee_added`/`_removed`, `trg_member_replan` (from today), `trg_school_year_replan`, `trg_school_closure_replan`, `trg_member_school_profile_replan` (from tomorrow), `trg_household_settings_approval` (D-22). |
 | `public.record_app_error(…)` | service role only | Inserts into `private.app_error`, trimming each field. The 7-argument form adds the household (WP-42); the 6-argument form stays for code deployed before it. |
 | `public.household_errors(household_id, limit)` | that household's admins | Its server errors from the last 30 days, newest first (time, route, kind, message). |
 | `public.system_usage()` | any admin | The database size, read live, and the latest Vercel reading from `private.usage_sample` (account total and this project's share, with when it was read). |
@@ -991,11 +1007,11 @@ All are `SECURITY DEFINER` with `search_path = ''`, and errors carry a stable co
 | `public.resolve_day_type(member, date)`, `public.member_school_year(member, date)`, `public.school_day_type(year, date)` | signed-in users, service role (security invoker) | A member's day type on a date, the school year they follow, and a date's type in a year (§4.4, WP-21). |
 | `public.household_day_types(household_id, date)` | that household's admins and board (security invoker) | Each active member's day type and school year on a date. |
 | `public.school_year_days(year)` | that household's admins and board (security invoker) | Every date of a school year with its day type, for the admin timeline. |
-| `public.chore_day_type_matches(chore, date)` | signed-in users, service role (security invoker) | Whether an item applies on a date by day type: any assignee's day type is in its `day_types` (SCH-03). |
+| `public.chore_day_type_matches(chore, date)` | signed-in users, service role (security invoker) | Whether an item applies on a date by day type: any active assignee's day type is in its `day_types` (SCH-03). |
 | `private.school_year_guard()`, `private.school_dates_guard()`, `private.school_profile_guard()` | triggers only | Default years don't overlap; terms and closures stay inside their year; a member follows one year on any date (D-44). |
 | `public.save_chore(household_id, id, item, assignees, tags)` | admins (security invoker, under their RLS) | Adds (`id` null) or edits an item, replaces its assignees and its active tags, in one transaction (WP-08). Assignees must be active members of the household (at least one, else `chore_needs_assignee`); archived tags already on the item stay. On an edit, a field left out of `item` keeps its value. An item the caller cannot see is `chore_not_found`. |
 | `private.chore_guard()` | triggers only | Sets `created_by` and `start_date` on insert; keeps `created_by`; lets only the creator change `visibility` (`visibility_creator_only`, D-43). |
-| `private.audit_row()` | triggers only | Writes one `audit_log` row per changed row (§3.1); skips rows whose household is being deleted. Rows about an item (`chore`, `chore_assignee`, `chore_tag`, and later its occurrences and events) carry its `chore_id`; an assignee or tag row names the member or tag as `entity_id`. |
+| `private.audit_row()` | triggers only | Writes one `audit_log` row per changed row (§3.1); skips rows whose household is being deleted. Rows about an item (`chore`, `chore_assignee`, `chore_tag`, and later its events) carry its `chore_id`; an assignee or tag row names the member or tag as `entity_id`. |
 
 ## 5. Rules-engine contract (`packages/rules-engine`)
 

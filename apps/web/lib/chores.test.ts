@@ -5,9 +5,11 @@ import {
   clock,
   dayPart,
   describeSchedule,
+  dueSummary,
   filterItems,
   parseChore,
   parseFilters,
+  relativeDay,
   scheduleSchema,
   type ListItem,
 } from './chores';
@@ -299,5 +301,31 @@ describe('filters', () => {
         status: 'archived',
       }),
     ).toEqual({ person: MAYA, tag: null, kind: 'task', when: null, status: 'archived' });
+  });
+});
+
+describe('occurrences', () => {
+  it('[CHR-03] names today and tomorrow, and dates after that', () => {
+    expect(relativeDay('2026-10-09', '2026-10-09')).toBe('Today');
+    expect(relativeDay('2026-10-10', '2026-10-09')).toBe('Tomorrow');
+    expect(relativeDay('2026-10-12', '2026-10-09')).toBe('Mon, Oct 12');
+    expect(relativeDay('2026-11-01', '2026-10-31')).toBe('Tomorrow');
+  });
+
+  it('[CHR-03][CHR-12] finds each item’s next date and how long a task has been left open', () => {
+    const s = dueSummary(
+      [
+        { choreId: 'bed', dueDate: '2026-10-11', kind: 'chore', status: 'scheduled' },
+        { choreId: 'bed', dueDate: '2026-10-09', kind: 'chore', status: 'scheduled' },
+        { choreId: 'bed', dueDate: '2026-10-08', kind: 'chore', status: 'missed' },
+        { choreId: 'fees', dueDate: '2026-10-05', kind: 'task', status: 'scheduled' },
+        { choreId: 'fees', dueDate: '2026-10-07', kind: 'task', status: 'scheduled' },
+        { choreId: 'done', dueDate: '2026-10-06', kind: 'task', status: 'completed' },
+      ],
+      '2026-10-09',
+    );
+    expect(s.get('bed')).toEqual({ next: '2026-10-09', overdueSince: null });
+    expect(s.get('fees')).toEqual({ next: null, overdueSince: '2026-10-05' });
+    expect(s.get('done')).toEqual({ next: null, overdueSince: null });
   });
 });

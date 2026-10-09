@@ -16,7 +16,7 @@ export type Job = (ctx: JobContext) => Promise<JobResult>;
 
 /**
  * Every job the endpoint runs, keyed by its schedule name (schedule.json; a test keeps the two in
- * step). Later work packages add calendar_sync, occurrence_gen, day_close, reminders and the rest.
+ * step). Later work packages add calendar_sync, day_close, reminders and the rest.
  */
 export const JOBS: Record<string, Job> = {
   // [NFR-07] Sample job (WP-07): proves the path end to end and reports how late pg_cron's call
@@ -31,5 +31,16 @@ export const JOBS: Record<string, Job> = {
       status: 'ok',
       stats: { lag_ms: Math.max(0, Date.now() - scheduledAt.getTime()), members: count ?? 0 },
     };
+  },
+
+  // [CHR-03] The rolling window (WP-09): adds the occurrences from tomorrow to 14 days ahead that
+  // are missing, in the database (generate_household_occurrences). Today is planned before it
+  // begins and changes only through an item's own edit (D-24). Repeating it adds nothing.
+  async occurrence_gen({ db, householdId }) {
+    const { data, error } = await db.rpc('generate_household_occurrences', {
+      p_household_id: householdId,
+    });
+    if (error) throw new Error(`generate occurrences: ${error.message}`);
+    return { status: 'ok', stats: data as Record<string, unknown> };
   },
 };
