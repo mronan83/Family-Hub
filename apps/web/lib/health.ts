@@ -120,6 +120,8 @@ export function unitFactor(unit: string, measure: Measure): number | null {
       'gb-h': 1,
       'mb-hour': 1 / 1000,
       'mb-hours': 1 / 1000,
+      'gigabyte-hour': 1,
+      'gigabyte-hours': 1,
     },
     gb: {
       gb: 1,

@@ -8,8 +8,6 @@ on:
   schedule:
     - cron: '41 6 * * *'
   workflow_dispatch:
-  push:
-    branches: [claude/wp-42-health]
 
 permissions:
   contents: read

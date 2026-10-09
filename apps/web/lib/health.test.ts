@@ -25,6 +25,11 @@ describe('System Health', () => {
     expect(unitFactor('GB Hours', 'gb-hours')).toBe(1);
     expect(unitFactor('Requests', 'count')).toBe(1);
     expect(unitFactor('furlongs', 'count')).toBeNull();
+    // As the billing API reports them (usage workflow, October 2026).
+    expect(unitFactor('Invocations', 'count')).toBe(1);
+    expect(unitFactor('hour', 'hours')).toBe(1);
+    expect(unitFactor('gigabyte-hour', 'gb-hours')).toBe(1);
+    expect(unitFactor('gigabyte', 'gb')).toBe(1);
   });
 
   it('[NFR-08] shows each reading against its limit, with FamilyWise’s share of the account', () => {
