@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.19: WP-08 done (PR #19), live in production. WP-21 is next.
 > v0.8.18: WP-08 in review (PR #19): the family list, tags and private items (D-43).
 > v0.8.17: WP-42 done (PR #17), so P0 is done: every P0 item is merged and its exit criteria pass (`04` §E). Ready now: WP-08, WP-21, WP-22, WP-24, WP-25, WP-32, WP-33.
 > v0.8.16: WP-42 in review (PR #17): System Health, with errors kept per household and usage read daily (D-42).
@@ -76,7 +77,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | Done (PR #12) |
 | WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Done (PR #8) |
 | WP-42 | System Health page | P0 | S | WP-03, WP-07 | Done (PR #17) |
-| WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | In review (PR #19) |
+| WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Done (PR #19) |
 | WP-21 | School year and day types | P1a | M | WP-04 | Ready |
 | WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | Queued |
 | WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | Queued |
