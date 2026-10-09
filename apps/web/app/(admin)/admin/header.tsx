@@ -5,6 +5,7 @@ import { signOut } from './actions';
 const LINKS = [
   { href: '/admin', label: 'Home' },
   { href: '/admin/members', label: 'Members' },
+  { href: '/admin/devices', label: 'Boards' },
 ] as const;
 
 /** The admin app's header: logo, sections, sign out. `current` marks the page you are on. */

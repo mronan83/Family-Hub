@@ -20,6 +20,8 @@ const HINTS: Record<string, string> = {
     'This invite is for a different email address. Sign in with the one it was sent to, or ask for a new invite.',
   other_household: 'You already run another household, so you can’t join this one.',
   timezone: 'Choose a timezone from the list.',
+  bad_device_name: 'Give the board a name of up to 60 characters, like Kitchen.',
+  device_revoked: 'That board is disconnected. Pair it again for a new code.',
 };
 
 export const GENERIC = 'That didn’t go through. Try again in a moment.';

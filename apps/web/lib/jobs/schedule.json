@@ -13,8 +13,8 @@
       "kind": "sql",
       "cron": "43 3 * * *",
       "everyMinutes": 1440,
-      "purpose": "Keeps history small: pg_cron run details 7 days, job_run 90 days, app_error 30 days.",
-      "sql": "delete from cron.job_run_details where end_time < now() - interval '7 days'; delete from public.job_run where started_at < now() - interval '90 days'; delete from private.app_error where occurred_at < now() - interval '30 days';"
+      "purpose": "Keeps history small: pg_cron run details 7 days, job_run 90 days, app_error 30 days, wrong pairing codes 1 day.",
+      "sql": "delete from cron.job_run_details where end_time < now() - interval '7 days'; delete from public.job_run where started_at < now() - interval '90 days'; delete from private.app_error where occurred_at < now() - interval '30 days'; delete from private.pairing_failure where at < now() - interval '1 day';"
     }
   ]
 }
