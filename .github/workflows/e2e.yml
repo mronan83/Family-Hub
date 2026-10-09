@@ -35,6 +35,20 @@ jobs:
             echo "::error::e2e is not configured yet; missing: ${missing[*]} (docs/01-technical-architecture.md §9.8)"
             exit 1
           fi
+      # The repository is public (D-48): the database credential only ever meets code already on one
+      # of this repository's own branches, never a fork's, even if a fork's preview were deployed.
+      - name: Only this repository's own commits
+        env:
+          SHA: ${{ github.event.deployment.sha }}
+        run: |
+          git init -q "$RUNNER_TEMP/own" && cd "$RUNNER_TEMP/own"
+          git fetch -q --filter=blob:none "https://github.com/$GITHUB_REPOSITORY" '+refs/heads/*:refs/remotes/origin/*'
+          if git cat-file -e "$SHA^{commit}" 2>/dev/null && [ -n "$(git branch -r --contains "$SHA")" ]; then
+            echo "commit $SHA is on a branch of $GITHUB_REPOSITORY"
+          else
+            echo "::error::commit $SHA is on no branch of this repository; not running it with the database credential"
+            exit 1
+          fi
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.deployment.sha }}
@@ -56,7 +70,9 @@ jobs:
           if [ -f "$RUNNER_TEMP/e2e-report.txt" ]; then
             tee -a "$GITHUB_STEP_SUMMARY" < "$RUNNER_TEMP/e2e-report.txt"
           fi
-      - if: failure()
+      # Traces record request headers, the deployment-protection bypass among them, and a public
+      # repository's artifacts are public (D-48): the report is kept only while the repository is private.
+      - if: failure() && github.event.repository.private
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report
