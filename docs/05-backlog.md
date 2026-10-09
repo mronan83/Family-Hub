@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.13: WP-06 done (PR #12), live in production. Y-9 done. The setup code shows on the setup-code run's summary page again (PR #13).
 > v0.8.12: WP-05 done (PR #11). WP-06 in review (PR #12): the board keeps its own snapshot live (D-41). Your household can start in production before launch, so Y-9 is due now.
 > v0.8.11: SPIKE-01 done and WP-05 in review (PR #11): boards pair in the database and heal themselves (D-40). WP-04 done (PR #10).
 > v0.8.10: WP-03 done (PR #9). WP-04 in review (PR #10).
@@ -35,7 +36,6 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 | Y-6 | Publish one iCloud calendar and save its link as the repository secret `ICS_SPIKE_URL` | iCloud Calendar → Share → Public Calendar; GitHub secrets | SPIKE-02, then WP-22 and WP-29 |
 | Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
 | Y-8 | Choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
-| Y-9 | Due now that your own household is in production (it was planned for launch): in Supabase Auth set the Site URL to `https://family-wise-topaz.vercel.app`, add `https://family-wise-topaz.vercel.app/**` to the redirect URLs, and turn off "Allow new users to sign up" | Supabase → Authentication → URL Configuration, and Sign In / Providers | Launch check L-12 (magic links and resets land on production; nobody can sign up through the API) |
 
 **Done**
 
@@ -46,6 +46,7 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 | Y-3 | GitHub repository secrets and variables are in place, including `DEPLOY_ENABLED`; the deploy token is scoped to the project's team. |
 | Y-4 | Vercel keys are in place: publishable key for Production and Preview, secret key and job signing secret for Production only. |
 | Y-5 | Dropped as a blocker: the second admin joins by invite link and signs in with a password, so nobody needs to join the Supabase team. Adding them later is optional, for magic links before custom email (Y-8). |
+| Y-9 | Supabase Auth points at production (Site URL `https://family-wise-topaz.vercel.app`, redirects `https://family-wise-topaz.vercel.app/**`), and "Allow new users to sign up" is off, so nobody can sign up through Supabase directly. Launch check L-12 confirms it end to end. |
 
 ---
 
@@ -67,7 +68,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-03 | Admin authentication and onboarding | P0 | M | WP-02, WP-37 | Done (PR #9) |
 | WP-04 | Members UI | P0 | S | WP-03, WP-37 | Done (PR #10) |
 | WP-05 | Device pairing and device auth | P0 | L | WP-03 | Done (PR #11) |
-| WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | In review (PR #12) |
+| WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | Done (PR #12) |
 | WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Done (PR #8) |
 | WP-42 | System Health page | P0 | S | WP-03, WP-07 | Queued |
 | WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Queued |

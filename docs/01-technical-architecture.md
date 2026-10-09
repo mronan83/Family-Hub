@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.11: Supabase's own sign-up is off (Y-9 done, §5.10).
 > v0.8.10: WP-06 board shell (D-41): `board_snapshot` is the board's one read; the board keeps it live itself (notify, then read the snapshot from the browser), catches up on reconnect, and follows the household's time or an admin's theme hold (§7).
 > v0.8.9: WP-05 and SPIKE-01 (D-40): boards pair in the database with an 8-digit code, keep a credential to sign in again unattended, and are disconnected for good; Realtime under RLS confirmed (§4, §5.1, §6.1).
 > v0.8.8: WP-04 members: an adult member links only to an admin of the same household, enforced by the database (§6.2).
@@ -455,7 +456,7 @@ sequenceDiagram
   A->>D: accept_invite(token): that email only, once
 ```
 
-- **No public sign-up.** Accounts are created by the server, only for a valid setup code or invite, and only in production, where the secret key lives. They are created confirmed, because the built-in mailer reaches only the Supabase team (§9.10); a password works from the first sign-in. Magic links never create an account (`shouldCreateUser: false`), and Supabase's own sign-up is switched off before launch (Y-9).
+- **No public sign-up.** Accounts are created by the server, only for a valid setup code or invite, and only in production, where the secret key lives. They are created confirmed, because the built-in mailer reaches only the Supabase team (§9.10); a password works from the first sign-in. Magic links never create an account (`shouldCreateUser: false`), and Supabase's own sign-up is switched off (Y-9, done).
 - **Signing in.** Email and password, or a magic link to an existing account; a forgotten password is reset by link. Links land on `/auth/callback`, which trades the one-time code for a session (PKCE, so a link works only in the browser that asked for it) and goes on to a path on this site only. The pages never say whether an account exists.
 - **Sessions.** `@supabase/ssr` keeps the session in cookies. `proxy.ts` refreshes it on every page and sends a signed-out visitor from `/admin` to sign in; that is the quick check only. Each admin page and action verifies the user again on the server (`getClaims()`), and RLS decides every row. A board session (`app_metadata.role = device`, WP-05) is never treated as an admin.
 - **Invites.** The token is 24 random bytes, stored as its SHA-256. It travels after `#`, which browsers never send to a server, so it is in no request log or Referer; the invite page keeps it in the browser while the invitee signs in. An invite works once, for 7 days, and only for an account with the email it names; a new invite to the same email replaces the open one, and an admin can cancel one. Anyone who has the link and can sign in as that email joins, so the page tells the inviter to share it only with that person (R-32).
