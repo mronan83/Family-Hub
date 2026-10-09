@@ -8,6 +8,10 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   retries: process.env.CI ? 1 : 0,
+  // Assertions that wait on a server round trip allow 15 s: on a preview, a server action now and
+  // then takes over 5 s to answer (seen in pairing and in saving an item). Speed itself is measured
+  // by the tests that time it (DEV-05, the WP-08 list entry), not by this timeout.
+  expect: { timeout: 15_000 },
   // The HTML report sits next to this file, where the workflow uploads it from on a failure.
   reporter: process.env.CI
     ? [['github'], ['html', { open: 'never', outputFolder: 'playwright-report' }]]

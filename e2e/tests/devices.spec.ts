@@ -224,10 +224,7 @@ test('[DEV-02] a board whose session is lost signs itself in again', async () =>
 test('[DEV-01] a used code is refused', async ({ browser }) => {
   const other = await (await browser.newContext()).newPage();
   await pair(other, code);
-  // A server round trip on a preview: allow for a slow first answer (it once took over 5 s).
-  await expect(other.getByRole('status')).toContainText('That code didn’t match.', {
-    timeout: 15_000,
-  });
+  await expect(other.getByRole('status')).toContainText('That code didn’t match.');
   await other.context().close();
 });
 
