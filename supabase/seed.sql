@@ -128,3 +128,39 @@ select '0de00000-0000-4000-8000-000000000001', chore_id::uuid, tag_id::uuid
     ('0de00000-0000-4000-8000-0000000c0004', '0de00000-0000-4000-8000-0000000a0002'),
     ('0de00000-0000-4000-8000-0000000c0005', '0de00000-0000-4000-8000-0000000a0004')
   ) as t (chore_id, tag_id);
+
+-- The school year (WP-21): this school year as the default, with terms and closures, and next
+-- year's calendar already added (also a default; default years never overlap). Dates follow
+-- today, so the demo always has a current school year; the school is made up.
+with base as (
+  select extract(year from d)::int - case when extract(month from d) < 8 then 1 else 0 end as y
+    from (select (now() at time zone 'America/New_York')::date as d) t
+)
+insert into public.school_year (id, household_id, name, school_name, start_date, end_date, is_default)
+select id::uuid, '0de00000-0000-4000-8000-000000000001', name, 'Demo Elementary', start_date, end_date, true
+  from base, lateral (values
+    ('0de00000-0000-4000-8000-0000000b0001', y || '–' || right((y + 1)::text, 2), make_date(y, 8, 24), make_date(y + 1, 6, 11)),
+    ('0de00000-0000-4000-8000-0000000b0002', (y + 1) || '–' || right((y + 2)::text, 2), make_date(y + 1, 8, 23), make_date(y + 2, 6, 10))
+  ) as v (id, name, start_date, end_date);
+
+insert into public.school_term (household_id, school_year_id, name, start_date, end_date)
+select y.household_id, y.id, t.name, t.start_date, t.end_date
+  from public.school_year y,
+       lateral (values ('Fall', y.start_date, make_date(extract(year from y.start_date)::int, 12, 18)),
+                       ('Spring', make_date(extract(year from y.end_date)::int, 1, 4), y.end_date)) as t (name, start_date, end_date)
+ where y.id = '0de00000-0000-4000-8000-0000000b0001';
+
+insert into public.school_closure (household_id, school_year_id, name, closure_type, start_date, end_date)
+select y.household_id, y.id, c.name, c.closure_type, c.start_date, c.end_date
+  from public.school_year y,
+       lateral (select extract(year from y.start_date)::int as a) s,
+       lateral (values
+         ('Teacher planning day', 'teacher_day', make_date(a, 10, 16), make_date(a, 10, 16)),
+         ('Thanksgiving break', 'break', make_date(a, 11, 25), make_date(a, 11, 27)),
+         ('Winter break', 'break', make_date(a, 12, 21), make_date(a + 1, 1, 1)),
+         ('Spring break', 'break', make_date(a + 1, 3, 22), make_date(a + 1, 3, 26)),
+         ('Memorial Day', 'holiday',
+          make_date(a + 1, 5, 31) - ((extract(isodow from make_date(a + 1, 5, 31))::int + 6) % 7),
+          make_date(a + 1, 5, 31) - ((extract(isodow from make_date(a + 1, 5, 31))::int + 6) % 7))
+       ) as c (name, closure_type, start_date, end_date)
+ where y.id = '0de00000-0000-4000-8000-0000000b0001';

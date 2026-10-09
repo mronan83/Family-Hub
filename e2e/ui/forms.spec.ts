@@ -38,3 +38,8 @@ test('[CHR-01][CHR-10] the family list and tags pages need a signed-in admin', a
     await expect(page).toHaveURL(new RegExp(`/sign-in\\?next=${next}$`));
   }
 });
+
+test('[SCH-01] the school year pages need a signed-in admin', async ({ page }) => {
+  await page.goto('/admin/school');
+  await expect(page).toHaveURL(/\/sign-in\?next=%2Fadmin%2Fschool$/);
+});

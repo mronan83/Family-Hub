@@ -172,9 +172,9 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CAL-06 | US-505 | WP-22 | CALSYNC, ADM, OBS | calendar_source, job_run | INT, E2E |
 | CAL-07 | US-502 | WP-22 | CALSYNC | calendar_event, calendar_event_instance | U |
 | CAL-08 | US-506 | WP-29 | CALSYNC, VAULT | calendar_source | INT |
-| SCH-01 | US-601 | WP-21 | ADM, DB | school_year, school_term, school_closure, member_school_profile | E2E, DB |
-| SCH-02 | US-602 | WP-21 | DB | resolve_day_type | DB |
-| SCH-03 | US-302, US-602 | WP-21 | OCCGEN, DB | chore, chore_occurrence | INT |
+| SCH-01 | US-601 | WP-21 | ADM, DB | school_year, school_term, school_closure, member_school_profile | U, DB, E2E |
+| SCH-02 | US-602 | WP-21 | DB | resolve_day_type | DB, E2E |
+| SCH-03 | US-302, US-602 | WP-21 | OCCGEN, DB | chore, chore_occurrence | DB, INT |
 | SCH-04 | US-603 | WP-36 | ADM, CALSYNC | school_closure, calendar_event_instance | INT |
 | MEAL-01 | US-701 | WP-25 | ADM, BRD | meal_plan_entry | E2E |
 | MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | E2E |
@@ -392,6 +392,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.20 | WP-21 school years (D-44), in review: school years, terms, breaks and days off, with each member following their own school year or the default for that date; default years may not overlap, so next year's calendar starts on its own. `resolve_day_type` is traced by pgTAP (`100_school_year`: weekend, break, no_school, school_day and summer precedence; a school-days-only item applies on no day of a break week), unit tests (`lib/school`) and e2e (`school.spec.ts`). Regenerating future occurrences when a closure changes (D-24) moves to WP-09, which brings occurrences. |
 | 0.8.19 | WP-08 done (PR #19): merged with every PR gate green and e2e 36 of 36 on the preview; the family list is live in production. |
 | 0.8.18 | WP-08 the family list (D-43): chores and tasks for any member with several assignees, schedules checked by zod and by the database, optional due times grouped into Morning, After school, Evening and Anytime, household tags by id, and private items that the board and the other admin never receive, down to their audit rows. Only an item's creator changes who sees it. Traced by pgTAP (`090_chores`), unit tests (`lib/chores`, `lib/tags`) and e2e (`chores.spec.ts`, which also times entering six chores and two tasks on a phone screen). |
 | 0.8.17 | P0 done: WP-42 merged (PR #17) and every P0 exit criterion passes: all PR gates green; pgTAP isolation and revoked-device tests green; on a preview an admin signs in by password, starts a household with a setup code, adds a child, pairs a browser as a board and sees a rename in 0.84 s (p95); the production deploy pipeline is green. Next is P1a. |

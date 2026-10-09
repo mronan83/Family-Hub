@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.20: WP-21 in review (PR #21): school years and day types (D-44). Regenerating occurrences when a closure changes moves to WP-09 with occurrences.
 > v0.8.19: WP-08 done (PR #19), live in production. WP-21 is next.
 > v0.8.18: WP-08 in review (PR #19): the family list, tags and private items (D-43).
 > v0.8.17: WP-42 done (PR #17), so P0 is done: every P0 item is merged and its exit criteria pass (`04` §E). Ready now: WP-08, WP-21, WP-22, WP-24, WP-25, WP-32, WP-33.
@@ -78,7 +79,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Done (PR #8) |
 | WP-42 | System Health page | P0 | S | WP-03, WP-07 | Done (PR #17) |
 | WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Done (PR #19) |
-| WP-21 | School year and day types | P1a | M | WP-04 | Ready |
+| WP-21 | School year and day types | P1a | M | WP-04 | In review (PR #21) |
 | WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | Queued |
 | WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | Queued |
 | WP-16 | Points ledger | P1a | M | WP-10 | Queued |
@@ -365,13 +366,20 @@ flowchart LR
 - Closure and school-year edits trigger regeneration for dates after today only (D-24).
 - Members without a school profile (adults) follow the household's default school year (`02` §3.5).
 - **Done when:** pgTAP covers weekend, break, no_school, school_day, summer precedence; a break week produces no school-only chores; a closure added for today leaves today alone.
+- As built (D-44):
+  - `/admin/school` shows today's day type for each member and the school years; each year's page has a timeline of its days, its breaks and days off, its terms, and who follows it instead of the default.
+  - A member follows their own school year for a date, else the default for that date. Several years may be defaults if their dates don't overlap, so next year's calendar starts on its first day.
+  - `chore_day_type_matches()` gives the generator the day-type test; pgTAP shows a school-days-only item applies on no day of a break week.
+  - Regenerating future occurrences when a year, closure or profile changes, and leaving today alone (D-24), need occurrences, so they are built and tested in WP-09.
+  - The demo family has this school year and next, with terms and five days off; dates follow today, so the demo never goes stale.
 
 ### WP-09 — Occurrence generator
 **Phase:** P1a · **Size:** L · **Depends on:** WP-08, WP-21 · **Reqs:** CHR-02, CHR-03, CHR-09, CHR-11, CHR-12
 - `chore_occurrence` (with `status` default `scheduled`) and `chore_occurrence_assignee`: one occurrence per item per due date with a snapshot of its assignees, `kind`, `due_time`, points and approval flag; rolling-window generation using the real `resolve_day_type` (per assignee's school profile, generated if any assignee's day type matches); regeneration of only future `scheduled` occurrences on edit.
 - Tasks carry over: open past-due tasks stay `scheduled` and are listed as overdue; a repeating task keeps generating while earlier ones are open (D-31).
 - `v_member_occurrence`: one row per occurrence and member with the per-member status (`covered` when someone else did it).
-- **Done when:** property tests show generation is idempotent and edits never touch past occurrences or their assignee snapshots; DST fixtures pass; a shared item yields one occurrence per day.
+- Regenerates `scheduled` occurrences after today when a school year, closure or school profile changes, leaving today and the past alone (D-24; moved from WP-21, which built the day types).
+- **Done when:** property tests show generation is idempotent and edits never touch past occurrences or their assignee snapshots; DST fixtures pass; a shared item yields one occurrence per day; a closure added for today leaves today alone, and one added for next week removes that week's school-only occurrences.
 
 ### WP-10 — Completion events, status projection, and day-close
 **Phase:** P1a · **Size:** L · **Depends on:** WP-09, WP-07 · **Reqs:** CHR-04, CHR-07, CHR-09, CHR-12, NFR-06

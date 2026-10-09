@@ -540,6 +540,91 @@ body {
   padding-top: var(--s-2);
 }
 
+/* School year (WP-21): date pairs, and the year as month grids shaded by day type ------------ */
+.fw-subhead {
+  margin: 0;
+  font-size: var(--t-heading);
+}
+.fw-dates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--s-3);
+}
+.fw-timeline {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--t-small);
+}
+.fw-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.fw-cal {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--s-4);
+}
+.fw-cal__label {
+  font-weight: 600;
+  margin-bottom: var(--s-1);
+}
+.fw-cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  font-size: 11px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.fw-cal__head {
+  color: var(--text-soft);
+}
+.fw-cal__day {
+  padding: 2px 0;
+  border-radius: 4px;
+  color: var(--text);
+}
+.fw-cal__day--today {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+  font-weight: 700;
+}
+.fw-cal__swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+.fw-cal--school_day {
+  background: var(--primary-tint);
+}
+.fw-cal--break {
+  background: var(--reward-tint);
+}
+.fw-cal--no_school {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--info);
+}
+.fw-cal--weekend {
+  background: var(--line);
+}
+.fw-cal--summer {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.fw-list__row strong + .fw-pill {
+  margin-left: var(--s-2);
+}
+
 /* Pairing (WP-05): the code an admin reads out, and the board's keypad ---------------------- */
 .fw-pairing-code {
   margin: 0;

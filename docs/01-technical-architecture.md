@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.15: school years (WP-21, D-44): day types worked out in the database, each member's school year with the default as fallback (§6.3).
 > v0.8.14: the family list (WP-08, D-43): private items in RLS as built, and only an item's creator changes who sees it (§6.3). The migration runner's additive check ignores function bodies (§9.5).
 > v0.8.13: WP-42 System Health (D-42): errors kept per household, usage read daily by the usage workflow (§4, §9.8, §9.10).
 > v0.8.12: SPIKE-02 (ICS part): what iCloud publishes and how the sync reads it (§5.4).
@@ -513,6 +514,7 @@ sequenceDiagram
 - Device policies: `SELECT` only, on board tables, where `household_id = device_household_id()`.
 - Derived, instance, and event tables have **no** insert/update/delete policy for end users; only the service role writes them.
 - Private items (D-34): `private.can_see_chore(chore_id)` admits family items to everyone in the household and private items only to their creator and assignees who sign in. The item, its occurrences, assignee snapshots, events and audit rows all use it, so the board and the other admin never receive a private row. The `chore` policy applies the same rule to the row's own columns (`visibility`, `created_by`, and `private.is_chore_assignee(id)`) so a private item is readable by its creator in the statement that inserts it. A trigger lets only the creator change `visibility` (D-43).
+- School years, terms, days off and school profiles: admins manage them and the board reads them. The day-type functions (`resolve_day_type`, `household_day_types`, `school_year_days`) are security invoker, so each caller sees only its own household (WP-21).
 - Views use `security_invoker = true` so RLS applies through them.
 - pgTAP suite proves: cross-household isolation, revoked-device denial, device cannot write, admin cannot read other households, and private items are invisible to the board and to the other admin.
 
