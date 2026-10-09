@@ -1,7 +1,8 @@
 'use client';
 
 import { Banner, Button } from '@familywise/ui';
-import { useActionState, useEffect, useRef } from 'react';
+import { useFormAction } from '@/lib/forms';
+import { useEffect, useRef } from 'react';
 import { type FormState, MIN_PASSWORD } from '@/lib/auth/messages';
 import { setUpHousehold } from './actions';
 
@@ -19,7 +20,7 @@ export function SetupForm({
   timezones: string[];
   withAccount: boolean;
 }) {
-  const [state, action, pending] = useActionState(setUpHousehold, {} as FormState);
+  const [state, onSubmit, pending] = useFormAction(setUpHousehold, {} as FormState);
   const zone = useRef<HTMLSelectElement>(null);
 
   // Start from this device's timezone; the list is rendered on the server, so pick it after mount.
@@ -29,7 +30,7 @@ export function SetupForm({
   }, [timezones]);
 
   return (
-    <form action={action} className="fw-form" aria-label="Set up your household">
+    <form onSubmit={onSubmit} className="fw-form" aria-label="Set up your household">
       <label className="fw-field">
         <span className="fw-field__label">Setup code</span>
         <input

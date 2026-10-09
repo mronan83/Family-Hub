@@ -1,7 +1,8 @@
 'use client';
 
 import { Banner, Button } from '@familywise/ui';
-import { useActionState, useEffect, useState } from 'react';
+import { useFormAction } from '@/lib/forms';
+import { useEffect, useState } from 'react';
 import { type FormState, hintMessage, MIN_PASSWORD } from '@/lib/auth/messages';
 import { signOut } from '../admin/actions';
 import { acceptInvite, type InvitePreview, joinWithNewAccount, previewInvite } from './actions';
@@ -94,9 +95,15 @@ export function InviteClient({
 }
 
 function AcceptForm({ token }: { token: string }) {
-  const [state, action, pending] = useActionState(acceptInvite, {} as FormState);
+  const [state, onSubmit, pending] = useFormAction(acceptInvite, {} as FormState);
   return (
-    <form action={action} onSubmit={forgetToken} className="fw-form">
+    <form
+      onSubmit={(e) => {
+        forgetToken();
+        onSubmit(e);
+      }}
+      className="fw-form"
+    >
       <input type="hidden" name="token" value={token} />
       {state.message ? <Banner kind="notice">{state.message}</Banner> : null}
       <div className="fw-actions">
@@ -109,9 +116,16 @@ function AcceptForm({ token }: { token: string }) {
 }
 
 function NewAccountForm({ token }: { token: string }) {
-  const [state, action, pending] = useActionState(joinWithNewAccount, {} as FormState);
+  const [state, onSubmit, pending] = useFormAction(joinWithNewAccount, {} as FormState);
   return (
-    <form action={action} onSubmit={forgetToken} className="fw-form" aria-label="New to FamilyWise">
+    <form
+      onSubmit={(e) => {
+        forgetToken();
+        onSubmit(e);
+      }}
+      className="fw-form"
+      aria-label="New to FamilyWise"
+    >
       <div className="fw-divider">or, new to FamilyWise</div>
       <input type="hidden" name="token" value={token} />
       <label className="fw-field">

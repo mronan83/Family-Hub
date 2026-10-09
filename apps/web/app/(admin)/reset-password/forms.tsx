@@ -1,14 +1,14 @@
 'use client';
 
 import { Banner, Button } from '@familywise/ui';
-import { useActionState } from 'react';
+import { useFormAction } from '@/lib/forms';
 import { type FormState, MIN_PASSWORD } from '@/lib/auth/messages';
 import { sendResetLink, setNewPassword } from './actions';
 
 export function ResetRequestForm() {
-  const [state, action, pending] = useActionState(sendResetLink, {} as FormState);
+  const [state, onSubmit, pending] = useFormAction(sendResetLink, {} as FormState);
   return (
-    <form action={action} className="fw-form" aria-label="Email me a reset link">
+    <form onSubmit={onSubmit} className="fw-form" aria-label="Email me a reset link">
       <label className="fw-field">
         <span className="fw-field__label">Email</span>
         <input className="fw-input" type="email" name="email" autoComplete="email" required />
@@ -27,9 +27,9 @@ export function ResetRequestForm() {
 }
 
 export function NewPasswordForm() {
-  const [state, action, pending] = useActionState(setNewPassword, {} as FormState);
+  const [state, onSubmit, pending] = useFormAction(setNewPassword, {} as FormState);
   return (
-    <form action={action} className="fw-form" aria-label="Choose a new password">
+    <form onSubmit={onSubmit} className="fw-form" aria-label="Choose a new password">
       <label className="fw-field">
         <span className="fw-field__label">New password</span>
         <input

@@ -22,10 +22,17 @@ is() { [ "$1" = "$2" ] && echo ok || echo "got '$1', expected '$2'"; }
 for f in "$root"/supabase/tests/bootstrap/*.sql; do psql "$(url)" -X -q -v ON_ERROR_STOP=1 -f "$f" >/dev/null; done
 SUPABASE_DB_URL=$(url) bash "$root/scripts/db-migrate.sh" >/dev/null
 
-SUPABASE_DB_URL=$(url) SETUP_CODE_OUT="$work/summary" bash "$root/scripts/setup-code.sh" > "$work/log" 2>&1; rc=$?
+SUPABASE_DB_URL=$(url) SETUP_CODE_OUT="$work/summary" GITHUB_ACTIONS='' bash "$root/scripts/setup-code.sh" > "$work/log" 2>&1; rc=$?
 code=$(grep -oE '[2-9A-Z]{4}-[2-9A-Z]{4}-[2-9A-Z]{4}' "$work/summary" | head -1)
 check "[ACC-01] issues a code in the form XXXX-XXXX-XXXX" "$(is "$rc:${#code}" "0:14")"
 check "[ACC-01] the code is written to the summary only, never to the log" "$(is "$(grep -c "${code:-none}" "$work/log")" "0")"
+
+# On GitHub the code is masked first (the runner consumes the ::add-mask:: line), so even a psql
+# error that echoed the statement would print *** instead.
+SUPABASE_DB_URL=$(url) SETUP_CODE_OUT="$work/summary2" GITHUB_ACTIONS=true bash "$root/scripts/setup-code.sh" > "$work/log" 2>&1
+code2=$(grep -oE '[2-9A-Z]{4}-[2-9A-Z]{4}-[2-9A-Z]{4}' "$work/summary2" | head -1)
+check "[ACC-01] on GitHub the code is masked before anything else, and appears in no other line" \
+  "$(is "$(head -1 "$work/log"):$(grep -c "${code2:-none}" "$work/log")" "::add-mask::$code2:1")"
 check "[ACC-01] only the code's hash is stored, for 24 hours" \
   "$(is "$(q "select count(*) from private.household_setup_code
               where code_hash = private.code_hash('$code') and code_hash <> '$code'

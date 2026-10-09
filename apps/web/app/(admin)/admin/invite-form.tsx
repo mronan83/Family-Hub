@@ -1,12 +1,13 @@
 'use client';
 
 import { Banner, Button } from '@familywise/ui';
-import { useActionState, useState } from 'react';
+import { useFormAction } from '@/lib/forms';
+import { useState } from 'react';
 import { createInvite, type InviteState } from './actions';
 
 /** [ACC-03] Invite an admin: the link appears once, to copy or share (no email is sent, 01 §9.10). */
 export function InviteForm() {
-  const [state, action, pending] = useActionState(createInvite, {} as InviteState);
+  const [state, onSubmit, pending] = useFormAction(createInvite, {} as InviteState);
   const [copied, setCopied] = useState(false);
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
@@ -22,10 +23,12 @@ export function InviteForm() {
   return (
     <div className="fw-form">
       <form
-        action={action}
         className="fw-form"
         aria-label="Invite an admin"
-        onSubmit={() => setCopied(false)}
+        onSubmit={(e) => {
+          setCopied(false);
+          onSubmit(e);
+        }}
       >
         <label className="fw-field">
           <span className="fw-field__label">Their email</span>

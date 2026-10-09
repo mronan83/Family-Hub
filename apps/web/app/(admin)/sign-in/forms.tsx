@@ -1,14 +1,14 @@
 'use client';
 
 import { Banner, Button } from '@familywise/ui';
-import { useActionState } from 'react';
+import { useFormAction } from '@/lib/forms';
 import type { FormState } from '@/lib/auth/messages';
 import { sendMagicLink, signInWithPassword } from './actions';
 
 export function PasswordForm({ next }: { next: string }) {
-  const [state, action, pending] = useActionState(signInWithPassword, {} as FormState);
+  const [state, onSubmit, pending] = useFormAction(signInWithPassword, {} as FormState);
   return (
-    <form action={action} className="fw-form" aria-label="Sign in with password">
+    <form onSubmit={onSubmit} className="fw-form" aria-label="Sign in with password">
       <input type="hidden" name="next" value={next} />
       <label className="fw-field">
         <span className="fw-field__label">Email</span>
@@ -36,9 +36,9 @@ export function PasswordForm({ next }: { next: string }) {
 }
 
 export function MagicLinkForm({ next }: { next: string }) {
-  const [state, action, pending] = useActionState(sendMagicLink, {} as FormState);
+  const [state, onSubmit, pending] = useFormAction(sendMagicLink, {} as FormState);
   return (
-    <form action={action} className="fw-form" aria-label="Email me a sign-in link">
+    <form onSubmit={onSubmit} className="fw-form" aria-label="Email me a sign-in link">
       <input type="hidden" name="next" value={next} />
       <label className="fw-field">
         <span className="fw-field__label">Email</span>
