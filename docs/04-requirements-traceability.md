@@ -30,7 +30,7 @@
 | DEV-08 | The board shall indicate when its data is stale. | S | P1 | Design |
 | CHR-01 | Admins shall create, edit, and archive chores (routines) and tasks (to-dos, one-off or repeating) with title, icon, assignees (any family members), points, approval flag, household tags, optional due time, and visibility. | M | P1 | User |
 | CHR-02 | Chores shall support recurrence (daily, weekly by weekday, monthly, once) and day-type filters. | M | P1 | User |
-| CHR-03 | The system shall materialize one occurrence per item per due date for a rolling window, snapshot its assignees, and regenerate only future occurrences on edit. | M | P1 | Design |
+| CHR-03 | The system shall materialize one occurrence per item per due date for a rolling window, snapshot its assignees, and on edit re-plan only occurrences nothing has happened to, never past ones (D-45). | M | P1 | Design |
 | CHR-04 | A family member shall check off an occurrence on the board with one tap, recording who did it, and undo within a configurable window via a compensating event. | M | P1 | User |
 | CHR-05 | The approval workflow shall be switchable on or off for the household at any time, with a per-chore override. When off, a check-off counts immediately and a parent verifies in real life and can uncheck; when on, it is `pending_approval` until approved or rejected. | M | P1 | User |
 | CHR-06 | Admins shall complete, uncomplete, or skip any occurrence. | M | P1 | Derived |
@@ -135,8 +135,8 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | DEV-07 | US-207 | WP-34 | PI, BRD | household_settings | HW |
 | DEV-08 | US-206 | WP-13 | BRD, OBS | job_run | E2E |
 | CHR-01 | US-301 | WP-08 | ADM, API | chore, chore_assignee | U, DB, E2E |
-| CHR-02 | US-302 | WP-09 | OCCGEN, DB | chore, school_closure | U, INT |
-| CHR-03 | US-303, US-308, US-311 | WP-09 | OCCGEN, SCHED, DB | chore_occurrence | INT, DB |
+| CHR-02 | US-302 | WP-09 | OCCGEN, DB | chore, school_closure | U, DB, E2E |
+| CHR-03 | US-303, US-308, US-311 | WP-09 | OCCGEN, SCHED, DB | chore_occurrence | DB, U, E2E |
 | CHR-04 | US-304, US-305, US-1006 | WP-10, WP-11 | BRD, OUTBOX, API, DB | chore_completion_event, chore_occurrence | E2E, DB |
 | CHR-05 | US-306, US-310 | WP-12 | ADM, API | chore_completion_event | E2E |
 | CHR-06 | US-307, US-309 | WP-12 | ADM, API | chore_completion_event | E2E |
@@ -174,7 +174,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CAL-08 | US-506 | WP-29 | CALSYNC, VAULT | calendar_source | INT |
 | SCH-01 | US-601 | WP-21 | ADM, DB | school_year, school_term, school_closure, member_school_profile | U, DB, E2E |
 | SCH-02 | US-602 | WP-21 | DB | resolve_day_type | DB, E2E |
-| SCH-03 | US-302, US-602 | WP-21 | OCCGEN, DB | chore, chore_occurrence | DB, INT |
+| SCH-03 | US-302, US-602 | WP-09, WP-21 | OCCGEN, DB | chore, chore_occurrence | DB, E2E |
 | SCH-04 | US-603 | WP-36 | ADM, CALSYNC | school_closure, calendar_event_instance | INT |
 | MEAL-01 | US-701 | WP-25 | ADM, BRD | meal_plan_entry | E2E |
 | MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | E2E |
@@ -392,6 +392,8 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.22 | WP-09 occurrences (D-45), in review (PR #22): every item is planned for today and the next 14 days by the database, one shared occurrence per due date with a snapshot of who was responsible and each one's day type. The hourly `occurrence_gen` job (minute 23) fills the window; edits re-plan at once by trigger. Only occurrences nothing has happened to change, never a past one: an item's own edit reaches today's in place, keeping its id; a school-year change starts tomorrow (D-24). CHR-03 reworded to match. Traced by pgTAP (`110_occurrences`: schedules, idempotent generation, a property test over 40 random edits, D-24 closures, DST, the per-member view, RLS), unit tests (`lib/chores`, the job schedule) and e2e (`chores.spec.ts`, `school.spec.ts`). |
+| 0.8.21 | WP-21 done (PR #21): merged with every PR gate green and e2e 41 of 41 on the preview; school years are live in production. |
 | 0.8.20 | WP-21 school years (D-44), in review: school years, terms, breaks and days off, with each member following their own school year or the default for that date; default years may not overlap, so next year's calendar starts on its own. `resolve_day_type` is traced by pgTAP (`100_school_year`: weekend, break, no_school, school_day and summer precedence; a school-days-only item applies on no day of a break week), unit tests (`lib/school`) and e2e (`school.spec.ts`). Regenerating future occurrences when a closure changes (D-24) moves to WP-09, which brings occurrences. |
 | 0.8.19 | WP-08 done (PR #19): merged with every PR gate green and e2e 36 of 36 on the preview; the family list is live in production. |
 | 0.8.18 | WP-08 the family list (D-43): chores and tasks for any member with several assignees, schedules checked by zod and by the database, optional due times grouped into Morning, After school, Evening and Anytime, household tags by id, and private items that the board and the other admin never receive, down to their audit rows. Only an item's creator changes who sees it. Traced by pgTAP (`090_chores`), unit tests (`lib/chores`, `lib/tags`) and e2e (`chores.spec.ts`, which also times entering six chores and two tasks on a phone screen). |

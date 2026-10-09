@@ -1,6 +1,6 @@
 import type { IconName, MemberColor } from '@familywise/ui';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Approval, DayType, Kind, ListItem, Schedule } from '@/lib/chores';
+import type { Approval, DayType, Kind, ListItem, OccurrenceDate, Schedule } from '@/lib/chores';
 
 export interface ChoreRow extends ListItem {
   icon: IconName;
@@ -106,4 +106,60 @@ export async function loadApprovalMode(
     .maybeSingle();
   if (error) throw new Error(`settings: ${error.message}`);
   return data?.approval_mode === 'on' ? 'on' : 'off';
+}
+
+/**
+ * [CHR-03][CHR-12] The household's occurrences from `from` on (RLS: private items' only for those
+ * who can see them), for each item's next date and how long a task has been left open.
+ */
+export async function loadOccurrenceDates(
+  db: SupabaseClient,
+  householdId: string,
+  from: string,
+): Promise<OccurrenceDate[]> {
+  const { data, error } = await db
+    .from('chore_occurrence')
+    .select('chore_id, due_date, kind, status')
+    .eq('household_id', householdId)
+    .gte('due_date', from);
+  if (error) throw new Error(`occurrences: ${error.message}`);
+  return (data as { chore_id: string; due_date: string; kind: Kind; status: string }[]).map(
+    (o) => ({ choreId: o.chore_id, dueDate: o.due_date, kind: o.kind, status: o.status }),
+  );
+}
+
+export interface ComingUp {
+  id: string;
+  dueDate: string;
+  status: string;
+  members: string[];
+}
+
+/** [CHR-03][CHR-09] An item's planned days from today, with who is responsible on each. */
+export async function loadComingUp(
+  db: SupabaseClient,
+  choreId: string,
+  today: string,
+): Promise<ComingUp[]> {
+  const { data, error } = await db
+    .from('chore_occurrence')
+    .select('id, due_date, status, chore_occurrence_assignee (member_id)')
+    .eq('chore_id', choreId)
+    .gte('due_date', today)
+    .order('due_date')
+    .limit(15);
+  if (error) throw new Error(`coming up: ${error.message}`);
+  return (
+    data as unknown as {
+      id: string;
+      due_date: string;
+      status: string;
+      chore_occurrence_assignee: { member_id: string }[];
+    }[]
+  ).map((o) => ({
+    id: o.id,
+    dueDate: o.due_date,
+    status: o.status,
+    members: o.chore_occurrence_assignee.map((a) => a.member_id),
+  }));
 }

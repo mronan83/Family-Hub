@@ -1,7 +1,7 @@
 -- [NFR-14] The demo family seed resets only the demo household and never touches another (D-37).
 -- [ACC-02] It creates the four demo sign-ins (D-39), without passwords.
 begin;
-select plan(16);
+select plan(17);
 
 insert into public.household (id, name, timezone) values
   ('44444444-4444-4444-4444-444444444444', 'Real family', 'America/Chicago'),
@@ -87,6 +87,14 @@ select results_eq(
 select is((select count(*)::int from public.school_closure c join public.school_year y on y.id = c.school_year_id
             where y.household_id = '0de00000-0000-4000-8000-000000000001'), 5,
   '[SCH-01] the demo school year has a teacher day, three breaks and a holiday');
+
+select results_eq(
+  $$ select count(distinct o.id)::int, count(*)::int, min(o.due_date) = private.household_today(o.household_id)
+       from public.chore_occurrence o join public.chore_occurrence_assignee a on a.occurrence_id = o.id
+      where o.chore_id = '0de00000-0000-4000-8000-0000000c0001'
+      group by o.household_id $$,
+  $$ values (15, 30, true) $$,
+  '[CHR-03] the demo family''s Make bed is planned from today for 15 days, shared by Maya and Leo, after two runs');
 
 select * from finish();
 rollback;

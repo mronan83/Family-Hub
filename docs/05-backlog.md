@@ -1,6 +1,8 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.22: WP-09 in review (PR #22): occurrences planned two weeks ahead by the database, and re-planned at once on edits without touching history (D-45).
+> v0.8.21: WP-21 done (PR #21), live in production. WP-27 is ready.
 > v0.8.20: WP-21 in review (PR #21): school years and day types (D-44). Regenerating occurrences when a closure changes moves to WP-09 with occurrences.
 > v0.8.19: WP-08 done (PR #19), live in production. WP-21 is next.
 > v0.8.18: WP-08 in review (PR #19): the family list, tags and private items (D-43).
@@ -79,8 +81,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Done (PR #8) |
 | WP-42 | System Health page | P0 | S | WP-03, WP-07 | Done (PR #17) |
 | WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Done (PR #19) |
-| WP-21 | School year and day types | P1a | M | WP-04 | In review (PR #21) |
-| WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | Queued |
+| WP-21 | School year and day types | P1a | M | WP-04 | Done (PR #21) |
+| WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | In review (PR #22) |
 | WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | Queued |
 | WP-16 | Points ledger | P1a | M | WP-10 | Queued |
 | WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37 | Queued |
@@ -98,7 +100,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
 | WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Ready |
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Queued |
-| WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Queued |
+| WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Ready |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Queued |
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Queued |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Queued |
@@ -374,18 +376,26 @@ flowchart LR
   - The demo family has this school year and next, with terms and five days off; dates follow today, so the demo never goes stale.
 
 ### WP-09 — Occurrence generator
-**Phase:** P1a · **Size:** L · **Depends on:** WP-08, WP-21 · **Reqs:** CHR-02, CHR-03, CHR-09, CHR-11, CHR-12
+**Phase:** P1a · **Size:** L · **Depends on:** WP-08, WP-21 · **Reqs:** CHR-02, CHR-03, CHR-09, CHR-11, CHR-12, SCH-03
 - `chore_occurrence` (with `status` default `scheduled`) and `chore_occurrence_assignee`: one occurrence per item per due date with a snapshot of its assignees, `kind`, `due_time`, points and approval flag; rolling-window generation using the real `resolve_day_type` (per assignee's school profile, generated if any assignee's day type matches); regeneration of only future `scheduled` occurrences on edit.
 - Tasks carry over: open past-due tasks stay `scheduled` and are listed as overdue; a repeating task keeps generating while earlier ones are open (D-31).
 - `v_member_occurrence`: one row per occurrence and member with the per-member status (`covered` when someone else did it).
 - Regenerates `scheduled` occurrences after today when a school year, closure or school profile changes, leaving today and the past alone (D-24; moved from WP-21, which built the day types).
 - **Done when:** property tests show generation is idempotent and edits never touch past occurrences or their assignee snapshots; DST fixtures pass; a shared item yields one occurrence per day; a closure added for today leaves today alone, and one added for next week removes that week's school-only occurrences.
+- As built (D-45):
+  - The database plans each item for today and the next 14 days. The hourly `occurrence_gen` job (minute 23) fills tomorrow to 14 days ahead; triggers re-plan at once when an item, its assignees, a member, a school year, a closure or a school profile changes. Items saved before this shipped were planned once by the migration.
+  - Only occurrences nothing has happened to change, and never a past one. An item's own edit (or a member archived or restored) reaches today's occurrence in place, keeping its id for the board's check-offs: an item archived in the morning leaves today, so it is never marked missed, and someone added at 7 am has it today. A school-year change starts tomorrow (D-24).
+  - Each assignee's day type is kept in the snapshot, since a child at another school can have a different one that day. A monthly day past the end of a shorter month falls on its last day. A one-off task entered after its date is open on that date and shows as overdue.
+  - `/admin/chores` shows when each item is next due ("Today", "Tomorrow" or the date) and "Overdue since …" for an open task; an item's page lists the next two weeks under "Coming up", with who it is for. Filtering the list by due date and status comes with WP-12.
+  - pgTAP `110_occurrences` (41 tests) includes a property test over 40 random edits: the past never changes, today's untouched occurrences always match their items and keep their ids, and generating again adds nothing. Removing the today rule makes six of them fail.
+  - Vercel's "skip unaffected projects" setting is off, so a commit that changes only docs or e2e still gets a preview and its e2e run, which the deploy gate needs (`01` §9.5).
 
 ### WP-10 — Completion events, status projection, and day-close
 **Phase:** P1a · **Size:** L · **Depends on:** WP-09, WP-07 · **Reqs:** CHR-04, CHR-07, CHR-09, CHR-12, NFR-06
 - `chore_completion_event` (append-only, client-generated ids, `batch_id`), `normalize_completion_event` (clamp, flag for routines only, server-derived household and credit date, `done_by` validated and `rewarded` computed from the earns-rewards switch), `fold_occurrence_status` by event time, `apply_completion_event`, `close_past_due` (routines only: `scheduled` and `rejected` → `missed`; tasks carry over), and report-only `rebuild_occurrence_status` (`02` §4.1–4.2).
 - `POST /api/completions` accepting batches, idempotent on `id`, with `done_by` (defaults to the profile on screen).
 - `day_close` job (hourly, idempotent, catch-up) writing `missed` and `finalized_at`; nightly drift report.
+- A queued check-off can arrive for an occurrence that a parent's edit removed today (the item was archived, or nobody is left assigned): the API answers that one as gone, without failing the rest of its batch (D-45).
 - **Done when:** pgTAP proves immutability, replay idempotency, event-time ordering (a late-arriving earlier event never overrides a later one), the clamp, the flag rule, and that rebuild equals the stored projection after random event sequences; a closed day has no `scheduled` or `rejected` routines while open tasks survive it; a shared item credits only `done_by`.
 
 ### WP-16 — Points ledger

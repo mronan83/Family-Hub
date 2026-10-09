@@ -339,3 +339,49 @@ export function filterItems<T extends ListItem>(items: T[], f: Filters): T[] {
         a.title.localeCompare(b.title),
     );
 }
+
+// ---------------------------------------------------------------------------------------------
+// Occurrences (WP-09): when an item is next due, and tasks left open
+// ---------------------------------------------------------------------------------------------
+
+export interface OccurrenceDate {
+  choreId: string;
+  dueDate: string;
+  kind: Kind;
+  status: string;
+}
+
+/** "Today", "Tomorrow", or the brand's date: "Mon, Oct 12" (dates are "YYYY-MM-DD"). */
+export function relativeDay(date: string, today: string): string {
+  if (date === today) return 'Today';
+  const tomorrow = new Date(Date.parse(`${today}T12:00:00Z`) + 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+  if (date === tomorrow) return 'Tomorrow';
+  return calendarDay(date);
+}
+
+/**
+ * [CHR-03][CHR-12] Per item: its next date from today on, and for a task the oldest date it was
+ * left open before today (shown as overdue, D-31).
+ */
+export function dueSummary(
+  occurrences: OccurrenceDate[],
+  today: string,
+): Map<string, { next: string | null; overdueSince: string | null }> {
+  const out = new Map<string, { next: string | null; overdueSince: string | null }>();
+  for (const o of occurrences) {
+    const s = out.get(o.choreId) ?? { next: null, overdueSince: null };
+    if (o.dueDate >= today && (!s.next || o.dueDate < s.next)) s.next = o.dueDate;
+    if (
+      o.kind === 'task' &&
+      o.status === 'scheduled' &&
+      o.dueDate < today &&
+      (!s.overdueSince || o.dueDate < s.overdueSince)
+    ) {
+      s.overdueSince = o.dueDate;
+    }
+    out.set(o.choreId, s);
+  }
+  return out;
+}

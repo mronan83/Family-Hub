@@ -2,13 +2,14 @@ import { Button } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
+import { relativeDay } from '@/lib/chores';
 import { isoDay } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
 import { loadMembers } from '../../members/data';
 import { setChoreArchived } from '../actions';
 import { ChoreForm } from '../chore-form';
-import { loadApprovalMode, loadChores, loadTags } from '../data';
+import { loadApprovalMode, loadChores, loadComingUp, loadTags } from '../data';
 
 export const metadata: Metadata = { title: 'Edit item' };
 
@@ -29,6 +30,9 @@ export default async function EditChorePage({ params }: { params: Promise<{ id: 
   const item = chores.find((c) => c.id === id);
   if (!item) notFound();
   const mine = item.createdBy === null || item.createdBy === user.userId;
+  const today = isoDay(household.timezone);
+  const comingUp = await loadComingUp(db!, item.id, today);
+  const memberName = new Map(members.map((m) => [m.id, m.displayName]));
   const archivedTags = tags.filter((t) => t.archivedAt && item.tags.includes(t.id));
 
   return (
@@ -58,6 +62,29 @@ export default async function EditChorePage({ params }: { params: Promise<{ id: 
               : 'Only the person who created this item can make it private.'}
           </p>
         ) : null}
+      </section>
+      <section className="fw-card" aria-labelledby="coming-up-heading">
+        <h2 id="coming-up-heading">Coming up</h2>
+        {comingUp.length === 0 ? (
+          <p className="fw-muted">
+            Nothing in the next two weeks. Check its schedule, who it’s for, and its days.
+          </p>
+        ) : (
+          <ul className="fw-list" aria-label="Coming up">
+            {comingUp.map((o) => (
+              <li key={o.id} className="fw-list__row">
+                <strong>{relativeDay(o.dueDate, today)}</strong>
+                <span className="fw-muted">
+                  {o.members.map((m) => memberName.get(m) ?? 'Someone').join(' and ')}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="fw-muted">
+          The next two weeks are planned ahead. A change applies from today; days already past keep
+          what they were.
+        </p>
       </section>
       <section className="fw-card" aria-labelledby="archive-heading">
         <h2 id="archive-heading">{item.archivedAt ? 'Restore' : 'Archive'}</h2>

@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.8: US-301, US-302, US-308 and US-311 as built (WP-09, D-45): two weeks planned on save, an edit reaches today only where nothing has happened, and each day's snapshot of who was responsible.
 > v0.8.7: US-601 and US-602 as built (WP-21, D-44): next year's default calendar, and a child at another school.
 > v0.8.6: US-301, US-313 and US-315 as built (WP-08, D-43): save and add another; the day's parts; only an item's creator changes who sees it.
 > v0.8.5: US-904 and US-909: System Health shows a household only its own errors, and usage against the Free-plan limits (WP-42, D-42).
@@ -136,7 +137,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-301 — Create a chore or task
 **As an** admin **I want** to create chores (routines) and tasks (to-dos) with an icon, assignees from the whole family, points, tags, an optional due time, and optional approval **so that** everyone's responsibilities live in one list.
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-01
-- Given I save a chore with a title, icon, and one assignee, when I view the list, then it appears and occurrences exist for the next 14 days where scheduled.
+- Given I save a chore with a title, icon, and one assignee, when I view the list, then it appears with when it is next due, and occurrences exist for today and the next 14 days where scheduled; its page lists them under "Coming up".
 - Given I save an item assigned only to an adult who does not earn rewards, when it is completed, then no points are posted, whatever its points value.
 - Given I choose Task and a due date, when I save, then it behaves as a to-do that stays open until done (US-314).
 - Given I set "requires approval", when the child completes it, then its state is `pending_approval`.
@@ -147,6 +148,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-02, SCH-03
 - Given a chore scheduled weekdays with day type `school_day`, when a weekday falls inside a break, then no occurrence is generated for that date.
 - Given a one-off task with `on_date`, when that date arrives, then exactly one occurrence exists.
+- Given a one-off task entered after its date, when I save it, then it is open on its date and the list shows it as overdue since then.
+- Given "the 31st" every month, when a month is shorter, then it falls on that month's last day (D-45).
 
 ### US-303 — See my chores for today
 **As a** kid **I want** to see today's chores as big pictures **so that** I know what to do without help.
@@ -206,6 +209,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-03
 - Given a chore with past completions, when I change its title and schedule, then past occurrences and their completions are unchanged and future `scheduled` occurrences are regenerated.
 - Given I change points, when I view a past occurrence, then it shows its original `points_snapshot`.
+- Given I change or archive an item in the morning, when nobody has checked off today's yet, then today's follows the change (or leaves the board, so it is never missed); one already checked off stays as it was (D-45).
+- Given a closure is added for today, when the board shows today, then today is as it was planned; later days follow the closure (D-24).
 
 ### US-311 — Share one item between several people
 **As an** admin **I want** to assign one chore or task to several family members **so that** shared work appears once and whoever does it gets the credit.
@@ -215,6 +220,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given it was done together, when the person checking it off picks Sam and Dad, then both are recorded and each one who earns rewards gets the item's points.
 - Given nobody does a shared routine, when the day closes, then it is missed for every assignee.
 - Given I later change the assignees, when I view past days, then they still show who was responsible on each day.
+- Given I add Leo to "Feed the dog" at 7 am, when nobody has done today's yet, then today's is Leo's too, the same occurrence on everyone's screen (D-45).
 
 ### US-312 — Define household tags
 **As an** admin **I want** to define our own tags with a name, color, and icon **so that** we can filter the list and set measurable goals by category.

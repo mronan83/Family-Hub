@@ -7,15 +7,19 @@ import {
   clock,
   DAY_PART_LABELS,
   DAY_PARTS,
+  calendarDay,
   describeSchedule,
+  dueSummary,
   filterItems,
   KIND_LABELS,
   parseFilters,
+  relativeDay,
 } from '@/lib/chores';
+import { isoDay } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../header';
 import { loadMembers } from '../members/data';
-import { loadChores, loadTags } from './data';
+import { loadChores, loadOccurrenceDates, loadTags } from './data';
 
 export const metadata: Metadata = { title: 'Chores and tasks' };
 
@@ -36,11 +40,17 @@ export default async function ChoresPage({
   const user = await requireSignedIn(db, '/admin/chores');
   const household = await adminHousehold(db!, user.userId);
   if (!household) redirect('/setup');
-  const [chores, tags, members] = await Promise.all([
+  const today = isoDay(household.timezone);
+  const lookback = new Date(Date.parse(`${today}T12:00:00Z`) - 90 * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+  const [chores, tags, members, occurrences] = await Promise.all([
     loadChores(db!, household.id),
     loadTags(db!, household.id),
     loadMembers(db!, household.id),
+    loadOccurrenceDates(db!, household.id, lookback),
   ]);
+  const due = dueSummary(occurrences, today);
   const params = await searchParams;
   const filters = parseFilters(params);
   const shown = filterItems(chores, filters);
@@ -160,7 +170,16 @@ export default async function ChoresPage({
                         {describeSchedule(c.schedule, c.kind)}
                         {c.dueTime ? ` · ${clock(c.dueTime)}` : ''}
                         {c.points > 0 ? ` · ${c.points} points` : ''}
+                        {due.get(c.id)?.next
+                          ? ` · Next: ${relativeDay(due.get(c.id)!.next!, today)}`
+                          : ''}
                       </span>
+                      {due.get(c.id)?.overdueSince ? (
+                        <span className="fw-actions fw-overdue">
+                          <Icon name="hourglass" size={16} />
+                          Overdue since {calendarDay(due.get(c.id)!.overdueSince!)}
+                        </span>
+                      ) : null}
                       <span className="fw-actions fw-item__people">
                         {people.map((m) => (
                           <Avatar

@@ -119,11 +119,18 @@ test('[SCH-01] a school year’s timeline counts its school days, breaks and day
   await expectContrastOk(page);
 });
 
-test('[SCH-01][SCH-02] a snow day added for a coming school day makes it a day off; removing it undoes that', async ({
+test('[SCH-01][SCH-02][SCH-03] a snow day added for a coming school day makes it a day off and takes its school-day chores off; removing it undoes that', async ({
   page,
 }) => {
   const { yearId, date } = nextSchoolDay();
   expect(dayType('Maya', date)).toBe('school_day');
+  // Homework (school days only) is planned up to 14 days ahead; outside that there is nothing to check.
+  const planned = sql(`select '${date}'::date <= ${TODAY} + 14`) === 't';
+  const homework = () =>
+    sql(
+      `select count(*) from public.chore_occurrence where chore_id = '0de00000-0000-4000-8000-0000000c0005' and due_date = '${date}'`,
+    );
+  if (planned) expect(homework()).toBe('1');
   await signIn(page);
   await page.goto(`/admin/school/${yearId}`);
   const form = page.getByRole('form', { name: 'Add a day off' });
@@ -137,6 +144,7 @@ test('[SCH-01][SCH-02] a snow day added for a coming school day makes it a day o
   );
   expect(dayType('Maya', date)).toBe('no_school');
   expect(dayType('Alex', date)).toBe('no_school');
+  if (planned) expect(homework()).toBe('0');
 
   await page.getByRole('button', { name: 'Remove Test snow day' }).click();
   await page.waitForURL(new RegExp(`/admin/school/${yearId}$`));
@@ -144,6 +152,7 @@ test('[SCH-01][SCH-02] a snow day added for a coming school day makes it a day o
     'Test snow day',
   );
   expect(dayType('Maya', date)).toBe('school_day');
+  if (planned) expect(homework()).toBe('1');
 });
 
 test('[SCH-01] two default school years may not overlap; one that isn’t the default may', async ({
