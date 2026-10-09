@@ -111,15 +111,25 @@ export async function loadPoints(
   const occurrenceIds = [
     ...new Set(entries.flatMap((e) => (e.occurrence_id ? [e.occurrence_id] : []))),
   ];
+  // Each earn's item title, read through RLS: an item this admin may not see (D-34) has none. Two
+  // plain reads, as an occurrence's link to its item is a composite key PostgREST won't embed by name.
   const titles = new Map<string, string>();
   if (occurrenceIds.length > 0) {
     const { data: occs, error: occError } = await db
       .from('chore_occurrence')
-      .select('id, chore:chore_id (title)')
+      .select('id, chore_id')
       .in('id', occurrenceIds);
     if (occError) throw new Error(`points items: ${occError.message}`);
-    for (const o of occs as unknown as { id: string; chore: { title: string } | null }[]) {
-      if (o.chore) titles.set(o.id, o.chore.title);
+    const pairs = occs as { id: string; chore_id: string }[];
+    const choreIds = [...new Set(pairs.map((o) => o.chore_id))];
+    const { data: chores, error: choreError } = choreIds.length
+      ? await db.from('chore').select('id, title').in('id', choreIds)
+      : { data: [], error: null };
+    if (choreError) throw new Error(`points items: ${choreError.message}`);
+    const title = new Map((chores as { id: string; title: string }[]).map((c) => [c.id, c.title]));
+    for (const o of pairs) {
+      const t = title.get(o.chore_id);
+      if (t) titles.set(o.id, t);
     }
   }
   return {
