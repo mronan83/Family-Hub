@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.11: completion events (WP-10, D-46): `chore_completion_event` as built, with who recorded it taken from the session; the fold, day close, rebuild and drift check; `record_completions()` (§4.1, §4.2, §4.5, §4.7).
 > v0.8.10: occurrences (WP-09, D-45): `chore_occurrence` and `chore_occurrence_assignee` as built, with each assignee's day type in the snapshot; the generator, re-planning triggers and `v_member_occurrence` (§3.2, §4.2, §4.5, §4.7).
 > v0.8.9: school years (WP-21, D-44): `school_year`, `school_term`, `school_closure` and `member_school_profile` as built; `resolve_day_type` and the day-type functions (§3.5, §4.4, §4.8).
 > v0.8.8: the family list (WP-08, D-43): `chore`, `chore_assignee`, `tag` and `chore_tag` as built, `save_chore()`, private items in RLS and in `audit_log` (§3.2, §4.5, §4.8).
@@ -570,11 +571,20 @@ create trigger trg_cce_immutable
 revoke truncate on chore_completion_event from public, anon, authenticated;
 ```
 
+**As built (WP-10, D-46):**
+- `household_id` and `occurrence_id` reference `chore_occurrence (household_id, id)`; `note` is at most 500 characters; an index on `batch_id`.
+- `actor_type` and `actor_id` come from the session, never the caller: an active board of that household (`device`, its id), an admin of it (`admin`, their user id), or no session at all (`system`: the seed and jobs). Anyone else is refused.
+- A board may record only `complete` and `undo`, and `undo` only when a `complete` on the same occurrence happened within `household_settings.undo_window_seconds` before it (event times, so an offline replay is judged as it happened). A board's `batch_id` is dropped.
+- `done_by` is sorted and deduplicated, must name members of the household (`done_by_not_member`), and is required for `complete`, `approve` and `admin_complete` (`done_by_required`; an approval without one credits whoever the check-off credited).
+- The occurrence row is locked while an event is normalized, so events on one occurrence are recorded one at a time and each fold sees every earlier one.
+- Never updated; deleted only with its household (export and delete, or the demo family's reset), when the household row is already gone. Not copied to `audit_log`: the events are the record.
+- `public.record_completions(events jsonb)` records a batch (at most 100) as the caller and answers each event on its own (§4.7).
+
 ### 4.2 Occurrence status projection (events are truth, status is persisted)
 
 `chore_occurrence.status` is written only by the three functions below. It can always be rebuilt from `chore_completion_event`.
 
-WP-09 built the status columns and both indexes with the table, and `v_member_occurrence` as below; every occurrence stays `scheduled` until WP-10 adds the events, the fold, day close and rebuild.
+WP-09 built the status columns and both indexes with the table, and `v_member_occurrence` as below. WP-10 built the fold, the trigger, day close and rebuild as below (`rebuild_occurrence_status` is plpgsql, returning its report). Day close runs per household through `close_household_day()`; the nightly `occurrence_status_drift()` re-folds the past 14 days and the planned 14 ahead, since a task can be done early.
 
 ```sql
 alter table chore_occurrence
@@ -947,6 +957,12 @@ create policy chore_occurrence_device_select on public.chore_occurrence for sele
   using (household_id = (select private.device_household_id()) and private.can_see_chore(chore_id));
 -- the snapshot follows its occurrence (private.can_see_occurrence); there are no write policies, and
 -- insert, update and delete are revoked from anon and authenticated (WP-09)
+
+-- events (WP-10): read by admins and the board under the item's visibility; a board inserts only
+-- complete and undo as itself, an admin anything as themselves; no update, delete or truncate
+create policy chore_completion_event_device_insert on public.chore_completion_event for insert to authenticated
+  with check (household_id = (select private.device_household_id()) and actor_type = 'device'
+              and event_type in ('complete', 'undo') and private.can_see_occurrence(occurrence_id));
 ```
 
 ### 4.6 Board snapshot contract
@@ -982,6 +998,10 @@ create policy chore_occurrence_device_select on public.chore_occurrence for sele
 | `public.job_health(household_id)` | admins, devices, service role (security invoker, so `job_run`'s RLS applies) | One row per HTTP job in `private.job_schedule`: `state` is `never` (no run), `failing` (last run errored, or ran 5 minutes without a result), `running`, `stale` (no `ok`/`skipped` run within twice its cadence) or `ok`; with `last_ok_at`, `last_run_at` and the error `message`. |
 | `public.generate_household_occurrences(household_id)` | service role only (the `occurrence_gen` job) | Adds a household's missing occurrences from tomorrow to 14 days ahead, and late one-off tasks; returns `{added, from, through}`. Idempotent (WP-09, D-45). |
 | `private.generate_occurrences()`, `private.replan()` | the job and triggers only | Make occurrences with their snapshots for a range; replace those nothing has happened to after a change (§3.2). Triggers: `trg_chore_replan`, `trg_chore_assignee_added`/`_removed`, `trg_member_replan` (from today), `trg_school_year_replan`, `trg_school_closure_replan`, `trg_member_school_profile_replan` (from tomorrow), `trg_household_settings_approval` (D-22). |
+| `public.record_completions(events)` | admins and boards (security invoker, under RLS) | Records up to 100 completion events as the caller, each on its own: `recorded`, `duplicate`, `gone`, `refused` or `invalid`, with a reason and the occurrence as the caller sees it (WP-10, D-46). |
+| `public.close_household_day(household_id)` | service role only (the `day_close` job) | Finalizes the household's past routines (`close_past_due`); returns `{closed, through}`. |
+| `public.occurrence_status_drift(household_id)` | service role only (the `status_check` job) | Report-only rebuild of the past 14 days and the planned 14 ahead; returns `{from, through, drift, sample}`. |
+| `private.normalize_completion_event()`, `private.apply_completion_event()`, `private.prevent_event_change()` | triggers only | Normalize each event (§4.1 as built); fold it into the occurrence's status; keep events append-only. |
 | `public.record_app_error(…)` | service role only | Inserts into `private.app_error`, trimming each field. The 7-argument form adds the household (WP-42); the 6-argument form stays for code deployed before it. |
 | `public.household_errors(household_id, limit)` | that household's admins | Its server errors from the last 30 days, newest first (time, route, kind, message). |
 | `public.system_usage()` | any admin | The database size, read live, and the latest Vercel reading from `private.usage_sample` (account total and this project's share, with when it was read). |
@@ -1011,7 +1031,7 @@ All are `SECURITY DEFINER` with `search_path = ''`, and errors carry a stable co
 | `private.school_year_guard()`, `private.school_dates_guard()`, `private.school_profile_guard()` | triggers only | Default years don't overlap; terms and closures stay inside their year; a member follows one year on any date (D-44). |
 | `public.save_chore(household_id, id, item, assignees, tags)` | admins (security invoker, under their RLS) | Adds (`id` null) or edits an item, replaces its assignees and its active tags, in one transaction (WP-08). Assignees must be active members of the household (at least one, else `chore_needs_assignee`); archived tags already on the item stay. On an edit, a field left out of `item` keeps its value. An item the caller cannot see is `chore_not_found`. |
 | `private.chore_guard()` | triggers only | Sets `created_by` and `start_date` on insert; keeps `created_by`; lets only the creator change `visibility` (`visibility_creator_only`, D-43). |
-| `private.audit_row()` | triggers only | Writes one `audit_log` row per changed row (§3.1); skips rows whose household is being deleted. Rows about an item (`chore`, `chore_assignee`, `chore_tag`, and later its events) carry its `chore_id`; an assignee or tag row names the member or tag as `entity_id`. |
+| `private.audit_row()` | triggers only | Writes one `audit_log` row per changed row (§3.1); skips rows whose household is being deleted. Rows about an item (`chore`, `chore_assignee`, `chore_tag`) carry its `chore_id`; its completion events are their own record and are not copied here (D-46); an assignee or tag row names the member or tag as `entity_id`. |
 
 ## 5. Rules-engine contract (`packages/rules-engine`)
 

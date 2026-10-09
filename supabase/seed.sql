@@ -74,10 +74,10 @@ values
 
 with today as (select (now() at time zone 'America/New_York')::date as d)
 insert into public.chore (id, household_id, title, icon, kind, points, approval, schedule, due_time,
-                          day_types, visibility, created_by)
+                          day_types, visibility, created_by, start_date)
 select id::uuid, '0de00000-0000-4000-8000-000000000001', title, icon, kind, points, approval, schedule,
        due_time::time, coalesce(day_types::text[], array['school_day', 'no_school', 'break', 'weekend', 'summer']),
-       visibility, created_by::uuid
+       visibility, created_by::uuid, d - 14
   from today, lateral (values
     ('0de00000-0000-4000-8000-0000000c0001', 'Make bed', 'chore-bed', 'chore', 5, 'inherit',
      '{"freq": "daily"}'::jsonb, '07:30', null, 'family', '0de00000-0000-4000-8000-0000000000a1'),
@@ -164,3 +164,55 @@ select y.household_id, y.id, c.name, c.closure_type, c.start_date, c.end_date
           make_date(a + 1, 5, 31) - ((extract(isodow from make_date(a + 1, 5, 31))::int + 6) % 7))
        ) as c (name, closure_type, start_date, end_date)
  where y.id = '0de00000-0000-4000-8000-0000000b0001';
+
+-- Last week (WP-10), as if the family had used the board: check-offs, a shared chore done together,
+-- a skipped day, a missed day, and the latest homework waiting for a parent. Recorded by the database
+-- itself; dates and times follow today. Day close then finalizes the past days.
+do $$
+declare
+  v_demo  constant uuid := '0de00000-0000-4000-8000-000000000001';
+  v_today date := (now() at time zone 'America/New_York')::date;
+  v_maya  uuid := (select id from public.member where household_id = v_demo and display_name = 'Maya');
+  v_leo   uuid := (select id from public.member where household_id = v_demo and display_name = 'Leo');
+  v_alex  uuid := (select id from public.member where household_id = v_demo and display_name = 'Alex');
+  v_last_homework date;
+  o       record;
+  k       integer;
+  v_at    timestamptz;
+begin
+  perform private.generate_occurrences(v_demo, v_today - 7, v_today - 1);
+  v_last_homework := (select max(due_date) from public.chore_occurrence
+                       where chore_id = '0de00000-0000-4000-8000-0000000c0005' and due_date < v_today);
+  for o in select occ.id, occ.chore_id, occ.due_date, coalesce(occ.due_time, '18:00') as due_time
+             from public.chore_occurrence occ
+            where occ.household_id = v_demo and occ.kind = 'chore' and occ.due_date < v_today
+            order by occ.due_date loop
+    k := v_today - o.due_date;
+    v_at := ((o.due_date + o.due_time)::timestamp at time zone 'America/New_York') + interval '5 minutes';
+    if o.chore_id = '0de00000-0000-4000-8000-0000000c0001' and k <> 3 then        -- Make bed: missed 3 days ago
+      insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)
+      values (gen_random_uuid(), o.id, 'complete', array[case when k % 2 = 0 then v_leo else v_maya end], v_at);
+    elsif o.chore_id = '0de00000-0000-4000-8000-0000000c0002' and k <> 5 then     -- Brush teeth: together
+      insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)
+      values (gen_random_uuid(), o.id, 'complete', array[v_maya, v_leo], v_at);
+    elsif o.chore_id = '0de00000-0000-4000-8000-0000000c0003' then                -- Feed the dog: shared
+      insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)
+      values (gen_random_uuid(), o.id, 'complete', array[case when k % 2 = 0 then v_alex else v_maya end], v_at);
+    elsif o.chore_id = '0de00000-0000-4000-8000-0000000c0004' then                -- Set the table: one skip
+      insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)
+      values (gen_random_uuid(), o.id, case when k = 2 then 'skip' else 'complete' end,
+              case when k = 2 then '{}'::uuid[] else array[v_leo] end, v_at);
+    elsif o.chore_id = '0de00000-0000-4000-8000-0000000c0005' then                -- Homework: needs approval
+      insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)
+      values (gen_random_uuid(), o.id, 'complete', array[v_maya], v_at);
+      if o.due_date < v_last_homework then
+        insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
+        values (gen_random_uuid(), o.id, 'approve', v_at + interval '2 hours');
+      end if;
+    elsif o.chore_id = '0de00000-0000-4000-8000-0000000c0006' then                -- Take out the bins
+      insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)
+      values (gen_random_uuid(), o.id, 'complete', array[v_alex], v_at);
+    end if;
+  end loop;
+  perform private.close_past_due(v_demo);
+end $$;

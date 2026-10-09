@@ -1,3 +1,4 @@
+import type { OccurrenceStatus } from '@familywise/rules-engine';
 import type { IconName, MemberColor } from '@familywise/ui';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Approval, DayType, Kind, ListItem, OccurrenceDate, Schedule } from '@/lib/chores';
@@ -131,7 +132,10 @@ export async function loadOccurrenceDates(
 export interface ComingUp {
   id: string;
   dueDate: string;
-  status: string;
+  status: OccurrenceStatus;
+  /** Who did it, once someone has (a task done early, or today's chore). */
+  doneBy: string[];
+  /** Who it is for on that day (the snapshot, WP-09). */
   members: string[];
 }
 
@@ -143,7 +147,7 @@ export async function loadComingUp(
 ): Promise<ComingUp[]> {
   const { data, error } = await db
     .from('chore_occurrence')
-    .select('id, due_date, status, chore_occurrence_assignee (member_id)')
+    .select('id, due_date, status, done_by, chore_occurrence_assignee (member_id)')
     .eq('chore_id', choreId)
     .gte('due_date', today)
     .order('due_date')
@@ -153,13 +157,39 @@ export async function loadComingUp(
     data as unknown as {
       id: string;
       due_date: string;
-      status: string;
+      status: OccurrenceStatus;
+      done_by: string[];
       chore_occurrence_assignee: { member_id: string }[];
     }[]
   ).map((o) => ({
     id: o.id,
     dueDate: o.due_date,
     status: o.status,
+    doneBy: o.done_by,
     members: o.chore_occurrence_assignee.map((a) => a.member_id),
   }));
+}
+
+export type PastDay = { id: string; dueDate: string; status: OccurrenceStatus; doneBy: string[] };
+
+/** [CHR-07] An item's last seven days before today, newest first, with who did each. */
+export async function loadLastWeek(
+  db: SupabaseClient,
+  choreId: string,
+  today: string,
+): Promise<PastDay[]> {
+  const weekAgo = new Date(Date.parse(`${today}T12:00:00Z`) - 7 * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+  const { data, error } = await db
+    .from('chore_occurrence')
+    .select('id, due_date, status, done_by')
+    .eq('chore_id', choreId)
+    .gte('due_date', weekAgo)
+    .lt('due_date', today)
+    .order('due_date', { ascending: false });
+  if (error) throw new Error(`last week: ${error.message}`);
+  return (
+    data as { id: string; due_date: string; status: OccurrenceStatus; done_by: string[] }[]
+  ).map((o) => ({ id: o.id, dueDate: o.due_date, status: o.status, doneBy: o.done_by }));
 }

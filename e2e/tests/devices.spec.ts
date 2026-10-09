@@ -110,6 +110,100 @@ test('[DEV-01][DEV-02] a second browser pairs with the code and reads the family
   ).toBe('active:device:true');
 });
 
+// [CHR-04][CHR-09][NFR-06] Check-offs from the board (WP-10): POST /api/completions with the board's
+// own session. Feed the dog is shared by Maya and Alex.
+const FEED_THE_DOG = '0de00000-0000-4000-8000-0000000c0003';
+const todayOf = (chore: string) =>
+  sql(
+    `select id from public.chore_occurrence where chore_id = '${chore}' and due_date = (now() at time zone 'America/New_York')::date`,
+  );
+const memberId = (name: string) =>
+  sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+const post = (events: object[]) => board.request.post('/api/completions', { data: { events } });
+
+test('[CHR-04][CHR-09] the board checks off a shared chore; a replay records nothing new; undo reopens it', async () => {
+  const occurrence = todayOf(FEED_THE_DOG);
+  const maya = memberId('Maya');
+  const check = {
+    id: crypto.randomUUID(),
+    occurrence_id: occurrence,
+    event_type: 'complete',
+    occurred_at: new Date().toISOString(),
+    done_by: [maya],
+  };
+  let res = await post([check]);
+  expect(res.status()).toBe(200);
+  expect((await res.json()).results[0]).toMatchObject({
+    result: 'recorded',
+    occurrence: { status: 'completed', done_by: [maya] },
+  });
+  res = await post([check]);
+  expect((await res.json()).results[0]).toMatchObject({ result: 'duplicate' });
+  expect(
+    sql(`select count(*) || ':' || min(e.actor_type) || ':' || bool_and(d.name = '${BOARD}')
+           from public.chore_completion_event e join public.device d on d.id = e.actor_id
+          where e.id = '${check.id}'`),
+  ).toBe('1:device:true');
+
+  // Alex sees it on the item: today is done by Maya.
+  await admin.goto(`/admin/chores/${FEED_THE_DOG}`);
+  await expect(
+    admin.getByRole('list', { name: 'Coming up', exact: true }).getByRole('listitem').first(),
+  ).toContainText('Done by Maya');
+
+  res = await post([
+    {
+      id: crypto.randomUUID(),
+      occurrence_id: occurrence,
+      event_type: 'undo',
+      occurred_at: new Date().toISOString(),
+    },
+  ]);
+  expect((await res.json()).results[0]).toMatchObject({
+    result: 'recorded',
+    occurrence: { status: 'scheduled', done_by: [] },
+  });
+});
+
+test('[CHR-04][CHR-06] the board cannot approve; a removed occurrence is gone; the rest of the batch is recorded', async () => {
+  const occurrence = todayOf(FEED_THE_DOG);
+  const at = new Date().toISOString();
+  const res = await post([
+    {
+      id: crypto.randomUUID(),
+      occurrence_id: occurrence,
+      event_type: 'approve',
+      occurred_at: at,
+      done_by: [memberId('Maya')],
+    },
+    {
+      id: crypto.randomUUID(),
+      occurrence_id: crypto.randomUUID(),
+      event_type: 'complete',
+      occurred_at: at,
+      done_by: [memberId('Maya')],
+    },
+    {
+      id: crypto.randomUUID(),
+      occurrence_id: occurrence,
+      event_type: 'complete',
+      occurred_at: at,
+      done_by: [memberId('Alex')],
+    },
+  ]);
+  expect(res.status()).toBe(200);
+  expect(
+    (await res.json()).results.map(
+      (r: { result: string; reason: string | null }) => `${r.result}:${r.reason}`,
+    ),
+  ).toEqual(['refused:not_allowed', 'gone:occurrence_gone', 'recorded:null']);
+  // Not JSON, or not signed in: refused before the database.
+  expect((await board.request.post('/api/completions', { form: { events: '[]' } })).status()).toBe(
+    415,
+  );
+  expect((await post([{ id: 'nope' }])).status()).toBe(400);
+});
+
 test('[DEV-05] a change in the household reaches the board live (Realtime under RLS)', async () => {
   // Live means changes stream: the board waits for the server to confirm the subscription, which
   // can take up to about 20 seconds after a quiet spell.

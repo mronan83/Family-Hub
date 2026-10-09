@@ -1,15 +1,15 @@
-import { Button } from '@familywise/ui';
+import { Button, Icon } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
-import { relativeDay } from '@/lib/chores';
+import { historyLine, relativeDay } from '@/lib/chores';
 import { isoDay } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
 import { loadMembers } from '../../members/data';
 import { setChoreArchived } from '../actions';
 import { ChoreForm } from '../chore-form';
-import { loadApprovalMode, loadChores, loadComingUp, loadTags } from '../data';
+import { loadApprovalMode, loadChores, loadComingUp, loadLastWeek, loadTags } from '../data';
 
 export const metadata: Metadata = { title: 'Edit item' };
 
@@ -31,8 +31,12 @@ export default async function EditChorePage({ params }: { params: Promise<{ id: 
   if (!item) notFound();
   const mine = item.createdBy === null || item.createdBy === user.userId;
   const today = isoDay(household.timezone);
-  const comingUp = await loadComingUp(db!, item.id, today);
+  const [comingUp, lastWeek] = await Promise.all([
+    loadComingUp(db!, item.id, today),
+    loadLastWeek(db!, item.id, today),
+  ]);
   const memberName = new Map(members.map((m) => [m.id, m.displayName]));
+  const name = (id: string) => memberName.get(id) ?? 'Someone';
   const archivedTags = tags.filter((t) => t.archivedAt && item.tags.includes(t.id));
 
   return (
@@ -77,6 +81,9 @@ export default async function EditChorePage({ params }: { params: Promise<{ id: 
                 <span className="fw-muted">
                   {o.members.map((m) => memberName.get(m) ?? 'Someone').join(' and ')}
                 </span>
+                {o.status !== 'scheduled' ? (
+                  <HistoryLine line={historyLine(o, item.kind, name)} />
+                ) : null}
               </li>
             ))}
           </ul>
@@ -84,6 +91,27 @@ export default async function EditChorePage({ params }: { params: Promise<{ id: 
         <p className="fw-muted">
           The next two weeks are planned ahead. A change applies from today; days already past keep
           what they were.
+        </p>
+      </section>
+      <section className="fw-card" aria-labelledby="last-week-heading">
+        <h2 id="last-week-heading">Last 7 days</h2>
+        {lastWeek.length === 0 ? (
+          <p className="fw-muted">Nothing was due in the last week.</p>
+        ) : (
+          <ul className="fw-list" aria-label="Last 7 days">
+            {lastWeek.map((o) => {
+              return (
+                <li key={o.id} className="fw-list__row">
+                  <strong>{relativeDay(o.dueDate, today)}</strong>
+                  <HistoryLine line={historyLine(o, item.kind, name)} />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <p className="fw-muted">
+          Each check-off, undo and parent decision is kept, so a day&rsquo;s result can always be
+          worked out again. A routine not done by the end of its day is missed; a task stays open.
         </p>
       </section>
       <section className="fw-card" aria-labelledby="archive-heading">
@@ -102,5 +130,15 @@ export default async function EditChorePage({ params }: { params: Promise<{ id: 
         </form>
       </section>
     </main>
+  );
+}
+
+/** A day's status as an icon and words, in its tone (06 §7.1). */
+function HistoryLine({ line }: { line: ReturnType<typeof historyLine> }) {
+  return (
+    <span className={`fw-history fw-history--${line.tone}`}>
+      <Icon name={line.icon} size={20} />
+      {line.text}
+    </span>
   );
 }

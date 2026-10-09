@@ -79,6 +79,18 @@ check "[NFR-14] --additive-only holds back a delete that follows a function body
   "$(is "$rc:$(grep -c '20260105000005_fn_then_delete' "$work/out")" "0:1")"
 
 fresh
+migration 20260106000000_revoke "create table seven (id int);
+revoke update, delete, truncate on seven from public;
+grant select on seven to public;"
+run --additive-only; rc=$?
+check "[NFR-14] --additive-only applies a migration that revokes truncate (a privilege, not a truncate)" \
+  "$(is "$rc:$(q "select to_regclass('seven') is not null")" "0:t")"
+migration 20260106000001_truncate "truncate seven;
+create table eight (id int);"
+run --additive-only; rc=$?
+check "[NFR-14] --additive-only still holds back a truncate" "$(is "$rc:$(q "select to_regclass('eight') is null")" "0:t")"
+
+fresh
 migration 20260101000000_own_tx "begin;
 create table x (id int);
 commit;"

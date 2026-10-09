@@ -137,10 +137,10 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CHR-01 | US-301 | WP-08 | ADM, API | chore, chore_assignee | U, DB, E2E |
 | CHR-02 | US-302 | WP-09 | OCCGEN, DB | chore, school_closure | U, DB, E2E |
 | CHR-03 | US-303, US-308, US-311 | WP-09 | OCCGEN, SCHED, DB | chore_occurrence | DB, U, E2E |
-| CHR-04 | US-304, US-305, US-1006 | WP-10, WP-11 | BRD, OUTBOX, API, DB | chore_completion_event, chore_occurrence | E2E, DB |
+| CHR-04 | US-304, US-305, US-1006 | WP-10, WP-11 | BRD, OUTBOX, API, DB | chore_completion_event, chore_occurrence | E2E, DB, U |
 | CHR-05 | US-306, US-310 | WP-12 | ADM, API | chore_completion_event | E2E |
 | CHR-06 | US-307, US-309 | WP-12 | ADM, API | chore_completion_event | E2E |
-| CHR-07 | US-307, US-314 | WP-10 | DB, SCHED, BRD, ADM | chore_occurrence, chore_completion_event | DB, INT |
+| CHR-07 | US-307, US-314 | WP-10 | DB, SCHED, BRD, ADM | chore_occurrence, chore_completion_event | DB, U, E2E |
 | CHR-08 | US-309 | WP-12 | ADM, API, DB | chore_completion_event, points_ledger | E2E, DB |
 | CHR-09 | US-304, US-311, US-316 | WP-08, WP-09, WP-10 | ADM, BRD, API, OCCGEN, DB | chore_assignee, chore_occurrence_assignee, chore_completion_event | DB, E2E |
 | CHR-10 | US-312 | WP-08, WP-15, WP-19 | ADM, RULES, DB | tag, chore_tag, reward_rule | DB, U, E2E |
@@ -201,7 +201,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-03 | US-905 | WP-11 | BRD | — | HW, E2E |
 | NFR-04 | US-102, US-901 | WP-02, WP-03, WP-05 | DB, VAULT, SAUTH, API | all tables | DB, REV |
 | NFR-05 | US-902 | WP-33 | ADM, API, DB | household, member | E2E, INT |
-| NFR-06 | US-907 | WP-10 | DB, API | chore_completion_event | DB, U |
+| NFR-06 | US-907 | WP-10 | DB, API | chore_completion_event | DB, U, E2E |
 | NFR-07 | US-904 | WP-07, WP-42 | OBS, API, SCHED | job_run, private.job_schedule, private.app_error | U, DB, E2E, REV |
 | NFR-08 | US-909 | WP-01, WP-41, WP-42 | CICD, OBS | private.usage_sample | U, DB, E2E, REV |
 | NFR-09 | US-101, US-901 | WP-02 | DB | all tables | DB |
@@ -392,6 +392,8 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.24 | WP-10 completion events (D-46), in review (PR #23): every check-off, undo, approval, rejection, skip and correction is an append-only event, recorded as the caller (board, admin or system) under RLS through `POST /api/completions`, each event in a batch answered on its own. The status is folded by event time into the occurrence; day close (hourly) finalizes routines, which become missed when not done, while tasks carry over; a nightly check fails on any drift. Traced by pgTAP (`120_completion_events`: immutability, replay, event-time order, the clamp, the flag, approval, day close, rebuild, a property test over 200 random events against an independent fold, RLS), unit tests (`lib/completions`, the jobs, `historyLine`) and e2e (a paired board's check-off, replay and undo in `devices.spec.ts`; an item's last week in `chores.spec.ts`). The migration runner's additive check ignores grants and revokes. |
+| 0.8.23 | WP-09 done (PR #22): merged with every PR gate green and e2e 43 of 43 on the preview; occurrences are live in production. |
 | 0.8.22 | WP-09 occurrences (D-45), in review (PR #22): every item is planned for today and the next 14 days by the database, one shared occurrence per due date with a snapshot of who was responsible and each one's day type. The hourly `occurrence_gen` job (minute 23) fills the window; edits re-plan at once by trigger. Only occurrences nothing has happened to change, never a past one: an item's own edit reaches today's in place, keeping its id; a school-year change starts tomorrow (D-24). CHR-03 reworded to match. Traced by pgTAP (`110_occurrences`: schedules, idempotent generation, a property test over 40 random edits, D-24 closures, DST, the per-member view, RLS), unit tests (`lib/chores`, the job schedule) and e2e (`chores.spec.ts`, `school.spec.ts`). |
 | 0.8.21 | WP-21 done (PR #21): merged with every PR gate green and e2e 41 of 41 on the preview; school years are live in production. |
 | 0.8.20 | WP-21 school years (D-44), in review: school years, terms, breaks and days off, with each member following their own school year or the default for that date; default years may not overlap, so next year's calendar starts on its own. `resolve_day_type` is traced by pgTAP (`100_school_year`: weekend, break, no_school, school_day and summer precedence; a school-days-only item applies on no day of a break week), unit tests (`lib/school`) and e2e (`school.spec.ts`). Regenerating future occurrences when a closure changes (D-24) moves to WP-09, which brings occurrences. |

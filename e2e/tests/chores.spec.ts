@@ -435,3 +435,22 @@ test('[CHR-01] an item is archived and restored, never deleted', async ({ page }
           and diff ? 'archived_at' and chore_id = (select id from public.chore where household_id = '${DEMO}' and title = 'Practice piano')`),
   ).toBe('2');
 });
+
+test('[CHR-07][CHR-09] an item’s page shows its last seven days: who did it, and the day it was missed', async ({
+  page,
+}) => {
+  // The demo family's seeded week (supabase/seed.sql): Make bed was missed three days ago, and done
+  // by Maya on odd days back and Leo on even ones.
+  await signIn(page, 'Alex');
+  await page.goto('/admin/chores/0de00000-0000-4000-8000-0000000c0001');
+  const week = page.getByRole('list', { name: 'Last 7 days', exact: true });
+  await expect(week.getByRole('listitem')).toHaveCount(7);
+  await expect(week.getByRole('listitem').first()).toContainText(/Yesterday\s*Done by Maya/);
+  await expect(week.getByRole('listitem').nth(1)).toContainText('Done by Leo');
+  await expect(week.getByRole('listitem').nth(2)).toContainText('Missed');
+  expect(
+    sql(`select string_agg(status, ',' order by due_date desc) from public.chore_occurrence
+          where chore_id = '0de00000-0000-4000-8000-0000000c0001' and due_date between ${TODAY} - 7 and ${TODAY} - 1`),
+  ).toBe('completed,completed,missed,completed,completed,completed,completed');
+  await expectContrastOk(page);
+});

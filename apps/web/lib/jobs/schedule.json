@@ -16,6 +16,20 @@
       "purpose": "Keeps each household's chores and tasks planned 14 days ahead (WP-09); edits re-plan at once in the database."
     },
     {
+      "name": "day_close",
+      "kind": "http",
+      "cron": "4 * * * *",
+      "everyMinutes": 60,
+      "purpose": "Finalizes each household's past routines once its local day has ended: those not done become missed; tasks carry over (WP-10)."
+    },
+    {
+      "name": "status_check",
+      "kind": "http",
+      "cron": "38 9 * * *",
+      "everyMinutes": 1440,
+      "purpose": "Nightly: re-folds the last 14 days of completion events and fails if any stored status differs from them (WP-10, NFR-06)."
+    },
+    {
       "name": "purge_history",
       "kind": "sql",
       "cron": "43 3 * * *",

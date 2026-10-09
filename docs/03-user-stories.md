@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.9: US-304, US-305 and US-307 as built in the database and API (WP-10, D-46); the board's screen comes with WP-11.
 > v0.8.8: US-301, US-302, US-308 and US-311 as built (WP-09, D-45): two weeks planned on save, an edit reaches today only where nothing has happened, and each day's snapshot of who was responsible.
 > v0.8.7: US-601 and US-602 as built (WP-21, D-44): next year's default calendar, and a child at another school.
 > v0.8.6: US-301, US-313 and US-315 as built (WP-08, D-43): save and add another; the day's parts; only an item's creator changes who sees it.
@@ -165,12 +166,13 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given I double-tap rapidly, when events reach the server, then only one effective completion exists (idempotent).
 - Given the chore does not require approval (the default), when I check it off, then its status becomes `completed` immediately and points are earned; a parent verifies in real life afterwards.
 - Given the chore is shared with someone else, when I check it off on my own screen, then I am recorded as the one who did it.
+- Given the board sends the same check-off again (a retry, or an offline replay), when it is recorded, then nothing new is recorded and the board gets the current state (WP-10).
 
 ### US-305 — Undo an accidental tap
 **As a** kid **I want** to undo a mistaken tap right away **so that** I'm not credited for something I didn't do.
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-04
 - Given I completed a chore less than the undo window ago (default 2 minutes), when I tap it again, then it returns to `scheduled` via a compensating `undo` event.
-- Given the undo window has passed, when I tap, then I cannot undo; an admin can.
+- Given the undo window has passed, when I tap, then I cannot undo; an admin can. The window is judged by when each tap happened, so an offline board's undo is judged as it happened (D-46).
 
 ### US-310 — Turn approval on or off
 **As an** admin **I want** to switch the approval workflow on or off, and override it per chore **so that** we can tighten or relax oversight as trust builds.
