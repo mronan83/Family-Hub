@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.18: the repository is public (D-48): what a public run page or artifact may hold, fork previews, and e2e on this repository's own commits only (§9.5, §9.8, §9.10).
 > v0.8.17: completion events (WP-10, D-46): `POST /api/completions` records a batch as the caller, each event answered on its own; the `day_close` and `status_check` jobs (§5.2, §5.6).
 > v0.8.16: occurrences (WP-09, D-45): planned in the database two weeks ahead; edits re-plan at once by trigger, and the hourly `occurrence_gen` job fills the window (§3, §5.6). Vercel no longer skips previews of commits that change no app code (§9.5).
 > v0.8.15: school years (WP-21, D-44): day types worked out in the database, each member's school year with the default as fallback (§6.3).
@@ -669,7 +670,7 @@ Vercel's automatic production deploy from Git is turned off (`vercel.json`), so 
 
 No secret is committed or pasted into chat. The database URL is the **session pooler** URI from the Supabase project's Connect dialog (port 5432, user `postgres.<project-ref>`).
 
-GitHub Free keeps environment secrets to public repositories (D-36), so every GitHub secret below is a repository secret, which any workflow run in the repository can read. Only the owner and Claude Code push, and a change to a workflow is reviewed in the pull request diff like any other code (R-25).
+Every GitHub secret below is a repository secret, which any workflow run in the repository can read. Only the owner and Claude Code push, and a change to a workflow is reviewed in the pull request diff like any other code (R-25). The repository is public (D-48): a fork's workflow runs get no secrets, a fork's preview needs the owner's authorization in Vercel, and e2e checks that the commit it is about to run is on one of this repository's branches before it touches the database credential. Run pages and artifacts are public, so no workflow writes a secret, a setup code or a trace to either (R-35).
 
 | Name | Kind | Stored in | Used by |
 |---|---|---|---|
@@ -705,10 +706,10 @@ GitHub Free keeps environment secrets to public repositories (D-36), so every Gi
 | Free-plan constraint | What we do |
 |---|---|
 | Projects pause after about a week of low database activity | `keepalive.yml` writes a heartbeat to the project four times a day (`private.heartbeat`). A failed run (usually a paused project) emails you; the runbook restores it from the dashboard. The board keeps working from its offline cache meanwhile (§7). After launch, pg_cron jobs and the board add activity too. |
-| No usable automatic backups | Nightly `backup.yml` (WP-24): `pg_dump` over the session pooler, compressed, encrypted with `BACKUP_PASSPHRASE`, kept as a private workflow artifact for 30 days. Restore drill: decrypt and load into a throwaway Postgres on the CI runner (§9.4). Storage files (catalog and goal images) are not in the dump; they are re-uploadable. |
+| No usable automatic backups | Nightly `backup.yml` (WP-24): `pg_dump` over the session pooler, compressed, encrypted with `BACKUP_PASSPHRASE`, kept 30 days somewhere private (not a workflow artifact, which is public while the repository is, D-48). Restore drill: decrypt and load into a throwaway Postgres on the CI runner (§9.4). Storage files (catalog and goal images) are not in the dump; they are re-uploadable. |
 | Direct database connection is IPv6-only | All CI access uses the session pooler URI (IPv4). |
-| GitHub Free: no branch protection, environment secrets or required reviewers on a private repository | The deploy gate enforces the pull request gates (§9.6); every secret is a repository secret (§9.8); squash-only merges (D-36). |
-| GitHub Free: a monthly cap on Actions minutes for a private repository (2,000 at the time of writing), each job rounded up to the minute | A CI run is four parallel jobs of about a minute each, and a newer push cancels the older run on the same branch. If a busy month nears the cap, GitHub → Settings → Billing shows usage. |
+| GitHub Free: a monthly cap on Actions minutes for a private repository (2,000 at the time of writing) | The repository is public, where Actions is free (D-48). The private allowance ran out on Oct 9 after about 870 minutes in two days. |
+| Public repository: run pages and artifacts are public | No workflow writes a secret, a setup code or a trace to them (D-48, R-35); the deploy gate still enforces the pull request gates (§9.6). |
 | No per-PR database branches | Previews run as the demo family in the one database (§9.5, D-37). |
 | Built-in auth email reaches only Supabase team members, about 2 per hour | Nothing depends on it: the server creates accounts already confirmed, a password works from the first sign-in, and invites are links the inviter shares (D-39). Magic links and password resets reach the Supabase team (the owner) until custom SMTP (a free-tier email provider, which needs a domain, Y-8) is configured; the second admin uses a password until then. |
 | Vercel Hobby keeps runtime logs for one hour | Logs are structured JSON (`lib/log.ts`: no PII, emails and tokens scrubbed); every server error and failed job is also kept 30 days in `private.app_error` (`onRequestError` in `instrumentation.ts`), for System Health. |
