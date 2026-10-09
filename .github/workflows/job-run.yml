@@ -1,0 +1,32 @@
+# Runs one job now through pg_cron's own path (private.call_job → pg_net → /api/jobs/<job>) and shows
+# the runs and the job's health (01 §5.6). Use it to replay a job (every job is idempotent), or with
+# force_failure to check that a failure shows as failing. Actions → job-run → Run workflow.
+name: job-run
+
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Job name from apps/web/lib/jobs/schedule.json'
+        required: true
+        default: heartbeat
+      force_failure:
+        description: 'Fail on purpose (checks that failures show in job health)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      JOB: ${{ inputs.job }}
+      FORCE_FAILURE: ${{ inputs.force_failure }}
+    steps:
+      - uses: actions/checkout@v7
+      - run: bash scripts/job-run.sh

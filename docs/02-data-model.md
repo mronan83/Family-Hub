@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.1: job framework (WP-07): `private.job_schedule`, `private.app_error`, `public.job_health()`, `public.record_app_error()`, `private.call_job()` (§3.1, §4.7); retention for job history and errors (§6).
 > v0.8: seed data is the demo family (`supabase/seed.sql`, D-37), the household previews and e2e run as in the one database.
 > v0.7: reminders (D-35): `reminder_preference`, `push_subscription`, `reminder_delivery` (§2.4, §3.7); `chore_assignee.remind`, `chore.remind_lead_minutes`.
 > v0.6: one family list (D-30..D-34): one shared occurrence per due date with an assignee snapshot (`chore_occurrence_assignee`) and `done_by`/`rewarded` credit on events; per-member status view with `covered`; routines get missed, tasks carry over; `due_time`; household `tag` list referenced by id; private visibility in RLS; `member.earns_rewards`; ledger posts per rewarded member.
@@ -327,8 +328,10 @@ erDiagram
 | `device_pairing` | `code_hash`, `expires_at`, `consumed_at`, `device_id?`, `created_by` | Single-use; TTL capped at 10 minutes by check. |
 | `household_settings` | `quiet_hours`, `celebration`, `streak_defaults`, `approval_mode` (`off`/`on`; household switch, changeable at any time), `undo_window_seconds`, `board_layout`, `points_settings` (all `jsonb`, zod-validated) | 1:1 with `household`. |
 | `audit_log` | `actor_type`, `actor_id`, `action`, `entity_type`, `entity_id`, `chore_id?`, `diff jsonb`, `at` | Written by API for admin and device actions. Rows about an item carry its `chore_id`, so a private item's history is visible only to those who can see the item (D-34). |
-| `job_run` | `job_type`, `target_id`, `started_at`, `finished_at`, `status` (`running`/`ok`/`error`/`skipped`), `stats jsonb`, `error` | One row per job per household. Feeds sync-health UI and stale indicators; written by jobs as service role, read by admins and the board. |
+| `job_run` | `job_type`, `target_id`, `started_at`, `finished_at`, `status` (`running`/`ok`/`error`/`skipped`), `stats jsonb`, `error` | One row per job per household per call, written by the job endpoint as service role (`running` before it answers, then the outcome); read by admins and the board, and summarized by `job_health()` (§4.7). `skipped` means nothing to do yet, or out of time with the rest left for the next call. |
 | `private.heartbeat` | `source` (PK), `beat_at`, `beats` | Infrastructure only: the keepalive target that stops Supabase Free from pausing the project (`01` §9.10). Not exposed through the API; not tenant data. |
+| `private.job_schedule` | `job_type` (PK), `cron`, `kind` (`http`/`sql`), `every_minutes`, `updated_at` | Infrastructure: mirrors `apps/web/lib/jobs/schedule.json`, written by the deploy with the pg_cron jobs (`01` §5.6); gives `job_health()` each job's cadence. Readable by signed-in users (schedules only, no data). |
+| `private.app_error` | `occurred_at`, `request_id`, `method`, `route`, `kind` (`render`/`route`/`action`/`proxy`/`job`), `message` (scrubbed, at most 1000 characters), `digest` | Infrastructure: server errors from Next.js `onRequestError` and failed jobs, kept longer than Vercel Hobby's one hour of logs, for System Health (WP-42). No household, no request body, no PII (NFR-05). Written only through `record_app_error()` by the service role. |
 
 ### 3.2 Chores
 
@@ -887,6 +890,14 @@ create policy occurrence_device_read on public.chore_occurrence for select to au
 
 ---
 
+### 4.7 Job framework functions (WP-07)
+
+| Function | Who may call it | What it does |
+|---|---|---|
+| `private.call_job(job, payload)` | the owner only (pg_cron runs as it) | Reads `job_signing_secret` and `job_base_url` from Vault; if either is missing returns null (jobs are off), else queues `net.http_post` to `<base>/api/jobs/<job in kebab-case>` with the bearer secret, `{scheduled_at, …payload}` and a 30 s timeout. Refuses names that are not snake_case. |
+| `public.job_health(household_id)` | admins, devices, service role (security invoker, so `job_run`'s RLS applies) | One row per HTTP job in `private.job_schedule`: `state` is `never` (no run), `failing` (last run errored, or ran 5 minutes without a result), `running`, `stale` (no `ok`/`skipped` run within twice its cadence) or `ok`; with `last_ok_at`, `last_run_at` and the error `message`. |
+| `public.record_app_error(…)` | service role only | Inserts into `private.app_error`, trimming each field. |
+
 ## 5. Rules-engine contract (`packages/rules-engine`)
 
 Pure functions, no I/O, no `Date.now()` (the clock is an input).
@@ -971,7 +982,7 @@ function evaluateHistory(input: HistoryInput):
 | Concern | Decision |
 |---|---|
 | Hot read paths | `chore_occurrence_assignee (household_id, member_id, due_date)`, `chore_occurrence (household_id, due_date, status)`, open tasks (partial index), `chore_completion_event (done_by)` (GIN), `points_ledger (household_id, member_id, created_at)`, `member_daily_summary (member_id, summary_date)`, `calendar_event_instance (household_id, local_start_date)`, `meal_plan_entry (household_id, plan_date, slot)` |
-| Retention | Events and goal history kept indefinitely (tiny volume). `calendar_event_instance` pruned to window. `job_run` and `reminder_delivery` pruned at 90 days; `push_subscription` deleted on a 404/410 from the push service. `points_ledger`, `member_daily_summary`, `streak_segment` kept indefinitely. `audit_log` kept 2 years. |
+| Retention | Events and goal history kept indefinitely (tiny volume). `calendar_event_instance` pruned to window. `job_run` and `reminder_delivery` pruned at 90 days, `private.app_error` at 30 days and pg_cron's run history at 7 days (the `purge_history` schedule); `push_subscription` deleted on a 404/410 from the push service. `points_ledger`, `member_daily_summary`, `streak_segment` kept indefinitely. `audit_log` kept 2 years. |
 | Export | `/admin/settings/export` returns a JSON/CSV bundle of all household data (NFR-05). |
 | Delete | Household deletion cascades via a documented procedure (not raw FK cascade on append-only tables); child profile deletion removes `member` PII and anonymizes events. |
 | Migration order | tenancy → devices → tags + chores/occurrences (assignee snapshot, per-member view)/events + status projection → points ledger + catalog + redemptions → history tables + `close_past_due` → rewards (+ triggers) → school year + `resolve_day_type` → calendar (+ `device_calendar`) → meals/menu → `board_snapshot` → RLS pgTAP suite |
@@ -986,7 +997,7 @@ function evaluateHistory(input: HistoryInput):
 | `household`, `household_settings`, `household_user`, `invite`, `member` | ACC-01..04, NFR-09, PTS-07 |
 | `device`, `device_pairing` | DEV-01..03, NFR-04 |
 | `audit_log` | ACC-05, CHR-13 |
-| `job_run` | DEV-08, CAL-06, MENU-04, NFR-07 |
+| `job_run`, `private.job_schedule`, `private.app_error` | DEV-08, CAL-06, MENU-04, NFR-07 |
 | `chore`, `chore_assignee`, `chore_occurrence` (incl. `status`), `chore_occurrence_assignee`, `v_member_occurrence` | CHR-01..03, CHR-07, CHR-09, CHR-11..14, SCH-03 |
 | `tag`, `chore_tag` | CHR-10, RWD-02 |
 | `reminder_preference`, `push_subscription`, `reminder_delivery` | CHR-15..17 |
