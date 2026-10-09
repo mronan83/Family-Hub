@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.30: WP-16 done (PR #27): the points ledger. WP-11 is ready.
 > v0.8.29: WP-16 in review (PR #27): the points ledger (D-49). WP-11 waits only on it.
 > v0.8.28: WP-43 done (PR #25). Y-10 lists four old failure reports: two more came from WP-43's first e2e runs, before its branch carried D-48's change.
 > v0.8.27: the repository is public (D-48). Y-10: rotate the deployment-protection bypass secret, and delete two old failure reports and two setup-code runs. WP-24's backups will not be workflow artifacts.
@@ -93,8 +94,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | Done (PR #22) |
 | WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | Done (PR #23) |
 | WP-43 | Everyone does their own | P1a | M | WP-10 | Done (PR #25) |
-| WP-16 | Points ledger | P1a | M | WP-10 | In review (PR #27) |
-| WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37, WP-43 | Queued |
+| WP-16 | Points ledger | P1a | M | WP-10 | Done (PR #27) |
+| WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37, WP-43 | Ready |
 | WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Queued |
 | WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | Queued |
 | WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
