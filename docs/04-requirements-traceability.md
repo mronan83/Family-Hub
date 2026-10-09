@@ -377,7 +377,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | A-09 | Free plans only: Supabase Free (one project), Vercel Hobby, GitHub Free. |
 | A-10 | Family members trust each other at the board: anyone can check off any family-visible item, and each check-off records who did it and that it came from the board. |
 | A-11 | Parents use iPhones on iOS 16.4 or later and add the admin app to the Home Screen, which web push requires. |
-| A-12 | The repository stays private, and only the owner and Claude Code (acting for the owner) push to it. |
+| A-12 | Only the owner and Claude Code (acting for the owner) push to the repository. It is public since D-48, so it holds no secrets and run pages hold none either (R-35). |
 
 ---
 
@@ -395,6 +395,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.31 | WP-11 board Today and check-off (D-50), in review (PR #28): the board opens on everyone's day, a column each, and shows a person's own day with their points; a tap checks off at once through an in-memory outbox with ids made on the board; a shared item asks who did it; undo is its own button with a second tap; a child's check-off celebrates (reduced motion honoured); points a parent took away read "A parent changed your points". The snapshot carries today's items, open overdue tasks and the undo window; `chore_occurrence` and `chore` are in Realtime. A-12 now matches D-48. Traced by pgTAP (`150_board_today`, and `070` for the snapshot), unit tests (`lib/today`, `lib/outbox`, the snapshot reader, `ChoreTile`), the UI suite on `/dev/board` (`e2e/ui/today.spec.ts`: click, touch, keyboard, double tap, undo, picker, celebration, reduced motion, sizes and contrast in both themes) and e2e on the preview (`board.spec.ts`). |
 | 0.8.30 | WP-16 done (PR #27): approved by the owner and merged once every gate was green, e2e 51 of 51 on the preview. WP-11 is ready. |
 | 0.8.29 | WP-16 points ledger (D-49), in review (PR #27): `points_ledger` is append-only and written only by database functions; earns and reversals reconcile each occurrence's points with its status for exactly those it rewards; a parent adds or takes away points with a reason on the member's page; each rewarded member's balance and five latest entries are on the board's snapshot and in Realtime; the nightly status check also covers points. Traced by pgTAP (`140_points_ledger`: each story's criteria, adjustments, append-only, RLS, the snapshot, the backfill, the drift check, and a property test over 300 random steps against an independent balance; `012` for the demo family), unit tests (`lib/points`, the snapshot reader, `status_check`) and e2e (`points.spec.ts`, and the board's check-off in `devices.spec.ts`). |
 | 0.8.28 | WP-43 done (PR #25): approved by the owner and merged once every gate was green on the head carrying main, e2e included. Y-10 now lists all four public failure reports from before D-48. |

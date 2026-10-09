@@ -247,7 +247,7 @@ test('[DEV-05] a rename in the admin app reaches the board within 3 seconds (p95
     const shown = await board
       .waitForFunction(
         (want) =>
-          [...document.querySelectorAll('[aria-label="Family"] .fw-board-members__name')].some(
+          [...document.querySelectorAll('[aria-label="Family"] .fw-today__person-name')].some(
             (el) => el.textContent === want,
           ) && Date.now(),
         name,

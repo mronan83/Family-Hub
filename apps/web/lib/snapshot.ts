@@ -1,10 +1,12 @@
 import type { AvatarKey, MemberColor, ThemeOverride } from '@familywise/ui';
+import type { OccurrenceStatus } from '@familywise/rules-engine';
 import type { LedgerEntry, LedgerEntryType } from './points';
+import type { TodayItem } from './today';
 
 /**
  * [DEV-05] What `public.board_snapshot()` returns (02 §4.6): the one read a paired board makes, and
- * the unit it will cache offline (WP-13). Members and their points so far; later work packages add
- * slices.
+ * the unit it will cache offline (WP-13). Members with their points, and today's items (WP-11);
+ * later work packages add slices.
  */
 export interface BoardSnapshot {
   v: 1;
@@ -12,9 +14,18 @@ export interface BoardSnapshot {
   /** Household-local date, YYYY-MM-DD. */
   today: string;
   range: { from: string; to: string };
-  household: { id: string; name: string; timezone: string; weekStart: number };
+  household: {
+    id: string;
+    name: string;
+    timezone: string;
+    weekStart: number;
+    /** How long a check-off can be undone on the board (US-305). */
+    undoWindowSeconds: number;
+  };
   device: { id: string; name: string; theme: ThemeOverride };
   members: BoardMember[];
+  /** [BRD-01] Today's family-visible items and the open overdue tasks (WP-11). */
+  occurrences: TodayItem[];
 }
 
 export interface BoardMember {
@@ -44,6 +55,16 @@ const ENTRY_TYPES: readonly LedgerEntryType[] = [
   'spend',
   'refund',
   'adjustment',
+];
+
+const STATUSES: readonly OccurrenceStatus[] = [
+  'scheduled',
+  'completed',
+  'pending_approval',
+  'approved',
+  'rejected',
+  'skipped',
+  'missed',
 ];
 
 const isObject = (x: unknown): x is Json =>
@@ -76,6 +97,32 @@ function readPoints(p: unknown): BoardPoints | null {
   };
 }
 
+const ids = (x: unknown): string[] =>
+  Array.isArray(x) ? x.filter((v): v is string => typeof v === 'string') : [];
+
+function readOccurrence(o: unknown): TodayItem {
+  if (!isObject(o) || !STATUSES.includes(o.status as OccurrenceStatus)) {
+    throw new Error('snapshot: unknown occurrence');
+  }
+  return {
+    id: str(o, 'id'),
+    choreId: str(o, 'chore_id'),
+    title: str(o, 'title'),
+    icon: typeof o.icon === 'string' ? o.icon : null,
+    kind: o.kind === 'task' ? 'task' : 'chore',
+    dueDate: str(o, 'due_date'),
+    dueTime: typeof o.due_time === 'string' ? o.due_time : null,
+    memberId: typeof o.member_id === 'string' ? o.member_id : null,
+    assignees: ids(o.assignees),
+    status: o.status as OccurrenceStatus,
+    doneBy: ids(o.done_by),
+    rewarded: ids(o.rewarded),
+    points: Number(o.points) || 0,
+    requiresApproval: o.requires_approval === true,
+    checkedAt: typeof o.checked_at === 'string' ? o.checked_at : null,
+  };
+}
+
 /**
  * The snapshot as the board uses it, or null when there is none (the board is not active: unpaired
  * or disconnected). Throws on a shape this build does not know, so a mismatch shows up as an error
@@ -101,6 +148,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
       name: str(h, 'name'),
       timezone: str(h, 'timezone'),
       weekStart: Number(h.week_start),
+      undoWindowSeconds: typeof h.undo_window_seconds === 'number' ? h.undo_window_seconds : 120,
     },
     device: {
       id: str(d, 'id'),
@@ -119,5 +167,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
         points: readPoints(m.points),
       };
     }),
+    // A snapshot from before WP-11 (an older database) has no items.
+    occurrences: Array.isArray(data.occurrences) ? data.occurrences.map(readOccurrence) : [],
   };
 }
