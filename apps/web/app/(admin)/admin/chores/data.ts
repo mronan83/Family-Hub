@@ -1,12 +1,21 @@
 import type { OccurrenceStatus } from '@familywise/rules-engine';
 import type { IconName, MemberColor } from '@familywise/ui';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Approval, DayType, Kind, ListItem, OccurrenceDate, Schedule } from '@/lib/chores';
+import type {
+  Approval,
+  Assignment,
+  DayType,
+  Kind,
+  ListItem,
+  OccurrenceDate,
+  Schedule,
+} from '@/lib/chores';
 
 export interface ChoreRow extends ListItem {
   icon: IconName;
   points: number;
   approval: Approval;
+  assignment: Assignment;
   schedule: Schedule;
   dayTypes: DayType[];
   visibility: 'family' | 'private';
@@ -28,6 +37,7 @@ interface RawChore {
   kind: Kind;
   points: number;
   approval: Approval;
+  assignment: Assignment;
   schedule: Schedule;
   due_time: string | null;
   day_types: DayType[];
@@ -39,7 +49,7 @@ interface RawChore {
 }
 
 const CHORE_COLUMNS =
-  'id, title, icon, kind, points, approval, schedule, due_time, day_types, visibility, created_by, archived_at, chore_assignee (member_id), chore_tag (tag_id)';
+  'id, title, icon, kind, points, approval, assignment, schedule, due_time, day_types, visibility, created_by, archived_at, chore_assignee (member_id), chore_tag (tag_id)';
 
 /**
  * [CHR-01][CHR-13] The household's items through RLS: family items, and private ones only for
@@ -58,6 +68,7 @@ export async function loadChores(db: SupabaseClient, householdId: string): Promi
     kind: r.kind,
     points: r.points,
     approval: r.approval,
+    assignment: r.assignment,
     schedule: r.schedule,
     dueTime: r.due_time ? r.due_time.slice(0, 5) : null,
     dayTypes: r.day_types,
@@ -129,67 +140,82 @@ export async function loadOccurrenceDates(
   );
 }
 
-export interface ComingUp {
+/** One occurrence on a day: whose it is (an "each" item, D-47) or nobody's (shared), and its state. */
+export interface DayOccurrence {
   id: string;
-  dueDate: string;
+  memberId: string | null;
   status: OccurrenceStatus;
-  /** Who did it, once someone has (a task done early, or today's chore). */
+  /** Who did it, once someone has. */
   doneBy: string[];
-  /** Who it is for on that day (the snapshot, WP-09). */
-  members: string[];
 }
 
-/** [CHR-03][CHR-09] An item's planned days from today, with who is responsible on each. */
+/** An item's day: who it is for (the snapshot, WP-09) and each of its occurrences. */
+export interface ItemDay {
+  dueDate: string;
+  members: string[];
+  occurrences: DayOccurrence[];
+}
+
+type RawDay = {
+  id: string;
+  due_date: string;
+  member_id: string | null;
+  status: OccurrenceStatus;
+  done_by: string[];
+  chore_occurrence_assignee: { member_id: string }[];
+};
+
+/** Occurrences grouped by day, in the order given, people kept in order of first appearance. */
+function byDay(rows: RawDay[]): ItemDay[] {
+  const days = new Map<string, ItemDay>();
+  for (const o of rows) {
+    const day = days.get(o.due_date) ?? { dueDate: o.due_date, members: [], occurrences: [] };
+    for (const a of o.chore_occurrence_assignee) {
+      if (!day.members.includes(a.member_id)) day.members.push(a.member_id);
+    }
+    day.occurrences.push({ id: o.id, memberId: o.member_id, status: o.status, doneBy: o.done_by });
+    days.set(o.due_date, day);
+  }
+  return [...days.values()];
+}
+
+const DAY_COLUMNS =
+  'id, due_date, member_id, status, done_by, chore_occurrence_assignee (member_id)';
+const addDays = (day: string, n: number) =>
+  new Date(Date.parse(`${day}T12:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
+
+/** [CHR-03][CHR-09][CHR-18] An item's planned days from today to 14 days ahead, with who each is for. */
 export async function loadComingUp(
   db: SupabaseClient,
   choreId: string,
   today: string,
-): Promise<ComingUp[]> {
+): Promise<ItemDay[]> {
   const { data, error } = await db
     .from('chore_occurrence')
-    .select('id, due_date, status, done_by, chore_occurrence_assignee (member_id)')
+    .select(DAY_COLUMNS)
     .eq('chore_id', choreId)
     .gte('due_date', today)
+    .lte('due_date', addDays(today, 14))
     .order('due_date')
-    .limit(15);
+    .order('member_id', { nullsFirst: true });
   if (error) throw new Error(`coming up: ${error.message}`);
-  return (
-    data as unknown as {
-      id: string;
-      due_date: string;
-      status: OccurrenceStatus;
-      done_by: string[];
-      chore_occurrence_assignee: { member_id: string }[];
-    }[]
-  ).map((o) => ({
-    id: o.id,
-    dueDate: o.due_date,
-    status: o.status,
-    doneBy: o.done_by,
-    members: o.chore_occurrence_assignee.map((a) => a.member_id),
-  }));
+  return byDay(data as unknown as RawDay[]);
 }
 
-export type PastDay = { id: string; dueDate: string; status: OccurrenceStatus; doneBy: string[] };
-
-/** [CHR-07] An item's last seven days before today, newest first, with who did each. */
+/** [CHR-07][CHR-18] An item's last seven days before today, newest first, with who did each. */
 export async function loadLastWeek(
   db: SupabaseClient,
   choreId: string,
   today: string,
-): Promise<PastDay[]> {
-  const weekAgo = new Date(Date.parse(`${today}T12:00:00Z`) - 7 * 86_400_000)
-    .toISOString()
-    .slice(0, 10);
+): Promise<ItemDay[]> {
   const { data, error } = await db
     .from('chore_occurrence')
-    .select('id, due_date, status, done_by')
+    .select(DAY_COLUMNS)
     .eq('chore_id', choreId)
-    .gte('due_date', weekAgo)
+    .gte('due_date', addDays(today, -7))
     .lt('due_date', today)
-    .order('due_date', { ascending: false });
+    .order('due_date', { ascending: false })
+    .order('member_id', { nullsFirst: true });
   if (error) throw new Error(`last week: ${error.message}`);
-  return (
-    data as { id: string; due_date: string; status: OccurrenceStatus; done_by: string[] }[]
-  ).map((o) => ({ id: o.id, dueDate: o.due_date, status: o.status, doneBy: o.done_by }));
+  return byDay(data as unknown as RawDay[]);
 }

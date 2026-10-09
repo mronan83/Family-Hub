@@ -93,15 +93,16 @@ select results_eq(
        from public.chore_occurrence o join public.chore_occurrence_assignee a on a.occurrence_id = o.id
       where o.chore_id = '0de00000-0000-4000-8000-0000000c0001' and o.due_date >= private.household_today(o.household_id)
       group by o.household_id $$,
-  $$ values (15, 30, true) $$,
-  '[CHR-03] the demo family''s Make bed is planned from today for 15 days, shared by Maya and Leo, after two runs');
+  $$ values (30, 30, true) $$,
+  '[CHR-03][CHR-18] the demo family''s Make bed is planned from today for 15 days, one for Maya and one for Leo each day, after two runs');
 
 select results_eq(
-  $$ select o.status, count(*)::int from public.chore_occurrence o
+  $$ select m.display_name::text, o.status, count(*)::int
+       from public.chore_occurrence o join public.member m on m.id = o.member_id
       where o.chore_id = '0de00000-0000-4000-8000-0000000c0001' and o.due_date < private.household_today(o.household_id)
-      group by 1 order by 1 $$,
-  $$ values ('completed'::text, 6), ('missed', 1) $$,
-  '[CHR-07] the demo family''s last week: Make bed done six days and missed one, after two runs');
+      group by 1, 2 order by 1, 2 $$,
+  $$ values ('Leo'::text, 'completed'::text, 6), ('Leo', 'missed', 1), ('Maya', 'completed', 6), ('Maya', 'missed', 1) $$,
+  '[CHR-07][CHR-18] the demo family''s last week: each child made their own bed six days and missed one, after two runs');
 -- Homework is on school days only, so in a break or the summer last week may have none.
 select ok((select count(*) filter (where o.status = 'pending_approval')
                     = least(count(*), 1)

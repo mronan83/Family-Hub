@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.10: US-320 everyone does their own (WP-43, D-47).
 > v0.8.9: US-304, US-305 and US-307 as built in the database and API (WP-10, D-46); the board's screen comes with WP-11.
 > v0.8.8: US-301, US-302, US-308 and US-311 as built (WP-09, D-45): two weeks planned on save, an edit reaches today only where nothing has happened, and each day's snapshot of who was responsible.
 > v0.8.7: US-601 and US-602 as built (WP-21, D-44): next year's default calendar, and a child at another school.
@@ -223,6 +224,15 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given nobody does a shared routine, when the day closes, then it is missed for every assignee.
 - Given I later change the assignees, when I view past days, then they still show who was responsible on each day.
 - Given I add Leo to "Feed the dog" at 7 am, when nobody has done today's yet, then today's is Leo's too, the same occurrence on everyone's screen (D-45).
+
+### US-320 — Everyone does their own
+**As an** admin **I want** a chore for several children to be each child's own **so that** each makes their own bed and gets their own credit, and a miss counts only for the one who missed it.
+**Priority:** Must · **Phase:** P1 · **Reqs:** CHR-18, CHR-09
+- Given I assign "Make bed" to Maya and Leo, when I save it as a chore, then "Everyone does their own" is chosen and each of them has their own "Make bed" every day.
+- Given Maya makes her bed and Leo does not, when the day closes, then Maya's is done and Leo's is missed.
+- Given Leo's school is on break and Maya's is not, when a school-days-only chore is planned for both, then only Maya has it on those days.
+- Given "Feed the dog" for Maya and Alex, when I choose "Any one of them", then there is one each day, done by whoever gets to it (US-311).
+- Given I switch an item between the two, when I save, then today follows unless someone already checked off today's, and past days keep what they were.
 
 ### US-312 — Define household tags
 **As an** admin **I want** to define our own tags with a name, color, and icon **so that** we can filter the list and set measurable goals by category.

@@ -75,15 +75,20 @@ export default async function EditChorePage({ params }: { params: Promise<{ id: 
           </p>
         ) : (
           <ul className="fw-list" aria-label="Coming up">
-            {comingUp.map((o) => (
-              <li key={o.id} className="fw-list__row">
-                <strong>{relativeDay(o.dueDate, today)}</strong>
+            {comingUp.map((day) => (
+              <li key={day.dueDate} className="fw-list__row">
+                <strong>{relativeDay(day.dueDate, today)}</strong>
                 <span className="fw-muted">
-                  {o.members.map((m) => memberName.get(m) ?? 'Someone').join(' and ')}
+                  {day.members.map(name).join(' and ')}
+                  {day.occurrences.some((o) => o.memberId) && day.members.length > 1
+                    ? ', each their own'
+                    : ''}
                 </span>
-                {o.status !== 'scheduled' ? (
-                  <HistoryLine line={historyLine(o, item.kind, name)} />
-                ) : null}
+                {day.occurrences
+                  .filter((o) => o.status !== 'scheduled')
+                  .map((o) => (
+                    <HistoryLine key={o.id} line={historyLine(o, item.kind, name)} />
+                  ))}
               </li>
             ))}
           </ul>
@@ -99,14 +104,14 @@ export default async function EditChorePage({ params }: { params: Promise<{ id: 
           <p className="fw-muted">Nothing was due in the last week.</p>
         ) : (
           <ul className="fw-list" aria-label="Last 7 days">
-            {lastWeek.map((o) => {
-              return (
-                <li key={o.id} className="fw-list__row">
-                  <strong>{relativeDay(o.dueDate, today)}</strong>
-                  <HistoryLine line={historyLine(o, item.kind, name)} />
-                </li>
-              );
-            })}
+            {lastWeek.map((day) => (
+              <li key={day.dueDate} className="fw-list__row">
+                <strong>{relativeDay(day.dueDate, today)}</strong>
+                {day.occurrences.map((o) => (
+                  <HistoryLine key={o.id} line={historyLine(o, item.kind, name)} />
+                ))}
+              </li>
+            ))}
           </ul>
         )}
         <p className="fw-muted">
