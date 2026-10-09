@@ -57,6 +57,10 @@ jobs:
       - run: bash scripts/db-test.sh
       - name: Migration runner
         run: bash scripts/db-migrate.test.sh
+      - name: Preview database
+        run: bash scripts/preview-db.test.sh
+      - name: Setup codes
+        run: bash scripts/setup-code.test.sh
 
   docs:
     runs-on: ubuntu-24.04

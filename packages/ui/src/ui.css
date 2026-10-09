@@ -44,6 +44,11 @@ body {
   font-family: var(--font-display);
   line-height: 1.25;
 }
+.admin a {
+  color: var(--primary-text);
+  font-weight: 600;
+  text-underline-offset: 2px;
+}
 .fw-visually-hidden {
   position: absolute;
   width: 1px;
@@ -300,6 +305,115 @@ body {
   background: transparent;
   border-color: var(--line);
   color: var(--text);
+}
+
+/* Admin forms and cards (WP-03) ------------------------------------------------------------- */
+.fw-page {
+  display: grid;
+  gap: var(--s-6);
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--s-8) var(--s-4) var(--s-12);
+}
+.fw-page--wide {
+  max-width: 880px;
+}
+.fw-card {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-6);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+.fw-card > h2,
+.fw-card > h1 {
+  margin: 0;
+}
+.fw-form {
+  display: grid;
+  gap: var(--s-4);
+}
+.fw-field {
+  display: grid;
+  gap: var(--s-1);
+}
+.fw-field__label {
+  font-weight: 600;
+}
+.fw-field__help,
+.fw-muted {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+/* The field edge uses --text-soft (4.5:1 on the surface), above the 3:1 a control boundary needs. */
+.fw-input {
+  min-height: var(--touch);
+  padding: 0 var(--s-3);
+  border: var(--border-w) solid var(--text-soft);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+.fw-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  align-items: center;
+}
+.fw-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  align-items: center;
+  justify-content: space-between;
+}
+.fw-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-divider::before,
+.fw-divider::after {
+  content: '';
+  flex: 1;
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-list {
+  display: grid;
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-list__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-4);
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--s-3);
+  border-bottom: var(--border-w) solid var(--line);
+}
+.fw-list__row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.fw-code {
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, monospace;
+  font-size: var(--t-small);
+}
+.fw-banner--notice {
+  background: var(--missed-tint);
+}
+.fw-banner--notice .fw-banner__icon {
+  color: var(--missed-text);
 }
 
 /* Avatar ------------------------------------------------------------------------------------ */

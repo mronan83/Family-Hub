@@ -121,10 +121,10 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | Req | Stories | Work packages | Components | Data entities | Verification |
 |---|---|---|---|---|---|
 | ACC-01 | US-101 | WP-02, WP-03 | ADM, DB | household, household_settings | DB, E2E |
-| ACC-02 | US-102 | WP-03 | ADM, SAUTH | household_user | E2E |
+| ACC-02 | US-102 | WP-03 | ADM, SAUTH | household_user | E2E, U |
 | ACC-03 | US-103 | WP-03 | ADM, API, SAUTH | invite, household_user | E2E, DB |
 | ACC-04 | US-104 | WP-04 | ADM, DB | member | E2E, DB |
-| ACC-05 | US-105 | WP-03, WP-32 | API, ADM, DB | audit_log | DB, E2E |
+| ACC-05 | US-105 | WP-03, WP-32 | DB, ADM | audit_log | DB, E2E |
 | ACC-06 | US-106 | WP-38 | ADM, SAUTH | household_user | E2E |
 | DEV-01 | US-201 | WP-05 | ADM, API, AUTH, BRD, SAUTH | device_pairing, device | E2E, DB |
 | DEV-02 | US-201, US-202 | WP-05 | AUTH, DB, SAUTH | device | DB |
@@ -242,7 +242,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 |---|---|
 | `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, CAL-03, CAL-04, CAL-05, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08 |
 | `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, BRD-05, CAL-01, CAL-03, CAL-05, CAL-06, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MENU-01, MENU-03, MENU-04, NFR-05, NFR-11, NFR-13, PTS-01, PTS-03, PTS-04, PTS-05, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04 |
-| `API` | ACC-03, ACC-05, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, DEV-01, DEV-06, MEAL-03, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13 |
+| `API` | ACC-03, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, DEV-01, DEV-06, MEAL-03, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13 |
 | `AUTH` | DEV-01, DEV-02, DEV-03 |
 | `RULES` | CHR-10, PTS-05, PTS-07, RWD-02, RWD-03, RWD-04, RWD-05, RWD-06, RWD-10, RWD-11, RWD-12, RWD-13 |
 | `OCCGEN` | CHR-02, CHR-03, CHR-09, CHR-11, CHR-12, SCH-03 |
@@ -250,7 +250,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | `MENUIMP` | MEAL-05, MENU-01, MENU-02, MENU-03, MENU-04, MENU-05 |
 | `NOTIFY` | CHR-15, CHR-16, CHR-17 |
 | `OUTBOX` | CHR-04, DEV-06, NFR-01, PTS-04 |
-| `SCHED` | CAL-02, CHR-03, CHR-07, CHR-12, CHR-16, MENU-05, PTS-05, RWD-04, RWD-06, RWD-11 |
+| `SCHED` | CAL-02, CHR-03, CHR-07, CHR-12, CHR-16, MENU-05, NFR-07, PTS-05, RWD-04, RWD-06, RWD-11 |
 | `DB` | ACC-01, ACC-04, ACC-05, CAL-05, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, DEV-02, DEV-05, MEAL-04, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, PTS-01, PTS-02, PTS-04, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03 |
 | `RT` | DEV-05 |
 | `VAULT` | CAL-01, CAL-08, NFR-04 |
@@ -270,7 +270,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Milestone | Scope | Exit criteria (CI + preview) |
 |---|---|---|
-| **P0 Foundation** | Repo, CI/CD pipeline, tenancy schema + RLS, admin auth, members, device pairing, board shell, realtime, job framework, brand system | All PR gates green; pgTAP isolation and revoked-device tests green; on a preview, an admin signs in (magic link and password), creates a household and child, pairs a browser as a board, and sees a rename within 3 s; production deploy pipeline (migrate → app → smoke) green |
+| **P0 Foundation** | Repo, CI/CD pipeline, tenancy schema + RLS, admin auth, members, device pairing, board shell, realtime, job framework, brand system | All PR gates green; pgTAP isolation and revoked-device tests green; on a preview, an admin signs in by password (the magic link is unit-tested, and checked in production by L-12), creates a household and child, pairs a browser as a board, and sees a rename within 3 s; production deploy pipeline (migrate → app → smoke) green |
 | **P1a Kid loop** | School year + day types, chores, occurrences, completion events + persisted status + day-close, points ledger, Today screen with balance and chore celebration, admin chore ops (approve, uncheck, bulk uncheck), offline outbox, 4K kiosk host | Day-type precedence tests green; E2E: check-off, undo, double tap, bulk uncheck with matching ledger reversals, approval on/off; offline replay with zero lost or duplicate events and event-time conflict resolution; day-close marks `scheduled` and `rejected` as `missed`; rebuild reports no drift after property tests; a shared item credits only who did it and is covered for the others; an overdue task carries over while a routine becomes missed; a private item is invisible on the board and to the other admin |
 | **P1b Rules engine, shop, streak history** | Rules engine, streak history + insights, catalog, redemptions | Property tests green; request → approve → fulfil end to end with two concurrent requests unable to overspend; insights match a hand-computed 14-day fixture |
 | **P1c Goals** | Goal admin, progress pipeline, payouts and reversals, board points/shop/goals UI, celebrations | A seeded goal is achieved, paid out once, un-achieved by a reversal (payout reversed) and re-achieved; reconcile heals a dirtied goal |
@@ -290,9 +290,10 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | L-06 | Restore drill completed against the production backup | NFR-10 |
 | L-07 | A full school week is planned in under 10 minutes; 4 weeks of menu load via adapter or CSV | former P2 exit |
 | L-08 | Hardware checklist (§F) passes: touch latency, calibration, boot-to-board time, dim/sleep, SPIKE-03 animation budget | HW |
-| L-09 | Production data reset with the launch runbook; household created; second admin invited; board paired | `01` §9.7 |
+| L-09 | Production data reset with the launch runbook; household created with a setup code; second admin invited and joined with a password; board paired | `01` §9.7 |
 | L-10 | Each parent receives reminders on their own iPhone for 7 days: on time, once per item, none after an item is done, none during quiet hours, private titles hidden; turning reminders off stops them | CHR-15..17 |
 | L-11 | Vercel usage over the 7-day soak (L-05), scaled to a month, stays under half of each Hobby allowance: invocations, Active CPU, provisioned memory | NFR-08, `01` §5.6 |
+| L-12 | With Supabase Auth's URL settings and sign-up switch in place (Y-9): the owner signs in to production by magic link and by password, resets the password by link, and a sign-up attempt through the API is refused | ACC-02, `01` §5.10 |
 
 ---
 
@@ -342,6 +343,8 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | R-27 | Previews run unapproved code against the production database | Low | High | Previews hold only the browser-safe key, so RLS applies to everything they do; they run as the demo family, which RLS keeps apart from yours (pgTAP); only additive migrations are applied before approval; previews sit behind a Vercel login; nothing in the pipeline wipes the database (D-37) |
 | R-28 | A slow job call holds every other job call: pg_net starts its next batch only when every call in the current one has finished (SPIKE-05) | Med | Med | Job endpoints answer 202 at once and work after the response (`after()`); pg_net timeout 30 s; one minute per schedule; `job_run` staleness on the health page (`01` §5.6) |
 | R-29 | The app uses up a Hobby allowance (Active CPU is the tightest: cold starts cost about 0.4 s of CPU each), and Vercel pauses the project, which resumes only by hand | Low | High | Jobs use under 10 % of each allowance when calls stay warm and sequential (`01` §5.6 budget); launch check L-11 measures the whole app before launch |
+| R-31 | Demo sign-ins also work on production's sign-in page, since previews and production share one Supabase project | Low | Low | They reach only the demo family, which holds made-up data; production never offers the one-tap buttons; their passwords come from the bypass secret, so rotating it (Vercel → Deployment Protection, then the GitHub secret) changes them at the next e2e run; a demo sign-in can create a household only with a setup code (D-39) |
+| R-32 | An invite link reaches someone other than the invitee, who joins as an admin | Low | High | One use, 7 days, and only for an account with the invited email; the page says to share it only with that person; open invites are listed and can be cancelled; the admins list shows who joined, and the join is audited (D-39) |
 | R-30 | A deploy stops because the one database holds a migration that `main` lacks (an open pull request's, applied at its preview), as PR #5's did while PR #6 was open | Med | Med | Migrations run through `scripts/db-migrate.sh`, which applies the commit's pending migrations and reports the others instead of refusing (`supabase db push` refuses); tested in `ci / database` |
 
 ### Spikes (time-boxed, before dependent work)
@@ -387,6 +390,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.9 | WP-03 admin sign-in and onboarding (D-39): no public sign-up. A setup code from the new setup-code workflow creates a household and its owner; invite links (token after `#`, one use, 7 days, the invited email only) add admins; the server creates accounts confirmed, so nothing depends on Supabase's built-in mailer. Password sign-in, magic links for existing accounts and password reset; sessions verified on the server, `proxy.ts` for refresh and redirects. Every household table is audited by trigger (`audit_log`), replacing the planned `withAudit` wrapper. Previews sign in with one tap as four demo parents, with passwords derived from the bypass secret. ACC-02 adds unit tests; the P0 exit checks the magic link in production at launch (L-12), since preview sign-ins cannot receive email. Y-5 is no longer a blocker: the second admin joins with a password. New Y-9 (Supabase Auth settings before launch), R-31, R-32. WP-07 done: the hourly heartbeat runs on its own in production; a forced failure shows `failing` and a replay returns it to `ok`. |
 | 0.8.8 | WP-07 job framework (PR #8): schedules as code synced to pg_cron by the deploy; `private.call_job` (off until the job-secret workflow writes Vault); `POST /api/jobs/[job]` answers 202 and works after the response, one `job_run` row per household; `job_health()`; sample hourly `heartbeat`; `purge_history`; job-secret and job-run workflows; structured logs without PII and `private.app_error` via `onRequestError`. The System Health page becomes WP-42 (after WP-03), so it is built once, behind admin sign-in. NFR-07 gains pgTAP, unit and e2e tests. |
 | 0.8.7 | PR #5's deploy stopped at migrate: PR #6's preview had applied its migration, `main` did not have it yet, and `supabase db push` refuses then. Migrations now run through `scripts/db-migrate.sh` in the deploy, e2e (`--additive-only`) and the database tests; it reports such migrations and carries on, runs each migration with its history row in one transaction, and refuses files that commit part of themselves. R-30. |
 | 0.8.6 | SPIKE-05 measured job calls on Vercel Hobby (`01` §5.6): calls stop at 300 s (504); pg_net starts its next batch only when the current one has finished, so job endpoints answer at once and work after the response; a cold start costs about 0.4 s of CPU and a warm call a few ms; concurrent calls each get an instance, so every schedule has its own minute; cron reports `succeeded` whatever the endpoint answers, so health comes from `job_run`. The job secret is generated by a workflow (WP-07), with no owner step. Jobs are budgeted at under 10 % of each Hobby allowance. D-38, R-28, R-29, L-11; `01` §9.4 corrected (the test bootstrap has no Vault, pg_cron or pg_net stand-ins). |

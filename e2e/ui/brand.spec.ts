@@ -53,8 +53,10 @@ test('[NFR-13] the page theme and a scoped theme resolve to the same tokens', as
 
 const CONTRAST_PAGES: [string, 'light' | 'dark'][] = [
   ['/board', 'light'],
-  ['/admin', 'light'],
-  ['/admin', 'dark'],
+  ['/sign-in', 'light'],
+  ['/sign-in', 'dark'],
+  ['/setup', 'light'],
+  ['/reset-password', 'dark'],
   ...SURFACES.flatMap((s) =>
     THEMES.map((t) => [`/dev/brand?surface=${s}&theme=${t}`, 'light'] as [string, 'light']),
   ),
@@ -92,18 +94,26 @@ test('[NFR-13] board and admin each link their own manifest, titles and icons', 
   const cases = [
     {
       path: '/board',
+      start: '/board',
       manifest: '/board.webmanifest',
       display: 'fullscreen',
       title: 'FamilyWise Board',
     },
-    { path: '/admin', manifest: '/admin.webmanifest', display: 'standalone', title: 'FamilyWise' },
+    // Signed out, /admin goes to sign in, which is part of the admin app.
+    {
+      path: '/admin',
+      start: '/admin',
+      manifest: '/admin.webmanifest',
+      display: 'standalone',
+      title: 'Sign in · FamilyWise',
+    },
   ];
   for (const c of cases) {
     await page.goto(c.path);
     await expect(page).toHaveTitle(c.title);
     await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', c.manifest);
     const manifest = await (await request.get(c.manifest)).json();
-    expect(manifest).toMatchObject({ name: 'FamilyWise', display: c.display, start_url: c.path });
+    expect(manifest).toMatchObject({ name: 'FamilyWise', display: c.display, start_url: c.start });
     for (const icon of manifest.icons) expect((await request.get(icon.src)).ok()).toBe(true);
   }
   for (const href of ['/icons/favicon.svg', '/icons/favicon.ico', '/icons/apple-touch-icon.png']) {

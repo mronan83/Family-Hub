@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.7: WP-03 admin sign-in and onboarding (D-39): no public sign-up; setup codes and invite links; accounts created by the server; demo sign-ins on previews; audit by triggers (§4, §5.10, §6.1, §6.2, §9.4, §9.5, §9.7, §9.8, §9.10).
 > v0.8.6: WP-07 job framework: schedules as code synced by the deploy, `private.call_job`, `POST /api/jobs/[job]`, `job_health()`, the job-secret and job-run workflows, structured logs and `private.app_error` (§3, §5.6, §9.6, §9.8, §9.10).
 > v0.8.5: migrations run through `scripts/db-migrate.sh` in the deploy, e2e and CI: one database means it can hold an open pull request's migration that `main` lacks, which `supabase db push` refuses (§9.4–9.6).
 > v0.8.4: SPIKE-05 measured job calls on Vercel Hobby: the invocation pattern, the limits and the monthly budget are in §5.6; the job secret comes from a workflow (§9.8, D-38).
@@ -132,10 +133,10 @@ flowchart TB
 | `NOTIFY` | Reminders | Sends web push reminders and the optional daily digest to admins who turned them on, switchable per person, per device and per item (D-35); at most once per item and person and never after it is done; holds reminders during quiet hours; hides private titles on the lock screen; prunes expired subscriptions. | Route handler job, `web-push` (VAPID), admin service worker | CHR-15, CHR-16, CHR-17 |
 | `OUTBOX` | Offline outbox | Service worker caches app shell; IndexedDB stores board snapshot + queued completion events; replays with idempotency keys. | Serwist, Dexie | DEV-06, NFR-01 |
 | `SCHED` | Scheduler | Time-based triggers into signed job endpoints. | `pg_cron` + `pg_net` | CAL-02, CHR-03, MENU-05 |
-| `DB` | Database | Postgres, RLS (incl. `can_see_chore` for private items), functions and triggers (`fold_occurrence_status`, status / ledger / dirty-goal triggers, `close_past_due`, `resolve_day_type`, `board_snapshot`), views `v_points_balance`, `v_member_occurrence`. | Supabase Postgres 15+ | all |
+| `DB` | Database | Postgres, RLS (incl. `can_see_chore` for private items), functions and triggers (the `audit_row` audit triggers, `create_household` and the invite functions (`02` §4.8), `fold_occurrence_status`, status / ledger / dirty-goal triggers, `close_past_due`, `resolve_day_type`, `board_snapshot`), views `v_points_balance`, `v_member_occurrence`. | Supabase Postgres 15+ | all |
 | `RT` | Realtime | Change notifications to board, filtered by RLS. | Supabase Realtime | DEV-05 |
 | `VAULT` | Secrets | Calendar URLs/credentials, job signing secret. | Supabase Vault | CAL-01/08, NFR-04 |
-| `SAUTH` | Admin identity | Email magic link and email + password (required); Sign in with Apple and passkeys once the production domain exists; device principals live here too. | Supabase Auth | ACC-02, ACC-06, DEV-02 |
+| `SAUTH` | Admin identity | Email magic link and email + password (required); Sign in with Apple and passkeys once the production domain exists; device principals live here too. No public sign-up: the server creates accounts, confirmed, for a setup code or an invite (D-39, §5.10). | Supabase Auth | ACC-02, ACC-06, DEV-02 |
 | `PI` | Kiosk host | Raspberry Pi OS, Chromium kiosk, watchdog, screen power. | systemd, Chromium | DEV-04/07, NFR-02 |
 | `OBS` | Observability | Structured JSON logs without PII (`lib/log.ts`); server errors and failed jobs kept 30 days in `private.app_error` (`onRequestError`); `job_run` and `job_health()`; all shown on System Health (WP-42). | Vercel runtime logs, Postgres | NFR-07, CAL-06 |
 | `UI` | Design system | FamilyWise tokens (Day and Evening), self-hosted fonts, typed icon set, avatars and brand components (`ChoreTile`, `PointsChip`, `GoalMeter`, `Banner`, `Button`, `Logo`, `BootSplash`) shared by board and admin. `brand/` is the source of truth: `packages/ui/scripts/brand.mjs` generates the typed icons and theme colors (committed, checked in CI) and, before every dev run and build, copies fonts, logos, avatars and app icons into `apps/web/public` and writes the two manifests and the font-precaching service worker. | `packages/ui`, `brand/` | NFR-13, NFR-11 |
@@ -413,6 +414,43 @@ sequenceDiagram
 
 A reminder is due at the item's due time minus its lead time, or at the person's morning time on the due date when the item has no due time. Quiet hours move it to the end of the quiet period. The dedupe key (`due:{occurrence}:{member}`) makes each reminder at most once, and an item completed before its reminder is skipped. On an iPhone, web push needs the admin app added to the Home Screen (iOS 16.4 or later); the permission prompt appears only after the person taps "Turn on reminders".
 
+### 5.10 Admin sign-in and onboarding (ACC-01, ACC-02, ACC-03, ACC-05, D-39)
+
+```mermaid
+sequenceDiagram
+  actor O as Owner
+  actor P as Second admin
+  participant W as setup-code workflow
+  participant A as ADM (server actions)
+  participant S as SAUTH
+  participant D as DB
+
+  W->>D: store the hash of a one-time code (24 h)
+  W-->>O: the code, on the run's summary page only
+  O->>A: /setup: code, email, password, household name, timezone, week start
+  A->>D: setup_code_usable(code), as the service role
+  A->>S: admin.createUser(email, password, confirmed)
+  A->>S: signInWithPassword
+  A->>D: create_household(code, ...) as the owner
+  Note over D: household, settings, owner link; code used; audit rows
+  O->>A: invite their email
+  A->>D: create_invite: random token, hash stored, 7 days
+  A-->>O: /invite#token, to copy or share
+  O-->>P: the link (Messages, AirDrop)
+  P->>A: opens it; the browser reads the token after #
+  A->>D: invite_preview(token)
+  P->>A: chooses a password (or signs in, if they have an account)
+  A->>S: admin.createUser(the invited email, confirmed); sign in
+  A->>D: accept_invite(token): that email only, once
+```
+
+- **No public sign-up.** Accounts are created by the server, only for a valid setup code or invite, and only in production, where the secret key lives. They are created confirmed, because the built-in mailer reaches only the Supabase team (§9.10); a password works from the first sign-in. Magic links never create an account (`shouldCreateUser: false`), and Supabase's own sign-up is switched off before launch (Y-9).
+- **Signing in.** Email and password, or a magic link to an existing account; a forgotten password is reset by link. Links land on `/auth/callback`, which trades the one-time code for a session (PKCE, so a link works only in the browser that asked for it) and goes on to a path on this site only. The pages never say whether an account exists.
+- **Sessions.** `@supabase/ssr` keeps the session in cookies. `proxy.ts` refreshes it on every page and sends a signed-out visitor from `/admin` to sign in; that is the quick check only. Each admin page and action verifies the user again on the server (`getClaims()`), and RLS decides every row. A board session (`app_metadata.role = device`, WP-05) is never treated as an admin.
+- **Invites.** The token is 24 random bytes, stored as its SHA-256. It travels after `#`, which browsers never send to a server, so it is in no request log or Referer; the invite page keeps it in the browser while the invitee signs in. An invite works once, for 7 days, and only for an account with the email it names; a new invite to the same email replaces the open one, and an admin can cancel one. Anyone who has the link and can sign in as that email joins, so the page tells the inviter to share it only with that person (R-32).
+- **Audit (ACC-05).** Triggers on `household`, `household_settings`, `household_user`, `member`, `invite`, `device` and `device_pairing` write `audit_log` on every insert, update (changed columns only, from and to) and delete, with the actor: the signed-in admin, a device, or the system (jobs, migrations, the seed). Hashes and timestamps are never copied. Later tables add the same trigger. The viewer is WP-32.
+- **Previews.** The demo family has four made-up sign-ins: Alex (owner), Sam (admin), and Jordan and Riley with no household yet, for invites and setup. `scripts/preview-db.sh` sets each password to HMAC-SHA256(`familywise demo sign-in <email>`) keyed with the preview-protection bypass secret, and a preview derives the same password in a one-tap server action, on `VERCEL_ENV=preview` only. Previews still hold no key that bypasses RLS, and demo admins see only the demo family. Account creation is off on previews (no secret key); e2e covers setup and invites with Jordan and Riley, and production account creation is unit-tested and checked at launch (L-12).
+
 ---
 
 ## 6. Security architecture
@@ -421,7 +459,7 @@ A reminder is due at the item's due time minus its lead time, or at the person's
 
 | Principal | AuthN | Reads | Writes |
 |---|---|---|---|
-| Admin | Supabase Auth: email magic link or email + password (ACC-02); Sign in with Apple or passkey later (ACC-06) | all rows of own household, except another admin's private items (D-34) | config tables via server actions under the user's session (RLS enforced) |
+| Admin | Supabase Auth: email magic link or email + password (ACC-02); Sign in with Apple or passkey later (ACC-06). Accounts only from a setup code or an invite (D-39) | all rows of own household, except another admin's private items (D-34) | config tables via server actions under the user's session (RLS enforced) |
 | Board device | Device auth user, `app_metadata.role=device` | family-visible board tables of own household while `device.status='active'` | none direct; `POST /api/completions` (with `done_by`) and `POST /api/redemptions` only |
 | Jobs | Signed bearer secret + service role | all | derived tables, instances, menu rows |
 | Child | not a principal | n/a | acts only through the device |
@@ -430,6 +468,7 @@ A reminder is due at the item's due time minus its lead time, or at the person's
 
 - `household_id` is **always** derived server-side from the verified session. Never trust it from a request body or query string.
 - The service-role key exists only in server-side environment variables and is never bundled to the client.
+- Nobody signs up: the server creates an account only for a valid setup code or invite (§5.10).
 - Device sessions cannot call admin endpoints (route-level role check **and** RLS).
 - Kiosk lockdown (6.5) is defense in depth, not the security boundary.
 
@@ -544,7 +583,7 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 
 ### 9.4 Database tests without Docker
 
-- `supabase/tests/bootstrap/` recreates what the hosted platform provides: the `anon`, `authenticated`, `service_role` and `authenticator` roles; an `auth` schema with `auth.users`, `auth.uid()`, `auth.jwt()` and `auth.role()` reading `request.jwt.claims`; the `extensions` schema; and the `supabase_realtime` publication. `pg_cron`, `pg_net` and Vault exist only on hosted Supabase: the scheduler migration enables the two extensions only where they are available, and the job path is measured and tested on the real project (SPIKE-05, then e2e in WP-07).
+- `supabase/tests/bootstrap/` recreates what the hosted platform provides: the `anon`, `authenticated`, `service_role` and `authenticator` roles; an `auth` schema with `auth.users`, `auth.identities`, `auth.uid()`, `auth.jwt()` and `auth.role()` reading `request.jwt.claims`; the `extensions` schema; and the `supabase_realtime` publication. `pg_cron`, `pg_net` and Vault exist only on hosted Supabase: the scheduler migration enables the two extensions only where they are available, and the job path is measured and tested on the real project (SPIKE-05, then e2e in WP-07).
 - `scripts/db-test.sh` creates a throwaway database, applies the bootstrap and then every migration through `scripts/db-migrate.sh` (the deploy's runner), runs `pg_prove` over `supabase/tests/*.test.sql`, and drops the database.
 - Tests act as a principal with `set local role authenticated` plus `set local request.jwt.claims`, exactly as PostgREST does.
 - The bootstrap is never deployed. Migrations must not depend on it beyond what Supabase itself provides.
@@ -557,6 +596,7 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 - When Vercel reports a successful preview, the e2e workflow (`scripts/preview-db.sh`) applies the PR's new migrations (`scripts/db-migrate.sh --additive-only`), resets the demo family, and runs Playwright against the preview. Runs are serialized.
 - New migrations that only add (tables, columns, functions, policies) are applied before approval; the running app ignores them by design (§9.6). If any new migration drops, renames, retypes, truncates or deletes, none of the PR's migrations are applied before approval: they ship with the deploy, and the preview runs on the current schema. So the database can hold a migration that `main` does not have yet: an open pull request's, applied at its preview. The migration runner reports such migrations on every deploy and carries on (`supabase db push` refuses to run then, which stopped the deploy of PR #5 while PR #6 was open). If you reject a change whose additions were applied, a follow-up migration removes them and its history row stays as a record.
 - Nothing in the pipeline wipes the database, so nothing depends on remembering a switch at launch.
+- The demo family's four sign-ins (`supabase/seed.sql`) get their passwords from `scripts/preview-db.sh`, in the same transaction as the reset: each is derived from the bypass secret, which never leaves the runner, and stored as a bcrypt hash. The preview's sign-in page offers them as one-tap buttons (§5.10, D-39). Households that e2e sets up with a demo sign-in are removed at the next reset.
 - Previews sit behind Vercel Authentication: sign in to Vercel once on each device you preview from. The e2e workflow uses the automation bypass secret. The production domain is public, so the kiosk and the smoke check reach it without a Vercel login.
 
 ### 9.6 Production deploy (ordered)
@@ -574,7 +614,7 @@ Vercel's automatic production deploy from Git is turned off (`vercel.json`), so 
 ### 9.7 Launch
 
 - Production is deployed continuously but dark: no board paired and no family data.
-- Launch happens once every milestone is done and the launch acceptance checklist (`04` §E) passes: tag `v1.0.0`, delete any trial households you made while previewing (the demo family stays, for previews), create your household, invite the second admin, pair the Pi. Nothing is wiped.
+- Launch happens once every milestone is done and the launch acceptance checklist (`04` §E) passes: tag `v1.0.0`, delete any trial households you made while previewing (the demo family stays, for previews), issue a setup code (setup-code workflow) and create your household at `/setup`, invite the second admin, pair the Pi. Nothing is wiped.
 - After launch the same pipeline applies; a migration that rewrites data is preceded by a confirmed backup.
 
 ### 9.8 Secrets and configuration
@@ -588,7 +628,7 @@ GitHub Free keeps environment secrets to public repositories (D-36), so every Gi
 | `SUPABASE_DB_URL` | secret | GitHub repository | migrate, e2e (new migrations, demo family reset), keepalive, backup |
 | `VERCEL_TOKEN` | secret | GitHub repository (a Vercel token scoped to the project's team, with an expiry) | app deploy |
 | `VERCEL_ORG_ID` = `team_A8TfHlLyTc2toipq0WsMVKvK`, `VERCEL_PROJECT_ID` = `prj_DnYxdFgs03cQOWsKZklobWGCTYqe` | variables | GitHub repository | app deploy |
-| `VERCEL_AUTOMATION_BYPASS_SECRET` | secret | GitHub repository (value from Vercel → Deployment Protection) | e2e on protected previews |
+| `VERCEL_AUTOMATION_BYPASS_SECRET` | secret | GitHub repository (value from Vercel → Deployment Protection); Vercel also gives it to every deployment as a system variable | e2e on protected previews; the demo sign-ins' passwords (`scripts/preview-db.sh`, and the preview's one-tap sign-in, D-39) |
 | `PRODUCTION_URL` = `https://family-wise-topaz.vercel.app` | variable | GitHub repository | smoke check |
 | `DEPLOY_ENABLED` = `true` | variable | GitHub repository | turns on production deploys (set last, in WP-41) |
 | `BACKUP_PASSPHRASE` | secret | GitHub repository | nightly backup encryption (WP-24) |
@@ -622,7 +662,7 @@ GitHub Free keeps environment secrets to public repositories (D-36), so every Gi
 | GitHub Free: no branch protection, environment secrets or required reviewers on a private repository | The deploy gate enforces the pull request gates (§9.6); every secret is a repository secret (§9.8); squash-only merges (D-36). |
 | GitHub Free: a monthly cap on Actions minutes for a private repository (2,000 at the time of writing), each job rounded up to the minute | A CI run is four parallel jobs of about a minute each, and a newer push cancels the older run on the same branch. If a busy month nears the cap, GitHub → Settings → Billing shows usage. |
 | No per-PR database branches | Previews run as the demo family in the one database (§9.5, D-37). |
-| Built-in auth email reaches only Supabase team members, about 2 per hour | Password sign-in needs no email. Invites are shareable links (WP-03), so they do not depend on email. Magic links and password resets reach anyone added to the Supabase organization's team until custom SMTP (a free-tier email provider, which needs a domain) is configured. |
+| Built-in auth email reaches only Supabase team members, about 2 per hour | Nothing depends on it: the server creates accounts already confirmed, a password works from the first sign-in, and invites are links the inviter shares (D-39). Magic links and password resets reach the Supabase team (the owner) until custom SMTP (a free-tier email provider, which needs a domain, Y-8) is configured; the second admin uses a password until then. |
 | Vercel Hobby keeps runtime logs for one hour | Logs are structured JSON (`lib/log.ts`: no PII, emails and tokens scrubbed); every server error and failed job is also kept 30 days in `private.app_error` (`onRequestError` in `instrumentation.ts`), for System Health. |
 | Usage caps (database size, storage, egress, realtime connections) | Our expected use is a small fraction: one household, a few devices, small JSON snapshots. System Health tracks usage; check current limits on Supabase's pricing page. |
 
