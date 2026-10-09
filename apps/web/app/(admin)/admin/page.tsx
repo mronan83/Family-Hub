@@ -1,9 +1,10 @@
-import { Banner, Button, Logo } from '@familywise/ui';
+import { Banner, Button } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { serverClient } from '@/lib/supabase/server';
-import { revokeInvite, signOut } from './actions';
+import { revokeInvite } from './actions';
+import { AdminHeader } from './header';
 import { InviteForm } from './invite-form';
 
 export const metadata: Metadata = { title: 'Home' };
@@ -54,14 +55,7 @@ export default async function AdminHome({
 
   return (
     <main className="fw-page fw-page--wide">
-      <header className="fw-bar">
-        <Logo />
-        <form action={signOut}>
-          <Button type="submit" variant="ghost" icon="logout">
-            Sign out
-          </Button>
-        </form>
-      </header>
+      <AdminHeader current="/admin" />
       {notice ? <Banner kind="info">{NOTICES[notice]}</Banner> : null}
 
       <section className="fw-card" aria-labelledby="household-heading">

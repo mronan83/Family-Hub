@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.8: WP-04 members: an adult member links only to an admin of the same household, enforced by the database (§6.2).
 > v0.8.7: WP-03 admin sign-in and onboarding (D-39): no public sign-up; setup codes and invite links; accounts created by the server; demo sign-ins on previews; audit by triggers (§4, §5.10, §6.1, §6.2, §9.4, §9.5, §9.7, §9.8, §9.10).
 > v0.8.6: WP-07 job framework: schedules as code synced by the deploy, `private.call_job`, `POST /api/jobs/[job]`, `job_health()`, the job-secret and job-run workflows, structured logs and `private.app_error` (§3, §5.6, §9.6, §9.8, §9.10).
 > v0.8.5: migrations run through `scripts/db-migrate.sh` in the deploy, e2e and CI: one database means it can hold an open pull request's migration that `main` lacks, which `supabase db push` refuses (§9.4–9.6).
@@ -469,6 +470,7 @@ sequenceDiagram
 - `household_id` is **always** derived server-side from the verified session. Never trust it from a request body or query string.
 - The service-role key exists only in server-side environment variables and is never bundled to the client.
 - Nobody signs up: the server creates an account only for a valid setup code or invite (§5.10).
+- A member's sign-in link (`member.user_id`) points only to an admin of the same household, enforced by a trigger, because "who am I" (My tasks, reminders, private items, D-34) is read from it.
 - Device sessions cannot call admin endpoints (route-level role check **and** RLS).
 - Kiosk lockdown (6.5) is defense in depth, not the security boundary.
 
