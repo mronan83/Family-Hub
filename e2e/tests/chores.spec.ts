@@ -360,6 +360,8 @@ test('[CHR-01] an item is archived and restored, never deleted', async ({ page }
   await signIn(page, 'Alex');
   await page.getByRole('link', { name: 'Edit Practice piano' }).click();
   await page.getByRole('button', { name: 'Archive Practice piano' }).click();
+  // Each action redirects when it has saved; wait for that before reading or moving on.
+  await page.waitForURL(/\/admin\/chores$/);
   await expect(list(page)).not.toContainText('Practice piano');
 
   const filters = page.getByRole('form', { name: 'Filter the list' });
@@ -368,6 +370,8 @@ test('[CHR-01] an item is archived and restored, never deleted', async ({ page }
   await expect(list(page).getByRole('listitem')).toHaveText([/Practice piano/]);
   await page.getByRole('link', { name: 'Edit Practice piano' }).click();
   await page.getByRole('button', { name: 'Restore Practice piano' }).click();
+  await page.waitForURL(/\/admin\/chores\?status=archived$/);
+  await expect(page.getByText('Nothing matches these filters.')).toBeVisible();
   await page.goto('/admin/chores');
   await expect(list(page)).toContainText('Practice piano');
   expect(
