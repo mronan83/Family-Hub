@@ -168,7 +168,11 @@ export function ChoreForm({
                 name="assignees"
                 value={m.id}
                 defaultChecked={initial?.assignees.includes(m.id) ?? false}
-                onChange={(e) => setPeople((n) => n + (e.currentTarget.checked ? 1 : -1))}
+                onChange={(e) => {
+                  // Read it now: React clears currentTarget before a queued update runs.
+                  const on = e.currentTarget.checked;
+                  setPeople((n) => n + (on ? 1 : -1));
+                }}
               />
               <Avatar
                 name={m.displayName}
