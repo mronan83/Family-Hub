@@ -54,17 +54,29 @@ export const JOBS: Record<string, Job> = {
   },
 
   // [NFR-06] The nightly check (WP-10): re-folds the last 14 days of events and compares them with
-  // the stored statuses, report-only. Any drift fails the run, so System Health shows it; correcting
-  // it is a parent's explicit action.
+  // the stored statuses, and (WP-16) the points each occurrence's members hold with what it owes them,
+  // report-only. Any drift fails the run, so System Health shows it; correcting it is a parent's
+  // explicit action.
   async status_check({ db, householdId }) {
     const { data, error } = await db.rpc('occurrence_status_drift', {
       p_household_id: householdId,
     });
     if (error) throw new Error(`check statuses: ${error.message}`);
-    const report = data as { drift: number; sample: unknown[] } & Record<string, unknown>;
+    const report = data as {
+      drift: number;
+      sample: unknown[];
+      points_drift?: number;
+      points_sample?: unknown[];
+    } & Record<string, unknown>;
     if (report.drift > 0) {
       throw new Error(
         `${report.drift} occurrence status(es) differ from their events: ${JSON.stringify(report.sample)}`,
+      );
+    }
+    // [PTS-01] The ledger holds each occurrence's points for exactly those it rewards while done.
+    if ((report.points_drift ?? 0) > 0) {
+      throw new Error(
+        `${report.points_drift} member point total(s) differ from their occurrences: ${JSON.stringify(report.points_sample)}`,
       );
     }
     return { status: 'ok', stats: report };

@@ -1,7 +1,7 @@
 -- [NFR-14] The demo family seed resets only the demo household and never touches another (D-37).
 -- [ACC-02] It creates the four demo sign-ins (D-39), without passwords.
 begin;
-select plan(19);
+select plan(22);
 
 insert into public.household (id, name, timezone) values
   ('44444444-4444-4444-4444-444444444444', 'Real family', 'America/Chicago'),
@@ -116,6 +116,31 @@ select ok((select count(*) filter (where o.status = 'pending_approval')
                            where o.household_id = '0de00000-0000-4000-8000-000000000001' and o.kind = 'chore'
                              and o.due_date < private.household_today(o.household_id) and o.finalized_at is null),
   '[CHR-05][CHR-07] the latest homework waits for a parent, and every past day is closed');
+
+-- Points (WP-16): each member holds the points of their done occurrences plus adjustments.
+select is_empty(
+  $$ select m.display_name
+       from public.member m
+      where m.household_id = '0de00000-0000-4000-8000-000000000001'
+        and (select coalesce(sum(amount), 0) from public.points_ledger l where l.member_id = m.id)
+            <> (select coalesce(sum(o.points_snapshot), 0) from public.chore_occurrence o
+                 where m.id = any (o.rewarded) and o.status in ('completed', 'approved'))
+               + (select coalesce(sum(amount), 0) from public.points_ledger l
+                   where l.member_id = m.id and l.entry_type = 'adjustment') $$,
+  '[PTS-01] the demo family''s balances are their done chores'' points plus adjustments, after two runs');
+select results_eq(
+  $$ select m.display_name::text, l.amount, l.reason
+       from public.points_ledger l join public.member m on m.id = l.member_id
+      where l.household_id = '0de00000-0000-4000-8000-000000000001' and l.entry_type = 'adjustment' $$,
+  $$ values ('Leo'::text, 10, 'Helped carry the shopping'::text) $$,
+  '[PTS-01] Leo has the one thank-you from Alex, after two runs');
+select ok((select bool_and(coalesce(earned, 0) > 0) from public.member m
+             left join (select member_id, sum(amount) as earned from public.points_ledger group by member_id) l
+                    on l.member_id = m.id
+            where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.role = 'child')
+          and not exists (select from public.points_ledger l join public.member m on m.id = l.member_id
+                           where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.role = 'adult'),
+  '[PTS-07] the children have earned points this week; the adults, who do not earn rewards, have none');
 
 select * from finish();
 rollback;

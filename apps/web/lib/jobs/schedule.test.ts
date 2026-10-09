@@ -90,4 +90,21 @@ describe('[NFR-07] schedule and job registry', () => {
       JOBS.status_check!({ db: drifted, householdId: 'h1', scheduledAt: new Date(), since: null }),
     ).rejects.toThrow(/1 occurrence status\(es\) differ from their events/);
   });
+
+  it('[PTS-01] status_check also fails when the points ledger differs from the statuses', async () => {
+    const db = {
+      rpc: vi.fn(async () => ({
+        data: {
+          drift: 0,
+          sample: [],
+          points_drift: 2,
+          points_sample: [{ occurrence_id: 'o1', member_id: 'm1', held: 0, owed: 5 }],
+        },
+        error: null,
+      })),
+    } as unknown as SupabaseClient;
+    await expect(
+      JOBS.status_check!({ db, householdId: 'h1', scheduledAt: new Date(), since: null }),
+    ).rejects.toThrow(/2 member point total\(s\) differ from their occurrences/);
+  });
 });

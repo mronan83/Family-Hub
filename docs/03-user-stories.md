@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.11: US-1101, US-1106 and US-1109 as built (WP-16, D-49): earns and reversals follow each item's status, a parent adds or takes away points on the member's page, and a double tap posts once. US-1102's balance and latest entries are on the board's snapshot; the board draws them with WP-11.
 > v0.8.10: US-320 everyone does their own (WP-43, D-47).
 > v0.8.9: US-304, US-305 and US-307 as built in the database and API (WP-10, D-46); the board's screen comes with WP-11.
 > v0.8.8: US-301, US-302, US-308 and US-311 as built (WP-09, D-45): two weeks planned on save, an edit reaches today only where nothing has happened, and each day's snapshot of who was responsible.
@@ -672,6 +673,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** PTS-01
 - Given I add 10 points with the reason "Helped a neighbor", when I save, then an `adjustment` entry is posted with my identity and it appears in history.
 - Given an adjustment, when I look for a way to edit or delete it, then there is none; I post a correcting entry instead.
+- Given I tap "Add points" twice, when the form is sent again, then the points are added once.
+- Given a member who doesn't earn rewards, when I open their page, then there is no way to give them points.
 
 ### US-1107 — Automatic bonus points
 **As an** admin **I want** bonus points for streaks or a perfect day **so that** consistency pays off.

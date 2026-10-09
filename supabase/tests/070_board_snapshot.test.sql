@@ -55,8 +55,9 @@ select is((select array_agg(m ->> 'display_name') from snap, jsonb_array_element
   '[DEV-05] members of this household only, without archived ones; children first, then by name');
 select is((select s -> 'members' -> 1 from snap),
   jsonb_build_object('id', (select id from public.member where display_name = 'Maya'), 'display_name', 'Maya',
-    'role', 'child', 'avatar_key', 'owl', 'color', 'member-1', 'earns_rewards', true),
-  '[DEV-05] each member with what the board draws: name, role, avatar, color, earns rewards');
+    'role', 'child', 'avatar_key', 'owl', 'color', 'member-1', 'earns_rewards', true,
+    'points', jsonb_build_object('balance', 0, 'recent', '[]'::jsonb)),
+  '[DEV-05][PTS-02] each member with what the board draws: name, role, avatar, color, earns rewards, points');
 select is((select (s ->> 'today')::date from snap), (now() at time zone 'Pacific/Kiritimati')::date,
   '[DEV-05] today is the household''s date, not the server''s');
 select is((select s -> 'range' from snap),
@@ -100,7 +101,7 @@ select pg_temp.act_as_owner();
 select is(
   (select array_agg(tablename::text order by tablename::text) from pg_publication_tables
     where pubname = 'supabase_realtime' and schemaname = 'public'),
-  array['device', 'household', 'household_settings', 'member'],
+  array['device', 'household', 'household_settings', 'member', 'points_ledger'],
   '[DEV-05] the board-readable tables notify the board (apps/web/lib/live.ts listens to each)');
 select ok((select bool_and(has_table_privilege('authenticated', format('public.%I', tablename), 'select'))
              from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public'),

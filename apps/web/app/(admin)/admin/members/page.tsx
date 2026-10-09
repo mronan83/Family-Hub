@@ -3,15 +3,16 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
+import { balanceText } from '@/lib/points';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../header';
 import { setArchived } from './actions';
-import { loadAdmins, loadMembers } from './data';
+import { loadAdmins, loadBalances, loadMembers } from './data';
 
 export const metadata: Metadata = { title: 'Members' };
 
-// [ACC-04][PTS-07] The household's members: children and adults, with avatar, color and whether
-// they earn rewards. Archived members keep their history and can be restored.
+// [ACC-04][PTS-07][PTS-02] The household's members: children and adults, with avatar, color, whether
+// they earn rewards and their points. Archived members keep their history and can be restored.
 export default async function MembersPage({
   searchParams,
 }: {
@@ -21,9 +22,10 @@ export default async function MembersPage({
   const user = await requireSignedIn(db, '/admin/members');
   const household = await adminHousehold(db!, user.userId);
   if (!household) redirect('/setup');
-  const [members, admins] = await Promise.all([
+  const [members, admins, balances] = await Promise.all([
     loadMembers(db!, household.id),
     loadAdmins(db!, household.id),
+    loadBalances(db!, household.id),
   ]);
   const emailOf = new Map(admins.map((a) => [a.userId, a.email]));
   const active = members.filter((m) => !m.archivedAt);
@@ -61,7 +63,9 @@ export default async function MembersPage({
                       {' · '}
                       {m.role === 'child' ? 'Child' : 'Adult'}
                       {' · '}
-                      {m.earnsRewards ? 'Earns rewards' : 'No rewards'}
+                      {m.earnsRewards
+                        ? `Earns rewards · ${balanceText(balances.get(m.id) ?? 0)}`
+                        : 'No rewards'}
                       {m.userId ? ` · Signs in as ${emailOf.get(m.userId) ?? 'an admin'}` : ''}
                     </span>
                   </span>

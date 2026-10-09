@@ -1,6 +1,7 @@
 import type { AvatarKey, MemberColor } from '@familywise/ui';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { MemberInput } from '@/lib/members';
+import type { LedgerEntry, LedgerEntryType } from '@/lib/points';
 
 export interface MemberRow extends MemberInput {
   id: string;
@@ -58,4 +59,88 @@ export async function loadAdmins(
     userId: a.user_id,
     email: a.email,
   }));
+}
+
+/** [PTS-02] Each member's balance in the household, through RLS; a member with no entries has none. */
+export async function loadBalances(
+  db: SupabaseClient,
+  householdId: string,
+): Promise<Map<string, number>> {
+  const { data, error } = await db
+    .from('v_points_balance')
+    .select('member_id, balance')
+    .eq('household_id', householdId);
+  if (error) throw new Error(`balances: ${error.message}`);
+  return new Map(
+    (data as { member_id: string; balance: number }[]).map((r) => [r.member_id, r.balance]),
+  );
+}
+
+interface RawEntry {
+  id: string;
+  entry_type: LedgerEntryType;
+  amount: number;
+  reason: string | null;
+  occurrence_id: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+/**
+ * [PTS-01][PTS-02] A member's balance and their latest entries, newest first. An earn names its item
+ * when this admin may see the item (D-34); otherwise it stays "a private item".
+ */
+export async function loadPoints(
+  db: SupabaseClient,
+  memberId: string,
+  limit = 30,
+): Promise<{ balance: number; entries: LedgerEntry[] }> {
+  const [{ data: rows, error }, { data: total, error: totalError }] = await Promise.all([
+    db
+      .from('points_ledger')
+      .select('id, entry_type, amount, reason, occurrence_id, created_by, created_at')
+      .eq('member_id', memberId)
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .limit(limit),
+    db.from('v_points_balance').select('balance').eq('member_id', memberId).maybeSingle(),
+  ]);
+  if (error) throw new Error(`points: ${error.message}`);
+  if (totalError) throw new Error(`balance: ${totalError.message}`);
+  const entries = rows as RawEntry[];
+  const occurrenceIds = [
+    ...new Set(entries.flatMap((e) => (e.occurrence_id ? [e.occurrence_id] : []))),
+  ];
+  // Each earn's item title, read through RLS: an item this admin may not see (D-34) has none. Two
+  // plain reads, as an occurrence's link to its item is a composite key PostgREST won't embed by name.
+  const titles = new Map<string, string>();
+  if (occurrenceIds.length > 0) {
+    const { data: occs, error: occError } = await db
+      .from('chore_occurrence')
+      .select('id, chore_id')
+      .in('id', occurrenceIds);
+    if (occError) throw new Error(`points items: ${occError.message}`);
+    const pairs = occs as { id: string; chore_id: string }[];
+    const choreIds = [...new Set(pairs.map((o) => o.chore_id))];
+    const { data: chores, error: choreError } = choreIds.length
+      ? await db.from('chore').select('id, title').in('id', choreIds)
+      : { data: [], error: null };
+    if (choreError) throw new Error(`points items: ${choreError.message}`);
+    const title = new Map((chores as { id: string; title: string }[]).map((c) => [c.id, c.title]));
+    for (const o of pairs) {
+      const t = title.get(o.chore_id);
+      if (t) titles.set(o.id, t);
+    }
+  }
+  return {
+    balance: (total as { balance: number } | null)?.balance ?? 0,
+    entries: entries.map((e) => ({
+      id: e.id,
+      type: e.entry_type,
+      amount: e.amount,
+      at: e.created_at,
+      label: e.occurrence_id ? (titles.get(e.occurrence_id) ?? null) : e.reason,
+      by: e.created_by,
+    })),
+  };
 }

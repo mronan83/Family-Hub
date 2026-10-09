@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.13: the points ledger (WP-16, D-49): `points_ledger` and `v_points_balance` as built; earn and reversal reconcile each occurrence's points; `adjust_points()`; the snapshot's points; the ledger drift check (§3.3b, §4.2b, §4.6, §4.7).
 > v0.8.12: everyone does their own (WP-43, D-47): `chore.assignment` (`each` or `shared`) and `chore_occurrence.member_id`, one occurrence per item, day and person (§3.2).
 > v0.8.11: completion events (WP-10, D-46): `chore_completion_event` as built, with who recorded it taken from the session; the fold, day close, rebuild and drift check; `record_completions()` (§4.1, §4.2, §4.5, §4.7).
 > v0.8.10: occurrences (WP-09, D-45): `chore_occurrence` and `chore_occurrence_assignee` as built, with each assignee's day type in the snapshot; the generator, re-planning triggers and `v_member_occurrence` (§3.2, §4.2, §4.5, §4.7).
@@ -425,7 +426,7 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `points_ledger` | `member_id`, `entry_type` (`earn`/`reversal`/`bonus`/`spend`/`refund`/`adjustment`), `amount` (signed), `occurrence_id?`, `redemption_id?`, `goal_id?`, `reason`, `dedupe_key` (unique), `created_by_type`, `created_by`, `created_at` | **Append-only.** Balance is a sum. Earn and reversal post once per rewarded member of the occurrence (D-32). A reversal after a spend may take the balance negative; the board shows it as a debt (R-12). |
+| `points_ledger` | `member_id`, `entry_type` (`earn`/`reversal`/`bonus`/`spend`/`refund`/`adjustment`), `amount` (signed, never 0), `occurrence_id?`, `redemption_id?`, `goal_id?`, `reason`, `dedupe_key` (unique), `created_by_type`, `created_by`, `created_at` | **Append-only.** Balance is a sum. Each rewarded member holds a done occurrence's points, and nobody holds a not-done one's (D-32, D-49). A reversal after a spend may take the balance negative; the board shows it as points to earn back (R-12). **As built (WP-16):** without `redemption_id` and `goal_id`, which arrive with redemptions (WP-18) and goal payouts (WP-30); `created_at` is the posting time (`clock_timestamp()`), so entries keep their order within a transaction. |
 | `reward_catalog_item` | `title`, `description`, `image_path`, `cost_points`, `stock?`, `weekly_limit?`, `active`, `sort_order`, `archived_at` | Admin-defined reward and activity inventory (arcade-style prizes). |
 | `redemption` | `id` (client uuid), `member_id`, `catalog_item_id`, `cost_snapshot`, `status` (`requested`/`approved`/`denied`/`fulfilled`/`cancelled`), `requested_at`, `decided_at`, `decided_by`, `fulfilled_at`, `note` | Approval posts the `spend` entry. A request is accepted only if balance minus open requests is at least the cost. |
 | `points_rule` | `rule_type` (`streak_bonus`/`all_done_bonus`), `params jsonb`, `bonus_points`, `active` | P2 bonus automation (PTS-05). |
@@ -752,71 +753,53 @@ Rules:
 
 ### 4.2b Points ledger
 
+As built (WP-16, `20261009130000_points_ledger.sql`, D-49), in outline:
+
 ```sql
-create table points_ledger (
-  id            uuid primary key default gen_random_uuid(),
-  household_id  uuid not null references household(id),
-  member_id     uuid not null references member(id),
-  entry_type    text not null check (entry_type in
-                  ('earn','reversal','bonus','spend','refund','adjustment')),
-  amount        int  not null,                    -- signed
-  occurrence_id uuid references chore_occurrence(id),
-  redemption_id uuid,
-  goal_id       uuid,
-  reason        text,
-  dedupe_key    text not null unique,
+create table public.points_ledger (
+  id              uuid primary key default gen_random_uuid(),
+  household_id    uuid not null references public.household (id) on delete cascade,
+  member_id       uuid not null,                     -- (household_id, member_id) → member
+  entry_type      text not null check (entry_type in
+                    ('earn','reversal','bonus','spend','refund','adjustment')),
+  amount          integer not null check (amount <> 0),   -- signed
+  occurrence_id   uuid,                              -- (household_id, occurrence_id) → chore_occurrence
+  reason          text check (char_length(reason) between 1 and 200),
+  dedupe_key      text not null unique,
   created_by_type text not null check (created_by_type in ('system','admin','device')),
-  created_by    uuid,
-  created_at    timestamptz not null default now()
+  created_by      uuid,
+  created_at      timestamptz not null default clock_timestamp(),
+  check (entry_type <> 'earn' or (amount > 0 and occurrence_id is not null)),
+  check (entry_type <> 'reversal' or amount < 0),
+  check (entry_type <> 'adjustment' or (reason is not null and created_by_type = 'admin' and created_by is not null))
 );
-create index on points_ledger (household_id, member_id, created_at);
-create trigger trg_pl_immutable before update or delete on points_ledger
-  for each row execute function private.prevent_mutation();
+-- Append-only: no update; no delete while the household exists (trg_pl_immutable).
 
--- Earn on entering a done status, reverse on leaving it: once per rewarded member (D-32).
-create function private.post_points() returns trigger
-language plpgsql security definer set search_path = '' as $$
-declare
-  before_set uuid[] := case when old.status in ('completed','approved') then old.rewarded else '{}' end;
-  after_set  uuid[] := case when new.status in ('completed','approved') then new.rewarded else '{}' end;
-  m uuid;
-begin
-  if new.points_snapshot = 0 then return new; end if;
-  foreach m in array after_set loop
-    continue when m = any(before_set);
-    insert into public.points_ledger
-      (household_id, member_id, entry_type, amount, occurrence_id, dedupe_key, created_by_type)
-    values (new.household_id, m, 'earn', new.points_snapshot, new.id,
-            'occ:' || new.id || ':earn:' || m || ':' || new.status_event_id, 'system')
-    on conflict (dedupe_key) do nothing;
-  end loop;
-  foreach m in array before_set loop
-    continue when m = any(after_set);
-    insert into public.points_ledger
-      (household_id, member_id, entry_type, amount, occurrence_id, dedupe_key, created_by_type)
-    values (new.household_id, m, 'reversal', -new.points_snapshot, new.id,
-            'occ:' || new.id || ':rev:' || m || ':' || new.status_event_id, 'system')
-    on conflict (dedupe_key) do nothing;
-  end loop;
-  return new;
-end $$;
+-- Earn and reversal (D-32, D-49): reconcile, not diff. An occurrence owes points_snapshot to each
+-- member of `rewarded` while it is completed or approved, and 0 otherwise. Each change posts the
+-- difference between what it owes and what the ledger holds for it, so every path that changes a
+-- status (an event, day close, a parent's rebuild) leaves the ledger agreeing, and posting again
+-- posts nothing. Postings for one occurrence happen under its row lock, one at a time.
+create trigger trg_occ_points after update of status, rewarded, points_snapshot on public.chore_occurrence
+  for each row when (old.status is distinct from new.status or old.rewarded is distinct from new.rewarded
+                     or old.points_snapshot is distinct from new.points_snapshot)
+  execute function private.post_points();   -- calls private.reconcile_occurrence_points(new.id)
+-- keys: 'occ:{occurrence}:{member}:{n}', n counting that member's postings on that occurrence
 
-create trigger trg_occ_points after update of status, rewarded on chore_occurrence
-  for each row execute function private.post_points();
-
-create view v_points_balance with (security_invoker = true) as
-select member_id,
-       sum(amount)::int                                   as balance,
-       coalesce(sum(amount) filter (where amount > 0 and entry_type in ('earn','bonus')), 0)::int
-                                                          as earned_total
-from points_ledger group by member_id;
+create view public.v_points_balance with (security_invoker = true) as
+select household_id, member_id, sum(amount)::int as balance,
+       coalesce(sum(amount) filter (where entry_type in ('earn','reversal','bonus')), 0)::int as earned,
+       max(created_at) as last_entry_at
+  from public.points_ledger group by household_id, member_id;
 ```
+
+`earned` is what doing things has brought in, net of reversals, before spending and adjustments. RLS: admins and the board read their whole household's ledger, because a balance is a sum; a private item's earn shows only its amount, as the item's title stays behind its own RLS. `insert`, `update`, `delete` and `truncate` are revoked from `anon`, `authenticated` and `service_role`. The ledger is in the `supabase_realtime` publication, so a points change tells the board to read its snapshot again.
 
 **Ledger write functions (D-28).** Application code never inserts into `points_ledger`. Earn and reversal come from `trg_occ_points`; every other entry goes through one `SECURITY DEFINER` function, `private.post_ledger(...)` (insert `on conflict (dedupe_key) do nothing`), called by these entry points:
 
 | Entry point | Caller | Entry | Dedupe key |
 |---|---|---|---|
-| `public.adjust_points(member, amount, reason, request_id)` | admin (RLS-checked inside) | `adjustment` | `adj:{request_id}` |
+| `public.adjust_points(member, amount, reason, request_id)` | admin (checked inside), built in WP-16 | `adjustment` | `adj:{request_id}` |
 | `public.decide_redemption(redemption, 'approve' \| 'deny')` | admin | `spend` on approve | `red:{id}:spend` |
 | `public.cancel_redemption(redemption)` | admin, or device while `requested` | `refund` if it was approved | `red:{id}:refund` |
 | `private.post_goal_payout(goal, n)` / `private.reverse_goal_payout(goal, n)` | reconcile job | `bonus` / `reversal` | `goal:{id}:payout:{n}` / `goal:{id}:payout_rev:{n}` |
@@ -978,7 +961,7 @@ create policy chore_completion_event_device_insert on public.chore_completion_ev
 
 `board_snapshot(p_from date default null, p_to date default null) returns jsonb` (SECURITY INVOKER, so RLS applies; `authenticated` only). It answers only an active board: it finds the caller's own `device` row (RLS shows a board its row while it is active) and returns null for anyone else, and for a board from the moment it is disconnected. `p_from` defaults to yesterday and `p_to` to two weeks ahead, both household-local; a window that ends before it starts or spans more than 32 days is refused (`22023`, hint `bad_range`).
 
-**Built so far (WP-06, `v: 1`):** `v`, `fetched_at`, `today` (household-local), `range {from, to}`, `household {id, name, timezone, week_start}`, `device {id, name, theme}` (`auto`, `day` or `evening`) and `members` (not archived; children first, then by name: `id, display_name, role, avatar_key, color, earns_rewards`). The board reads it through `apps/web/lib/snapshot.ts`, which refuses a shape it does not know. Each later work package adds its slice to the same object and bumps `v` only for a breaking change.
+**Built so far (WP-06, WP-16, `v: 1`):** `v`, `fetched_at`, `today` (household-local), `range {from, to}`, `household {id, name, timezone, week_start}`, `device {id, name, theme}` (`auto`, `day` or `evening`) and `members` (not archived; children first, then by name: `id, display_name, role, avatar_key, color, earns_rewards, points`). `points` is null for a member who does not earn rewards, else `{balance, recent}`: `recent` is the five latest entries, newest first, each `{id, type, amount, at, label}`, where `label` is the item's title (null for a private item, which the board cannot see) or an adjustment's reason. The board reads it through `apps/web/lib/snapshot.ts`, which refuses a shape it does not know. Each later work package adds its slice to the same object and bumps `v` only for a breaking change.
 
 **Full shape**, as the slices arrive:
 
@@ -1009,7 +992,11 @@ create policy chore_completion_event_device_insert on public.chore_completion_ev
 | `private.generate_occurrences()`, `private.replan()` | the job and triggers only | Make occurrences with their snapshots for a range; replace those nothing has happened to after a change (§3.2). Triggers: `trg_chore_replan`, `trg_chore_assignee_added`/`_removed`, `trg_member_replan` (from today), `trg_school_year_replan`, `trg_school_closure_replan`, `trg_member_school_profile_replan` (from tomorrow), `trg_household_settings_approval` (D-22). |
 | `public.record_completions(events)` | admins and boards (security invoker, under RLS) | Records up to 100 completion events as the caller, each on its own: `recorded`, `duplicate`, `gone`, `refused` or `invalid`, with a reason and the occurrence as the caller sees it (WP-10, D-46). |
 | `public.close_household_day(household_id)` | service role only (the `day_close` job) | Finalizes the household's past routines (`close_past_due`); returns `{closed, through}`. |
-| `public.occurrence_status_drift(household_id)` | service role only (the `status_check` job) | Report-only rebuild of the past 14 days and the planned 14 ahead; returns `{from, through, drift, sample}`. |
+| `public.occurrence_status_drift(household_id)` | service role only (the `status_check` job) | Report-only rebuild of the past 14 days and the planned 14 ahead; returns `{from, through, drift, sample, points_drift, points_sample}`. `points_drift` counts members whose points for one of those occurrences differ from what it owes them (`private.points_drift`, WP-16). |
+| `public.adjust_points(member, amount, reason, request_id)` | admins of the member's household (checked inside; `42501` otherwise) | Posts an `adjustment` of 1 to 10,000 points either way with a trimmed reason of up to 200 characters, as the caller. Refused for a member who does not earn rewards (`not_earning`) or is archived (`member_archived`), and for a bad amount (`bad_amount`) or reason (`reason_required`). Keyed `adj:{request_id}`: the same request again posts nothing and answers the same; a request id reused for a different member or amount is refused (`request_reused`). Returns `{id, duplicate, balance}` (WP-16). |
+| `private.reconcile_occurrence_points(occurrence)`, `private.post_points()` | the trigger `trg_occ_points`; an operator's fix | Posts the difference between what an occurrence owes each member (its `points_snapshot` to each of `rewarded` while `completed` or `approved`, else 0) and what the ledger holds for them: an `earn` or a `reversal`, keyed `occ:{occurrence}:{member}:{n}` (WP-16). |
+| `private.post_ledger(…)`, `private.member_balance(member)`, `private.backfill_points()` | definer functions only | The one writer for entries other than earn and reversal (`on conflict (dedupe_key) do nothing`, returning the new id or null); a member's balance; the migration's one-off earns for check-offs made before the ledger (safe to run again). |
+| `private.prevent_ledger_change()` | trigger only | Keeps `points_ledger` append-only: no update, and no delete while its household exists. |
 | `private.normalize_completion_event()`, `private.apply_completion_event()`, `private.prevent_event_change()` | triggers only | Normalize each event (§4.1 as built); fold it into the occurrence's status; keep events append-only. |
 | `public.record_app_error(…)` | service role only | Inserts into `private.app_error`, trimming each field. The 7-argument form adds the household (WP-42); the 6-argument form stays for code deployed before it. |
 | `public.household_errors(household_id, limit)` | that household's admins | Its server errors from the last 30 days, newest first (time, route, kind, message). |

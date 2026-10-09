@@ -17,6 +17,13 @@ const RAW = {
       avatar_key: 'owl',
       color: 'member-1',
       earns_rewards: true,
+      points: {
+        balance: 35,
+        recent: [
+          { id: 'p2', type: 'earn', amount: 5, at: '2026-10-09T13:00:00Z', label: 'Make bed' },
+          { id: 'p1', type: 'earn', amount: 7, at: '2026-10-08T13:00:00Z', label: null },
+        ],
+      },
     },
     {
       id: 'm2',
@@ -25,6 +32,7 @@ const RAW = {
       avatar_key: null,
       color: 'member-3',
       earns_rewards: false,
+      points: null,
     },
   ],
 };
@@ -46,6 +54,13 @@ describe('board snapshot', () => {
           avatarKey: 'owl',
           color: 'member-1',
           earnsRewards: true,
+          points: {
+            balance: 35,
+            recent: [
+              { id: 'p2', type: 'earn', amount: 5, at: '2026-10-09T13:00:00Z', label: 'Make bed' },
+              { id: 'p1', type: 'earn', amount: 7, at: '2026-10-08T13:00:00Z', label: null },
+            ],
+          },
         },
         {
           id: 'm2',
@@ -54,9 +69,28 @@ describe('board snapshot', () => {
           avatarKey: null,
           color: 'member-3',
           earnsRewards: false,
+          points: null,
         },
       ],
     });
+  });
+
+  it("[PTS-02] reads each rewarded member's points; refuses an entry it does not know", () => {
+    const maya = RAW.members[0]!;
+    const withEntry = (entry: unknown) => ({
+      ...RAW,
+      members: [{ ...maya, points: { balance: 1, recent: [entry] } }],
+    });
+    expect(() => readSnapshot(withEntry({ ...maya.points!.recent[0], type: 'gift' }))).toThrow(
+      'unknown points entry',
+    );
+    expect(() =>
+      readSnapshot({ ...RAW, members: [{ ...maya, points: { balance: '35', recent: [] } }] }),
+    ).toThrow('points are not a balance');
+    // A snapshot from before points (an older database) reads as no points.
+    expect(
+      readSnapshot({ ...RAW, members: [{ ...maya, points: undefined }] })?.members[0]?.points,
+    ).toBeNull();
   });
 
   it('[DEV-02] no snapshot means the board is not active', () => {
@@ -88,6 +122,7 @@ describe('notify, then refetch', () => {
       { table: 'household_settings', filter: 'household_id=eq.h1' },
       { table: 'member', filter: 'household_id=eq.h1' },
       { table: 'device', filter: 'id=eq.d1' },
+      { table: 'points_ledger', filter: 'household_id=eq.h1' },
     ]);
   });
 

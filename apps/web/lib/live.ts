@@ -19,6 +19,7 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     { table: 'household_settings', filter: `household_id=eq.${householdId}` },
     { table: 'member', filter: `household_id=eq.${householdId}` },
     { table: 'device', filter: `id=eq.${deviceId}` },
+    { table: 'points_ledger', filter: `household_id=eq.${householdId}` },
   ];
 }
 
