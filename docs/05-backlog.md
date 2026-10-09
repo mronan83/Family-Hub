@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.17: WP-42 done (PR #17), so P0 is done: every P0 item is merged and its exit criteria pass (`04` §E). Ready now: WP-08, WP-21, WP-22, WP-24, WP-25, WP-32, WP-33.
 > v0.8.16: WP-42 in review (PR #17): System Health, with errors kept per household and usage read daily (D-42).
 > v0.8.15: SPIKE-02's ICS part done (`01` §5.4), so WP-22 is queued; its CalDAV part runs before WP-29. Y-6's calendar is a real one, so the spike reports counts only and its fixture is made up.
 > v0.8.14: Y-6 done, so SPIKE-02 is ready (its iCloud part; the CalDAV part waits for WP-29). Y-8 is not needed before P3.
@@ -73,9 +74,9 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-05 | Device pairing and device auth | P0 | L | WP-03 | Done (PR #11) |
 | WP-06 | Board shell, snapshot, and realtime | P0 | M | WP-05, WP-37 | Done (PR #12) |
 | WP-07 | Job framework and observability | P0 | M | WP-01, WP-02 | Done (PR #8) |
-| WP-42 | System Health page | P0 | S | WP-03, WP-07 | In review (PR #17) |
-| WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Queued |
-| WP-21 | School year and day types | P1a | M | WP-04 | Queued |
+| WP-42 | System Health page | P0 | S | WP-03, WP-07 | Done (PR #17) |
+| WP-08 | Chores, tasks, tags, and visibility | P1a | L | WP-04 | Ready |
+| WP-21 | School year and day types | P1a | M | WP-04 | Ready |
 | WP-09 | Occurrence generator | P1a | L | WP-08, WP-21 | Queued |
 | WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | Queued |
 | WP-16 | Points ledger | P1a | M | WP-10 | Queued |
@@ -89,10 +90,10 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Queued |
 | WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Queued |
 | WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Queued |
-| WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Queued |
+| WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Ready |
 | WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Queued |
-| WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Queued |
-| WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Queued |
+| WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
+| WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Ready |
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Queued |
 | WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Queued |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Queued |
@@ -100,8 +101,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Queued |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Queued |
 | WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Queued |
-| WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Queued |
-| WP-33 | Export and delete | P3 | M | WP-04 | Queued |
+| WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
+| WP-33 | Export and delete | P3 | M | WP-04 | Ready |
 | WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
 | WP-35 | Board layout configuration and weather | P3 | M | WP-23 | Queued |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
@@ -542,7 +543,7 @@ flowchart LR
 
 | Milestone | Items | Notes |
 |---|---|---|
-| P0 | SPIKE-01, SPIKE-05, WP-01 – WP-07, WP-37, WP-41, WP-42 | One L (device auth) |
+| P0 | SPIKE-01, SPIKE-05, WP-01 – WP-07, WP-37, WP-41, WP-42 | One L (device auth). Done 9 October 2026. |
 | P1a | SPIKE-03, WP-08 – WP-14, WP-16, WP-21 | Five L (chores/tasks, generator, events/status, board Today, admin ops) |
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
