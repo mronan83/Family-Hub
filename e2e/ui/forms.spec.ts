@@ -12,3 +12,8 @@ test('[ACC-02] a refused sign-in keeps the email that was typed', async ({ page 
   await expect(form.getByRole('status')).toHaveText('Sign-in isn’t set up on this deployment.');
   await expect(form.getByLabel('Email')).toHaveValue('pat@example.com');
 });
+
+test('[ACC-04] members pages need a signed-in admin', async ({ page }) => {
+  await page.goto('/admin/members/new');
+  await expect(page).toHaveURL(/\/sign-in\?next=%2Fadmin%2Fmembers%2Fnew$/);
+});

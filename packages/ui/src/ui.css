@@ -409,6 +409,60 @@ body {
   font-family: ui-monospace, monospace;
   font-size: var(--t-small);
 }
+/* Choices: radios and switches with their words; avatar and color pickers (WP-04). */
+.fw-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.fw-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch);
+  cursor: pointer;
+}
+.fw-choice input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--primary);
+}
+.fw-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.fw-picker__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch);
+  padding: var(--s-1) var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+}
+.fw-picker__item:has(input:checked) {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+.fw-picker__item:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+.fw-input--short {
+  max-width: 8ch;
+}
+.admin a[aria-current='page'] {
+  text-decoration: none;
+  border-bottom: 2px solid var(--primary);
+}
 .fw-banner--notice {
   background: var(--missed-tint);
 }
