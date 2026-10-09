@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.32: WP-11 done (PR #28): the board's Today and check-off. The owner confirmed D-50: the board never shows why points were taken away. WP-12, WP-13 and WP-18 are ready; WP-12 and WP-18 were ready from WP-16's merge but not marked so.
 > v0.8.31: WP-11 in review (PR #28): the board's Today and check-off (D-50).
 > v0.8.30: WP-16 done (PR #27): the points ledger. WP-11 is ready.
 > v0.8.29: WP-16 in review (PR #27): the points ledger (D-49). WP-11 waits only on it.
@@ -96,13 +97,13 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-10 | Completion events, status projection, day-close | P1a | L | WP-09, WP-07 | Done (PR #23) |
 | WP-43 | Everyone does their own | P1a | M | WP-10 | Done (PR #25) |
 | WP-16 | Points ledger | P1a | M | WP-10 | Done (PR #27) |
-| WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37, WP-43 | In review (PR #28) |
-| WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Queued |
-| WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | Queued |
+| WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37, WP-43 | Done (PR #28) |
+| WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Ready |
+| WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | Ready |
 | WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
 | WP-15 | Rules engine package | P1b | L | WP-01 | Ready |
 | WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Queued |
-| WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Queued |
+| WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Ready |
 | WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Queued |
 | WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Queued |
 | WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Queued |
