@@ -337,7 +337,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | R-23 | A private item leaks through the board snapshot, an audit row, or the other admin's view | Low | High | One RLS rule on the item, its occurrences, events and audit rows; pgTAP proves the board and the other admin see nothing; the snapshot reads through RLS |
 | R-24 | Web push on iPhone works only for the admin app added to the Home Screen with permission granted, and Apple can change the rules | Med | Med | Onboarding step with a test notification; Settings lists each device's last delivery; My tasks and the board work without push; launch check L-10 on real phones |
 | R-25 | Production secrets are repository secrets, readable by any workflow run on any branch (GitHub Free, private repository) | Low | High | Only the owner and Claude Code push; workflow changes are reviewed in the pull request diff; the Vercel token is scoped to the team and expires; the database password and the token can be rotated from their dashboards |
-| R-26 | A commit reaches `main` without passing its checks, since GitHub Free does not enforce branch protection on a private repository | Low | Med | The deploy gate refuses to ship it and the failed run emails the owner; fix forward in a pull request or revert (D-36) |
+| R-26 | A commit reaches `main` without passing its checks, since GitHub Free does not enforce branch protection on a private repository | Low | Med | The deploy gate refuses to ship it and the failed run emails the owner; fix forward in a pull request or revert (D-36). Each refusal is tested in `ci / checks`, so a change that weakens the gate fails CI |
 | R-27 | Previews run unapproved code against the production database | Low | High | Previews hold only the browser-safe key, so RLS applies to everything they do; they run as the demo family, which RLS keeps apart from yours (pgTAP); only additive migrations are applied before approval; previews sit behind a Vercel login; nothing in the pipeline wipes the database (D-37) |
 
 ### Spikes (time-boxed, before dependent work)
@@ -383,6 +383,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.5 | WP-41 done: PR #4's merge deployed on its own (gate, migrate, app, smoke), and the deploy gate's refusals are tested in `ci / checks` (`scripts/deploy-gate.sh`). Owner setup Y-1 to Y-4 are done or dropped and leave `05` §0 for a Done table. R-26 mitigation. |
 | 0.8.4 | First production deploy: gate, migrate, app and smoke passed on `main` (production serves the build, dark until launch); keepalive wrote its first heartbeat. Pull requests open automatically when a work package is built and tested (owner's standing instruction). |
 | 0.8.3 | WP-37 merged (PR #3); owner setup Y-4 done. The first production deploy passed the gate and the migrate step, then stopped because the deploy token could not open the Vercel project; the gate now checks the token before the database is touched. |
 | 0.8.2 | WP-37 brand system: Evening `--success` is Leaf 400 (8.33:1 on the Evening surface; Leaf 600 was 2.89:1); `.theme-day` and `.theme-evening` force a theme on part of a page; brand checks join `ci / build`. NFR-13 now has tests. |
