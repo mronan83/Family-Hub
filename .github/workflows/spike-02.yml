@@ -7,8 +7,6 @@ name: spike-02
 
 on:
   workflow_dispatch:
-  push:
-    branches: [claude/spike-02-ics]
 
 permissions:
   contents: read
