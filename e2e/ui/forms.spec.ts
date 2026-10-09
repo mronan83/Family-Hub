@@ -18,6 +18,11 @@ test('[ACC-04] members pages need a signed-in admin', async ({ page }) => {
   await expect(page).toHaveURL(/\/sign-in\?next=%2Fadmin%2Fmembers%2Fnew$/);
 });
 
+test('[NFR-07] the System Health page needs a signed-in admin', async ({ page }) => {
+  await page.goto('/admin/health');
+  await expect(page).toHaveURL(/\/sign-in\?next=%2Fadmin%2Fhealth$/);
+});
+
 test('[DEV-01] boards pages need a signed-in admin', async ({ page }) => {
   await page.goto('/admin/devices');
   await expect(page).toHaveURL(/\/sign-in\?next=%2Fadmin%2Fdevices$/);
