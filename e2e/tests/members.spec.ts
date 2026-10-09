@@ -132,6 +132,8 @@ test('[ACC-04] an adult is linked to an admin, and only to one member', async ({
 
   // Alex's and Sam's sign-ins are taken by their own members, so Pat is not offered them.
   await page.getByRole('link', { name: 'Edit Pat' }).click();
+  // allTextContents does not wait, so wait for the edit page first.
+  await expect(page.getByRole('heading', { name: 'Pat', level: 1 })).toBeVisible();
   const options = await page.getByLabel('Their sign-in').locator('option').allTextContents();
   expect(options[0]).toBe('Not linked');
   expect(options).not.toContain('alex@demo.familywise.invalid');
