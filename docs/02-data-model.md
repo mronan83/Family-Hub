@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.9: school years (WP-21, D-44): `school_year`, `school_term`, `school_closure` and `member_school_profile` as built; `resolve_day_type` and the day-type functions (§3.5, §4.4, §4.8).
 > v0.8.8: the family list (WP-08, D-43): `chore`, `chore_assignee`, `tag` and `chore_tag` as built, `save_chore()`, private items in RLS and in `audit_log` (§3.2, §4.5, §4.8).
 > v0.8.7: System Health (WP-42, D-42): `private.app_error.household_id`, `private.usage_sample`, `household_errors()`, `system_usage()` and the 7-argument `record_app_error()` (§3.1, §4.7, §6).
 > v0.8.6: `calendar_source.content_hash` and how the sync uses `etag` (SPIKE-02, §3.1).
@@ -424,10 +425,10 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `school_year` | `name`, `school_name?`, `start_date`, `end_date`, `is_default` | Multiple years allowed; one default per household. |
+| `school_year` | `name`, `school_name?`, `start_date`, `end_date`, `is_default`, `archived_at` | Multiple years allowed. Several may be defaults if their dates don't overlap (D-44). Archived, never deleted. |
 | `school_term` | `school_year_id`, `name`, `start_date`, `end_date` | Informational and available as reward-window presets. |
 | `school_closure` | `school_year_id`, `name`, `start_date`, `end_date`, `closure_type` (`break`/`holiday`/`teacher_day`/`snow_day`/`other`) | `break` → day type `break`; others → `no_school`. |
-| `member_school_profile` | `member_id`, `school_year_id`, `lunch_defaults jsonb` (`{"mon":"buy","tue":"bring",...}`), `menu_source_id?` | Per child, per year. Drives buyer/bringer defaults. |
+| `member_school_profile` | `id`, `member_id`, `school_year_id`, `lunch_defaults jsonb` (`{"mon":"buy","tue":"bring",...}`), `menu_source_id?` | Which school year a member follows instead of the default (any member), per year. Drives buyer/bringer defaults (WP-26); `menu_source_id` arrives with menus (WP-27). |
 
 **Day-type resolution** (`resolve_day_type`), precedence top to bottom:
 
@@ -440,6 +441,12 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 | 5 | Otherwise | `summer` |
 
 The result is computed, never stored per day (the occurrence stores a snapshot of the type it was generated under). A member without a school profile, usually an adult, follows the household's default school year, so a parent's "pack lunches on school days" works. A shared item is generated for a date when its day-type filter matches for any assignee.
+
+**As built (WP-21, D-44):**
+- A member's school year on a date (`member_school_year`) is the one they are assigned to that covers the date, else the household's default that covers it; none means summer. So a child with a profile for one school follows the default again outside that school's dates, and next year's default applies from its first day.
+- Default years may not overlap (`default_year_overlap`); a member follows one school year on any date (`profile_overlap`); terms and closures sit inside their year (`outside_school_year`), and a year's dates can't shrink past them (`year_excludes_dates`). Guards are triggers; errors carry the hint.
+- An archived year no longer applies; its members fall back to the default.
+- `chore_day_type_matches(chore, date)` is the day-type half of generation: true when any assignee's day type is in the item's `day_types`. The generator (WP-09) adds the schedule and regenerates future occurrences when a year, closure or profile changes (D-24).
 
 When a closure or school year changes, the generator re-resolves and regenerates `scheduled` occurrences for dates **after today** only. Today's occurrences and the past are never touched (D-24).
 
@@ -815,31 +822,46 @@ create trigger trg_cce_dirty after insert on chore_completion_event
 ### 4.4 Day type
 
 ```sql
-create function public.resolve_day_type(p_member uuid, p_date date)
-returns text language sql stable as $$
-  with sy as (                     -- the member's school year, or the household default if none
-    select y.id
-    from school_year y
-    join member m on m.id = p_member and m.household_id = y.household_id
-    where p_date between y.start_date and y.end_date
-      and (exists (select 1 from member_school_profile sp
-                   where sp.member_id = p_member and sp.school_year_id = y.id)
-           or (y.is_default and not exists (select 1 from member_school_profile sp
-                                            where sp.member_id = p_member)))
-    limit 1
-  )
+-- The school year a member follows on a date: their own, else the household default for that date.
+create function public.member_school_year(p_member uuid, p_date date) returns uuid
+language sql stable set search_path = '' as $$
+  select coalesce(
+    (select y.id from public.member_school_profile p join public.school_year y on y.id = p.school_year_id
+      where p.member_id = p_member and y.archived_at is null and p_date between y.start_date and y.end_date
+      limit 1),
+    (select y.id from public.school_year y join public.member m on m.household_id = y.household_id
+      where m.id = p_member and y.is_default and y.archived_at is null
+        and p_date between y.start_date and y.end_date
+        and not exists (select from public.member_school_profile p
+                          join public.school_year own on own.id = p.school_year_id
+                         where p.member_id = p_member and own.archived_at is null
+                           and p_date between own.start_date and own.end_date)
+      limit 1))
+$$;
+
+-- A date's type in a school year, by precedence (§3.5).
+create function public.school_day_type(p_school_year uuid, p_date date) returns text
+language sql stable set search_path = '' as $$
   select case
-    when extract(isodow from p_date) in (6,7) then 'weekend'
-    when exists (select 1 from school_closure c join sy on sy.id = c.school_year_id
-                 where c.closure_type = 'break'
-                   and p_date between c.start_date and c.end_date) then 'break'
-    when exists (select 1 from school_closure c join sy on sy.id = c.school_year_id
-                 where p_date between c.start_date and c.end_date) then 'no_school'
-    when exists (select 1 from sy) then 'school_day'
+    when extract(isodow from p_date) in (6, 7) then 'weekend'
+    when p_school_year is null then 'summer'
+    when exists (select from public.school_closure c where c.school_year_id = p_school_year
+                   and c.closure_type = 'break' and p_date between c.start_date and c.end_date) then 'break'
+    when exists (select from public.school_closure c where c.school_year_id = p_school_year
+                   and p_date between c.start_date and c.end_date) then 'no_school'
+    when exists (select from public.school_year y where y.id = p_school_year
+                   and p_date between y.start_date and y.end_date) then 'school_day'
     else 'summer'
   end
 $$;
+
+create function public.resolve_day_type(p_member uuid, p_date date) returns text
+language sql stable set search_path = '' as $$
+  select public.school_day_type(public.member_school_year(p_member, p_date), p_date)
+$$;
 ```
+
+All are security invoker (each caller reads through its own access) and callable by signed-in users and the service role, not by anonymous callers.
 
 ### 4.5 RLS helpers (pattern)
 
@@ -966,6 +988,11 @@ All are `SECURITY DEFINER` with `search_path = ''`, and errors carry a stable co
 | `public.device_heartbeat(app_version)` | the board itself | Records `last_seen_at` (at most once a minute) and the app version. |
 | `public.board_snapshot(from, to)` | the board itself (security invoker) | Everything the board shows, in one read (§4.6); null for anyone but an active board. |
 | `private.check_member_user()`, `private.unlink_departed_admin()` | triggers only | Refuse a member linked to anyone but an admin of its household; unlink the member when its admin leaves (WP-04). |
+| `public.resolve_day_type(member, date)`, `public.member_school_year(member, date)`, `public.school_day_type(year, date)` | signed-in users, service role (security invoker) | A member's day type on a date, the school year they follow, and a date's type in a year (§4.4, WP-21). |
+| `public.household_day_types(household_id, date)` | that household's admins and board (security invoker) | Each active member's day type and school year on a date. |
+| `public.school_year_days(year)` | that household's admins and board (security invoker) | Every date of a school year with its day type, for the admin timeline. |
+| `public.chore_day_type_matches(chore, date)` | signed-in users, service role (security invoker) | Whether an item applies on a date by day type: any assignee's day type is in its `day_types` (SCH-03). |
+| `private.school_year_guard()`, `private.school_dates_guard()`, `private.school_profile_guard()` | triggers only | Default years don't overlap; terms and closures stay inside their year; a member follows one year on any date (D-44). |
 | `public.save_chore(household_id, id, item, assignees, tags)` | admins (security invoker, under their RLS) | Adds (`id` null) or edits an item, replaces its assignees and its active tags, in one transaction (WP-08). Assignees must be active members of the household (at least one, else `chore_needs_assignee`); archived tags already on the item stay. On an edit, a field left out of `item` keeps its value. An item the caller cannot see is `chore_not_found`. |
 | `private.chore_guard()` | triggers only | Sets `created_by` and `start_date` on insert; keeps `created_by`; lets only the creator change `visibility` (`visibility_creator_only`, D-43). |
 | `private.audit_row()` | triggers only | Writes one `audit_log` row per changed row (§3.1); skips rows whose household is being deleted. Rows about an item (`chore`, `chore_assignee`, `chore_tag`, and later its occurrences and events) carry its `chore_id`; an assignee or tag row names the member or tag as `entity_id`. |

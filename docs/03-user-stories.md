@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.7: US-601 and US-602 as built (WP-21, D-44): next year's default calendar, and a child at another school.
 > v0.8.6: US-301, US-313 and US-315 as built (WP-08, D-43): save and add another; the day's parts; only an item's creator changes who sees it.
 > v0.8.5: US-904 and US-909: System Health shows a household only its own errors, and usage against the Free-plan limits (WP-42, D-42).
 > v0.8.4: US-204: the 3-second budget is measured on every pull request, and a board an admin holds on Day or Evening switches live (WP-06, D-41). US-911: our own household may start in production before launch.
@@ -401,7 +402,9 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As an** admin **I want** to set school year dates, terms, breaks, and no-school days **so that** the system knows when school is in session.
 **Priority:** Must · **Phase:** P1 · **Reqs:** SCH-01
 - Given I create a school year with start/end dates and add a winter break and a teacher day, when I save, then they appear on a timeline.
-- Given I add next year's calendar, when I view settings, then multiple years coexist and one is marked default.
+- Given I add next year's calendar, when I view settings, then multiple years coexist and each shows whether it is a default.
+- Given next year's calendar is added as a default during the summer, when its first day comes, then everyone follows it with nothing to switch; two default years may not overlap (D-44).
+- Given a child goes to another school, when I add that school's year and tick the child under "Who follows it", then their day types follow that calendar while everyone else follows the default.
 
 ### US-602 — Behavior follows the day type
 **As a** parent **I want** chores and lunches to adapt to school days, breaks, weekends, and summer **so that** I don't maintain separate setups.
