@@ -121,7 +121,7 @@ const memberId = (name: string) =>
   sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
 const post = (events: object[]) => board.request.post('/api/completions', { data: { events } });
 
-test('[CHR-04][CHR-09] the board checks off a shared chore; a replay records nothing new; undo reopens it', async () => {
+test('[CHR-04][CHR-09][PTS-01] the board checks off a shared chore; a replay records nothing new; undo reopens it', async () => {
   const occurrence = todayOf(FEED_THE_DOG);
   const maya = memberId('Maya');
   const check = {
@@ -144,6 +144,11 @@ test('[CHR-04][CHR-09] the board checks off a shared chore; a replay records not
            from public.chore_completion_event e join public.device d on d.id = e.actor_id
           where e.id = '${check.id}'`),
   ).toBe('1:device:true');
+  // [PTS-01] Maya earns the chore's 5 points, once (WP-16).
+  const held = () =>
+    sql(`select coalesce(sum(amount), 0) from public.points_ledger
+          where occurrence_id = '${occurrence}' and member_id = '${maya}'`);
+  expect(held()).toBe('5');
 
   // Alex sees it on the item: today is done by Maya.
   await admin.goto(`/admin/chores/${FEED_THE_DOG}`);
@@ -163,6 +168,8 @@ test('[CHR-04][CHR-09] the board checks off a shared chore; a replay records not
     result: 'recorded',
     occurrence: { status: 'scheduled', done_by: [] },
   });
+  // [PTS-01] and gives them back.
+  expect(held()).toBe('0');
 });
 
 test('[CHR-04][CHR-06] the board cannot approve; a removed occurrence is gone; the rest of the batch is recorded', async () => {

@@ -221,3 +221,13 @@ begin
   end loop;
   perform private.close_past_due(v_demo);
 end $$;
+
+-- Points (WP-16): last week's check-offs earned their points as they were recorded. Alex also gave
+-- Leo 10 points two days ago, as a parent does on the member's page.
+insert into public.points_ledger (household_id, member_id, entry_type, amount, reason, dedupe_key,
+                                  created_by_type, created_by, created_at)
+select m.household_id, m.id, 'adjustment', 10, 'Helped carry the shopping',
+       'adj:0de00000-0000-4000-8000-0000000ad001', 'admin', '0de00000-0000-4000-8000-0000000000a1',
+       now() - interval '2 days'
+  from public.member m
+ where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Leo';

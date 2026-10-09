@@ -6,6 +6,7 @@ import type { FormState } from '@/lib/auth/messages';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { log } from '@/lib/log';
 import { memberSaveMessage, parseMember } from '@/lib/members';
+import { adjustmentMessage, parseAdjustment } from '@/lib/points';
 import { serverClient } from '@/lib/supabase/server';
 
 async function context() {
@@ -58,4 +59,34 @@ export async function setArchived(form: FormData): Promise<void> {
   if (error) log('warn', 'member archive not saved', { code: error.code });
   revalidatePath('/admin/members');
   redirect('/admin/members');
+}
+
+/**
+ * [PTS-01][US-1106] Adds or takes away a member's points with a reason, as the signed-in admin. The
+ * form carries a request id made when the page was drawn, so sending it twice posts once; the
+ * database checks who may and for whom (adjust_points).
+ */
+export async function adjustPoints(_prev: FormState, form: FormData): Promise<FormState> {
+  const { db, household } = await context();
+  const parsed = parseAdjustment(form);
+  if (!parsed.ok) return { message: parsed.message };
+  const a = parsed.value;
+  const { error } = await db.rpc('adjust_points', {
+    p_member_id: a.memberId,
+    p_amount: a.amount,
+    p_reason: a.reason,
+    p_request_id: a.requestId,
+  });
+  if (error) {
+    log('warn', 'points not adjusted', { code: error.code, hint: error.hint });
+    const { data: member } = await db
+      .from('member')
+      .select('display_name')
+      .eq('id', a.memberId)
+      .eq('household_id', household.id)
+      .maybeSingle();
+    return { message: adjustmentMessage(error, member?.display_name ?? 'This member') };
+  }
+  revalidatePath('/admin/members');
+  redirect(`/admin/members/${a.memberId}?adjusted=${a.amount}#points`);
 }

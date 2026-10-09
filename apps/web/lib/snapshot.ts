@@ -1,8 +1,10 @@
 import type { AvatarKey, MemberColor, ThemeOverride } from '@familywise/ui';
+import type { LedgerEntry, LedgerEntryType } from './points';
 
 /**
  * [DEV-05] What `public.board_snapshot()` returns (02 §4.6): the one read a paired board makes, and
- * the unit it will cache offline (WP-13). Members only for now; later work packages add slices.
+ * the unit it will cache offline (WP-13). Members and their points so far; later work packages add
+ * slices.
  */
 export interface BoardSnapshot {
   v: 1;
@@ -22,9 +24,27 @@ export interface BoardMember {
   avatarKey: AvatarKey | null;
   color: MemberColor;
   earnsRewards: boolean;
+  /** [PTS-02] For a member who earns rewards: their balance and latest entries; otherwise null. */
+  points: BoardPoints | null;
+}
+
+export interface BoardPoints {
+  /** Below zero means points to earn back (PTS-02). */
+  balance: number;
+  /** The five latest entries, newest first. */
+  recent: Omit<LedgerEntry, 'by'>[];
 }
 
 type Json = Record<string, unknown>;
+
+const ENTRY_TYPES: readonly LedgerEntryType[] = [
+  'earn',
+  'reversal',
+  'bonus',
+  'spend',
+  'refund',
+  'adjustment',
+];
 
 const isObject = (x: unknown): x is Json =>
   typeof x === 'object' && x !== null && !Array.isArray(x);
@@ -33,6 +53,28 @@ const str = (o: Json, k: string): string => {
   if (typeof v !== 'string') throw new Error(`snapshot: ${k} is not text`);
   return v;
 };
+
+function readPoints(p: unknown): BoardPoints | null {
+  if (!isObject(p)) return null;
+  if (typeof p.balance !== 'number' || !Array.isArray(p.recent)) {
+    throw new Error('snapshot: points are not a balance and a list');
+  }
+  return {
+    balance: p.balance,
+    recent: p.recent.map((e) => {
+      if (!isObject(e) || !ENTRY_TYPES.includes(e.type as LedgerEntryType)) {
+        throw new Error('snapshot: unknown points entry');
+      }
+      return {
+        id: str(e, 'id'),
+        type: e.type as LedgerEntryType,
+        amount: Number(e.amount),
+        at: str(e, 'at'),
+        label: typeof e.label === 'string' ? e.label : null,
+      };
+    }),
+  };
+}
 
 /**
  * The snapshot as the board uses it, or null when there is none (the board is not active: unpaired
@@ -74,6 +116,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
         avatarKey: (typeof m.avatar_key === 'string' ? m.avatar_key : null) as AvatarKey | null,
         color: str(m, 'color') as MemberColor,
         earnsRewards: m.earns_rewards === true,
+        points: readPoints(m.points),
       };
     }),
   };

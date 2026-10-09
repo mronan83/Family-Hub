@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.20: the points ledger (WP-16, D-49): earns and reversals by trigger, a parent's adjustments, each member's points on the board's snapshot and in Realtime, and the status check covers points too (§5.6, §7).
 > v0.8.19: everyone does their own (WP-43, D-47): an item with several people is planned one occurrence per person, or one shared (§3, §5.6).
 > v0.8.18: the repository is public (D-48): what a public run page or artifact may hold, fork previews, and e2e on this repository's own commits only (§9.5, §9.8, §9.10).
 > v0.8.17: completion events (WP-10, D-46): `POST /api/completions` records a batch as the caller, each event answered on its own; the `day_close` and `status_check` jobs (§5.2, §5.6).
@@ -333,7 +334,7 @@ sequenceDiagram
 | `menu_import` | daily | `/api/jobs/menu-import` | window 28 days ahead; skips override rows |
 | `occurrence_gen` | hourly (minute 23); edits re-plan at once in the database | `/api/jobs/occurrence-gen` | calls `generate_household_occurrences()`: tomorrow to 14 days ahead, one occurrence per item per due date, or per person for an item where everyone does their own (D-47) (`UNIQUE NULLS NOT DISTINCT (chore_id, due_date, member_id)` + `ON CONFLICT DO NOTHING`) with its `chore_occurrence_assignee` snapshot; idempotent. Triggers re-plan on edits (D-45): an item, its assignees or a member from today, in place; a school year, closure or school profile from tomorrow (D-24) |
 | `day_close` | hourly (minute 4; acts once a household's local day has ended) | `/api/jobs/day-close` | `close_household_day()` → `close_past_due()` marks unresolved routines `missed` and stamps `finalized_at` (tasks stay open, D-31); catches up every earlier day; idempotent (WP-10). Writing `member_daily_summary` and rebuilding `streak_segment` join it with WP-17 |
-| `status_check` | daily 09:38 UTC | `/api/jobs/status-check` | `occurrence_status_drift()`: re-folds the past 14 days and the planned 14 ahead, report-only; any drift fails the run, so System Health shows it (NFR-06, WP-10) |
+| `status_check` | daily 09:38 UTC | `/api/jobs/status-check` | `occurrence_status_drift()`: re-folds the past 14 days and the planned 14 ahead, and checks that each member holds exactly the points each of those occurrences owes them (WP-16), report-only; any drift fails the run, so System Health shows it (NFR-06, WP-10) |
 | `reminders` | every 5 min (minutes 0, 5, 10 …) | `/api/jobs/reminders` | household-local schedule; skips done items and people, items or devices with reminders off; inserts `reminder_delivery` (dedupe key) before sending; holds during quiet hours; daily digest at each person's chosen time |
 | `progress_reconcile` | every 5 min (minutes 2, 7, 12 …) | `/api/jobs/progress-reconcile` | recompute dirty goals; apply time-based transitions (scheduled→active, active→expired at household-local midnight); post goal payouts and points bonus rules idempotently; nightly full recompute |
 
@@ -544,7 +545,7 @@ sequenceDiagram
 **Notify-then-refetch (D-41).** Realtime events only say "something changed in table X for household H". The board then reads its whole snapshot again with `board_snapshot(from, to)`. This avoids trusting partial payloads for derived data and keeps the client logic simple.
 
 - **Who reads.** The server draws the first snapshot (`/board`, one RPC alongside the heartbeat). After that the board reads it from the browser, straight from Supabase with its own session. No Vercel invocation is spent per change, and the snapshot lives in the browser, where check-off (WP-11) and the offline cache (WP-13) need it.
-- **What it listens to.** Every table in the `supabase_realtime` publication (`household`, `household_settings`, `member`, `device`), each filtered to the board's household or to the board itself (`apps/web/lib/live.ts`). A pgTAP test pins the publication, so a work package that publishes a new table adds it to the listener too.
+- **What it listens to.** Every table in the `supabase_realtime` publication (`household`, `household_settings`, `member`, `device`, `points_ledger`), each filtered to the board's household or to the board itself (`apps/web/lib/live.ts`). A pgTAP test pins the publication, so a work package that publishes a new table adds it to the listener too.
 - **Bursts.** Reads are coalesced: a change heard while a read is in flight costs one more read after it, so a burst means at most two reads, and the last read always starts after the last change.
 - **Catch-up.** The board reads again each time its channel is (re)joined and when the browser reports the network is back (US-204). The first join after a quiet spell can take seconds while Realtime starts (SPIKE-01), and this read covers it.
 - **Losing access.** A null snapshot (disconnected) or a sign-out (its refresh refused) sends the board to `/board`, where the server resumes it with its credential or shows the pairing screen (§5.1). RLS applies to both reads and Realtime, so a disconnected board hears nothing and reads nothing from that moment.
