@@ -245,3 +245,38 @@ select '0de00000-0000-4000-8000-0000000f0001', m.household_id, m.id, '0de00000-0
        'device', now() - interval '3 hours'
   from public.member m
  where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Leo';
+
+-- Goals (WP-19): Leo's "Movie night" (19 things done since last week: he has done 18, so one more
+-- today reaches it), Maya's "Trip to the park" (5 good days in a row, a miss a week forgiven) and the
+-- family's "Pizza night" (10 days with every routine done). They started a week ago; the engine works
+-- out their progress the first time the Goals page opens or the reconcile job runs.
+do $$
+declare
+  v_demo  constant uuid := '0de00000-0000-4000-8000-000000000001';
+  v_alex  constant uuid := '0de00000-0000-4000-8000-0000000000a1';
+  v_today date := (now() at time zone 'America/New_York')::date;
+  v_maya  uuid := (select id from public.member where household_id = v_demo and display_name = 'Maya');
+  v_leo   uuid := (select id from public.member where household_id = v_demo and display_name = 'Leo');
+begin
+  insert into public.reward_goal (id, household_id, member_id, title, description, icon, start_date, end_date,
+                                  rule_logic, status, created_by, created_at)
+  values
+    ('0de00000-0000-4000-8000-000000060001', v_demo, v_leo, 'Movie night', 'Leo picks the film.', 'ticket',
+     v_today - 7, v_today + 7, 'all', 'active', v_alex, now() - interval '7 days'),
+    ('0de00000-0000-4000-8000-000000060002', v_demo, v_maya, 'Trip to the park', null, 'sun',
+     v_today - 7, v_today + 14, 'all', 'active', v_alex, now() - interval '7 days'),
+    ('0de00000-0000-4000-8000-000000060003', v_demo, null, 'Pizza night', 'Everyone chooses a topping.', 'utensils',
+     v_today - 7, v_today + 21, 'all', 'active', v_alex, now() - interval '7 days');
+  insert into public.reward_rule (household_id, goal_id, rule_type, target, scope, params, sort_order)
+  values
+    (v_demo, '0de00000-0000-4000-8000-000000060001', 'COUNT', 19, '{"all": true}', '{}', 1),
+    (v_demo, '0de00000-0000-4000-8000-000000060002', 'STREAK', 5, '{"all": true}', '{"grace_per_week": 1}', 1),
+    (v_demo, '0de00000-0000-4000-8000-000000060003', 'DAILY_ALL_DONE', 10, '{"all": true}', '{}', 1);
+  insert into public.reward_goal_progress (goal_id, household_id)
+  select id, v_demo from public.reward_goal where household_id = v_demo;
+  insert into public.reward_goal_event (household_id, goal_id, type, actor_type, actor_id, at)
+  select v_demo, g.id, e.type, e.actor, case when e.actor = 'admin' then v_alex end, now() - interval '7 days'
+    from public.reward_goal g
+   cross join (values ('created', 'admin'), ('activated', 'system')) e (type, actor)
+   where g.household_id = v_demo;
+end $$;
