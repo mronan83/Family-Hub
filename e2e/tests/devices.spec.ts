@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
+import { retireBoard } from '../support/board';
 
 // [DEV-01][DEV-02][DEV-03][DEV-05] A board on the preview (WP-05, WP-06, SPIKE-01, D-40): Alex gets
 // a code, a second browser pairs with it and reads the demo family, admin changes reach it within
@@ -73,7 +74,9 @@ let board: Page;
 const RESET_NAMES = `update public.member set display_name = 'Maya' where household_id = '${DEMO}' and display_name like 'Maya%';
      update public.member set display_name = 'Leo' where household_id = '${DEMO}' and display_name like 'Leo%';`;
 
-test.beforeAll(async ({ browser }) => {
+test.beforeAll(async ({ browser }, testInfo) => {
+  // Signing in and pairing a board can take most of 30 s on a cold preview.
+  testInfo.setTimeout(90_000);
   // A retry starts with no demo boards and the seeded member names (their sign-ins go at the next
   // demo family reset).
   sql(`${RESET_NAMES}
@@ -83,8 +86,9 @@ test.beforeAll(async ({ browser }) => {
   board = await (await browser.newContext()).newPage();
 });
 
-test.afterAll(() => {
+test.afterAll(async () => {
   sql(RESET_NAMES);
+  await retireBoard(board, BOARD);
 });
 
 test('[DEV-01] an admin gets an 8-digit code for a named board', async () => {

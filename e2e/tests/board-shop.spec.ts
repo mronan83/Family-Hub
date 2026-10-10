@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
+import { retireBoard } from '../support/board';
 
 // [PTS-02][PTS-04][RWD-07][RWD-08] The board's shop, requests and goals on the preview (WP-20, D-59),
 // at the reference panel's 3840×2160 (the board-4k project). The done-when: Maya earns points on the
@@ -53,7 +54,9 @@ let admin: Page;
 let board: Page;
 const people = () => board.getByRole('list', { name: 'Family', exact: true });
 
-test.beforeAll(async ({ browser }) => {
+test.beforeAll(async ({ browser }, testInfo) => {
+  // Signing in and pairing a board can take most of 30 s on a cold preview.
+  testInfo.setTimeout(90_000);
   // A retry starts again: the bed to do, no board of this name, the test goal set afresh.
   putBackBed();
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
@@ -106,9 +109,8 @@ test.afterAll(async () => {
   putBackBed();
   sql(`update public.reward_goal set status = 'cancelled', archived_at = now() where id = '${GOAL}';
        update public.reward_goal set celebrated_at = coalesce(celebrated_at, now())
-        where household_id = '${DEMO}' and status = 'achieved';
-       delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
+        where household_id = '${DEMO}' and status = 'achieved';`);
+  await retireBoard(board, BOARD);
 });
 
 test("[PTS-02][RWD-07][US-403] Maya's day: her balance, her goals, and a nudge naming the one nearly reached", async () => {
@@ -203,8 +205,12 @@ test('[RWD-08][US-404] a goal reached is celebrated once, by the board that show
     const link = await board.locator('[data-link]').getAttribute('data-link');
     const heard = await board.locator('[data-events]').getAttribute('data-events');
     const read = await board.locator('main').getAttribute('data-fetched-at');
+    // Any board of the household may celebrate first (D-59), so name every one still paired.
+    const boards =
+      sql(`select coalesce(string_agg(name || ' (' || status || ')', ', ' order by name), 'none')
+                          from public.device where household_id = '${DEMO}'`);
     throw new Error(
-      `no celebration on the board: the goal is ${goal}; the board is ${link}, heard ${heard} changes, last read at ${read}`,
+      `no celebration on the board: the goal is ${goal}; the board is ${link}, heard ${heard} changes, last read at ${read}; the family's boards: ${boards}`,
       { cause: e },
     );
   }

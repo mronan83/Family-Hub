@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { retireBoard } from '../support/board';
 
 // [BRD-01][BRD-03][BRD-07][CHR-04][NFR-03][US-305] The board's Today on the preview (WP-11, D-50): a
 // board paired to the demo family shows everyone's day, checks items off by click and by touch, counts
@@ -74,7 +75,9 @@ async function nextRead(fetchedAt: string | null) {
 }
 const fetchedAt = () => board.locator('main').getAttribute('data-fetched-at');
 
-test.beforeAll(async ({ browser }) => {
+test.beforeAll(async ({ browser }, testInfo) => {
+  // Signing in and pairing a board can take most of 30 s on a cold preview.
+  testInfo.setTimeout(90_000);
   // A retry starts from today as the seed left it, with no board of this name.
   putBack();
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
@@ -102,8 +105,9 @@ test.beforeAll(async ({ browser }) => {
   await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
 });
 
-test.afterAll(() => {
+test.afterAll(async () => {
   putBack();
+  await retireBoard(board, BOARD);
 });
 
 test("[BRD-01][BRD-07] the board opens on everyone's day: a column each, today's items by part of day", async () => {

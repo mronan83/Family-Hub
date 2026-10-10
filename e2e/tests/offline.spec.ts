@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
+import { retireBoard } from '../support/board';
 
 // [DEV-06][DEV-08][NFR-01][US-205] A board offline on the preview (WP-13), paired to the demo family:
 // it goes offline, checks off three of Maya's items, reloads with no network (its page from the
@@ -56,7 +57,9 @@ async function asMaya(page: Page) {
   await expect(page.getByRole('heading', { name: 'Maya', level: 2 })).toBeVisible();
 }
 
-test.beforeAll(async ({ browser }) => {
+test.beforeAll(async ({ browser }, testInfo) => {
+  // Signing in and pairing a board can take most of 30 s on a cold preview.
+  testInfo.setTimeout(90_000);
   // A retry starts from today as the seed left it, with no board of this name.
   putBack();
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
@@ -85,8 +88,9 @@ test.beforeAll(async ({ browser }) => {
   await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
 });
 
-test.afterAll(() => {
+test.afterAll(async () => {
   putBack();
+  await retireBoard(board, BOARD);
 });
 
 test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no network, exactly three events; a parent’s later uncheck wins', async () => {
@@ -113,12 +117,23 @@ test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no netwo
   for (const title of ['Make bed', 'Brush teeth', 'Feed the dog']) {
     await expect(checkOff(board, title)).toHaveCount(0);
   }
-  // Nothing has reached the database.
-  expect(
-    sql(`select count(*) from public.chore_completion_event
-          where occurrence_id in ('${items.bed}', '${items.teeth}', '${items.dog}')
-            and recorded_at >= '${started}'`),
-  ).toBe('0');
+  // Nothing has reached the database. If something has, say what, who sent it and when, and how
+  // the board saw its network, so the failure says what happened.
+  const early = sql(`select coalesce(string_agg(e.event_type || ' by ' || e.actor_type || ' ' ||
+          coalesce((select d.name from public.device d where d.id = e.actor_id), e.actor_id::text, '?') ||
+          ' at ' || to_char(e.recorded_at, 'HH24:MI:SS.MS'), '; ' order by e.recorded_at), '')
+     from public.chore_completion_event e
+    where e.occurrence_id in ('${items.bed}', '${items.teeth}', '${items.dog}')
+      and e.recorded_at >= '${started}'`);
+  if (early) {
+    const seen = await board.evaluate(() => ({
+      online: navigator.onLine,
+      worker: Boolean(navigator.serviceWorker?.controller),
+    }));
+    throw new Error(
+      `reached the database while the board was offline: ${early} (the board saw itself ${seen.online ? 'online' : 'offline'}; its service worker ${seen.worker ? 'in control' : 'not in control'})`,
+    );
+  }
 
   // Meanwhile a parent unchecks Brush teeth (later than the board's tap).
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)

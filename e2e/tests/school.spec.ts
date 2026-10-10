@@ -186,6 +186,9 @@ test('[SCH-01] two default school years may not overlap; one that isn’t the de
 test('[SCH-02] a child at another school follows its calendar; archiving it puts them back on the default', async ({
   page,
 }) => {
+  // Three saves and an archive, each a server action that a preview can take several seconds to
+  // answer: more than 30 s together on a slow run (seen on #37).
+  test.slow();
   const { date } = nextSchoolDay();
   const camp = sql(
     `select id from public.school_year where household_id = '${DEMO}' and name = 'Summer camp'`,
