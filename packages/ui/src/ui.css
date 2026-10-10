@@ -1523,6 +1523,301 @@ span.fw-heat__cell {
   color: var(--primary-text);
 }
 
+/* The board's shop, requests and goals (WP-20, 06 §7.3) ------------------------------------- */
+.fw-today__card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.fw-today__spend {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+/* [RWD-07] A goal nearly reached, named: a Sun-tint pill under the day's progress. */
+.fw-today__nudge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: var(--s-2) 0 0;
+  padding: var(--s-1) var(--s-4);
+  border-radius: var(--r-pill);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+  font-weight: 700;
+}
+.fw-today__nudge--col {
+  justify-self: start;
+  margin: 0;
+  font-size: var(--t-small);
+}
+/* [PTS-04] What a child asked for: the reward and its cost, then where it stands (words and an
+   icon, never colour alone) and "Call off" while it waits. */
+.fw-today__ask-list,
+.fw-today__goal-list {
+  display: grid;
+  gap: var(--s-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-today__ask {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+}
+.fw-today__ask-title {
+  overflow-wrap: break-word;
+}
+.fw-today__ask-state {
+  grid-column: 1 / 3;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-today__ask[data-status='approved'] .fw-today__ask-state,
+.fw-today__ask[data-status='fulfilled'] .fw-today__ask-state {
+  color: var(--primary-text);
+  font-weight: 700;
+}
+.fw-today__ask > .fw-btn {
+  grid-column: 3;
+}
+.fw-today__wish-asked {
+  margin: 0;
+  color: var(--primary-text);
+  font-weight: 700;
+}
+/* [RWD-07] Goals: a meter per rule, a streak's run now, when it ends; reached, a trophy. */
+.fw-today__goal {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-today__goal-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0;
+}
+.fw-today__goal-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 800;
+  overflow-wrap: break-word;
+}
+.fw-today__goal-rule {
+  display: grid;
+  gap: var(--s-1);
+}
+.fw-today__goal-logic,
+.fw-today__goal-note,
+.fw-today__goal-ends {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-today__goal-reached {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+  font-weight: 700;
+}
+.fw-today__family-goals {
+  display: grid;
+  gap: var(--s-4);
+  margin-top: var(--s-8);
+  padding: var(--s-6);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.fw-today__family-goals h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0;
+  font-size: var(--t-heading);
+}
+.fw-today__family-goals .fw-today__goal-list {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 560px), 1fr));
+}
+.fw-board-photo {
+  flex: none;
+  border-radius: var(--r-md);
+  object-fit: cover;
+}
+/* [PTS-03][PTS-04] A child's shop: a card per reward, what can be asked for outlined in Teal; asking
+   asks once more in the card itself. */
+.fw-shop {
+  width: min(1600px, 94vw);
+  max-height: 92vh;
+  overflow: auto;
+}
+.fw-shop__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+.fw-shop__spend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+}
+.fw-shop__items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: var(--s-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-shop__item {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--s-3);
+  padding: var(--s-6);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+}
+.fw-shop__item[data-can] {
+  border-color: var(--primary);
+}
+.fw-shop__picture {
+  display: inline-flex;
+  color: var(--text-soft);
+}
+.fw-shop__title {
+  font-weight: 800;
+  overflow-wrap: break-word;
+}
+.fw-shop__facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+.fw-shop__left,
+.fw-shop__why {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-shop__confirm {
+  display: grid;
+  gap: var(--s-3);
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-shop__confirm p {
+  margin: 0;
+  font-weight: 700;
+}
+.fw-shop__confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+}
+/* [RWD-08] A goal reached: full screen, once. Sparks fly out and the card pops (transform and
+   opacity only); with reduced motion, no sparks and no pop, the words the same. */
+.fw-celebrate {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--text) 55%, transparent);
+}
+.fw-celebrate__burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.fw-celebrate__burst span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  background: var(--reward);
+  opacity: 0;
+  animation: fw-spark 1600ms var(--ease) forwards;
+  animation-delay: calc(var(--k) * 20ms);
+}
+.fw-celebrate__burst span:nth-child(3n) {
+  background: var(--primary);
+}
+.fw-celebrate__burst span:nth-child(3n + 1) {
+  border-radius: 50%;
+}
+@keyframes fw-spark {
+  0% {
+    opacity: 1;
+    transform: rotate(calc(var(--k) * 15deg)) translateY(0) scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(calc(var(--k) * 15deg)) translateY(-45vh) scale(1);
+  }
+}
+.fw-celebrate__card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--s-6);
+  max-width: min(1200px, 90vw);
+  padding: var(--s-12);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  color: var(--text);
+  text-align: center;
+  box-shadow: var(--shadow-2);
+  animation: fw-pop 600ms var(--ease);
+}
+.fw-celebrate__picture {
+  display: inline-flex;
+  color: var(--reward-text);
+}
+.fw-celebrate__card h2 {
+  margin: 0;
+  font-size: var(--t-title);
+}
+.fw-celebrate__card p {
+  margin: 0;
+}
+.fw-celebrate__card .fw-btn {
+  min-height: var(--touch-primary);
+  padding: 0 var(--s-12);
+  font-size: var(--t-body);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fw-celebrate__burst {
+    display: none;
+  }
+  .fw-celebrate__card {
+    animation: none;
+  }
+}
 /* "Which one is you?" (D-61): a parent links their sign-in to themselves in one tap. ------------ */
 .fw-link-me {
   display: grid;

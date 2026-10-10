@@ -61,7 +61,9 @@ select is((select s -> 'members' -> 1 from snap),
     -- [RWD-05] No history yet: no run (WP-17).
     'streak', jsonb_build_object('kind', null, 'length', 0, 'best', 0),
     -- [PTS-06] Nothing pinned to save for yet (WP-30).
-    'wish', null),
+    'wish', null,
+    -- [PTS-04] Nothing to spend, nothing asked for, no weekly limit reached (WP-20).
+    'available', 0, 'requests', '[]'::jsonb, 'limited', '[]'::jsonb),
   '[DEV-05][PTS-02] each member with what the board draws: name, role, avatar, color, earns rewards, points');
 select is((select (s ->> 'today')::date from snap), (now() at time zone 'Pacific/Kiritimati')::date,
   '[DEV-05] today is the household''s date, not the server''s');
@@ -107,6 +109,7 @@ select is(
   (select array_agg(tablename::text order by tablename::text) from pg_publication_tables
     where pubname = 'supabase_realtime' and schemaname = 'public'),
   array['chore', 'chore_occurrence', 'device', 'household', 'household_settings', 'member', 'points_ledger',
+        'redemption', 'reward_catalog_item', 'reward_goal', 'reward_goal_progress', 'reward_rule_progress',
         'streak_segment', 'wishlist_pin'],
   '[DEV-05] the board-readable tables notify the board (apps/web/lib/live.ts listens to each)');
 select ok((select bool_and(has_table_privilege('authenticated', format('public.%I', tablename), 'select'))
