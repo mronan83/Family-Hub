@@ -15,6 +15,8 @@ const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const NAME = 'Family e2e';
 const LINK = 'https://calendar.familywise.invalid/family-e2e.ics';
+// What only the link holds (the demo sign-ins' addresses end in familywise.invalid too).
+const LINK_PATH = 'calendar.familywise.invalid/family-e2e';
 const sql = (q: string) => query(db!, q);
 
 test.describe.configure({ mode: 'serial' });
@@ -143,7 +145,7 @@ test('[CAL-01][US-501] Alex adds a calendar by its link: it goes to Vault only, 
   await expect(row(page)).toContainText('Can’t sync');
   await expect(row(page)).toContainText('Couldn’t reach the link.');
   await expect(row(page)).toContainText('Alex’s');
-  await expect(page.locator('main')).not.toContainText('familywise.invalid');
+  await expect(page.locator('main')).not.toContainText(LINK_PATH);
 
   calendarId = sql(
     `select id from public.calendar_source where household_id = '${DEMO}' and name = '${NAME}'`,
@@ -153,8 +155,8 @@ test('[CAL-01][US-501] Alex adds a calendar by its link: it goes to Vault only, 
            join public.calendar_source s on s.url_secret_id = d.id where s.id = '${calendarId}'`),
   ).toBe(LINK);
   expect(
-    sql(`select (select count(*) from public.calendar_source s where to_jsonb(s)::text like '%familywise.invalid%')
-              + (select count(*) from public.audit_log a where a.diff::text like '%familywise.invalid%')`),
+    sql(`select (select count(*) from public.calendar_source s where to_jsonb(s)::text like '%${LINK_PATH}%')
+              + (select count(*) from public.audit_log a where a.diff::text like '%${LINK_PATH}%')`),
   ).toBe('0');
 });
 
