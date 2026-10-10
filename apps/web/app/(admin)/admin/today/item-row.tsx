@@ -50,6 +50,7 @@ export function ItemRow({
   only,
   selectable,
   extra,
+  tail,
 }: {
   item: DayItem;
   today: string;
@@ -60,6 +61,8 @@ export function ItemRow({
   only?: DayAction[];
   selectable?: boolean;
   extra?: ReactNode;
+  /** Before the buttons: My tasks' bell (WP-40). */
+  tail?: ReactNode;
 }) {
   const names = new Map(people.map((p) => [p.id, p.displayName]));
   const name = (id: string) => names.get(id) ?? 'Someone';
@@ -76,7 +79,7 @@ export function ItemRow({
   ];
 
   return (
-    <li className="fw-list__row fw-day__row" data-status={item.status}>
+    <li id={`item-${item.id}`} className="fw-list__row fw-day__row" data-status={item.status}>
       {selectable && (item.status === 'completed' || item.status === 'approved') ? (
         <label className="fw-choice fw-day__select">
           <input type="checkbox" name="selected" value={item.id} />
@@ -99,8 +102,9 @@ export function ItemRow({
           {extra}
         </span>
       </span>
-      {actions.length > 0 ? (
+      {actions.length > 0 || tail ? (
         <span className="fw-actions">
+          {tail}
           {actions.map((a) => {
             if (a !== 'done') {
               return (

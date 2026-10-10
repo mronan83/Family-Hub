@@ -3,6 +3,8 @@
 // Keeps the board's page and the build files it loaded, so a board that reloads with no network
 // still opens on its last day (WP-13, D-54); its data and outbox live in IndexedDB. Other pages, the
 // API and Supabase always go to the network.
+// [CHR-15] Shows reminders pushed to the admin app and opens the item when one is tapped (WP-40,
+// D-58).
 const CACHE = '__CACHE__';
 const PRECACHE = __PRECACHE__;
 // The board's page (network first) and the build's content-hashed files (cache first).
@@ -59,6 +61,41 @@ self.addEventListener('fetch', (event) => {
   ) {
     event.respondWith(staleWhileRevalidate(request));
   }
+});
+
+// [CHR-15][CHR-16] A reminder from the reminders job: {title, body, url, tag}. One per tag: a
+// reminder sent again (it never should be) replaces the first rather than stacking.
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : '' };
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'FamilyWise', {
+      body: data.body || '',
+      tag: data.tag || undefined,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-maskable-192.png',
+      data: {
+        url: typeof data.url === 'string' && data.url.startsWith('/') ? data.url : '/admin/my',
+      },
+    }),
+  );
+});
+
+// Tapping a reminder opens its item in My tasks, in an open window of the app if there is one.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || '/admin/my', self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+      const open = windows.find((w) => new URL(w.url).origin === self.location.origin);
+      if (open) return open.navigate(url).then((w) => (w || open).focus());
+      return self.clients.openWindow(url);
+    }),
+  );
 });
 
 /**

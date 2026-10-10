@@ -1,0 +1,31 @@
+# Creates the web push (VAPID) keys for reminders (WP-40, 01 §9.8, D-58): generated on the runner,
+# written to Vercel, never printed; then production is redeployed so the app holds them. Run it once:
+# Actions → vapid-keys → Run workflow. It refuses to replace keys that exist (that would stop
+# reminders on every device).
+name: vapid-keys
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write # starts the production deploy and waits for it
+
+concurrency:
+  group: vapid-keys
+  cancel-in-progress: false
+
+jobs:
+  create:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - run: bash scripts/vapid-keys.sh

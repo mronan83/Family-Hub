@@ -92,6 +92,8 @@ export interface ChoreInput {
   tags: string[];
   /** Left out when the form does not offer it (only an item's creator changes who sees it). */
   visibility?: 'family' | 'private';
+  /** [CHR-16] How long before its due time it reminds; null follows each person's own (WP-40). */
+  remindLeadMinutes?: number | null;
 }
 
 export type Parsed = { ok: true; value: ChoreInput } | { ok: false; message: string };
@@ -143,6 +145,11 @@ export function parseChore(
   const approval = (APPROVALS as readonly string[]).includes(approvalText)
     ? (approvalText as Approval)
     : 'inherit';
+  const leadText = String(form.get('remindLeadMinutes') ?? '').trim();
+  const remindLeadMinutes = leadText === '' ? null : Number(leadText);
+  if (remindLeadMinutes !== null && ![0, 15, 60, 1440].includes(remindLeadMinutes)) {
+    return { ok: false, message: 'Choose when it reminds.' };
+  }
   const assignmentText = String(form.get('assignment') ?? '');
   const assignment = (ASSIGNMENTS as readonly string[]).includes(assignmentText)
     ? (assignmentText as Assignment)
@@ -162,6 +169,7 @@ export function parseChore(
       approval,
       assignment,
       tags: ids(form, 'tags'),
+      remindLeadMinutes,
       ...(canSetVisibility
         ? { visibility: form.get('private') === 'on' ? ('private' as const) : ('family' as const) }
         : {}),

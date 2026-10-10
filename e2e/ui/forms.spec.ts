@@ -73,3 +73,8 @@ test('[CHR-06][CHR-14] a parent’s day and My tasks need a signed-in admin', as
     await expect(page).toHaveURL(new RegExp(`/sign-in\\?next=${next}$`));
   }
 });
+
+test('[CHR-15] the reminders page needs a signed-in admin', async ({ page }) => {
+  await page.goto('/admin/reminders');
+  await expect(page).toHaveURL(/\/sign-in\?next=%2Fadmin%2Freminders$/);
+});

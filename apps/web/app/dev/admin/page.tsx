@@ -7,7 +7,8 @@ import { TodayView } from '../../(admin)/admin/today/view';
 
 // A parent's day and My tasks (WP-12) with a made-up family and no database, for the UI suite: the
 // pages' layout on a phone and a laptop, in Day and Evening (?theme=evening), and every state of a
-// row. ?view=my for My tasks, ?view=unlinked for a sign-in not linked to a member.
+// row. ?view=my for My tasks (with each item's reminder bell, WP-40), ?view=unlinked for a sign-in
+// not linked to a member.
 export const metadata: Metadata = { title: 'Admin day', robots: { index: false } };
 
 const TZ = 'America/New_York';
@@ -179,6 +180,10 @@ export default async function DevAdminPage({
           notice={params.notice ? 'Added Pick up the dry cleaning for today.' : null}
           error={null}
           request={request}
+          // [CHR-16] The bell (WP-40): on by default; the second item switched off.
+          bells={new Map(mine.map((i, n) => [i.choreId, n === 1 ? false : null]))}
+          defaultOn
+          remindersOn
         />
       ) : (
         <TodayView

@@ -1,8 +1,9 @@
-import { Banner } from '@familywise/ui';
+import { Banner, Button } from '@familywise/ui';
 import Link from 'next/link';
 import { myTaskGroups, type DayItem } from '@/lib/admin-day';
 import { relativeDay } from '@/lib/chores';
 import { AdminHeader } from '../header';
+import { setBell } from '../reminders/actions';
 import { dayAction } from '../today/actions';
 import { ItemRow, type Person } from '../today/item-row';
 import { QuickAdd } from './quick-add';
@@ -16,6 +17,11 @@ export interface MyTasksViewProps {
   notice: string | null;
   error: string | null;
   request: string;
+  /** [CHR-16] Each item's bell for me (chore id to on, off, or null for my default). */
+  bells: Map<string, boolean | null>;
+  /** My default for items that don't say, and whether my reminders are on at all. */
+  defaultOn: boolean;
+  remindersOn: boolean;
 }
 
 /**
@@ -30,6 +36,9 @@ export function MyTasksView({
   notice,
   error,
   request,
+  bells,
+  defaultOn,
+  remindersOn,
 }: MyTasksViewProps) {
   if (!me) {
     return (
@@ -47,6 +56,26 @@ export function MyTasksView({
     );
   }
   const groups = myTaskGroups(items, today);
+  // [CHR-16][US-318] The bell: this item reminds me, or not; it follows my default until I say.
+  const bell = (i: DayItem) => {
+    // Only on what is still to do: nothing comes for an item once it's done.
+    if (!bells.has(i.choreId) || (i.status !== 'scheduled' && i.status !== 'rejected')) return null;
+    const on = bells.get(i.choreId) ?? defaultOn;
+    return (
+      <Button
+        type="submit"
+        formAction={setBell.bind(null, `${i.choreId}:${on ? 'off' : 'on'}`)}
+        variant="ghost"
+        icon="bell"
+        className="fw-bell"
+        aria-pressed={on}
+        aria-label={`Remind me about ${i.title}`}
+        data-bell={on ? 'on' : 'off'}
+      >
+        {on ? 'Bell on' : 'Bell off'}
+      </Button>
+    );
+  };
   const group = (key: string, heading: string, list: DayItem[], showDay: boolean) => (
     <section key={key} aria-labelledby={`my-${key}`}>
       <h2 id={`my-${key}`} className="fw-subhead">
@@ -64,6 +93,7 @@ export function MyTasksView({
               people={people}
               me={me}
               only={['done', 'uncheck']}
+              tail={bell(i)}
               extra={
                 showDay ? <span className="fw-muted">{relativeDay(i.dueDate, today)}</span> : null
               }
@@ -84,6 +114,10 @@ export function MyTasksView({
       ) : null}
       <section className="fw-card" aria-labelledby="my-heading">
         <h1 id="my-heading">My tasks</h1>
+        <p className="fw-muted">
+          {remindersOn ? 'Your reminders are on' : 'Your reminders are off'}:{' '}
+          <Link href="/admin/reminders">Reminders</Link>.
+        </p>
         <QuickAdd />
       </section>
       <section className="fw-card">
