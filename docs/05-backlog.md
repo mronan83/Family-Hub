@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.53: e2e reliability in review: each spec retires its board; the bonus test checks the ledger first. No work package changes status.
 > v0.8.52: fix (D-62), done (PR #39): production's jobs leave the demo family alone. No work package changes status.
 > v0.8.51: fix (D-61), done (PR #38): a parent links their own sign-in from Reminders, My tasks or their page on Members. No work package changes status.
 > v0.8.50: WP-20 done (PR #37): the board's shop, requests and goals. WP-31 is ready. WP-44 (offline goal projection, a fallback only, D-60) is added: ready, and nothing waits on it.
