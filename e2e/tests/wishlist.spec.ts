@@ -25,6 +25,13 @@ const balance = (member: string) =>
   Number(
     sql(`select coalesce(sum(amount), 0) from public.points_ledger where member_id = '${member}'`),
   );
+/** What the wish card counts (WP-20): the balance less requests waiting for a parent. */
+const spendable = (member: string) =>
+  balance(member) -
+  Number(
+    sql(`select coalesce(sum(cost_snapshot), 0) from public.redemption
+          where member_id = '${member}' and status = 'requested'`),
+  );
 /** The household's date `days` from today, as YYYY-MM-DD. */
 const householdDay = (days: number) =>
   sql(`select to_char((now() at time zone timezone)::date + ${days}, 'YYYY-MM-DD')
@@ -158,11 +165,11 @@ test('[PTS-06][US-1108] on the board Leo chooses a wish, sees how far he is, and
   const maya = memberId('Maya');
   const people = board.getByRole('list', { name: 'Family', exact: true });
 
-  // Maya's seeded wish: her balance against Movie night's 100.
+  // Maya's seeded wish: what she can spend against Movie night's 100.
   await people.getByRole('button', { name: 'Maya', exact: true }).click();
   const card = board.getByRole('region', { name: 'Saving for', exact: true });
   await expect(card).toContainText('Movie night');
-  const hers = Math.min(Math.max(balance(maya), 0), 100);
+  const hers = Math.min(Math.max(spendable(maya), 0), 100);
   await expect(card.getByRole('progressbar')).toHaveAttribute(
     'aria-valuetext',
     `${hers} of 100, ${hers}%`,
@@ -176,11 +183,9 @@ test('[PTS-06][US-1108] on the board Leo chooses a wish, sees how far he is, and
   await picker.getByRole('button', { name: /Stay up 30 minutes late/ }).click();
   await expect(card).toContainText('Stay up 30 minutes late');
   await expect.poll(() => pin(leo)).toBe(`${STAY_UP}:device`);
-  // Points to earn back count as none saved.
-  const his = Math.max(0, balance(leo));
-  await expect(card).toContainText(
-    his >= 25 ? 'You have enough! Ask a grown-up for it.' : `${25 - his} more`,
-  );
+  // Points to earn back count as none saved; with enough, the card offers to ask for it (WP-20).
+  const his = Math.max(0, spendable(leo));
+  await expect(card).toContainText(his >= 25 ? 'You have enough!' : `${25 - his} more`);
 
   // A parent sees who is saving for what.
   await admin.goto('/admin/rewards');
