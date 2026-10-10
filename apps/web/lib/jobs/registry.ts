@@ -2,6 +2,7 @@ import { ENGINE_VERSION } from '@familywise/rules-engine';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { isoDay } from '../format';
 import { dayBefore, rebuildMemberHistory } from '../history';
+import { runReminders, vapidFromEnv, webPushSender } from '../reminders';
 
 export type JobContext = {
   db: SupabaseClient;
@@ -19,7 +20,7 @@ export type Job = (ctx: JobContext) => Promise<JobResult>;
 
 /**
  * Every job the endpoint runs, keyed by its schedule name (schedule.json; a test keeps the two in
- * step). Later work packages add calendar_sync, reminders and the rest.
+ * step). Later work packages add calendar_sync and the rest.
  */
 export const JOBS: Record<string, Job> = {
   // [NFR-07] Sample job (WP-07): proves the path end to end and reports how late pg_cron's call
@@ -56,6 +57,20 @@ export const JOBS: Record<string, Job> = {
     if (error) throw new Error(`close the day: ${error.message}`);
     const history = await rebuildHistories(db, householdId);
     return { status: 'ok', stats: { ...(data as Record<string, unknown>), history } };
+  },
+
+  // [CHR-15][CHR-16][CHR-17] Reminders (WP-40, D-58), every 5 minutes: the database plans what has
+  // come due and claims what is due now, each at most once; each goes to the person's devices by web
+  // push. Without the VAPID keys nothing is sent, and a reminder waiting fails the run.
+  async reminders({ db, householdId }) {
+    const vapid = vapidFromEnv();
+    const stats = await runReminders(
+      db,
+      householdId,
+      new Date(),
+      vapid ? webPushSender(vapid) : null,
+    );
+    return { status: 'ok', stats: { ...stats } };
   },
 
   // [NFR-06] The nightly check (WP-10): re-folds the last 14 days of events and compares them with

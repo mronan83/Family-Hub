@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.22: reminders as built (WP-40, D-58): `reminder_preference`, `push_subscription` and `reminder_delivery` with each person's own RLS, and the functions that plan, claim and finish reminders (§3.7).
 > v0.8.19: streak history and insights (WP-17, D-55): `member_daily_summary` and `streak_segment` as built, the marks and functions that keep them, `member_insights()`, and the snapshot's streak (§3.3, §4.6, §4.7); `evaluateHistory` takes `through`, so stored days are judged as of today (§5).
 > v0.8.18: the board through an outage (WP-13, D-54): no schema change; the snapshot is what a board saves in IndexedDB, and a board reads its household's `job_health()` through job_run's RLS (§4.6).
 > v0.8.17: the rewards shop as built (WP-18, D-53): `reward_catalog_item` with icon, photo, stock and weekly limit; `redemption` with who asked; the ledger's `redemption_id`; the redemption functions and the `rewards` Storage bucket (§3.3b, §4.2b).
@@ -509,6 +510,8 @@ If the effective mode is `buy`, the board shows `school_menu_day` for `(menu_sou
 | `reminder_delivery` | `occurrence_id?`, `member_id`, `kind` (`due`/`digest`), `scheduled_for`, `sent_at?`, `status` (`held`/`sent`/`skipped`/`failed`), `dedupe_key` (unique) | One row per reminder per person (`due:{occurrence}:{member}` or `digest:{member}:{date}`), inserted before sending so a retry never sends twice. Readable only by that person. Pruned after 90 days. |
 
 Whether and when each assignee is reminded: `chore_assignee.remind` (null follows the person's `default_on`; true or false overrides it) and `chore.remind_lead_minutes` (null uses the person's `default_lead_minutes`). An item without a due time reminds at the person's `morning_time` on its due date. Nothing is sent when the person, the item or every device is switched off, or when the occurrence is already done.
+
+**As built (WP-40, D-58).** `reminder_preference` also has `household_id` and `updated_at`; quiet hours are both set or both null and may run past midnight. `push_subscription` has `id`, `household_id`, `enabled` (the device's own switch) and `created_at`; `endpoint` is https. `reminder_delivery` has `id`, `household_id`, `detail` (why skipped or failed: `reminders_off`, `item_off`, `done`, `no_device`, `late`, `nothing_due`, `gone`, `push_failed`) and `created_at`; `occurrence_id` is set exactly for `due`. RLS: a person (`private.my_member_ids()`, their member rows by sign-in) reads and writes their own preferences; reads, switches, renames and deletes their own subscriptions (added only through `save_push_subscription(household, endpoint, p256dh, auth, label)`, which moves a browser that subscribed for someone else); and reads their own deliveries. `set_my_reminder(chore, remind)` sets the caller's bell on an item they are on. The job's functions are the service role's: `plan_reminders(household, now)` (§3.7's rules; only reminders whose time came in the last two hours, held until quiet hours end by `private.after_quiet`), `claim_reminders(household, now)` (marks each now due `sent` before it goes, or `skipped`; returns each payload and its devices) and `finish_reminder(delivery, results)` (success, 404/410 deletes, failure count; `failed` with no success).
 
 ---
 

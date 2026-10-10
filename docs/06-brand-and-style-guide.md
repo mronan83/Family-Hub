@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.6 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17)
+> Version 1.9 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-40)
+> v1.9: reminders in the admin app: the Reminders page and the bell on each item in My tasks (`bell`, pressed Teal-tinted "Bell on", plain "Bell off"); a reminder notification is the item's title (or "Private task") and "Due at 3:00 pm" (§7.3, WP-40).
 > v1.6: the streak flame as built: tiers at 3, 7, 14 and 30 days, a glow on reaching one; the Insights heatmap marks each day with an icon as well as a colour (§7.2, WP-17).
 > v1.5: the board's offline and stale lines sit in its bar as pills; a balance not yet saved while offline is provisional: dashed plum ring and `wifi-off` (§7.2, WP-13).
 > v1.4: the board's points list says what each entry was for; points a parent took away read "A parent changed your points", never the reason (D-50, § Voice).
@@ -206,6 +207,7 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 - Approval queue is a badge on Chores, not a modal.
 - Insights uses the trust panel and heatmap; heatmap cells use Teal (good), Plum (missed), empty (neutral), plus a text legend.
 - Destructive actions: ghost button, confirm dialog stating the consequence ("This reverses 4 chores and 20 points").
+- Reminders (WP-40): the Reminders page says plainly whether they are on ("On. Reminders come to the devices below." in Teal, or "Off. Nothing is sent to you."), then my devices (each with Send a test, Switch off or on, Remove) and "When to remind me". Each open item in My tasks has a bell: "Bell on" pressed (Teal tint) or "Bell off" (ghost), named "Remind me about …". A notification reads like the board: the item's title, or "Private task" for a private item, over "Due at 3:00 pm"; the digest is "Your day: 3 to do, 1 overdue" over the first three titles.
 
 ---
 

@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.29: reminders as built (WP-40, D-58): the `reminders` job plans and claims in the database and sends by web push; the Reminders page, the bell in My tasks and an item's lead time; the vapid-keys workflow (§5.6, §5.9, §9.8).
 > v0.8.26: streak history and insights (WP-17, D-55): day close stores each member's days and runs from the rules engine, the Insights page, and the board's streak flame (§5.8, §7).
 > v0.8.25: the board through an outage (WP-13, D-54): its outbox, last snapshot and check-offs in IndexedDB; the service worker keeps its page and build files; offline and stale lines; provisional points (§5.3, §7).
 > v0.8.24: the rewards shop (WP-18, D-53): `POST /api/redemptions` and `/api/redemptions/cancel` for the board; a parent decides in the admin app; photos in a private Storage bucket per household (§5.7).
@@ -347,7 +348,7 @@ sequenceDiagram
 | `occurrence_gen` | hourly (minute 23); edits re-plan at once in the database | `/api/jobs/occurrence-gen` | calls `generate_household_occurrences()`: tomorrow to 14 days ahead, one occurrence per item per due date, or per person for an item where everyone does their own (D-47) (`UNIQUE NULLS NOT DISTINCT (chore_id, due_date, member_id)` + `ON CONFLICT DO NOTHING`) with its `chore_occurrence_assignee` snapshot; idempotent. Triggers re-plan on edits (D-45): an item, its assignees or a member from today, in place; a school year, closure or school profile from tomorrow (D-24) |
 | `day_close` | hourly (minute 4; acts once a household's local day has ended) | `/api/jobs/day-close` | `close_household_day()` → `close_past_due()` marks unresolved routines `missed` and stamps `finalized_at` (tasks stay open, D-31); catches up every earlier day; idempotent (WP-10). Writing `member_daily_summary` and rebuilding `streak_segment` join it with WP-17 |
 | `status_check` | daily 09:38 UTC | `/api/jobs/status-check` | `occurrence_status_drift()`: re-folds the past 14 days and the planned 14 ahead, and checks that each member holds exactly the points each of those occurrences owes them (WP-16), report-only; any drift fails the run, so System Health shows it (NFR-06, WP-10) |
-| `reminders` | every 5 min (minutes 0, 5, 10 …) | `/api/jobs/reminders` | household-local schedule; skips done items and people, items or devices with reminders off; inserts `reminder_delivery` (dedupe key) before sending; holds during quiet hours; daily digest at each person's chosen time |
+| `reminders` | every 5 min (minutes 0, 5, 10 …) | `/api/jobs/reminders` | household-local schedule; skips done items and people, items or devices with reminders off; inserts `reminder_delivery` (dedupe key) before sending; holds during quiet hours; daily digest at each person's chosen time. As built (WP-40, D-58): `plan_reminders()`, `claim_reminders()`, web push, `finish_reminder()` |
 | `progress_reconcile` | every 5 min (minutes 2, 7, 12 …) | `/api/jobs/progress-reconcile` | recompute dirty goals; apply time-based transitions (scheduled→active, active→expired at household-local midnight); post goal payouts and points bonus rules idempotently; nightly full recompute |
 
 No two job calls are scheduled in the same minute: each schedule has its own minute (and the hourly and daily jobs avoid the 5-minute ones), so calls reach Vercel one at a time.
@@ -469,6 +470,8 @@ sequenceDiagram
 ```
 
 A reminder is due at the item's due time minus its lead time, or at the person's morning time on the due date when the item has no due time. Quiet hours move it to the end of the quiet period. The dedupe key (`due:{occurrence}:{member}`) makes each reminder at most once, and an item completed before its reminder is skipped. On an iPhone, web push needs the admin app added to the Home Screen (iOS 16.4 or later); the permission prompt appears only after the person taps "Turn on reminders".
+
+**As built (WP-40, D-58).** For each household the job (`lib/reminders.ts`) calls `plan_reminders(household, now)`: one `reminder_delivery` per open item (`scheduled` or `rejected`) and assignee whose reminder time came in the last two hours, with the person's reminders on and the item's bell on (`chore_assignee.remind`, else their `default_on`), and each digest whose time came, with something open today or an overdue task; each `held` until any quiet hours end, and pruned after 90 days. Then `claim_reminders(household, now)` takes each held one now due: still wanted (reminders on, item open and its bell on, a device switched on, not over two hours late), it is marked `sent` and returned with its payload `{title, body, url, tag}` and the person's devices; otherwise `skipped` with why. The job sends each with `web-push` (VAPID, aes128gcm; four-hour TTL, high urgency) and `finish_reminder()` records each device's answer: success resets its failures, 404 or 410 deletes the subscription, anything else counts a failure; with no success the delivery is `failed`. A private item's payload reads "Private task" while the person hides private titles. The service worker shows it (one per tag) and a tap opens `/admin/my#item-{occurrence}`. Without the VAPID keys nothing is claimed, and reminders waiting fail the run. The Reminders page (`/admin/reminders`) turns reminders on (the browser asks only after that tap; on an iPhone it says to add FamilyWise to the Home Screen first), lists, tests, switches and removes devices, and saves the settings; My tasks has a bell on each open item (`set_my_reminder()`); the item editor sets `chore.remind_lead_minutes`.
 
 ### 5.10 Admin sign-in and onboarding (ACC-01, ACC-02, ACC-03, ACC-05, D-39)
 
@@ -710,8 +713,8 @@ Every GitHub secret below is a repository secret, which any workflow run in the 
 | `BACKUP_PASSPHRASE` | secret | GitHub repository | nightly backup encryption (WP-24) |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (`sb_publishable_…`) | env | Vercel: Production and Preview, the same values | app (browser-safe; RLS applies) |
 | `SUPABASE_SECRET_KEY` (`sb_secret_…`, marked Sensitive) | env, server only | Vercel: Production only; previews never hold it (D-37) | jobs, derived tables (bypasses RLS; never `NEXT_PUBLIC_`) |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | env (browser-safe) | Vercel: Production and Preview | admin app subscribes to push (WP-40) |
-| `VAPID_PRIVATE_KEY` (Sensitive), `VAPID_SUBJECT` (`mailto:` contact) | env, server only | Vercel: Production only | reminders job (WP-40) |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | env (browser-safe) | Vercel: Production and Preview; generated and written by the vapid-keys workflow, never by hand (WP-40, D-58) | admin app subscribes to push (WP-40) |
+| `VAPID_PRIVATE_KEY` (Sensitive), `VAPID_SUBJECT` (the production URL as the contact) | env, server only | Vercel: Production only; written by the vapid-keys workflow, which refuses to replace existing keys (every device would stop getting reminders) | reminders job, a device's test (WP-40) |
 | `JOB_SIGNING_SECRET` | env | Vercel Production only, and Supabase Vault (`job_signing_secret`); generated and written by the job-secret workflow, never by hand (WP-07, D-38) | `pg_net` → job endpoints |
 | `job_base_url` = `PRODUCTION_URL` | Vault secret | Supabase Vault; written by the job-secret workflow | `private.call_job`: where job calls go |
 
@@ -756,7 +759,7 @@ Every GitHub secret below is a repository secret, which any workflow run in the 
 | Rules evaluation fails | meter lags briefly | goal `dirty`; reconcile fixes within ~5 min |
 | Day-close job skipped | history views lag | the job catches up all past dates on its next run; `fold_occurrence_status` also reports `missed` for any past-due unresolved occurrence on the next touch |
 | Device token revoked | board returns to pairing screen | by design |
-| Push service rejects a device, or a subscription expired | that device stops getting reminders | 404/410 deletes the subscription; Settings shows each device's last delivery and a test button; My tasks and the board still list everything |
+| Push service rejects a device, or a subscription expired | that device stops getting reminders | 404/410 deletes the subscription; the Reminders page shows when each device was last reached and has a test button; My tasks and the board still list everything |
 | Pi power loss | reboot to board in <2 min | SSD boot, auto-launch |
 
 ---

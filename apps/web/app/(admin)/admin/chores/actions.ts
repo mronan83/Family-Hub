@@ -26,7 +26,7 @@ export async function saveChore(_prev: FormState, form: FormData): Promise<FormS
   const parsed = parseChore(form, { canSetVisibility: form.get('visibilityOffered') === 'true' });
   if (!parsed.ok) return { message: parsed.message };
   const id = String(form.get('id') ?? '') || null;
-  const { error } = await db.rpc('save_chore', {
+  const { data: savedId, error } = await db.rpc('save_chore', {
     p_household_id: household.id,
     p_id: id,
     p_item: chorePayload(parsed.value),
@@ -36,6 +36,15 @@ export async function saveChore(_prev: FormState, form: FormData): Promise<FormS
   if (error) {
     log('warn', 'chore not saved', { code: error.code, hint: error.hint });
     return { message: choreSaveMessage(error) };
+  }
+  // [CHR-16] Its reminder lead time (WP-40): nothing to re-plan, so set apart from the item.
+  if (id || parsed.value.remindLeadMinutes != null) {
+    const { error: lError } = await db
+      .from('chore')
+      .update({ remind_lead_minutes: parsed.value.remindLeadMinutes ?? null })
+      .eq('id', savedId as string)
+      .eq('household_id', household.id);
+    if (lError) log('warn', 'reminder lead time not saved', { code: lError.code });
   }
   revalidatePath('/admin/chores');
   const saved = encodeURIComponent(parsed.value.title);

@@ -30,6 +30,13 @@
       "purpose": "Nightly: re-folds the last 14 days of completion events and fails if any stored status differs from them (WP-10, NFR-06)."
     },
     {
+      "name": "reminders",
+      "kind": "http",
+      "cron": "0-59/5 * * * *",
+      "everyMinutes": 5,
+      "purpose": "Every 5 minutes: plans the reminders that have come due and sends those due now by web push, each at most once, held through quiet hours (WP-40, D-58)."
+    },
+    {
       "name": "purge_history",
       "kind": "sql",
       "cron": "43 3 * * *",

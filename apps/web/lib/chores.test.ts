@@ -93,9 +93,23 @@ describe('parseChore', () => {
         approval: 'inherit',
         assignment: 'each',
         tags: [KITCHEN],
+        remindLeadMinutes: null,
         visibility: 'family',
       },
     });
+  });
+
+  it('[CHR-16] reads its reminder lead time, or none to follow each person’s own (WP-40)', () => {
+    const lead = (value: string) => {
+      const parsed = parseChore(form({ ...base, remindLeadMinutes: value }), {
+        canSetVisibility: true,
+      });
+      return parsed.ok ? parsed.value.remindLeadMinutes : parsed.message;
+    };
+    expect(lead('')).toBeNull();
+    expect(lead('0')).toBe(0);
+    expect(lead('1440')).toBe(1440);
+    expect(lead('30')).toBe('Choose when it reminds.');
   });
 
   it('[CHR-18] reads the choice for several people, and falls back to the kind’s default', () => {
