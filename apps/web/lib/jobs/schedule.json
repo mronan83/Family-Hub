@@ -44,6 +44,13 @@
       "purpose": "Every 5 minutes: plans the reminders that have come due and sends those due now by web push, each at most once, held through quiet hours (WP-40, D-58)."
     },
     {
+      "name": "calendar_sync",
+      "kind": "http",
+      "cron": "3-59/15 * * * *",
+      "everyMinutes": 15,
+      "purpose": "Every 15 minutes (minutes 3, 18, 33, 48): fetches each household's published calendars that are due, expands them over the window (a week back, 120 days ahead) and stores their events; a broken link keeps its last good events (WP-22, D-63)."
+    },
+    {
       "name": "purge_history",
       "kind": "sql",
       "cron": "43 3 * * *",

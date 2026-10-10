@@ -1,5 +1,6 @@
 import { Banner, Icon } from '@familywise/ui';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { dayAndTime } from '@/lib/format';
@@ -34,13 +35,20 @@ export default async function HealthPage() {
   if (!household) redirect('/setup');
   const tz = household.timezone;
 
-  const [jobsRes, errorsRes, usageRes, demoRes] = await Promise.all([
+  const [jobsRes, errorsRes, usageRes, demoRes, calendarsRes] = await Promise.all([
     db!.rpc('job_health', { p_household_id: household.id }),
     db!.rpc('household_errors', { p_household_id: household.id, p_limit: 20 }),
     db!.rpc('system_usage'),
     db!.from('household').select('is_demo').eq('id', household.id).maybeSingle(),
+    // [CAL-06] A calendar whose link fails is its own state, not a failing job (D-63): said here too.
+    db!
+      .from('calendar_source')
+      .select('name')
+      .eq('household_id', household.id)
+      .eq('status', 'error')
+      .order('name'),
   ]);
-  for (const r of [jobsRes, errorsRes, usageRes]) {
+  for (const r of [jobsRes, errorsRes, usageRes, calendarsRes]) {
     if (r.error) throw new Error(`system health: ${r.error.message}`);
   }
   const jobs = (jobsRes.data ?? []) as JobRow[];
@@ -50,19 +58,27 @@ export default async function HealthPage() {
   const demo = demoRes.data?.is_demo === true;
   const failing = jobs.filter((j) => j.state === 'failing' || j.state === 'stale');
   const near = usage.lines.filter((l) => l.warn);
+  const broken = ((calendarsRes.data ?? []) as { name: string }[]).map((c) => c.name);
 
   return (
     <main className="fw-page fw-page--wide">
       <AdminHeader current="/admin/health" />
       <section className="fw-card" aria-labelledby="health-heading">
         <h1 id="health-heading">System health</h1>
-        {failing.length === 0 && near.length === 0 ? (
+        {failing.length === 0 && near.length === 0 && broken.length === 0 ? (
           <Banner kind="info">Everything is running normally.</Banner>
         ) : null}
         {failing.length > 0 ? (
           <Banner kind="notice">
             {failing.length === 1 ? 'A background job needs' : 'Background jobs need'} attention:{' '}
             {failing.map((j) => jobLabel(j.job_type)).join(', ')}.
+          </Banner>
+        ) : null}
+        {broken.length > 0 ? (
+          <Banner kind="notice">
+            {broken.length === 1 ? 'A calendar can’t sync' : 'Calendars can’t sync'}:{' '}
+            {broken.join(', ')}. The board keeps their last good events; see{' '}
+            <Link href="/admin/calendars">Calendars</Link> for what to do.
           </Banner>
         ) : null}
         {near.length > 0 ? (
