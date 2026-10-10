@@ -1,11 +1,13 @@
 import { Banner, Button, Icon, type IconName } from '@familywise/ui';
 import Image from 'next/image';
 import Link from 'next/link';
+import { bonusFacts, describeBonus, type BonusRule } from '@/lib/bonus';
 import { dayAndTime } from '@/lib/format';
 import { pointsWord } from '@/lib/points';
 import { itemFacts, STATUS_WORDS } from '@/lib/rewards';
 import { AdminHeader } from '../header';
-import { redemptionAction } from './actions';
+import { applyBonusesNow, bonusRuleAction, redemptionAction } from './actions';
+import { BonusForm } from './bonus-form';
 import type { RedemptionRow, RewardRow } from './data';
 
 export interface RewardsViewProps {
@@ -15,6 +17,12 @@ export interface RewardsViewProps {
   /** Each child's balance now. */
   balances: Map<string, number>;
   timezone: string;
+  /** The household's date (YYYY-MM-DD). */
+  today: string;
+  /** [PTS-05] The bonus rules, archived ones included. */
+  bonusRules: BonusRule[];
+  /** [PTS-06] What each child is saving for: member id to reward id. */
+  wishes: Map<string, string>;
   notice: string | null;
   error: string | null;
 }
@@ -44,8 +52,8 @@ function Picture({
 
 /**
  * [PTS-03][PTS-04] The rewards shop for a parent: what the children asked for (approve, or not this
- * time), what is approved and still to give (mark given, or cancel and refund), the shop itself, and
- * what happened lately.
+ * time), what is approved and still to give (mark given, or cancel and refund), the shop itself (and
+ * who is saving for what, PTS-06), the bonus rules (PTS-05), and what happened lately.
  */
 export function RewardsView({
   catalog,
@@ -53,6 +61,9 @@ export function RewardsView({
   members,
   balances,
   timezone,
+  today,
+  bonusRules,
+  wishes,
   notice,
   error,
 }: RewardsViewProps) {
@@ -65,6 +76,10 @@ export function RewardsView({
     .slice(0, 10);
   const shop = catalog.filter((c) => !c.archivedAt);
   const archived = catalog.filter((c) => c.archivedAt);
+  const savers = (itemId: string) =>
+    members.filter((m) => wishes.get(m.id) === itemId).map((m) => m.displayName);
+  const rules = bonusRules.filter((r) => !r.archivedAt);
+  const oldRules = bonusRules.filter((r) => r.archivedAt);
 
   const row = (r: RedemptionRow, buttons: React.ReactNode, extra?: string) => {
     const it = item(r.itemId);
@@ -215,6 +230,13 @@ export function RewardsView({
                       {itemFacts(c)}
                       {c.active ? '' : ' · not in the shop now'}
                     </span>
+                    {savers(c.id).length > 0 ? (
+                      <span className="fw-muted fw-reward__savers">
+                        <Icon name="target" size={20} />
+                        {savers(c.id).join(' and ')} {savers(c.id).length === 1 ? 'is' : 'are'}{' '}
+                        saving for it
+                      </span>
+                    ) : null}
                   </span>
                 </span>
                 <Link href={`/admin/rewards/${c.id}`} aria-label={`Edit ${c.title}`}>
@@ -234,6 +256,86 @@ export function RewardsView({
                   <Link href={`/admin/rewards/${c.id}`} aria-label={`Edit ${c.title}`}>
                     Edit
                   </Link>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
+      </section>
+
+      <section className="fw-card" aria-labelledby="bonus-heading">
+        <h2 id="bonus-heading">Bonus points</h2>
+        <p className="fw-muted">
+          Extra points paid automatically, overnight once a day is over. Each bonus is paid once.
+        </p>
+        {rules.length === 0 ? (
+          <p className="fw-muted">No bonuses yet. A streak bonus rewards keeping it up.</p>
+        ) : (
+          <form action={bonusRuleAction}>
+            <ul className="fw-list" aria-label="Bonus points">
+              {rules.map((r) => {
+                const words = describeBonus(r);
+                return (
+                  <li key={r.id} className="fw-list__row fw-reward__row" data-bonus={r.id}>
+                    <span className="fw-item">
+                      <span className="fw-reward__icon" aria-hidden>
+                        <Icon
+                          name={r.ruleType === 'streak_bonus' ? 'flame' : 'sparkles'}
+                          size={28}
+                        />
+                      </span>
+                      <span className="fw-item__body">
+                        <strong>{words}</strong>
+                        <span className="fw-muted">{bonusFacts(r, today)}</span>
+                      </span>
+                    </span>
+                    <span className="fw-actions">
+                      <Button
+                        type="submit"
+                        name="act"
+                        value={`${r.active ? 'off' : 'on'}:${r.id}`}
+                        variant="ghost"
+                        icon={r.active ? 'minus-circle' : 'check-circle'}
+                        aria-label={`${r.active ? 'Turn off' : 'Turn on'}: ${words}`}
+                      >
+                        {r.active ? 'Turn off' : 'Turn on'}
+                      </Button>
+                      <Button
+                        type="submit"
+                        name="act"
+                        value={`archive:${r.id}`}
+                        variant="ghost"
+                        icon="trash"
+                        aria-label={`Archive: ${words}`}
+                      >
+                        Archive
+                      </Button>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </form>
+        )}
+        <details className="fw-more">
+          <summary>Add a bonus</summary>
+          <BonusForm today={today} />
+        </details>
+        {rules.some((r) => r.active) ? (
+          <form action={applyBonusesNow} className="fw-actions">
+            <Button type="submit" variant="secondary" icon="sync">
+              Pay bonuses now
+            </Button>
+            <span className="fw-muted">For the days already over, as tonight would.</span>
+          </form>
+        ) : null}
+        {oldRules.length > 0 ? (
+          <details className="fw-more">
+            <summary>Archived bonuses ({oldRules.length})</summary>
+            <ul className="fw-list" aria-label="Archived bonuses">
+              {oldRules.map((r) => (
+                <li key={r.id} className="fw-list__row">
+                  <span>{describeBonus(r)}</span>
                 </li>
               ))}
             </ul>

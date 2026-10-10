@@ -1,7 +1,9 @@
 import { ENGINE_VERSION } from '@familywise/rules-engine';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { isoDay } from '../format';
+import { evaluateHouseholdGoals } from '../goals';
 import { dayBefore, rebuildMemberHistory } from '../history';
+import { log } from '../log';
 import { runReminders, vapidFromEnv, webPushSender } from '../reminders';
 
 export type JobContext = {
@@ -51,12 +53,24 @@ export const JOBS: Record<string, Job> = {
   // [CHR-07] Day close (WP-10): once the household's local day has ended, its routines are finalized
   // and those not done become missed; tasks carry over (D-31). Catches up every earlier day at once,
   // and repeating it changes nothing. [RWD-11] Then (WP-17) each member whose occurrences changed has
-  // their history rebuilt through yesterday by the rules engine (D-55).
+  // their history rebuilt through yesterday by the rules engine (D-55). [PTS-05] Last (WP-30), the
+  // household's bonus rules are applied to that history; each bonus is posted once (D-57).
   async day_close({ db, householdId }) {
     const { data, error } = await db.rpc('close_household_day', { p_household_id: householdId });
     if (error) throw new Error(`close the day: ${error.message}`);
     const history = await rebuildHistories(db, householdId);
-    return { status: 'ok', stats: { ...(data as Record<string, unknown>), history } };
+    const { data: bonuses, error: bError } = await db.rpc('apply_points_rules', {
+      p_household: householdId,
+    });
+    if (bError) throw new Error(`apply bonus rules: ${bError.message}`);
+    return {
+      status: 'ok',
+      stats: {
+        ...(data as Record<string, unknown>),
+        history,
+        bonuses: bonuses as { posted: number },
+      },
+    };
   },
 
   // [CHR-15][CHR-16][CHR-17] Reminders (WP-40, D-58), every 5 minutes: the database plans what has
@@ -100,6 +114,22 @@ export const JOBS: Record<string, Job> = {
       );
     }
     return { status: 'ok', stats: report };
+  },
+
+  // [RWD-04][US-407] Goal progress (WP-19, D-56): evaluates every goal of the household that needs it
+  // (marked dirty by a check-off, an uncheck, day close or new rules; due to start or end; or not yet
+  // evaluated today) with the rules engine, stores the progress and applies the status changes once.
+  // A goal that fails stays dirty for the next run, 5 minutes later; the run fails so Health shows it.
+  async progress_reconcile({ db, householdId }) {
+    const errors: string[] = [];
+    const stats = await evaluateHouseholdGoals(db, householdId, (goalId, e) => {
+      errors.push(`${goalId}: ${e instanceof Error ? e.message : String(e)}`);
+      log('warn', 'goal not evaluated', { goalId, error: String(e) });
+    });
+    if (errors.length > 0) {
+      throw new Error(`${errors.length} goal(s) not evaluated: ${errors.join('; ')}`);
+    }
+    return { status: 'ok', stats: { ...stats } };
   },
 };
 

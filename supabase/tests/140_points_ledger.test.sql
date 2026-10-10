@@ -279,7 +279,7 @@ select throws_ok($$ insert into public.points_ledger (household_id, member_id, e
                     values ('0f000000-0000-0000-0000-000000000001', '0f110000-0000-0000-0000-000000000001', 'bonus', 100, 'x', 'admin') $$,
   '42501', null, '[PTS-01] an admin cannot insert an entry');
 reset role;
-select ok(not has_function_privilege('authenticated', 'private.post_ledger(uuid, uuid, text, integer, text, text, text, uuid, uuid)', 'execute')
+select ok(not has_function_privilege('authenticated', 'private.post_ledger(uuid, uuid, text, integer, text, text, text, uuid, uuid, uuid)', 'execute')
           and not has_function_privilege('authenticated', 'private.reconcile_occurrence_points(uuid)', 'execute')
           and not has_function_privilege('authenticated', 'private.backfill_points()', 'execute'),
   '[NFR-04] the ledger''s writers are not callable from outside');

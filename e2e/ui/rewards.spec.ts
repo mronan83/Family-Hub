@@ -78,9 +78,63 @@ test('[PTS-03][US-1103] the shop: each reward’s cost, what is left, its limit;
     'not in the shop now',
   );
   await expect(shop.locator('img')).toHaveCount(1);
-  await expect(page.getByText('Archived (1)')).toBeVisible();
+  await expect(page.getByText('Archived (1)', { exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Add a reward' })).toHaveAttribute(
     'href',
     '/admin/rewards/new',
   );
+});
+
+test('[PTS-06] the shop says who is saving for what', async ({ page }) => {
+  await page.goto('/dev/rewards');
+  const shop = page.getByRole('list', { name: 'The shop' });
+  await expect(shop.getByRole('listitem').filter({ hasText: 'Movie night' })).toContainText(
+    'Maya is saving for it',
+  );
+  await expect(shop.getByText(/saving for it/)).toHaveCount(1);
+});
+
+test('[PTS-05][US-1107] bonus points: each rule in words, from when it counts, on or off; archived ones aside', async ({
+  page,
+}) => {
+  await page.goto('/dev/rewards');
+  const rules = page.getByRole('list', { name: 'Bonus points' });
+  await expect(rules.getByRole('listitem')).toHaveCount(2);
+  const streak = rules
+    .getByRole('listitem')
+    .filter({ hasText: '20 points for 7 good days in a row' });
+  await expect(streak).toContainText('counts from Thu, Oct 1');
+  await expect(
+    streak.getByRole('button', { name: 'Turn off: 20 points for 7 good days in a row' }),
+  ).toBeVisible();
+  await expect(
+    streak.getByRole('button', { name: 'Archive: 20 points for 7 good days in a row' }),
+  ).toBeVisible();
+  const perfect = rules
+    .getByRole('listitem')
+    .filter({ hasText: '5 points for each day with everything done' });
+  await expect(perfect).toContainText('counts from Mon, Oct 5 · off');
+  await expect(
+    perfect.getByRole('button', { name: 'Turn on: 5 points for each day with everything done' }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Pay bonuses now' })).toBeVisible();
+  await page.getByText('Archived bonuses (1)').click();
+  await expect(page.getByRole('list', { name: 'Archived bonuses' })).toContainText(
+    '2 points for 3 good days in a row',
+  );
+});
+
+test('[PTS-05] adding a bonus: a streak asks how long; a perfect day doesn’t', async ({ page }) => {
+  await page.goto('/dev/rewards');
+  await page.getByText('Add a bonus', { exact: true }).click();
+  const form = page.getByRole('form', { name: 'Add a bonus' });
+  await expect(form.getByRole('radio', { name: 'A streak' })).toBeChecked();
+  await expect(form.getByLabel('Good days in a row')).toHaveValue('7');
+  await expect(form.getByLabel('Bonus points')).toHaveValue('20');
+  await expect(form.getByLabel('Counts from')).toHaveValue(/^\d{4}-\d{2}-\d{2}$/);
+  await form.getByRole('radio', { name: 'A perfect day' }).check();
+  await expect(form.getByLabel('Good days in a row')).toHaveCount(0);
+  await expect(form.getByLabel('Bonus points')).toHaveValue('5');
+  await expect(form).toContainText('Each day with everything on the list done.');
+  await expect(form.getByRole('button', { name: 'Add bonus' })).toBeVisible();
 });

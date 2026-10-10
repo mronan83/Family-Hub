@@ -4,6 +4,7 @@ import {
   Avatar,
   Button,
   ChoreTile,
+  GoalMeter,
   Icon,
   ICON_NAMES,
   PointsChip,
@@ -20,7 +21,7 @@ import {
 import type { BoardStore } from '@/lib/board-store';
 import { signed } from '@/lib/points';
 import { flameDays, flameTier, reachedMilestone } from '@/lib/streak';
-import type { BoardMember, BoardSnapshot } from '@/lib/snapshot';
+import type { BoardMember, BoardShopItem, BoardSnapshot } from '@/lib/snapshot';
 import {
   boardActivity,
   defaultDoers,
@@ -35,6 +36,8 @@ import {
   type TodayItem,
   undoUntil,
 } from '@/lib/today';
+import { type PinWish, wishLine } from '@/lib/wishes';
+import { useOnline } from './use-online';
 
 /** A tap within this long of the last one on the same tile is the same tap (NFR-03). */
 const DEBOUNCE_MS = 500;
@@ -320,7 +323,7 @@ function useToday(
     return () => clearTimeout(t);
   }, [celebrating]);
 
-  return { items, balance, provisional, earns, checkOff, undo, notice, celebrating };
+  return { items, balance, provisional, earns, checkOff, undo, notice, say, celebrating };
 }
 
 /** Ticks every second while `active`, for undo buttons that close on time. */
@@ -583,6 +586,175 @@ function WhoDidIt({
 }
 
 /**
+ * [PTS-06][US-1108] What a child is saving for (WP-30): the reward they pinned and a meter of their
+ * balance against its cost, and when they have enough, a nudge to ask for it. Choosing needs the
+ * network (a wish isn't queued like a check-off).
+ */
+function WishCard({
+  wish,
+  balance,
+  shopOpen,
+  online,
+  onChoose,
+}: {
+  wish: BoardShopItem | null;
+  balance: number;
+  shopOpen: boolean;
+  online: boolean;
+  onChoose: () => void;
+}) {
+  return (
+    <section className="fw-today__card fw-today__wish" aria-labelledby="me-wish">
+      <h3 id="me-wish">Saving for</h3>
+      {wish ? (
+        <>
+          <p className="fw-today__wish-item">
+            <Icon name={iconOf(wish.icon)} size={40} />
+            <span>{wish.title}</span>
+          </p>
+          <GoalMeter
+            label="Saved"
+            value={Math.min(Math.max(balance, 0), wish.cost)}
+            target={wish.cost}
+          />
+          <p className="fw-today__wish-line" data-enough={balance >= wish.cost || undefined}>
+            {balance >= wish.cost ? <Icon name="sparkles" size={28} /> : null}
+            <span>{wishLine(balance, wish.cost)}</span>
+          </p>
+        </>
+      ) : (
+        <p className="fw-today__muted">
+          {shopOpen ? 'Pick a reward from the shop to save up for.' : 'Nothing in the shop yet.'}
+        </p>
+      )}
+      {shopOpen ? (
+        <Button
+          variant={wish ? 'secondary' : 'primary'}
+          icon={wish ? 'edit' : 'gift'}
+          disabled={!online}
+          onClick={onChoose}
+        >
+          {wish ? 'Change' : 'Choose a wish'}
+        </Button>
+      ) : null}
+      {shopOpen && !online ? (
+        <p className="fw-today__muted">Choosing a wish needs the internet.</p>
+      ) : null}
+    </section>
+  );
+}
+
+/** [PTS-06] The shop's rewards to save for, the one pinned now pressed, and "No wish". */
+function WishPicker({
+  member,
+  shop,
+  current,
+  onPick,
+  onCancel,
+}: {
+  member: BoardMember;
+  shop: BoardShopItem[];
+  current: string | null;
+  onPick: (itemId: string | null) => void;
+  onCancel: () => void;
+}) {
+  const first = useRef<HTMLButtonElement>(null);
+  // Focus goes in once, when it opens; the board redrawing (each minute, each snapshot) leaves it be.
+  useEffect(() => first.current?.focus(), []);
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && onCancel();
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, [onCancel]);
+  return (
+    <div className="fw-today__scrim">
+      <div
+        className="fw-today__picker"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="wish-title"
+      >
+        <h2 id="wish-title">What is {member.displayName} saving for?</h2>
+        <ul className="fw-today__wishes" aria-label="Rewards">
+          {shop.map((i, n) => (
+            <li key={i.id}>
+              <button
+                ref={n === 0 ? first : undefined}
+                type="button"
+                className="fw-today__wish-option"
+                aria-pressed={current === i.id}
+                onClick={() => onPick(i.id)}
+              >
+                <Icon name={iconOf(i.icon)} size={48} />
+                <span className="fw-today__wish-title">{i.title}</span>
+                <PointsChip points={i.cost} />
+                {current === i.id ? (
+                  <Icon name="check-circle" size={36} className="fw-today__picked" />
+                ) : null}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="fw-today__picker-actions">
+          {current ? (
+            <Button variant="secondary" icon="minus-circle" onClick={() => onPick(null)}>
+              No wish
+            </Button>
+          ) : null}
+          <Button variant="ghost" icon="close" onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * [PTS-06] Each child's wish with this board's own choice laid over the snapshot until the
+ * snapshot shows it, so a pick answers at once; a pick the server didn't take is put back.
+ */
+function useWishes(snapshot: BoardSnapshot, pinWish: PinWish, say: (text: string) => void) {
+  const [chosen, setChosen] = useState<Map<string, BoardShopItem | null>>(() => new Map());
+  // What the snapshot shows now wins: a choice it already shows is no longer needed.
+  const shown = useMemo(
+    () => new Map(snapshot.members.map((m) => [m.id, m.wish?.id ?? null])),
+    [snapshot.members],
+  );
+  const [seen, setSeen] = useState(shown);
+  if (seen !== shown) {
+    setSeen(shown);
+    setChosen((prev) => {
+      const next = new Map([...prev].filter(([id, w]) => (w?.id ?? null) !== shown.get(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }
+  const wishOf = useCallback(
+    (m: BoardMember) => (chosen.has(m.id) ? (chosen.get(m.id) ?? null) : m.wish),
+    [chosen],
+  );
+  const pick = useCallback(
+    (m: BoardMember, itemId: string | null) => {
+      const item = itemId ? (snapshot.shop.find((i) => i.id === itemId) ?? null) : null;
+      const before = chosen.has(m.id) ? (chosen.get(m.id) ?? null) : m.wish;
+      setChosen((prev) => new Map(prev).set(m.id, item));
+      void pinWish(m.id, itemId).then((answer) => {
+        if (answer === 'saved') return;
+        setChosen((prev) => new Map(prev).set(m.id, before));
+        say(
+          answer === 'refused' ? 'That one isn’t in the shop now.' : 'That didn’t save. Try again.',
+        );
+      });
+    },
+    [snapshot.shop, chosen, pinWish, say],
+  );
+  return { wishOf, pick };
+}
+
+/** Without a server to ask (a board that can't pin), a wish never saves. */
+const noPin: PinWish = async () => 'offline';
+
+/**
  * [BRD-01][BRD-02][BRD-07][PTS-02] The board's Today: everyone's day in a column each, or one
  * person's own day with their points. Tap a person to see theirs; it goes back to everyone after a
  * while untouched. Slots for events, meals, the goal meter and the streak flame are kept for the
@@ -594,19 +766,26 @@ export function Today({
   post,
   store = null,
   onQueue,
+  pinWish = noPin,
 }: {
   snapshot: BoardSnapshot;
   /** The current minute. */
   now: Date;
   post: Post;
+  /** [PTS-06] Pins the reward a child is saving for (POST /api/wishes on a board). */
+  pinWish?: PinWish;
   /** [DEV-06] Where the outbox and what the board shows ahead of the snapshot outlast a reload. */
   store?: BoardStore | null;
   onQueue?: (q: QueueState) => void;
 }) {
   const t = useToday(snapshot, post, store, onQueue);
+  const w = useWishes(snapshot, pinWish, t.say);
+  const online = useOnline();
   const { members, household, today } = snapshot;
   const [view, setView] = useState<string>('family');
   const [picker, setPicker] = useState<{ item: TodayItem; initial: string[] } | null>(null);
+  // Whose wish is being chosen: the picker closes with the person's screen.
+  const [wishing, setWishing] = useState<string | null>(null);
   const nowTime = localTime(now, household.timezone);
   const names = useMemo(() => new Map(members.map((m) => [m.id, m.displayName])), [members]);
   const name = useCallback((id: string) => names.get(id) ?? 'someone', [names]);
@@ -620,7 +799,10 @@ export function Today({
   const idle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touched = useCallback(() => {
     if (idle.current) clearTimeout(idle.current);
-    idle.current = setTimeout(() => setView('family'), IDLE_MS);
+    idle.current = setTimeout(() => {
+      setView('family');
+      setWishing(null);
+    }, IDLE_MS);
   }, []);
   useEffect(() => () => (idle.current ? clearTimeout(idle.current) : undefined), []);
 
@@ -749,6 +931,15 @@ export function Today({
                   )}
                 </section>
               ) : null}
+              {member.earnsRewards ? (
+                <WishCard
+                  wish={w.wishOf(member)}
+                  balance={t.balance(member)}
+                  shopOpen={snapshot.shop.length > 0}
+                  online={online}
+                  onChoose={() => setWishing(member.id)}
+                />
+              ) : null}
               {/* Kept for later work packages: the goal meter (WP-20), today's events (WP-23) and
                   meals (WP-28). The streak flame (WP-17) is beside the name. */}
             </aside>
@@ -786,6 +977,19 @@ export function Today({
           })}
         </div>
       )}
+
+      {member && wishing === member.id ? (
+        <WishPicker
+          member={member}
+          shop={snapshot.shop}
+          current={w.wishOf(member)?.id ?? null}
+          onCancel={() => setWishing(null)}
+          onPick={(itemId) => {
+            w.pick(member, itemId);
+            setWishing(null);
+          }}
+        />
+      ) : null}
 
       {picker ? (
         <WhoDidIt

@@ -6,6 +6,8 @@ import { expect, test, type Page } from '@playwright/test';
 // board's 1920×1080. The same flow runs on a real board and database in e2e/tests/board.spec.ts.
 test.use({ viewport: { width: 1920, height: 1080 } });
 
+const LEO = 'f1000000-0000-4000-8000-000000000002';
+
 const people = (page: Page) => page.getByRole('list', { name: 'Family', exact: true });
 const posts = (page: Page) =>
   page.evaluate(() =>
@@ -226,6 +228,132 @@ test('[PTS-02][D-50] the points list says what each was for, never why points we
   await expect(list).toContainText('Helped carry the shopping');
   await expect(list).toContainText('Feed the dog, undone');
 });
+
+const wishes = (page: Page) =>
+  page.evaluate(
+    () =>
+      (window as unknown as { __fwWishes?: { member: string; item: string | null }[] })
+        .__fwWishes ?? [],
+  );
+
+async function asLeo(page: Page) {
+  await page.goto('/dev/board');
+  await people(page).getByRole('button', { name: 'Leo', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Leo', level: 2 })).toBeVisible();
+}
+
+test('[PTS-06][US-1108] a child sees what they are saving for: their balance against its cost', async ({
+  page,
+}) => {
+  await asMaya(page);
+  const card = page.getByRole('region', { name: 'Saving for' });
+  await expect(card).toContainText('Movie night');
+  const meter = card.getByRole('progressbar');
+  await expect(meter).toHaveAttribute('aria-valuenow', '42');
+  await expect(meter).toHaveAttribute('aria-valuetext', '42 of 100, 42%');
+  await expect(card).toContainText('58 more points to go.');
+  await expect(card.getByRole('button', { name: 'Change' })).toBeVisible();
+  // A grown-up who doesn't earn rewards has no wish.
+  await people(page).getByRole('button', { name: 'Alex', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Alex', level: 2 })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Saving for' })).toHaveCount(0);
+});
+
+test('[PTS-06][US-1108] choosing a wish: picked at once, sent once; with enough, ask for it', async ({
+  page,
+}) => {
+  await asLeo(page);
+  const card = page.getByRole('region', { name: 'Saving for' });
+  await expect(card).toContainText('Pick a reward from the shop to save up for.');
+  await card.getByRole('button', { name: 'Choose a wish' }).click();
+  const picker = page.getByRole('dialog', { name: 'What is Leo saving for?' });
+  const options = picker.getByRole('list', { name: 'Rewards' }).getByRole('button');
+  await expect(options).toHaveCount(4);
+  await expect(options.first()).toBeFocused();
+  // Nothing pinned yet: none pressed, and no "No wish".
+  await expect(picker.locator('[aria-pressed="true"]')).toHaveCount(0);
+  await expect(picker.getByRole('button', { name: 'No wish' })).toHaveCount(0);
+  await picker.getByRole('button', { name: /Stay up 30 minutes late/ }).click();
+  await expect(picker).toHaveCount(0);
+  await expect(card).toContainText('Stay up 30 minutes late');
+  await expect(card.getByRole('progressbar')).toHaveAttribute('aria-valuetext', '17 of 25, 68%');
+  await expect(card).toContainText('8 more points to go.');
+  await expect.poll(() => wishes(page)).toEqual([{ member: LEO, item: 'r-late' }]);
+
+  // Two chores later (5 points each) there is enough: the board says to ask for it.
+  await page.getByRole('button', { name: 'Check off Make bed' }).click();
+  await page.getByRole('button', { name: 'Check off Set the table' }).click();
+  await expect(card.getByRole('progressbar')).toHaveAttribute('aria-valuetext', '25 of 25, 100%');
+  await expect(card).toContainText('You have enough! Ask a grown-up for it.');
+
+  // Change: the pinned one is pressed; "No wish" takes it off.
+  await card.getByRole('button', { name: 'Change' }).click();
+  await expect(picker.getByRole('button', { name: /Stay up 30 minutes late/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await picker.getByRole('button', { name: 'No wish' }).click();
+  await expect(card).toContainText('Pick a reward from the shop to save up for.');
+  await expect
+    .poll(() => wishes(page))
+    .toEqual([
+      { member: LEO, item: 'r-late' },
+      { member: LEO, item: null },
+    ]);
+});
+
+test('[PTS-06] cancelling the wish picker changes nothing', async ({ page }) => {
+  await asMaya(page);
+  const card = page.getByRole('region', { name: 'Saving for' });
+  await card.getByRole('button', { name: 'Change' }).click();
+  const picker = page.getByRole('dialog', { name: 'What is Maya saving for?' });
+  await expect(picker.getByRole('button', { name: /Movie night/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.keyboard.press('Escape');
+  await expect(picker).toHaveCount(0);
+  await expect(card).toContainText('Movie night');
+  expect(await wishes(page)).toEqual([]);
+});
+
+test('[PTS-06][DEV-08] offline, choosing a wish waits for the internet', async ({
+  page,
+  context,
+}) => {
+  await asMaya(page);
+  await context.setOffline(true);
+  const card = page.getByRole('region', { name: 'Saving for' });
+  await expect(card.getByRole('button', { name: 'Change' })).toBeDisabled();
+  await expect(card).toContainText('Choosing a wish needs the internet.');
+  // What she is saving for still shows.
+  await expect(card).toContainText('Movie night');
+  await context.setOffline(false);
+  await expect(card.getByRole('button', { name: 'Change' })).toBeEnabled();
+});
+
+for (const theme of ['day', 'evening'] as const) {
+  test(`[PTS-06][NFR-11] the wish picker in ${theme}: 56 px choices, 28 px text, AA contrast`, async ({
+    page,
+  }) => {
+    await page.goto(`/dev/board?theme=${theme}`);
+    await people(page).getByRole('button', { name: 'Maya', exact: true }).click();
+    await page.getByRole('button', { name: 'Change' }).click();
+    const report = await page.evaluate(() => {
+      const dialog = document.querySelector('[role="dialog"]')!;
+      const small = [...dialog.querySelectorAll('button')]
+        .filter((b) => b.getBoundingClientRect().height < 56)
+        .map((b) => b.textContent);
+      const tiny = [...dialog.querySelectorAll('*')]
+        .filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim()))
+        .filter((el) => parseFloat(getComputedStyle(el).fontSize) < 28)
+        .map((el) => el.textContent?.trim());
+      return { small, tiny };
+    });
+    expect(report).toEqual({ small: [], tiny: [] });
+    await contrastOk(page);
+  });
+}
 
 for (const theme of ['day', 'evening'] as const) {
   test(`[BRD-03][NFR-11] fits the board and is legible in ${theme}: 56 px targets, 28 px text, no overflow`, async ({

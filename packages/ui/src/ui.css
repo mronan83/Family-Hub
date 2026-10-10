@@ -360,6 +360,13 @@ body {
   color: var(--text);
   font: inherit;
 }
+/* A file picker's built-in width ("Choose File · No file chosen") would push a phone's column wider
+   than the screen; it shrinks with the column instead (WP-19; the shop's photo field too). */
+.fw-input[type='file'] {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
 .fw-actions {
   display: flex;
   flex-wrap: wrap;
@@ -464,6 +471,10 @@ body {
 /* A time field wide enough for "12:30 PM" and its picker (WP-40). */
 .fw-input--time {
   max-width: 10em;
+}
+/* A date field wide enough for its whole date and its picker button (WP-30). */
+.fw-input--date {
+  max-width: 12em;
 }
 .admin a[aria-current='page']:not(.fw-btn) {
   text-decoration: none;
@@ -608,6 +619,12 @@ body {
   border-radius: var(--r-sm);
   background: var(--reward-tint);
   color: var(--reward-text);
+}
+/* [PTS-06] Who is saving for a reward (WP-30). */
+.fw-reward__savers {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
 }
 /* A parent's day and My tasks (WP-12): a tick for "Not actually done", who did it, Undo. */
 .fw-day__row {
@@ -1036,6 +1053,75 @@ html:has(.board) {
   padding: 0 var(--s-8);
   font-size: var(--t-body);
 }
+/* [PTS-06] What a child is saving for (WP-30): the reward, a meter, and a nudge once there is enough. */
+.fw-today__wish-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--t-heading);
+  font-weight: 800;
+}
+.fw-today__wish-line {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  color: var(--text-soft);
+}
+.fw-today__wish-line[data-enough] {
+  color: var(--primary-text);
+  font-weight: 700;
+}
+.fw-today__wish .fw-btn {
+  justify-self: start;
+  min-height: var(--touch-primary);
+  padding: 0 var(--s-8);
+  font-size: var(--t-body);
+}
+.fw-today__wishes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
+  gap: var(--s-4);
+  max-height: 60vh;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.fw-today__wish-option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  width: 100%;
+  min-height: var(--touch-primary);
+  padding: var(--s-4) var(--s-6);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: var(--t-body);
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+.fw-today__wish-option[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-today__wish-title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+.fw-today__wish-option > .fw-points,
+.fw-today__wish-option > svg {
+  flex: none;
+}
 /* [RWD-08] A check-off celebrates: the check pops and the tile settles (06 §6, transform and opacity
    only). Reduced motion turns both into the plain change of state (tokens). */
 @keyframes fw-pop {
@@ -1306,6 +1392,108 @@ span.fw-heat__cell {
   .fw-today__flame[data-glow] svg {
     animation: none;
   }
+}
+
+/* Goals (WP-19): a parent's goals in play, each a card with its rules' meters, and the goal form's
+   rule rows. Achieved reads in the reward colour with a trophy, never by colour alone. */
+.fw-goals__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.fw-goals__head h1 {
+  margin: 0;
+}
+.fw-goals {
+  display: grid;
+  gap: var(--s-4);
+  margin: var(--s-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-goal {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+}
+.fw-goal > .fw-item {
+  flex-wrap: wrap;
+}
+.fw-goal > .fw-item > .fw-item__body {
+  flex: 1 1 200px;
+}
+.fw-goal__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-1) var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-weight: 700;
+  font-size: var(--t-small);
+}
+.fw-goal__status[data-status='achieved'] {
+  background: var(--reward-tint);
+  color: var(--reward-text);
+}
+.fw-goal__status[data-status='scheduled'] {
+  background: transparent;
+  border: var(--border-w) solid var(--line);
+  color: var(--text-soft);
+}
+.fw-goal__description {
+  margin: 0;
+}
+.fw-goal__rules {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-goal__rules > p {
+  margin: 0;
+}
+.fw-goal__rule {
+  display: grid;
+  gap: var(--s-1);
+}
+.fw-goal__flag {
+  display: inline-flex;
+  margin-top: var(--s-1);
+  align-items: center;
+  gap: var(--s-1);
+  color: var(--missed-text);
+  font-weight: 700;
+}
+.fw-goal__review {
+  display: grid;
+  gap: var(--s-3);
+  justify-items: start;
+}
+.fw-goal-form__dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+}
+.fw-goal-form__dates > .fw-field {
+  flex: 1 1 180px;
+}
+.fw-goal-rule {
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+}
+.fw-goal-rule__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+}
+.fw-goal-rule__head > .fw-field {
+  flex: 1 1 160px;
 }
 
 /* Reminders (WP-40): whether they are on, this device, quiet hours side by side, the bell. ------- */

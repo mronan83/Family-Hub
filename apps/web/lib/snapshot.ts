@@ -26,6 +26,16 @@ export interface BoardSnapshot {
   members: BoardMember[];
   /** [BRD-01] Today's family-visible items and the open overdue tasks (WP-11). */
   occurrences: TodayItem[];
+  /** [PTS-06] The rewards in the shop now, to choose one to save for (WP-30). */
+  shop: BoardShopItem[];
+}
+
+/** A reward in the shop, as the board shows it. */
+export interface BoardShopItem {
+  id: string;
+  title: string;
+  icon: string;
+  cost: number;
 }
 
 export interface BoardMember {
@@ -39,6 +49,8 @@ export interface BoardMember {
   points: BoardPoints | null;
   /** [RWD-05] For a member who earns rewards: their run as of the last closed day (WP-17). */
   streak: BoardStreak | null;
+  /** [PTS-06] For a member who earns rewards: the reward they're saving for, if any (WP-30). */
+  wish: BoardShopItem | null;
 }
 
 /** The run going as of the last closed day, and the best good run (streak_segment). */
@@ -116,6 +128,19 @@ function readStreak(x: unknown): BoardStreak | null {
   };
 }
 
+/** A reward from the snapshot (the shop, or a member's wish); null when it isn't one. */
+function readShopItem(x: unknown): BoardShopItem | null {
+  if (!isObject(x) || typeof x.title !== 'string') return null;
+  const id = typeof x.id === 'string' ? x.id : typeof x.item_id === 'string' ? x.item_id : null;
+  if (!id) return null;
+  return {
+    id,
+    title: x.title,
+    icon: typeof x.icon === 'string' ? x.icon : 'gift',
+    cost: Number(x.cost) || 0,
+  };
+}
+
 const ids = (x: unknown): string[] =>
   Array.isArray(x) ? x.filter((v): v is string => typeof v === 'string') : [];
 
@@ -185,9 +210,15 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
         earnsRewards: m.earns_rewards === true,
         points: readPoints(m.points),
         streak: readStreak(m.streak),
+        // A snapshot from before WP-30 has no wish.
+        wish: readShopItem(m.wish),
       };
     }),
     // A snapshot from before WP-11 (an older database) has no items.
     occurrences: Array.isArray(data.occurrences) ? data.occurrences.map(readOccurrence) : [],
+    // A snapshot from before WP-30 has no shop.
+    shop: Array.isArray(data.shop)
+      ? data.shop.map(readShopItem).filter((i): i is BoardShopItem => i !== null)
+      : [],
   };
 }

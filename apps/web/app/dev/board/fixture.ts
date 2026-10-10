@@ -1,6 +1,7 @@
 import type { Answer, CompletionEvent } from '@/lib/outbox';
 import type { BoardSnapshot } from '@/lib/snapshot';
 import type { TodayItem } from '@/lib/today';
+import type { PinWish } from '@/lib/wishes';
 
 // A made-up family's day for the board's Today (WP-11), dated today in New York, so the UI suite can
 // check the screen, its taps and its states without a database. Names are invented.
@@ -54,6 +55,8 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         },
         // Six good days to yesterday: finishing today reaches the 7-day milestone (WP-17).
         streak: { kind: 'good', length: 6, best: 6 },
+        // Nothing pinned yet: the board offers to choose a wish (WP-30).
+        wish: null,
       },
       {
         id: MAYA,
@@ -77,6 +80,8 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
           ],
         },
         streak: { kind: 'good', length: 2, best: 5 },
+        // Saving for Movie night: 42 of 100 (WP-30).
+        wish: { id: 'r-movie', title: 'Movie night', icon: 'ticket', cost: 100 },
       },
       {
         id: ALEX,
@@ -87,6 +92,7 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         earnsRewards: false,
         points: null,
         streak: null,
+        wish: null,
       },
       {
         id: SAM,
@@ -97,6 +103,7 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         earnsRewards: false,
         points: null,
         streak: null,
+        wish: null,
       },
     ],
     occurrences: [
@@ -173,6 +180,12 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         checkedAt: longAgo,
       }),
     ],
+    shop: [
+      { id: 'r-movie', title: 'Movie night', icon: 'ticket', cost: 100 },
+      { id: 'r-icecream', title: 'Ice cream trip', icon: 'snack', cost: 40 },
+      { id: 'r-late', title: 'Stay up 30 minutes late', icon: 'moon', cost: 25 },
+      { id: 'r-dinner', title: 'Pick the dinner', icon: 'utensils', cost: 30 },
+    ],
   };
 }
 
@@ -210,5 +223,19 @@ export function fixturePost(snapshot: BoardSnapshot) {
         },
       };
     });
+  };
+}
+
+/**
+ * Answers like POST /api/wishes would (WP-30), a moment later, and keeps each pin on window.__fwWishes
+ * so a test can read them: a reward not in the shop is refused, and offline nothing is sent.
+ */
+export function fixturePin(snapshot: BoardSnapshot): PinWish {
+  return async (memberId, itemId) => {
+    if (!navigator.onLine) return 'offline';
+    const w = window as unknown as { __fwWishes?: { member: string; item: string | null }[] };
+    (w.__fwWishes ??= []).push({ member: memberId, item: itemId });
+    await new Promise((r) => setTimeout(r, 30));
+    return itemId === null || snapshot.shop.some((i) => i.id === itemId) ? 'saved' : 'refused';
   };
 }
