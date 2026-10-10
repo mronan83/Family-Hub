@@ -1,7 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.52: fix (D-62): production's jobs leave the demo family alone. No work package changes status.
+> v0.8.52: fix (D-62), done (PR #39): production's jobs leave the demo family alone. No work package changes status.
 > v0.8.50: WP-20 done (PR #37): the board's shop, requests and goals. WP-31 is ready. WP-44 (offline goal projection, a fallback only, D-60) is added: ready, and nothing waits on it.
 > v0.8.49: WP-20 in review (PR #37): the board's shop, requests and goals (D-59).
 > v0.8.48: WP-40 done (PR #36): reminders by web push. Nothing waits on it; the owner runs the vapid-keys workflow once to switch sending on.
