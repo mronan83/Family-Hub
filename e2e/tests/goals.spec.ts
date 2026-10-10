@@ -143,11 +143,12 @@ test('[RWD-01][RWD-06] a parent sets a goal through the form, then cancels it', 
   await admin.getByRole('link', { name: 'Set a goal' }).click();
   const form = admin.getByRole('form', { name: 'Set a goal' });
   await form.getByLabel('Name', { exact: true }).fill('Bike ride e2e');
-  await form.getByRole('radio', { name: 'Maya' }).check();
+  await form.getByRole('radio', { name: 'Maya', exact: true }).check();
   await form.getByRole('combobox', { name: 'Counts' }).selectOption('COUNT');
-  await form.getByLabel('Target').fill('3');
-  await form.getByRole('radio', { name: 'Some tags' }).check();
-  await form.getByRole('checkbox', { name: 'Morning' }).check();
+  // The number field: the icon picker has a "target" icon too.
+  await form.getByRole('spinbutton', { name: 'Target', exact: true }).fill('3');
+  await form.getByRole('radio', { name: 'Some tags', exact: true }).check();
+  await form.getByRole('checkbox', { name: 'Morning', exact: true }).check();
   await form.getByRole('button', { name: 'Set goal' }).click();
   await expect(admin.getByRole('status')).toHaveText('Saved Bike ride e2e.');
   await expect(goal('Bike ride e2e')).toContainText('Maya · Started');
