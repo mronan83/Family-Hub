@@ -89,8 +89,14 @@ test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 test.beforeAll(() => {
-  // A retry starts from the seeded list (supabase/seed.sql).
-  sql(`delete from public.chore where household_id = '${DEMO}' and id::text not like '${SEEDED_CHORES}';
+  // A retry starts from the seeded list (supabase/seed.sql). An item another spec made and checked
+  // off has history, which is never deleted (D-46): it stays archived, out of the lists.
+  sql(`delete from public.chore c where c.household_id = '${DEMO}' and c.id::text not like '${SEEDED_CHORES}'
+          and not exists (select from public.chore_occurrence o
+                            join public.chore_completion_event e on e.occurrence_id = o.id
+                           where o.chore_id = c.id);
+       update public.chore set archived_at = now()
+        where household_id = '${DEMO}' and id::text not like '${SEEDED_CHORES}' and archived_at is null;
        delete from public.tag where household_id = '${DEMO}' and id::text not like '${SEEDED_TAGS}';
        update public.tag set archived_at = null, name = case id::text
            when '0de00000-0000-4000-8000-0000000a0001' then 'Morning'
@@ -98,7 +104,8 @@ test.beforeAll(() => {
            when '0de00000-0000-4000-8000-0000000a0003' then 'Bedroom'
            else 'School' end
         where household_id = '${DEMO}';
-       update public.chore set archived_at = null where household_id = '${DEMO}';`);
+       update public.chore set archived_at = null
+        where household_id = '${DEMO}' and id::text like '${SEEDED_CHORES}';`);
 });
 
 test('[CHR-01][CHR-13] Alex sees the family list, but not Sam’s private gift', async ({ page }) => {
@@ -423,11 +430,14 @@ test('[CHR-01] an item is archived and restored, never deleted', async ({ page }
   const filters = page.getByRole('form', { name: 'Filter the list' });
   await filters.getByLabel('Show').selectOption('Archived');
   await filters.getByRole('button', { name: 'Filter' }).click();
-  await expect(list(page).getByRole('listitem')).toHaveText([/Practice piano/]);
+  // Only the seeded items are restored before this spec; another spec's item with history stays here.
+  await expect(list(page).getByRole('listitem').filter({ hasText: 'Practice piano' })).toHaveCount(
+    1,
+  );
   await page.getByRole('link', { name: 'Edit Practice piano' }).click();
   await page.getByRole('button', { name: 'Restore Practice piano' }).click();
   await page.waitForURL(/\/admin\/chores\?status=archived$/);
-  await expect(page.getByText('Nothing matches these filters.')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Edit Practice piano' })).toHaveCount(0);
   await page.goto('/admin/chores');
   await expect(list(page)).toContainText('Practice piano');
   expect(
