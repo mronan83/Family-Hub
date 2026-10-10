@@ -808,6 +808,18 @@ html:has(.board) {
   font-size: var(--t-small);
   color: var(--text-soft);
 }
+/* [DEV-08] Offline and stale lines (WP-13, 06 §7.2): pills in the bar, never over chores. */
+.fw-board__health {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}
+.fw-board__health .fw-banner {
+  margin: 0;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-pill);
+}
 
 /* Board Today (WP-11) ------------------------------------------------------------------------ */
 .fw-today {
@@ -891,6 +903,19 @@ html:has(.board) {
 .fw-today__col-head .fw-today__balance,
 .fw-today__me-head .fw-today__balance {
   margin-left: auto;
+}
+.fw-today__balance {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+/* [NFR-01] Points the database hasn't answered yet, while offline: a dashed ring and wifi-off. */
+.fw-today__balance--provisional .fw-points {
+  outline: 3px dashed var(--missed-text);
+  outline-offset: 3px;
+}
+.fw-today__balance-mark {
+  color: var(--missed-text);
 }
 .fw-today__progress {
   margin: var(--s-1) 0 0;

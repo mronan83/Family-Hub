@@ -178,6 +178,8 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
 export function fixturePost(snapshot: BoardSnapshot) {
   const earners = new Set(snapshot.members.filter((m) => m.earnsRewards).map((m) => m.id));
   return async (events: CompletionEvent[]): Promise<Answer[]> => {
+    // Offline, as a real post would be (the UI suite turns the network off).
+    if (!navigator.onLine) throw new TypeError('Failed to fetch');
     const w = window as unknown as { __fwPosts?: CompletionEvent[][] };
     (w.__fwPosts ??= []).push(events);
     await new Promise((r) => setTimeout(r, 30));

@@ -2,17 +2,27 @@
 
 import { BoardThemeController, Icon } from '@familywise/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { boardHealth, type JobHealth, laterSnapshot } from '@/lib/board-health';
+import { type BoardStore, openBoardStore } from '@/lib/board-store';
 import { day, isoDay, time } from '@/lib/format';
-import { boardTables, coalesce, untilNextMinute } from '@/lib/live';
+import { boardTables, coalesce } from '@/lib/live';
 import { postCompletions } from '@/lib/outbox';
 import { readSnapshot, type BoardSnapshot } from '@/lib/snapshot';
 import { browserClient } from '@/lib/supabase/browser';
-import { Today } from './today';
+import { HealthLines } from './health-lines';
+import { type QueueState, Today } from './today';
+import { useMinute } from './use-minute';
+import { useHydrated, useOnline } from './use-online';
 
 type Link = 'connecting' | 'live' | 'offline';
 
 /** How often an open board reports in (the database keeps one write a minute at most). */
 const HEARTBEAT_MS = 5 * 60_000;
+/**
+ * [DEV-08] How often a board reads again with nothing heard: a quiet household's snapshot stays
+ * under five minutes old, and a change Realtime missed is picked up. It also reads job health.
+ */
+const REFRESH_MS = 4 * 60_000;
 
 /**
  * [DEV-05] Notify, then refetch (01 §7): Realtime says that a board-readable row changed, and the
@@ -21,15 +31,36 @@ const HEARTBEAT_MS = 5 * 60_000;
  * nothing changed while it was away is missed. RLS applies to both, so a disconnected board hears
  * nothing and reads nothing; when it finds that out, the server takes it to the pairing screen.
  */
-function useLiveSnapshot(initial: BoardSnapshot, appVersion: string) {
+function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: BoardStore | null) {
   const [snapshot, setSnapshot] = useState(initial);
   const [link, setLink] = useState<Link>('connecting');
+  const [jobs, setJobs] = useState<JobHealth[]>([]);
+  // [NFR-01] The saved snapshot is read back before this one is saved over it.
+  const [restored, setRestored] = useState(!store);
   // Changes heard, shown as data-events for e2e (a disconnected board must hear none).
   const [events, setEvents] = useState(0);
   // Read again on demand (a new day), through the same coalesced read.
   const refresh = useRef<() => void>(() => undefined);
   const householdId = initial.household.id;
   const deviceId = initial.device.id;
+
+  // [NFR-01] A page from the service worker's cache carries the snapshot of its day; a later one
+  // this board saved shows instead. Each snapshot read is saved for the next start.
+  useEffect(() => {
+    if (!store) return;
+    let cancelled = false;
+    void store.get('snapshot').then((saved) => {
+      if (cancelled) return;
+      setSnapshot((current) => laterSnapshot(current, saved));
+      setRestored(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [store]);
+  useEffect(() => {
+    if (store && restored) void store.set('snapshot', snapshot);
+  }, [store, restored, snapshot]);
 
   useEffect(() => {
     const db = browserClient();
@@ -47,6 +78,12 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string) {
       else leave();
     });
     refresh.current = () => void reload();
+    // [DEV-08] The jobs that keep today's list right, as this board may see them (job_run's RLS).
+    const readJobs = async () => {
+      const { data, error } = await db.rpc('job_health', { p_household_id: householdId });
+      if (!cancelled && !error && Array.isArray(data)) setJobs(data as JobHealth[]);
+    };
+    void readJobs();
 
     // `wait`: report SUBSCRIBED only once the server streams changes. By default it reports on
     // joining, before the replication stream is up after a quiet spell, and a change made in that
@@ -91,10 +128,15 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string) {
     const heartbeat = setInterval(() => {
       void db.rpc('device_heartbeat', { p_app_version: appVersion });
     }, HEARTBEAT_MS);
+    const again = setInterval(() => {
+      void reload();
+      void readJobs();
+    }, REFRESH_MS);
 
     return () => {
       cancelled = true;
       clearInterval(heartbeat);
+      clearInterval(again);
       window.removeEventListener('online', online);
       window.removeEventListener('offline', offline);
       auth.subscription.unsubscribe();
@@ -103,23 +145,7 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string) {
   }, [householdId, deviceId, appVersion]);
 
   const again = useCallback(() => refresh.current(), []);
-  return { snapshot, link, events, refresh: again };
-}
-
-/** The current minute, ticking on the minute. */
-function useMinute(): Date {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    const tick = () => {
-      const at = new Date();
-      setNow(at);
-      timer = setTimeout(tick, untilNextMinute(at));
-    };
-    timer = setTimeout(tick, untilNextMinute(new Date()));
-    return () => clearTimeout(timer);
-  }, []);
-  return now;
+  return { snapshot, link, jobs, events, refresh: again };
 }
 
 function LiveStatus({ link, events }: { link: Link; events: number }) {
@@ -133,8 +159,21 @@ function LiveStatus({ link, events }: { link: Link; events: number }) {
 
 /** [DEV-05][BRD-01] The board: household, date and time, connection, and the family's Today. */
 export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVersion: string }) {
-  const { snapshot, link, events, refresh } = useLiveSnapshot(initial, appVersion);
+  // [DEV-06][NFR-01] This board's IndexedDB: its outbox and last snapshot (none on the server).
+  const [store] = useState(() =>
+    typeof window === 'undefined' ? null : openBoardStore(initial.device.id),
+  );
+  const { snapshot, link, jobs, events, refresh } = useLiveSnapshot(initial, appVersion, store);
+  const [queue, setQueue] = useState<QueueState>({ pending: 0, waiting: false });
+  const online = useOnline();
+  const hydrated = useHydrated();
   const now = useMinute();
+  const health = boardHealth({
+    fetchedAt: snapshot.fetchedAt,
+    now,
+    offline: !online || queue.waiting,
+    jobs,
+  });
   const { household, device } = snapshot;
   const tz = household.timezone;
   // A new day in the household: read today's items (nothing changed in the database to say so).
@@ -159,9 +198,16 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
             {time(now, tz)}
           </time>
           <LiveStatus link={link} events={events} />
+          {hydrated ? <HealthLines offline={health.offline} stale={health.stale} /> : null}
         </div>
       </header>
-      <Today snapshot={snapshot} now={now} post={postCompletions} />
+      <Today
+        snapshot={snapshot}
+        now={now}
+        post={postCompletions}
+        store={store}
+        onQueue={setQueue}
+      />
       <footer className="fw-board__foot">{device.name}</footer>
     </main>
   );

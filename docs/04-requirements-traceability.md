@@ -134,7 +134,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | DEV-05 | US-204 | WP-06 | RT, BRD, DB | board_snapshot, all board-readable tables | U, DB, E2E |
 | DEV-06 | US-205 | WP-13 | OUTBOX, BRD, API | chore_completion_event | E2E, U |
 | DEV-07 | US-207 | WP-34 | PI, BRD | household_settings | HW |
-| DEV-08 | US-206 | WP-13 | BRD, OBS | job_run | E2E |
+| DEV-08 | US-206 | WP-13 | BRD, OBS | job_run | E2E, U, DB |
 | CHR-01 | US-301 | WP-08 | ADM, API | chore, chore_assignee | U, DB, E2E |
 | CHR-02 | US-302 | WP-09 | OCCGEN, DB | chore, school_closure | U, DB, E2E |
 | CHR-03 | US-303, US-308, US-311 | WP-09 | OCCGEN, SCHED, DB | chore_occurrence | DB, U, E2E |
@@ -198,7 +198,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | BRD-05 | US-1004 | WP-35 | ADM, BRD | household_settings | E2E |
 | BRD-06 | US-1005 | WP-14 | BRD | — | E2E |
 | BRD-07 | US-1006 | WP-11 | BRD, API | chore_occurrence, chore_occurrence_assignee | E2E |
-| NFR-01 | US-205 | WP-13 | OUTBOX, BRD | — | E2E |
+| NFR-01 | US-205 | WP-13 | OUTBOX, BRD | — | E2E, U, HW |
 | NFR-02 | US-905 | WP-14 | BRD, PI | — | HW, E2E |
 | NFR-03 | US-905 | WP-11 | BRD | — | HW, E2E |
 | NFR-04 | US-102, US-901 | WP-02, WP-03, WP-05 | DB, VAULT, SAUTH, API | all tables | DB, REV |
@@ -395,6 +395,8 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.40 | WP-13 done (PR #32): approved by the owner and merged once every gate was green, e2e green on the preview with WP-12's and WP-18's specs alongside. The owner accepted D-54 (our own service worker rather than Serwist); the real 24-hour soak on the Pi stays with WP-24. Nothing waits on WP-13. |
+| 0.8.39 | WP-13 the board through an outage (D-54), in review (PR #32): the outbox, last snapshot and check-offs ahead of it in IndexedDB (Dexie) for the paired board; the service worker keeps the board's page (used only with no network) and the build files it loads; "Offline: your check-offs are saved", "Updated 12 minutes ago" and "Today's list may be out of date" in the bar; provisional points while offline. Traced by unit tests (`lib/outbox` with a store, `lib/board-store` on fake-indexeddb, `lib/board-health`), pgTAP (`180_board_job_health`: a board reads its own household's job health, not another's), the UI suite on `/dev/board` (`offline.spec.ts`: three check-offs offline through a reload served by the worker, sent once each on reconnect; a day offline with every timer run; the lines in both themes, AA contrast, no second live region) and e2e on the preview (`offline.spec.ts`: exactly three events after a reload offline, a parent's later uncheck winning, the board opened after a day offline). NFR-01's real 24-hour soak is on the Pi (WP-24, HW). |
 | 0.8.38 | WP-18 done (PR #31): approved by the owner and merged once every gate was green, e2e green on the preview with WP-12's specs alongside. WP-39 and WP-20 wait on WP-19 too. |
 | 0.8.37 | WP-18 the rewards shop (D-53), in review (PR #31): `reward_catalog_item` and `redemption`; requests within the available balance, stock and weekly limit under locks; a parent approves (one spend), says not this time, marks given or cancels (refunding); photos in a private Storage bucket per household; `POST /api/redemptions` and `/api/redemptions/cancel`; the Rewards page. Traced by pgTAP (`170_rewards`: the shop's rules, each decision, refunds, who may, RLS, photos' folders; `012` for the demo shop), `scripts/redemption-race.sh` (two requests at once, real sessions; removing the locks fails it), unit tests (`lib/rewards`), the UI suite on `/dev/rewards` and e2e on the preview (`rewards.spec.ts`: a reward with a photo, a board's requests, approve and give, cancel and refund, not this time, photo removed). |
 | 0.8.36 | WP-12 done (PR #30): approved by the owner and merged once every gate was green, e2e green on the preview. A sent-back check-off keeps its approval flag (D-22 names `scheduled` only); extending the re-resolve to it stays an open question for the owner. WP-40 is ready. |
