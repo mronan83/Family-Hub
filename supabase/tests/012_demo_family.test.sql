@@ -1,7 +1,8 @@
--- [NFR-14] The demo family seed resets only the demo household and never touches another (D-37).
+-- [NFR-14] The demo family seed resets only the demo household and never touches another (D-37),
+-- and marks it so production's jobs leave it alone (D-62).
 -- [ACC-02] It creates the four demo sign-ins (D-39), without passwords.
 begin;
-select plan(24);
+select plan(26);
 
 insert into public.household (id, name, timezone) values
   ('44444444-4444-4444-4444-444444444444', 'Real family', 'America/Chicago'),
@@ -32,6 +33,10 @@ insert into public.device (household_id, name, auth_user_id) values
 
 select is((select count(*)::int from public.household where id = '0de00000-0000-4000-8000-000000000001'), 1,
   '[NFR-14] one demo household after two runs');
+select is((select is_demo from public.household where id = '0de00000-0000-4000-8000-000000000001'), true,
+  '[NFR-07][NFR-14] the seed marks the demo family, so production''s jobs leave it alone (D-62)');
+select is((select is_demo from public.household where id = '44444444-4444-4444-4444-444444444444'), false,
+  '[NFR-07] a real household stays in the jobs');
 select is((select count(*)::int from public.member where household_id = '0de00000-0000-4000-8000-000000000001'), 4,
   '[NFR-14] the demo family has four members, not duplicated');
 select is((select count(*)::int from public.member

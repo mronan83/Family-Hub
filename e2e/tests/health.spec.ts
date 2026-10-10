@@ -59,6 +59,11 @@ test('[NFR-07] a failing job shows with its message, and the household’s serve
     'Heartbeat',
   );
   await expect(page.getByRole('list', { name: 'Server errors', exact: true })).toContainText(ERROR);
+  // The seed marks the demo family, so production's jobs leave it alone (D-62); the page says so.
+  expect(sql(`select is_demo from public.household where id = '${DEMO}'`)).toBe('t');
+  await expect(
+    page.getByText('The background jobs leave the demo family alone', { exact: false }),
+  ).toBeVisible();
 
   const { violations } = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze();
   expect(violations.flatMap((v) => v.nodes.map((n) => `${n.target}: ${n.failureSummary}`))).toEqual(

@@ -34,10 +34,11 @@ export default async function HealthPage() {
   if (!household) redirect('/setup');
   const tz = household.timezone;
 
-  const [jobsRes, errorsRes, usageRes] = await Promise.all([
+  const [jobsRes, errorsRes, usageRes, demoRes] = await Promise.all([
     db!.rpc('job_health', { p_household_id: household.id }),
     db!.rpc('household_errors', { p_household_id: household.id, p_limit: 20 }),
     db!.rpc('system_usage'),
+    db!.from('household').select('is_demo').eq('id', household.id).maybeSingle(),
   ]);
   for (const r of [jobsRes, errorsRes, usageRes]) {
     if (r.error) throw new Error(`system health: ${r.error.message}`);
@@ -45,6 +46,8 @@ export default async function HealthPage() {
   const jobs = (jobsRes.data ?? []) as JobRow[];
   const errors = (errorsRes.data ?? []) as ErrorRow[];
   const usage = usageLines((usageRes.data ?? []) as UsageRow[], new Date());
+  // [NFR-07] Production's jobs leave the demo family alone (D-62); previews run as it.
+  const demo = demoRes.data?.is_demo === true;
   const failing = jobs.filter((j) => j.state === 'failing' || j.state === 'stale');
   const near = usage.lines.filter((l) => l.warn);
 
@@ -71,6 +74,12 @@ export default async function HealthPage() {
 
       <section className="fw-card" aria-labelledby="jobs-heading">
         <h2 id="jobs-heading">Background jobs</h2>
+        {demo ? (
+          <p className="fw-muted">
+            The background jobs leave the demo family alone, so here they show as not run yet. In a
+            real household they run on schedule.
+          </p>
+        ) : null}
         {jobs.length === 0 ? (
           <p className="fw-muted">No background jobs are scheduled yet.</p>
         ) : (
