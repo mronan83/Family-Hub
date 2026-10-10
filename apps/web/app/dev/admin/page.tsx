@@ -175,6 +175,11 @@ export default async function DevAdminPage({
         <MyTasksView
           today={today}
           me={params.view === 'my' ? ALEX : null}
+          // [D-61] Unlinked: the adults with no sign-in to choose from.
+          candidates={[
+            { id: ALEX, displayName: 'Alex', avatarKey: 'owl', color: 'member-1' },
+            { id: SAM, displayName: 'Sam', avatarKey: 'bear', color: 'member-2' },
+          ]}
           items={mine}
           people={PEOPLE}
           notice={params.notice ? 'Added Pick up the dry cleaning for today.' : null}

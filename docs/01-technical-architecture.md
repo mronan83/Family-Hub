@@ -2,6 +2,7 @@
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
 > v0.8.33: production's jobs leave the demo family alone (`household.is_demo`, D-62, §5.6, §9.5).
+> v0.8.32: a parent links their own sign-in to themselves from Reminders, My tasks or their page on Members (`link_my_member()`, D-61, §6.2).
 > v0.8.31: goal progress on the board is the server's while it is connected; projecting it offline is WP-44, a fallback only (D-60, §7).
 > v0.8.30: the board's shop, requests and goals (WP-20, D-59): a child asks for a reward from their shop and calls a waiting one off; what they can spend, their requests, goal meters, nudges and a once-only celebration (`POST /api/goals/celebrated`); the shop, requests and goals in Realtime (§5.7, §7).
 > v0.8.29: reminders as built (WP-40, D-58): the `reminders` job plans and claims in the database and sends by web push; the Reminders page, the bell in My tasks and an item's lead time; the vapid-keys workflow (§5.6, §5.9, §9.8).
@@ -541,7 +542,7 @@ sequenceDiagram
 - `household_id` is **always** derived server-side from the verified session. Never trust it from a request body or query string.
 - The service-role key exists only in server-side environment variables and is never bundled to the client.
 - Nobody signs up: the server creates an account only for a valid setup code or invite (§5.10).
-- A member's sign-in link (`member.user_id`) points only to an admin of the same household, enforced by a trigger, because "who am I" (My tasks, reminders, private items, D-34) is read from it.
+- A member's sign-in link (`member.user_id`) points only to an admin of the same household, enforced by a trigger, because "who am I" (My tasks, reminders, private items, D-34) is read from it. A parent links their own where it is missing, in one tap: Reminders and My tasks ask "Which one is you?", and an adult's page on Members offers "This is me". `link_my_member()` links only the caller's own sign-in, to an adult of their household, and moves it off an archived or duplicate record (D-61).
 - Device sessions cannot call admin endpoints (route-level role check **and** RLS).
 - Kiosk lockdown (6.5) is defense in depth, not the security boundary.
 

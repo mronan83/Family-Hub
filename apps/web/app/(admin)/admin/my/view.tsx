@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { myTaskGroups, type DayItem } from '@/lib/admin-day';
 import { relativeDay } from '@/lib/chores';
 import { AdminHeader } from '../header';
+import { type LinkCandidate, LinkMe } from '../link-me';
 import { setBell } from '../reminders/actions';
 import { dayAction } from '../today/actions';
 import { ItemRow, type Person } from '../today/item-row';
@@ -12,6 +13,8 @@ export interface MyTasksViewProps {
   today: string;
   /** The member linked to this sign-in; null when there is none yet. */
   me: string | null;
+  /** [D-61] Without one: the adults this sign-in can be linked to, to choose from here. */
+  candidates?: LinkCandidate[];
   items: DayItem[];
   people: Person[];
   notice: string | null;
@@ -31,6 +34,7 @@ export interface MyTasksViewProps {
 export function MyTasksView({
   today,
   me,
+  candidates = [],
   items,
   people,
   notice,
@@ -46,11 +50,8 @@ export function MyTasksView({
         <AdminHeader current="/admin/my" />
         <section className="fw-card">
           <h1>My tasks</h1>
-          <p>
-            Your sign-in isn’t linked to anyone in the family yet. On{' '}
-            <Link href="/admin/members">Members</Link>, open yourself and choose your sign-in under
-            “Their sign-in”.
-          </p>
+          {error ? <Banner kind="notice">{error}</Banner> : null}
+          <LinkMe candidates={candidates} back="/admin/my" purpose="your own tasks" />
         </section>
       </main>
     );

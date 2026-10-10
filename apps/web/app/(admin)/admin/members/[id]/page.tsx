@@ -4,9 +4,11 @@ import { notFound, redirect } from 'next/navigation';
 import { randomUUID } from 'node:crypto';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
+import { LINK_ERRORS } from '@/lib/link-me';
 import { ledgerDay, ledgerLine, pointsWord, signed } from '@/lib/points';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
+import { linkMe } from '../../link-actions';
 import { setArchived } from '../actions';
 import { loadAdmins, loadMembers, loadPoints } from '../data';
 import { MemberForm } from '../member-form';
@@ -19,7 +21,7 @@ export default async function EditMemberPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ adjusted?: string }>;
+  searchParams: Promise<{ adjusted?: string; did?: string; error?: string }>;
 }) {
   const { id } = await params;
   const db = await serverClient();
@@ -36,13 +38,28 @@ export default async function EditMemberPage({
   const linkedElsewhere = new Set(
     members.filter((m) => m.id !== id && m.userId).map((m) => m.userId),
   );
+  // [D-61] Sign-ins on another member are named, not silently left out of the choice.
+  const elsewhere = members
+    .filter((m) => m.id !== id && m.userId)
+    .map((m) => ({
+      email: admins.find((a) => a.userId === m.userId)?.email ?? 'an admin',
+      name: m.displayName,
+      archived: Boolean(m.archivedAt),
+    }));
+  // [D-61] "This is me": an adult still here with no sign-in, for a parent not linked to anyone still
+  // here (their sign-in on no one, or on an archived record, which it moves from).
+  const mine = members.find((m) => m.userId === user.userId) ?? null;
+  const offerMe =
+    member.role === 'adult' && !member.archivedAt && !member.userId && (!mine || !!mine.archivedAt);
   // An adjustment shows who made it: the admin's member name, else their email.
   const adminName = (userId: string) =>
     members.find((m) => m.userId === userId)?.displayName ??
     admins.find((a) => a.userId === userId)?.email ??
     'an admin';
   const today = isoDay(household.timezone);
-  const adjusted = Number((await searchParams).adjusted);
+  const query = await searchParams;
+  const adjusted = Number(query.adjusted);
+  const linkError = query.error ? (LINK_ERRORS[query.error] ?? LINK_ERRORS.link_failed!) : null;
   const showPoints = member.earnsRewards || points.entries.length > 0;
 
   return (
@@ -50,12 +67,35 @@ export default async function EditMemberPage({
       <AdminHeader current="/admin/members" />
       <section className="fw-card">
         <h1>{member.displayName}</h1>
+        {query.did === 'linked' && member.userId === user.userId ? (
+          <Banner kind="info">Linked: you’re {member.displayName} now.</Banner>
+        ) : linkError ? (
+          <Banner kind="notice">{linkError}</Banner>
+        ) : null}
         <MemberForm
           id={member.id}
           initial={member}
           admins={admins.filter((a) => !linkedElsewhere.has(a.userId))}
+          elsewhere={elsewhere}
         />
       </section>
+      {offerMe ? (
+        <section className="fw-card" aria-labelledby="me-heading">
+          <h2 id="me-heading">Is this you?</h2>
+          <p className="fw-muted">
+            {mine
+              ? `Your sign-in is on ${mine.displayName}, who is archived. Move it here, and your own tasks and reminders will find you.`
+              : 'Your sign-in isn’t linked to anyone yet. Link it here, and your own tasks and reminders will find you.'}
+          </p>
+          <form action={linkMe}>
+            <input type="hidden" name="member" value={member.id} />
+            <input type="hidden" name="back" value={`/admin/members/${member.id}`} />
+            <Button type="submit" variant="secondary" icon="person">
+              This is me
+            </Button>
+          </form>
+        </section>
+      ) : null}
       {showPoints ? (
         <section className="fw-card" id="points" aria-labelledby="points-heading">
           <div className="fw-bar">

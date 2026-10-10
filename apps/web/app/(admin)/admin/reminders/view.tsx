@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { dayAndTime } from '@/lib/format';
 import { settingsSummary, type ReminderSettings } from '@/lib/reminder-settings';
 import { AdminHeader } from '../header';
+import { type LinkCandidate, LinkMe } from '../link-me';
 import { deviceAction, setReminders } from './actions';
 import type { DeviceRow } from './data';
 import { SettingsForm } from './settings-form';
@@ -11,6 +12,8 @@ import { ThisDevice } from './this-device';
 export interface RemindersViewProps {
   /** The member linked to this sign-in; null when there is none yet. */
   me: string | null;
+  /** [D-61] Without one: the adults this sign-in can be linked to, to choose from here. */
+  candidates?: LinkCandidate[];
   settings: ReminderSettings;
   devices: DeviceRow[];
   vapidKey: string | null;
@@ -25,6 +28,7 @@ export interface RemindersViewProps {
  */
 export function RemindersView({
   me,
+  candidates = [],
   settings,
   devices,
   vapidKey,
@@ -48,11 +52,8 @@ export function RemindersView({
         {header}
         <section className="fw-card">
           <h1>Reminders</h1>
-          <p>
-            Reminders are for someone in the family with a sign-in. On{' '}
-            <Link href="/admin/members">Members</Link>, open yourself and choose your sign-in under
-            “Their sign-in”.
-          </p>
+          <p>Reminders are for someone in the family with a sign-in.</p>
+          <LinkMe candidates={candidates} back="/admin/reminders" purpose="your reminders" />
         </section>
       </main>
     );

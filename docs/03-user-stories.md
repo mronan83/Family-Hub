@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.22: US-104 and US-316: a parent whose sign-in isn't linked links it to themselves in one tap from My tasks, Reminders or their page on Members; a Child record says only an adult can have a sign-in (D-61).
 > v0.8.21: US-403, US-404, US-1102, US-1104 and US-1105 as built on the board (WP-20, D-59): goals with a meter per rule, the run now and the best for a streak, and a nudge naming a goal nearly reached, on a child's own screen (there is no separate Goals screen; the family's goals sit under everyone's day); a reached goal celebrated full-screen once; the shop, "Ask for this" with a second tap to be sure, the request pending at once, called off while it waits, and the parent's answer live. Goal progress shows as the server last worked it out.
 > v0.8.20: US-317, US-318 and US-319 as built (WP-40, D-58): the Reminders page, the bell in My tasks, an item's lead time in its editor, and the reminders job; a test notification works on the live app once its keys are set.
 > v0.8.19: US-1107 and US-1108 as built (WP-30, D-57): bonus rules on the Rewards page, paid by day close from the stored history; the wish card and picker on a child's own screen. Asking for the wish from the board comes with WP-20's shop.
@@ -76,6 +77,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given I archive a child, when the board refreshes, then their active chores and goals no longer display but history is retained; I can restore them later.
 - Given I add a child, the earns-rewards switch starts on; for an adult it starts off; I can change it for anyone (PTS-07).
 - Given an adult in the family is an admin, when I link their member to their sign-in, then it is saved; a sign-in that is not an admin of my household cannot be linked, and each sign-in links to one member.
+- Given my own record says Child, when I open it, then it says only an adult can have a sign-in and to choose Adult; once it says Adult, "This is me" links my sign-in to it, moving it off an archived record if it was there (D-61).
 
 ### US-105 — Review the audit trail
 **As an** admin **I want** to see who changed chores, goals, and devices and when **so that** I can resolve "who changed that?" questions.
@@ -285,7 +287,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-14, CHR-09
 - Given items are assigned to me, when I open My tasks, then I see overdue, today's, and upcoming items in that order, including shared items I am on.
 - Given I type a title in quick add, when I save, then a family-visible task due today and assigned to me exists in one step, with no points, and it is on the board at once.
-- Given my sign-in isn't linked to a member, when I open My tasks, then it tells me how to link it on Members.
+- Given my sign-in isn't linked to a member, when I open My tasks or Reminders, then it asks which one is me among the adults with no sign-in, and one tap links it; if I'm not listed, it says how to fix my record or add myself (D-61).
 - Given I complete an item on my phone, when the board refreshes, then it shows as done by me.
 
 ### US-317 — Turn reminders on or off for myself

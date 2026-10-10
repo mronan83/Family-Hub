@@ -28,11 +28,14 @@ export function MemberForm({
   id,
   initial,
   admins,
+  elsewhere = [],
 }: {
   id?: string;
   initial?: MemberInput;
   /** Admins of the household who are not linked to another member. */
   admins: AdminOption[];
+  /** [D-61] Sign-ins linked to another member (archived ones too), said here rather than left out. */
+  elsewhere?: { email: string; name: string; archived: boolean }[];
 }) {
   const [state, onSubmit, pending] = useFormAction(saveMember, {} as FormState);
   const [role, setRole] = useState(initial?.role ?? 'child');
@@ -175,9 +178,18 @@ export function MemberForm({
           </select>
           <span className="fw-field__help">
             Link the adult who is an admin, so their own tasks and reminders find them.
+            {elsewhere.length > 0
+              ? ` Already linked: ${elsewhere
+                  .map((e) => `${e.email} to ${e.name}${e.archived ? ' (archived)' : ''}`)
+                  .join('; ')}.`
+              : ''}
           </span>
         </label>
-      ) : null}
+      ) : (
+        <p className="fw-field__help" data-testid="sign-in-child">
+          Only an adult can have a sign-in. Choose Adult above to link one.
+        </p>
+      )}
 
       {state.message ? <Banner kind="notice">{state.message}</Banner> : null}
       <div className="fw-actions">

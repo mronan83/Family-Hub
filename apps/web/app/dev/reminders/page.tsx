@@ -5,8 +5,8 @@ import { RemindersView } from '../../(admin)/admin/reminders/view';
 
 // A person's reminders (WP-40) with made-up devices and no database, for the UI suite: the page's
 // layout on a phone and a laptop, in Day and Evening (?theme=evening). ?state=off for reminders not
-// yet turned on, ?state=unlinked for a sign-in not linked to a member, ?keys=none for a site without
-// web push keys.
+// yet turned on, ?state=unlinked for a sign-in not linked to a member ("Which one is you?", D-61;
+// &none=1 with no adult left to choose), ?keys=none for a site without web push keys.
 export const metadata: Metadata = { title: 'Reminders', robots: { index: false } };
 
 // A well-formed public key (65 bytes, base64url); nothing is ever sent with it here.
@@ -45,7 +45,7 @@ const DEVICES: DeviceRow[] = [
 export default async function DevRemindersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; state?: string; keys?: string }>;
+  searchParams: Promise<{ theme?: string; state?: string; keys?: string; none?: string }>;
 }) {
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -54,6 +54,25 @@ export default async function DevRemindersPage({
     <div className={`admin ${theme}`}>
       <RemindersView
         me={params.state === 'unlinked' ? null : 'f1000000-0000-4000-8000-000000000003'}
+        // [D-61] Unlinked: the adults with no sign-in to choose from (&none=1: none left).
+        candidates={
+          params.none === '1'
+            ? []
+            : [
+                {
+                  id: 'f1000000-0000-4000-8000-000000000003',
+                  displayName: 'Alex',
+                  avatarKey: 'owl',
+                  color: 'member-1',
+                },
+                {
+                  id: 'f1000000-0000-4000-8000-000000000004',
+                  displayName: 'Sam',
+                  avatarKey: 'bear',
+                  color: 'member-2',
+                },
+              ]
+        }
         settings={off ? DEFAULT_SETTINGS : ON}
         devices={off ? [] : DEVICES}
         vapidKey={params.keys === 'none' ? null : KEY}
