@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.15: US-1103, US-1104 and US-1105 as built in the admin app, the database and the board's API (WP-18, D-53); the board's shop screen comes with WP-20.
 > v0.8.14: US-306, US-307, US-309, US-310 and US-316 as built (WP-12, D-52): the admin Today page with the approval queue, late credit, skips and "Not actually done" with Undo; the approval switch on Home; My tasks with quick add.
 > v0.8.13: US-402 and US-408's rules for days and runs as built in the rules engine (WP-15, D-51): today counts as good once everything due is done, and is never a miss. Insights and the board's streak flame come with WP-17, goals with WP-19 and WP-20.
 > v0.8.12: US-303, US-304, US-305, US-404 (a chore's celebration), US-905, US-1001 (chores and points; events, meals and the goal meter come with their work packages), US-1002, US-1006 and US-1102 as built on the board (WP-11, D-50): undo is its own button with a second tap, and points a parent took away read "A parent changed your points".
@@ -667,6 +668,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a balance of 120 and an item costing 100, when I tap "Ask for this", then a `requested` redemption is created and the board shows it as pending.
 - Given a balance of 120 and one open request for 100, when I ask for another 100 item, then the request is refused (available = 20).
 - Given I change my mind before approval, when I cancel, then the request is withdrawn with no ledger entry.
+- Given two boards send a request for me at the same moment and I can afford only one, when they are recorded, then exactly one is accepted (D-53).
 
 ### US-1105 — Approve and fulfill a reward
 **As an** admin **I want** to approve a request and mark it fulfilled **so that** the points are spent and the reward actually happens.

@@ -572,6 +572,39 @@ body {
   margin: 0;
   font-size: var(--t-heading);
 }
+/* The rewards shop (WP-18): a photo or an icon beside each reward. */
+.fw-reward__row > .fw-item {
+  flex: 1 1 240px;
+}
+.fw-reward__photo {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+}
+.fw-reward__photo--large {
+  width: 160px;
+  height: 160px;
+  border-radius: var(--r-md);
+}
+.fw-reward__photo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-4);
+}
+.fw-reward__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-sm);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+}
 /* A parent's day and My tasks (WP-12): a tick for "Not actually done", who did it, Undo. */
 .fw-day__row {
   align-items: flex-start;
