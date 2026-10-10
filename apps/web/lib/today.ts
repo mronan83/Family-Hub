@@ -48,25 +48,27 @@ export function itemsFor(items: TodayItem[], memberId: string): TodayItem[] {
 
 export type SectionKey = 'overdue' | DayPart;
 
-export interface Section {
+export interface Section<T = TodayItem> {
   key: SectionKey;
   label: string;
-  items: TodayItem[];
+  items: T[];
 }
+
+type Placed = Pick<TodayItem, 'id' | 'title' | 'dueDate' | 'dueTime'>;
 
 /**
  * [CHR-11][CHR-12] The day in parts (morning, after school, evening, anytime) by due time, with
  * overdue tasks first. Within a part: by due time, then title. Empty parts are left out.
  */
-export function sections(items: TodayItem[], today: string): Section[] {
-  const byTime = (a: TodayItem, b: TodayItem) =>
+export function sections<T extends Placed>(items: T[], today: string): Section<T>[] {
+  const byTime = (a: T, b: T) =>
     (a.dueTime ?? '99:99').localeCompare(b.dueTime ?? '99:99') ||
     a.title.localeCompare(b.title) ||
     a.id.localeCompare(b.id);
   const overdue = items
     .filter((i) => i.dueDate < today)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || byTime(a, b));
-  const out: Section[] = overdue.length
+  const out: Section<T>[] = overdue.length
     ? [{ key: 'overdue', label: 'Overdue', items: overdue }]
     : [];
   for (const part of DAY_PARTS) {

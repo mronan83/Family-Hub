@@ -2,6 +2,7 @@
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
 > v0.8.15: US-1103, US-1104 and US-1105 as built in the admin app, the database and the board's API (WP-18, D-53); the board's shop screen comes with WP-20.
+> v0.8.14: US-306, US-307, US-309, US-310 and US-316 as built (WP-12, D-52): the admin Today page with the approval queue, late credit, skips and "Not actually done" with Undo; the approval switch on Home; My tasks with quick add.
 > v0.8.13: US-402 and US-408's rules for days and runs as built in the rules engine (WP-15, D-51): today counts as good once everything due is done, and is never a miss. Insights and the board's streak flame come with WP-17, goals with WP-19 and WP-20.
 > v0.8.12: US-303, US-304, US-305, US-404 (a chore's celebration), US-905, US-1001 (chores and points; events, meals and the goal meter come with their work packages), US-1002, US-1006 and US-1102 as built on the board (WP-11, D-50): undo is its own button with a second tap, and points a parent took away read "A parent changed your points".
 > v0.8.11: US-1101, US-1106 and US-1109 as built (WP-16, D-49): earns and reversals follow each item's status, a parent adds or takes away points on the member's page, and a double tap posts once. US-1102's balance and latest entries are on the board's snapshot; the board draws them with WP-11.
@@ -211,6 +212,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given 5 occurrences are `completed`, when I select 4 and choose "Not actually done", then 4 `admin_uncomplete` events are written with one shared `batch_id` and they return to `scheduled` (or `missed` if the day is closed).
 - Given those occurrences had earned points, when the batch is applied, then matching reversal entries are posted to the points ledger exactly once.
 - Given the batch is applied, when the board refreshes, then the child sees the chores open again without a punitive message.
+- Given I unchecked a batch by mistake, when I tap Undo, then each item not changed since is done again by whoever had done it, and its points are earned again (D-52).
 
 ### US-308 — Edit a chore without rewriting history
 **As an** admin **I want** edits to a chore to affect only future occurrences **so that** past credit and streaks stay intact.
@@ -274,7 +276,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As a** parent **I want** a My tasks view on my phone **so that** I can run my own day from the same family list.
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-14, CHR-09
 - Given items are assigned to me, when I open My tasks, then I see overdue, today's, and upcoming items in that order, including shared items I am on.
-- Given I type a title in quick add, when I save, then a family-visible task due today and assigned to me exists in one step.
+- Given I type a title in quick add, when I save, then a family-visible task due today and assigned to me exists in one step, with no points, and it is on the board at once.
+- Given my sign-in isn't linked to a member, when I open My tasks, then it tells me how to link it on Members.
 - Given I complete an item on my phone, when the board refreshes, then it shows as done by me.
 
 ### US-317 — Turn reminders on or off for myself
