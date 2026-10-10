@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.23: a parent's day (WP-12, D-52): the admin app records a parent's completions, unchecks, skips, approvals and rejections through `record_completions()`, with event ids from the form's request id; a batch is put back by `undo_uncheck_batch()` (§5.2).
 > v0.8.22: the rules engine as built (WP-15, D-51): `evaluateGoal` and `evaluateHistory` in `packages/rules-engine`, pure and property-tested (§4, `02` §5).
 > v0.8.21: the board's Today (WP-11, D-50): the board checks items off through an in-memory outbox and shows them at once; the snapshot carries today's items and the undo window, and `chore_occurrence` and `chore` are in Realtime (§5.2, §7).
 > v0.8.20: the points ledger (WP-16, D-49): earns and reversals by trigger, a parent's adjustments, each member's points on the board's snapshot and in Realtime, and the status check covers points too (§5.6, §7).
@@ -226,6 +227,8 @@ sequenceDiagram
 If `RULES` evaluation fails after the insert, the completion still stands and the goal stays `dirty`; `progress_reconcile` (5.6) repairs it within minutes.
 
 On a member's own screen `done_by` is that member; on the Family view the picker lists the item's assignees first and allows anyone in the family, or several people (D-30). Only members who earn rewards get points, approval and celebrations (D-32).
+
+**As built (WP-12, D-52).** A parent's actions in the admin app (Today and My tasks) are server actions that call `record_completions()` as the parent, so the same rules and points apply as for a board. Each event's id is a hash of the form's request id (one per page view), the occurrence and the event type, so a form sent twice records once. "Not actually done" sends one `admin_uncomplete` per ticked item with the request id as `batch_id`. `undo_uncheck_batch()` (security invoker) puts back, in one transaction, each item whose status still comes from the batch's event, as an `admin_complete` by whoever had done it.
 
 **As built (WP-11, D-50).** A tap lays the check-off over the snapshot at once (`lib/today.ts` works out what the database will make of it: done, or waiting for a parent), and hands the event to the board's outbox (`lib/outbox.ts`). The outbox sends events in order, at most 100 at a time; events queued while a batch is out go together in the next one. A failed send is retried with the same ids after 1, 2, 5, 10, then every 30 seconds, so a resend counts once. A request the API refuses outright (400) is answered as invalid rather than retried. Each answer replaces the board's guess with the database's state; `gone`, `refused` and `invalid` take the guess back and say why in the board's voice. The board's guess stops applying once a snapshot read after the database answered shows the change. Undo posts an `undo` event. Until WP-13 the outbox lives in memory, so a reload drops what is unanswered.
 

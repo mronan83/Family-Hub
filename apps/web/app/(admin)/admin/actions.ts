@@ -61,3 +61,26 @@ export async function signOut(form: FormData): Promise<void> {
   if (db) await db.auth.signOut({ scope: 'local' });
   redirect(signInPath(String(form.get('next') ?? '')));
 }
+
+/**
+ * [CHR-05][D-22] Whether a parent approves the children's check-offs. Switching re-resolves only
+ * items still to do (the database's trigger); check-offs already waiting stay in the queue, and
+ * those already done stay done.
+ */
+export async function setApprovalMode(form: FormData): Promise<void> {
+  const db = await serverClient();
+  const user = await requireSignedIn(db, '/admin');
+  const household = db ? await adminHousehold(db, user.userId) : null;
+  if (!db || !household) redirect('/setup');
+  const mode = form.get('approval') === 'on' ? 'on' : 'off';
+  const { error } = await db
+    .from('household_settings')
+    .update({ approval_mode: mode })
+    .eq('household_id', household.id);
+  if (error) {
+    log('warn', 'approval mode not saved', { code: error.code });
+    redirect('/admin?approval=failed');
+  }
+  revalidatePath('/admin');
+  redirect(`/admin?approval=${mode}`);
+}
