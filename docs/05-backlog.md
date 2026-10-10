@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.43: WP-19 in review (PR #34): goals and the progress pipeline (D-56).
 > v0.8.42: WP-17 done (PR #33): streak history and insights. WP-30 is ready.
 > v0.8.41: WP-17 in review (PR #33): streak history and insights (D-55).
 > v0.8.40: WP-13 done (PR #32): the board works through an outage. The real 24-hour soak on the Pi stays with WP-24.
@@ -114,7 +115,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-15 | Rules engine package | P1b | L | WP-01 | Done (PR #29) |
 | WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Done (PR #33) |
 | WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Done (PR #31) |
-| WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Ready |
+| WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | In review (PR #34) |
 | WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Queued |
 | WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Queued |
 | WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Ready |
@@ -556,6 +557,17 @@ flowchart LR
 **Phase:** P1c · **Size:** L · **Depends on:** WP-15, WP-16 · **Reqs:** RWD-01, RWD-04, RWD-06, RWD-09, CHR-10
 - Goal CRUD with rules (scoped to all items, tags by id, or specific items; goals only for members who earn rewards or the whole family), lifecycle jobs (scheduled → active → expired), dirty flag trigger, reconcile within 5 minutes, reversible achievement (achieved ↔ active with `unachieved` events, `celebrated_at` cleared), redeem and redemption history.
 - **Done when:** a seeded goal becomes achieved, returns to active when the deciding chore is unchecked, and is achieved again; reconcile heals a deliberately dirtied goal.
+- As built (D-56):
+  - **Goals** (`/admin/goals`, new in the nav). Those in play come first (achieved, going, starting later), each with its rules' meters, a streak's run now and best, and "Mark redeemed" once achieved. History lists those redeemed (when, by whom), ended or cancelled, with a flag on a redeemed goal whose check-off was later undone. Each goal's page changes it, shows what happened to it and cancels it.
+  - **The form.** A child who earns rewards or the whole family; start and end dates; 1 to 5 rules (things done, days with everything done, good days in a row with 0 to 3 misses a week forgiven, points earned), each counting everything, some tags or some items; all or any; an icon or a photo. Once started, who it's for and its start date stay; once finished, its rules and dates.
+  - **The pipeline.** A trigger marks goals dirty. `progress_reconcile` (every 5 minutes) and the Goals page evaluate what needs it, as does a check-off in production. The rules engine works out the progress, and `save_goal_evaluation()` applies each status change once (started, achieved n, unachieved, expired, needs review). A stale read is refused and read again.
+  - **Seeded:** Leo's "Movie night" (19 things done; he has 18), Maya's "Trip to the park" (5 good days in a row; reached), the family's "Pizza night" (10 days with everything done).
+  - **Tests.**
+    - pgTAP `200_goals` (52): the form's checks, who may, the facts, the marks, every status change once, stale reads refused, redeem, cancel and review.
+    - Unit: the form, the words, the engine on a week of facts, the stale-read retry, one goal failing among several, and the job.
+    - UI suite: the list and form on a phone and a laptop in both themes.
+    - e2e: the done-when on the preview.
+  - **Found on the way:** a file picker's built-in width pushed a phone's form wider than the screen, the shop's photo field too (WP-18). It now shrinks with the column.
 
 ### WP-39 — Goal payouts, payout reversal, and rule-change preview
 **Phase:** P1c · **Size:** M · **Depends on:** WP-18, WP-19 · **Reqs:** RWD-04, RWD-10, RWD-13

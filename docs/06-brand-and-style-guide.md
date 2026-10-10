@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.6 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17)
+> Version 1.7 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19)
+> v1.7: goals in the admin app (WP-19): a card per goal with a meter per rule; its state in a pill (Achieved in the reward colour with a trophy, Going in the primary tint, Starts later outlined), never colour alone; "Needs a look" in the missed colour with a warning icon; a file picker shrinks with a phone's column.
 > v1.6: the streak flame as built: tiers at 3, 7, 14 and 30 days, a glow on reaching one; the Insights heatmap marks each day with an icon as well as a colour (§7.2, WP-17).
 > v1.5: the board's offline and stale lines sit in its bar as pills; a balance not yet saved while offline is provisional: dashed plum ring and `wifi-off` (§7.2, WP-13).
 > v1.4: the board's points list says what each entry was for; points a parent took away read "A parent changed your points", never the reason (D-50, § Voice).
