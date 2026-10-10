@@ -145,7 +145,8 @@ test('[PTS-04][US-1104][US-1105] the done-when: Maya earns, asks for a reward, A
   await shop.getByRole('button', { name: 'Yes, ask', exact: true }).click();
   await expect(shop).toHaveCount(0);
   const asked = board.getByRole('region', { name: 'Asked for' });
-  const row = asked.getByRole('listitem').filter({ hasText: STAY_UP_TITLE });
+  // Newest first: a retry also lists the first attempt's request, refunded ("Called off").
+  const row = asked.getByRole('listitem').filter({ hasText: STAY_UP_TITLE }).first();
   await expect(row).toContainText('Waiting for a grown-up');
   const id = sql(
     `select id from public.redemption where member_id = '${maya}' and catalog_item_id = '${STAY_UP}'
@@ -191,7 +192,22 @@ test('[RWD-08][US-404] a goal reached is celebrated once, by the board that show
   ).toBe('achieved:1');
   // Each reached goal in turn, each once: the kite, and the park if the seeded run reached it.
   const party = board.getByRole('dialog', { name: /^Maya reached / });
-  await expect(party).toBeVisible();
+  // The board hears the change through Realtime (normally within seconds); a missed event is read by
+  // its next refresh. If it doesn't come, say where it stopped: the goal, and what the board heard.
+  try {
+    await expect(party).toBeVisible({ timeout: 30_000 });
+  } catch (e) {
+    const goal = sql(`select status || ' ' || achievement_count || ', ' ||
+                             coalesce('celebrated ' || celebrated_at::text, 'not celebrated')
+                        from public.reward_goal where id = '${GOAL}'`);
+    const link = await board.locator('[data-link]').getAttribute('data-link');
+    const heard = await board.locator('[data-events]').getAttribute('data-events');
+    const read = await board.locator('main').getAttribute('data-fetched-at');
+    throw new Error(
+      `no celebration on the board: the goal is ${goal}; the board is ${link}, heard ${heard} changes, last read at ${read}`,
+      { cause: e },
+    );
+  }
   const seen: string[] = [];
   while (await party.isVisible()) {
     const line = (await party.getByRole('heading').textContent()) ?? '';
