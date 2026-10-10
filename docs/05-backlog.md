@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.40: WP-13 done (PR #32): the board works through an outage. The real 24-hour soak on the Pi stays with WP-24.
 > v0.8.39: WP-13 in review (PR #32): the board works through an outage (D-54).
 > v0.8.38: WP-18 done (PR #31): the rewards shop. WP-39 and WP-20 wait on WP-19 too.
 > v0.8.37: WP-18 in review (PR #31): the rewards shop (D-53).
@@ -106,7 +107,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-16 | Points ledger | P1a | M | WP-10 | Done (PR #27) |
 | WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37, WP-43 | Done (PR #28) |
 | WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Done (PR #30) |
-| WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | In review (PR #32) |
+| WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | Done (PR #32) |
 | WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
 | WP-15 | Rules engine package | P1b | L | WP-01 | Done (PR #29) |
 | WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Ready |
