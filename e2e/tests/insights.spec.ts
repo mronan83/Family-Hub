@@ -112,7 +112,15 @@ test('[RWD-05] a board shows Maya’s run from her stored history', async ({ bro
     .getByRole('region', { name: 'Everyone today' })
     .locator('section', { has: board.getByRole('heading', { name: 'Maya', level: 2 }) })
     .locator('.fw-today__flame');
-  // Today isn't done yet, so the flame is her stored run (none when she has no good run going).
+  // Today isn't done yet (the board specs put back what they tick), so the flame is her stored run
+  // (none when she has no good run going).
+  expect(
+    Number(
+      sql(`select count(*) from public.chore_occurrence
+            where member_id = '${maya}' and kind = 'chore' and status = 'scheduled'
+              and due_date = (now() at time zone 'America/New_York')::date`),
+    ),
+  ).toBeGreaterThan(0);
   if (run === '0') await expect(flame).toHaveCount(0);
   else await expect(flame).toHaveText(`${run} ${run === '1' ? 'day' : 'days'} in a row`);
   await board.context().close();

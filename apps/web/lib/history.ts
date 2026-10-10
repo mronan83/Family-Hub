@@ -17,12 +17,15 @@ import type { SupabaseClient } from '@supabase/supabase-js';
  * runs here, so the board and the server always read a day the same way.
  */
 
-/** The day before an ISO date (YYYY-MM-DD). */
-export function dayBefore(iso: string): string {
+/** The day `n` days after an ISO date (YYYY-MM-DD); before it when `n` is negative. */
+function addDays(iso: string, n: number): string {
   const d = new Date(`${iso}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() - 1);
+  d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
 }
+
+/** The day before an ISO date (YYYY-MM-DD). */
+export const dayBefore = (iso: string) => addDays(iso, -1);
 
 /** What save_member_history stores: the days and runs through `through`. */
 export interface HistoryRows {
@@ -33,14 +36,21 @@ export interface HistoryRows {
 
 /**
  * [RWD-11] The engine's reading of a member's facts through `through` (a closed day): one row a day
- * from their first day, and their runs. Today is never stored, so the runs end on a closed day.
+ * from their first day, and their runs. Today is never stored, so the runs end on a closed day. The
+ * days are judged as of the day after `through` (today), so a miss on `through` makes it bad: as of
+ * `through` itself it would be today, which is never bad, and the run would carry on through it.
  */
 export function historyRows(
   memberId: string,
   facts: OccurrenceFact[],
   through: string,
 ): HistoryRows {
-  const h: HistoryEvaluation = evaluateHistory({ memberId, occurrences: facts, asOf: through });
+  const h: HistoryEvaluation = evaluateHistory({
+    memberId,
+    occurrences: facts,
+    asOf: addDays(through, 1),
+    through,
+  });
   return { through, days: h.days, segments: h.segments };
 }
 

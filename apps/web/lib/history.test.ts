@@ -94,6 +94,19 @@ describe('a member’s stored history', () => {
     ]);
   });
 
+  it('[RWD-11][D-55] a miss on the last closed day makes it bad and ends the good run there', () => {
+    // As the seed's Leo: everything done but yesterday's bed. Yesterday is a closed day, not today.
+    const facts = FACTS.map((f) =>
+      f.id === 'bed-14' ? { ...f, status: 'missed' as const, credited: false } : f,
+    );
+    const rows = historyRows(KID, facts, THROUGH);
+    expect(rows.days.at(-1)).toMatchObject({ date: THROUGH, done: 2, missed: 1, dayClass: 'bad' });
+    expect(rows.segments.slice(-2)).toEqual([
+      { kind: 'good', start: day(8), end: day(13), length: 5 },
+      { kind: 'bad', start: day(14), end: null, length: 1 },
+    ]);
+  });
+
   it('[RWD-11] the same facts in any order give the same rows (a rebuild changes nothing)', () => {
     const once = historyRows(KID, FACTS, THROUGH);
     const shuffled = [...FACTS].reverse();

@@ -1,7 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
-> v0.8.19: streak history and insights (WP-17, D-55): `member_daily_summary` and `streak_segment` as built, the marks and functions that keep them, `member_insights()`, and the snapshot's streak (§3.3, §4.6, §4.7).
+> v0.8.19: streak history and insights (WP-17, D-55): `member_daily_summary` and `streak_segment` as built, the marks and functions that keep them, `member_insights()`, and the snapshot's streak (§3.3, §4.6, §4.7); `evaluateHistory` takes `through`, so stored days are judged as of today (§5).
 > v0.8.15: the rules engine as built (WP-15, D-51): the contract's types, when a day is good, bad, neutral or open (today counts as good once it qualifies), streak targets, qualify modes and the status changes an evaluation calls for (§5).
 > v0.8.14: the board's Today (WP-11, D-50): the snapshot's `occurrences` and `household.undo_window_seconds` as built; `chore_occurrence` and `chore` join the Realtime publication (§4.6).
 > v0.8.13: the points ledger (WP-16, D-49): `points_ledger` and `v_points_balance` as built; earn and reversal reconcile each occurrence's points; `adjust_points()`; the snapshot's points; the ledger drift check (§3.3b, §4.2b, §4.6, §4.7).
@@ -1078,7 +1078,8 @@ interface GoalEvaluation { goal_id: string; pct: number; is_achieved: boolean;
 function evaluateGoal(input: GoalInput): GoalEvaluation;   // deterministic, side-effect free
 
 // History (RWD-11): raw good and bad runs, no grace, used for insights and the heatmap
-interface HistoryInput { memberId: string; occurrences: OccurrenceFact[]; asOf: string }
+interface HistoryInput { memberId: string; occurrences: OccurrenceFact[]; asOf: string;
+                         through?: string }   // last day to include; default asOf
 interface DailySummary { date: string; scheduled: number; done: number; missed: number;
                          skipped: number; covered: number; points: number;
                          dayClass: 'good'|'bad'|'neutral'|'open' }
@@ -1090,7 +1091,7 @@ function evaluateHistory(input: HistoryInput):
 const ENGINE_VERSION = 1;   // stored on derived rows; bumping it forces a full recompute
 ```
 
-`missed` is now an input status, not something the engine infers. The engine never reads a clock; "today" is `asOf`. Facts are per member (D-30): a goal for a member counts only facts where that member is `credited`; a family goal (`member_id` null) counts each done occurrence once. Tasks count toward `COUNT` and `POINTS` on their `credit_date` and never make a day bad (D-31).
+`missed` is now an input status, not something the engine infers. The engine never reads a clock; "today" is `asOf`. Stored history (WP-17, D-55) is evaluated as of today `through` yesterday, so a miss yesterday makes it a bad day; as of yesterday itself it would be today, which is never bad. Facts are per member (D-30): a goal for a member counts only facts where that member is `credited`; a family goal (`member_id` null) counts each done occurrence once. Tasks count toward `COUNT` and `POINTS` on their `credit_date` and never make a day bad (D-31).
 
 ### Rule semantics
 
