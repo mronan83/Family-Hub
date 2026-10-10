@@ -209,7 +209,8 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
                                  from public.chore_assignee a join public.member m on m.id = a.member_id
                                 where a.chore_id = c.id), ',' order by c.title)
            from public.chore c
-          where c.household_id = '${DEMO}' and c.id::text not like '${SEEDED_CHORES}'`),
+          where c.household_id = '${DEMO}' and c.id::text not like '${SEEDED_CHORES}'
+            and c.archived_at is null`),
   ).toBe(
     [
       'Order school uniform:task:0:-:once:backpack:shared:Sam',
