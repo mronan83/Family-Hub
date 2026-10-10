@@ -24,6 +24,12 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     { table: 'chore', filter: `household_id=eq.${householdId}` },
     { table: 'streak_segment', filter: `household_id=eq.${householdId}` },
     { table: 'wishlist_pin', filter: `household_id=eq.${householdId}` },
+    // The shop, requests and goals (WP-20).
+    { table: 'reward_catalog_item', filter: `household_id=eq.${householdId}` },
+    { table: 'redemption', filter: `household_id=eq.${householdId}` },
+    { table: 'reward_goal', filter: `household_id=eq.${householdId}` },
+    { table: 'reward_goal_progress', filter: `household_id=eq.${householdId}` },
+    { table: 'reward_rule_progress', filter: `household_id=eq.${householdId}` },
   ];
 }
 

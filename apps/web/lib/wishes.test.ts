@@ -51,6 +51,6 @@ describe('saving up', () => {
   it('[PTS-06] says how far to go, and to ask once there is enough', () => {
     expect(wishLine(17, 25)).toBe('8 more points to go.');
     expect(wishLine(24, 25)).toBe('1 more point to go.');
-    expect(wishLine(25, 25)).toBe('You have enough! Ask a grown-up for it.');
+    expect(wishLine(25, 25)).toBe('You have enough!');
   });
 });

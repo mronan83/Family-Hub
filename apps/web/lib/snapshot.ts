@@ -1,6 +1,7 @@
 import type { AvatarKey, MemberColor, ThemeOverride } from '@familywise/ui';
-import type { OccurrenceStatus } from '@familywise/rules-engine';
+import type { OccurrenceStatus, RuleType } from '@familywise/rules-engine';
 import type { LedgerEntry, LedgerEntryType } from './points';
+import type { RedemptionStatus } from './rewards';
 import type { TodayItem } from './today';
 
 /**
@@ -26,8 +27,10 @@ export interface BoardSnapshot {
   members: BoardMember[];
   /** [BRD-01] Today's family-visible items and the open overdue tasks (WP-11). */
   occurrences: TodayItem[];
-  /** [PTS-06] The rewards in the shop now, to choose one to save for (WP-30). */
+  /** [PTS-03][PTS-06] The rewards in the shop now: to save for (WP-30) and to ask for (WP-20). */
   shop: BoardShopItem[];
+  /** [RWD-07] The goals in play, each child's then the family's (WP-20). */
+  goals: BoardGoal[];
 }
 
 /** A reward in the shop, as the board shows it. */
@@ -36,6 +39,54 @@ export interface BoardShopItem {
   title: string;
   icon: string;
   cost: number;
+  /** Its photo's path in the private rewards bucket (WP-20); the board reads it through a signed link. */
+  photo?: string | null;
+  /** How many are still to be had; null for as many as asked for (WP-20). */
+  left?: number | null;
+}
+
+/** [PTS-04] One of a child's requests: open, or settled in the last two days (WP-20). */
+export interface BoardRequest {
+  id: string;
+  itemId: string;
+  title: string;
+  icon: string;
+  cost: number;
+  status: RedemptionStatus;
+  /** When it last changed: asked, decided, given or cancelled. */
+  at: string;
+}
+
+/** [RWD-07] A goal in play, as WP-19's progress pipeline last worked it out. */
+export interface BoardGoal {
+  id: string;
+  /** Null for a family goal. */
+  memberId: string | null;
+  title: string;
+  icon: string;
+  photo: string | null;
+  status: 'active' | 'achieved';
+  /** Which time it was reached (achievement n); 0 while never reached. */
+  n: number;
+  achievedAt: string | null;
+  /** [RWD-08] Reached and not yet celebrated on any board. */
+  celebrate: boolean;
+  endDate: string | null;
+  logic: 'all' | 'any';
+  pct: number;
+  rules: BoardGoalRule[];
+}
+
+export interface BoardGoalRule {
+  id: string;
+  type: RuleType;
+  target: number;
+  current: number;
+  pct: number;
+  met: boolean;
+  /** A streak rule's run now and best; null for the others. */
+  streak: number | null;
+  best: number | null;
 }
 
 export interface BoardMember {
@@ -51,6 +102,15 @@ export interface BoardMember {
   streak: BoardStreak | null;
   /** [PTS-06] For a member who earns rewards: the reward they're saving for, if any (WP-30). */
   wish: BoardShopItem | null;
+  /**
+   * [PTS-04] For a member who earns rewards: what they can still ask for, their balance less the
+   * requests waiting for a parent (WP-20); otherwise null.
+   */
+  available: number | null;
+  /** [PTS-04] Their requests, newest first (WP-20). */
+  requests: BoardRequest[];
+  /** [PTS-04] The rewards they've asked for as often as allowed this week (WP-20). */
+  limited: string[];
 }
 
 /** The run going as of the last closed day, and the best good run (streak_segment). */
@@ -133,12 +193,87 @@ function readShopItem(x: unknown): BoardShopItem | null {
   if (!isObject(x) || typeof x.title !== 'string') return null;
   const id = typeof x.id === 'string' ? x.id : typeof x.item_id === 'string' ? x.item_id : null;
   if (!id) return null;
-  return {
+  const item: BoardShopItem = {
     id,
     title: x.title,
     icon: typeof x.icon === 'string' ? x.icon : 'gift',
     cost: Number(x.cost) || 0,
   };
+  // The shop's own facts (WP-20); a wish has neither.
+  if ('photo' in x) item.photo = typeof x.photo === 'string' ? x.photo : null;
+  if ('left' in x) item.left = typeof x.left === 'number' ? x.left : null;
+  return item;
+}
+
+const REQUEST_STATUSES: readonly RedemptionStatus[] = [
+  'requested',
+  'approved',
+  'denied',
+  'fulfilled',
+  'cancelled',
+];
+
+/** A member's requests (WP-20); one in a state this build doesn't know is left out. */
+function readRequests(x: unknown): BoardRequest[] {
+  if (!Array.isArray(x)) return [];
+  return x.flatMap((r) => {
+    if (!isObject(r) || !REQUEST_STATUSES.includes(r.status as RedemptionStatus)) return [];
+    return [
+      {
+        id: str(r, 'id'),
+        itemId: str(r, 'item_id'),
+        title: str(r, 'title'),
+        icon: typeof r.icon === 'string' ? r.icon : 'gift',
+        cost: Number(r.cost) || 0,
+        status: r.status as RedemptionStatus,
+        at: str(r, 'at'),
+      },
+    ];
+  });
+}
+
+const RULE_TYPES: readonly RuleType[] = ['COUNT', 'STREAK', 'DAILY_ALL_DONE', 'POINTS'];
+const num = (x: unknown): number | null => (typeof x === 'number' ? x : null);
+
+/** The goals in play (WP-20); a goal in a state the board doesn't show, or a rule it can't draw, is left out. */
+function readGoals(x: unknown): BoardGoal[] {
+  if (!Array.isArray(x)) return [];
+  return x.flatMap((g) => {
+    if (!isObject(g) || (g.status !== 'active' && g.status !== 'achieved')) return [];
+    const rules = Array.isArray(g.rules) ? g.rules : [];
+    return [
+      {
+        id: str(g, 'id'),
+        memberId: typeof g.member_id === 'string' ? g.member_id : null,
+        title: str(g, 'title'),
+        icon: typeof g.icon === 'string' ? g.icon : 'trophy',
+        photo: typeof g.photo === 'string' ? g.photo : null,
+        status: g.status,
+        n: Number(g.n) || 0,
+        achievedAt: typeof g.achieved_at === 'string' ? g.achieved_at : null,
+        celebrate: g.celebrate === true,
+        endDate: typeof g.end_date === 'string' ? g.end_date : null,
+        logic: g.logic === 'any' ? 'any' : 'all',
+        pct: Number(g.pct) || 0,
+        rules: rules.flatMap((r) =>
+          isObject(r) && RULE_TYPES.includes(r.type as RuleType)
+            ? [
+                {
+                  id: str(r, 'id'),
+                  type: r.type as RuleType,
+                  target: Number(r.target) || 0,
+                  current: Number(r.current) || 0,
+                  pct: Number(r.pct) || 0,
+                  met: r.met === true,
+                  streak: num(r.streak),
+                  best: num(r.best),
+                },
+              ]
+            : [],
+        ),
+      },
+    ];
+  });
 }
 
 const ids = (x: unknown): string[] =>
@@ -212,6 +347,15 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
         streak: readStreak(m.streak),
         // A snapshot from before WP-30 has no wish.
         wish: readShopItem(m.wish),
+        // A snapshot from before WP-20 has none of these: nothing held, nothing asked for.
+        available:
+          typeof m.available === 'number'
+            ? m.available
+            : isObject(m.points) && typeof m.points.balance === 'number'
+              ? m.points.balance
+              : null,
+        requests: readRequests(m.requests),
+        limited: ids(m.limited),
       };
     }),
     // A snapshot from before WP-11 (an older database) has no items.
@@ -220,5 +364,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
     shop: Array.isArray(data.shop)
       ? data.shop.map(readShopItem).filter((i): i is BoardShopItem => i !== null)
       : [],
+    // A snapshot from before WP-20 has no goals.
+    goals: readGoals(data.goals),
   };
 }

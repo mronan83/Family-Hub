@@ -1,5 +1,7 @@
 import type { Answer, CompletionEvent } from '@/lib/outbox';
-import type { BoardSnapshot } from '@/lib/snapshot';
+import type { MarkCelebrated } from '@/lib/board-goals';
+import type { AskFor, CancelAsk } from '@/lib/shop';
+import type { BoardMember, BoardSnapshot } from '@/lib/snapshot';
 import type { TodayItem } from '@/lib/today';
 import type { PinWish } from '@/lib/wishes';
 
@@ -57,6 +59,10 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         streak: { kind: 'good', length: 6, best: 6 },
         // Nothing pinned yet: the board offers to choose a wish (WP-30).
         wish: null,
+        // Nothing asked for (WP-20).
+        available: 17,
+        requests: [],
+        limited: [],
       },
       {
         id: MAYA,
@@ -82,6 +88,30 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         streak: { kind: 'good', length: 2, best: 5 },
         // Saving for Movie night: 42 of 100 (WP-30).
         wish: { id: 'r-movie', title: 'Movie night', icon: 'ticket', cost: 100 },
+        // Picked the dinner this week (once a week, given), and was told not this time for ice
+        // cream; nothing waiting, so all 42 can be spent (WP-20).
+        available: 42,
+        requests: [
+          {
+            id: 'q-dinner',
+            itemId: 'r-dinner',
+            title: 'Pick the dinner',
+            icon: 'utensils',
+            cost: 30,
+            status: 'fulfilled',
+            at: longAgo,
+          },
+          {
+            id: 'q-icecream',
+            itemId: 'r-icecream',
+            title: 'Ice cream trip',
+            icon: 'snack',
+            cost: 40,
+            status: 'denied',
+            at: longAgo,
+          },
+        ],
+        limited: ['r-dinner'],
       },
       {
         id: ALEX,
@@ -93,6 +123,9 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         points: null,
         streak: null,
         wish: null,
+        available: null,
+        requests: [],
+        limited: [],
       },
       {
         id: SAM,
@@ -104,6 +137,9 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         points: null,
         streak: null,
         wish: null,
+        available: null,
+        requests: [],
+        limited: [],
       },
     ],
     occurrences: [
@@ -181,11 +217,253 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
       }),
     ],
     shop: [
-      { id: 'r-movie', title: 'Movie night', icon: 'ticket', cost: 100 },
-      { id: 'r-icecream', title: 'Ice cream trip', icon: 'snack', cost: 40 },
-      { id: 'r-late', title: 'Stay up 30 minutes late', icon: 'moon', cost: 25 },
-      { id: 'r-dinner', title: 'Pick the dinner', icon: 'utensils', cost: 30 },
+      { id: 'r-movie', title: 'Movie night', icon: 'ticket', cost: 100, photo: null, left: null },
+      { id: 'r-icecream', title: 'Ice cream trip', icon: 'snack', cost: 40, photo: null, left: 3 },
+      {
+        id: 'r-late',
+        title: 'Stay up 30 minutes late',
+        icon: 'moon',
+        cost: 25,
+        photo: null,
+        left: null,
+      },
+      {
+        id: 'r-dinner',
+        title: 'Pick the dinner',
+        icon: 'utensils',
+        cost: 30,
+        photo: null,
+        left: null,
+      },
+      { id: 'r-kite', title: 'A new kite', icon: 'star', cost: 15, photo: null, left: 0 },
     ],
+    // Leo is one thing from his goal (a nudge); Maya has two rules to go and one reached (already
+    // celebrated); the family is 90% of the way to Pizza night (WP-20).
+    goals: [
+      {
+        id: 'g-bike',
+        memberId: LEO,
+        title: 'Bike ride',
+        icon: 'star',
+        photo: null,
+        status: 'active',
+        n: 0,
+        achievedAt: null,
+        celebrate: false,
+        endDate: day(3, today),
+        logic: 'all',
+        pct: 90,
+        rules: [
+          {
+            id: 'gr-bike',
+            type: 'COUNT',
+            target: 10,
+            current: 9,
+            pct: 90,
+            met: false,
+            streak: null,
+            best: null,
+          },
+        ],
+      },
+      {
+        id: 'g-art',
+        memberId: MAYA,
+        title: 'Art kit',
+        icon: 'gift',
+        photo: null,
+        status: 'achieved',
+        n: 1,
+        achievedAt: longAgo,
+        celebrate: false,
+        endDate: null,
+        logic: 'all',
+        pct: 100,
+        rules: [
+          {
+            id: 'gr-art',
+            type: 'POINTS',
+            target: 50,
+            current: 50,
+            pct: 100,
+            met: true,
+            streak: null,
+            best: null,
+          },
+        ],
+      },
+      {
+        id: 'g-zoo',
+        memberId: MAYA,
+        title: 'Zoo trip',
+        icon: 'ticket',
+        photo: null,
+        status: 'active',
+        n: 0,
+        achievedAt: null,
+        celebrate: false,
+        endDate: day(20, today),
+        logic: 'all',
+        pct: 50,
+        rules: [
+          {
+            id: 'gr-zoo-1',
+            type: 'COUNT',
+            target: 20,
+            current: 12,
+            pct: 60,
+            met: false,
+            streak: null,
+            best: null,
+          },
+          {
+            id: 'gr-zoo-2',
+            type: 'STREAK',
+            target: 5,
+            current: 3,
+            pct: 60,
+            met: false,
+            streak: 2,
+            best: 3,
+          },
+        ],
+      },
+      {
+        id: 'g-pizza',
+        memberId: null,
+        title: 'Pizza night',
+        icon: 'trophy',
+        photo: null,
+        status: 'active',
+        n: 0,
+        achievedAt: null,
+        celebrate: false,
+        endDate: null,
+        logic: 'all',
+        pct: 90,
+        rules: [
+          {
+            id: 'gr-pizza',
+            type: 'COUNT',
+            target: 20,
+            current: 18,
+            pct: 90,
+            met: false,
+            streak: null,
+            best: null,
+          },
+        ],
+      },
+    ],
+  };
+}
+
+/** [RWD-08] The same family the moment Leo reaches his goal: the board celebrates it (WP-20). */
+export function reachedBike(s: BoardSnapshot, now: Date): BoardSnapshot {
+  return {
+    ...s,
+    goals: s.goals.map((g) =>
+      g.id === 'g-bike'
+        ? {
+            ...g,
+            status: 'achieved',
+            n: 1,
+            achievedAt: now.toISOString(),
+            celebrate: true,
+            pct: 100,
+            rules: g.rules.map((r) => ({ ...r, current: 10, pct: 100, met: true })),
+          }
+        : g,
+    ),
+  };
+}
+
+type Change = (f: (s: BoardSnapshot) => BoardSnapshot) => void;
+type Shop = {
+  asks: { id: string; member: string; item: string }[];
+  cancels: string[];
+  marks: string[];
+};
+const shopLog = () => {
+  const w = window as unknown as { __fwShop?: Shop };
+  return (w.__fwShop ??= { asks: [], cancels: [], marks: [] });
+};
+const withMember = (s: BoardSnapshot, id: string, f: (m: BoardMember) => BoardMember) => ({
+  ...s,
+  members: s.members.map((m) => (m.id === id ? f(m) : m)),
+});
+
+/**
+ * Answers like POST /api/redemptions would (WP-20), a moment later, and then shows the request in the
+ * snapshot as Realtime would. Each ask is kept on window.__fwShop; a reward none are left of is
+ * refused (window.__fwRefuse refuses anything, with that reason), and offline nothing is sent.
+ */
+export function fixtureAsk(snapshot: BoardSnapshot, change: Change): AskFor {
+  return async (id, memberId, itemId) => {
+    if (!navigator.onLine) return { ok: false, offline: true };
+    shopLog().asks.push({ id, member: memberId, item: itemId });
+    await new Promise((r) => setTimeout(r, 30));
+    // A test can have the shop refuse, as it would if another board got there first.
+    const refuse = (window as unknown as { __fwRefuse?: string }).__fwRefuse;
+    if (refuse) return { ok: false, reason: refuse };
+    // The points are the board's to check: this stand-in's snapshot never hears of its check-offs.
+    const item = snapshot.shop.find((i) => i.id === itemId)!;
+    if (item.left === 0) return { ok: false, reason: 'out_of_stock' };
+    change((s) =>
+      withMember(s, memberId, (x) => ({
+        ...x,
+        available: (x.available ?? 0) - item.cost,
+        requests: [
+          {
+            id,
+            itemId,
+            title: item.title,
+            icon: item.icon,
+            cost: item.cost,
+            status: 'requested',
+            at: new Date().toISOString(),
+          },
+          ...x.requests,
+        ],
+      })),
+    );
+    return { ok: true };
+  };
+}
+
+/** Answers like POST /api/redemptions/cancel would, then shows it called off and the points free. */
+export function fixtureCancel(change: Change): CancelAsk {
+  return async (id) => {
+    if (!navigator.onLine) return { ok: false, offline: true };
+    shopLog().cancels.push(id);
+    await new Promise((r) => setTimeout(r, 30));
+    change((s) => ({
+      ...s,
+      members: s.members.map((m) => {
+        const r = m.requests.find((x) => x.id === id);
+        if (!r) return m;
+        return {
+          ...m,
+          available: (m.available ?? 0) + r.cost,
+          requests: m.requests.map((x) => (x.id === id ? { ...x, status: 'cancelled' } : x)),
+        };
+      }),
+    }));
+    return { ok: true };
+  };
+}
+
+/** Answers like POST /api/goals/celebrated would, then shows the goal celebrated. */
+export function fixtureMark(change: Change): MarkCelebrated {
+  return async (goalId, n) => {
+    if (!navigator.onLine) return false;
+    shopLog().marks.push(`${goalId}:${n}`);
+    await new Promise((r) => setTimeout(r, 30));
+    change((s) => ({
+      ...s,
+      goals: s.goals.map((g) => (g.id === goalId && g.n === n ? { ...g, celebrate: false } : g)),
+    }));
+    return true;
   };
 }
 

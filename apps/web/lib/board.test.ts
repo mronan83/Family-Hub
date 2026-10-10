@@ -100,6 +100,10 @@ describe('board snapshot', () => {
           },
           streak: null,
           wish: { id: 'r1', title: 'Movie night', icon: 'ticket', cost: 100 },
+          // A snapshot from before WP-20: all of the balance can be spent, nothing asked for.
+          available: 35,
+          requests: [],
+          limited: [],
         },
         {
           id: 'm2',
@@ -111,12 +115,16 @@ describe('board snapshot', () => {
           points: null,
           streak: null,
           wish: null,
+          available: null,
+          requests: [],
+          limited: [],
         },
       ],
       shop: [
         { id: 'r1', title: 'Movie night', icon: 'ticket', cost: 100 },
         { id: 'r2', title: 'Ice cream trip', icon: 'snack', cost: 40 },
       ],
+      goals: [],
       occurrences: [
         {
           id: 'o1',
@@ -231,6 +239,157 @@ describe('wishes in the snapshot', () => {
   });
 });
 
+describe('the shop, requests and goals (WP-20)', () => {
+  const maya = (RAW.members as Record<string, unknown>[])[0]!;
+  const read = (member: Record<string, unknown>, extra: Record<string, unknown> = {}) =>
+    readSnapshot({ ...RAW, members: [{ ...maya, ...member }], ...extra })!;
+
+  it('[PTS-04] reads what a child can spend, their requests and their weekly limits', () => {
+    const s = read({
+      available: 5,
+      requests: [
+        {
+          id: 'q1',
+          item_id: 'r1',
+          title: 'Movie night',
+          icon: 'ticket',
+          cost: 30,
+          status: 'requested',
+          at: '2026-10-09T13:00:00Z',
+        },
+        { id: 'q2', item_id: 'r2', title: 'Kite', cost: 5, status: 'lost', at: 'x' },
+      ],
+      limited: ['r2', 7],
+    });
+    expect(s.members[0]).toMatchObject({
+      available: 5,
+      requests: [
+        {
+          id: 'q1',
+          itemId: 'r1',
+          title: 'Movie night',
+          icon: 'ticket',
+          cost: 30,
+          status: 'requested',
+          at: '2026-10-09T13:00:00Z',
+        },
+      ],
+      limited: ['r2'],
+    });
+  });
+
+  it('[PTS-03] reads how many of a reward are left and its photo; a wish has neither', () => {
+    const s = read(
+      {},
+      {
+        shop: [
+          {
+            id: 'r1',
+            title: 'Movie night',
+            icon: 'ticket',
+            cost: 100,
+            photo: 'h/r1/a.jpg',
+            left: 2,
+          },
+          { id: 'r2', title: 'Kite', icon: 'star', cost: 15, photo: null, left: null },
+        ],
+      },
+    );
+    expect(s.shop).toEqual([
+      { id: 'r1', title: 'Movie night', icon: 'ticket', cost: 100, photo: 'h/r1/a.jpg', left: 2 },
+      { id: 'r2', title: 'Kite', icon: 'star', cost: 15, photo: null, left: null },
+    ]);
+    expect(s.members[0]!.wish).toEqual({
+      id: 'r1',
+      title: 'Movie night',
+      icon: 'ticket',
+      cost: 100,
+    });
+  });
+
+  it('[RWD-07] reads the goals in play with each rule; leaves out what it cannot draw', () => {
+    const s = read(
+      {},
+      {
+        goals: [
+          {
+            id: 'g1',
+            member_id: 'm1',
+            title: 'Zoo trip',
+            icon: 'star',
+            photo: null,
+            status: 'achieved',
+            n: 2,
+            achieved_at: '2026-10-09T13:00:00Z',
+            celebrate: true,
+            end_date: '2026-10-20',
+            logic: 'any',
+            pct: 100,
+            rules: [
+              {
+                id: 'r1',
+                type: 'STREAK',
+                target: 5,
+                current: 5,
+                pct: 100,
+                met: true,
+                streak: 5,
+                best: 5,
+              },
+              { id: 'r2', type: 'MAGIC', target: 1 },
+            ],
+          },
+          { id: 'g2', member_id: null, title: 'Old', icon: 'star', status: 'redeemed', rules: [] },
+          { id: 'g3', member_id: null, title: 'Pizza night', status: 'active', logic: 'all' },
+        ],
+      },
+    );
+    expect(s.goals).toEqual([
+      {
+        id: 'g1',
+        memberId: 'm1',
+        title: 'Zoo trip',
+        icon: 'star',
+        photo: null,
+        status: 'achieved',
+        n: 2,
+        achievedAt: '2026-10-09T13:00:00Z',
+        celebrate: true,
+        endDate: '2026-10-20',
+        logic: 'any',
+        pct: 100,
+        rules: [
+          {
+            id: 'r1',
+            type: 'STREAK',
+            target: 5,
+            current: 5,
+            pct: 100,
+            met: true,
+            streak: 5,
+            best: 5,
+          },
+        ],
+      },
+      {
+        id: 'g3',
+        memberId: null,
+        title: 'Pizza night',
+        icon: 'trophy',
+        photo: null,
+        status: 'active',
+        n: 0,
+        achievedAt: null,
+        celebrate: false,
+        endDate: null,
+        logic: 'all',
+        pct: 0,
+        rules: [],
+      },
+    ]);
+  });
+});
+
 describe('notify, then refetch', () => {
   it('[DEV-05] listens to every board-readable table, filtered to this board', () => {
     expect(boardTables('h1', 'd1')).toEqual([
@@ -243,6 +402,11 @@ describe('notify, then refetch', () => {
       { table: 'chore', filter: 'household_id=eq.h1' },
       { table: 'streak_segment', filter: 'household_id=eq.h1' },
       { table: 'wishlist_pin', filter: 'household_id=eq.h1' },
+      { table: 'reward_catalog_item', filter: 'household_id=eq.h1' },
+      { table: 'redemption', filter: 'household_id=eq.h1' },
+      { table: 'reward_goal', filter: 'household_id=eq.h1' },
+      { table: 'reward_goal_progress', filter: 'household_id=eq.h1' },
+      { table: 'reward_rule_progress', filter: 'household_id=eq.h1' },
     ]);
   });
 

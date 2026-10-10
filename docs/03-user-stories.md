@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.21: US-403, US-404, US-1102, US-1104 and US-1105 as built on the board (WP-20, D-59): goals with a meter per rule, the run now and the best for a streak, and a nudge naming a goal nearly reached, on a child's own screen (there is no separate Goals screen; the family's goals sit under everyone's day); a reached goal celebrated full-screen once; the shop, "Ask for this" with a second tap to be sure, the request pending at once, called off while it waits, and the parent's answer live. Goal progress shows as the server last worked it out.
 > v0.8.19: US-1107 and US-1108 as built (WP-30, D-57): bonus rules on the Rewards page, paid by day close from the stored history; the wish card and picker on a child's own screen. Asking for the wish from the board comes with WP-20's shop.
 > v0.8.18: US-401, US-405, US-407 and US-406's log (`rules_changed`, then `recomputed` with the progress before and after) as built in the admin app and the database (WP-19, D-56); the preview of a rule change is WP-39; the board's goal meter, nudge and celebration (US-403, US-404) come with WP-20.
 > v0.8.17: US-408 as built (WP-17, D-55): Insights for a member over 7, 30 or 90 days, history rebuilt from every check-off, and the board's streak flame.
