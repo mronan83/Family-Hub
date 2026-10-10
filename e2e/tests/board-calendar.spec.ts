@@ -190,9 +190,16 @@ test('[US-507] ticked again, School is back in its own color, with its person', 
   await form.getByRole('button', { name: 'Save calendars' }).click();
   const school = todayColumn().locator('.fw-bcal__event[data-calendar="School e2e"]');
   await expect(school).toContainText('Picture day e2e', { timeout: 3_000 });
-  expect(await school.evaluate((el) => getComputedStyle(el).getPropertyValue('--cal').trim())).toBe(
-    'var(--member-3)',
-  );
+  // The browser gives a custom property's value with var() resolved: School's color is member-3's.
+  const color = await school.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return {
+      cal: style.getPropertyValue('--cal').trim(),
+      own: style.getPropertyValue('--member-3').trim(),
+    };
+  });
+  expect(color.cal).not.toBe('');
+  expect(color.cal).toBe(color.own);
   await expect(school.getByRole('img', { name: 'Maya' })).toBeVisible();
 });
 
