@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.33: WP-15 in review (PR #29): the rules engine (D-51). WP-17 follows it.
 > v0.8.32: WP-11 done (PR #28): the board's Today and check-off. The owner confirmed D-50: the board never shows why points were taken away. WP-12, WP-13 and WP-18 are ready; WP-12 and WP-18 were ready from WP-16's merge but not marked so.
 > v0.8.31: WP-11 in review (PR #28): the board's Today and check-off (D-50).
 > v0.8.30: WP-16 done (PR #27): the points ledger. WP-11 is ready.
@@ -101,7 +102,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Ready |
 | WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | Ready |
 | WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
-| WP-15 | Rules engine package | P1b | L | WP-01 | Ready |
+| WP-15 | Rules engine package | P1b | L | WP-01 | In review (PR #29) |
 | WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Queued |
 | WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Ready |
 | WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Queued |
@@ -488,6 +489,11 @@ flowchart LR
 - `packages/rules-engine`: `evaluateGoal` and `evaluateHistory` per `02` §5 over per-member facts (`covered` is neutral; day classes use routines only; scope by tag ids); pure, no clock or I/O.
 - Property tests with `fast-check` (event orderings, DST, replay) and at least 90% coverage.
 - **Done when:** the coverage gate is green and the documented edge cases in `02` §5 each have a named test.
+- As built (D-51):
+  - `evaluateGoal` and `evaluateHistory` per `02` §5 as built, with `ENGINE_VERSION` for the derived rows. The engine is pure: no clock, no I/O, no Node APIs (the package has no Node types).
+  - Today counts as good as soon as everything due today is done, and is never bad. A day waiting for a parent stays open.
+  - A streak goal's target stays met once reached, while those days stay done.
+  - 62 Vitest tests: a named test per edge case, and nine fast-check properties (order, time zone and daylight saving, replay, runs against an independent reading, goal streaks against history, monotone progress, neutral facts, bounds). Coverage is 100% of lines and 96.7% of branches. Seventeen deliberate breaks are each caught.
 
 ### WP-17 — Streak history and insights
 **Phase:** P1b · **Size:** M · **Depends on:** WP-10, WP-15 · **Reqs:** RWD-11, RWD-12
