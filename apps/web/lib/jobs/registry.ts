@@ -52,12 +52,24 @@ export const JOBS: Record<string, Job> = {
   // [CHR-07] Day close (WP-10): once the household's local day has ended, its routines are finalized
   // and those not done become missed; tasks carry over (D-31). Catches up every earlier day at once,
   // and repeating it changes nothing. [RWD-11] Then (WP-17) each member whose occurrences changed has
-  // their history rebuilt through yesterday by the rules engine (D-55).
+  // their history rebuilt through yesterday by the rules engine (D-55). [PTS-05] Last (WP-30), the
+  // household's bonus rules are applied to that history; each bonus is posted once (D-57).
   async day_close({ db, householdId }) {
     const { data, error } = await db.rpc('close_household_day', { p_household_id: householdId });
     if (error) throw new Error(`close the day: ${error.message}`);
     const history = await rebuildHistories(db, householdId);
-    return { status: 'ok', stats: { ...(data as Record<string, unknown>), history } };
+    const { data: bonuses, error: bError } = await db.rpc('apply_points_rules', {
+      p_household: householdId,
+    });
+    if (bError) throw new Error(`apply bonus rules: ${bError.message}`);
+    return {
+      status: 'ok',
+      stats: {
+        ...(data as Record<string, unknown>),
+        history,
+        bonuses: bonuses as { posted: number },
+      },
+    };
   },
 
   // [NFR-06] The nightly check (WP-10): re-folds the last 14 days of events and compares them with

@@ -246,6 +246,12 @@ select '0de00000-0000-4000-8000-0000000f0001', m.household_id, m.id, '0de00000-0
   from public.member m
  where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Leo';
 
+-- [PTS-06] The wishlist (WP-30): Maya is saving for Movie night; Leo hasn't chosen yet.
+insert into public.wishlist_pin (member_id, household_id, catalog_item_id, pinned_by_type)
+select m.id, m.household_id, '0de00000-0000-4000-8000-0000000e0001', 'admin'
+  from public.member m
+ where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Maya';
+
 -- Goals (WP-19): Leo's "Movie night" (19 things done since last week: he has done 18, so one more
 -- today reaches it), Maya's "Trip to the park" (5 good days in a row, a miss a week forgiven) and the
 -- family's "Pizza night" (10 days with every routine done). They started a week ago; the engine works

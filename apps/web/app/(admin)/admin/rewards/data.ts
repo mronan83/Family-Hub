@@ -1,9 +1,10 @@
 import type { IconName } from '@familywise/ui';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { BonusRule, BonusRuleType } from '@/lib/bonus';
 import type { RedemptionStatus } from '@/lib/rewards';
 
 // The rewards shop (WP-18), read through RLS as the admin. Photos are private: each comes with a
-// signed link that lasts an hour.
+// signed link that lasts an hour. Also the bonus rules and what each child is saving for (WP-30).
 
 /** The icons a reward can take (06 §5), gift first. */
 export const REWARD_ICONS: IconName[] = [
@@ -145,4 +146,55 @@ export async function loadRedemptions(
     cancelledAt: r.cancelled_at,
     note: r.note,
   }));
+}
+
+/** [PTS-05] The household's bonus rules, the ones still in use first, oldest first. */
+export async function loadBonusRules(
+  db: SupabaseClient,
+  householdId: string,
+): Promise<BonusRule[]> {
+  const { data, error } = await db
+    .from('points_rule')
+    .select('id, rule_type, streak_days, bonus_points, counts_from, active, archived_at')
+    .eq('household_id', householdId)
+    .order('created_at')
+    .order('id');
+  if (error) throw new Error(`bonus rules: ${error.message}`);
+  return (
+    data as {
+      id: string;
+      rule_type: BonusRuleType;
+      streak_days: number | null;
+      bonus_points: number;
+      counts_from: string;
+      active: boolean;
+      archived_at: string | null;
+    }[]
+  ).map((r) => ({
+    id: r.id,
+    ruleType: r.rule_type,
+    streakDays: r.streak_days,
+    bonusPoints: r.bonus_points,
+    countsFrom: r.counts_from,
+    active: r.active,
+    archivedAt: r.archived_at,
+  }));
+}
+
+/** [PTS-06] What each child is saving for: member id to reward id. */
+export async function loadWishes(
+  db: SupabaseClient,
+  householdId: string,
+): Promise<Map<string, string>> {
+  const { data, error } = await db
+    .from('wishlist_pin')
+    .select('member_id, catalog_item_id')
+    .eq('household_id', householdId);
+  if (error) throw new Error(`wishes: ${error.message}`);
+  return new Map(
+    (data as { member_id: string; catalog_item_id: string }[]).map((w) => [
+      w.member_id,
+      w.catalog_item_id,
+    ]),
+  );
 }

@@ -9,7 +9,7 @@ import { HealthLines } from '../../(board)/board/health-lines';
 import { useMinute } from '../../(board)/board/use-minute';
 import { useOnline } from '../../(board)/board/use-online';
 import { type QueueState, Today } from '../../(board)/board/today';
-import { fixturePost, fixtureSnapshot, TZ } from './fixture';
+import { fixturePin, fixturePost, fixtureSnapshot, TZ } from './fixture';
 
 /**
  * The board's Today with a made-up family and a stand-in for the server (WP-11 UI suite). Like a
@@ -26,6 +26,7 @@ export function DevBoard({ theme, stale, jobs }: { theme: Theme; stale: boolean;
     return stale ? { ...s, fetchedAt: new Date(opened.getTime() - 12 * 60_000).toISOString() } : s;
   }, [opened, stale]);
   const post = useMemo(() => fixturePost(snapshot), [snapshot]);
+  const pinWish = useMemo(() => fixturePin(snapshot), [snapshot]);
   const [store] = useState(() =>
     typeof window === 'undefined'
       ? null
@@ -55,7 +56,14 @@ export function DevBoard({ theme, stale, jobs }: { theme: Theme; stale: boolean;
           <HealthLines offline={health.offline} stale={health.stale} />
         </div>
       </header>
-      <Today snapshot={snapshot} now={now} post={post} store={store} onQueue={setQueue} />
+      <Today
+        snapshot={snapshot}
+        now={now}
+        post={post}
+        store={store}
+        onQueue={setQueue}
+        pinWish={pinWish}
+      />
       <footer className="fw-board__foot">{snapshot.device.name}</footer>
     </main>
   );

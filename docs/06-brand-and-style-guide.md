@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.7 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19)
+> Version 1.8 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30)
+> v1.8: the wish card and picker on a child's own screen (the goal meter labelled "Saved", "N more points to go", a sparkle and "You have enough! Ask a grown-up for it."), and the Rewards page's bonus rules with `flame` and `sparkles` (§7.2, §7.3, WP-30).
 > v1.7: goals in the admin app (WP-19): a card per goal with a meter per rule; its state in a pill (Achieved in the reward colour with a trophy, Going in the primary tint, Starts later outlined), never colour alone; "Needs a look" in the missed colour with a warning icon; a file picker shrinks with a phone's column.
 > v1.6: the streak flame as built: tiers at 3, 7, 14 and 30 days, a glow on reaching one; the Insights heatmap marks each day with an icon as well as a colour (§7.2, WP-17).
 > v1.5: the board's offline and stale lines sit in its bar as pills; a balance not yet saved while offline is provisional: dashed plum ring and `wifi-off` (§7.2, WP-13).
@@ -198,6 +199,7 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 - **Points chip:** Sun pill with `star`, Nunito 800, minimum height 56. Negative balance: Plum pill, "−5 to earn back". Provisional (offline, counting check-offs not yet saved): a dashed Plum ring and a small `wifi-off`, "Not saved yet" for screen readers.
 - **Streak flame:** `flame` plus count; one flame size per milestone tier, no animation unless a milestone was just reached. As built: Sun text beside the name, flame 36 px below 3 days, then 40, 48, 52 and 56 px at 3, 7, 14 and 30; the glow is a 1.4 s scale of the flame (none with reduced motion). In admin Insights a day is Teal with `check` (good), Plum with `close` (bad), Sun with `hourglass` (waiting) or dotted (nothing counted).
 - **Goal meter:** 28 px tall pill, teal-to-sun fill, percentage label always visible, never color-only.
+- **Wish card (WP-30):** in the side column of a child's own screen, under Points: "Saving for", the reward's icon and title (Nunito 800, heading size), the goal meter labelled "Saved" ("42 of 100 · 42%"), then "58 more points to go." in soft text, or with enough a `sparkles` and "You have enough! Ask a grown-up for it." in Teal text. "Choose a wish" (primary, `gift`) or "Change" (secondary, `edit`), 56 px; while offline the button is disabled and a line says choosing needs the internet. The picker is the who-did-it dialog's sibling: the shop's rewards as 56 px option cards two to a row (icon, title, cost chip; the pinned one Teal-tinted with `check-circle`), "No wish" (`minus-circle`) when one is pinned, and Cancel; Escape cancels.
 - **Shop card:** 280 px wide, image on tint, title, cost chip with `ticket`, one "Ask" button. Unaffordable items stay visible with "Need 40 more".
 - **Banners:** `hourglass` for stale, `wifi-off` for offline. Sun tint and Plum tint respectively; never red; never cover chores. On the board they are pills in the bar under the clock: "Offline: your check-offs are saved", "Updated 12 minutes ago", "Today's list may be out of date"; not a second live region.
 - **Buttons:** primary (teal, white text), secondary (teal tint), ghost (line border). Minimum height 56, label Nunito 800, always icon + word on the board.
@@ -207,6 +209,7 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 - Approval queue is a badge on Chores, not a modal.
 - Insights uses the trust panel and heatmap; heatmap cells use Teal (good), Plum (missed), empty (neutral), plus a text legend.
 - Destructive actions: ghost button, confirm dialog stating the consequence ("This reverses 4 chores and 20 points").
+- Bonus rules (WP-30) on the Rewards page: each rule as a sentence ("20 points for 7 good days in a row", "5 points for each day with everything done") on a Sun-tint tile with `flame` or `sparkles`, then when it counts from and "off" when paused; Turn off / Turn on and Archive as ghost buttons; "Add a bonus" folded under a disclosure. Each reward says who is saving for it, with `target`.
 
 ---
 

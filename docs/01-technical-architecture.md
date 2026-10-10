@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.28: bonus rules and the wishlist (WP-30, D-57): day close applies a parent's bonus rules to the stored history and posts each bonus once; `POST /api/wishes` for the board; the board's wish card (§5.6, §5.7, §5.8, §7).
 > v0.8.27: goals (WP-19, D-56): the progress pipeline as built: the rules engine evaluates goals in `progress_reconcile` (every 5 minutes, minutes 1, 6, 11 …), right after a check-off where the job's key is present, and on the Goals page before it reads; each status change is applied once (§5.2, §5.6).
 > v0.8.26: streak history and insights (WP-17, D-55): day close stores each member's days and runs from the rules engine, the Insights page, and the board's streak flame (§5.8, §7).
 > v0.8.25: the board through an outage (WP-13, D-54): its outbox, last snapshot and check-offs in IndexedDB; the service worker keeps its page and build files; offline and stale lines; provisional points (§5.3, §7).
@@ -348,7 +349,7 @@ sequenceDiagram
 | `calendar_sync` | every 15 min per source, each source on its own minute | `/api/jobs/calendar-sync` | one source per invocation; advisory lock per source |
 | `menu_import` | daily | `/api/jobs/menu-import` | window 28 days ahead; skips override rows |
 | `occurrence_gen` | hourly (minute 23); edits re-plan at once in the database | `/api/jobs/occurrence-gen` | calls `generate_household_occurrences()`: tomorrow to 14 days ahead, one occurrence per item per due date, or per person for an item where everyone does their own (D-47) (`UNIQUE NULLS NOT DISTINCT (chore_id, due_date, member_id)` + `ON CONFLICT DO NOTHING`) with its `chore_occurrence_assignee` snapshot; idempotent. Triggers re-plan on edits (D-45): an item, its assignees or a member from today, in place; a school year, closure or school profile from tomorrow (D-24) |
-| `day_close` | hourly (minute 4; acts once a household's local day has ended) | `/api/jobs/day-close` | `close_household_day()` → `close_past_due()` marks unresolved routines `missed` and stamps `finalized_at` (tasks stay open, D-31); catches up every earlier day; idempotent (WP-10). Writing `member_daily_summary` and rebuilding `streak_segment` join it with WP-17 |
+| `day_close` | hourly (minute 4; acts once a household's local day has ended) | `/api/jobs/day-close` | `close_household_day()` → `close_past_due()` marks unresolved routines `missed` and stamps `finalized_at` (tasks stay open, D-31); catches up every earlier day; idempotent (WP-10). Writing `member_daily_summary` and rebuilding `streak_segment` join it with WP-17; then the household's bonus rules are applied (`apply_points_rules()`, WP-30, D-57) |
 | `status_check` | daily 09:38 UTC | `/api/jobs/status-check` | `occurrence_status_drift()`: re-folds the past 14 days and the planned 14 ahead, and checks that each member holds exactly the points each of those occurrences owes them (WP-16), report-only; any drift fails the run, so System Health shows it (NFR-06, WP-10) |
 | `reminders` | every 5 min (minutes 0, 5, 10 …) | `/api/jobs/reminders` | household-local schedule; skips done items and people, items or devices with reminders off; inserts `reminder_delivery` (dedupe key) before sending; holds during quiet hours; daily digest at each person's chosen time |
 | `progress_reconcile` | every 5 min (minutes 1, 6, 11 …) | `/api/jobs/progress-reconcile` | recompute dirty goals; apply time-based transitions (scheduled→active, active→expired at household-local midnight); post goal payouts and points bonus rules idempotently; nightly full recompute. **As built (WP-19):** evaluates each goal that is dirty, never computed, computed by another engine or for older rules, due to start or end, or (an open goal) not yet evaluated today, which is the nightly recompute; a goal that fails stays dirty and fails the run. Payouts join with WP-39, bonus rules with WP-30 |
@@ -424,6 +425,8 @@ sequenceDiagram
 
 **As built (WP-18, D-53).** `POST /api/redemptions` takes `{id, member_id, item_id}` (JSON only) and calls `request_redemption()` as the caller. It answers 200 with the request (asking again with the same id answers the same), 409 with the reason when the shop's rules refuse it (`not_enough_points`, `out_of_stock`, `weekly_limit`, `not_earning`), 403 or 404 otherwise. `POST /api/redemptions/cancel` cancels a request still waiting. A parent approves, says not this time, marks given or cancels (refunding) on the Rewards page, through `decide_redemption()`, `fulfil_redemption()` and `cancel_redemption()`. Reward photos live in Supabase Storage (`rewards` bucket, private, one folder per household under its RLS). The admin app uploads them as the parent and shows them through signed links. Two requests at once are tested with real concurrent sessions (`scripts/redemption-race.sh`, run by `db:test`).
 
+**Wishlist (WP-30, D-57).** `POST /api/wishes` takes `{member_id, item_id}` (JSON only; `item_id` null takes the wish off) and calls `pin_wish()` as the board: 200 with the pin, 409 `not_earning` for someone who doesn't earn rewards, 404 `not_in_shop` for a reward not offered now, 403 or 400 otherwise. Pinning the same again changes nothing. It is not queued in the outbox: choosing a wish needs the network, and the board says so while offline.
+
 Approval (when switched on) is the control point: parents verify chores **before** points are spent. If a completion is unchecked after points were already spent, the reversal still posts (truth wins), the balance may go below zero, and it is shown as points to earn back. Goal achievement and payouts are likewise derived and reversible: if a reversal drops a goal below its target, the goal returns to `active` and any points payout is reversed (see `02` §5). A cancelled approved redemption posts a `refund`.
 
 ### 5.8 Day close (CHR-07, RWD-11)
@@ -448,6 +451,8 @@ sequenceDiagram
 ```
 
 **As built (WP-17, D-55).** A trigger on `chore_occurrence` marks every member an occurrence concerns (its assignees and whoever did it) when its status, credit or finalization changes, so a late credit or an uncheck of a closed day marks them too. After `close_household_day()`, the job lists the marked members (`history_dirty_members()`, also any whose rows an older `ENGINE_VERSION` made) and for each runs `lib/history.ts`: `member_history_facts()` reads all their facts through yesterday (every item, private ones included), `evaluateHistory` makes the days and runs through yesterday, judged as of today (so a miss yesterday is a bad day, not an open one), and `save_member_history()` replaces what was stored, leaving a row that didn't change as it was and clearing the mark unless it was made after the read. A parent's Insights page does the same for a marked member before it reads (`member_history_stale()`), so it is never behind, and so a preview, which holds no job secret, shows it too. Goals are WP-19's.
+
+**Bonus rules (WP-30, D-57).** After the histories, the job calls `apply_points_rules()` for the household: each active rule is applied to the stored history of every member who earns rewards. A streak bonus pays for each good run (`streak_segment`) that reached its length on or after the rule's counts-from date, keyed by the run's first day; a perfect-day bonus pays for each good day (`member_daily_summary`) on or after it, keyed by the day. Each goes through `private.post_points_rule_bonus()` to the ledger's one writer with the dedupe key `rule:{rule}:{member}:{key}`, so a rerun, a replay or a parent's "Pay bonuses now" (which first rebuilds any stale history, as day close does) posts nothing twice. A bonus paid is never taken back.
 
 ### 5.9 Reminders (CHR-15, CHR-16, CHR-17)
 
@@ -519,7 +524,7 @@ sequenceDiagram
 | Principal | AuthN | Reads | Writes |
 |---|---|---|---|
 | Admin | Supabase Auth: email magic link or email + password (ACC-02); Sign in with Apple or passkey later (ACC-06). Accounts only from a setup code or an invite (D-39) | all rows of own household, except another admin's private items (D-34) | config tables via server actions under the user's session (RLS enforced) |
-| Board device | Its own Supabase Auth user (`app_metadata.role=device`), created by `redeem_pairing_code`; signs itself in again with the credential it keeps (D-40) | family-visible board tables of own household while `device.status='active'` | none direct; `POST /api/completions` (with `done_by`) and `POST /api/redemptions` only |
+| Board device | Its own Supabase Auth user (`app_metadata.role=device`), created by `redeem_pairing_code`; signs itself in again with the credential it keeps (D-40) | family-visible board tables of own household while `device.status='active'` | none direct; `POST /api/completions` (with `done_by`), `POST /api/redemptions` and `POST /api/wishes` only |
 | Jobs | Signed bearer secret + service role | all | derived tables, instances, menu rows |
 | Child | not a principal | n/a | acts only through the device |
 
@@ -582,6 +587,7 @@ sequenceDiagram
 - Points shown offline are projected locally (balance + pending earns); the server ledger is authoritative on rebase.
 - `RULES` is isomorphic: the board projects goal progress locally so the meter moves instantly even offline; the server result is authoritative on rebase.
 - **Streak flame (WP-17, D-55):** the snapshot carries each earner's run as of the last closed day (`streak_segment`); the board adds today with `evaluateHistory` over today's items once today is good (`lib/streak.ts`). `streak_segment` is in Realtime, so the flame follows day close.
+- **Wish (WP-30, D-57):** the snapshot carries the shop (active rewards: id, title, icon, cost) and each earner's `wish` (a pinned reward still in the shop, else null); the meter is the board's balance (provisional points included) against its cost. The board lays its own pick over the snapshot until the snapshot shows it, and puts it back if the server refuses. `wishlist_pin` is in Realtime.
 - Stale indicator: subtle icon when `now - fetched_at > 5 min` or realtime is disconnected; calendar-specific stale badge when the source's last success is older than 3 sync intervals.
 
 **As built (WP-13, D-54).**

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import type { BonusRule } from '@/lib/bonus';
 import type { RedemptionRow, RewardRow } from '../../(admin)/admin/rewards/data';
 import { RewardsView } from '../../(admin)/admin/rewards/view';
 
 // The rewards shop for a parent (WP-18) with a made-up family and no database, for the UI suite: the
-// page's layout on a phone and a laptop, in Day and Evening (?theme=evening).
+// page's layout on a phone and a laptop, in Day and Evening (?theme=evening). With bonus rules and
+// who is saving for what (WP-30).
 export const metadata: Metadata = { title: 'Rewards', robots: { index: false } };
 
 const MAYA = 'f1000000-0000-4000-8000-000000000001';
@@ -39,6 +41,36 @@ const ask = (
   note: null,
   ...o,
 });
+
+const BONUSES: BonusRule[] = [
+  {
+    id: 'b1',
+    ruleType: 'streak_bonus',
+    streakDays: 7,
+    bonusPoints: 20,
+    countsFrom: '2026-10-01',
+    active: true,
+    archivedAt: null,
+  },
+  {
+    id: 'b2',
+    ruleType: 'all_done_bonus',
+    streakDays: null,
+    bonusPoints: 5,
+    countsFrom: '2026-10-05',
+    active: false,
+    archivedAt: null,
+  },
+  {
+    id: 'b3',
+    ruleType: 'streak_bonus',
+    streakDays: 3,
+    bonusPoints: 2,
+    countsFrom: '2026-09-01',
+    active: false,
+    archivedAt: '2026-09-30T00:00:00Z',
+  },
+];
 
 export default async function DevRewardsPage({
   searchParams,
@@ -83,6 +115,9 @@ export default async function DevRewardsPage({
           ])
         }
         timezone="America/New_York"
+        today="2026-10-10"
+        bonusRules={BONUSES}
+        wishes={new Map([[MAYA, 'r1']])}
         notice="Approved. The points are spent."
         error={null}
       />
