@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.36: WP-12 done (PR #30): a parent's day and My tasks. WP-40 is ready.
 > v0.8.35: WP-12 in review (PR #30): a parent's day and My tasks (D-52).
 > v0.8.34: WP-15 done (PR #29): the rules engine. WP-17 and WP-19 are ready.
 > v0.8.33: WP-15 in review (PR #29): the rules engine (D-51). WP-17 follows it.
@@ -101,7 +102,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-43 | Everyone does their own | P1a | M | WP-10 | Done (PR #25) |
 | WP-16 | Points ledger | P1a | M | WP-10 | Done (PR #27) |
 | WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37, WP-43 | Done (PR #28) |
-| WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | In review (PR #30) |
+| WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Done (PR #30) |
 | WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | Ready |
 | WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
 | WP-15 | Rules engine package | P1b | L | WP-01 | Done (PR #29) |
@@ -120,7 +121,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Queued |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Queued |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Queued |
-| WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Queued |
+| WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Ready |
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
 | WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
