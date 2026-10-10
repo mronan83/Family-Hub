@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.38: WP-18 done (PR #31): the rewards shop. WP-39 and WP-20 wait on WP-19 too.
 > v0.8.37: WP-18 in review (PR #31): the rewards shop (D-53).
 > v0.8.36: WP-12 done (PR #30): a parent's day and My tasks. WP-40 is ready.
 > v0.8.35: WP-12 in review (PR #30): a parent's day and My tasks (D-52).
@@ -108,7 +109,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
 | WP-15 | Rules engine package | P1b | L | WP-01 | Done (PR #29) |
 | WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Ready |
-| WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | In review (PR #31) |
+| WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Done (PR #31) |
 | WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Ready |
 | WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Queued |
 | WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Queued |
