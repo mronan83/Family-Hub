@@ -1,6 +1,7 @@
 import { ENGINE_VERSION } from '@familywise/rules-engine';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { isoDay } from '../format';
+import { runCalendarSync } from '../calendar/sync';
 import { evaluateHouseholdGoals } from '../goals';
 import { dayBefore, rebuildMemberHistory } from '../history';
 import { log } from '../log';
@@ -22,7 +23,7 @@ export type Job = (ctx: JobContext) => Promise<JobResult>;
 
 /**
  * Every job the endpoint runs, keyed by its schedule name (schedule.json; a test keeps the two in
- * step). Later work packages add calendar_sync and the rest.
+ * step). Later work packages add the rest.
  */
 export const JOBS: Record<string, Job> = {
   // [NFR-07] Sample job (WP-07): proves the path end to end and reports how late pg_cron's call
@@ -84,6 +85,15 @@ export const JOBS: Record<string, Job> = {
       new Date(),
       vapid ? webPushSender(vapid) : null,
     );
+    return { status: 'ok', stats: { ...stats } };
+  },
+
+  // [CAL-02][CAL-06] Calendar sync (WP-22, D-63), every 15 minutes: each of the household's calendars
+  // due is fetched, expanded over its window and stored, one at a time. A calendar whose link fails
+  // keeps its last good events and shows its error on Calendars; the run fails only when the job
+  // itself can't work, so a broken link doesn't log a server error every 15 minutes.
+  async calendar_sync({ db, householdId }) {
+    const stats = await runCalendarSync(db, householdId);
     return { status: 'ok', stats: { ...stats } };
   },
 

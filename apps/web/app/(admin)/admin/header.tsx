@@ -13,6 +13,7 @@ const LINKS = [
   { href: '/admin/goals', label: 'Goals' },
   { href: '/admin/insights', label: 'Insights' },
   { href: '/admin/school', label: 'School' },
+  { href: '/admin/calendars', label: 'Calendars' },
   { href: '/admin/devices', label: 'Boards' },
   { href: '/admin/health', label: 'Health' },
 ] as const;

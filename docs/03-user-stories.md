@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.23: US-501 and US-505 as built (WP-22, D-63): saving a link syncs it at once and Calendars lists what's coming up, or what's wrong with the link; a calendar that can't sync says what to do, keeps its last good events and is named on System Health.
 > v0.8.22: US-104 and US-316: a parent whose sign-in isn't linked links it to themselves in one tap from My tasks, Reminders or their page on Members; a Child record says only an adult can have a sign-in (D-61).
 > v0.8.21: US-403, US-404, US-1102, US-1104 and US-1105 as built on the board (WP-20, D-59): goals with a meter per rule, the run now and the best for a streak, and a nudge naming a goal nearly reached, on a child's own screen (there is no separate Goals screen; the family's goals sit under everyone's day); a reached goal celebrated full-screen once; the shop, "Ask for this" with a second tap to be sure, the request pending at once, called off while it waits, and the parent's answer live. Goal progress shows as the server last worked it out.
 > v0.8.20: US-317, US-318 and US-319 as built (WP-40, D-58): the Reminders page, the bell in My tasks, an item's lead time in its editor, and the reminders job; a test notification works on the live app once its keys are set.
@@ -391,6 +392,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** CAL-01, CAL-03
 - Given I paste a published ICS URL, when I save, then the URL is stored only in Vault, a first sync runs, and events appear.
 - Given any UI surface, when I look for event create/edit controls, then none exist for synced calendars.
+- Given I add a calendar or replace its link, when I save, then it syncs at once and Calendars shows what's coming up, or what's wrong with the link; the link is never shown again (D-63).
 
 ### US-502 — Events stay fresh and correct
 **As an** admin **I want** calendars to refresh automatically and handle recurring events, all-day events, and DST correctly **so that** the board matches my phone.
@@ -424,6 +426,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** CAL-06
 - Given a sync fails, when I open Calendars, then I see the error and last success time, and the board still shows the last good events.
 - Given the link is fixed, when the next sync succeeds, then status returns to OK.
+- Given a calendar can't sync, when I open System Health, then it names that calendar; the background job itself still shows as running (D-63).
 
 ### US-506 — Use CalDAV with a safer credential
 **As an** admin **I want** CalDAV support with guidance on a secondary read-only Apple ID **so that** private calendars work without exposing my main account.

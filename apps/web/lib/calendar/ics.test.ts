@@ -16,6 +16,13 @@ describe('published calendar links', () => {
     );
     expect(icsUrl('https://example.com/a.ics').protocol).toBe('https:');
     expect(() => icsUrl('http://example.com/a.ics')).toThrow('https or webcal');
+    for (const local of [
+      'https://localhost/a.ics',
+      'https://10.0.0.1/a.ics',
+      'https://[::1]/a.ics',
+    ]) {
+      expect(() => icsUrl(local)).toThrow('name their server');
+    }
   });
 });
 

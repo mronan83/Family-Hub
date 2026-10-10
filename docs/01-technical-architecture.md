@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.35: calendar sync as built (WP-22, D-63): one call every 15 minutes syncs each household's calendars due; saving a link syncs it at once; a broken link is the calendar's own state, not a failing job (§5.4, §5.6, §6.4).
 > v0.8.34: e2e reliability: each spec retires the board it paired when it ends, so no board outlives its spec (§9.5).
 > v0.8.33: production's jobs leave the demo family alone (`household.is_demo`, D-62, §5.6, §9.5).
 > v0.8.32: a parent links their own sign-in to themselves from Reminders, My tasks or their page on Members (`link_my_member()`, D-61, §6.2).
@@ -289,34 +290,45 @@ sequenceDiagram
   participant I as iCloud
   participant D as DB
 
-  S->>C: POST /api/jobs/calendar-sync (signed)
-  C->>D: pick sources due, take per-source lock
-  loop each source (one invocation per source)
-    C->>V: read URL / credentials
+  S->>C: POST /api/jobs/calendar-sync (signed, every 15 min)
+  loop each household, then each of its calendars due
+    C->>D: calendar_sources_due(): the calendar, its zone, its last hash
+    D->>V: read the link (service role only)
     C->>I: fetch (iCloud always sends the whole file)
-    alt same ETag or body hash as last time
-      C->>D: touch last_synced_at
+    alt same hash as the last good sync (file, window's first day, zone)
+      C->>D: save_calendar_sync(unchanged): touch last_synced_at
     else changed
       C->>C: parse + expand recurrences (today-7d .. today+120d)
-      C->>D: upsert events, replace instances
+      C->>D: save_calendar_sync(): lock the calendar, upsert events, replace instances
+    else failed
+      C->>D: save_calendar_sync(failed): status and error only
     end
-    C->>D: job_run (ok | error), source health
   end
+  C->>D: job_run per household (ok unless the job itself can't work)
 ```
 
 On failure the last good instances remain; only `last_error` and the board's stale indicator change.
 
+**As built (WP-22, D-63).** `lib/calendar/sync.ts` and `lib/calendar/ics.ts`; the database side is `20261010100000_calendar_sync.sql` (`02` §3.4).
+
+- **Connecting.** Calendars (`/admin/calendars`) takes a name, the public link (`webcal://` or `https://`, a named host), a color, optionally whose calendar it is, and whether boards show it. `save_calendar_source()` writes the link to Vault (`familywise_calendar_<id>`) and keeps only its id; the portal never shows it again, and typing a new one replaces it. Removing a calendar deletes its events and, by trigger, its Vault secret (also when its household goes).
+- **Synced at once.** Saving a link syncs it straight away with the link just typed, as the admin (`save_calendar_sync()` accepts a household's admins as well as the job), so they see what's coming up or what's wrong now. Previews, which hold no secret key, do the same.
+- **The job.** `calendar_sync` every 15 minutes (minutes 3, 18, 33, 48): for each household, `calendar_sources_due()` (service role only) lists the calendars not tried for their interval less 3 minutes, least recently tried first, each with its link from Vault. Each is fetched (15 s at most, 5 MB at most), hashed with the window's first day and the household's zone, and skipped when the hash matches the last good sync; otherwise expanded and stored. `save_calendar_sync()` locks the calendar's row, upserts its events by (uid, recurrence id), deletes those no longer sent, replaces its instances, and refuses an instance whose event wasn't sent or more than 5,000 (nothing changes).
+- **What is kept.** Titles, times, all-day and which series or moved instance each instance belongs to; never places, notes, people, links or alarms (NFR-05). Timed instances are instants; all-day ones are household-local dates, and each instance carries its household-local first and last day. A series is expanded by its own times, so an instance moved months ahead doesn't end it early.
+- **When it fails.** The calendar records its error in words that say what to do ("The link answered 404 (Not Found): the calendar may no longer be public. Share it publicly again in Apple Calendar and replace the link.", "Couldn’t reach the link…", "…took more than 15 seconds…"), and keeps its last good events. Calendars shows it with the last good sync; System Health names each calendar that can't sync. The job's run stays `ok`: it fails only when it can't list or store, so a broken link isn't a server error every 15 minutes.
+- **Tests.** Unit (`ics.test.ts`, `sync.test.ts` on the made-up `family-sync.ics`: a weekly series over the November change with a moved, a far-moved, a deleted and a cancelled instance, a monthly rule, all-day with and without an end, a cancelled event, a UTC flight, personal fields, an old event), pgTAP `260_calendar_sync` (56), the UI suite on `/dev/calendars`, and e2e: Alex adds a calendar on the preview, then the job's own code runs on the e2e runner against a made-up calendar built around today (`calendar.spec.ts`).
+
 **What iCloud publishes (SPIKE-02, ICS part).** Measured on a real published family calendar with the `spike-02` workflow, which reports counts and checks only:
 
 - **Fetch.** A `webcal://` link is fetched over https from a `pNN-caldav.icloud.com` host, with no redirect, as `text/calendar; charset=UTF-8`. About 57 KB for a decade of events: 0.3–0.5 s the first time, about 0.1 s after.
-- **No conditional requests.** iCloud sends an `ETag`, stable while the calendar is unchanged and new when it changes. It ignores `If-None-Match` (a full 200 again) and sends no `Last-Modified`, `Cache-Control` or `X-PUBLISHED-TTL`. So every sync downloads the file, and the sync compares the ETag (or a hash of the body) with the last one to skip parsing and writing (`02` §3.1 `calendar_source.etag`).
+- **No conditional requests.** iCloud sends an `ETag`, stable while the calendar is unchanged and new when it changes. It ignores `If-None-Match` (a full 200 again) and sends no `Last-Modified`, `Cache-Control` or `X-PUBLISHED-TTL`. So every sync downloads the file, and compares a hash of it with the last good sync's to skip parsing and writing (`02` §3.4 `calendar_source.content_hash`; the ETag is kept for reference, D-63).
 - **The whole history.** Every event ever is in the file (12 years), with no `X-WR-TIMEZONE`. The sync parses it all and expands only its window; with ical.js that took 0.16 s for 101 events.
 - **Zones.** A `VTIMEZONE` comes for every zone used; a few events are in UTC; none are floating. The file's zones are registered before expanding (`lib/calendar/ics.ts`).
 - **Recurrence.**
   - Rules use `FREQ`, `INTERVAL`, `BYDAY` with ordinals (`2MO`) and `BYSETPOS`.
   - A moved instance is its own `VEVENT` with `RECURRENCE-ID`.
   - All expand correctly, and a weekly series keeps its local time across the November clock change.
-  - Deleted instances (`EXDATE`, per RFC 5545) were not in the calendar, so they are covered by a synthetic test until WP-22 sees one.
+  - Deleted instances (`EXDATE`, per RFC 5545) were not in the calendar, so they are covered by made-up fixtures (`synthetic.ics`, and WP-22's `family-sync.ics`).
 - **Personal fields.** Events carry `DESCRIPTION`, `LOCATION`, `URL`, `ORGANIZER`, `X-APPLE-STRUCTURED-LOCATION` and `X-APPLE-TRAVEL-START` (map coordinates).
   - The sync keeps only what the board shows: title, times, all-day, and the series identity (NFR-05).
   - Test fixtures are never made from a real calendar. `icloud-shape.ics` has iCloud's properties and rule kinds with made-up events.
@@ -352,7 +364,7 @@ sequenceDiagram
 |---|---|---|---|
 | `heartbeat` | hourly (minute 17) | `/api/jobs/heartbeat` | sample job (WP-07): counts members, reports how late the call arrived; reads only |
 | `purge_history` | daily 03:43 UTC (SQL, no call) | — | deletes cron run history after 7 days, `job_run` after 90, `private.app_error` after 30 |
-| `calendar_sync` | every 15 min per source, each source on its own minute | `/api/jobs/calendar-sync` | one source per invocation; advisory lock per source |
+| `calendar_sync` | every 15 min (minutes 3, 18, 33, 48) | `/api/jobs/calendar-sync` | each household's calendars due, one at a time (`calendar_sources_due()`); storing locks the calendar's row; a calendar whose link fails keeps its last good events and its own error, and the run stays `ok` (D-63, §5.4) |
 | `menu_import` | daily | `/api/jobs/menu-import` | window 28 days ahead; skips override rows |
 | `occurrence_gen` | hourly (minute 23); edits re-plan at once in the database | `/api/jobs/occurrence-gen` | calls `generate_household_occurrences()`: tomorrow to 14 days ahead, one occurrence per item per due date, or per person for an item where everyone does their own (D-47) (`UNIQUE NULLS NOT DISTINCT (chore_id, due_date, member_id)` + `ON CONFLICT DO NOTHING`) with its `chore_occurrence_assignee` snapshot; idempotent. Triggers re-plan on edits (D-45): an item, its assignees or a member from today, in place; a school year, closure or school profile from tomorrow (D-24) |
 | `day_close` | hourly (minute 4; acts once a household's local day has ended) | `/api/jobs/day-close` | `close_household_day()` → `close_past_due()` marks unresolved routines `missed` and stamps `finalized_at` (tasks stay open, D-31); catches up every earlier day; idempotent (WP-10). Writing `member_daily_summary` and rebuilding `streak_segment` join it with WP-17; then the household's bonus rules are applied (`apply_points_rules()`, WP-30, D-57) |
@@ -394,13 +406,13 @@ Production database (pg_cron 1.6.4, pg_net 0.20.4) calling a preview of the app 
 
 Hobby includes, per month: 1 000 000 invocations, 4 hours of Active CPU (billed only while code runs, not while waiting) and 360 GB-hours of provisioned memory (2 GB instances, billed from a request's start until the last request in flight ends; nothing between requests). Sustained use past them can pause the project, and a paused project resumes only by hand.
 
-| Resource | Jobs in the table above (4 calendar sources) | Share of Hobby |
+| Resource | Jobs in the table above | Share of Hobby |
 |---|---|---|
-| Invocations | about 30 300 a month (8 640 each for `reminders` and `progress_reconcile`, 11 520 for `calendar_sync`, 720 each hourly, 30 daily) | 3 % |
-| Active CPU | about 5 minutes a month if calls find a warm instance; 3.4 hours if every call started cold | 2 % warm, 84 % all cold |
-| Provisioned memory | 17 to 34 GB-hours a month at 1 to 2 s per call | 5 to 9 % |
+| Invocations | about 22 400 a month (8 640 each for `reminders` and `progress_reconcile`, 2 880 for `calendar_sync` however many calendars, 720 each hourly, 30 daily) | 2 % |
+| Active CPU | about 4 minutes a month if calls find a warm instance; 2.5 hours if every call started cold | 2 % warm, 63 % all cold |
+| Provisioned memory | 12 to 25 GB-hours a month at 1 to 2 s per call | 3 to 7 % |
 
-Cold starts are the only way jobs could matter: each 1 % of calls that start cold costs about 2 minutes of Active CPU a month. One minute per schedule, answering at once, and short work keep calls warm and sequential. The board and the admin app share the same allowances; launch check L-11 measures the whole app's use.
+Cold starts are the only way jobs could matter: each 1 % of calls that start cold costs about 1.5 minutes of Active CPU a month. One minute per schedule, answering at once, and short work keep calls warm and sequential. The board and the admin app share the same allowances; launch check L-11 measures the whole app's use.
 
 ### 5.7 Reward redemption (PTS-03, PTS-04)
 
@@ -562,7 +574,7 @@ sequenceDiagram
 
 ### 6.4 Secrets and calendar credentials
 
-- Calendar URLs/credentials live in `VAULT`; tables store only the secret ID.
+- Calendar URLs/credentials live in `VAULT`; tables store only the secret ID. As built (WP-22, D-63): an admin's `save_calendar_source()` writes a link to Vault, only the job's `calendar_sources_due()` (service role) reads it back, and it goes with its calendar or household (trigger). The admin portal never shows it again, and no table, audit row or log holds it.
 - **Default (MVP): published ICS link.** The URL is a bearer secret, so treat it like a password and store it in Vault.
 - **Web push (D-35):** a VAPID key pair; the public key ships to browsers and the private key is a server-only Vercel secret. Push subscriptions are stored per device, readable only by their owner and by the reminders job.
 - **Later (CAL-08): CalDAV.** An Apple app-specific password is **not scoped to one calendar**; it exposes the whole Apple ID's CalDAV data. Use a secondary Apple ID that is shared read-only on just the calendars the board needs, and generate the app-specific password on that account.

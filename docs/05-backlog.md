@@ -1,6 +1,8 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.55: WP-22 done (PR #41): ICS calendar sync. WP-23 and WP-29 are ready.
+> v0.8.54: WP-22 in review (PR #41): ICS calendar sync (D-63).
 > v0.8.53: e2e reliability done (PR #40): each spec retires its board; the bonus test checks the ledger first. No work package changes status.
 > v0.8.52: fix (D-62), done (PR #39): production's jobs leave the demo family alone. No work package changes status.
 > v0.8.51: fix (D-61), done (PR #38): a parent links their own sign-in from Reminders, My tasks or their page on Members. No work package changes status.
@@ -128,14 +130,14 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Done (PR #34) |
 | WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Ready |
 | WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Done (PR #37) |
-| WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Ready |
-| WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Queued |
+| WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Done (PR #41) |
+| WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Ready |
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
 | WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Ready |
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Queued |
 | WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Ready |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Queued |
-| WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Queued |
+| WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Ready (SPIKE-02's CalDAV part first) |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Done (PR #35) |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Ready |
 | WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Done (PR #36) |
@@ -612,6 +614,11 @@ flowchart LR
 - Calendar source CRUD with URL in Vault; sync job (one source per invocation, conditional fetch), parse with `ical.js`, expansion window, last-good retention, sync health surface.
 - Fixtures for recurrence across DST, all-day, cancelled and moved instances.
 - **Done when:** fixture-based sync matches expected instances; a broken URL leaves old data and shows an error.
+- As built (D-63):
+  - **Calendars** (`/admin/calendars`, in the header): add a calendar by its public link (name, color, whose, shown on the boards or not); each calendar's sync in words (Synced, Can't sync with what to do and the last good sync, Not synced yet) and its next five events; edit, replace the link (never shown again), remove. No event is added or changed anywhere (CAL-03).
+  - **Synced at once:** saving a link syncs it straight away with that link, on previews too.
+  - **The job:** `calendar_sync` every 15 minutes (minutes 3, 18, 33, 48), each household's calendars due one at a time (`calendar_sources_due()`, `lib/calendar/sync.ts`, `save_calendar_sync()`); a file unchanged that day is skipped. A broken link is the calendar's own state, named on System Health; the run fails only when the job can't work.
+  - **Done when:** `sync.test.ts` matches the expected instances of the made-up `family-sync.ics` (DST, all-day, moved, deleted and cancelled); pgTAP `260_calendar_sync` (56) and `calendar.spec.ts` show a broken link leaving the last good events and showing its error, on Calendars and System Health.
 
 ### WP-23 — Calendar views and per-device selection
 **Phase:** P1d · **Size:** M · **Depends on:** WP-22, WP-05 · **Reqs:** CAL-04, CAL-05

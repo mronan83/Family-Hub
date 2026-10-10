@@ -1152,6 +1152,29 @@ html:has(.board) {
   animation: fw-pop 600ms var(--ease);
 }
 
+/* Calendars (WP-22): each calendar's sync, in words beside an icon, and what's coming up. ------- */
+.fw-calendar__sync {
+  margin: 0;
+}
+.fw-calendar__sync[data-state='error'] .fw-health__state {
+  color: var(--missed-text);
+}
+.fw-calendar__sync[data-state='ok'] .fw-health__state {
+  color: var(--primary-text);
+}
+.fw-calendar__events {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-calendar__when {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
+}
+
 /* System Health (WP-42) --------------------------------------------------------------------- */
 .fw-health__message {
   display: block;
