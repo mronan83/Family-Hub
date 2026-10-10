@@ -1,4 +1,7 @@
+import { ENGINE_VERSION } from '@familywise/rules-engine';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { isoDay } from '../format';
+import { dayBefore, rebuildMemberHistory } from '../history';
 
 export type JobContext = {
   db: SupabaseClient;
@@ -46,11 +49,13 @@ export const JOBS: Record<string, Job> = {
 
   // [CHR-07] Day close (WP-10): once the household's local day has ended, its routines are finalized
   // and those not done become missed; tasks carry over (D-31). Catches up every earlier day at once,
-  // and repeating it changes nothing.
+  // and repeating it changes nothing. [RWD-11] Then (WP-17) each member whose occurrences changed has
+  // their history rebuilt through yesterday by the rules engine (D-55).
   async day_close({ db, householdId }) {
     const { data, error } = await db.rpc('close_household_day', { p_household_id: householdId });
     if (error) throw new Error(`close the day: ${error.message}`);
-    return { status: 'ok', stats: data as Record<string, unknown> };
+    const history = await rebuildHistories(db, householdId);
+    return { status: 'ok', stats: { ...(data as Record<string, unknown>), history } };
   },
 
   // [NFR-06] The nightly check (WP-10): re-folds the last 14 days of events and compares them with
@@ -82,3 +87,31 @@ export const JOBS: Record<string, Job> = {
     return { status: 'ok', stats: report };
   },
 };
+
+/**
+ * [RWD-11] Rebuilds the history of each member of a household who is marked (their occurrences
+ * changed) or whose rows an older engine made, through the household's yesterday.
+ */
+export async function rebuildHistories(
+  db: SupabaseClient,
+  householdId: string,
+  now: Date = new Date(),
+): Promise<{ members: number; days: number }> {
+  const { data: household, error: hError } = await db
+    .from('household')
+    .select('timezone')
+    .eq('id', householdId)
+    .single();
+  if (hError) throw new Error(`read household: ${hError.message}`);
+  const through = dayBefore(isoDay(household.timezone as string, now));
+  const { data: members, error } = await db.rpc('history_dirty_members', {
+    p_household_id: householdId,
+    p_engine_version: ENGINE_VERSION,
+  });
+  if (error) throw new Error(`list members to rebuild: ${error.message}`);
+  let days = 0;
+  for (const memberId of (members ?? []) as string[]) {
+    days += (await rebuildMemberHistory(db, memberId, through)).days;
+  }
+  return { members: (members ?? []).length, days };
+}

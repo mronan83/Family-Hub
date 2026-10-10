@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.17: US-408 as built (WP-17, D-55): Insights for a member over 7, 30 or 90 days, history rebuilt from every check-off, and the board's streak flame.
 > v0.8.16: US-205 and US-206 as built (WP-13, D-54): the board keeps its check-offs, snapshot and page through an outage and a reload, says when it is offline or its data is old, and marks points not yet saved.
 > v0.8.15: US-1103, US-1104 and US-1105 as built in the admin app, the database and the board's API (WP-18, D-53); the board's shop screen comes with WP-20.
 > v0.8.14: US-306, US-307, US-309, US-310 and US-316 as built (WP-12, D-52): the admin Today page with the approval queue, late credit, skips and "Not actually done" with Undo; the approval switch on Home; My tasks with quick add.
@@ -328,6 +329,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As a** parent **I want** a history of good and bad streaks, including missed days **so that** I can see patterns and the board can show my child's current streak.
 **Priority:** Must · **Phase:** P1 · **Reqs:** RWD-11, RWD-12
 - Given 6 finalized days with all chores done, when I open Insights, then I see a current good streak of 6 and a heatmap of good days.
+- Given my child's run of good days, when the board shows them, then a flame and the count sit beside their name, today included once today is done, bigger at 3, 7, 14 and 30 days.
 - Given 3 consecutive finalized days with missed chores, when I open Insights, then a bad streak of 3 is shown, and today (still open) is not counted as bad.
 - Given weekends have no chores, when a run spans a weekend, then those days are neutral and do not break the raw streak.
 - Given history is rebuilt from events, when I compare it with the stored `streak_segment` rows, then they match.

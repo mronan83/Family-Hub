@@ -114,7 +114,10 @@ export interface GoalEvaluation {
 export interface HistoryInput {
   memberId: string;
   occurrences: OccurrenceFact[];
+  /** Today: a day before it is settled, so a miss makes it bad; it and later days never are. */
   asOf: string;
+  /** The last day to include (default `asOf`). Stored history stops at yesterday (D-55). */
+  through?: string;
 }
 
 /**

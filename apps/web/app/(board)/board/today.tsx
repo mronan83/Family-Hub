@@ -19,6 +19,7 @@ import {
 } from '@/lib/outbox';
 import type { BoardStore } from '@/lib/board-store';
 import { signed } from '@/lib/points';
+import { flameDays, flameTier, reachedMilestone } from '@/lib/streak';
 import type { BoardMember, BoardSnapshot } from '@/lib/snapshot';
 import {
   boardActivity,
@@ -375,6 +376,37 @@ function CountingChip({ points, provisional }: { points: number; provisional: bo
   );
 }
 
+const FLAME_SIZE = [36, 40, 48, 52, 56];
+
+/**
+ * [RWD-05][US-408] A child's run of good days, today included once it is good (WP-17): a flame and
+ * the count, bigger at each milestone (3, 7, 14, 30 days). It glows once when the run reaches a
+ * milestone while the board is open (06 §6), not on every load; reduced motion keeps it still.
+ */
+function Flame({ days }: { days: number }) {
+  const [seen, setSeen] = useState(days);
+  const [glow, setGlow] = useState(0);
+  if (days !== seen) {
+    setSeen(days);
+    if (reachedMilestone(seen, days)) setGlow((g) => g + 1);
+  }
+  if (days < 1) return null;
+  const tier = flameTier(days);
+  return (
+    <span
+      key={glow}
+      className="fw-today__flame"
+      data-days={days}
+      data-tier={tier}
+      data-glow={glow > 0 || undefined}
+    >
+      <Icon name="flame" size={FLAME_SIZE[tier]} />
+      <span>{days}</span>
+      <span className="fw-visually-hidden">{days === 1 ? ' day' : ' days'} in a row</span>
+    </span>
+  );
+}
+
 interface TileProps {
   item: TodayItem;
   viewer: string;
@@ -676,6 +708,9 @@ export function Today({
                 })()}
               </p>
             </div>
+            {member.streak ? (
+              <Flame days={flameDays(member.streak, t.items, member.id, today)} />
+            ) : null}
             {member.points ? (
               <CountingChip points={t.balance(member)} provisional={t.provisional(member)} />
             ) : null}
@@ -714,8 +749,8 @@ export function Today({
                   )}
                 </section>
               ) : null}
-              {/* Kept for later work packages: the goal meter (WP-20), the streak flame (WP-17),
-                  today's events (WP-23) and meals (WP-28). */}
+              {/* Kept for later work packages: the goal meter (WP-20), today's events (WP-23) and
+                  meals (WP-28). The streak flame (WP-17) is beside the name. */}
             </aside>
           </div>
         </section>
@@ -734,6 +769,7 @@ export function Today({
                     decorative
                   />
                   <h2 id={`col-${m.id}`}>{m.displayName}</h2>
+                  {m.streak ? <Flame days={flameDays(m.streak, t.items, m.id, today)} /> : null}
                   {m.points ? (
                     <CountingChip points={t.balance(m)} provisional={t.provisional(m)} />
                   ) : null}

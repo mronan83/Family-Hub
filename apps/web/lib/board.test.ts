@@ -92,6 +92,7 @@ describe('board snapshot', () => {
               { id: 'p1', type: 'earn', amount: 7, at: '2026-10-08T13:00:00Z', label: null },
             ],
           },
+          streak: null,
         },
         {
           id: 'm2',
@@ -101,6 +102,7 @@ describe('board snapshot', () => {
           color: 'member-3',
           earnsRewards: false,
           points: null,
+          streak: null,
         },
       ],
       occurrences: [
@@ -169,6 +171,22 @@ describe('board snapshot', () => {
     );
     expect(() => readSnapshot({ ...RAW, members: [null] })).toThrow('member');
   });
+
+  it('[RWD-05] reads a member’s run as of the last closed day (WP-17); an unknown kind is no run', () => {
+    const member = (streak: unknown) =>
+      readSnapshot({
+        ...RAW,
+        members: [{ ...(RAW.members as Record<string, unknown>[])[0], streak }],
+      })!.members[0]!.streak;
+    expect(member({ kind: 'good', length: 4, best: 9 })).toEqual({
+      kind: 'good',
+      length: 4,
+      best: 9,
+    });
+    expect(member({ kind: null, length: 0, best: 0 })).toEqual({ kind: null, length: 0, best: 0 });
+    expect(member({ kind: 'great', length: 'x' })).toEqual({ kind: null, length: 0, best: 0 });
+    expect(member(null)).toBeNull();
+  });
 });
 
 describe('notify, then refetch', () => {
@@ -181,6 +199,7 @@ describe('notify, then refetch', () => {
       { table: 'points_ledger', filter: 'household_id=eq.h1' },
       { table: 'chore_occurrence', filter: 'household_id=eq.h1' },
       { table: 'chore', filter: 'household_id=eq.h1' },
+      { table: 'streak_segment', filter: 'household_id=eq.h1' },
     ]);
   });
 

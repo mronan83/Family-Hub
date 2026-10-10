@@ -1,6 +1,8 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.42: WP-17 done (PR #33): streak history and insights. WP-30 is ready.
+> v0.8.41: WP-17 in review (PR #33): streak history and insights (D-55).
 > v0.8.40: WP-13 done (PR #32): the board works through an outage. The real 24-hour soak on the Pi stays with WP-24.
 > v0.8.39: WP-13 in review (PR #32): the board works through an outage (D-54).
 > v0.8.38: WP-18 done (PR #31): the rewards shop. WP-39 and WP-20 wait on WP-19 too.
@@ -110,7 +112,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | Done (PR #32) |
 | WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
 | WP-15 | Rules engine package | P1b | L | WP-01 | Done (PR #29) |
-| WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Ready |
+| WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Done (PR #33) |
 | WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Done (PR #31) |
 | WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Ready |
 | WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Queued |
@@ -123,7 +125,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Ready |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Queued |
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Queued |
-| WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Queued |
+| WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Ready |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Queued |
 | WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Ready |
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
@@ -522,6 +524,11 @@ flowchart LR
 - `member_daily_summary` and `streak_segment` for every member, written by day-close using `evaluateHistory`; late completions re-derive the affected day; reward streaks are shown only for members who earn rewards.
 - Admin Insights page: current and best good streak, longest bad streak, completion rate, heatmap, most-missed chores, completion by tag, trust panel (reversal/rejection rate, time to verify); board streak flame.
 - **Done when:** after 14 seeded days the insights match a hand-computed table and a rebuild produces identical rows.
+- As built (D-55):
+  - **History:** `member_daily_summary` and `streak_segment` through yesterday, for every member, from `evaluateHistory` over all their facts (`lib/history.ts`). A trigger marks a member when their occurrences change; day close rebuilds the marked members, and the Insights page rebuilds a marked member before it reads. The same facts leave every row identical.
+  - **Insights** (`/admin/insights`): one member at a time, the last 7, 30 or 90 closed days. Streaks (good run now, best good run, longest bad streak, over all history), routines done of those that counted, a day heatmap in words as well as colour, the five most missed, completion by tag, and Checking (check-offs, unchecked by a parent, sent back, median time to check) to inform the approval switch. "Rebuild from history" for a parent.
+  - **Board:** a flame and count beside each child's name (own screen and everyone's), today added once it is done, bigger at 3, 7, 14 and 30 days, glowing once on reaching one (still with reduced motion). The snapshot carries each earner's run; `streak_segment` is in Realtime.
+  - **The 14 days:** pgTAP `190_streak_history` (27) seeds them with completion events and checks the facts, the history (hand-computed), the rebuild, the marks, the insights and who may; `lib/history.test.ts` puts the same days through the engine and gets the same table. The preview's demo family keeps its seeded week: `insights.spec.ts` checks Leo's, hand-computed.
 
 ### WP-18 — Reward catalog and redemptions
 **Phase:** P1b · **Size:** M · **Depends on:** WP-16 · **Reqs:** PTS-03, PTS-04

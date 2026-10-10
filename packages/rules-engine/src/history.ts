@@ -7,12 +7,17 @@ import type { DailySummary, HistoryEvaluation, HistoryInput, StreakSegment } fro
  * neutral and open days are passed over, neither extending nor breaking a run. What the board's
  * streak flame, the heatmap and the parents' insights show; day close stores it (WP-17).
  *
- * Days run from the member's first routine or credited check-off to `asOf`, every day included
- * (none when that is after `asOf`).
+ * Days run from the member's first routine or credited check-off to `through` (default `asOf`),
+ * every day included (none when that is after `through`). Each is judged as of `asOf`, today, so
+ * stored history (through yesterday, as of today) holds yesterday's misses as bad.
  */
 export function evaluateHistory(input: HistoryInput): HistoryEvaluation {
   const { asOf } = input;
+  const through = input.through ?? asOf;
   dayNumber(asOf);
+  if (dayNumber(through) > dayNumber(asOf)) {
+    throw new RangeError(`through ${through} is after asOf ${asOf}`);
+  }
   const units = memberUnits(input.occurrences, input.memberId);
 
   let first: string | null = null;
@@ -34,7 +39,7 @@ export function evaluateHistory(input: HistoryInput): HistoryEvaluation {
     done.set(d, { count: had.count + 1, points: had.points + u.fact.points });
   }
 
-  const days: DailySummary[] = datesBetween(first, asOf).map((date) => {
+  const days: DailySummary[] = datesBetween(first, through).map((date) => {
     const t = routines.get(date);
     const credited = done.get(date);
     return {

@@ -118,6 +118,28 @@ describe('evaluateHistory: days and raw runs', () => {
     });
   });
 
+  it('[RWD-11][D-55] stored history stops at yesterday, judged as of today: a miss yesterday is bad', () => {
+    const h = evaluateHistory({
+      memberId: 'maya',
+      occurrences: [...allDone('2026-10-06', '2026-10-07'), missed('2026-10-08'), done(TODAY)],
+      asOf: TODAY,
+      through: '2026-10-08',
+    });
+    expect(h.days.map((d) => [d.date, d.dayClass])).toEqual([
+      ['2026-10-06', 'good'],
+      ['2026-10-07', 'good'],
+      ['2026-10-08', 'bad'],
+    ]);
+    expect(h.segments).toEqual([
+      { kind: 'good', start: '2026-10-06', end: '2026-10-07', length: 2 },
+      { kind: 'bad', start: '2026-10-08', end: null, length: 1 },
+    ]);
+    expect(h.current).toEqual({ kind: 'bad', length: 1 });
+    expect(() =>
+      evaluateHistory({ memberId: 'maya', occurrences: [], asOf: TODAY, through: '2026-10-10' }),
+    ).toThrow(RangeError);
+  });
+
   it('[RWD-05][D-51] today counts as good the moment it is all done, and an unfinished today breaks nothing', () => {
     expect(history([...allDone('2026-10-08', TODAY)]).current).toEqual({ kind: 'good', length: 2 });
     expect(history([...allDone('2026-10-08'), done(TODAY), open(TODAY)]).current).toEqual({

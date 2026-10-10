@@ -52,8 +52,15 @@ describe('[NFR-07] schedule and job registry', () => {
   });
 
   it('[CHR-07] day_close asks the database to finalize the household’s past days', async () => {
-    const rpc = vi.fn(async () => ({ data: { closed: 4, through: '2026-10-08' }, error: null }));
-    const db = { rpc } as unknown as SupabaseClient;
+    const rpc = vi.fn(async (name: string) =>
+      name === 'close_household_day'
+        ? { data: { closed: 4, through: '2026-10-08' }, error: null }
+        : { data: [], error: null },
+    );
+    // [RWD-11] Then the histories of marked members (none here; lib/jobs/history.test.ts).
+    const household = { data: { timezone: 'UTC' }, error: null };
+    const from = () => ({ select: () => ({ eq: () => ({ single: async () => household }) }) });
+    const db = { rpc, from } as unknown as SupabaseClient;
     const result = await JOBS.day_close!({
       db,
       householdId: 'h1',
@@ -61,7 +68,10 @@ describe('[NFR-07] schedule and job registry', () => {
       since: null,
     });
     expect(rpc).toHaveBeenCalledWith('close_household_day', { p_household_id: 'h1' });
-    expect(result).toEqual({ status: 'ok', stats: { closed: 4, through: '2026-10-08' } });
+    expect(result).toEqual({
+      status: 'ok',
+      stats: { closed: 4, through: '2026-10-08', history: { members: 0, days: 0 } },
+    });
   });
 
   it('[NFR-06] status_check passes when every status matches its events, and fails on drift', async () => {

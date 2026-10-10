@@ -37,6 +37,15 @@ export interface BoardMember {
   earnsRewards: boolean;
   /** [PTS-02] For a member who earns rewards: their balance and latest entries; otherwise null. */
   points: BoardPoints | null;
+  /** [RWD-05] For a member who earns rewards: their run as of the last closed day (WP-17). */
+  streak: BoardStreak | null;
+}
+
+/** The run going as of the last closed day, and the best good run (streak_segment). */
+export interface BoardStreak {
+  kind: 'good' | 'bad' | null;
+  length: number;
+  best: number;
 }
 
 export interface BoardPoints {
@@ -94,6 +103,16 @@ function readPoints(p: unknown): BoardPoints | null {
         label: typeof e.label === 'string' ? e.label : null,
       };
     }),
+  };
+}
+
+/** A snapshot from before WP-17 has no streak; an unknown kind reads as no run. */
+function readStreak(x: unknown): BoardStreak | null {
+  if (!isObject(x)) return null;
+  return {
+    kind: x.kind === 'good' || x.kind === 'bad' ? x.kind : null,
+    length: Number(x.length) || 0,
+    best: Number(x.best) || 0,
   };
 }
 
@@ -165,6 +184,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
         color: str(m, 'color') as MemberColor,
         earnsRewards: m.earns_rewards === true,
         points: readPoints(m.points),
+        streak: readStreak(m.streak),
       };
     }),
     // A snapshot from before WP-11 (an older database) has no items.
