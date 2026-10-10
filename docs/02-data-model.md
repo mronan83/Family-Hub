@@ -2,6 +2,7 @@
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
 > v0.8.18: the board through an outage (WP-13, D-54): no schema change; the snapshot is what a board saves in IndexedDB, and a board reads its household's `job_health()` through job_run's RLS (§4.6).
+> v0.8.15: the rules engine as built (WP-15, D-51): the contract's types, when a day is good, bad, neutral or open (today counts as good once it qualifies), streak targets, qualify modes and the status changes an evaluation calls for (§5).
 > v0.8.14: the board's Today (WP-11, D-50): the snapshot's `occurrences` and `household.undo_window_seconds` as built; `chore_occurrence` and `chore` join the Realtime publication (§4.6).
 > v0.8.13: the points ledger (WP-16, D-49): `points_ledger` and `v_points_balance` as built; earn and reversal reconcile each occurrence's points; `adjust_points()`; the snapshot's points; the ledger drift check (§3.3b, §4.2b, §4.6, §4.7).
 > v0.8.12: everyone does their own (WP-43, D-47): `chore.assignment` (`each` or `shared`) and `chore_occurrence.member_id`, one occurrence per item, day and person (§3.2).
@@ -1042,10 +1043,11 @@ type RuleType = 'COUNT' | 'STREAK' | 'DAILY_ALL_DONE' | 'POINTS';
 type OccurrenceStatus = 'scheduled'|'completed'|'pending_approval'|'approved'
                       | 'rejected'|'skipped'|'missed';
 type MemberStatus = OccurrenceStatus | 'covered';   // per member: someone else did it (neutral)
-interface RuleScope { all?: boolean; chore_ids?: string[]; tag_ids?: string[] }
-interface StreakParams {
-  grace_per_week: number;                       // goal streaks only; misses forgiven per household week (default 1)
-  qualify: { mode: 'all_scheduled' | 'min_count' | 'min_pct'; value?: number };
+interface RuleScope { all?: boolean; chore_ids?: string[]; tag_ids?: string[] }  // items or tags: either matches
+interface Qualify { mode: 'all_scheduled' | 'min_count' | 'min_pct'; value?: number }
+interface StreakParams {                        // a STREAK rule's params
+  grace_per_week: number;                       // bad days forgiven per household week (default 1)
+  qualify: Qualify;                             // when a day is good (default all_scheduled)
 }
 interface Rule { id: string; type: RuleType; target: number; scope: RuleScope;
                  params: Record<string, unknown> }
@@ -1053,10 +1055,16 @@ interface OccurrenceFact {                      // from v_member_occurrence: one
   id: string; chore_id: string; member_id: string; kind: 'chore'|'task'; tag_ids: string[];
   due_date: string; credit_date: string|null; status: MemberStatus; credited: boolean;
   points: number }
+type GoalStatus = 'draft'|'scheduled'|'active'|'achieved'|'redeemed'|'expired'|'cancelled';
 interface GoalInput { goal: { id: string; member_id: string|null; start_date: string;
-                              end_date: string|null; rule_logic: 'all'|'any'; status: string };
+                              end_date: string|null; rule_logic: 'all'|'any'; status: GoalStatus };
                       rules: Rule[]; occurrences: OccurrenceFact[];
-                      asOf: string /* household-local date */; weekStart: number }
+                      asOf: string /* household-local date */; weekStart: number /* 0 Sunday … 6 */ }
+interface RuleProgress { rule_id: string; type: RuleType; current_value: number; target_value: number;
+                         pct: number; is_met: boolean; current_streak: number|null;
+                         best_streak: number|null; last_qualifying_date: string|null }
+interface GoalTransition { type: 'started'|'achieved'|'unachieved'|'expired'|'needs_review';
+                           from: GoalStatus; to: GoalStatus }
 interface GoalEvaluation { goal_id: string; pct: number; is_achieved: boolean;
                            rules: RuleProgress[]; transitions: GoalTransition[] }
 
@@ -1065,11 +1073,14 @@ function evaluateGoal(input: GoalInput): GoalEvaluation;   // deterministic, sid
 // History (RWD-11): raw good and bad runs, no grace, used for insights and the heatmap
 interface HistoryInput { memberId: string; occurrences: OccurrenceFact[]; asOf: string }
 interface DailySummary { date: string; scheduled: number; done: number; missed: number;
-                         skipped: number; points: number; dayClass: 'good'|'bad'|'neutral'|'open' }
+                         skipped: number; covered: number; points: number;
+                         dayClass: 'good'|'bad'|'neutral'|'open' }
 interface StreakSegment { kind: 'good'|'bad'; start: string; end: string|null; length: number }
 function evaluateHistory(input: HistoryInput):
   { days: DailySummary[]; segments: StreakSegment[];
     current: { kind: 'good'|'bad'|null; length: number }; bestGood: number; worstBad: number };
+
+const ENGINE_VERSION = 1;   // stored on derived rows; bumping it forces a full recompute
 ```
 
 `missed` is now an input status, not something the engine infers. The engine never reads a clock; "today" is `asOf`. Facts are per member (D-30): a goal for a member counts only facts where that member is `credited`; a family goal (`member_id` null) counts each done occurrence once. Tasks count toward `COUNT` and `POINTS` on their `credit_date` and never make a day bad (D-31).
@@ -1088,9 +1099,9 @@ function evaluateHistory(input: HistoryInput):
 | Class | Definition |
 |---|---|
 | `neutral` | No in-scope routines, or all `skipped` or `covered`. Does not extend or break a run. |
-| `open` | Today (`asOf`) or any day with a `scheduled` occurrence not yet finalized. Never counted as bad. |
-| `good` | Finalized day where the qualify mode is satisfied (default: every non-skipped occurrence done). |
-| `bad` | Finalized day with at least one `missed` and the qualify mode not satisfied. |
+| `good` | The qualify mode is satisfied (default: every routine that counts is done). Today counts as soon as it qualifies (D-51). |
+| `open` | Today, unless already good; or a day with a routine still `scheduled`, `rejected` or `pending_approval` (not yet settled, or waiting for a parent). Never counted as bad; does not extend or break a run. |
+| `bad` | A past, settled day where the qualify mode is not satisfied, so at least one routine was `missed`. |
 
 **Raw history** (`evaluateHistory`): a good streak is consecutive `good` days; a bad streak is consecutive `bad` days; `neutral` days are transparent. No grace. This is what the board's "current streak" flame, the heatmap, and the parent insights show.
 
@@ -1109,6 +1120,25 @@ function evaluateHistory(input: HistoryInput):
 - Given identical inputs, output is identical (property-tested).
 - Changing a goal's rules triggers `recomputed` on the next evaluation, replayed against full history in `[start, end]`. The admin UI shows a **preview** of the new result before saving (RWD-10).
 - `engine_version` is stored on derived rows; bumping it forces a full recompute in the nightly job. `member_daily_summary` and `streak_segment` are rebuilt the same way.
+
+**As built (WP-15, D-51).**
+
+- **Facts.** Done means `completed` or `approved` and credited to the member. Credited and `pending_approval` is waiting. Done or waiting without credit is `covered`. A family goal reads each occurrence once, as whoever did it saw it: the credited view first, then any view but a covered one.
+- **Qualify.** `min_count n` is met by n routines done, or by all of them on a day with fewer than n. `min_pct p` (0 < p ≤ 100) is met by at least p% done.
+- **The window.** COUNT and POINTS count done facts by `credit_date` (a routine's due date, a task's day done), from `start_date` to the end date or today, whichever comes first. DAILY_ALL_DONE counts the good days (every routine that counts done) in the same window.
+- **Streaks.** STREAK reports `current_streak` and `best_streak` over the window. It is met once `best_streak` reaches the target, so a later bad day does not take back a reached target while the days that reached it stay done. `current_value` is the run going now until then.
+- **Progress.** Each rule's `pct` is min(100, value ÷ target × 100), or 100 once met, rounded to two decimals. A target of 0 is met at once.
+- **Transitions,** applied in turn:
+  - scheduled → active on the start date;
+  - active → achieved while met, or → expired after the end date;
+  - expired → achieved, when a parent's late credit inside the window meets it;
+  - achieved → active when no longer met, then → expired if the window has passed;
+  - redeemed stays redeemed, with `needs_review`;
+  - draft and cancelled never change.
+
+  The caller logs them as `reward_goal_event` rows and runs payouts (WP-19, WP-39).
+- **Bad input.** A malformed date, week start, target or streak param throws a `RangeError` rather than guess. A stored null param is the same as unset.
+- **Tests.** 62 Vitest tests: one named test per edge case above, and nine fast-check properties. The properties check that results are deterministic and independent of the order facts arrive in and of the machine's time zone, and that settled days come out the same when replayed later. They also check runs against an independent reading of the day classes, goal streaks with no grace against the raw history, that doing more never lowers progress, and that tasks, skipped and covered routines never change a day. Coverage is 100% of lines and 96.7% of branches (the gate is 90%). Seventeen deliberate breaks of the engine are each caught.
 
 ---
 
