@@ -37,6 +37,8 @@ import {
   undoUntil,
 } from '@/lib/today';
 import { type PinWish, wishLine } from '@/lib/wishes';
+import { eventsOn, eventWhen } from '@/lib/board-calendar';
+import { CalendarScreen, type LoadCalendar } from './calendar-ui';
 import { Celebration, FamilyGoals, GoalsCard, useCelebrations } from './goals-ui';
 import { iconOf, type PhotoUrl } from './picture';
 import { RequestsCard, ShopDialog, useShop } from './shop-ui';
@@ -798,6 +800,7 @@ export function Today({
   cancelAsk = noCancel,
   markCelebrated = noMark,
   photoUrl,
+  loadCalendar,
 }: {
   snapshot: BoardSnapshot;
   /** The current minute. */
@@ -812,6 +815,8 @@ export function Today({
   markCelebrated?: MarkCelebrated;
   /** [PTS-03] Signed links to reward and goal photos; without them, icons. */
   photoUrl?: PhotoUrl;
+  /** [CAL-04] Reads a range of the calendar the snapshot doesn't hold (WP-23). */
+  loadCalendar?: LoadCalendar;
   /** [DEV-06] Where the outbox and what the board shows ahead of the snapshot outlast a reload. */
   store?: BoardStore | null;
   onQueue?: (q: QueueState) => void;
@@ -921,6 +926,18 @@ export function Today({
             </button>
           </li>
         ))}
+        {/* [CAL-04] The family's calendar (WP-23). */}
+        <li>
+          <button
+            type="button"
+            className="fw-today__person fw-today__person--all"
+            aria-pressed={view === 'calendar'}
+            onClick={() => setView('calendar')}
+          >
+            <Icon name="calendar" size={64} />
+            <span>Calendar</span>
+          </button>
+        </li>
       </ul>
 
       <div className="fw-today__notice" aria-live="polite">
@@ -1075,11 +1092,47 @@ export function Today({
                   photoUrl={photoUrl}
                 />
               ) : null}
-              {/* Kept for later work packages: today's events (WP-23) and meals (WP-28). The streak
-                  flame (WP-17) is beside the name. */}
+              {(() => {
+                // [CAL-04] Today's events: this person's calendars and the whole family's (WP-23).
+                const cal = snapshot.calendar;
+                const theirs = new Map(
+                  (cal?.calendars ?? [])
+                    .filter((c) => c.memberId === null || c.memberId === member.id)
+                    .map((c) => [c.id, c]),
+                );
+                const list = eventsOn(
+                  (cal?.events ?? []).filter((e) => theirs.has(e.calendarId)),
+                  today,
+                );
+                return list.length ? (
+                  <section className="fw-today__card" aria-labelledby="me-events">
+                    <h3 id="me-events">Today</h3>
+                    <ol className="fw-bcal__list">
+                      {list.map((e) => (
+                        <li
+                          key={e.id}
+                          className="fw-bcal__event"
+                          style={{
+                            ['--cal' as string]: `var(--${theirs.get(e.calendarId)?.color ?? 'member-6'})`,
+                          }}
+                        >
+                          <span className="fw-bcal__when">
+                            {eventWhen(e, today, household.timezone)}
+                          </span>
+                          <span className="fw-bcal__title">{e.title || 'Untitled event'}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                ) : null;
+              })()}
+              {/* Kept for a later work package: meals (WP-28). The streak flame (WP-17) is beside
+                  the name. */}
             </aside>
           </div>
         </section>
+      ) : view === 'calendar' ? (
+        <CalendarScreen snapshot={snapshot} now={now} load={loadCalendar} />
       ) : (
         <>
           <div className="fw-today__family" role="region" aria-label="Everyone today">

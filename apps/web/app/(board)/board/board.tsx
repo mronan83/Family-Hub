@@ -7,7 +7,7 @@ import { type BoardStore, openBoardStore } from '@/lib/board-store';
 import { day, isoDay, time } from '@/lib/format';
 import { boardTables, coalesce } from '@/lib/live';
 import { postCompletions } from '@/lib/outbox';
-import { readSnapshot, type BoardSnapshot } from '@/lib/snapshot';
+import { readCalendar, readSnapshot, type BoardCalendar, type BoardSnapshot } from '@/lib/snapshot';
 import { browserClient } from '@/lib/supabase/browser';
 import { postCelebrated } from '@/lib/board-goals';
 import { postAsk, postCancelAsk } from '@/lib/shop';
@@ -205,6 +205,17 @@ function usePhotos(snapshot: BoardSnapshot): PhotoUrl {
   );
 }
 
+/**
+ * [CAL-04] A range of the board's calendar beyond its snapshot's window (WP-23), as this board may
+ * see it (RLS); null offline or on an error, so the screen shows what the snapshot has.
+ */
+async function loadCalendar(from: string, to: string): Promise<BoardCalendar | null> {
+  const db = browserClient();
+  if (!db) return null;
+  const { data, error } = await db.rpc('board_calendar', { p_from: from, p_to: to });
+  return error ? null : readCalendar(data);
+}
+
 function LiveStatus({ link, events }: { link: Link; events: number }) {
   return (
     <span className="fw-live" role="status" data-link={link} data-events={events}>
@@ -270,6 +281,7 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
         cancelAsk={postCancelAsk}
         markCelebrated={postCelebrated}
         photoUrl={photoUrl}
+        loadCalendar={loadCalendar}
       />
       <footer className="fw-board__foot">{device.name}</footer>
     </main>

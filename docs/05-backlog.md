@@ -1,6 +1,8 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.59: WP-23 done (PR #43): calendar views and per-board selection. WP-35 is ready.
+> v0.8.58: WP-23 in review (PR #43): calendar views and per-board selection (D-65).
 > v0.8.57: change (D-64), done (PR #42): the board's outbox sends nothing while the browser says it is offline. No work package changes status.
 > v0.8.56: change (D-64), in review (PR #42): the board's outbox sends nothing while the browser says it is offline. No work package changes status.
 > v0.8.55: WP-22 done (PR #41): ICS calendar sync. WP-23 and WP-29 are ready.
@@ -133,7 +135,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Ready |
 | WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Done (PR #37) |
 | WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Done (PR #41) |
-| WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Ready |
+| WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Done (PR #43) |
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
 | WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Ready |
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Queued |
@@ -147,7 +149,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
 | WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
-| WP-35 | Board layout configuration and weather | P3 | M | WP-23 | Queued |
+| WP-35 | Board layout configuration and weather | P3 | M | WP-23 | Ready |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -627,6 +629,12 @@ flowchart LR
 **Phase:** P1d · **Size:** M · **Depends on:** WP-22, WP-05 · **Reqs:** CAL-04, CAL-05
 - Day, week, month views scrollable by touch; color and member association; `device_calendar` selection UI per board with defaults for new calendars.
 - **Done when:** unticking a calendar in the admin portal removes its events from the board within 3 seconds.
+- As built (D-65):
+  - **The board's Calendar**, a button beside the people: Week by default, Day and Month a tap away; the arrows, a sideways swipe or Today move it. Each event in its calendar's color with the avatar of whose calendar it is; a month's day shows three and "+N more" and opens as Day. A calendar failing or 45 minutes behind says so, its last good events kept. Offline, dates beyond the snapshot's two weeks show what the board has, and say so.
+  - **A person's screen** lists today's events from their own calendars and the family's (the side column).
+  - **Boards** (admin): "Calendars on Kitchen" per board, a tick per calendar; saving gives that board its own choice (`set_board_calendars()`), else it follows each calendar's "show on the boards". A calendar connected later stays off a board with its own choice.
+  - **Data:** `device_calendar`, the snapshot's `calendar` slice and `board_calendar()` for other ranges; `calendar_source` and `device_calendar` in Realtime.
+  - **Done when:** e2e `board-calendar.spec.ts` unticks School for a paired board at 3840×2160 and its events leave within 3 seconds (pgTAP `270_board_calendars`, the UI suite's `board-calendar.spec.ts`).
 
 ### WP-24 — Backups, runbooks, and soak
 **Phase:** P1d · **Size:** S · **Depends on:** WP-07 · **Reqs:** NFR-10

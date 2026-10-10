@@ -1,7 +1,7 @@
 'use client';
 
 import { ThemeLock, type Theme } from '@familywise/ui';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { boardHealth, type JobHealth } from '@/lib/board-health';
 import { openBoardStore } from '@/lib/board-store';
 import { day, isoDay, time } from '@/lib/format';
@@ -9,8 +9,10 @@ import { HealthLines } from '../../(board)/board/health-lines';
 import { useMinute } from '../../(board)/board/use-minute';
 import { useOnline } from '../../(board)/board/use-online';
 import { type QueueState, Today } from '../../(board)/board/today';
+import type { BoardCalendar } from '@/lib/snapshot';
 import {
   fixtureAsk,
+  fixtureCalendar,
   fixtureCancel,
   fixtureMark,
   fixturePin,
@@ -26,28 +28,67 @@ import {
  * database), and says when it is offline or its data is old (WP-13): `stale` makes the snapshot
  * 12 minutes old, `jobs` makes a job behind. Asking for a reward, calling it off and celebrating a
  * goal change the snapshot a moment later, as Realtime would (WP-20); `celebrate` opens on Leo
- * reaching his goal.
+ * reaching their goal. The calendar (WP-23) reads any range from the made-up family's calendars;
+ * `busy` adds 40 events this month, `calBehind` makes School's sync fail three hours ago.
  */
 export function DevBoard({
   theme,
   stale,
   jobs,
   celebrate,
+  busy = false,
+  calBehind = false,
 }: {
   theme: Theme;
   stale: boolean;
   jobs: boolean;
   celebrate: boolean;
+  busy?: boolean;
+  calBehind?: boolean;
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
   const now = useMinute();
+  // A School sync that failed three hours ago, when asked for.
+  const withSchool = useCallback(
+    (cal: BoardCalendar): BoardCalendar =>
+      calBehind
+        ? {
+            ...cal,
+            calendars: cal.calendars.map((c) =>
+              c.id === 'cal-school'
+                ? {
+                    ...c,
+                    status: 'error' as const,
+                    lastSuccessAt: new Date(opened.getTime() - 3 * 3_600_000).toISOString(),
+                  }
+                : c,
+            ),
+          }
+        : cal,
+    [calBehind, opened],
+  );
   const [snapshot, setSnapshot] = useState(() => {
     let s = fixtureSnapshot(isoDay(TZ, opened), opened);
+    if (busy || calBehind) {
+      s = {
+        ...s,
+        calendar: withSchool(fixtureCalendar(s.today, opened, s.range.from, s.range.to, busy)),
+      };
+    }
     if (stale) s = { ...s, fetchedAt: new Date(opened.getTime() - 12 * 60_000).toISOString() };
     return celebrate ? reachedBike(s, opened) : s;
   });
   const post = useMemo(() => fixturePost(snapshot), [snapshot]);
+  // As board_calendar() would answer, a moment later (offline: nothing).
+  const loadCalendar = useCallback(
+    async (from: string, to: string) => {
+      if (!navigator.onLine) return null;
+      await new Promise((r) => setTimeout(r, 30));
+      return withSchool(fixtureCalendar(snapshot.today, opened, from, to, busy));
+    },
+    [snapshot.today, opened, busy, withSchool],
+  );
   const pinWish = useMemo(() => fixturePin(snapshot), [snapshot]);
   const ask = useMemo(() => fixtureAsk(snapshot, setSnapshot), [snapshot]);
   const [cancelAsk] = useState(() => fixtureCancel(setSnapshot));
@@ -91,6 +132,7 @@ export function DevBoard({
         ask={ask}
         cancelAsk={cancelAsk}
         markCelebrated={markCelebrated}
+        loadCalendar={loadCalendar}
       />
       <footer className="fw-board__foot">{snapshot.device.name}</footer>
     </main>
