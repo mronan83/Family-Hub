@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.44: WP-19 done (PR #34): goals and the progress pipeline. WP-20 and WP-39 are ready.
 > v0.8.43: WP-19 in review (PR #34): goals and the progress pipeline (D-56).
 > v0.8.42: WP-17 done (PR #33): streak history and insights. WP-30 is ready.
 > v0.8.41: WP-17 in review (PR #33): streak history and insights (D-55).
@@ -115,9 +116,9 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-15 | Rules engine package | P1b | L | WP-01 | Done (PR #29) |
 | WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Done (PR #33) |
 | WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Done (PR #31) |
-| WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | In review (PR #34) |
-| WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Queued |
-| WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Queued |
+| WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Done (PR #34) |
+| WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Ready |
+| WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Ready |
 | WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Ready |
 | WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Queued |
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
