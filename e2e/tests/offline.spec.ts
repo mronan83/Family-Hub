@@ -117,8 +117,10 @@ test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no netwo
   for (const title of ['Make bed', 'Brush teeth', 'Feed the dog']) {
     await expect(checkOff(board, title)).toHaveCount(0);
   }
-  // Nothing has reached the database. If something has, say what, who sent it and when, and how
-  // the board saw its network, so the failure says what happened.
+  // Nothing has reached the database: the board sends nothing while its browser says it is offline
+  // (D-64). Playwright's offline doesn't stop requests from a page its service worker controls, so
+  // that is what keeps this true here. If something has, say what, who sent it and when, and how the
+  // board saw its network, so the failure says what happened.
   const early = sql(`select coalesce(string_agg(e.event_type || ' by ' || e.actor_type || ' ' ||
           coalesce((select d.name from public.device d where d.id = e.actor_id), e.actor_id::text, '?') ||
           ' at ' || to_char(e.recorded_at, 'HH24:MI:SS.MS'), '; ' order by e.recorded_at), '')

@@ -159,6 +159,8 @@ function useToday(
   useEffect(() => {
     const box = createOutbox(post, onAnswer, {
       store: store?.outbox,
+      // [NFR-01] Nothing is sent while the browser says it is offline (D-64).
+      isOnline: () => navigator.onLine,
       // A retry that fails again changes nothing, so it renders nothing (a day offline is 2,880).
       onChange: () =>
         setQueue((q) =>
