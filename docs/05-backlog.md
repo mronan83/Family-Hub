@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.59: WP-23 done (PR #43): calendar views and per-board selection. WP-35 is ready.
 > v0.8.58: WP-23 in review (PR #43): calendar views and per-board selection (D-65).
 > v0.8.57: change (D-64), done (PR #42): the board's outbox sends nothing while the browser says it is offline. No work package changes status.
 > v0.8.56: change (D-64), in review (PR #42): the board's outbox sends nothing while the browser says it is offline. No work package changes status.
@@ -134,7 +135,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Ready |
 | WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Done (PR #37) |
 | WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Done (PR #41) |
-| WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | In review (PR #43) |
+| WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Done (PR #43) |
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
 | WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Ready |
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Queued |
@@ -148,7 +149,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
 | WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
-| WP-35 | Board layout configuration and weather | P3 | M | WP-23 | Queued |
+| WP-35 | Board layout configuration and weather | P3 | M | WP-23 | Ready |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
