@@ -1,7 +1,8 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.6 · Status: built (WP-37, WP-06, WP-11, WP-17)
+> Version 1.6 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17)
 > v1.6: the streak flame as built: tiers at 3, 7, 14 and 30 days, a glow on reaching one; the Insights heatmap marks each day with an icon as well as a colour (§7.2, WP-17).
+> v1.5: the board's offline and stale lines sit in its bar as pills; a balance not yet saved while offline is provisional: dashed plum ring and `wifi-off` (§7.2, WP-13).
 > v1.4: the board's points list says what each entry was for; points a parent took away read "A parent changed your points", never the reason (D-50, § Voice).
 > v1.3: every board action works by touch, mouse click and keyboard; no gesture is the only way to do anything (§ Touch).
 > v1.2: the board's manual theme override is a per-board hold an admin sets in Boards (Always Day or Always Evening); the board's live status uses `wifi` and `wifi-off`.
@@ -193,11 +194,11 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 | Private | Admin views only, never on the board | `lock` | Private | Outline pill |
 
 ### 7.2 Other board components
-- **Points chip:** Sun pill with `star`, Nunito 800, minimum height 56. Negative balance: Plum pill, "−5 to earn back".
+- **Points chip:** Sun pill with `star`, Nunito 800, minimum height 56. Negative balance: Plum pill, "−5 to earn back". Provisional (offline, counting check-offs not yet saved): a dashed Plum ring and a small `wifi-off`, "Not saved yet" for screen readers.
 - **Streak flame:** `flame` plus count; one flame size per milestone tier, no animation unless a milestone was just reached. As built: Sun text beside the name, flame 36 px below 3 days, then 40, 48, 52 and 56 px at 3, 7, 14 and 30; the glow is a 1.4 s scale of the flame (none with reduced motion). In admin Insights a day is Teal with `check` (good), Plum with `close` (bad), Sun with `hourglass` (waiting) or dotted (nothing counted).
 - **Goal meter:** 28 px tall pill, teal-to-sun fill, percentage label always visible, never color-only.
 - **Shop card:** 280 px wide, image on tint, title, cost chip with `ticket`, one "Ask" button. Unaffordable items stay visible with "Need 40 more".
-- **Banners:** `hourglass` for stale, `wifi-off` for offline. Sun tint and Plum tint respectively; never red; never cover chores.
+- **Banners:** `hourglass` for stale, `wifi-off` for offline. Sun tint and Plum tint respectively; never red; never cover chores. On the board they are pills in the bar under the clock: "Offline: your check-offs are saved", "Updated 12 minutes ago", "Today's list may be out of date"; not a second live region.
 - **Buttons:** primary (teal, white text), secondary (teal tint), ghost (line border). Minimum height 56, label Nunito 800, always icon + word on the board.
 
 ### 7.3 Admin conventions

@@ -104,3 +104,41 @@ begin
     create publication supabase_realtime;
   end if;
 end $$;
+
+-- storage: the subset of Supabase Storage's schema that migrations and policies reference (WP-18).
+-- Files themselves live outside the database; tests check the rows and the policies.
+set client_min_messages = warning;
+create schema if not exists storage;
+create table if not exists storage.buckets (
+  id                 text primary key,
+  name               text not null unique,
+  owner              uuid,
+  public             boolean default false,
+  file_size_limit    bigint,
+  allowed_mime_types text[],
+  created_at         timestamptz default now(),
+  updated_at         timestamptz default now()
+);
+create table if not exists storage.objects (
+  id         uuid primary key default gen_random_uuid(),
+  bucket_id  text references storage.buckets (id),
+  name       text,
+  owner      uuid,
+  metadata   jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique (bucket_id, name)
+);
+alter table storage.objects enable row level security;
+-- As Supabase defines it: the folders of a path, without its file name.
+create or replace function storage.foldername(name text) returns text[]
+language plpgsql as $$
+declare
+  _parts text[];
+begin
+  select string_to_array(name, '/') into _parts;
+  return _parts[1:array_length(_parts, 1) - 1];
+end $$;
+grant usage on schema storage to anon, authenticated, service_role;
+grant select, insert, update, delete on storage.objects to authenticated, service_role;
+grant select on storage.buckets to anon, authenticated, service_role;

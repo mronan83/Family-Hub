@@ -17,6 +17,7 @@ import {
   type Outbox,
   type Post,
 } from '@/lib/outbox';
+import type { BoardStore } from '@/lib/board-store';
 import { signed } from '@/lib/points';
 import { flameDays, flameTier, reachedMilestone } from '@/lib/streak';
 import type { BoardMember, BoardSnapshot } from '@/lib/snapshot';
@@ -75,18 +76,33 @@ function prefersReducedMotion(): boolean {
   );
 }
 
+/** The outbox's state, for the board's offline line and provisional points. */
+export interface QueueState {
+  pending: number;
+  /** A send failed and waits to be retried: the board is offline. */
+  waiting: boolean;
+}
+
 /**
  * [CHR-04][NFR-03][US-304][US-305] Today's items with this board's own check-offs and undos laid
  * over the snapshot until the snapshot shows them, so a tap answers at once (06: 120 ms) and the
  * next read replaces it. Events go out through the outbox with ids made here, so a double tap or a
- * resend counts once.
+ * resend counts once. [DEV-06][NFR-01] With a store, both outlast a reload: what this board did
+ * shows again at once, and what it had not sent goes first (WP-13).
  */
-function useToday(snapshot: BoardSnapshot, post: Post) {
+function useToday(
+  snapshot: BoardSnapshot,
+  post: Post,
+  store: BoardStore | null,
+  onQueue?: (q: QueueState) => void,
+) {
   const [overrides, setOverrides] = useState<Map<string, Override>>(() => new Map());
   const [gone, setGone] = useState<Set<string>>(() => new Set());
   const [notice, setNotice] = useState<string | null>(null);
   const [celebrating, setCelebrating] = useState<string | null>(null);
-  const eventToItem = useRef(new Map<string, string>());
+  const [queue, setQueue] = useState<QueueState>({ pending: 0, waiting: false });
+  // Saved overrides are read back before any are written, so a reload can't overwrite them.
+  const [restored, setRestored] = useState(!store);
   const lastTap = useRef(new Map<string, number>());
   const outbox = useRef<Outbox | null>(null);
 
@@ -98,9 +114,8 @@ function useToday(snapshot: BoardSnapshot, post: Post) {
   }, [notice]);
 
   const onAnswer = useCallback(
-    (a: Answer) => {
-      const itemId = a.occurrence?.id ?? eventToItem.current.get(a.id);
-      eventToItem.current.delete(a.id);
+    (a: Answer, event: CompletionEvent | undefined) => {
+      const itemId = a.occurrence?.id ?? event?.occurrence_id;
       if (!itemId) return;
       if (a.result === 'recorded' || a.result === 'duplicate') {
         const o = a.occurrence;
@@ -139,10 +154,53 @@ function useToday(snapshot: BoardSnapshot, post: Post) {
   );
 
   useEffect(() => {
-    const box = createOutbox(post, onAnswer);
+    const box = createOutbox(post, onAnswer, {
+      store: store?.outbox,
+      // A retry that fails again changes nothing, so it renders nothing (a day offline is 2,880).
+      onChange: () =>
+        setQueue((q) =>
+          q.pending === box.pending() && q.waiting === box.waiting()
+            ? q
+            : { pending: box.pending(), waiting: box.waiting() },
+        ),
+    });
     outbox.current = box;
-    return () => box.stop();
-  }, [post, onAnswer]);
+    // The network is back: send what waits now rather than at the next retry.
+    const online = () => box.retry();
+    window.addEventListener('online', online);
+    return () => {
+      window.removeEventListener('online', online);
+      box.stop();
+    };
+  }, [post, onAnswer, store]);
+
+  useEffect(() => {
+    onQueue?.(queue);
+  }, [queue, onQueue]);
+
+  // What this board showed ahead of the snapshot before a reload shows again: an answered one until
+  // the snapshot shows it, an unanswered one while its event still waits in the outbox.
+  useEffect(() => {
+    if (!store) return;
+    let cancelled = false;
+    void Promise.all([store.get<[string, Override][]>('overrides'), store.outbox.load()]).then(
+      ([saved, waiting]) => {
+        if (cancelled) return;
+        const queued = new Set(waiting.map((e) => e.occurrence_id));
+        const kept = Array.isArray(saved)
+          ? saved.filter(([id, o]) => o.serverAt !== null || queued.has(id))
+          : [];
+        if (kept.length > 0) setOverrides((prev) => new Map([...kept, ...prev]));
+        setRestored(true);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [store]);
+  useEffect(() => {
+    if (store && restored) void store.set('overrides', [...overrides]);
+  }, [store, restored, overrides]);
 
   // A snapshot read after the database wrote an answer shows it, so that override has done its job:
   // it no longer applies, and the next change of overrides drops it.
@@ -187,10 +245,32 @@ function useToday(snapshot: BoardSnapshot, post: Post) {
     [items, snapshot.occurrences],
   );
 
-  const send = useCallback((itemId: string, event: Omit<CompletionEvent, 'id' | 'occurred_at'>) => {
-    const id = crypto.randomUUID();
-    eventToItem.current.set(id, itemId);
-    outbox.current?.send({ ...event, id, occurred_at: new Date().toISOString() });
+  /**
+   * [NFR-01] A balance that counts a check-off the database hasn't answered while the board is
+   * offline: shown as provisional (01 §7), since the ledger decides on reconnect.
+   */
+  const provisional = useCallback(
+    (member: BoardMember): boolean =>
+      queue.waiting &&
+      items.some((i) => {
+        const o = overrides.get(i.id);
+        const before = snapshot.occurrences.find((s) => s.id === i.id);
+        return (
+          o !== undefined &&
+          o.serverAt === null &&
+          before !== undefined &&
+          pointsHeld(i, member.id) !== pointsHeld(before, member.id)
+        );
+      }),
+    [queue.waiting, items, overrides, snapshot.occurrences],
+  );
+
+  const send = useCallback((event: Omit<CompletionEvent, 'id' | 'occurred_at'>) => {
+    outbox.current?.send({
+      ...event,
+      id: crypto.randomUUID(),
+      occurred_at: new Date().toISOString(),
+    });
   }, []);
 
   /** [CHR-04] One tap checks it off for these people; a second tap on a done tile does nothing. */
@@ -211,7 +291,7 @@ function useToday(snapshot: BoardSnapshot, post: Post) {
       if (next.status === 'completed' && next.rewarded.length > 0 && item.points > 0) {
         setCelebrating(item.id);
       }
-      send(item.id, { occurrence_id: item.id, event_type: 'complete', done_by: next.doneBy });
+      send({ occurrence_id: item.id, event_type: 'complete', done_by: next.doneBy });
     },
     [earns, send, prune],
   );
@@ -229,7 +309,7 @@ function useToday(snapshot: BoardSnapshot, post: Post) {
         }),
       );
       setCelebrating((c) => (c === item.id ? null : c));
-      send(item.id, { occurrence_id: item.id, event_type: 'undo' });
+      send({ occurrence_id: item.id, event_type: 'undo' });
     },
     [send, prune],
   );
@@ -240,7 +320,7 @@ function useToday(snapshot: BoardSnapshot, post: Post) {
     return () => clearTimeout(t);
   }, [celebrating]);
 
-  return { items, balance, earns, checkOff, undo, notice, celebrating };
+  return { items, balance, provisional, earns, checkOff, undo, notice, celebrating };
 }
 
 /** Ticks every second while `active`, for undo buttons that close on time. */
@@ -255,7 +335,7 @@ function useSecond(active: boolean): number {
 }
 
 /** [RWD-08] A balance that counts up to its new value (06 §6, about 600 ms; at once with reduced motion). */
-function CountingChip({ points }: { points: number }) {
+function CountingChip({ points, provisional }: { points: number; provisional: boolean }) {
   const [shown, setShown] = useState(points);
   const from = useRef(points);
   useEffect(() => {
@@ -280,8 +360,18 @@ function CountingChip({ points }: { points: number }) {
     };
   }, [points]);
   return (
-    <span className="fw-today__balance" data-balance={points}>
+    <span
+      className={`fw-today__balance${provisional ? ' fw-today__balance--provisional' : ''}`}
+      data-balance={points}
+      data-provisional={provisional || undefined}
+    >
       <PointsChip points={shown} />
+      {provisional ? (
+        <>
+          <Icon name="wifi-off" size={28} className="fw-today__balance-mark" />
+          <span className="fw-visually-hidden">Not saved yet</span>
+        </>
+      ) : null}
     </span>
   );
 }
@@ -502,13 +592,18 @@ export function Today({
   snapshot,
   now,
   post,
+  store = null,
+  onQueue,
 }: {
   snapshot: BoardSnapshot;
   /** The current minute. */
   now: Date;
   post: Post;
+  /** [DEV-06] Where the outbox and what the board shows ahead of the snapshot outlast a reload. */
+  store?: BoardStore | null;
+  onQueue?: (q: QueueState) => void;
 }) {
-  const t = useToday(snapshot, post);
+  const t = useToday(snapshot, post, store, onQueue);
   const { members, household, today } = snapshot;
   const [view, setView] = useState<string>('family');
   const [picker, setPicker] = useState<{ item: TodayItem; initial: string[] } | null>(null);
@@ -616,7 +711,9 @@ export function Today({
             {member.streak ? (
               <Flame days={flameDays(member.streak, t.items, member.id, today)} />
             ) : null}
-            {member.points ? <CountingChip points={t.balance(member)} /> : null}
+            {member.points ? (
+              <CountingChip points={t.balance(member)} provisional={t.provisional(member)} />
+            ) : null}
           </header>
           <div className="fw-today__me-body">
             <div className="fw-today__list">
@@ -673,7 +770,9 @@ export function Today({
                   />
                   <h2 id={`col-${m.id}`}>{m.displayName}</h2>
                   {m.streak ? <Flame days={flameDays(m.streak, t.items, m.id, today)} /> : null}
-                  {m.points ? <CountingChip points={t.balance(m)} /> : null}
+                  {m.points ? (
+                    <CountingChip points={t.balance(m)} provisional={t.provisional(m)} />
+                  ) : null}
                 </header>
                 <Parts
                   items={mine}

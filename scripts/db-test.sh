@@ -30,3 +30,6 @@ if [ ${#tests[@]} -eq 0 ]; then
 fi
 echo "applied ${#migrations[@]} migration(s); running ${#tests[@]} test file(s)"
 pg_prove -d "$db" --failures "${tests[@]}"
+# Concurrency, which pgTAP in one session cannot show (WP-18).
+echo "redemption race"
+bash "$root/scripts/redemption-race.sh" "$db"

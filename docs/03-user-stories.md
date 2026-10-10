@@ -2,6 +2,9 @@
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
 > v0.8.17: US-408 as built (WP-17, D-55): Insights for a member over 7, 30 or 90 days, history rebuilt from every check-off, and the board's streak flame.
+> v0.8.16: US-205 and US-206 as built (WP-13, D-54): the board keeps its check-offs, snapshot and page through an outage and a reload, says when it is offline or its data is old, and marks points not yet saved.
+> v0.8.15: US-1103, US-1104 and US-1105 as built in the admin app, the database and the board's API (WP-18, D-53); the board's shop screen comes with WP-20.
+> v0.8.14: US-306, US-307, US-309, US-310 and US-316 as built (WP-12, D-52): the admin Today page with the approval queue, late credit, skips and "Not actually done" with Undo; the approval switch on Home; My tasks with quick add.
 > v0.8.13: US-402 and US-408's rules for days and runs as built in the rules engine (WP-15, D-51): today counts as good once everything due is done, and is never a miss. Insights and the board's streak flame come with WP-17, goals with WP-19 and WP-20.
 > v0.8.12: US-303, US-304, US-305, US-404 (a chore's celebration), US-905, US-1001 (chores and points; events, meals and the goal meter come with their work packages), US-1002, US-1006 and US-1102 as built on the board (WP-11, D-50): undo is its own button with a second tap, and points a parent took away read "A parent changed your points".
 > v0.8.11: US-1101, US-1106 and US-1109 as built (WP-16, D-49): earns and reversals follow each item's status, a parent adds or takes away points on the member's page, and a double tap posts once. US-1102's balance and latest entries are on the board's snapshot; the board draws them with WP-11.
@@ -118,7 +121,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-205 — Keep working offline
 **As a** parent **I want** the board to keep working when wifi drops **so that** the habit doesn't break.
 **Priority:** Must · **Phase:** P1 · **Reqs:** DEV-06, NFR-01
-- Given wifi is off, when the child checks off chores, then the UI updates instantly and the events are queued.
+- Given wifi is off, when the child checks off chores, then the UI updates instantly, the events are queued, the board says "Offline: your check-offs are saved", and a balance that counts them shows as not saved yet.
+- Given the board reloads while wifi is off, when it opens, then it shows its last day with the queued check-offs still done.
 - Given wifi returns, when the outbox replays, then each event is applied exactly once and the board shows server-authoritative state.
 - Given the board has been offline for 24 hours, when it is opened, then it displays the last cached day's data with a stale indicator.
 - Given the child checked off a chore offline at 7:00 and a parent unchecked it on the phone at 7:30, when the board's 7:00 event replays at 8:00, then the chore stays open because the later event by time wins.
@@ -127,7 +131,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-206 — Know when data is stale
 **As a** parent **I want** a subtle indicator when the board's data is old **so that** I know when not to trust it.
 **Priority:** Should · **Phase:** P1 · **Reqs:** DEV-08
-- Given the last snapshot is older than 5 minutes or realtime is disconnected, when the board renders, then a discreet stale icon appears.
+- Given the last snapshot is older than 5 minutes or realtime is disconnected, when the board renders, then a discreet stale icon appears ("Updated 12 minutes ago"; Realtime's own state reads "Reconnecting…").
+- Given planning or day closing is late or erroring for the household, when the board renders, then it says today's list may be out of date.
 - Given a calendar source's last success is older than three sync intervals, when the calendar view renders, then it shows a "calendar may be out of date" badge.
 
 ### US-207 — Quiet hours and burn-in protection
@@ -211,6 +216,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given 5 occurrences are `completed`, when I select 4 and choose "Not actually done", then 4 `admin_uncomplete` events are written with one shared `batch_id` and they return to `scheduled` (or `missed` if the day is closed).
 - Given those occurrences had earned points, when the batch is applied, then matching reversal entries are posted to the points ledger exactly once.
 - Given the batch is applied, when the board refreshes, then the child sees the chores open again without a punitive message.
+- Given I unchecked a batch by mistake, when I tap Undo, then each item not changed since is done again by whoever had done it, and its points are earned again (D-52).
 
 ### US-308 — Edit a chore without rewriting history
 **As an** admin **I want** edits to a chore to affect only future occurrences **so that** past credit and streaks stay intact.
@@ -274,7 +280,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As a** parent **I want** a My tasks view on my phone **so that** I can run my own day from the same family list.
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-14, CHR-09
 - Given items are assigned to me, when I open My tasks, then I see overdue, today's, and upcoming items in that order, including shared items I am on.
-- Given I type a title in quick add, when I save, then a family-visible task due today and assigned to me exists in one step.
+- Given I type a title in quick add, when I save, then a family-visible task due today and assigned to me exists in one step, with no points, and it is on the board at once.
+- Given my sign-in isn't linked to a member, when I open My tasks, then it tells me how to link it on Members.
 - Given I complete an item on my phone, when the board refreshes, then it shows as done by me.
 
 ### US-317 — Turn reminders on or off for myself
@@ -666,6 +673,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a balance of 120 and an item costing 100, when I tap "Ask for this", then a `requested` redemption is created and the board shows it as pending.
 - Given a balance of 120 and one open request for 100, when I ask for another 100 item, then the request is refused (available = 20).
 - Given I change my mind before approval, when I cancel, then the request is withdrawn with no ledger entry.
+- Given two boards send a request for me at the same moment and I can afford only one, when they are recorded, then exactly one is accepted (D-53).
 
 ### US-1105 — Approve and fulfill a reward
 **As an** admin **I want** to approve a request and mark it fulfilled **so that** the points are spent and the reward actually happens.

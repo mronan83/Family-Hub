@@ -572,6 +572,71 @@ body {
   margin: 0;
   font-size: var(--t-heading);
 }
+/* The rewards shop (WP-18): a photo or an icon beside each reward. */
+.fw-reward__row > .fw-item {
+  flex: 1 1 240px;
+}
+.fw-reward__photo {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+}
+.fw-reward__photo--large {
+  width: 160px;
+  height: 160px;
+  border-radius: var(--r-md);
+}
+.fw-reward__photo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-4);
+}
+.fw-reward__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-sm);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+}
+/* A parent's day and My tasks (WP-12): a tick for "Not actually done", who did it, Undo. */
+.fw-day__row {
+  align-items: flex-start;
+}
+/* The item keeps room for its name; on a phone the buttons go on their own line below it. */
+.fw-day__row > .fw-item {
+  flex: 1 1 260px;
+}
+.fw-day__row > .fw-actions {
+  flex: 0 1 auto;
+}
+.fw-day__select {
+  flex: none;
+  min-height: auto;
+  padding-top: 2px;
+}
+.fw-day__who > summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch);
+  color: var(--primary-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+.fw-day__who[open] {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-day__undo {
+  display: inline-flex;
+  margin-left: var(--s-3);
+}
 .fw-dates {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -743,6 +808,18 @@ html:has(.board) {
   font-size: var(--t-small);
   color: var(--text-soft);
 }
+/* [DEV-08] Offline and stale lines (WP-13, 06 §7.2): pills in the bar, never over chores. */
+.fw-board__health {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}
+.fw-board__health .fw-banner {
+  margin: 0;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-pill);
+}
 
 /* Board Today (WP-11) ------------------------------------------------------------------------ */
 .fw-today {
@@ -826,6 +903,19 @@ html:has(.board) {
 .fw-today__col-head .fw-today__balance,
 .fw-today__me-head .fw-today__balance {
   margin-left: auto;
+}
+.fw-today__balance {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+/* [NFR-01] Points the database hasn't answered yet, while offline: a dashed ring and wifi-off. */
+.fw-today__balance--provisional .fw-points {
+  outline: 3px dashed var(--missed-text);
+  outline-offset: 3px;
+}
+.fw-today__balance-mark {
+  color: var(--missed-text);
 }
 .fw-today__progress {
   margin: var(--s-1) 0 0;

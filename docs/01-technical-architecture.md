@@ -1,8 +1,11 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.22: the rules engine as built (WP-15, D-51): `evaluateGoal` and `evaluateHistory` in `packages/rules-engine`, pure and property-tested (§4, `02` §5).
 > v0.8.26: streak history and insights (WP-17, D-55): day close stores each member's days and runs from the rules engine, the Insights page, and the board's streak flame (§5.8, §7).
+> v0.8.25: the board through an outage (WP-13, D-54): its outbox, last snapshot and check-offs in IndexedDB; the service worker keeps its page and build files; offline and stale lines; provisional points (§5.3, §7).
+> v0.8.24: the rewards shop (WP-18, D-53): `POST /api/redemptions` and `/api/redemptions/cancel` for the board; a parent decides in the admin app; photos in a private Storage bucket per household (§5.7).
+> v0.8.23: a parent's day (WP-12, D-52): the admin app records a parent's completions, unchecks, skips, approvals and rejections through `record_completions()`, with event ids from the form's request id; a batch is put back by `undo_uncheck_batch()` (§5.2).
+> v0.8.22: the rules engine as built (WP-15, D-51): `evaluateGoal` and `evaluateHistory` in `packages/rules-engine`, pure and property-tested (§4, `02` §5).
 > v0.8.21: the board's Today (WP-11, D-50): the board checks items off through an in-memory outbox and shows them at once; the snapshot carries today's items and the undo window, and `chore_occurrence` and `chore` are in Realtime (§5.2, §7).
 > v0.8.20: the points ledger (WP-16, D-49): earns and reversals by trigger, a parent's adjustments, each member's points on the board's snapshot and in Realtime, and the status check covers points too (§5.6, §7).
 > v0.8.19: everyone does their own (WP-43, D-47): an item with several people is planned one occurrence per person, or one shared (§3, §5.6).
@@ -147,7 +150,7 @@ flowchart TB
 | `CALSYNC` | Calendar sync | Fetch ICS/CalDAV, parse, expand recurrences into a window, upsert events/instances, record health. | `ical.js`, `tsdav` | CAL-01..03, CAL-06..08 |
 | `MENUIMP` | Menu import | Adapter interface + implementations + CSV/manual; never overwrites manual overrides. | Route handler job | MENU-01..05 |
 | `NOTIFY` | Reminders | Sends web push reminders and the optional daily digest to admins who turned them on, switchable per person, per device and per item (D-35); at most once per item and person and never after it is done; holds reminders during quiet hours; hides private titles on the lock screen; prunes expired subscriptions. | Route handler job, `web-push` (VAPID), admin service worker | CHR-15, CHR-16, CHR-17 |
-| `OUTBOX` | Offline outbox | Service worker caches app shell; IndexedDB stores board snapshot + queued completion events; replays with idempotency keys. | Serwist, Dexie | DEV-06, NFR-01 |
+| `OUTBOX` | Offline outbox | Service worker caches app shell; IndexedDB stores board snapshot + queued completion events; replays with idempotency keys. | Service worker (own, D-54), Dexie | DEV-06, NFR-01 |
 | `SCHED` | Scheduler | Time-based triggers into signed job endpoints. | `pg_cron` + `pg_net` | CAL-02, CHR-03, MENU-05 |
 | `DB` | Database | Postgres, RLS (incl. `can_see_chore` for private items), functions and triggers (the `audit_row` audit triggers, `create_household` and the invite functions (`02` §4.8), `fold_occurrence_status`, status / ledger / dirty-goal triggers, `close_past_due`, `resolve_day_type`, `board_snapshot`), views `v_points_balance`, `v_member_occurrence`. | Supabase Postgres 15+ | all |
 | `RT` | Realtime | Change notifications to board, filtered by RLS. | Supabase Realtime | DEV-05 |
@@ -228,7 +231,9 @@ If `RULES` evaluation fails after the insert, the completion still stands and th
 
 On a member's own screen `done_by` is that member; on the Family view the picker lists the item's assignees first and allows anyone in the family, or several people (D-30). Only members who earn rewards get points, approval and celebrations (D-32).
 
-**As built (WP-11, D-50).** A tap lays the check-off over the snapshot at once (`lib/today.ts` works out what the database will make of it: done, or waiting for a parent), and hands the event to the board's outbox (`lib/outbox.ts`). The outbox sends events in order, at most 100 at a time; events queued while a batch is out go together in the next one. A failed send is retried with the same ids after 1, 2, 5, 10, then every 30 seconds, so a resend counts once. A request the API refuses outright (400) is answered as invalid rather than retried. Each answer replaces the board's guess with the database's state; `gone`, `refused` and `invalid` take the guess back and say why in the board's voice. The board's guess stops applying once a snapshot read after the database answered shows the change. Undo posts an `undo` event. Until WP-13 the outbox lives in memory, so a reload drops what is unanswered.
+**As built (WP-12, D-52).** A parent's actions in the admin app (Today and My tasks) are server actions that call `record_completions()` as the parent, so the same rules and points apply as for a board. Each event's id is a hash of the form's request id (one per page view), the occurrence and the event type, so a form sent twice records once. "Not actually done" sends one `admin_uncomplete` per ticked item with the request id as `batch_id`. `undo_uncheck_batch()` (security invoker) puts back, in one transaction, each item whose status still comes from the batch's event, as an `admin_complete` by whoever had done it.
+
+**As built (WP-11, D-50).** A tap lays the check-off over the snapshot at once (`lib/today.ts` works out what the database will make of it: done, or waiting for a parent), and hands the event to the board's outbox (`lib/outbox.ts`). The outbox sends events in order, at most 100 at a time; events queued while a batch is out go together in the next one. A failed send is retried with the same ids after 1, 2, 5, 10, then every 30 seconds, so a resend counts once. A request the API refuses outright (400) is answered as invalid rather than retried. Each answer replaces the board's guess with the database's state; `gone`, `refused` and `invalid` take the guess back and say why in the board's voice. The board's guess stops applying once a snapshot read after the database answered shows the change. Undo posts an `undo` event. WP-13 keeps the outbox in IndexedDB, so a reload or an outage drops nothing (§5.3).
 
 The fold always takes the event with the latest `occurred_at` (D-20), so an event that arrives late but happened earlier never overrides a later decision. `status_event_id` records the event the status was folded from, not the event that was just inserted.
 
@@ -259,6 +264,8 @@ sequenceDiagram
 ```
 
 **Conflict rule (D-20).** Every event carries the time it happened (`occurred_at`), online or offline. The fold orders an occurrence's events by `occurred_at`, then `recorded_at`, then `id`, and the latest wins. Example: the child taps *Make bed* offline at 7:00; a parent unchecks it on the phone at 7:30; the tap replays at 8:00. The 7:30 uncheck is later by event time, so the chore stays open. The database clamps `occurred_at` to the time the event was received, so a device clock running fast cannot win future conflicts.
+
+**As built (WP-13, D-54).** The outbox keeps each event in IndexedDB (`lib/board-store.ts`, Dexie) from the tap until the database answers it. When the board starts, what waited goes first, oldest first, ahead of anything new, with the ids it was made with; when the network returns (the browser's `online`), it sends at once rather than at the next retry. The check-offs the board shows ahead of its snapshot are kept too, so after a reload it looks as it did. The store belongs to the paired board: paired again as another device, it starts empty. The answer to a replayed event carries the occurrence as the database now has it, so a parent's later decision (the 7:30 uncheck above) replaces the board's guess.
 
 **Today only (D-21).** The board shows today's chores only. Late credit for a past day is parent-only (`admin_complete`). A board event whose `occurred_at` falls outside the occurrence's due date is kept but flagged for a parent, which covers an offline board that missed midnight.
 
@@ -411,6 +418,8 @@ sequenceDiagram
   D-->>B: realtime: balance updated
   P->>M: mark fulfilled after the activity happens
 ```
+
+**As built (WP-18, D-53).** `POST /api/redemptions` takes `{id, member_id, item_id}` (JSON only) and calls `request_redemption()` as the caller. It answers 200 with the request (asking again with the same id answers the same), 409 with the reason when the shop's rules refuse it (`not_enough_points`, `out_of_stock`, `weekly_limit`, `not_earning`), 403 or 404 otherwise. `POST /api/redemptions/cancel` cancels a request still waiting. A parent approves, says not this time, marks given or cancels (refunding) on the Rewards page, through `decide_redemption()`, `fulfil_redemption()` and `cancel_redemption()`. Reward photos live in Supabase Storage (`rewards` bucket, private, one folder per household under its RLS). The admin app uploads them as the parent and shows them through signed links. Two requests at once are tested with real concurrent sessions (`scripts/redemption-race.sh`, run by `db:test`).
 
 Approval (when switched on) is the control point: parents verify chores **before** points are spent. If a completion is unchecked after points were already spent, the reversal still posts (truth wins), the balance may go below zero, and it is shown as points to earn back. Goal achievement and payouts are likewise derived and reversible: if a reversal drops a goal below its target, the goal returns to `active` and any points payout is reversed (see `02` §5). A cancelled approved redemption posts a `refund`.
 
@@ -571,6 +580,13 @@ sequenceDiagram
 - `RULES` is isomorphic: the board projects goal progress locally so the meter moves instantly even offline; the server result is authoritative on rebase.
 - **Streak flame (WP-17, D-55):** the snapshot carries each earner's run as of the last closed day (`streak_segment`); the board adds today with `evaluateHistory` over today's items once today is good (`lib/streak.ts`). `streak_segment` is in Realtime, so the flame follows day close.
 - Stale indicator: subtle icon when `now - fetched_at > 5 min` or realtime is disconnected; calendar-specific stale badge when the source's last success is older than 3 sync intervals.
+
+**As built (WP-13, D-54).**
+- **Service worker** (generated into `public/sw.js` from `packages/ui/scripts/sw.template.js`; the project's own, not Serwist): fonts precached; `/_next/static/*` cache first as the board loads it (content-hashed, the newest 400 kept); brand files and icons stale-while-revalidate; the board's page network first, kept, and served from the cache only when there is no network. A redirect (to pairing, or to sign in again) is always followed and never kept. Nothing else is cached.
+- **Snapshot:** each one the board reads is saved; when it starts, a saved snapshot later than the page's wins (the page may be the worker's copy). The board reads again every four minutes with nothing heard, so a quiet household's snapshot stays fresh and a change Realtime missed is picked up.
+- **Lines in the bar** (06 §7.2), neither a second live region: "Offline: your check-offs are saved" while the browser is offline or the outbox cannot send; "Updated 12 minutes ago" once the snapshot is over five minutes old; "Today's list may be out of date" when `occurrence_gen` or `day_close` is `stale` or `failing` for the household (`job_health()`, which the board may read through job_run's RLS; a job that never ran is not behind). Realtime's own state stays in the live status ("Reconnecting…").
+- **Provisional points:** while the outbox cannot send, a balance that counts check-offs the database hasn't answered has a dashed ring and wifi-off ("Not saved yet").
+- **The 24 hours (NFR-01):** CI runs a day offline with Playwright's clock (every timer in the UI suite; the board opened after a day on the preview). The real 24-hour soak runs on the Pi (WP-24).
 
 **Time:** all instants are `timestamptz` (UTC). Business dates (`due_date`, `credit_date`, `plan_date`) are `date` in the **household timezone**. The household timezone is stored, never inferred from the device.
 

@@ -50,8 +50,13 @@ test("[PTS-02] Members shows each child's balance; their page shows where it cam
   await page.getByRole('link', { name: 'Edit Leo' }).click();
   const section = page.getByRole('region', { name: 'Points' });
   await expect(section).toContainText(String(points));
+  // His latest 30 entries, newest first: the specs before this one add today's, so the seed's older
+  // ones (Alex's thank-you among them) may be further back. Who made an adjustment is checked below.
   const history = section.getByRole('list', { name: 'Leo’s points' });
-  await expect(history).toContainText('Helped carry the shopping · by Alex');
+  const entries = Number(
+    sql(`select count(*) from public.points_ledger where member_id = '${leo}'`),
+  );
+  await expect(history.getByRole('listitem')).toHaveCount(Math.min(entries, 30));
   await expect(history).toContainText('Set the table');
   const { violations } = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze();
   expect(violations.flatMap((v) => v.nodes.map((n) => `${n.target}: ${n.failureSummary}`))).toEqual(
