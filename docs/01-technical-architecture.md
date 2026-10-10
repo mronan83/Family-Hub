@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.36: the board's outbox sends nothing while the browser says it is offline, and sends at once when it says it is back (D-64, §7).
 > v0.8.35: calendar sync as built (WP-22, D-63): one call every 15 minutes syncs each household's calendars due; saving a link syncs it at once; a broken link is the calendar's own state, not a failing job (§5.4, §5.6, §6.4).
 > v0.8.34: e2e reliability: each spec retires the board it paired when it ends, so no board outlives its spec (§9.5).
 > v0.8.33: production's jobs leave the demo family alone (`household.is_demo`, D-62, §5.6, §9.5).
@@ -276,7 +277,7 @@ sequenceDiagram
 
 **Conflict rule (D-20).** Every event carries the time it happened (`occurred_at`), online or offline. The fold orders an occurrence's events by `occurred_at`, then `recorded_at`, then `id`, and the latest wins. Example: the child taps *Make bed* offline at 7:00; a parent unchecks it on the phone at 7:30; the tap replays at 8:00. The 7:30 uncheck is later by event time, so the chore stays open. The database clamps `occurred_at` to the time the event was received, so a device clock running fast cannot win future conflicts.
 
-**As built (WP-13, D-54).** The outbox keeps each event in IndexedDB (`lib/board-store.ts`, Dexie) from the tap until the database answers it. When the board starts, what waited goes first, oldest first, ahead of anything new, with the ids it was made with; when the network returns (the browser's `online`), it sends at once rather than at the next retry. The check-offs the board shows ahead of its snapshot are kept too, so after a reload it looks as it did. The store belongs to the paired board: paired again as another device, it starts empty. The answer to a replayed event carries the occurrence as the database now has it, so a parent's later decision (the 7:30 uncheck above) replaces the board's guess.
+**As built (WP-13, D-54).** The outbox keeps each event in IndexedDB (`lib/board-store.ts`, Dexie) from the tap until the database answers it. When the board starts, what waited goes first, oldest first, ahead of anything new, with the ids it was made with; when the network returns (the browser's `online`), it sends at once rather than at the next retry. While the browser says it is offline (`navigator.onLine`), it sends nothing and waits, looking again at each retry; a browser that says online while the network is down is covered by the retries (D-64). The check-offs the board shows ahead of its snapshot are kept too, so after a reload it looks as it did. The store belongs to the paired board: paired again as another device, it starts empty. The answer to a replayed event carries the occurrence as the database now has it, so a parent's later decision (the 7:30 uncheck above) replaces the board's guess.
 
 **Today only (D-21).** The board shows today's chores only. Late credit for a past day is parent-only (`admin_complete`). A board event whose `occurred_at` falls outside the occurrence's due date is kept but flagged for a parent, which covers an offline board that missed midnight.
 
