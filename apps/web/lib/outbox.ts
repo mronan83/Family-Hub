@@ -5,7 +5,8 @@ import type { OccurrenceStatus } from '@familywise/rules-engine';
  * POST /api/completions answers them. Each event keeps the id it was made with, so sending it again
  * (a retry after a dropped connection, or after the board reloads) records nothing new (WP-10). With
  * a store (IndexedDB on the board, WP-13) it survives a reload or a long outage: what was waiting is
- * sent first, oldest first, when the board starts again.
+ * sent first, oldest first, when the board starts again. While the browser says it is offline nothing
+ * is sent: events wait, and go when it says it is back (D-64).
  */
 export interface CompletionEvent {
   id: string;
@@ -60,12 +61,19 @@ export interface OutboxOptions {
   /** Called whenever pending() or waiting() may have changed. */
   onChange?: () => void;
   timers?: Pick<typeof globalThis, 'setTimeout' | 'clearTimeout'>;
+  /**
+   * Whether the browser says it is online (`navigator.onLine` on the board). While it says not,
+   * nothing is sent and a retry waits, so the board shows it is waiting; the board calls retry()
+   * when the browser says it is back. A browser that says online while the network is down is
+   * covered by the retries as before.
+   */
+  isOnline?: () => boolean;
 }
 
 export function createOutbox(
   post: Post,
   onAnswer: (answer: Answer, event: CompletionEvent | undefined) => void,
-  { store, onChange, timers = globalThis }: OutboxOptions = {},
+  { store, onChange, timers = globalThis, isOnline = () => true }: OutboxOptions = {},
 ): Outbox {
   const queue: CompletionEvent[] = [];
   let sending = false;
@@ -80,8 +88,25 @@ export function createOutbox(
   };
   const changed = () => onChange?.();
 
+  function later() {
+    failures += 1;
+    timer ??= timers.setTimeout(
+      () => {
+        timer = null;
+        void flush();
+      },
+      RETRY_MS[Math.min(failures, RETRY_MS.length) - 1],
+    );
+  }
+
   async function flush() {
     if (sending || stopped || !loaded || queue.length === 0) return;
+    // [NFR-01] Offline, by the browser's own word: hold everything, and look again at the next retry.
+    if (!isOnline()) {
+      later();
+      changed();
+      return;
+    }
     sending = true;
     const batch = queue.slice(0, 100);
     try {
@@ -96,14 +121,7 @@ export function createOutbox(
         );
       }
     } catch {
-      failures += 1;
-      timer ??= timers.setTimeout(
-        () => {
-          timer = null;
-          void flush();
-        },
-        RETRY_MS[Math.min(failures, RETRY_MS.length) - 1],
-      );
+      later();
     } finally {
       sending = false;
       changed();
