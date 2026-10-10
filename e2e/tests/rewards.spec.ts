@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
+import { retireBoard } from '../support/board';
 
 // [PTS-03][PTS-04] The rewards shop on the preview (WP-18, D-53), as Alex of the demo family with a
 // paired board: a reward added with a photo; the board asks for it for Maya (asking twice is one
@@ -46,7 +47,9 @@ let cost = 0;
 const ask = (id: string, member: string, item: string) =>
   board.request.post('/api/redemptions', { data: { id, member_id: member, item_id: item } });
 
-test.beforeAll(async ({ browser }) => {
+test.beforeAll(async ({ browser }, testInfo) => {
+  // Signing in and pairing a board can take most of 30 s on a cold preview.
+  testInfo.setTimeout(90_000);
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
        delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
   admin = await browser.newPage();
@@ -64,6 +67,10 @@ test.beforeAll(async ({ browser }) => {
   await board.getByRole('button', { name: 'Pair this board', exact: true }).click();
   await expect(board).toHaveURL(/\/board$/);
   await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
+});
+
+test.afterAll(async () => {
+  await retireBoard(board, BOARD);
 });
 
 test('[PTS-03][US-1103] a parent adds a reward with a photo; it is in the shop, the photo kept privately', async () => {

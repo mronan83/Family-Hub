@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
+import { retireBoard } from '../support/board';
 
 // [PTS-05][PTS-06] Bonus rules and the wishlist on the preview (WP-30, D-57), as Alex of the demo
 // family with a paired board. Leo's seeded last week (see insights.spec.ts) has runs good 2, bad 1,
@@ -47,9 +48,15 @@ let admin: Page;
 let board: Page;
 let ruleId = '';
 
-test.beforeAll(async ({ browser }) => {
+test.beforeAll(async ({ browser }, testInfo) => {
+  // Signing in and pairing a board can take most of 30 s on a cold preview.
+  testInfo.setTimeout(90_000);
+  // A rule left by a failed attempt is archived, so a retry adds the only one (what it paid stays in
+  // the ledger, which never changes).
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
+       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';
+       update public.points_rule set active = false, archived_at = now()
+        where household_id = '${DEMO}' and archived_at is null and streak_days = 3 and bonus_points = 7;`);
   admin = await browser.newPage();
   await admin.goto('/sign-in');
   await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
@@ -67,11 +74,25 @@ test.beforeAll(async ({ browser }) => {
   await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
 });
 
+/**
+ * Taps "Pay bonuses now" and waits for the server action's own answer: where it sends the page,
+ * and so how many bonuses it posted. The page shows that number from its address, so a page that
+ * never moved on and one sent to the same address again would look the same.
+ */
+async function payBonuses(): Promise<{ to: string; posted: number | null }> {
+  const answer = admin.waitForResponse(
+    (r) => r.request().method() === 'POST' && r.request().headers()['next-action'] !== undefined,
+  );
+  await admin.getByRole('button', { name: 'Pay bonuses now', exact: true }).click();
+  const to = (await (await answer).headerValue('x-action-redirect')) ?? '';
+  const posted = /[?&]posted=(\d+)/.exec(to);
+  return { to, posted: posted ? Number(posted[1]) : null };
+}
+
 test.afterAll(async () => {
   // Leave nothing pinned for Leo and no board behind; the archived rule pays nothing more.
-  sql(`delete from public.wishlist_pin where member_id = '${memberId('Leo')}';
-       delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
+  sql(`delete from public.wishlist_pin where member_id = '${memberId('Leo')}';`);
+  await retireBoard(board, BOARD);
 });
 
 test('[PTS-05][US-1107] a streak bonus pays once for a run that reaches it; paying again pays nothing', async () => {
@@ -103,7 +124,7 @@ test('[PTS-05][US-1107] a streak bonus pays once for a run that reaches it; payi
 
   // Paying brings each child's history up to date first, then pays every earner's good runs of 3
   // or more that reached 3 on or after the date: Leo's among them.
-  await admin.getByRole('button', { name: 'Pay bonuses now', exact: true }).click();
+  const first = await payBonuses();
   await expect(admin.getByRole('status')).toHaveText(/^Paid (one bonus|\d+ bonuses)\.$/);
   const expected = Number(
     sql(`select count(*) from public.streak_segment s
@@ -121,13 +142,21 @@ test('[PTS-05][US-1107] a streak bonus pays once for a run that reaches it; payi
   ).toBe(`7:3 good days in a row:system:rule:${ruleId}:${leo}:${householdDay(-4)}`);
   expect(balance(leo)).toBe(before + 7);
 
-  // The done-when: paying again pays nothing.
-  await admin.getByRole('button', { name: 'Pay bonuses now', exact: true }).click();
-  await expect(admin.getByRole('status')).toHaveText('No new bonuses to pay.');
-  expect(sql(`select count(*) from public.points_ledger where points_rule_id = '${ruleId}'`)).toBe(
-    String(expected),
-  );
+  if (first.posted !== null) expect(first.posted).toBe(expected);
+
+  // The done-when: paying again pays nothing. The ledger first, once the action has answered, then
+  // what the page says: a second payment and a page still showing the first tap's words look alike.
+  const again = await payBonuses();
+  expect(
+    sql(`select count(*) from public.points_ledger where points_rule_id = '${ruleId}'`),
+    `bonuses in the ledger after paying again (the action sent the page to ${again.to || 'nowhere'})`,
+  ).toBe(String(expected));
   expect(balance(leo)).toBe(before + 7);
+  if (again.posted !== null) expect(again.posted, 'bonuses the second payment posted').toBe(0);
+  await expect(
+    admin.getByRole('status'),
+    `the page after paying again (the action sent it to ${again.to || 'nowhere'})`,
+  ).toHaveText('No new bonuses to pay.');
 });
 
 test('[PTS-05] a bonus turned off pays nothing; back on it counts from today; archived, its bonuses stay', async () => {

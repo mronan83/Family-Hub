@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
+import { retireBoard } from '../support/board';
 
 // [CHR-05][CHR-06][CHR-08][CHR-14] A parent's day on the preview (WP-12, D-52), as Alex of the demo
 // family: "Not actually done" on four of five check-offs is one batch, the board shows them open again
@@ -69,7 +70,9 @@ let admin: Page;
 let board: Page;
 let started = '';
 
-test.beforeAll(async ({ browser }) => {
+test.beforeAll(async ({ browser }, testInfo) => {
+  // Signing in and pairing a board can take most of 30 s on a cold preview.
+  testInfo.setTimeout(90_000);
   putBack();
   started = sql(`select now()`);
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
@@ -88,8 +91,9 @@ test.beforeAll(async ({ browser }) => {
   await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
 });
 
-test.afterAll(() => {
+test.afterAll(async () => {
   putBack();
+  await retireBoard(board, BOARD);
 });
 
 const column = (name: string) =>
