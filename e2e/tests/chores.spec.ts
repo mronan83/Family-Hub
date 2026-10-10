@@ -81,7 +81,8 @@ async function enter(form: Locator, e: Entry) {
     }
   }
   if (e.onDate) await form.getByLabel('Due date').fill(e.onDate);
-  if (e.time) await form.getByLabel('Due time').fill(e.time);
+  // By role: the Reminders choice "At the due time" also carries the words.
+  if (e.time) await form.getByRole('textbox', { name: /^Due time/ }).fill(e.time);
   await pick(form, e.icon);
 }
 
