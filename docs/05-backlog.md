@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.48: WP-40 done (PR #36): reminders by web push. Nothing waits on it; the owner runs the vapid-keys workflow once to switch sending on.
 > v0.8.47: WP-40 in review (PR #36): reminders by web push (D-58).
 > v0.8.46: WP-30 done (PR #35): bonus rules and the wishlist. Nothing waits on it.
 > v0.8.45: WP-30 in review (PR #35): bonus rules and the wishlist (D-57).
@@ -132,7 +133,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Queued |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Done (PR #35) |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Queued |
-| WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | In review (PR #36) |
+| WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Done (PR #36) |
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
 | WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
