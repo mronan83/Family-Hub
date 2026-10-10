@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.25: `household.is_demo`: production's jobs leave the demo family alone; only the server, the seed or a migration changes it (D-62, §3.1).
 > v0.8.24: `link_my_member()`: a parent links their own sign-in to an adult of their household, moving it from wherever it was (D-61, §4.8).
 > v0.8.23: the board's shop, requests and goals (WP-20, D-59): the snapshot's `available`, `requests` and `limited` for each earner, the shop's `left`, `photo` and `description`, and `goals`; `mark_goal_celebrated()`; the shop, requests and goals in the Realtime publication (§4.6, §4.8).
 > v0.8.22: reminders as built (WP-40, D-58): `reminder_preference`, `push_subscription` and `reminder_delivery` with each person's own RLS, and the functions that plan, claim and finish reminders (§3.7).
@@ -345,7 +346,7 @@ erDiagram
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `household` | `name`, `timezone` (IANA), `week_start` (0–6), `locale` | `timezone` is authoritative for all business dates; an unknown zone is rejected by trigger (`private.check_timezone`). Its `id` is the tenant key, so it is the one table without a `household_id` column. |
+| `household` | `name`, `timezone` (IANA), `week_start` (0–6), `locale`, `is_demo` | `timezone` is authoritative for all business dates; an unknown zone is rejected by trigger (`private.check_timezone`). Its `id` is the tenant key, so it is the one table without a `household_id` column. `is_demo` (default false) marks the demo family, which production's jobs leave alone; only the server, the seed or a migration changes it (`private.guard_household_demo`, D-62). |
 | `household_user` | `household_id`, `user_id → auth.users`, `role` (`owner`/`admin`) | PK `(household_id, user_id)`. Defines admins. |
 | `member` | `display_name`, `role` (`child`/`adult`), `avatar_key` (one of the 8 brand avatars), `color` (brand token key `member-1`..`member-6`, never hex, D-18), `birth_year?`, `user_id?`, `earns_rewards`, `archived_at` | Children have no `user_id` (enforced by check). An adult's `user_id` must be an admin of the same household (`trg_member_user`), and is cleared when that admin leaves it (WP-04). Archived, never deleted, from the admin app. Supports multiple children. `earns_rewards` is set from the role on insert (on for a child, off for an adult) and can be changed per person (D-32). |
 | `invite` | `email`, `token_hash`, `role`, `invited_by`, `expires_at`, `accepted_at`, `accepted_by`, `revoked_at` | Token stored only as its SHA-256 (D-39). One use, 7 days, accepted only by an account with its email; a new invite to the same email revokes the open one; admins can cancel. |

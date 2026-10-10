@@ -23,8 +23,14 @@ const fail = (what: string, error: { message: string } | null) => {
 
 export function supabaseJobStore(db: SupabaseClient): JobStore {
   return {
+    // [NFR-07] Every household but the demo family: previews and e2e run as it in this database,
+    // and its tests run what the jobs do themselves, so no job lands mid-test (D-62).
     async households() {
-      const { data, error } = await db.from('household').select('id').order('id');
+      const { data, error } = await db
+        .from('household')
+        .select('id')
+        .eq('is_demo', false)
+        .order('id');
       fail('list households', error);
       return (data ?? []).map((h) => h.id as string);
     },
