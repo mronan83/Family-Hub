@@ -27,8 +27,9 @@ delete from auth.users u
 delete from private.household_setup_code
  where (used_at is not null and household_id is null) or (used_at is null and expires_at < now());
 
-insert into public.household (id, name, timezone)
-values ('0de00000-0000-4000-8000-000000000001', 'Demo family', 'America/New_York');
+-- is_demo: production's jobs leave the demo family alone; its tests run what the jobs do (D-62).
+insert into public.household (id, name, timezone, is_demo)
+values ('0de00000-0000-4000-8000-000000000001', 'Demo family', 'America/New_York', true);
 
 insert into public.household_settings (household_id)
 values ('0de00000-0000-4000-8000-000000000001');
