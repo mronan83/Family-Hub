@@ -14,6 +14,7 @@ export default [
         self: 'readonly',
         caches: 'readonly',
         fetch: 'readonly',
+        Response: 'readonly',
         URL: 'readonly',
         __PRECACHE__: 'readonly',
       },

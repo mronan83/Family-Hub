@@ -3,6 +3,7 @@ import {
   type Answer,
   type CompletionEvent,
   createOutbox,
+  memoryStore,
   postCompletions,
   RETRY_MS,
 } from './outbox';
@@ -91,6 +92,102 @@ describe('the board outbox', () => {
     await vi.advanceTimersByTimeAsync(RETRY_MS[0]!);
     expect(post.mock.calls.at(-1)![0].map((e) => e.id)).toEqual(['e1', 'e2']);
     expect(outbox.pending()).toBe(0);
+  });
+
+  it('[DEV-06] keeps each event in its store until it is answered', async () => {
+    let fail = true;
+    const post = vi.fn(async (events: CompletionEvent[]) => {
+      if (fail) throw new Error('offline');
+      return events.map(recorded);
+    });
+    const store = memoryStore();
+    const outbox = createOutbox(post, () => undefined, { store });
+    outbox.send(event(1));
+    outbox.send(event(2));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.events.map((e) => e.id)).toEqual(['e1', 'e2']);
+    fail = false;
+    await vi.advanceTimersByTimeAsync(RETRY_MS[0]!);
+    expect(store.events).toEqual([]);
+  });
+
+  it('[DEV-06][NFR-01] after a reload, sends what waited first, oldest first, then what is new', async () => {
+    const post = vi.fn(async (events: CompletionEvent[]) => events.map(recorded));
+    const store = memoryStore([event(1), event(2)]);
+    const answered: [string, string | undefined][] = [];
+    const outbox = createOutbox(post, (a, e) => answered.push([a.id, e?.occurrence_id]), {
+      store,
+    });
+    // Made before the store was read: it still goes after what waited.
+    outbox.send(event(3));
+    await vi.runAllTimersAsync();
+    expect(post.mock.calls.flatMap(([events]) => events.map((e) => e.id))).toEqual([
+      'e1',
+      'e2',
+      'e3',
+    ]);
+    // Each answer comes with its event, so the board knows the item without having made it.
+    expect(answered).toEqual([
+      ['e1', 'o1'],
+      ['e2', 'o2'],
+      ['e3', 'o3'],
+    ]);
+    expect(store.events).toEqual([]);
+  });
+
+  it('[NFR-01] an event both saved and sent again goes once', async () => {
+    const post = vi.fn(async (events: CompletionEvent[]) => events.map(recorded));
+    const store = memoryStore([event(1)]);
+    const outbox = createOutbox(post, () => undefined, { store });
+    outbox.send(event(1));
+    await vi.runAllTimersAsync();
+    expect(post.mock.calls.flatMap(([events]) => events.map((e) => e.id))).toEqual(['e1']);
+  });
+
+  it('[DEV-08] says when it is waiting to retry, and sends at once when asked (the network is back)', async () => {
+    let fail = true;
+    const post = vi.fn(async (events: CompletionEvent[]) => {
+      if (fail) throw new Error('offline');
+      return events.map(recorded);
+    });
+    const changes = vi.fn();
+    const outbox = createOutbox(post, () => undefined, { onChange: changes });
+    outbox.send(event(1));
+    await vi.advanceTimersByTimeAsync(0);
+    // Several failures: the next retry is 5 s away.
+    await vi.advanceTimersByTimeAsync(RETRY_MS[0]! + RETRY_MS[1]!);
+    expect(outbox.waiting()).toBe(true);
+    expect(changes).toHaveBeenCalled();
+    fail = false;
+    outbox.retry();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(post).toHaveBeenCalledTimes(4);
+    expect(outbox.waiting()).toBe(false);
+    expect(outbox.pending()).toBe(0);
+    // Nothing waits, so asking again sends nothing.
+    outbox.retry();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(post).toHaveBeenCalledTimes(4);
+  });
+
+  it('[NFR-01] a store that fails does not stop the board', async () => {
+    const post = vi.fn(async (events: CompletionEvent[]) => events.map(recorded));
+    const broken = {
+      load: async () => {
+        throw new Error('no IndexedDB');
+      },
+      add: async () => {
+        throw new Error('no IndexedDB');
+      },
+      remove: async () => {
+        throw new Error('no IndexedDB');
+      },
+    };
+    const answers: string[] = [];
+    const outbox = createOutbox(post, (a) => answers.push(a.id), { store: broken });
+    outbox.send(event(1));
+    await vi.runAllTimersAsync();
+    expect(answers).toEqual(['e1']);
   });
 
   it('stops cleanly when the board leaves', async () => {

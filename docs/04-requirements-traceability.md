@@ -134,7 +134,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | DEV-05 | US-204 | WP-06 | RT, BRD, DB | board_snapshot, all board-readable tables | U, DB, E2E |
 | DEV-06 | US-205 | WP-13 | OUTBOX, BRD, API | chore_completion_event | E2E, U |
 | DEV-07 | US-207 | WP-34 | PI, BRD | household_settings | HW |
-| DEV-08 | US-206 | WP-13 | BRD, OBS | job_run | E2E |
+| DEV-08 | US-206 | WP-13 | BRD, OBS | job_run | E2E, U, DB |
 | CHR-01 | US-301 | WP-08 | ADM, API | chore, chore_assignee | U, DB, E2E |
 | CHR-02 | US-302 | WP-09 | OCCGEN, DB | chore, school_closure | U, DB, E2E |
 | CHR-03 | US-303, US-308, US-311 | WP-09 | OCCGEN, SCHED, DB | chore_occurrence | DB, U, E2E |
@@ -198,7 +198,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | BRD-05 | US-1004 | WP-35 | ADM, BRD | household_settings | E2E |
 | BRD-06 | US-1005 | WP-14 | BRD | — | E2E |
 | BRD-07 | US-1006 | WP-11 | BRD, API | chore_occurrence, chore_occurrence_assignee | E2E |
-| NFR-01 | US-205 | WP-13 | OUTBOX, BRD | — | E2E |
+| NFR-01 | US-205 | WP-13 | OUTBOX, BRD | — | E2E, U, HW |
 | NFR-02 | US-905 | WP-14 | BRD, PI | — | HW, E2E |
 | NFR-03 | US-905 | WP-11 | BRD | — | HW, E2E |
 | NFR-04 | US-102, US-901 | WP-02, WP-03, WP-05 | DB, VAULT, SAUTH, API | all tables | DB, REV |
@@ -395,6 +395,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.36 | WP-13 the board through an outage (D-54), in review (PR #32): the outbox, last snapshot and check-offs ahead of it in IndexedDB (Dexie) for the paired board; the service worker keeps the board's page (used only with no network) and the build files it loads; "Offline: your check-offs are saved", "Updated 12 minutes ago" and "Today's list may be out of date" in the bar; provisional points while offline. Traced by unit tests (`lib/outbox` with a store, `lib/board-store` on fake-indexeddb, `lib/board-health`), pgTAP (`180_board_job_health`: a board reads its own household's job health, not another's), the UI suite on `/dev/board` (`offline.spec.ts`: three check-offs offline through a reload served by the worker, sent once each on reconnect; a day offline with every timer run; the lines in both themes, AA contrast, no second live region) and e2e on the preview (`offline.spec.ts`: exactly three events after a reload offline, a parent's later uncheck winning, the board opened after a day offline). NFR-01's real 24-hour soak is on the Pi (WP-24, HW). |
 | 0.8.32 | WP-11 done (PR #28): approved by the owner and merged once every gate was green, e2e 57 of 57 on the preview. The owner confirmed D-50: the board never shows why points were taken away. WP-12, WP-13 and WP-18 are ready; WP-12 and WP-18 were ready from WP-16's merge but not marked so. |
 | 0.8.31 | WP-11 board Today and check-off (D-50), in review (PR #28): the board opens on everyone's day, a column each, and shows a person's own day with their points; a tap checks off at once through an in-memory outbox with ids made on the board; a shared item asks who did it; undo is its own button with a second tap; a child's check-off celebrates (reduced motion honoured); points a parent took away read "A parent changed your points". The snapshot carries today's items, open overdue tasks and the undo window; `chore_occurrence` and `chore` are in Realtime. A-12 now matches D-48. Traced by pgTAP (`150_board_today`, and `070` for the snapshot), unit tests (`lib/today`, `lib/outbox`, the snapshot reader, `ChoreTile`), the UI suite on `/dev/board` (`e2e/ui/today.spec.ts`: click, touch, keyboard, double tap, undo, picker, celebration, reduced motion, sizes and contrast in both themes) and e2e on the preview (`board.spec.ts`). |
 | 0.8.30 | WP-16 done (PR #27): approved by the owner and merged once every gate was green, e2e 51 of 51 on the preview. WP-11 is ready. |

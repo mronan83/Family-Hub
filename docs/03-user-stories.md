@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.16: US-205 and US-206 as built (WP-13, D-54): the board keeps its check-offs, snapshot and page through an outage and a reload, says when it is offline or its data is old, and marks points not yet saved.
 > v0.8.12: US-303, US-304, US-305, US-404 (a chore's celebration), US-905, US-1001 (chores and points; events, meals and the goal meter come with their work packages), US-1002, US-1006 and US-1102 as built on the board (WP-11, D-50): undo is its own button with a second tap, and points a parent took away read "A parent changed your points".
 > v0.8.11: US-1101, US-1106 and US-1109 as built (WP-16, D-49): earns and reversals follow each item's status, a parent adds or takes away points on the member's page, and a double tap posts once. US-1102's balance and latest entries are on the board's snapshot; the board draws them with WP-11.
 > v0.8.10: US-320 everyone does their own (WP-43, D-47).
@@ -116,7 +117,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-205 — Keep working offline
 **As a** parent **I want** the board to keep working when wifi drops **so that** the habit doesn't break.
 **Priority:** Must · **Phase:** P1 · **Reqs:** DEV-06, NFR-01
-- Given wifi is off, when the child checks off chores, then the UI updates instantly and the events are queued.
+- Given wifi is off, when the child checks off chores, then the UI updates instantly, the events are queued, the board says "Offline: your check-offs are saved", and a balance that counts them shows as not saved yet.
+- Given the board reloads while wifi is off, when it opens, then it shows its last day with the queued check-offs still done.
 - Given wifi returns, when the outbox replays, then each event is applied exactly once and the board shows server-authoritative state.
 - Given the board has been offline for 24 hours, when it is opened, then it displays the last cached day's data with a stale indicator.
 - Given the child checked off a chore offline at 7:00 and a parent unchecked it on the phone at 7:30, when the board's 7:00 event replays at 8:00, then the chore stays open because the later event by time wins.
@@ -125,7 +127,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-206 — Know when data is stale
 **As a** parent **I want** a subtle indicator when the board's data is old **so that** I know when not to trust it.
 **Priority:** Should · **Phase:** P1 · **Reqs:** DEV-08
-- Given the last snapshot is older than 5 minutes or realtime is disconnected, when the board renders, then a discreet stale icon appears.
+- Given the last snapshot is older than 5 minutes or realtime is disconnected, when the board renders, then a discreet stale icon appears ("Updated 12 minutes ago"; Realtime's own state reads "Reconnecting…").
+- Given planning or day closing is late or erroring for the household, when the board renders, then it says today's list may be out of date.
 - Given a calendar source's last success is older than three sync intervals, when the calendar view renders, then it shows a "calendar may be out of date" badge.
 
 ### US-207 — Quiet hours and burn-in protection
