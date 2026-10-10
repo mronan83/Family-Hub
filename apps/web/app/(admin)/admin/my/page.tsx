@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { noticeFor } from '@/lib/admin-day';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
+import { LINK_ERRORS, linkCandidates } from '@/lib/link-me';
 import { serverClient } from '@/lib/supabase/server';
 import { loadMembers } from '../members/data';
 import { loadBells, loadSettings } from '../reminders/data';
@@ -15,6 +16,7 @@ const ERRORS: Record<string, string> = {
   title: 'Give it a name, up to 80 characters.',
   gone: 'That item changed: it was taken off the list.',
   failed: 'That didn’t save. Try again in a moment.',
+  ...LINK_ERRORS,
 };
 
 const shift = (date: string, days: number) =>
@@ -56,18 +58,21 @@ export default async function MyTasksPage({
   const bellItem = items.find((i) => i.choreId === params.chore);
   const notice = params.added
     ? `Added ${params.added} for today.`
-    : (params.bell === 'on' || params.bell === 'off') && bellItem
-      ? params.bell === 'on'
-        ? `${bellItem.title} reminds you.`
-        : `${bellItem.title} won’t remind you.`
-      : (params.did === 'done' || params.did === 'uncheck') && known
-        ? noticeFor(params.did, known.title)
-        : null;
+    : params.did === 'linked' && me
+      ? `Linked: you’re ${me.displayName}. These are your tasks.`
+      : (params.bell === 'on' || params.bell === 'off') && bellItem
+        ? params.bell === 'on'
+          ? `${bellItem.title} reminds you.`
+          : `${bellItem.title} won’t remind you.`
+        : (params.did === 'done' || params.did === 'uncheck') && known
+          ? noticeFor(params.did, known.title)
+          : null;
 
   return (
     <MyTasksView
       today={today}
       me={me?.id ?? null}
+      candidates={me ? [] : linkCandidates(members)}
       items={items}
       people={members.filter((m) => !m.archivedAt)}
       notice={notice}
