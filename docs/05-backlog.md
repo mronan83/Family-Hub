@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.57: change (D-64), done (PR #42): the board's outbox sends nothing while the browser says it is offline. No work package changes status.
 > v0.8.56: change (D-64), in review (PR #42): the board's outbox sends nothing while the browser says it is offline. No work package changes status.
 > v0.8.55: WP-22 done (PR #41): ICS calendar sync. WP-23 and WP-29 are ready.
 > v0.8.54: WP-22 in review (PR #41): ICS calendar sync (D-63).
