@@ -23,6 +23,7 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     { table: 'chore_occurrence', filter: `household_id=eq.${householdId}` },
     { table: 'chore', filter: `household_id=eq.${householdId}` },
     { table: 'streak_segment', filter: `household_id=eq.${householdId}` },
+    { table: 'wishlist_pin', filter: `household_id=eq.${householdId}` },
   ];
 }
 

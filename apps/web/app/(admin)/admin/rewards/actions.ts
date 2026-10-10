@@ -1,9 +1,13 @@
 'use server';
 
+import { ENGINE_VERSION } from '@familywise/rules-engine';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { FormState } from '@/lib/auth/messages';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
+import { parseBonusRule, resumedFrom } from '@/lib/bonus';
+import { isoDay } from '@/lib/format';
+import { dayBefore, rebuildMemberHistory } from '@/lib/history';
 import { log } from '@/lib/log';
 import { checkPhoto, parseCatalog, refusal } from '@/lib/rewards';
 import { serverClient } from '@/lib/supabase/server';
@@ -144,4 +148,105 @@ export async function redemptionAction(form: FormData): Promise<void> {
   }
   revalidatePath('/admin/rewards');
   redirect(`/admin/rewards?did=${act}&request=${id}`);
+}
+
+/**
+ * [PTS-05][US-1107] Adds a bonus rule: points for a run of good days, or for each day with everything
+ * done, counting from a date. A rule's terms don't change once set (each bonus names the rule that
+ * paid it): to change one, archive it and add another.
+ */
+export async function saveBonusRule(_prev: FormState, form: FormData): Promise<FormState> {
+  const { db, household } = await context();
+  const parsed = parseBonusRule(form, isoDay(household.timezone));
+  if (!parsed.ok) return { message: parsed.message };
+  const v = parsed.value;
+  const { error } = await db.from('points_rule').insert({
+    household_id: household.id,
+    rule_type: v.ruleType,
+    streak_days: v.streakDays,
+    bonus_points: v.bonusPoints,
+    counts_from: v.countsFrom,
+  });
+  if (error) {
+    log('warn', 'bonus rule not saved', { code: error.code });
+    return { message: 'That didn’t save. Try again in a moment.' };
+  }
+  revalidatePath('/admin/rewards');
+  redirect('/admin/rewards?bonus=added#bonus-heading');
+}
+
+const BONUS_ACTS = ['off', 'on', 'archive'] as const;
+type BonusAct = (typeof BONUS_ACTS)[number];
+
+/**
+ * [PTS-05] Turns a bonus rule off or back on, or archives it; never deleted, and bonuses it paid stay.
+ * Back on, it counts from today: days while it was off never pay.
+ */
+export async function bonusRuleAction(form: FormData): Promise<void> {
+  const { db, household } = await context();
+  const [act, id] = String(form.get('act') ?? '').split(':') as [BonusAct, string];
+  if (!BONUS_ACTS.includes(act) || !id || !GUID.test(id)) redirect('/admin/rewards?error=invalid');
+  const { data: rule } = await db
+    .from('points_rule')
+    .select('counts_from')
+    .eq('id', id)
+    .eq('household_id', household.id)
+    .is('archived_at', null)
+    .maybeSingle();
+  if (!rule) redirect('/admin/rewards?error=bonus_gone#bonus-heading');
+  const change =
+    act === 'archive'
+      ? { archived_at: new Date().toISOString(), active: false }
+      : act === 'off'
+        ? { active: false }
+        : {
+            active: true,
+            counts_from: resumedFrom(rule.counts_from as string, isoDay(household.timezone)),
+          };
+  const { error } = await db
+    .from('points_rule')
+    .update(change)
+    .eq('id', id)
+    .eq('household_id', household.id);
+  if (error) {
+    log('warn', 'bonus rule not changed', { code: error.code });
+    redirect('/admin/rewards?error=invalid#bonus-heading');
+  }
+  revalidatePath('/admin/rewards');
+  redirect(`/admin/rewards?bonus=${act}#bonus-heading`);
+}
+
+/**
+ * [PTS-05] Applies the bonus rules now to the days already over, as day close does each night: each
+ * child's history is brought up to date first (RWD-11), and a bonus already paid is never paid again.
+ */
+export async function applyBonusesNow(): Promise<void> {
+  const { db, household } = await context();
+  const { data: earners, error: mError } = await db
+    .from('member')
+    .select('id')
+    .eq('household_id', household.id)
+    .eq('earns_rewards', true)
+    .is('archived_at', null);
+  if (mError) throw new Error(`members: ${mError.message}`);
+  const through = dayBefore(isoDay(household.timezone));
+  try {
+    for (const { id } of earners as { id: string }[]) {
+      const { data: stale } = await db.rpc('member_history_stale', {
+        p_member: id,
+        p_engine_version: ENGINE_VERSION,
+      });
+      if (stale) await rebuildMemberHistory(db, id, through);
+    }
+  } catch (e) {
+    log('warn', 'history not rebuilt', { error: String(e) });
+    redirect('/admin/rewards?error=history#bonus-heading');
+  }
+  const { data, error } = await db.rpc('apply_points_rules', { p_household: household.id });
+  if (error) {
+    log('warn', 'bonus rules not applied', { code: error.code });
+    redirect('/admin/rewards?error=invalid#bonus-heading');
+  }
+  revalidatePath('/admin/rewards');
+  redirect(`/admin/rewards?bonus=paid&posted=${(data as { posted: number }).posted}#bonus-heading`);
 }

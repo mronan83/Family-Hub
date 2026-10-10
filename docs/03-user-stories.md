@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.19: US-1107 and US-1108 as built (WP-30, D-57): bonus rules on the Rewards page, paid by day close from the stored history; the wish card and picker on a child's own screen. Asking for the wish from the board comes with WP-20's shop.
 > v0.8.17: US-408 as built (WP-17, D-55): Insights for a member over 7, 30 or 90 days, history rebuilt from every check-off, and the board's streak flame.
 > v0.8.16: US-205 and US-206 as built (WP-13, D-54): the board keeps its check-offs, snapshot and page through an outage and a reload, says when it is offline or its data is old, and marks points not yet saved.
 > v0.8.15: US-1103, US-1104 and US-1105 as built in the admin app, the database and the board's API (WP-18, D-53); the board's shop screen comes with WP-20.
@@ -695,12 +696,17 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P2 · **Reqs:** PTS-05
 - Given a rule "7-day good streak = +20", when the streak hits 7, then one `bonus` entry of 20 is posted.
 - Given the job reruns, when the streak is unchanged, then no second bonus is posted.
+- Given a run already paid, when it goes on to 8 days, then nothing more is paid; when a new run reaches 7, it pays again.
+- Given a rule "a perfect day = +5", when a child's day is good, then one bonus of 5 is posted for that day.
+- Given I turn a rule off and later back on, when bonuses are paid, then the days while it was off never pay; given I archive it, then the bonuses it paid stay.
 
 ### US-1108 — Wishlist and saving up
 **As a** kid **I want** to pin a reward I'm saving for **so that** I can see how far away it is.
 **Priority:** Should · **Phase:** P2 · **Reqs:** PTS-06
 - Given I pin a 200-point item with a balance of 120, when I open Today, then I see a meter at 60%.
 - Given I reach the cost, when the board renders, then it prompts me to ask for it.
+- Given the board is offline, when I want to choose or change my wish, then it tells me that needs the internet, and still shows my wish.
+- Given the reward I pinned leaves the shop, when the board renders, then it shows no wish until I choose again (or the reward returns).
 
 ### US-1109 — Choose who earns rewards
 **As an** admin **I want** an earns-rewards switch on each family member **so that** points, approval, and goals apply only to the people we choose.

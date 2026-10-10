@@ -9,6 +9,7 @@ import { boardTables, coalesce } from '@/lib/live';
 import { postCompletions } from '@/lib/outbox';
 import { readSnapshot, type BoardSnapshot } from '@/lib/snapshot';
 import { browserClient } from '@/lib/supabase/browser';
+import { postWish } from '@/lib/wishes';
 import { HealthLines } from './health-lines';
 import { type QueueState, Today } from './today';
 import { useMinute } from './use-minute';
@@ -207,6 +208,7 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
         post={postCompletions}
         store={store}
         onQueue={setQueue}
+        pinWish={postWish}
       />
       <footer className="fw-board__foot">{device.name}</footer>
     </main>

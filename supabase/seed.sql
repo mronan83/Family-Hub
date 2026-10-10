@@ -245,3 +245,9 @@ select '0de00000-0000-4000-8000-0000000f0001', m.household_id, m.id, '0de00000-0
        'device', now() - interval '3 hours'
   from public.member m
  where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Leo';
+
+-- [PTS-06] The wishlist (WP-30): Maya is saving for Movie night; Leo hasn't chosen yet.
+insert into public.wishlist_pin (member_id, household_id, catalog_item_id, pinned_by_type)
+select m.id, m.household_id, '0de00000-0000-4000-8000-0000000e0001', 'admin'
+  from public.member m
+ where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Maya';

@@ -30,6 +30,7 @@ const RAW = {
           { id: 'p1', type: 'earn', amount: 7, at: '2026-10-08T13:00:00Z', label: null },
         ],
       },
+      wish: { item_id: 'r1', title: 'Movie night', icon: 'ticket', cost: 100 },
     },
     {
       id: 'm2',
@@ -39,7 +40,12 @@ const RAW = {
       color: 'member-3',
       earns_rewards: false,
       points: null,
+      wish: null,
     },
+  ],
+  shop: [
+    { id: 'r1', title: 'Movie night', icon: 'ticket', cost: 100 },
+    { id: 'r2', title: 'Ice cream trip', icon: 'snack', cost: 40 },
   ],
   occurrences: [
     {
@@ -93,6 +99,7 @@ describe('board snapshot', () => {
             ],
           },
           streak: null,
+          wish: { id: 'r1', title: 'Movie night', icon: 'ticket', cost: 100 },
         },
         {
           id: 'm2',
@@ -103,7 +110,12 @@ describe('board snapshot', () => {
           earnsRewards: false,
           points: null,
           streak: null,
+          wish: null,
         },
+      ],
+      shop: [
+        { id: 'r1', title: 'Movie night', icon: 'ticket', cost: 100 },
+        { id: 'r2', title: 'Ice cream trip', icon: 'snack', cost: 40 },
       ],
       occurrences: [
         {
@@ -189,6 +201,36 @@ describe('board snapshot', () => {
   });
 });
 
+describe('wishes in the snapshot', () => {
+  it('[PTS-06] reads the shop and each child’s wish (WP-30); an older snapshot has neither', () => {
+    const old = readSnapshot({
+      ...RAW,
+      shop: undefined,
+      members: (RAW.members as Record<string, unknown>[]).map((m) => ({ ...m, wish: undefined })),
+    })!;
+    expect(old.shop).toEqual([]);
+    expect(old.members.map((m) => m.wish)).toEqual([null, null]);
+    // Something that isn't a reward (no id, or no title) is left out of the shop, and is no wish.
+    const odd = readSnapshot({ ...RAW, shop: [null, { title: 'No id' }, RAW.shop[1]] })!;
+    expect(odd.shop.map((i) => i.id)).toEqual(['r2']);
+    const bare = readSnapshot({
+      ...RAW,
+      members: [{ ...(RAW.members as Record<string, unknown>[])[0], wish: { item_id: 'r9' } }],
+    })!;
+    expect(bare.members[0]!.wish).toBeNull();
+    const plain = readSnapshot({
+      ...RAW,
+      members: [
+        {
+          ...(RAW.members as Record<string, unknown>[])[0],
+          wish: { item_id: 'r9', title: 'Kite' },
+        },
+      ],
+    })!;
+    expect(plain.members[0]!.wish).toEqual({ id: 'r9', title: 'Kite', icon: 'gift', cost: 0 });
+  });
+});
+
 describe('notify, then refetch', () => {
   it('[DEV-05] listens to every board-readable table, filtered to this board', () => {
     expect(boardTables('h1', 'd1')).toEqual([
@@ -200,6 +242,7 @@ describe('notify, then refetch', () => {
       { table: 'chore_occurrence', filter: 'household_id=eq.h1' },
       { table: 'chore', filter: 'household_id=eq.h1' },
       { table: 'streak_segment', filter: 'household_id=eq.h1' },
+      { table: 'wishlist_pin', filter: 'household_id=eq.h1' },
     ]);
   });
 

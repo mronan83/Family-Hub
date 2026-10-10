@@ -55,9 +55,12 @@ describe('[NFR-07] schedule and job registry', () => {
     const rpc = vi.fn(async (name: string) =>
       name === 'close_household_day'
         ? { data: { closed: 4, through: '2026-10-08' }, error: null }
-        : { data: [], error: null },
+        : name === 'apply_points_rules'
+          ? { data: { posted: 1 }, error: null }
+          : { data: [], error: null },
     );
-    // [RWD-11] Then the histories of marked members (none here; lib/jobs/history.test.ts).
+    // [RWD-11] Then the histories of marked members (none here; lib/jobs/history.test.ts), and
+    // [PTS-05] then the bonus rules.
     const household = { data: { timezone: 'UTC' }, error: null };
     const from = () => ({ select: () => ({ eq: () => ({ single: async () => household }) }) });
     const db = { rpc, from } as unknown as SupabaseClient;
@@ -68,10 +71,32 @@ describe('[NFR-07] schedule and job registry', () => {
       since: null,
     });
     expect(rpc).toHaveBeenCalledWith('close_household_day', { p_household_id: 'h1' });
+    expect(rpc).toHaveBeenLastCalledWith('apply_points_rules', { p_household: 'h1' });
     expect(result).toEqual({
       status: 'ok',
-      stats: { closed: 4, through: '2026-10-08', history: { members: 0, days: 0 } },
+      stats: {
+        closed: 4,
+        through: '2026-10-08',
+        history: { members: 0, days: 0 },
+        bonuses: { posted: 1 },
+      },
     });
+  });
+
+  it('[PTS-05] day_close fails the run when the bonus rules can’t be applied', async () => {
+    const rpc = vi.fn(async (name: string) =>
+      name === 'apply_points_rules'
+        ? { data: null, error: { message: 'permission denied' } }
+        : name === 'close_household_day'
+          ? { data: { closed: 0 }, error: null }
+          : { data: [], error: null },
+    );
+    const household = { data: { timezone: 'UTC' }, error: null };
+    const from = () => ({ select: () => ({ eq: () => ({ single: async () => household }) }) });
+    const db = { rpc, from } as unknown as SupabaseClient;
+    await expect(
+      JOBS.day_close!({ db, householdId: 'h1', scheduledAt: new Date(), since: null }),
+    ).rejects.toThrow('apply bonus rules: permission denied');
   });
 
   it('[NFR-06] status_check passes when every status matches its events, and fails on drift', async () => {

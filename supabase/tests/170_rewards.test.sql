@@ -192,7 +192,7 @@ select is((select count(*)::int from storage.objects where bucket_id = 'rewards'
 
 select pg_temp.as_nobody();
 select ok(not has_function_privilege('anon', 'public.request_redemption(uuid, uuid, uuid)', 'execute')
-          and not has_function_privilege('authenticated', 'private.post_ledger(uuid, uuid, text, integer, text, text, text, uuid, uuid)', 'execute'),
+          and not has_function_privilege('authenticated', 'private.post_ledger(uuid, uuid, text, integer, text, text, text, uuid, uuid, uuid)', 'execute'),
           'signed-out callers cannot ask, and nobody outside writes the ledger');
 
 select * from finish();
