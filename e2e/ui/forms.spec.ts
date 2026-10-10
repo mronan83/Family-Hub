@@ -43,3 +43,13 @@ test('[SCH-01] the school year pages need a signed-in admin', async ({ page }) =
   await page.goto('/admin/school');
   await expect(page).toHaveURL(/\/sign-in\?next=%2Fadmin%2Fschool$/);
 });
+
+test('[CHR-06][CHR-14] a parent’s day and My tasks need a signed-in admin', async ({ page }) => {
+  for (const [path, next] of [
+    ['/admin/today', '%2Fadmin%2Ftoday'],
+    ['/admin/my', '%2Fadmin%2Fmy'],
+  ]) {
+    await page.goto(path!);
+    await expect(page).toHaveURL(new RegExp(`/sign-in\\?next=${next}$`));
+  }
+});
