@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.19: streak history and insights (WP-17, D-55): `member_daily_summary` and `streak_segment` as built, the marks and functions that keep them, `member_insights()`, and the snapshot's streak (§3.3, §4.6, §4.7).
 > v0.8.15: the rules engine as built (WP-15, D-51): the contract's types, when a day is good, bad, neutral or open (today counts as good once it qualifies), streak targets, qualify modes and the status changes an evaluation calls for (§5).
 > v0.8.14: the board's Today (WP-11, D-50): the snapshot's `occurrences` and `household.undo_window_seconds` as built; `chore_occurrence` and `chore` join the Realtime publication (§4.6).
 > v0.8.13: the points ledger (WP-16, D-49): `points_ledger` and `v_points_balance` as built; earn and reversal reconcile each occurrence's points; `adjust_points()`; the snapshot's points; the ledger drift check (§3.3b, §4.2b, §4.6, §4.7).
@@ -434,6 +435,9 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 | `points_rule` | `rule_type` (`streak_bonus`/`all_done_bonus`), `params jsonb`, `bonus_points`, `active` | P2 bonus automation (PTS-05). |
 | `member_daily_summary` | PK `(member_id, summary_date)`, `scheduled_count`, `done_count`, `missed_count`, `skipped_count`, `covered_count`, `points_earned`, `day_class` (`good`/`bad`/`neutral`), `finalized_at` | One row per member per day, for every member, written by day-close. Day classes use routines only; tasks count toward `done_count` on their credit date and never make a day bad. Feeds heatmaps and insights (RWD-11/12). Rebuildable. |
 | `streak_segment` | `member_id`, `kind` (`good`/`bad`), `start_date`, `end_date?` (null = ongoing), `length_days`, `engine_version` | Raw runs of consecutive good or bad days, **no grace applied**. Goal streaks (with grace) are computed separately by the rules engine. Rebuildable. |
+| `private.member_history_dirty` | `member_id` (PK), `household_id`, `marked_at` | Members whose history must be rebuilt: marked by `trg_occurrence_history_dirty` when an occurrence they are in changes, cleared by `save_member_history()` (WP-17). |
+
+**As built (WP-17, D-55).** Both carry `household_id` and reference `member (household_id, id)`. `member_daily_summary` is keyed `(member_id, summary_date)`; `day_class` is also `open` for a past day still waiting for a parent (D-51), and `computed_at` changes only when a row's values do. `streak_segment` is keyed `(member_id, start_date)` (runs never overlap; at most one with no end). Rows run through the household's yesterday: today is never stored. `private.member_history_dirty` (one row per marked member) is filled by `trg_occurrence_history_dirty` and emptied by a save. Parents read both tables; a board reads `streak_segment` for its household (the flame); only the functions in §4.7 write.
 
 ### 3.4 Calendar
 
@@ -965,6 +969,8 @@ create policy chore_completion_event_device_insert on public.chore_completion_ev
 
 **Built so far (WP-06, WP-16, WP-11, `v: 1`):** `v`, `fetched_at`, `today` (household-local), `range {from, to}`, `household {id, name, timezone, week_start, undo_window_seconds}`, `device {id, name, theme}` (`auto`, `day` or `evening`) and `members` (not archived; children first, then by name: `id, display_name, role, avatar_key, color, earns_rewards, points`). `points` is null for a member who does not earn rewards, else `{balance, recent}`: `recent` is the five latest entries, newest first, each `{id, type, amount, at, label}`, where `label` is the item's title (null for a private item, which the board cannot see) or an adjustment's reason. `occurrences` (WP-11, D-50) holds the occurrences the board can see (family-visible, by RLS) that are due today, plus open overdue tasks (`scheduled`, `rejected` or `pending_approval`) of items not archived (D-21). Each is `{id, chore_id, title, icon, kind, due_date, due_time (HH:MM or null), member_id (whose own, D-47; null when shared), assignees, status, done_by, rewarded, points, requires_approval, checked_at}`, ordered by due date, due time (anytime last), title and member. `checked_at` is when the check-off it shows happened (its status event's `occurred_at` when that event is a `complete`), so the board knows how long it may still undo it; it is null otherwise, including after a parent's `admin_complete`. `undo_window_seconds` is the household's (default 120). `chore_occurrence` and `chore` are in the `supabase_realtime` publication, so a check-off or an edit tells the board to read again. The board reads it through `apps/web/lib/snapshot.ts`, which refuses a shape it does not know. Each later work package adds its slice to the same object and bumps `v` only for a breaking change.
 
+**Streak (WP-17, D-55):** each member who earns rewards has `streak {kind, length, best}`: the run going as of the last closed day (`kind` null when there is none) and the best good run, from `streak_segment`. The board adds today itself.
+
 **Full shape**, as the slices arrive:
 
 ```
@@ -1021,6 +1027,10 @@ All are `SECURITY DEFINER` with `search_path = ''`, and errors carry a stable co
 | `public.revoke_device(device_id)` | that household's admins | Final: `status = revoked`, and the board's sign-in is banned. |
 | `public.device_heartbeat(app_version)` | the board itself | Records `last_seen_at` (at most once a minute) and the app version. |
 | `public.board_snapshot(from, to)` | the board itself (security invoker) | Everything the board shows, in one read (§4.6); null for anyone but an active board. |
+| `public.member_history_facts(member, through)`, `public.save_member_history(member, through, days, segments, engine_version, read_at)` | the day-close job (service role), or a parent of the member's household | Read all of a member's facts for `evaluateHistory` (02 §5), every item whatever its visibility; replace their stored days and runs, leaving unchanged rows as they were, and clear their mark unless it is newer than the read (WP-17). |
+| `public.history_dirty_members(household, engine_version)` | the job only | The members to rebuild: marked, or with rows an older engine made. |
+| `public.member_history_stale(member, engine_version)` | a parent of the household | Whether the Insights page must rebuild the member first. |
+| `public.member_insights(member, from, to)` | parents (security invoker: RLS applies) | One member's insights over 1 to 367 closed days: streaks over all history, routines done of those that counted, the days, the five most missed, completion by tag, and what a parent did next to their check-offs (RWD-12). |
 | `private.check_member_user()`, `private.unlink_departed_admin()` | triggers only | Refuse a member linked to anyone but an admin of its household; unlink the member when its admin leaves (WP-04). |
 | `public.resolve_day_type(member, date)`, `public.member_school_year(member, date)`, `public.school_day_type(year, date)` | signed-in users, service role (security invoker) | A member's day type on a date, the school year they follow, and a date's type in a year (§4.4, WP-21). |
 | `public.household_day_types(household_id, date)` | that household's admins and board (security invoker) | Each active member's day type and school year on a date. |

@@ -163,8 +163,8 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | RWD-08 | US-404 | WP-11, WP-20 | BRD | reward_goal | E2E |
 | RWD-09 | US-405 | WP-19 | ADM, API | reward_goal, reward_goal_event | E2E |
 | RWD-10 | US-406 | WP-39 | ADM, RULES | reward_goal, reward_rule | U, E2E |
-| RWD-11 | US-408 | WP-15, WP-17 | DB, SCHED, RULES | member_daily_summary, streak_segment | U, DB, INT |
-| RWD-12 | US-408 | WP-17 | ADM, RULES | member_daily_summary, streak_segment | E2E, U |
+| RWD-11 | US-408 | WP-15, WP-17 | DB, SCHED, RULES | member_daily_summary, streak_segment | U, DB, INT, E2E |
+| RWD-12 | US-408 | WP-17 | ADM, RULES | member_daily_summary, streak_segment | E2E, U, DB |
 | RWD-13 | US-409 | WP-39 | RULES, API, DB | reward_goal, points_ledger, redemption | U, INT |
 | CAL-01 | US-501 | WP-22 | ADM, CALSYNC, VAULT | calendar_source | INT, E2E |
 | CAL-02 | US-502 | WP-22 | CALSYNC, SCHED | calendar_event, calendar_event_instance | U, INT |
@@ -395,6 +395,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.37 | WP-17 streak history and insights (D-55), in review (PR #33): `member_daily_summary` and `streak_segment` stored through yesterday from the rules engine by day close (members marked when their occurrences change) and by the Insights page for a stale member; `member_insights()`; the board's streak flame. Traced by pgTAP (`190_streak_history`: 14 days of a child's routines with misses, skips, a covered day, an uncheck, approvals and a send-back; the facts, the hand-computed history saved and rebuilt identically, marks, the insights, who may, the board's slice), unit tests (`lib/history`: the same 14 days through the engine match the table; `lib/jobs/history`: day close rebuilds marked members; `lib/streak`: today's class and the flame), the UI suite (`insights.spec.ts` on `/dev/insights`, phone and laptop in both themes; `streak.spec.ts` on `/dev/board`: the flame, the 7-day glow, reduced motion) and e2e on the preview (`insights.spec.ts`: Leo's seeded week as hand-computed, a rebuild leaving every row identical, Maya's flame on a paired board). |
 | 0.8.34 | WP-15 done (PR #29): approved by the owner and merged once every gate was green, e2e green on the preview. WP-17 and WP-19 are ready. |
 | 0.8.33 | WP-15 rules engine (D-51), in review (PR #29): `evaluateGoal` (COUNT, POINTS, DAILY_ALL_DONE, STREAK with grace per household week; all or any; the status changes an evaluation calls for) and `evaluateHistory` (daily summaries and raw good and bad runs), pure and deterministic. Today counts as good once it qualifies and is never bad. Traced by Vitest: a named test for each edge case in `02` §5 (`goal.test.ts`, `history.test.ts`, `dates.test.ts`) and nine fast-check properties (`properties.test.ts`); 100% of lines, 96.7% of branches; seventeen deliberate breaks each caught. |
 | 0.8.32 | WP-11 done (PR #28): approved by the owner and merged once every gate was green, e2e 57 of 57 on the preview. The owner confirmed D-50: the board never shows why points were taken away. WP-12, WP-13 and WP-18 are ready; WP-12 and WP-18 were ready from WP-16's merge but not marked so. |

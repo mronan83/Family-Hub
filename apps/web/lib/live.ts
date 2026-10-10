@@ -22,6 +22,7 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     { table: 'points_ledger', filter: `household_id=eq.${householdId}` },
     { table: 'chore_occurrence', filter: `household_id=eq.${householdId}` },
     { table: 'chore', filter: `household_id=eq.${householdId}` },
+    { table: 'streak_segment', filter: `household_id=eq.${householdId}` },
   ];
 }
 

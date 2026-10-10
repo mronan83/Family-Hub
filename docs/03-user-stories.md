@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.17: US-408 as built (WP-17, D-55): Insights for a member over 7, 30 or 90 days, history rebuilt from every check-off, and the board's streak flame.
 > v0.8.13: US-402 and US-408's rules for days and runs as built in the rules engine (WP-15, D-51): today counts as good once everything due is done, and is never a miss. Insights and the board's streak flame come with WP-17, goals with WP-19 and WP-20.
 > v0.8.12: US-303, US-304, US-305, US-404 (a chore's celebration), US-905, US-1001 (chores and points; events, meals and the goal meter come with their work packages), US-1002, US-1006 and US-1102 as built on the board (WP-11, D-50): undo is its own button with a second tap, and points a parent took away read "A parent changed your points".
 > v0.8.11: US-1101, US-1106 and US-1109 as built (WP-16, D-49): earns and reversals follow each item's status, a parent adds or takes away points on the member's page, and a double tap posts once. US-1102's balance and latest entries are on the board's snapshot; the board draws them with WP-11.
@@ -321,6 +322,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As a** parent **I want** a history of good and bad streaks, including missed days **so that** I can see patterns and the board can show my child's current streak.
 **Priority:** Must · **Phase:** P1 · **Reqs:** RWD-11, RWD-12
 - Given 6 finalized days with all chores done, when I open Insights, then I see a current good streak of 6 and a heatmap of good days.
+- Given my child's run of good days, when the board shows them, then a flame and the count sit beside their name, today included once today is done, bigger at 3, 7, 14 and 30 days.
 - Given 3 consecutive finalized days with missed chores, when I open Insights, then a bad streak of 3 is shown, and today (still open) is not counted as bad.
 - Given weekends have no chores, when a run spans a weekend, then those days are neutral and do not break the raw streak.
 - Given history is rebuilt from events, when I compare it with the stored `streak_segment` rows, then they match.

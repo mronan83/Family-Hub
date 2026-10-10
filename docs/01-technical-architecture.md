@@ -2,6 +2,7 @@
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
 > v0.8.22: the rules engine as built (WP-15, D-51): `evaluateGoal` and `evaluateHistory` in `packages/rules-engine`, pure and property-tested (§4, `02` §5).
+> v0.8.26: streak history and insights (WP-17, D-55): day close stores each member's days and runs from the rules engine, the Insights page, and the board's streak flame (§5.8, §7).
 > v0.8.21: the board's Today (WP-11, D-50): the board checks items off through an in-memory outbox and shows them at once; the snapshot carries today's items and the undo window, and `chore_occurrence` and `chore` are in Realtime (§5.2, §7).
 > v0.8.20: the points ledger (WP-16, D-49): earns and reversals by trigger, a parent's adjustments, each member's points on the board's snapshot and in Realtime, and the status check covers points too (§5.6, §7).
 > v0.8.19: everyone does their own (WP-43, D-47): an item with several people is planned one occurrence per person, or one shared (§3, §5.6).
@@ -434,6 +435,8 @@ sequenceDiagram
   end
 ```
 
+**As built (WP-17, D-55).** A trigger on `chore_occurrence` marks every member an occurrence concerns (its assignees and whoever did it) when its status, credit or finalization changes, so a late credit or an uncheck of a closed day marks them too. After `close_household_day()`, the job lists the marked members (`history_dirty_members()`, also any whose rows an older `ENGINE_VERSION` made) and for each runs `lib/history.ts`: `member_history_facts()` reads all their facts through yesterday (every item, private ones included), `evaluateHistory` makes the days and runs, and `save_member_history()` replaces what was stored, leaving a row that didn't change as it was and clearing the mark unless it was made after the read. A parent's Insights page does the same for a marked member before it reads (`member_history_stale()`), so it is never behind, and so a preview, which holds no job secret, shows it too. Goals are WP-19's.
+
 ### 5.9 Reminders (CHR-15, CHR-16, CHR-17)
 
 ```mermaid
@@ -566,6 +569,7 @@ sequenceDiagram
 - Undo is a compensating event, never a delete.
 - Points shown offline are projected locally (balance + pending earns); the server ledger is authoritative on rebase.
 - `RULES` is isomorphic: the board projects goal progress locally so the meter moves instantly even offline; the server result is authoritative on rebase.
+- **Streak flame (WP-17, D-55):** the snapshot carries each earner's run as of the last closed day (`streak_segment`); the board adds today with `evaluateHistory` over today's items once today is good (`lib/streak.ts`). `streak_segment` is in Realtime, so the flame follows day close.
 - Stale indicator: subtle icon when `now - fetched_at > 5 min` or realtime is disconnected; calendar-specific stale badge when the source's last success is older than 3 sync intervals.
 
 **Time:** all instants are `timestamptz` (UTC). Business dates (`due_date`, `credit_date`, `plan_date`) are `date` in the **household timezone**. The household timezone is stored, never inferred from the device.

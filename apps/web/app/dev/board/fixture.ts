@@ -52,6 +52,8 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
           balance: 17,
           recent: [{ id: 'p4', type: 'earn', amount: 2, at: longAgo, label: 'Brush teeth' }],
         },
+        // Six good days to yesterday: finishing today reaches the 7-day milestone (WP-17).
+        streak: { kind: 'good', length: 6, best: 6 },
       },
       {
         id: MAYA,
@@ -74,6 +76,7 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
             { id: 'p1', type: 'reversal', amount: -5, at: longAgo, label: 'Feed the dog' },
           ],
         },
+        streak: { kind: 'good', length: 2, best: 5 },
       },
       {
         id: ALEX,
@@ -83,6 +86,7 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         color: 'member-1',
         earnsRewards: false,
         points: null,
+        streak: null,
       },
       {
         id: SAM,
@@ -92,6 +96,7 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         color: 'member-2',
         earnsRewards: false,
         points: null,
+        streak: null,
       },
     ],
     occurrences: [
