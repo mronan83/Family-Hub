@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.55: WP-22 done (PR #41): ICS calendar sync. WP-23 and WP-29 are ready.
 > v0.8.54: WP-22 in review (PR #41): ICS calendar sync (D-63).
 > v0.8.53: e2e reliability done (PR #40): each spec retires its board; the bonus test checks the ledger first. No work package changes status.
 > v0.8.52: fix (D-62), done (PR #39): production's jobs leave the demo family alone. No work package changes status.
@@ -129,14 +130,14 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Done (PR #34) |
 | WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Ready |
 | WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Done (PR #37) |
-| WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | In review (PR #41) |
-| WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Queued |
+| WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Done (PR #41) |
+| WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Ready |
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
 | WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Ready |
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Queued |
 | WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Ready |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Queued |
-| WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Queued |
+| WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Ready (SPIKE-02's CalDAV part first) |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Done (PR #35) |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Ready |
 | WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Done (PR #36) |
