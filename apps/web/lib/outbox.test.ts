@@ -170,6 +170,39 @@ describe('the board outbox', () => {
     expect(post).toHaveBeenCalledTimes(4);
   });
 
+  it('[NFR-01] sends nothing while the browser says it is offline; sends at once when it is back', async () => {
+    let online = false;
+    const post = vi.fn(async (events: CompletionEvent[]) => events.map(recorded));
+    const answers: Answer[] = [];
+    const outbox = createOutbox(post, (a) => answers.push(a), { isOnline: () => online });
+    outbox.send(event(1));
+    outbox.send(event(2));
+    // A day of retries offline: none of them posts, and the board says it is waiting.
+    await vi.advanceTimersByTimeAsync(24 * 3600_000);
+    expect(post).not.toHaveBeenCalled();
+    expect(outbox.pending()).toBe(2);
+    expect(outbox.waiting()).toBe(true);
+    online = true;
+    outbox.retry();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(post).toHaveBeenCalledTimes(1);
+    expect(post).toHaveBeenCalledWith([event(1), event(2)]);
+    expect(answers.map((a) => a.id)).toEqual(['e1', 'e2']);
+    expect(outbox.waiting()).toBe(false);
+  });
+
+  it('[NFR-01] back online without the event, the next retry sends', async () => {
+    let online = false;
+    const post = vi.fn(async (events: CompletionEvent[]) => events.map(recorded));
+    const outbox = createOutbox(post, () => {}, { isOnline: () => online });
+    outbox.send(event(1));
+    await vi.advanceTimersByTimeAsync(0);
+    online = true;
+    await vi.advanceTimersByTimeAsync(RETRY_MS.at(-1)!);
+    expect(post).toHaveBeenCalledWith([event(1)]);
+    expect(outbox.pending()).toBe(0);
+  });
+
   it('[NFR-01] a store that fails does not stop the board', async () => {
     const post = vi.fn(async (events: CompletionEvent[]) => events.map(recorded));
     const broken = {
