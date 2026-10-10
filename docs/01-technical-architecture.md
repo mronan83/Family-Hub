@@ -2,6 +2,8 @@
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
 > v0.8.25: the board through an outage (WP-13, D-54): its outbox, last snapshot and check-offs in IndexedDB; the service worker keeps its page and build files; offline and stale lines; provisional points (§5.3, §7).
+> v0.8.24: the rewards shop (WP-18, D-53): `POST /api/redemptions` and `/api/redemptions/cancel` for the board; a parent decides in the admin app; photos in a private Storage bucket per household (§5.7).
+> v0.8.23: a parent's day (WP-12, D-52): the admin app records a parent's completions, unchecks, skips, approvals and rejections through `record_completions()`, with event ids from the form's request id; a batch is put back by `undo_uncheck_batch()` (§5.2).
 > v0.8.22: the rules engine as built (WP-15, D-51): `evaluateGoal` and `evaluateHistory` in `packages/rules-engine`, pure and property-tested (§4, `02` §5).
 > v0.8.21: the board's Today (WP-11, D-50): the board checks items off through an in-memory outbox and shows them at once; the snapshot carries today's items and the undo window, and `chore_occurrence` and `chore` are in Realtime (§5.2, §7).
 > v0.8.20: the points ledger (WP-16, D-49): earns and reversals by trigger, a parent's adjustments, each member's points on the board's snapshot and in Realtime, and the status check covers points too (§5.6, §7).
@@ -228,6 +230,8 @@ If `RULES` evaluation fails after the insert, the completion still stands and th
 
 On a member's own screen `done_by` is that member; on the Family view the picker lists the item's assignees first and allows anyone in the family, or several people (D-30). Only members who earn rewards get points, approval and celebrations (D-32).
 
+**As built (WP-12, D-52).** A parent's actions in the admin app (Today and My tasks) are server actions that call `record_completions()` as the parent, so the same rules and points apply as for a board. Each event's id is a hash of the form's request id (one per page view), the occurrence and the event type, so a form sent twice records once. "Not actually done" sends one `admin_uncomplete` per ticked item with the request id as `batch_id`. `undo_uncheck_batch()` (security invoker) puts back, in one transaction, each item whose status still comes from the batch's event, as an `admin_complete` by whoever had done it.
+
 **As built (WP-11, D-50).** A tap lays the check-off over the snapshot at once (`lib/today.ts` works out what the database will make of it: done, or waiting for a parent), and hands the event to the board's outbox (`lib/outbox.ts`). The outbox sends events in order, at most 100 at a time; events queued while a batch is out go together in the next one. A failed send is retried with the same ids after 1, 2, 5, 10, then every 30 seconds, so a resend counts once. A request the API refuses outright (400) is answered as invalid rather than retried. Each answer replaces the board's guess with the database's state; `gone`, `refused` and `invalid` take the guess back and say why in the board's voice. The board's guess stops applying once a snapshot read after the database answered shows the change. Undo posts an `undo` event. WP-13 keeps the outbox in IndexedDB, so a reload or an outage drops nothing (§5.3).
 
 The fold always takes the event with the latest `occurred_at` (D-20), so an event that arrives late but happened earlier never overrides a later decision. `status_event_id` records the event the status was folded from, not the event that was just inserted.
@@ -413,6 +417,8 @@ sequenceDiagram
   D-->>B: realtime: balance updated
   P->>M: mark fulfilled after the activity happens
 ```
+
+**As built (WP-18, D-53).** `POST /api/redemptions` takes `{id, member_id, item_id}` (JSON only) and calls `request_redemption()` as the caller. It answers 200 with the request (asking again with the same id answers the same), 409 with the reason when the shop's rules refuse it (`not_enough_points`, `out_of_stock`, `weekly_limit`, `not_earning`), 403 or 404 otherwise. `POST /api/redemptions/cancel` cancels a request still waiting. A parent approves, says not this time, marks given or cancels (refunding) on the Rewards page, through `decide_redemption()`, `fulfil_redemption()` and `cancel_redemption()`. Reward photos live in Supabase Storage (`rewards` bucket, private, one folder per household under its RLS). The admin app uploads them as the parent and shows them through signed links. Two requests at once are tested with real concurrent sessions (`scripts/redemption-race.sh`, run by `db:test`).
 
 Approval (when switched on) is the control point: parents verify chores **before** points are spent. If a completion is unchecked after points were already spent, the reversal still posts (truth wins), the balance may go below zero, and it is shown as points to earn back. Goal achievement and payouts are likewise derived and reversible: if a reversal drops a goal below its target, the goal returns to `active` and any points payout is reversed (see `02` §5). A cancelled approved redemption posts a `refund`.
 

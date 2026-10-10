@@ -572,6 +572,71 @@ body {
   margin: 0;
   font-size: var(--t-heading);
 }
+/* The rewards shop (WP-18): a photo or an icon beside each reward. */
+.fw-reward__row > .fw-item {
+  flex: 1 1 240px;
+}
+.fw-reward__photo {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+}
+.fw-reward__photo--large {
+  width: 160px;
+  height: 160px;
+  border-radius: var(--r-md);
+}
+.fw-reward__photo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-4);
+}
+.fw-reward__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-sm);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+}
+/* A parent's day and My tasks (WP-12): a tick for "Not actually done", who did it, Undo. */
+.fw-day__row {
+  align-items: flex-start;
+}
+/* The item keeps room for its name; on a phone the buttons go on their own line below it. */
+.fw-day__row > .fw-item {
+  flex: 1 1 260px;
+}
+.fw-day__row > .fw-actions {
+  flex: 0 1 auto;
+}
+.fw-day__select {
+  flex: none;
+  min-height: auto;
+  padding-top: 2px;
+}
+.fw-day__who > summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch);
+  color: var(--primary-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+.fw-day__who[open] {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-day__undo {
+  display: inline-flex;
+  margin-left: var(--s-3);
+}
 .fw-dates {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

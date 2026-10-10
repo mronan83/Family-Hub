@@ -1,7 +1,11 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.36: WP-13 in review (PR #32): the board works through an outage (D-54).
+> v0.8.39: WP-13 in review (PR #32): the board works through an outage (D-54).
+> v0.8.38: WP-18 done (PR #31): the rewards shop. WP-39 and WP-20 wait on WP-19 too.
+> v0.8.37: WP-18 in review (PR #31): the rewards shop (D-53).
+> v0.8.36: WP-12 done (PR #30): a parent's day and My tasks. WP-40 is ready.
+> v0.8.35: WP-12 in review (PR #30): a parent's day and My tasks (D-52).
 > v0.8.34: WP-15 done (PR #29): the rules engine. WP-17 and WP-19 are ready.
 > v0.8.33: WP-15 in review (PR #29): the rules engine (D-51). WP-17 follows it.
 > v0.8.32: WP-11 done (PR #28): the board's Today and check-off. The owner confirmed D-50: the board never shows why points were taken away. WP-12, WP-13 and WP-18 are ready; WP-12 and WP-18 were ready from WP-16's merge but not marked so.
@@ -101,12 +105,12 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-43 | Everyone does their own | P1a | M | WP-10 | Done (PR #25) |
 | WP-16 | Points ledger | P1a | M | WP-10 | Done (PR #27) |
 | WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37, WP-43 | Done (PR #28) |
-| WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Ready |
+| WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Done (PR #30) |
 | WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | In review (PR #32) |
 | WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
 | WP-15 | Rules engine package | P1b | L | WP-01 | Done (PR #29) |
 | WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Ready |
-| WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Ready |
+| WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Done (PR #31) |
 | WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Ready |
 | WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Queued |
 | WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Queued |
@@ -120,7 +124,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Queued |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Queued |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Queued |
-| WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Queued |
+| WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Ready |
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
 | WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
@@ -469,6 +473,15 @@ flowchart LR
 - Multi-select "Not actually done" producing one `batch_id`; undo of a batch.
 - My tasks on the phone: overdue, today and upcoming items assigned to me (shared ones included), quick add (family-visible task due today, assigned to me), complete with `done_by` = me.
 - **Done when:** a parent unchecks four of five items in one action, the child sees them open again on the board, and exactly four reversals post to the ledger; quick add creates a task in one step and it appears on the board.
+- As built (D-52):
+  - **Today** (`/admin/today`). Check-offs waiting for a parent come first, from any day, with when they were checked off and a mark on one made after its day. Then the day's items by part of day, with today's overdue tasks. "Day before" and "Day after" go to any day, for late credit or skipping ahead.
+  - **Per item:** Mark done (its person or one assignee; a shared item with several asks who), Skip, Uncheck, Put back, Approve, Send back, as its state allows. A routine can't be done before its day.
+  - **"Not actually done"** unchecks the ticked done items as one batch. Undo, in the notice that follows, puts back what is unchanged since (`undo_uncheck_batch()`).
+  - **The approval switch** is on Home. It and an item's own setting now re-resolve every `scheduled` occurrence, including one a parent has unchecked, as D-22 says (WP-09 left those with the old setting; the preview e2e found it).
+  - **My tasks** (`/admin/my`). The linked member's overdue tasks, today's items and the next seven days. Mark done credits only them. Quick add makes a family task for today with no points; the button is off while it saves, so a double tap adds one.
+  - **Every action** is a completion event recorded as the parent, with ids from the form, so a form sent twice records once.
+  - **`/dev/admin`** draws both pages from a made-up family for the UI suite.
+  - **pgTAP** `160_admin_operations` (30 tests).
 
 ### WP-13 — Offline outbox and stale indicator
 **Phase:** P1a · **Size:** M · **Depends on:** WP-11 · **Reqs:** DEV-06, DEV-08, NFR-01
@@ -513,6 +526,21 @@ flowchart LR
 **Phase:** P1b · **Size:** M · **Depends on:** WP-16 · **Reqs:** PTS-03, PTS-04
 - `reward_catalog_item`, `redemption`; admin catalog editor; `POST /api/redemptions` → `public.request_redemption` with the available-balance check under a member lock; `public.decide_redemption` (approve posts `spend`, deny), `public.cancel_redemption` (refund if approved), fulfil.
 - **Done when:** a redemption flows requested → approved → fulfilled and two concurrent requests cannot overspend (pgTAP/integration).
+- As built (D-53):
+  - **Rewards** (`/admin/rewards`):
+    - what was asked for, with each child's balance (Approve, or Not this time);
+    - what is approved and still to give (Given, or Cancel and refund);
+    - the shop, with each reward's cost, what is left and its limit;
+    - lately.
+  - **Adding or editing a reward:** name, cost, description, icon, an optional photo (JPEG, PNG or WebP up to 2 MB), stock, a weekly limit, and whether it is in the shop. Rewards are archived, not deleted, and a photo can be removed.
+  - **Board API:** `POST /api/redemptions` asks for a reward and `POST /api/redemptions/cancel` cancels one still waiting. The board's shop screen, and its slice of the snapshot and Realtime, come with WP-20.
+  - **Storage:** the `rewards` bucket is private, one folder per household under RLS. Server actions take bodies up to 3 MB for the photo. The local test bootstrap stands in for Storage's tables.
+  - **Demo family:** four rewards, and a request from Leo waiting.
+  - **Tests:**
+    - pgTAP `170_rewards` (49 tests);
+    - `scripts/redemption-race.sh`: two requests at once, run by `db:test` in CI. It fails when the locks are removed;
+    - the UI suite on `/dev/rewards`;
+    - `rewards.spec.ts` on the preview.
 
 ### Phase P1c — Goals
 

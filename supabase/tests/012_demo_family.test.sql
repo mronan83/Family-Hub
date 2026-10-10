@@ -1,7 +1,7 @@
 -- [NFR-14] The demo family seed resets only the demo household and never touches another (D-37).
 -- [ACC-02] It creates the four demo sign-ins (D-39), without passwords.
 begin;
-select plan(22);
+select plan(24);
 
 insert into public.household (id, name, timezone) values
   ('44444444-4444-4444-4444-444444444444', 'Real family', 'America/Chicago'),
@@ -141,6 +141,13 @@ select ok((select bool_and(coalesce(earned, 0) > 0) from public.member m
           and not exists (select from public.points_ledger l join public.member m on m.id = l.member_id
                            where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.role = 'adult'),
   '[PTS-07] the children have earned points this week; the adults, who do not earn rewards, have none');
+select is((select count(*)::int from public.reward_catalog_item
+            where household_id = '0de00000-0000-4000-8000-000000000001' and active and archived_at is null),
+          4, '[PTS-03] the demo family has four rewards in the shop');
+select ok((select r.status = 'requested' and r.cost_snapshot <= private.member_balance(r.member_id)
+             from public.redemption r join public.member m on m.id = r.member_id
+            where r.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Leo'),
+  '[PTS-04] Leo''s request is waiting for a parent, and he can afford it');
 
 select * from finish();
 rollback;
