@@ -159,7 +159,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | RWD-04 | US-406, US-407 | WP-19, WP-39 | RULES, API, SCHED, DB | reward_rule_progress, reward_goal_progress | U, INT, DB |
 | RWD-05 | US-402 | WP-15 | RULES | reward_rule | U |
 | RWD-06 | US-405 | WP-19 | RULES, SCHED, API | reward_goal, reward_goal_event | U, INT |
-| RWD-07 | US-403 | WP-20 | BRD | reward_goal_progress | E2E |
+| RWD-07 | US-403 | WP-20, WP-44 | BRD | reward_goal_progress | E2E |
 | RWD-08 | US-404 | WP-11, WP-20 | BRD | reward_goal | E2E |
 | RWD-09 | US-405 | WP-19 | ADM, API | reward_goal, reward_goal_event | E2E |
 | RWD-10 | US-406 | WP-39 | ADM, RULES | reward_goal, reward_rule | U, E2E |
@@ -198,7 +198,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | BRD-05 | US-1004 | WP-35 | ADM, BRD | household_settings | E2E |
 | BRD-06 | US-1005 | WP-14 | BRD | — | E2E |
 | BRD-07 | US-1006 | WP-11 | BRD, API | chore_occurrence, chore_occurrence_assignee | E2E |
-| NFR-01 | US-205 | WP-13 | OUTBOX, BRD | — | E2E, U, HW |
+| NFR-01 | US-205 | WP-13, WP-44 | OUTBOX, BRD | — | E2E, U, HW |
 | NFR-02 | US-905 | WP-14 | BRD, PI | — | HW, E2E |
 | NFR-03 | US-905 | WP-11 | BRD | — | HW, E2E |
 | NFR-04 | US-102, US-901 | WP-02, WP-03, WP-05 | DB, VAULT, SAUTH, API | all tables | DB, REV |
@@ -395,6 +395,8 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.50 | WP-20 done (PR #37): approved by the owner and merged once every gate was green on the merge with main (WP-40), e2e green on the preview, the done-when at 3840×2160 included (the first run's only failure was `wishlist.spec.ts` expecting the wish card's old words, fixed in the test). WP-31 is ready. WP-44 added (D-60): goal progress projected on the board only while it is offline, as a fallback; ready, and nothing waits on it. RWD-07 and NFR-01 trace to it. |
+| 0.8.49 | WP-20 the board's shop, requests and goals (D-59), in review (PR #37): the snapshot's `available`, `requests`, `limited`, the shop's `left` and `photo`, and `goals` with each rule's progress; `mark_goal_celebrated()` and `POST /api/goals/celebrated`; the shop, requests and goals in Realtime; the shop dialog ("Ask for this", "Yes, ask"), the "Asked for" card (call off while waiting), "Ask for it" on the wish card, goal meters, nudges, family goals under everyone's day, and a once-only celebration (still with reduced motion). pgTAP `230_board_shop_goals` (37), unit, UI suite and the preview's `board-shop.spec.ts` at 3840×2160. |
 | 0.8.48 | WP-40 done (PR #36): approved by the owner and merged once every gate was green on the merge with main (WP-19, WP-30), e2e green on the preview, the reminders job's done-when included. Earlier preview runs failed only on test locators: the bell's value (fixed in the code: a form action's button loses its name, so the value is bound into the action), and a label search for "Due time" matching first the editor's help (reworded) and then the new "At the due time" choice (fixed in the test). Nothing waits on it. Owner action: run the vapid-keys workflow once, then send a test from the iPhone's Home Screen app. |
 | 0.8.47 | WP-40 reminders (D-58), in review: each person's own `reminder_preference`, `push_subscription` and `reminder_delivery` (RLS); the `reminders` job every 5 minutes (`plan_reminders()`, `claim_reminders()`, web push with VAPID, `finish_reminder()`), each reminder at most once, never after its item is done, held through quiet hours; the Reminders page, the bell in My tasks, an item's lead time; push handling in the service worker; the vapid-keys workflow. Traced by pgTAP (`220_reminders`: who sees and changes what, the due time less the lead, the morning time, the digest, a replay, done first and done after planning, off for the person, the item and the device, quiet hours held and released once, a private title hidden, 410 deleting a device, pruning), unit tests (`lib/reminders`: VAPID and encryption read back as the browser would, a run sending to each device and recording answers, no keys; `lib/reminder-settings`; the item editor's lead time), the UI suite (`reminders.spec.ts` on `/dev/reminders` and the bell on `/dev/admin?view=my`, phone and laptop in both themes) and e2e: on the runner against a mocked push service (`reminders-job.spec.ts`: one push for a task due in 15 minutes, none after completing it first, none when switched off for the item, the device or the person, quiet hours released once, a private title absent from the decrypted message) and on the preview (`reminders.spec.ts`: settings saved, a device switched, tested and removed, the bell, the lead time). |
 | 0.8.46 | WP-30 done (PR #35): approved by the owner and merged once every gate was green, after main (WP-19) was merged in and the docs stacked; e2e green on the preview (the first run's only failures were the test reading the archived bonuses before opening their closed disclosure, and its expected "saved" figure not counting a balance below zero as none, as the card does; both fixed in the test). Nothing waits on it. |

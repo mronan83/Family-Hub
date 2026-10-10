@@ -1,7 +1,7 @@
 'use client';
 
 import { BoardThemeController, Icon } from '@familywise/ui';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { boardHealth, type JobHealth, laterSnapshot } from '@/lib/board-health';
 import { type BoardStore, openBoardStore } from '@/lib/board-store';
 import { day, isoDay, time } from '@/lib/format';
@@ -9,8 +9,11 @@ import { boardTables, coalesce } from '@/lib/live';
 import { postCompletions } from '@/lib/outbox';
 import { readSnapshot, type BoardSnapshot } from '@/lib/snapshot';
 import { browserClient } from '@/lib/supabase/browser';
+import { postCelebrated } from '@/lib/board-goals';
+import { postAsk, postCancelAsk } from '@/lib/shop';
 import { postWish } from '@/lib/wishes';
 import { HealthLines } from './health-lines';
+import type { PhotoUrl } from './picture';
 import { type QueueState, Today } from './today';
 import { useMinute } from './use-minute';
 import { useHydrated, useOnline } from './use-online';
@@ -149,6 +152,59 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
   return { snapshot, link, jobs, events, refresh: again };
 }
 
+/** How long a signed photo link lasts, and how long before its end the board asks for a new one. */
+const PHOTO_LINK_S = 3600;
+const PHOTO_RENEW_MS = 10 * 60_000;
+
+/**
+ * [PTS-03] Signed links to the shop's and goals' photos (a private bucket the board reads by RLS),
+ * asked for together and renewed before they lapse. Offline, or before they arrive, there are none
+ * and the board shows icons.
+ */
+function usePhotos(snapshot: BoardSnapshot): PhotoUrl {
+  const paths = useMemo(
+    () =>
+      [
+        ...new Set(
+          [...snapshot.shop.map((i) => i.photo), ...snapshot.goals.map((g) => g.photo)].filter(
+            (p): p is string => typeof p === 'string',
+          ),
+        ),
+      ].sort(),
+    [snapshot.shop, snapshot.goals],
+  );
+  const key = paths.join('|');
+  const [links, setLinks] = useState<{ urls: Map<string, string>; until: number }>({
+    urls: new Map(),
+    until: 0,
+  });
+  useEffect(() => {
+    const db = browserClient();
+    if (!db || !key) return;
+    let cancelled = false;
+    const wanted = key.split('|');
+    const sign = async () => {
+      const { data, error } = await db.storage
+        .from('rewards')
+        .createSignedUrls(wanted, PHOTO_LINK_S);
+      if (cancelled || error || !data) return;
+      const urls = new Map<string, string>();
+      for (const s of data) if (s.path && s.signedUrl) urls.set(s.path, s.signedUrl);
+      setLinks({ urls, until: Date.now() + PHOTO_LINK_S * 1000 });
+    };
+    void sign();
+    const renew = setInterval(() => void sign(), PHOTO_LINK_S * 1000 - PHOTO_RENEW_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(renew);
+    };
+  }, [key]);
+  return useCallback(
+    (path: string) => (links.until > Date.now() ? (links.urls.get(path) ?? null) : null),
+    [links],
+  );
+}
+
 function LiveStatus({ link, events }: { link: Link; events: number }) {
   return (
     <span className="fw-live" role="status" data-link={link} data-events={events}>
@@ -165,6 +221,7 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
     typeof window === 'undefined' ? null : openBoardStore(initial.device.id),
   );
   const { snapshot, link, jobs, events, refresh } = useLiveSnapshot(initial, appVersion, store);
+  const photoUrl = usePhotos(snapshot);
   const [queue, setQueue] = useState<QueueState>({ pending: 0, waiting: false });
   const online = useOnline();
   const hydrated = useHydrated();
@@ -209,6 +266,10 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
         store={store}
         onQueue={setQueue}
         pinWish={postWish}
+        ask={postAsk}
+        cancelAsk={postCancelAsk}
+        markCelebrated={postCelebrated}
+        photoUrl={photoUrl}
       />
       <footer className="fw-board__foot">{device.name}</footer>
     </main>

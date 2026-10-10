@@ -40,13 +40,17 @@ test.beforeAll(async ({ browser }) => {
   await admin.waitForURL(/\/admin$/);
 });
 
-test.afterAll(() => {
+test.afterAll(async () => {
   // Leo's bed as the seed left it: still to do today.
   const bed = leoBed();
   if (sql(`select status from public.chore_occurrence where id = '${bed}'`) !== 'scheduled') {
     sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
          values (gen_random_uuid(), '${bed}', 'admin_uncomplete', now())`);
   }
+  // And his goal worked out again, so it is going as the seed left it: a goal left reached would open
+  // every later spec's board on its celebration (WP-20).
+  await admin.goto('/admin/goals');
+  await expect(goal('Movie night')).not.toContainText('Achieved');
 });
 
 const inPlay = () => admin.getByRole('list', { name: 'Goals in play' });

@@ -45,6 +45,6 @@ export function wishProgress(balance: number, cost: number): { toGo: number; eno
 /** The line under a wish's meter, in a child's words (06 §2). */
 export function wishLine(balance: number, cost: number): string {
   const { toGo, enough } = wishProgress(balance, cost);
-  if (enough) return 'You have enough! Ask a grown-up for it.';
+  if (enough) return 'You have enough!';
   return `${toGo} more ${toGo === 1 ? 'point' : 'points'} to go.`;
 }

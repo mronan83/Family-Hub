@@ -268,7 +268,7 @@ test('[PTS-06][US-1108] choosing a wish: picked at once, sent once; with enough,
   await card.getByRole('button', { name: 'Choose a wish' }).click();
   const picker = page.getByRole('dialog', { name: 'What is Leo saving for?' });
   const options = picker.getByRole('list', { name: 'Rewards' }).getByRole('button');
-  await expect(options).toHaveCount(4);
+  await expect(options).toHaveCount(5);
   await expect(options.first()).toBeFocused();
   // Nothing pinned yet: none pressed, and no "No wish".
   await expect(picker.locator('[aria-pressed="true"]')).toHaveCount(0);
@@ -280,11 +280,12 @@ test('[PTS-06][US-1108] choosing a wish: picked at once, sent once; with enough,
   await expect(card).toContainText('8 more points to go.');
   await expect.poll(() => wishes(page)).toEqual([{ member: LEO, item: 'r-late' }]);
 
-  // Two chores later (5 points each) there is enough: the board says to ask for it.
+  // Two chores later (5 points each) there is enough: the board offers to ask for it (WP-20).
   await page.getByRole('button', { name: 'Check off Make bed' }).click();
   await page.getByRole('button', { name: 'Check off Set the table' }).click();
   await expect(card.getByRole('progressbar')).toHaveAttribute('aria-valuetext', '25 of 25, 100%');
-  await expect(card).toContainText('You have enough! Ask a grown-up for it.');
+  await expect(card).toContainText('You have enough!');
+  await expect(card.getByRole('button', { name: 'Ask for it' })).toBeVisible();
 
   // Change: the pinned one is pressed; "No wish" takes it off.
   await card.getByRole('button', { name: 'Change' }).click();

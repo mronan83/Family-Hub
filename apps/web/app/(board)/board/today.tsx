@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  Avatar,
-  Button,
-  ChoreTile,
-  GoalMeter,
-  Icon,
-  ICON_NAMES,
-  PointsChip,
-  type IconName,
-} from '@familywise/ui';
+import { Avatar, Button, ChoreTile, GoalMeter, Icon, PointsChip } from '@familywise/ui';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type Answer,
@@ -21,7 +12,16 @@ import {
 import type { BoardStore } from '@/lib/board-store';
 import { signed } from '@/lib/points';
 import { flameDays, flameTier, reachedMilestone } from '@/lib/streak';
-import type { BoardMember, BoardShopItem, BoardSnapshot } from '@/lib/snapshot';
+import { celebrationLine, goalsFor, type MarkCelebrated, nudgeFor } from '@/lib/board-goals';
+import {
+  type AskFor,
+  askLine,
+  askState,
+  type AskState,
+  type CancelAsk,
+  REQUEST_WORDS,
+} from '@/lib/shop';
+import type { BoardMember, BoardRequest, BoardShopItem, BoardSnapshot } from '@/lib/snapshot';
 import {
   boardActivity,
   defaultDoers,
@@ -37,6 +37,9 @@ import {
   undoUntil,
 } from '@/lib/today';
 import { type PinWish, wishLine } from '@/lib/wishes';
+import { Celebration, FamilyGoals, GoalsCard, useCelebrations } from './goals-ui';
+import { iconOf, type PhotoUrl } from './picture';
+import { RequestsCard, ShopDialog, useShop } from './shop-ui';
 import { useOnline } from './use-online';
 
 /** A tap within this long of the last one on the same tile is the same tap (NFR-03). */
@@ -69,9 +72,6 @@ function localTime(now: Date, timeZone: string): string {
     hourCycle: 'h23',
   }).format(now);
 }
-
-const iconOf = (icon: string | null): IconName =>
-  icon && (ICON_NAMES as readonly string[]).includes(icon) ? (icon as IconName) : 'list-check';
 
 function prefersReducedMotion(): boolean {
   return (
@@ -595,14 +595,23 @@ function WishCard({
   balance,
   shopOpen,
   online,
+  ask,
   onChoose,
+  onAsk,
 }: {
   wish: BoardShopItem | null;
+  /** What they can spend: their balance less what they have asked for (WP-20). */
   balance: number;
   shopOpen: boolean;
   online: boolean;
+  /** [PTS-04] Whether the wish can be asked for now, and a request for it already open (WP-20). */
+  ask: { state: AskState; open: BoardRequest | null } | null;
   onChoose: () => void;
+  onAsk: () => void;
 }) {
+  const enough = wish ? balance >= wish.cost : false;
+  // Why it can't be asked for, when that isn't the points the meter already counts.
+  const why = ask && !ask.state.can && ask.state.why !== 'points' ? askLine(ask.state) : null;
   return (
     <section className="fw-today__card fw-today__wish" aria-labelledby="me-wish">
       <h3 id="me-wish">Saving for</h3>
@@ -617,10 +626,21 @@ function WishCard({
             value={Math.min(Math.max(balance, 0), wish.cost)}
             target={wish.cost}
           />
-          <p className="fw-today__wish-line" data-enough={balance >= wish.cost || undefined}>
-            {balance >= wish.cost ? <Icon name="sparkles" size={28} /> : null}
+          <p className="fw-today__wish-line" data-enough={enough || undefined}>
+            {enough ? <Icon name="sparkles" size={28} /> : null}
             <span>{wishLine(balance, wish.cost)}</span>
           </p>
+          {ask?.open ? (
+            <p className="fw-today__wish-asked" data-status={ask.open.status}>
+              Asked: {REQUEST_WORDS[ask.open.status]}
+            </p>
+          ) : ask?.state.can ? (
+            <Button icon="gift" onClick={onAsk}>
+              Ask for it
+            </Button>
+          ) : enough && why ? (
+            <p className="fw-today__muted">{why}</p>
+          ) : null}
         </>
       ) : (
         <p className="fw-today__muted">
@@ -753,12 +773,17 @@ function useWishes(snapshot: BoardSnapshot, pinWish: PinWish, say: (text: string
 
 /** Without a server to ask (a board that can't pin), a wish never saves. */
 const noPin: PinWish = async () => 'offline';
+/** Without a server to ask (a board that can't ask), nothing is sent. */
+const noAsk: AskFor = async () => ({ ok: false, offline: true });
+const noCancel: CancelAsk = async () => ({ ok: false, offline: true });
+const noMark: MarkCelebrated = async () => false;
 
 /**
- * [BRD-01][BRD-02][BRD-07][PTS-02] The board's Today: everyone's day in a column each, or one
- * person's own day with their points. Tap a person to see theirs; it goes back to everyone after a
- * while untouched. Slots for events, meals, the goal meter and the streak flame are kept for the
- * work packages that fill them.
+ * [BRD-01][BRD-02][BRD-07][PTS-02][PTS-04][RWD-07][RWD-08] The board's Today: everyone's day in a
+ * column each with the family's goals below, or one person's own day with their points, the shop,
+ * what they've asked for, what they're saving for and their goals. Tap a person to see theirs; it goes
+ * back to everyone after a while untouched. A reached goal is celebrated once, whoever is showing.
+ * Slots for events and meals are kept for the work packages that fill them.
  */
 export function Today({
   snapshot,
@@ -767,6 +792,10 @@ export function Today({
   store = null,
   onQueue,
   pinWish = noPin,
+  ask = noAsk,
+  cancelAsk = noCancel,
+  markCelebrated = noMark,
+  photoUrl,
 }: {
   snapshot: BoardSnapshot;
   /** The current minute. */
@@ -774,18 +803,29 @@ export function Today({
   post: Post;
   /** [PTS-06] Pins the reward a child is saving for (POST /api/wishes on a board). */
   pinWish?: PinWish;
+  /** [PTS-04] Asks for a reward, and calls a request off (POST /api/redemptions[/cancel]). */
+  ask?: AskFor;
+  cancelAsk?: CancelAsk;
+  /** [RWD-08] Says a reached goal has been celebrated (POST /api/goals/celebrated). */
+  markCelebrated?: MarkCelebrated;
+  /** [PTS-03] Signed links to reward and goal photos; without them, icons. */
+  photoUrl?: PhotoUrl;
   /** [DEV-06] Where the outbox and what the board shows ahead of the snapshot outlast a reload. */
   store?: BoardStore | null;
   onQueue?: (q: QueueState) => void;
 }) {
   const t = useToday(snapshot, post, store, onQueue);
   const w = useWishes(snapshot, pinWish, t.say);
+  const shop = useShop(snapshot, ask, cancelAsk, t.say);
+  const party = useCelebrations(snapshot.goals, markCelebrated);
   const online = useOnline();
   const { members, household, today } = snapshot;
   const [view, setView] = useState<string>('family');
   const [picker, setPicker] = useState<{ item: TodayItem; initial: string[] } | null>(null);
   // Whose wish is being chosen: the picker closes with the person's screen.
   const [wishing, setWishing] = useState<string | null>(null);
+  // Whose shop is open, and a reward to ask about straight away.
+  const [shopping, setShopping] = useState<{ member: string; item: string | null } | null>(null);
   const nowTime = localTime(now, household.timezone);
   const names = useMemo(() => new Map(members.map((m) => [m.id, m.displayName])), [members]);
   const name = useCallback((id: string) => names.get(id) ?? 'someone', [names]);
@@ -794,6 +834,18 @@ export function Today({
   const anyUndoable = t.items.some((i) => (undoUntil(i, windowSeconds) ?? 0) > now.getTime());
   const second = useSecond(anyUndoable);
   const member = members.find((m) => m.id === view) ?? null;
+  const familyGoals = useMemo(
+    () => snapshot.goals.filter((g) => g.memberId === null),
+    [snapshot.goals],
+  );
+  /**
+   * [PTS-04] What a child can spend now: the balance as shown (with this board's own check-offs)
+   * less what they have asked for, this board's asks the snapshot doesn't show yet included.
+   */
+  const spendable = useCallback(
+    (m: BoardMember) => t.balance(m) - (m.points?.balance ?? 0) + shop.availableOf(m),
+    [t, shop],
+  );
 
   // Back to everyone after a while untouched, so the next person finds the whole family.
   const idle = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -802,9 +854,14 @@ export function Today({
     idle.current = setTimeout(() => {
       setView('family');
       setWishing(null);
+      setShopping(null);
     }, IDLE_MS);
   }, []);
   useEffect(() => () => (idle.current ? clearTimeout(idle.current) : undefined), []);
+  const celebrating = party.current;
+  const endCelebration = useCallback(() => {
+    if (celebrating) party.finish(celebrating);
+  }, [celebrating, party]);
 
   const tile = (i: TodayItem, viewer: string, mode: 'member' | 'family') => (
     <Tile
@@ -826,6 +883,8 @@ export function Today({
       onUndo={() => t.undo(i)}
     />
   );
+
+  const shopFor = member && shopping?.member === member.id ? member : null;
 
   return (
     <div className="fw-today" onPointerDown={touched} onKeyDown={touched}>
@@ -889,6 +948,15 @@ export function Today({
                   return p.total ? `${p.done} of ${p.total} done` : 'Nothing on the list today';
                 })()}
               </p>
+              {(() => {
+                const line = member.earnsRewards ? nudgeFor(snapshot.goals, member.id) : null;
+                return line ? (
+                  <p className="fw-today__nudge">
+                    <Icon name="target" size={32} />
+                    <span>{line}</span>
+                  </p>
+                ) : null;
+              })()}
             </div>
             {member.streak ? (
               <Flame days={flameDays(member.streak, t.items, member.id, today)} />
@@ -916,7 +984,26 @@ export function Today({
             <aside className="fw-today__side" aria-label={`More for ${member.displayName}`}>
               {member.points ? (
                 <section className="fw-today__card" aria-labelledby="me-points">
-                  <h3 id="me-points">Points</h3>
+                  <div className="fw-today__card-head">
+                    <h3 id="me-points">Points</h3>
+                    {snapshot.shop.length > 0 ? (
+                      <Button
+                        variant="secondary"
+                        icon="gift"
+                        onClick={() => setShopping({ member: member.id, item: null })}
+                      >
+                        Shop
+                      </Button>
+                    ) : null}
+                  </div>
+                  {(() => {
+                    const held = t.balance(member) - spendable(member);
+                    return held > 0 ? (
+                      <p className="fw-today__spend" data-available={spendable(member)}>
+                        {Math.max(0, spendable(member))} to spend · {held} waiting for a grown-up
+                      </p>
+                    ) : null;
+                  })()}
                   {member.points.recent.length === 0 ? (
                     <p className="fw-today__muted">Points arrive as chores get done.</p>
                   ) : (
@@ -932,50 +1019,106 @@ export function Today({
                 </section>
               ) : null}
               {member.earnsRewards ? (
-                <WishCard
-                  wish={w.wishOf(member)}
-                  balance={t.balance(member)}
-                  shopOpen={snapshot.shop.length > 0}
+                <RequestsCard
+                  requests={shop.requestsOf(member)}
+                  sending={shop.sending}
+                  cancelling={shop.cancelling}
                   online={online}
-                  onChoose={() => setWishing(member.id)}
+                  onCancel={shop.cancel}
                 />
               ) : null}
-              {/* Kept for later work packages: the goal meter (WP-20), today's events (WP-23) and
-                  meals (WP-28). The streak flame (WP-17) is beside the name. */}
+              {member.earnsRewards
+                ? (() => {
+                    const wish = w.wishOf(member);
+                    const item = wish
+                      ? (snapshot.shop.find((i) => i.id === wish.id) ?? wish)
+                      : null;
+                    const open = item
+                      ? (shop
+                          .requestsOf(member)
+                          .find(
+                            (r) =>
+                              r.itemId === item.id &&
+                              (r.status === 'requested' || r.status === 'approved'),
+                          ) ?? null)
+                      : null;
+                    return (
+                      <WishCard
+                        wish={wish}
+                        balance={spendable(member)}
+                        shopOpen={snapshot.shop.length > 0}
+                        online={online}
+                        ask={
+                          item
+                            ? {
+                                state: askState(
+                                  item,
+                                  { available: spendable(member), limited: member.limited },
+                                  online,
+                                ),
+                                open,
+                              }
+                            : null
+                        }
+                        onChoose={() => setWishing(member.id)}
+                        onAsk={() => item && setShopping({ member: member.id, item: item.id })}
+                      />
+                    );
+                  })()
+                : null}
+              {member.earnsRewards ? (
+                <GoalsCard
+                  goals={goalsFor(snapshot.goals, member.id)}
+                  today={today}
+                  photoUrl={photoUrl}
+                />
+              ) : null}
+              {/* Kept for later work packages: today's events (WP-23) and meals (WP-28). The streak
+                  flame (WP-17) is beside the name. */}
             </aside>
           </div>
         </section>
       ) : (
-        <div className="fw-today__family" role="region" aria-label="Everyone today">
-          {members.map((m) => {
-            const mine = itemsFor(t.items, m.id);
-            return (
-              <section key={m.id} className="fw-today__col" aria-labelledby={`col-${m.id}`}>
-                <header className="fw-today__col-head">
-                  <Avatar
-                    name={m.displayName}
-                    avatarKey={m.avatarKey}
-                    color={m.color}
-                    size={64}
-                    decorative
-                  />
-                  <h2 id={`col-${m.id}`}>{m.displayName}</h2>
-                  {m.streak ? <Flame days={flameDays(m.streak, t.items, m.id, today)} /> : null}
-                  {m.points ? (
-                    <CountingChip points={t.balance(m)} provisional={t.provisional(m)} />
+        <>
+          <div className="fw-today__family" role="region" aria-label="Everyone today">
+            {members.map((m) => {
+              const mine = itemsFor(t.items, m.id);
+              const nudge = m.earnsRewards ? nudgeFor(snapshot.goals, m.id, { own: true }) : null;
+              return (
+                <section key={m.id} className="fw-today__col" aria-labelledby={`col-${m.id}`}>
+                  <header className="fw-today__col-head">
+                    <Avatar
+                      name={m.displayName}
+                      avatarKey={m.avatarKey}
+                      color={m.color}
+                      size={64}
+                      decorative
+                    />
+                    <h2 id={`col-${m.id}`}>{m.displayName}</h2>
+                    {m.streak ? <Flame days={flameDays(m.streak, t.items, m.id, today)} /> : null}
+                    {m.points ? (
+                      <CountingChip points={t.balance(m)} provisional={t.provisional(m)} />
+                    ) : null}
+                  </header>
+                  {nudge ? (
+                    <p className="fw-today__nudge fw-today__nudge--col">
+                      <Icon name="target" size={28} />
+                      <span>{nudge}</span>
+                    </p>
                   ) : null}
-                </header>
-                <Parts
-                  items={mine}
-                  idPrefix={`col-${m.id}`}
-                  today={today}
-                  empty="Nothing today"
-                  tile={(i) => tile(i, m.id, 'family')}
-                />
-              </section>
-            );
-          })}
-        </div>
+                  <Parts
+                    items={mine}
+                    idPrefix={`col-${m.id}`}
+                    today={today}
+                    empty="Nothing today"
+                    tile={(i) => tile(i, m.id, 'family')}
+                  />
+                </section>
+              );
+            })}
+          </div>
+          <FamilyGoals goals={familyGoals} today={today} photoUrl={photoUrl} />
+        </>
       )}
 
       {member && wishing === member.id ? (
@@ -991,6 +1134,22 @@ export function Today({
         />
       ) : null}
 
+      {shopFor ? (
+        <ShopDialog
+          member={shopFor}
+          shop={snapshot.shop}
+          available={spendable(shopFor)}
+          online={online}
+          photoUrl={photoUrl}
+          initial={shopping?.item ?? null}
+          onClose={() => setShopping(null)}
+          onAsk={(item) => {
+            shop.askFor(shopFor, item);
+            setShopping(null);
+          }}
+        />
+      ) : null}
+
       {picker ? (
         <WhoDidIt
           item={picker.item}
@@ -1001,6 +1160,16 @@ export function Today({
             t.checkOff(picker.item, doneBy);
             setPicker(null);
           }}
+        />
+      ) : null}
+
+      {celebrating ? (
+        <Celebration
+          key={`${celebrating.id}:${celebrating.n}`}
+          goal={celebrating}
+          line={celebrationLine(celebrating, name)}
+          photoUrl={photoUrl}
+          onDone={endCelebration}
         />
       ) : null}
     </div>
