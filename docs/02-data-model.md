@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.24: `link_my_member()`: a parent links their own sign-in to an adult of their household, moving it from wherever it was (D-61, §4.8).
 > v0.8.23: the board's shop, requests and goals (WP-20, D-59): the snapshot's `available`, `requests` and `limited` for each earner, the shop's `left`, `photo` and `description`, and `goals`; `mark_goal_celebrated()`; the shop, requests and goals in the Realtime publication (§4.6, §4.8).
 > v0.8.22: reminders as built (WP-40, D-58): `reminder_preference`, `push_subscription` and `reminder_delivery` with each person's own RLS, and the functions that plan, claim and finish reminders (§3.7).
 > v0.8.21: bonus rules and the wishlist (WP-30, D-57): `points_rule` as built, `wishlist_pin`, the ledger's `points_rule_id`, `apply_points_rules()` and `pin_wish()`, and the snapshot's `shop` and each earner's `wish` (§3.3b, §4.2b, §4.6).
@@ -1072,6 +1073,7 @@ All are `SECURITY DEFINER` with `search_path = ''`, and errors carry a stable co
 | `public.history_dirty_members(household, engine_version)` | the job only | The members to rebuild: marked, or with rows an older engine made. |
 | `public.member_history_stale(member, engine_version)` | a parent of the household | Whether the Insights page must rebuild the member first. |
 | `public.member_insights(member, from, to)` | parents (security invoker: RLS applies) | One member's insights over 1 to 367 closed days: streaks over all history, routines done of those that counted, the days, the five most missed, completion by tag, and what a parent did next to their check-offs (RWD-12). |
+| `public.link_my_member(member)` | a signed-in parent of the member's household | [ACC-04] Links the caller's own sign-in to `member`: an adult of their household, not archived, with no one else's sign-in (else `23514`: `not_adult`, `member_archived`, `linked_to_someone_else`; a member of another household, or none, is `P0002`). The sign-in moves from any other member it was on, archived or not (`moved_from`); linking the member already linked changes nothing (`duplicate`). Only one's own: an admin sets anyone's link from the member form (D-61). |
 | `private.check_member_user()`, `private.unlink_departed_admin()` | triggers only | Refuse a member linked to anyone but an admin of its household; unlink the member when its admin leaves (WP-04). |
 | `public.resolve_day_type(member, date)`, `public.member_school_year(member, date)`, `public.school_day_type(year, date)` | signed-in users, service role (security invoker) | A member's day type on a date, the school year they follow, and a date's type in a year (§4.4, WP-21). |
 | `public.household_day_types(household_id, date)` | that household's admins and board (security invoker) | Each active member's day type and school year on a date. |

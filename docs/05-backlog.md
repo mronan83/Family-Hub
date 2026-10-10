@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.51: fix (D-61): a parent links their own sign-in from Reminders, My tasks or their page on Members. No work package changes status.
 > v0.8.50: WP-20 done (PR #37): the board's shop, requests and goals. WP-31 is ready. WP-44 (offline goal projection, a fallback only, D-60) is added: ready, and nothing waits on it.
 > v0.8.49: WP-20 in review (PR #37): the board's shop, requests and goals (D-59).
 > v0.8.48: WP-40 done (PR #36): reminders by web push. Nothing waits on it; the owner runs the vapid-keys workflow once to switch sending on.
@@ -339,6 +340,7 @@ flowchart LR
 - CRUD for child and adult members (name, avatar, color), archive instead of delete, multiple children supported by the schema.
 - Earns-rewards switch on each member (D-32), defaulting from the role.
 - An adult member links to an admin's sign-in, and only to an admin of the same household (database trigger), since later work reads "who am I" from it.
+- Later fix (D-61): a parent links their own sign-in in one tap from Reminders, My tasks ("Which one is you?") or their page on Members ("This is me"), through `link_my_member()`, which moves it off an archived record; a Child record says only an adult can have a sign-in.
 - **Done when:** the single child profile exists, an adult profile can be linked to an admin, and the switch defaults correctly and can be changed.
 
 ### WP-05 — Device pairing and device auth

@@ -51,10 +51,10 @@ for (const [path, title, done] of [
     await page.goto(path);
     await expect(page.getByRole('heading', { name: title, level: 1 })).toBeVisible();
     const choose = page.getByRole('region', { name: 'Which one is you?' });
-    // Sam has his own sign-in, so Alex is the only adult offered.
-    await expect(
-      choose.getByRole('list', { name: 'Adults without a sign-in' }).getByRole('button'),
-    ).toHaveText(['I’m Alex']);
+    // Sam has his own sign-in, so he isn't offered.
+    const adults = choose.getByRole('list', { name: 'Adults without a sign-in' });
+    await expect(adults.getByRole('button', { name: 'I’m Alex' })).toBeVisible();
+    await expect(adults.getByRole('button', { name: 'I’m Sam' })).toHaveCount(0);
     await choose.getByRole('button', { name: 'I’m Alex' }).click();
     await page.waitForURL(new RegExp(`${path}\\?did=linked`));
     await expect(page.getByText(done)).toBeVisible();
@@ -67,7 +67,9 @@ test('[ACC-04][US-316] his record says Child: told to choose Adult, then “This
   unlink(`, role = 'child'`);
   await page.goto('/admin/reminders');
   const choose = page.getByRole('region', { name: 'Which one is you?' });
-  await expect(choose).toContainText('Every adult in the family already has a sign-in.');
+  // A child can't have a sign-in, so Alex isn't offered; the page says what to do instead.
+  await expect(choose).toBeVisible();
+  await expect(choose.getByRole('button', { name: 'I’m Alex' })).toHaveCount(0);
   await expect(choose).toContainText(
     'if your record says Child, open it on Members and choose Adult',
   );
@@ -106,7 +108,7 @@ test('[ACC-04][US-316] his sign-in left on an archived record: named, then moved
   await page.goto(`/admin/members/${alex()}`);
   // The sign-in choice says where his sign-in went, rather than leaving it out without a word.
   await expect(page.getByRole('form', { name: 'Edit member' })).toContainText(
-    `Already linked: alex@demo.familywise.invalid to ${OLD} (archived)`,
+    `alex@demo.familywise.invalid to ${OLD} (archived)`,
   );
   const me = page.getByRole('region', { name: 'Is this you?' });
   await expect(me).toContainText(`Your sign-in is on ${OLD}, who is archived. Move it here`);

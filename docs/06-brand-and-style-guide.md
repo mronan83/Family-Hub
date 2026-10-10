@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.10 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20)
+> Version 1.11 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20)
+> v1.11: "Which one is you?" on Reminders and My tasks, a pill per adult with their avatar ("I’m Alex"), and "This is me" on a member's page (§7.3, D-61).
 > v1.10: the board's shop, "Asked for" card, goals card, nudge pill, family goals and the goal celebration (§7.2, WP-20).
 > v1.9: reminders in the admin app: the Reminders page and the bell on each item in My tasks (`bell`, pressed Teal-tinted "Bell on", plain "Bell off"); a reminder notification is the item's title (or "Private task") and "Due at 3:00 pm" (§7.3, WP-40).
 > v1.8: the wish card and picker on a child's own screen (the goal meter labelled "Saved", "N more points to go", a sparkle and "You have enough! Ask a grown-up for it."), and the Rewards page's bonus rules with `flame` and `sparkles` (§7.2, §7.3, WP-30).
@@ -216,6 +217,7 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 - Destructive actions: ghost button, confirm dialog stating the consequence ("This reverses 4 chores and 20 points").
 - Bonus rules (WP-30) on the Rewards page: each rule as a sentence ("20 points for 7 good days in a row", "5 points for each day with everything done") on a Sun-tint tile with `flame` or `sparkles`, then when it counts from and "off" when paused; Turn off / Turn on and Archive as ghost buttons; "Add a bonus" folded under a disclosure. Each reward says who is saving for it, with `target`.
 - Reminders (WP-40): the Reminders page says plainly whether they are on ("On. Reminders come to the devices below." in Teal, or "Off. Nothing is sent to you."), then my devices (each with Send a test, Switch off or on, Remove) and "When to remind me". Each open item in My tasks has a bell: "Bell on" pressed (Teal tint) or "Bell off" (ghost), named "Remind me about …". A notification reads like the board: the item's title, or "Private task" for a private item, over "Due at 3:00 pm"; the digest is "Your day: 3 to do, 1 overdue" over the first three titles.
+- Linking your sign-in (D-61): where a parent's sign-in is linked to no one, Reminders and My tasks ask "Which one is you?" with a pill per adult still here with no sign-in (avatar and "I’m Alex", 44 px), then how to fix a record that says Child or add yourself. A member's page offers "This is me" (secondary) when it is you. A Child record says "Only an adult can have a sign-in. Choose Adult above to link one." Linking says so: "Linked: these are your reminders now.", "Linked: you’re Alex. These are your tasks." or "Linked: you’re Alex now."
 
 ---
 
