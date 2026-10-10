@@ -327,6 +327,9 @@ for (const theme of ['day', 'evening'] as const) {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(`/dev/board?theme=${theme}&celebrate=1`);
     await expect(page.getByRole('dialog')).toBeVisible();
+    // The dev board sets its theme once it is running (ThemeLock); nothing is tapped here first, so
+    // wait for it, or the contrast check can read a button halfway between Day and Evening.
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
     expect(await fit(page, '.fw-celebrate')).toEqual({ small: [], tiny: [], wide: 1920 });
     await contrastOk(page);
   });
