@@ -32,15 +32,25 @@ const systemEvent = (id: string, type: string, doneBy: string[] = []) =>
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)
        values (gen_random_uuid(), '${id}', '${type}', array[${doneBy.map((d) => `'${d}'`).join(',')}]::uuid[], now())`);
 
-/** Today's items this spec touches, put back as the seed left them; approval off. */
+const ITEMS = `('${MAKE_BED}', '${BRUSH_TEETH}', '${FEED_THE_DOG}', '${SET_THE_TABLE}')`;
+
+/**
+ * Today's and tomorrow's items this spec touches, put back as the seed left them, approval off:
+ * open again, then each one's approval flag as the switch now has it (one that waited for a parent
+ * keeps its flag when the switch goes off, D-22, so a failed run can't leave the next spec's
+ * check-offs waiting).
+ */
 function putBack() {
-  sql(`update public.household_settings set approval_mode = 'off' where household_id = '${DEMO}';
-       insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
+  sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
        select gen_random_uuid(), o.id, 'admin_uncomplete', now()
          from public.chore_occurrence o
         where o.household_id = '${DEMO}' and o.due_date between ${TODAY} and ${TODAY} + 1
-          and o.status <> 'scheduled'
-          and o.chore_id in ('${MAKE_BED}', '${BRUSH_TEETH}', '${FEED_THE_DOG}', '${SET_THE_TABLE}');
+          and o.status <> 'scheduled' and o.chore_id in ${ITEMS};
+       update public.household_settings set approval_mode = 'off' where household_id = '${DEMO}';
+       update public.chore_occurrence o set requires_approval_snapshot = private.chore_requires_approval(o.chore_id)
+        where o.household_id = '${DEMO}' and o.due_date between ${TODAY} and ${TODAY} + 1
+          and o.chore_id in ${ITEMS}
+          and o.requires_approval_snapshot is distinct from private.chore_requires_approval(o.chore_id);
        update public.chore set archived_at = now()
         where household_id = '${DEMO}' and title like 'Pick up the dry cleaning e2e%' and archived_at is null;`);
 }
@@ -180,6 +190,7 @@ test('[CHR-06] late credit for yesterday, then unchecked again; a day ahead skip
   await expect(admin.getByRole('status')).toContainText('Skipped Set the table.');
   expect(status(tomorrow)).toBe('skipped');
   await admin.getByRole('button', { name: 'Put Set the table back', exact: true }).click();
+  await expect(admin.getByRole('status')).toHaveText('Set the table is back on the list.');
   expect(status(tomorrow)).toBe('scheduled');
 });
 

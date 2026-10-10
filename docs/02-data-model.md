@@ -1,7 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
-> v0.8.16: a parent's day (WP-12, D-52): `undo_uncheck_batch()` puts back a "Not actually done" batch (§4.7).
+> v0.8.16: a parent's day (WP-12, D-52): `undo_uncheck_batch()` puts back a "Not actually done" batch (§4.7). The approval switches now re-resolve every `scheduled` occurrence, as D-22 says, including one a parent has unchecked (§3.2).
 > v0.8.14: the board's Today (WP-11, D-50): the snapshot's `occurrences` and `household.undo_window_seconds` as built; `chore_occurrence` and `chore` join the Realtime publication (§4.6).
 > v0.8.13: the points ledger (WP-16, D-49): `points_ledger` and `v_points_balance` as built; earn and reversal reconcile each occurrence's points; `adjust_points()`; the snapshot's points; the ledger drift check (§3.3b, §4.2b, §4.6, §4.7).
 > v0.8.12: everyone does their own (WP-43, D-47): `chore.assignment` (`each` or `shared`) and `chore_occurrence.member_id`, one occurrence per item, day and person (§3.2).
@@ -404,7 +404,7 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 - An item is due on a date when its schedule falls on it (`private.schedule_matches()`), the date is within `start_date`..`end_date` (a one-off ignores `start_date`), it is not archived, and the day type of at least one active assignee is in its `day_types`. Intervals count from `start_date`; weeks are ISO; a monthly day past the end of a shorter month falls on its last day.
 - Each assignee's day type on the date is kept in `chore_occurrence_assignee.day_type`, not one per occurrence, since a child at another school can have another day type on the same date (D-44).
 - Re-planning changes only occurrences nothing has happened to (`scheduled`, `status_event_id` null), never a past one. After today they are replaced. Today's follow an item's own edit, or a member archived or restored, in place: same id, new points, time, approval and assignees, or removed if the item is no longer due today. A school-year change starts tomorrow (D-24). An open one-off task follows its date, so one entered after its date is made on that date and shows as overdue.
-- Changing the household's approval switch re-resolves `requires_approval_snapshot` on occurrences nothing has happened to (D-22).
+- Changing the household's approval switch re-resolves `requires_approval_snapshot` on every `scheduled` occurrence (D-22), and changing an item's own setting does the same for that item's (`trg_chore_approval`, WP-12). WP-09 re-resolved only those nothing had happened to, so an item a parent had unchecked kept the old setting. A check-off waiting for a parent keeps its flag.
 - Both tables carry `household_id` and reference `chore (household_id, id)`, `chore_occurrence (household_id, id)` and `member (household_id, id)`. Admins and the board read them under the item's visibility; nobody writes them directly; they are not audited.
 
 **As built (WP-43, D-47):**

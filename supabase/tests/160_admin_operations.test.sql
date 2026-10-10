@@ -4,7 +4,7 @@
 -- parent of the household. Earlier events happen at distinct times a little before now; putting back
 -- happens now, so it is always the latest.
 begin;
-select plan(24);
+select plan(30);
 
 insert into auth.users (id, email) values
   ('16100000-0000-0000-0000-000000000001', 'parent@example.com'),
@@ -178,6 +178,46 @@ select is(public.undo_uncheck_batch('16ba0000-0000-0000-0000-0000000000d1'),
 select pg_temp.as_nobody();
 select is(pg_temp.statuses(array[pg_temp.occ(1, pg_temp.today() - 1), pg_temp.occ(5)]), array['approved', 'completed'],
           '... done again, while the item checked off since stays as the board left it');
+
+-- [CHR-05] The approval switches follow every item still to do (D-22), including one a parent has
+-- unchecked; a check-off already waiting for a parent stays in the queue. (Item 5's events are all
+-- on the earlier timeline, so an uncheck now is its latest.)
+select pg_temp.as_user('16100000-0000-0000-0000-000000000001');
+select pg_temp.rec('admin_uncomplete', array[pg_temp.occ(5)]);
+select pg_temp.as_nobody();
+select set_config('request.jwt.claims', '{}', true); -- the audit trigger reads the claims
+update public.household_settings set approval_mode = 'on' where household_id = '16000000-0000-0000-0000-000000000001';
+select is((select array_agg(o.status || ':' || o.requires_approval_snapshot order by o.due_date) from public.chore_occurrence o
+            where o.id in (pg_temp.occ(5), pg_temp.occ(5, pg_temp.today() + 1))),
+          array['scheduled:true', 'scheduled:true'],
+          'switched on: an unchecked item needs a parent, as does one nothing has happened to');
+select is((select requires_approval_snapshot from public.chore_occurrence where id = pg_temp.occ(3)), false,
+          '... one already done is unchanged');
+select pg_temp.as_user('16d00000-0000-0000-0000-00000000000d');
+select pg_temp.rec('complete', array[pg_temp.occ(5)], p_done_by => array['16110000-0000-0000-0000-000000000001']::uuid[]);
+select pg_temp.as_nobody();
+select is(pg_temp.statuses(array[pg_temp.occ(5)]), array['pending_approval'], 'so checking it off again waits for a parent');
+select set_config('request.jwt.claims', '{}', true);
+update public.household_settings set approval_mode = 'off' where household_id = '16000000-0000-0000-0000-000000000001';
+select is((select array_agg(o.status || ':' || o.requires_approval_snapshot order by o.due_date) from public.chore_occurrence o
+            where o.id in (pg_temp.occ(5), pg_temp.occ(5, pg_temp.today() + 1))),
+          array['pending_approval:true', 'scheduled:false'],
+          'switched off: one waiting stays in the queue; the rest count straight away');
+
+-- An item's own setting does the same: tomorrow's, skipped and put back, follows it.
+select pg_temp.as_user('16100000-0000-0000-0000-000000000001');
+select pg_temp.rec('skip', array[pg_temp.occ(4, pg_temp.today() + 1)]);
+select pg_temp.rec('admin_uncomplete', array[pg_temp.occ(4, pg_temp.today() + 1)]);
+select pg_temp.as_nobody();
+select set_config('request.jwt.claims', '{}', true);
+update public.chore set approval = 'required' where id = '16c00000-0000-0000-0000-000000000004';
+select is((select array_agg(o.status || ':' || o.requires_approval_snapshot order by o.due_date) from public.chore_occurrence o
+            where o.id in (pg_temp.occ(4, pg_temp.today() + 1), pg_temp.occ(4, pg_temp.today() + 2))),
+          array['scheduled:true', 'scheduled:true'],
+          'an item set to need a parent: one skipped and put back follows it too');
+select is((select bool_or(requires_approval_snapshot) from public.chore_occurrence
+            where chore_id <> '16c00000-0000-0000-0000-000000000004' and status = 'scheduled'), false,
+          '... and no other item''s');
 
 select * from finish();
 rollback;
