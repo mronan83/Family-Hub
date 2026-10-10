@@ -16,6 +16,7 @@ import { HealthLines } from './health-lines';
 import type { PhotoUrl } from './picture';
 import { type QueueState, Today } from './today';
 import { useMinute } from './use-minute';
+import { useBarHeight } from './use-bar-height';
 import { useHydrated, useOnline } from './use-online';
 
 type Link = 'connecting' | 'live' | 'offline';
@@ -237,6 +238,8 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
   const online = useOnline();
   const hydrated = useHydrated();
   const now = useMinute();
+  const bar = useRef<HTMLElement>(null);
+  useBarHeight(bar);
   const health = boardHealth({
     fetchedAt: snapshot.fetchedAt,
     now,
@@ -255,7 +258,7 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
   return (
     <main className="fw-board" data-fetched-at={snapshot.fetchedAt}>
       <BoardThemeController timeZone={tz} override={device.theme} />
-      <header className="fw-board__bar">
+      <header ref={bar} className="fw-board__bar">
         <div className="fw-board__title">
           <h1>{household.name}</h1>
           <p className="fw-board__date" suppressHydrationWarning>

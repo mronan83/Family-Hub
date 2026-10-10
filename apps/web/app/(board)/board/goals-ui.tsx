@@ -1,7 +1,15 @@
 'use client';
 
 import { Button, GoalMeter, Icon } from '@familywise/ui';
-import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type CSSProperties,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   celebrationKey,
   endsLine,
@@ -17,16 +25,19 @@ import { Picture, type PhotoUrl } from './picture';
 const CELEBRATION_MS = 10_000;
 
 /** One goal: its meters (one per rule) and when it ends; reached, it says so. */
-function GoalItem({
+export function GoalItem({
   goal,
   today,
   photoUrl,
   compact = false,
+  who,
 }: {
   goal: BoardGoal;
   today: string;
   photoUrl?: PhotoUrl;
   compact?: boolean;
+  /** [D-66] Whose goal it is, on the dashboard where everyone's show together. */
+  who?: ReactNode;
 }) {
   const ends = endsLine(goal.endDate, today);
   return (
@@ -40,6 +51,7 @@ function GoalItem({
           fallback="trophy"
         />
         <span className="fw-today__goal-title">{goal.title}</span>
+        {who}
         {goal.memberId === null && !compact ? <span className="fw-pill">Family</span> : null}
       </p>
       {goal.status === 'achieved' ? (

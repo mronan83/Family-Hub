@@ -196,14 +196,14 @@ test('[NFR-01][DEV-08][US-205] opened after a day offline, the board shows its l
     'Offline: your check-offs are saved',
     'Updated 1 day ago',
   ]);
-  // Its last day: everyone's column, with Maya's bed done as the database had it.
-  const maya = page
-    .getByRole('region', { name: 'Everyone today' })
-    .locator('section', { has: page.getByRole('heading', { name: 'Maya', level: 2 }) });
-  await expect(maya.getByRole('heading', { name: 'Make bed' })).toBeVisible();
-  await expect(maya.getByRole('button', { name: 'Check off Make bed', exact: true })).toHaveCount(
-    0,
-  );
+  // Its last day: the family dashboard (D-66), with Maya's bed done as the database had it.
+  const bed = page.locator('.fw-dash__list li[data-row]', {
+    has: page.getByText('Make bed', { exact: true }),
+  });
+  await expect(bed).toBeVisible();
+  await expect(
+    bed.getByRole('button', { name: 'Check off Make bed for Maya', exact: true }),
+  ).toHaveCount(0);
   await goOnline(page.context());
   await page.close();
 });

@@ -19,6 +19,13 @@ const posts = (page: Page) =>
 const balance = async (page: Page, scope = page.locator('body')) =>
   Number(await scope.locator('[data-balance]').first().getAttribute('data-balance'));
 
+/** [D-66] Everyone's day in a column each: the Chores screen (the home screen is the dashboard). */
+async function chores(page: Page) {
+  await page.goto('/dev/board');
+  await people(page).getByRole('button', { name: 'Chores', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Everyone today' })).toBeVisible();
+}
+
 async function asMaya(page: Page) {
   await page.goto('/dev/board');
   await people(page).getByRole('button', { name: 'Maya', exact: true }).click();
@@ -32,10 +39,10 @@ async function contrastOk(page: Page) {
   );
 }
 
-test("[BRD-07][CHR-11][CHR-12] everyone's day: a column each, by part of day, overdue first", async ({
+test("[BRD-07][CHR-11][CHR-12] everyone's day on Chores: a column each, by part of day, overdue first", async ({
   page,
 }) => {
-  await page.goto('/dev/board');
+  await chores(page);
   const everyone = page.getByRole('region', { name: 'Everyone today' });
   for (const name of ['Leo', 'Maya', 'Alex', 'Sam']) {
     await expect(everyone.getByRole('heading', { name, level: 2 })).toBeVisible();
@@ -144,7 +151,7 @@ test('[CHR-05] a check-off that needs a parent waits, without points yet', async
 test("[BRD-07][US-1006] who did it: the item's people first, anyone, several allowed", async ({
   page,
 }) => {
-  await page.goto('/dev/board');
+  await chores(page);
   const everyone = page.getByRole('region', { name: 'Everyone today' });
   const alexColumn = everyone.locator('section', {
     has: page.getByRole('heading', { name: 'Alex', level: 2 }),
@@ -181,7 +188,7 @@ test("[BRD-07][US-1006] who did it: the item's people first, anyone, several all
 });
 
 test('[BRD-07] cancelling the picker records nothing', async ({ page }) => {
-  await page.goto('/dev/board');
+  await chores(page);
   await page.getByRole('button', { name: 'Check off Feed the dog' }).first().click();
   await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -190,7 +197,7 @@ test('[BRD-07] cancelling the picker records nothing', async ({ page }) => {
 });
 
 test("[RWD-08][US-1006] a child's check-off celebrates; an adult's does not", async ({ page }) => {
-  await page.goto('/dev/board');
+  await chores(page);
   const everyone = page.getByRole('region', { name: 'Everyone today' });
   const leoColumn = everyone.locator('section', {
     has: page.getByRole('heading', { name: 'Leo', level: 2 }),
@@ -361,7 +368,7 @@ for (const theme of ['day', 'evening'] as const) {
     page,
   }) => {
     await page.goto(`/dev/board?theme=${theme}`);
-    for (const view of ['Everyone', 'Maya']) {
+    for (const view of ['Home', 'Chores', 'Maya']) {
       await people(page).getByRole('button', { name: view, exact: true }).click();
       const report = await page.evaluate(() => {
         const small = [...document.querySelectorAll('button')]

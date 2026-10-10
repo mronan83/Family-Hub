@@ -96,10 +96,19 @@ test.afterAll(async () => {
   await retireBoard(board, BOARD);
 });
 
+const everyone = () => board.getByRole('region', { name: 'Everyone today' });
 const column = (name: string) =>
-  board
-    .getByRole('region', { name: 'Everyone today' })
-    .locator('section', { has: board.getByRole('heading', { name, level: 2 }) });
+  everyone().locator('section', { has: board.getByRole('heading', { name, level: 2 }) });
+/** The board's Chores screen (a column each), opened again if the board went back to Home (90 s
+ * untouched, D-66). */
+async function chores() {
+  if (await everyone().isVisible()) return;
+  await board
+    .getByRole('list', { name: 'Family', exact: true })
+    .getByRole('button', { name: 'Chores', exact: true })
+    .click();
+  await expect(everyone()).toBeVisible();
+}
 
 test('[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batch, open again on the board, four reversals; Undo puts them back', async () => {
   const [maya, leo] = [memberId('Maya'), memberId('Leo')];
@@ -116,6 +125,7 @@ test('[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batc
   systemEvent(four[2]!, 'complete', [maya]);
   systemEvent(four[3]!, 'complete', [leo]);
   systemEvent(table, 'complete', [leo]);
+  await chores();
   await expect(
     column('Leo').getByRole('listitem').filter({ hasText: 'Set the table' }),
   ).toContainText('Done!');
@@ -148,6 +158,7 @@ test('[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batc
           where occurrence_id in (${ids}, '${table}') and entry_type = 'reversal' and created_at >= '${started}'`),
   ).toBe('4');
   // The child sees them open again, with nothing telling them off.
+  await chores();
   for (const [name, title] of [
     ['Maya', 'Make bed'],
     ['Maya', 'Brush teeth'],
@@ -235,6 +246,7 @@ test('[CHR-05][D-22] with approval on, a child’s check-off waits for a parent:
   await expect(admin.getByRole('status')).toContainText('Sent Set the table back.');
   expect(status(table)).toBe('rejected');
   // Open on the board again, to try again.
+  await chores();
   await expect(
     column('Leo').getByRole('button', { name: 'Check off Set the table', exact: true }),
   ).toBeVisible();
@@ -262,6 +274,7 @@ test('[CHR-14][US-316] My tasks: quick add makes a task for me today, on the boa
           where c.household_id = '${DEMO}' and c.title = '${title}'
           group by c.kind, c.visibility, o.due_date`),
   ).toBe(`task:family:${sql(`select ${TODAY}`)}:${alex}`);
+  await chores();
   await expect(
     column('Alex').getByRole('button', { name: `Check off ${title}`, exact: true }),
   ).toBeVisible({ timeout: 15_000 });

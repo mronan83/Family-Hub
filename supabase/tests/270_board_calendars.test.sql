@@ -115,7 +115,7 @@ select is((select c from jsonb_array_elements(public.board_calendar(pg_temp.toda
   jsonb_build_object('id', '27ca0000-0000-0000-0000-000000000002', 'name', 'School', 'color', 'member-3',
                      'member_id', '27110000-0000-0000-0000-00000000000a', 'status', 'ok'),
   '[CAL-05] each calendar with its color and whose it is');
-select is((public.board_snapshot() -> 'calendar' -> 'calendars'), public.board_calendar(pg_temp.today() - 1, pg_temp.today() + 14) -> 'calendars',
+select is((public.board_snapshot() -> 'calendar' -> 'calendars'), public.board_calendar(pg_temp.today() - 1, pg_temp.today() + 21) -> 'calendars',
   '[DEV-05] the snapshot carries the calendar over its own window');
 select is(jsonb_array_length(public.board_snapshot() -> 'calendar' -> 'events'), 3,
   '[DEV-05] with the events in it');

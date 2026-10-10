@@ -29,6 +29,8 @@ export interface TodayItem {
   requiresApproval: boolean;
   /** When the check-off it shows was made (ISO), for undoing it on the board. */
   checkedAt: string | null;
+  /** [D-66] The item's description, for "More info" (none from before WP-35). */
+  description?: string | null;
 }
 
 /** Statuses a tap can check off: not done yet, or sent back. */

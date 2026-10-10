@@ -106,7 +106,7 @@ select is((select x - 'id' - 'chore_id' - 'checked_at' from snap, jsonb_array_el
                              'due_time', '17:00', 'member_id', null,
                              'assignees', jsonb_build_array('15110000-0000-0000-0000-000000000001', '15110000-0000-0000-0000-000000000003'),
                              'status', 'scheduled', 'done_by', '[]'::jsonb, 'rewarded', '[]'::jsonb, 'points', 5,
-                             'requires_approval', false),
+                             'requires_approval', false, 'description', null),
   '[BRD-07][CHR-11] each item carries what its tile needs: title, icon, kind, due time and who it is for');
 select is((select x ->> 'member_id' from snap, jsonb_array_elements(s) x
             where x ->> 'title' = 'Make bed' and x -> 'assignees' ? '15110000-0000-0000-0000-000000000002'),

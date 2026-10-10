@@ -1,15 +1,17 @@
 'use client';
 
 import { ThemeLock, type Theme } from '@familywise/ui';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { boardHealth, type JobHealth } from '@/lib/board-health';
 import { openBoardStore } from '@/lib/board-store';
 import { day, isoDay, time } from '@/lib/format';
 import { HealthLines } from '../../(board)/board/health-lines';
 import { useMinute } from '../../(board)/board/use-minute';
+import { useBarHeight } from '../../(board)/board/use-bar-height';
 import { useOnline } from '../../(board)/board/use-online';
 import { type QueueState, Today } from '../../(board)/board/today';
 import type { BoardCalendar } from '@/lib/snapshot';
+import type { BoardLayout } from '@/lib/board-layout';
 import {
   fixtureAsk,
   fixtureCalendar,
@@ -38,6 +40,7 @@ export function DevBoard({
   celebrate,
   busy = false,
   calBehind = false,
+  layout,
 }: {
   theme: Theme;
   stale: boolean;
@@ -45,10 +48,14 @@ export function DevBoard({
   celebrate: boolean;
   busy?: boolean;
   calBehind?: boolean;
+  /** [BRD-05] The household's home screen layout (WP-35); the defaults without one. */
+  layout?: BoardLayout;
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
   const now = useMinute();
+  const bar = useRef<HTMLElement>(null);
+  useBarHeight(bar);
   // A School sync that failed three hours ago, when asked for.
   const withSchool = useCallback(
     (cal: BoardCalendar): BoardCalendar =>
@@ -69,7 +76,7 @@ export function DevBoard({
     [calBehind, opened],
   );
   const [snapshot, setSnapshot] = useState(() => {
-    let s = fixtureSnapshot(isoDay(TZ, opened), opened);
+    let s = fixtureSnapshot(isoDay(TZ, opened), opened, layout);
     if (busy || calBehind) {
       s = {
         ...s,
@@ -110,7 +117,7 @@ export function DevBoard({
   return (
     <main className="fw-board">
       <ThemeLock theme={theme} />
-      <header className="fw-board__bar">
+      <header ref={bar} className="fw-board__bar">
         <div className="fw-board__title">
           <h1>{snapshot.household.name}</h1>
           <p className="fw-board__date">{day(now, TZ)}</p>

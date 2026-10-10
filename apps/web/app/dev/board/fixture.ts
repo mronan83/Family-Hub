@@ -1,6 +1,7 @@
 import type { Answer, CompletionEvent } from '@/lib/outbox';
 import type { MarkCelebrated } from '@/lib/board-goals';
 import type { AskFor, CancelAsk } from '@/lib/shop';
+import { type BoardLayout, DEFAULT_LAYOUT } from '@/lib/board-layout';
 import type { BoardMember, BoardSnapshot } from '@/lib/snapshot';
 import type { BoardCalendar, BoardEvent } from '@/lib/snapshot';
 import type { TodayItem } from '@/lib/today';
@@ -17,7 +18,7 @@ const SAM = 'f1000000-0000-4000-8000-000000000004';
 const day = (offset: number, today: string) =>
   new Date(Date.parse(`${today}T12:00:00Z`) + offset * 86_400_000).toISOString().slice(0, 10);
 
-export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
+export function fixtureSnapshot(today: string, now: Date, layout?: BoardLayout): BoardSnapshot {
   const item = (id: string, o: Partial<TodayItem>): TodayItem => ({
     id,
     choreId: `c-${id}`,
@@ -41,9 +42,11 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
     v: 1,
     fetchedAt: new Date(now.getTime() - 60_000).toISOString(),
     today,
-    range: { from: day(-1, today), to: day(14, today) },
+    range: { from: day(-1, today), to: day(21, today) },
     household: { id: 'h', name: 'Demo family', timezone: TZ, weekStart: 0, undoWindowSeconds: 120 },
     device: { id: 'd', name: 'Kitchen', theme: 'auto' },
+    // [BRD-05] The household's layout, the defaults unless the page says otherwise (WP-35).
+    layout: { household: layout ?? structuredClone(DEFAULT_LAYOUT), board: null },
     members: [
       {
         id: LEO,
@@ -161,6 +164,8 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         points: 0,
       }),
       item('bed-maya', {
+        // One chore everyone does their own: an occurrence each, the same chore (WP-43).
+        choreId: 'c-bed',
         title: 'Make bed',
         icon: 'chore-bed',
         dueTime: '07:30',
@@ -168,6 +173,7 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         assignees: [MAYA],
       }),
       item('bed-leo', {
+        choreId: 'c-bed',
         title: 'Make bed',
         icon: 'chore-bed',
         dueTime: '07:30',
@@ -188,6 +194,7 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
       }),
       item('homework', {
         title: 'Homework',
+        description: 'Reading log and spelling words, then show a grown-up.',
         icon: 'chore-homework',
         dueTime: '16:00',
         assignees: [MAYA],
@@ -196,6 +203,7 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
       }),
       item('dog', {
         title: 'Feed the dog',
+        description: 'One scoop of dry food, and fresh water in the blue bowl.',
         icon: 'chore-pet',
         dueTime: '17:00',
         assignees: [MAYA, ALEX],
@@ -356,7 +364,7 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         ],
       },
     ],
-    calendar: fixtureCalendar(today, now, day(-1, today), day(14, today)),
+    calendar: fixtureCalendar(today, now, day(-1, today), day(21, today)),
   };
 }
 

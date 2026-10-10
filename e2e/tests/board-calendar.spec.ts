@@ -99,7 +99,7 @@ function cleanUp() {
 }
 
 const todayColumn = () => board.locator('.fw-bcal__col[data-today]');
-/** The board's calendar, opened again if the board went back to Everyone (90 s untouched). */
+/** The board's calendar, opened again if the board went back to Home (90 s untouched). */
 async function boardCalendar() {
   if (await board.locator('#cal-title').isVisible()) return;
   await board

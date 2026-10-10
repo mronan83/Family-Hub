@@ -2079,3 +2079,468 @@ span.fw-heat__cell {
 .fw-link-me__choice:focus-visible {
   border-color: var(--primary);
 }
+
+/* The board's home: a family dashboard (WP-35, D-66). ------------------------------------------ */
+/* The bar and the people stay in sight while the dashboard scrolls (--bar-h is the bar's height). */
+.fw-board__bar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  margin-top: calc(-1 * var(--s-4));
+  padding-block: var(--s-4) var(--s-2);
+  background: var(--bg);
+}
+.fw-today__people {
+  position: sticky;
+  top: var(--bar-h, 0px);
+  z-index: 2;
+  margin-block: calc(-1 * var(--s-2));
+  padding-block: var(--s-2);
+  background: var(--bg);
+}
+.fw-today__pill-balance {
+  display: inline-flex;
+}
+.fw-dash {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 680px;
+  grid-template-areas:
+    'cal list'
+    'cards list';
+  grid-template-rows: auto 1fr;
+  gap: var(--s-6);
+  align-items: start;
+  min-width: 0;
+}
+.fw-dash__cal {
+  grid-area: cal;
+}
+.fw-dash__list {
+  grid-area: list;
+}
+.fw-dash__cards {
+  grid-area: cards;
+}
+.fw-dash__cal,
+.fw-dash__list,
+.fw-dash__card {
+  display: grid;
+  align-content: start;
+  gap: var(--s-4);
+  min-width: 0;
+  padding: var(--s-6);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.fw-dash__head,
+.fw-dash__card h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0;
+  font-size: var(--t-heading);
+}
+.fw-dash__head > svg,
+.fw-dash__card h2 > svg {
+  color: var(--primary-text);
+}
+.fw-dash__sub {
+  margin-left: auto;
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 500;
+}
+/* [CAL-04] Three, five or seven days as columns; each day's head opens it as a day. */
+.fw-dash__days {
+  display: grid;
+  grid-template-columns: repeat(var(--days), minmax(0, 1fr));
+  gap: var(--s-3);
+}
+.fw-dash__day {
+  display: grid;
+  align-content: start;
+  gap: var(--s-2);
+  min-width: 0;
+  padding: var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+}
+.fw-dash__day[data-today] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+}
+.fw-dash__day-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2);
+  min-height: var(--touch);
+  padding: var(--s-1) var(--s-2);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: var(--t-body);
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+.fw-dash__today {
+  color: var(--primary-text);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.fw-dash__day .fw-bcal__event {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  border: var(--border-w) solid var(--line);
+  border-left: 10px solid var(--cal);
+}
+.fw-dash__day .fw-bcal__title {
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+/* [CAL-04] The month: a dot per calendar with something on a day; a tap opens the day. */
+.fw-dash__month {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-dash__weekdays,
+.fw-dash__cells {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-dash__weekdays li {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-weight: 600;
+  text-align: center;
+}
+.fw-dash__cell {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--s-2);
+  width: 100%;
+  min-height: 104px;
+  padding: var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: var(--t-body);
+  font-weight: 800;
+  cursor: pointer;
+}
+.fw-dash__cells [data-outside] .fw-dash__cell {
+  background: transparent;
+  color: var(--text-soft);
+}
+.fw-dash__cells [data-today] .fw-dash__cell {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-dash__dots {
+  display: flex;
+  gap: 6px;
+  min-height: 18px;
+}
+.fw-dash__dots i {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--cal);
+}
+/* [BRD-07] Today's list: a row per item, a face per person on it (each a check-off button). */
+.fw-dash__part {
+  display: grid;
+  gap: var(--s-1);
+}
+.fw-dash__rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-dash__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  height: 104px;
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-dash__row:first-child {
+  border-top: 0;
+}
+.fw-dash__icon {
+  flex: none;
+  color: var(--text-soft);
+}
+.fw-dash__what {
+  display: grid;
+  flex: 1;
+  justify-items: start;
+  gap: var(--s-1);
+  min-width: 0;
+}
+.fw-dash__title {
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: var(--t-body);
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.fw-dash__row[data-done] .fw-dash__title {
+  color: var(--text-soft);
+  text-decoration: line-through;
+}
+.fw-dash__row[data-celebrate] .fw-face__badge {
+  animation: fw-pop var(--dur-celebrate) var(--ease);
+}
+.fw-dash__faces {
+  display: flex;
+  flex: none;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: 4px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.fw-face .fw-avatar {
+  width: 56px;
+  height: 56px;
+}
+.fw-face[data-state='late'],
+.fw-face[data-state='overdue'] {
+  border-color: var(--reward);
+}
+.fw-face[data-state='done'] {
+  border-color: var(--primary);
+}
+.fw-face[data-state='waiting'] {
+  border-style: dashed;
+  border-color: var(--reward);
+}
+.fw-face[data-state='covered'],
+.fw-face[data-state='skipped'] {
+  border-style: dashed;
+  border-color: var(--line);
+}
+.fw-face[data-armed] {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-face:disabled {
+  cursor: default;
+}
+.fw-face__badge {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.fw-face[data-state='waiting'] .fw-face__badge {
+  background: var(--reward);
+  color: var(--on-reward);
+}
+.fw-face__anyone {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 3px dashed var(--text-soft);
+  border-radius: 50%;
+  color: var(--text-soft);
+}
+/* [D-66] "More info": an item's description, or a title that doesn't fit. */
+.fw-info-btn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  padding: 0;
+  border: var(--border-w) solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--primary-text);
+  cursor: pointer;
+}
+/* The cards under the calendar, in the order the layout sets. */
+.fw-dash__cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-6);
+  align-items: start;
+}
+.fw-dash__cards:empty {
+  display: none;
+}
+.fw-dash__lines {
+  display: grid;
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-dash__lines li {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--touch);
+  font-size: var(--t-small);
+}
+.fw-dash__line-text {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+.fw-dash__line-date,
+.fw-dash__line-when {
+  flex: none;
+  color: var(--text-soft);
+}
+.fw-dash__line-date {
+  min-width: 10ch;
+  font-weight: 600;
+}
+.fw-dash__coming {
+  padding-left: var(--s-3);
+  border-left: 8px solid var(--cal);
+}
+.fw-dash__who {
+  display: inline-flex;
+  flex: none;
+  gap: var(--s-1);
+}
+/* [D-66] Every tile in a list is one height: two lines of title at most, the rest in "More info". */
+.board .fw-today__tile {
+  --tile-h: 168px;
+}
+.board .fw-today__family .fw-today__tile {
+  --tile-h: 212px;
+}
+.board .fw-today__tile .fw-tile {
+  box-sizing: border-box;
+  height: var(--tile-h);
+  overflow: hidden;
+}
+.fw-today__tile .fw-tile__title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.fw-today__tile .fw-tile__status > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.fw-today__tile--more .fw-tile {
+  padding-right: calc(var(--s-6) + var(--touch) + var(--s-2));
+}
+.fw-today__more {
+  position: absolute;
+  top: calc(var(--tile-h, 168px) / 2 - var(--touch) / 2);
+  right: var(--s-4);
+  z-index: 1;
+}
+/* [D-66] An item in full. */
+.fw-details {
+  width: min(1100px, 92vw);
+}
+.fw-details__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+.fw-details__head h2 {
+  margin: 0;
+}
+.fw-details__text {
+  margin: 0;
+  font-size: var(--t-body);
+  line-height: 1.4;
+}
+.fw-details__facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--s-3) var(--s-6);
+  margin: 0;
+  font-size: var(--t-body);
+}
+.fw-details__facts dt {
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.fw-details__facts dd {
+  margin: 0;
+}
+.fw-details__who {
+  display: grid;
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-details__who li {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+/* [BRD-05] The home screen's layout in the admin app: a card per row, ticked to show, Up and Down. */
+.fw-layout-cards {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-layout-cards__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+.fw-layout-cards__note {
+  display: block;
+  font-size: var(--t-small);
+}

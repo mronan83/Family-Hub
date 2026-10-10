@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.38: the board's home screen is a family dashboard, laid out by the household or a board's own layout (WP-35, D-66, D-67): what the snapshot carries for it, and the three-week window (§7).
 > v0.8.37: calendars on the boards (WP-23, D-65): each board's own choice of calendars, the snapshot's calendar slice and `board_calendar()` for other ranges, and the board's Day, Week and Month (§7).
 > v0.8.36: the board's outbox sends nothing while the browser says it is offline, and sends at once when it says it is back (D-64, §7).
 > v0.8.35: calendar sync as built (WP-22, D-63): one call every 15 minutes syncs each household's calendars due; saving a link syncs it at once; a broken link is the calendar's own state, not a failing job (§5.4, §5.6, §6.4).
@@ -601,9 +602,11 @@ sequenceDiagram
 - **A new day.** Nothing in the database changes at midnight, so the board checks each minute whether the household's date has moved past its snapshot's `today`, and reads again when it has (WP-11).
 - **Theme.** The board follows household-local time (Day 06:30–19:00) unless an admin holds it on Day or Evening (`device.board_config.theme`, set in Boards), and switches when the snapshot changes.
 
-**Board snapshot** (single RPC, RLS-invoker): day type, every member's family-visible occurrences for today plus open overdue tasks (with assignees, due time, status and who did it), goals + progress, points balance + active catalog + open redemption requests and streak summary for each member who earns rewards, calendar instances (today-1 .. today+14) **limited to the calendars selected for that device**, meal plan (7 days), school menu for buy days. It is the unit cached in IndexedDB.
+**Board snapshot** (single RPC, RLS-invoker): day type, every member's family-visible occurrences for today plus open overdue tasks (with assignees, due time, status and who did it), goals + progress, points balance + active catalog + open redemption requests and streak summary for each member who earns rewards, calendar instances (today-1 .. today+21, D-66) **limited to the calendars selected for that device**, meal plan (7 days), school menu for buy days. It is the unit cached in IndexedDB.
 
 **As built (WP-23, D-65): the board's calendar.** The snapshot's `calendar` slice holds the calendars this board shows and their events over the snapshot's window; a range beyond it (a later week or month) is read when the calendar screen opens it, with `board_calendar(from, to)` (62 days at most, as the board under RLS), and read again whenever the snapshot is. Offline, the screen shows what the snapshot has for those dates and says so. Which calendars a board shows: its own choice once an admin saves one on Boards (`device_calendar`, `set_board_calendars()`), else each calendar's "show on the boards". `calendar_source` and `device_calendar` are in Realtime: a sync updates its calendar's row last, and a board's choice is its own rows, so the board reads again on either; unticking a calendar takes its events off within seconds (the done-when, e2e `board-calendar.spec.ts`). The screen is "Calendar" beside the people: Week (default), Day or Month, by the arrows, a sideways swipe of 120 px or "Today"; it returns to Everyone with the rest of the board when left alone.
+
+**As built (WP-35, D-66, D-67): the home screen.** The board opens on a family dashboard: the calendar (3, 5 or 7 days from today, or the month; ranges beyond the snapshot read as in WP-23), today's list (`lib/dashboard.ts` turns the snapshot's items into a row per item with a face per person, by part of the day), then cards in the layout's order. The layout is in the snapshot (`layout {household, board}`, D-67); `household_settings` and `device` were already in the publication, so a layout saved on Boards reaches the board like any other change, within the 3-second budget (e2e times it). The page scrolls; the bar and the people are `position: sticky`, and the idle timer (90 s) returns to the dashboard at the top. Per-person columns are the Chores screen.
 
 **Offline rules**
 
