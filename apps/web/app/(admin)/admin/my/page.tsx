@@ -5,6 +5,7 @@ import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { loadMembers } from '../members/data';
+import { loadBells, loadSettings } from '../reminders/data';
 import { loadMine } from '../today/data';
 import { MyTasksView } from './view';
 
@@ -26,7 +27,14 @@ const shift = (date: string, days: number) =>
 export default async function MyTasksPage({
   searchParams,
 }: {
-  searchParams: Promise<{ added?: string; did?: string; item?: string; error?: string }>;
+  searchParams: Promise<{
+    added?: string;
+    did?: string;
+    item?: string;
+    error?: string;
+    bell?: string;
+    chore?: string;
+  }>;
 }) {
   const db = await serverClient();
   const user = await requireSignedIn(db, '/admin/my');
@@ -36,14 +44,25 @@ export default async function MyTasksPage({
   const today = isoDay(household.timezone);
   const members = await loadMembers(db!, household.id);
   const me = members.find((m) => m.userId === user.userId && !m.archivedAt) ?? null;
-  const items = me ? await loadMine(db!, household.id, me.id, today, shift(today, 7)) : [];
+  const [items, bells, settings] = me
+    ? await Promise.all([
+        loadMine(db!, household.id, me.id, today, shift(today, 7)),
+        loadBells(db!, household.id, me.id),
+        loadSettings(db!, me.id),
+      ])
+    : [[], new Map<string, boolean | null>(), null];
 
   const known = items.find((i) => i.id === params.item);
+  const bellItem = items.find((i) => i.choreId === params.chore);
   const notice = params.added
     ? `Added ${params.added} for today.`
-    : (params.did === 'done' || params.did === 'uncheck') && known
-      ? noticeFor(params.did, known.title)
-      : null;
+    : (params.bell === 'on' || params.bell === 'off') && bellItem
+      ? params.bell === 'on'
+        ? `${bellItem.title} reminds you.`
+        : `${bellItem.title} won’t remind you.`
+      : (params.did === 'done' || params.did === 'uncheck') && known
+        ? noticeFor(params.did, known.title)
+        : null;
 
   return (
     <MyTasksView
@@ -54,6 +73,9 @@ export default async function MyTasksPage({
       notice={notice}
       error={params.error ? (ERRORS[params.error] ?? ERRORS.failed!) : null}
       request={crypto.randomUUID()}
+      bells={bells}
+      defaultOn={settings?.defaultOn ?? true}
+      remindersOn={settings?.enabled ?? false}
     />
   );
 }

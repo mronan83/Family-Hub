@@ -29,6 +29,7 @@ import {
   type Kind,
 } from '@/lib/chores';
 import { useFormAction } from '@/lib/forms';
+import { LEAD_CHOICES } from '@/lib/reminder-settings';
 import { saveChore } from './actions';
 
 export interface MemberOption {
@@ -287,6 +288,26 @@ export function ChoreForm({
         />
         <span className="fw-field__help">
           Orders the day into morning, after school and evening. It never changes points.
+        </span>
+      </label>
+
+      <label className="fw-field">
+        <span className="fw-field__label">Reminders</span>
+        <select
+          className="fw-input"
+          name="remindLeadMinutes"
+          defaultValue={initial?.remindLeadMinutes == null ? '' : String(initial.remindLeadMinutes)}
+        >
+          <option value="">As each person chose</option>
+          {LEAD_CHOICES.map((c) => (
+            <option key={c.minutes} value={c.minutes}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+        <span className="fw-field__help">
+          For people who turned reminders on. An item without a time reminds at their morning time.
+          Each person switches an item’s reminders on or off with its bell in My tasks.
         </span>
       </label>
 

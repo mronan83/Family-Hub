@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.8 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30)
+> Version 1.9 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40)
+> v1.9: reminders in the admin app: the Reminders page and the bell on each item in My tasks (`bell`, pressed Teal-tinted "Bell on", plain "Bell off"); a reminder notification is the item's title (or "Private task") and "Due at 3:00 pm" (§7.3, WP-40).
 > v1.8: the wish card and picker on a child's own screen (the goal meter labelled "Saved", "N more points to go", a sparkle and "You have enough! Ask a grown-up for it."), and the Rewards page's bonus rules with `flame` and `sparkles` (§7.2, §7.3, WP-30).
 > v1.7: goals in the admin app (WP-19): a card per goal with a meter per rule; its state in a pill (Achieved in the reward colour with a trophy, Going in the primary tint, Starts later outlined), never colour alone; "Needs a look" in the missed colour with a warning icon; a file picker shrinks with a phone's column.
 > v1.6: the streak flame as built: tiers at 3, 7, 14 and 30 days, a glow on reaching one; the Insights heatmap marks each day with an icon as well as a colour (§7.2, WP-17).
@@ -210,6 +211,7 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 - Insights uses the trust panel and heatmap; heatmap cells use Teal (good), Plum (missed), empty (neutral), plus a text legend.
 - Destructive actions: ghost button, confirm dialog stating the consequence ("This reverses 4 chores and 20 points").
 - Bonus rules (WP-30) on the Rewards page: each rule as a sentence ("20 points for 7 good days in a row", "5 points for each day with everything done") on a Sun-tint tile with `flame` or `sparkles`, then when it counts from and "off" when paused; Turn off / Turn on and Archive as ghost buttons; "Add a bonus" folded under a disclosure. Each reward says who is saving for it, with `target`.
+- Reminders (WP-40): the Reminders page says plainly whether they are on ("On. Reminders come to the devices below." in Teal, or "Off. Nothing is sent to you."), then my devices (each with Send a test, Switch off or on, Remove) and "When to remind me". Each open item in My tasks has a bell: "Bell on" pressed (Teal tint) or "Bell off" (ghost), named "Remind me about …". A notification reads like the board: the item's title, or "Private task" for a private item, over "Due at 3:00 pm"; the digest is "Your day: 3 to do, 1 overdue" over the first three titles.
 
 ---
 

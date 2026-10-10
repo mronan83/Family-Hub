@@ -468,6 +468,10 @@ body {
 .fw-input--short {
   max-width: 8ch;
 }
+/* A time field wide enough for "12:30 PM" and its picker (WP-40). */
+.fw-input--time {
+  max-width: 10em;
+}
 /* A date field wide enough for its whole date and its picker button (WP-30). */
 .fw-input--date {
   max-width: 12em;
@@ -1490,4 +1494,31 @@ span.fw-heat__cell {
 }
 .fw-goal-rule__head > .fw-field {
   flex: 1 1 160px;
+}
+
+/* Reminders (WP-40): whether they are on, this device, quiet hours side by side, the bell. ------- */
+.fw-reminders__state {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+.fw-reminders__state[data-on] {
+  color: var(--primary-text);
+}
+.fw-reminders__device {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-reminders__quiet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+}
+.fw-bell[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
 }
