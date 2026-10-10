@@ -231,3 +231,17 @@ select m.household_id, m.id, 'adjustment', 10, 'Helped carry the shopping',
        now() - interval '2 days'
   from public.member m
  where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Leo';
+
+-- The rewards shop (WP-18): four rewards, and Leo asking the board for "Pick the dinner" this
+-- morning, waiting for a parent.
+insert into public.reward_catalog_item (id, household_id, title, icon, cost_points, stock, weekly_limit, sort_order)
+values
+  ('0de00000-0000-4000-8000-0000000e0001', '0de00000-0000-4000-8000-000000000001', 'Movie night', 'ticket', 100, null, null, 1),
+  ('0de00000-0000-4000-8000-0000000e0002', '0de00000-0000-4000-8000-000000000001', 'Ice cream trip', 'snack', 40, null, 1, 2),
+  ('0de00000-0000-4000-8000-0000000e0003', '0de00000-0000-4000-8000-000000000001', 'Stay up 30 minutes late', 'moon', 25, null, null, 3),
+  ('0de00000-0000-4000-8000-0000000e0004', '0de00000-0000-4000-8000-000000000001', 'Pick the dinner', 'utensils', 30, 2, null, 4);
+insert into public.redemption (id, household_id, member_id, catalog_item_id, cost_snapshot, requested_by_type, requested_at)
+select '0de00000-0000-4000-8000-0000000f0001', m.household_id, m.id, '0de00000-0000-4000-8000-0000000e0004', 30,
+       'device', now() - interval '3 hours'
+  from public.member m
+ where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Leo';

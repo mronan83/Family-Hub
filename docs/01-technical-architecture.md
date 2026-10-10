@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.24: the rewards shop (WP-18, D-53): `POST /api/redemptions` and `/api/redemptions/cancel` for the board; a parent decides in the admin app; photos in a private Storage bucket per household (§5.7).
 > v0.8.21: the board's Today (WP-11, D-50): the board checks items off through an in-memory outbox and shows them at once; the snapshot carries today's items and the undo window, and `chore_occurrence` and `chore` are in Realtime (§5.2, §7).
 > v0.8.20: the points ledger (WP-16, D-49): earns and reversals by trigger, a parent's adjustments, each member's points on the board's snapshot and in Realtime, and the status check covers points too (§5.6, §7).
 > v0.8.19: everyone does their own (WP-43, D-47): an item with several people is planned one occurrence per person, or one shared (§3, §5.6).
@@ -409,6 +410,8 @@ sequenceDiagram
   D-->>B: realtime: balance updated
   P->>M: mark fulfilled after the activity happens
 ```
+
+**As built (WP-18, D-53).** `POST /api/redemptions` takes `{id, member_id, item_id}` (JSON only) and calls `request_redemption()` as the caller. It answers 200 with the request (asking again with the same id answers the same), 409 with the reason when the shop's rules refuse it (`not_enough_points`, `out_of_stock`, `weekly_limit`, `not_earning`), 403 or 404 otherwise. `POST /api/redemptions/cancel` cancels a request still waiting. A parent approves, says not this time, marks given or cancels (refunding) on the Rewards page, through `decide_redemption()`, `fulfil_redemption()` and `cancel_redemption()`. Reward photos live in Supabase Storage (`rewards` bucket, private, one folder per household under its RLS). The admin app uploads them as the parent and shows them through signed links. Two requests at once are tested with real concurrent sessions (`scripts/redemption-race.sh`, run by `db:test`).
 
 Approval (when switched on) is the control point: parents verify chores **before** points are spent. If a completion is unchecked after points were already spent, the reversal still posts (truth wins), the balance may go below zero, and it is shown as points to earn back. Goal achievement and payouts are likewise derived and reversible: if a reversal drops a goal below its target, the goal returns to `active` and any points payout is reversed (see `02` §5). A cancelled approved redemption posts a `refund`.
 

@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.35: WP-18 in review (PR #31): the rewards shop (D-53).
 > v0.8.32: WP-11 done (PR #28): the board's Today and check-off. The owner confirmed D-50: the board never shows why points were taken away. WP-12, WP-13 and WP-18 are ready; WP-12 and WP-18 were ready from WP-16's merge but not marked so.
 > v0.8.31: WP-11 in review (PR #28): the board's Today and check-off (D-50).
 > v0.8.30: WP-16 done (PR #27): the points ledger. WP-11 is ready.
@@ -103,7 +104,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
 | WP-15 | Rules engine package | P1b | L | WP-01 | Ready |
 | WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Queued |
-| WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Ready |
+| WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | In review (PR #31) |
 | WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Queued |
 | WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Queued |
 | WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Queued |
@@ -499,6 +500,21 @@ flowchart LR
 **Phase:** P1b · **Size:** M · **Depends on:** WP-16 · **Reqs:** PTS-03, PTS-04
 - `reward_catalog_item`, `redemption`; admin catalog editor; `POST /api/redemptions` → `public.request_redemption` with the available-balance check under a member lock; `public.decide_redemption` (approve posts `spend`, deny), `public.cancel_redemption` (refund if approved), fulfil.
 - **Done when:** a redemption flows requested → approved → fulfilled and two concurrent requests cannot overspend (pgTAP/integration).
+- As built (D-53):
+  - **Rewards** (`/admin/rewards`):
+    - what was asked for, with each child's balance (Approve, or Not this time);
+    - what is approved and still to give (Given, or Cancel and refund);
+    - the shop, with each reward's cost, what is left and its limit;
+    - lately.
+  - **Adding or editing a reward:** name, cost, description, icon, an optional photo (JPEG, PNG or WebP up to 2 MB), stock, a weekly limit, and whether it is in the shop. Rewards are archived, not deleted, and a photo can be removed.
+  - **Board API:** `POST /api/redemptions` asks for a reward and `POST /api/redemptions/cancel` cancels one still waiting. The board's shop screen, and its slice of the snapshot and Realtime, come with WP-20.
+  - **Storage:** the `rewards` bucket is private, one folder per household under RLS. Server actions take bodies up to 3 MB for the photo. The local test bootstrap stands in for Storage's tables.
+  - **Demo family:** four rewards, and a request from Leo waiting.
+  - **Tests:**
+    - pgTAP `170_rewards` (49 tests);
+    - `scripts/redemption-race.sh`: two requests at once, run by `db:test` in CI. It fails when the locks are removed;
+    - the UI suite on `/dev/rewards`;
+    - `rewards.spec.ts` on the preview.
 
 ### Phase P1c — Goals
 
