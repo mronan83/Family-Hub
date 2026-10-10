@@ -4,7 +4,7 @@ import { sql as query } from '../support/db';
 // [CHR-14][CHR-15][ACC-04] "Which one is you?" on the preview (D-61), as Alex of the demo family: a
 // sign-in linked to no one links itself in one tap from Reminders or My tasks; a parent whose own
 // record says Child is told to choose Adult, then links from their member page; and a sign-in left on
-// an archived record moves to the one still here. Alex is put back as he was, an adult with his own
+// an archived record moves to the one still here. Alex is put back as before, an adult with their own
 // sign-in.
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
@@ -46,12 +46,12 @@ for (const [path, title, done] of [
   ['/admin/reminders', 'Reminders', 'Linked: these are your reminders now.'],
   ['/admin/my', 'My tasks', 'Linked: you’re Alex. These are your tasks.'],
 ] as const) {
-  test(`[CHR-14][CHR-15][US-316] ${title}, not linked: “I’m Alex” links him in one tap`, async () => {
+  test(`[CHR-14][CHR-15][US-316] ${title}, not linked: “I’m Alex” links Alex in one tap`, async () => {
     unlink();
     await page.goto(path);
     await expect(page.getByRole('heading', { name: title, level: 1 })).toBeVisible();
     const choose = page.getByRole('region', { name: 'Which one is you?' });
-    // Sam has his own sign-in, so he isn't offered.
+    // Sam has a sign-in of their own, so isn't offered.
     const adults = choose.getByRole('list', { name: 'Adults without a sign-in' });
     await expect(adults.getByRole('button', { name: 'I’m Alex' })).toBeVisible();
     await expect(adults.getByRole('button', { name: 'I’m Sam' })).toHaveCount(0);
@@ -63,7 +63,7 @@ for (const [path, title, done] of [
   });
 }
 
-test('[ACC-04][US-316] his record says Child: told to choose Adult, then “This is me” on his page', async () => {
+test('[ACC-04][US-316] Alex’s record says Child: told to choose Adult, then “This is me” on Alex’s page', async () => {
   unlink(`, role = 'child'`);
   await page.goto('/admin/reminders');
   const choose = page.getByRole('region', { name: 'Which one is you?' });
@@ -101,12 +101,12 @@ test('[ACC-04][US-316] his record says Child: told to choose Adult, then “This
   expect(linked()).toBe('Alex');
 });
 
-test('[ACC-04][US-316] his sign-in left on an archived record: named, then moved to him', async () => {
+test('[ACC-04][US-316] Alex’s sign-in left on an archived record: named, then moved to Alex', async () => {
   unlink();
   sql(`insert into public.member (household_id, display_name, role, color, user_id, archived_at)
        values ('${DEMO}', '${OLD}', 'adult', 'member-5', '${ALEX_SIGN_IN}', now())`);
   await page.goto(`/admin/members/${alex()}`);
-  // The sign-in choice says where his sign-in went, rather than leaving it out without a word.
+  // The sign-in choice says where Alex’s sign-in went, rather than leaving it out without a word.
   await expect(page.getByRole('form', { name: 'Edit member' })).toContainText(
     `alex@demo.familywise.invalid to ${OLD} (archived)`,
   );
