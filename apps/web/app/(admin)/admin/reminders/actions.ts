@@ -173,11 +173,12 @@ export async function deviceAction(form: FormData): Promise<void> {
 
 /**
  * [CHR-16][US-318] The bell on an item, for the signed-in person: on or off for this item. Sent from
- * My tasks; goes back there.
+ * My tasks, bound to "{chore}:on|off" (a button whose formAction is a server action can't carry its
+ * own name and value: React uses its name to say which action to run); goes back there.
  */
-export async function setBell(form: FormData): Promise<void> {
+export async function setBell(bell: string, form: FormData): Promise<void> {
   const { db } = await context();
-  const [choreId, value] = String(form.get('bell') ?? '').split(':');
+  const [choreId, value] = String(bell ?? '').split(':');
   const back = String(form.get('back') ?? '/admin/my');
   const to = back.startsWith('/admin/') ? back : '/admin/my';
   if (!choreId || !GUID.test(choreId) || (value !== 'on' && value !== 'off')) redirect(to);

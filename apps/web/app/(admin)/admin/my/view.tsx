@@ -64,9 +64,7 @@ export function MyTasksView({
     return (
       <Button
         type="submit"
-        formAction={setBell}
-        name="bell"
-        value={`${i.choreId}:${on ? 'off' : 'on'}`}
+        formAction={setBell.bind(null, `${i.choreId}:${on ? 'off' : 'on'}`)}
         variant="ghost"
         icon="bell"
         className="fw-bell"

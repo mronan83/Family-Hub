@@ -306,7 +306,7 @@ export function ChoreForm({
           ))}
         </select>
         <span className="fw-field__help">
-          For people who turned reminders on. With no due time, it reminds at their morning time.
+          For people who turned reminders on. An item without a time reminds at their morning time.
           Each person switches an item’s reminders on or off with its bell in My tasks.
         </span>
       </label>
