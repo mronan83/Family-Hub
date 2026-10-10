@@ -1175,6 +1175,205 @@ html:has(.board) {
   font-variant-numeric: tabular-nums;
 }
 
+/* A board's calendars on the Boards page (WP-23): a full row under the board's own controls. */
+.fw-board-cals {
+  flex-basis: 100%;
+}
+
+/* The board's calendar (WP-23): Day, Week and Month, each event in its calendar's color. -------- */
+.fw-bcal {
+  display: grid;
+  align-content: start;
+  gap: var(--s-6);
+  min-width: 0;
+}
+.fw-bcal__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+.fw-bcal__views {
+  display: inline-flex;
+  gap: var(--s-2);
+  padding: var(--s-1);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+}
+.fw-bcal__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+.fw-bcal__view,
+.fw-bcal__step,
+.fw-bcal__today {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-width: var(--touch-primary);
+  min-height: var(--touch-primary);
+  padding: 0 var(--s-6);
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.fw-bcal__view[aria-pressed='true'] {
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-bcal__step,
+.fw-bcal__today {
+  border: var(--border-w) solid var(--line);
+  background: var(--surface);
+}
+.fw-bcal__today:disabled {
+  border-style: dashed;
+  color: var(--text-soft);
+  cursor: default;
+}
+.fw-bcal__title-date {
+  min-width: 10ch;
+  margin: 0;
+  font-size: var(--t-title);
+  text-align: center;
+}
+.fw-bcal__note {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: fit-content;
+  margin: 0;
+  padding: var(--s-2) var(--s-6);
+  border-radius: var(--r-pill);
+  background: var(--reward-tint);
+  color: var(--text);
+}
+.fw-bcal__body {
+  min-width: 0;
+  touch-action: pan-y;
+}
+.fw-bcal__list {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-bcal__event {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+  padding: var(--s-2) var(--s-3);
+  border-left: 10px solid var(--cal);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+.fw-bcal__when {
+  flex: none;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
+}
+.fw-bcal__title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.fw-bcal__body--day .fw-bcal__event {
+  min-height: var(--touch-primary);
+  padding: var(--s-3) var(--s-6);
+  border: var(--border-w) solid var(--line);
+  border-left: 14px solid var(--cal);
+}
+.fw-bcal__week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+.fw-bcal__col {
+  display: grid;
+  align-content: start;
+  gap: var(--s-2);
+  min-width: 0;
+  padding: var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+}
+.fw-bcal__col[data-today] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+}
+.fw-bcal__col .fw-bcal__event {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+.fw-bcal__col-head {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-bcal__col-head span {
+  color: var(--text);
+  font-size: var(--t-heading);
+}
+.fw-bcal__month {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-bcal__cell {
+  display: grid;
+  align-content: start;
+  gap: var(--s-1);
+  width: 100%;
+  height: 100%;
+  min-height: calc(var(--touch-primary) * 1.75);
+  padding: var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fw-bcal__month li[data-outside] .fw-bcal__cell {
+  border-style: dashed;
+  background: transparent;
+}
+.fw-bcal__month li[data-today] .fw-bcal__cell {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+}
+.fw-bcal__date {
+  font-weight: 800;
+}
+.fw-bcal__chip {
+  overflow: hidden;
+  padding-left: var(--s-2);
+  border-left: 8px solid var(--cal);
+  font-size: var(--t-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fw-bcal__more {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+
 /* System Health (WP-42) --------------------------------------------------------------------- */
 .fw-health__message {
   display: block;

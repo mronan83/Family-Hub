@@ -31,6 +31,42 @@ export interface BoardSnapshot {
   shop: BoardShopItem[];
   /** [RWD-07] The goals in play, each child's then the family's (WP-20). */
   goals: BoardGoal[];
+  /** [CAL-04][CAL-05] The calendars this board shows and their events over the window (WP-23). */
+  calendar: BoardCalendar | null;
+}
+
+/** [CAL-05] A calendar a board shows: its name, color and whose it is, and how its sync is going. */
+export interface BoardCalendarSource {
+  id: string;
+  name: string;
+  color: MemberColor;
+  memberId: string | null;
+  status: 'pending' | 'ok' | 'error' | 'disabled';
+  lastSuccessAt: string | null;
+}
+
+/** [CAL-04][CAL-07] One event on a board's calendar, all-day ones by household-local dates. */
+export interface BoardEvent {
+  id: string;
+  calendarId: string;
+  title: string;
+  allDay: boolean;
+  /** Instants (ISO); an all-day event's are its days' midnights in the household's zone. */
+  start: string;
+  end: string;
+  /** Household-local, YYYY-MM-DD; the end is the last day it covers. */
+  startDate: string;
+  endDate: string;
+  /** Moved or edited on its own in Apple Calendar. */
+  changed: boolean;
+}
+
+/** What `board_calendar(from, to)` returns: a range of dates, its calendars and its events. */
+export interface BoardCalendar {
+  from: string;
+  to: string;
+  calendars: BoardCalendarSource[];
+  events: BoardEvent[];
 }
 
 /** A reward in the shop, as the board shows it. */
@@ -302,6 +338,58 @@ function readOccurrence(o: unknown): TodayItem {
   };
 }
 
+const CALENDAR_STATUSES = ['pending', 'ok', 'error', 'disabled'] as const;
+
+/**
+ * [CAL-04] A board's calendar (the snapshot's slice, or `board_calendar()`); null when there is none
+ * (an older database, or not a board). A calendar or event in a shape this build doesn't know is
+ * left out rather than failing the whole board.
+ */
+export function readCalendar(x: unknown): BoardCalendar | null {
+  if (!isObject(x) || typeof x.from !== 'string' || typeof x.to !== 'string') return null;
+  const calendars = (Array.isArray(x.calendars) ? x.calendars : []).flatMap(
+    (c): BoardCalendarSource[] =>
+      isObject(c) && typeof c.id === 'string' && typeof c.name === 'string'
+        ? [
+            {
+              id: c.id,
+              name: c.name,
+              color: (typeof c.color === 'string' ? c.color : 'member-6') as MemberColor,
+              memberId: typeof c.member_id === 'string' ? c.member_id : null,
+              status: CALENDAR_STATUSES.includes(c.status as BoardCalendarSource['status'])
+                ? (c.status as BoardCalendarSource['status'])
+                : 'ok',
+              lastSuccessAt: typeof c.last_success_at === 'string' ? c.last_success_at : null,
+            },
+          ]
+        : [],
+  );
+  const events = (Array.isArray(x.events) ? x.events : []).flatMap((e): BoardEvent[] =>
+    isObject(e) &&
+    typeof e.id === 'string' &&
+    typeof e.calendar_id === 'string' &&
+    typeof e.start === 'string' &&
+    typeof e.end === 'string' &&
+    typeof e.start_date === 'string' &&
+    typeof e.end_date === 'string'
+      ? [
+          {
+            id: e.id,
+            calendarId: e.calendar_id,
+            title: typeof e.title === 'string' ? e.title : '',
+            allDay: e.all_day === true,
+            start: e.start,
+            end: e.end,
+            startDate: e.start_date,
+            endDate: e.end_date,
+            changed: e.changed === true,
+          },
+        ]
+      : [],
+  );
+  return { from: x.from, to: x.to, calendars, events };
+}
+
 /**
  * The snapshot as the board uses it, or null when there is none (the board is not active: unpaired
  * or disconnected). Throws on a shape this build does not know, so a mismatch shows up as an error
@@ -366,5 +454,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
       : [],
     // A snapshot from before WP-20 has no goals.
     goals: readGoals(data.goals),
+    // A snapshot from before WP-23 has no calendar.
+    calendar: readCalendar(data.calendar),
   };
 }

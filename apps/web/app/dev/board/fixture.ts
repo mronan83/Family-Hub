@@ -2,6 +2,7 @@ import type { Answer, CompletionEvent } from '@/lib/outbox';
 import type { MarkCelebrated } from '@/lib/board-goals';
 import type { AskFor, CancelAsk } from '@/lib/shop';
 import type { BoardMember, BoardSnapshot } from '@/lib/snapshot';
+import type { BoardCalendar, BoardEvent } from '@/lib/snapshot';
 import type { TodayItem } from '@/lib/today';
 import type { PinWish } from '@/lib/wishes';
 
@@ -355,6 +356,7 @@ export function fixtureSnapshot(today: string, now: Date): BoardSnapshot {
         ],
       },
     ],
+    calendar: fixtureCalendar(today, now, day(-1, today), day(14, today)),
   };
 }
 
@@ -515,5 +517,140 @@ export function fixturePin(snapshot: BoardSnapshot): PinWish {
     (w.__fwWishes ??= []).push({ member: memberId, item: itemId });
     await new Promise((r) => setTimeout(r, 30));
     return itemId === null || snapshot.shop.some((i) => i.id === itemId) ? 'saved' : 'refused';
+  };
+}
+
+/** An instant from a New York date and wall-clock time ("17:00"), across the clock changes. */
+function nyAt(date: string, hm: string): string {
+  const guess = new Date(`${date}T${hm}:00Z`);
+  const offset = new Intl.DateTimeFormat('en-US', { timeZone: TZ, timeZoneName: 'longOffset' })
+    .formatToParts(guess)
+    .find((p) => p.type === 'timeZoneName')!
+    .value.replace('GMT', '');
+  return new Date(`${date}T${hm}:00${offset || '+00:00'}`).toISOString();
+}
+
+/**
+ * [CAL-04] The made-up family's calendars around today (WP-23): Family (everyone), School (Maya's)
+ * and Work (Alex's); a weekly swim at 5 pm, a three-day visit, a day's test, a late flight past
+ * midnight, a moved dentist appointment. `busy` adds 40 more this month, eight on one day, for the
+ * month view's "+N more". Only events in [from, to] are returned, as board_calendar() would.
+ */
+export function fixtureCalendar(
+  today: string,
+  now: Date,
+  from: string,
+  to: string,
+  busy = false,
+): BoardCalendar {
+  const synced = new Date(now.getTime() - 5 * 60_000).toISOString();
+  const calendars: BoardCalendar['calendars'] = [
+    {
+      id: 'cal-family',
+      name: 'Family',
+      color: 'member-6',
+      memberId: null,
+      status: 'ok',
+      lastSuccessAt: synced,
+    },
+    {
+      id: 'cal-school',
+      name: 'School',
+      color: 'member-3',
+      memberId: MAYA,
+      status: 'ok',
+      lastSuccessAt: synced,
+    },
+    {
+      id: 'cal-work',
+      name: 'Work',
+      color: 'member-1',
+      memberId: ALEX,
+      status: 'ok',
+      lastSuccessAt: synced,
+    },
+  ];
+  const timed = (
+    id: string,
+    cal: string,
+    title: string,
+    offset: number,
+    start: string,
+    end: string,
+    changed = false,
+    endOffset = offset,
+  ): BoardEvent => ({
+    id,
+    calendarId: cal,
+    title,
+    allDay: false,
+    changed,
+    start: nyAt(day(offset, today), start),
+    end: nyAt(day(endOffset, today), end),
+    startDate: day(offset, today),
+    endDate: day(endOffset, today),
+  });
+  const allDay = (
+    id: string,
+    cal: string,
+    title: string,
+    offset: number,
+    days = 1,
+  ): BoardEvent => ({
+    id,
+    calendarId: cal,
+    title,
+    allDay: true,
+    changed: false,
+    start: nyAt(day(offset, today), '00:00'),
+    end: nyAt(day(offset + days, today), '00:00'),
+    startDate: day(offset, today),
+    endDate: day(offset + days - 1, today),
+  });
+  const events: BoardEvent[] = [
+    ...[-7, 0, 7, 14, 21, 28].map((w) =>
+      timed(`swim${w}`, 'cal-family', 'Swim', w, '17:00', '18:00'),
+    ),
+    allDay('spelling', 'cal-school', 'Spelling test', 0),
+    timed('dentist', 'cal-family', 'Dentist', 1, '09:30', '10:15', true),
+    timed('standup', 'cal-work', 'Team meeting', 1, '14:00', '15:00'),
+    allDay('visit', 'cal-family', 'Grandparents visit', 2, 3),
+    allDay('picture', 'cal-school', 'Picture day', 3),
+    timed('book', 'cal-family', 'Book club', 3, '19:30', '21:00'),
+    timed('flight', 'cal-family', 'Late flight', 5, '22:30', '01:00', false, 6),
+    timed('soccer', 'cal-school', 'Soccer', -1, '10:00', '11:30'),
+  ];
+  if (busy) {
+    const first = `${today.slice(0, 7)}-01`;
+    const offset = Math.round(
+      (Date.parse(`${first}T12:00:00Z`) - Date.parse(`${today}T12:00:00Z`)) / 86_400_000,
+    );
+    for (let n = 0; n < 40; n++) {
+      // Eight on the 10th, the rest one a day through the month.
+      const d = n < 8 ? offset + 9 : offset + ((n - 8) % 28);
+      events.push(
+        timed(
+          `busy${n}`,
+          n % 2 ? 'cal-family' : 'cal-school',
+          `Practice ${n + 1}`,
+          d,
+          `${String(8 + (n % 10)).padStart(2, '0')}:00`,
+          `${String(9 + (n % 10)).padStart(2, '0')}:00`,
+        ),
+      );
+    }
+  }
+  return {
+    from,
+    to,
+    calendars,
+    events: events
+      .filter((e) => e.startDate <= to && e.endDate >= from)
+      .sort(
+        (a, b) =>
+          a.startDate.localeCompare(b.startDate) ||
+          Number(b.allDay) - Number(a.allDay) ||
+          a.start.localeCompare(b.start),
+      ),
   };
 }

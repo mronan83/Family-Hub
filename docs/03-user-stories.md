@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.24: US-503, US-504 and US-507 as built (WP-23, D-65): the board's Calendar (Week, Day, Month; arrows, a swipe or Today), each event in its calendar's color with whose it is, and each board's own choice of calendars on Boards; offline, a range beyond the board's two weeks says it shows what the board has.
 > v0.8.23: US-501 and US-505 as built (WP-22, D-63): saving a link syncs it at once and Calendars lists what's coming up, or what's wrong with the link; a calendar that can't sync says what to do, keeps its last good events and is named on System Health.
 > v0.8.22: US-104 and US-316: a parent whose sign-in isn't linked links it to themselves in one tap from My tasks, Reminders or their page on Members; a Child record says only an adult can have a sign-in (D-61).
 > v0.8.21: US-403, US-404, US-1102, US-1104 and US-1105 as built on the board (WP-20, D-59): goals with a meter per rule, the run now and the best for a streak, and a nudge naming a goal nearly reached, on a child's own screen (there is no separate Goals screen; the family's goals sit under everyone's day); a reached goal celebrated full-screen once; the shop, "Ask for this" with a second tap to be sure, the request pending at once, called off while it waits, and the parent's answer live. Goal progress shows as the server last worked it out.
@@ -406,6 +407,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** CAL-04
 - Given the Calendar tab, when I swipe or tap arrows, then I can move between days, weeks, and months with smooth scrolling.
 - Given 40 events in a month, when I open month view, then it renders without lag and shows overflow as "+N more".
+- Given the board is offline, when I open dates beyond the two weeks it holds, then it shows what it has and says so (D-65).
 
 ### US-504 — Color-code by person
 **As an** admin **I want** each calendar to have a color and optional family member **so that** events are easy to scan.

@@ -90,3 +90,24 @@ export async function disconnectDevice(form: FormData): Promise<void> {
   revalidatePath('/admin/devices');
   redirect('/admin/devices');
 }
+
+/**
+ * [CAL-05][US-507] Saves which calendars a board shows: those ticked, and none other (a calendar
+ * connected later stays off this board until ticked). The board hears it through Realtime.
+ */
+export async function setBoardCalendars(form: FormData): Promise<void> {
+  const { db } = await context();
+  const id = String(form.get('id') ?? '');
+  const name = String(form.get('name') ?? '');
+  const { error } = await db.rpc('set_board_calendars', {
+    p_device: id,
+    p_calendars: form.getAll('calendars').map(String),
+  });
+  if (error) log('warn', 'board calendars not saved', { code: error.code });
+  revalidatePath('/admin/devices');
+  redirect(
+    error
+      ? '/admin/devices?error=calendars'
+      : `/admin/devices?did=calendars&name=${encodeURIComponent(name)}`,
+  );
+}

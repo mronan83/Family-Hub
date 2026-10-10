@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.37: calendars on the boards (WP-23, D-65): each board's own choice of calendars, the snapshot's calendar slice and `board_calendar()` for other ranges, and the board's Day, Week and Month (§7).
 > v0.8.35: calendar sync as built (WP-22, D-63): one call every 15 minutes syncs each household's calendars due; saving a link syncs it at once; a broken link is the calendar's own state, not a failing job (§5.4, §5.6, §6.4).
 > v0.8.34: e2e reliability: each spec retires the board it paired when it ends, so no board outlives its spec (§9.5).
 > v0.8.33: production's jobs leave the demo family alone (`household.is_demo`, D-62, §5.6, §9.5).
@@ -600,6 +601,8 @@ sequenceDiagram
 - **Theme.** The board follows household-local time (Day 06:30–19:00) unless an admin holds it on Day or Evening (`device.board_config.theme`, set in Boards), and switches when the snapshot changes.
 
 **Board snapshot** (single RPC, RLS-invoker): day type, every member's family-visible occurrences for today plus open overdue tasks (with assignees, due time, status and who did it), goals + progress, points balance + active catalog + open redemption requests and streak summary for each member who earns rewards, calendar instances (today-1 .. today+14) **limited to the calendars selected for that device**, meal plan (7 days), school menu for buy days. It is the unit cached in IndexedDB.
+
+**As built (WP-23, D-65): the board's calendar.** The snapshot's `calendar` slice holds the calendars this board shows and their events over the snapshot's window; a range beyond it (a later week or month) is read when the calendar screen opens it, with `board_calendar(from, to)` (62 days at most, as the board under RLS), and read again whenever the snapshot is. Offline, the screen shows what the snapshot has for those dates and says so. Which calendars a board shows: its own choice once an admin saves one on Boards (`device_calendar`, `set_board_calendars()`), else each calendar's "show on the boards". `calendar_source` and `device_calendar` are in Realtime: a sync updates its calendar's row last, and a board's choice is its own rows, so the board reads again on either; unticking a calendar takes its events off within seconds (the done-when, e2e `board-calendar.spec.ts`). The screen is "Calendar" beside the people: Week (default), Day or Month, by the arrows, a sideways swipe of 120 px or "Today"; it returns to Everyone with the rest of the board when left alone.
 
 **Offline rules**
 

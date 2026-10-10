@@ -125,6 +125,8 @@ describe('board snapshot', () => {
         { id: 'r2', title: 'Ice cream trip', icon: 'snack', cost: 40 },
       ],
       goals: [],
+      // A snapshot from before WP-23 has no calendar.
+      calendar: null,
       occurrences: [
         {
           id: 'o1',
@@ -407,6 +409,8 @@ describe('notify, then refetch', () => {
       { table: 'reward_goal', filter: 'household_id=eq.h1' },
       { table: 'reward_goal_progress', filter: 'household_id=eq.h1' },
       { table: 'reward_rule_progress', filter: 'household_id=eq.h1' },
+      { table: 'calendar_source', filter: 'household_id=eq.h1' },
+      { table: 'device_calendar', filter: 'device_id=eq.d1' },
     ]);
   });
 
