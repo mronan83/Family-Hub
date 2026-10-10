@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { expect, test, type Page } from '@playwright/test';
+import { type BrowserContext, expect, test, type Page } from '@playwright/test';
 import { retireBoard } from '../support/board';
 
 // [DEV-06][DEV-08][NFR-01][US-205] A board offline on the preview (WP-13), paired to the demo family:
@@ -48,6 +48,22 @@ let board: Page;
 const health = (page: Page) => page.locator('[data-health]');
 const checkOff = (page: Page, title: string) =>
   page.getByRole('button', { name: `Check off ${title}`, exact: true });
+
+/**
+ * Offline as far as the database is concerned. Playwright's offline mode can attach to a reloaded
+ * page, and to the service worker that serves it, a moment after the board's first scripts run
+ * (seen on CI after D-64), so the board's check-offs could still leave then. Blocking them at the
+ * browser context holds from the first request, whatever controls the page.
+ */
+const COMPLETIONS = '**/api/completions';
+async function goOffline(context: BrowserContext) {
+  await context.route(COMPLETIONS, (route) => route.abort('internetdisconnected'));
+  await context.setOffline(true);
+}
+async function goOnline(context: BrowserContext) {
+  await context.unroute(COMPLETIONS);
+  await context.setOffline(false);
+}
 
 async function asMaya(page: Page) {
   await page
@@ -103,7 +119,7 @@ test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no netwo
   const started = sql('select now()');
   const context = board.context();
   await asMaya(board);
-  await context.setOffline(true);
+  await goOffline(context);
   await expect(health(board).first()).toHaveText('Offline: your check-offs are saved');
   for (const title of ['Make bed', 'Brush teeth', 'Feed the dog']) {
     await checkOff(board, title).click();
@@ -118,9 +134,9 @@ test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no netwo
     await expect(checkOff(board, title)).toHaveCount(0);
   }
   // Nothing has reached the database: the board sends nothing while its browser says it is offline
-  // (D-64). Playwright's offline doesn't stop requests from a page its service worker controls, so
-  // that is what keeps this true here. If something has, say what, who sent it and when, and how the
-  // board saw its network, so the failure says what happened.
+  // (D-64), and goOffline() holds even while Playwright's offline mode is still attaching to the
+  // reloaded page. If something has, say what, who sent it and when, and how the board saw its
+  // network, so the failure says what happened.
   const early = sql(`select coalesce(string_agg(e.event_type || ' by ' || e.actor_type || ' ' ||
           coalesce((select d.name from public.device d where d.id = e.actor_id), e.actor_id::text, '?') ||
           ' at ' || to_char(e.recorded_at, 'HH24:MI:SS.MS'), '; ' order by e.recorded_at), '')
@@ -141,7 +157,7 @@ test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no netwo
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
        values (gen_random_uuid(), '${items.teeth}', 'admin_uncomplete', now())`);
 
-  await context.setOffline(false);
+  await goOnline(context);
   const boardEvents = () =>
     sql(`select count(*) from public.chore_completion_event e
           where e.occurrence_id in ('${items.bed}', '${items.teeth}', '${items.dog}')
@@ -172,7 +188,7 @@ test('[NFR-01][DEV-08][US-205] opened after a day offline, the board shows its l
   await page.goto('/board');
   await expect(page.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
   await expect(page.getByRole('heading', { name: 'Demo family', level: 1 })).toBeVisible();
-  await page.context().setOffline(true);
+  await goOffline(page.context());
   await page.clock.fastForward('24:00:00');
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Demo family', level: 1 })).toBeVisible();
@@ -188,6 +204,6 @@ test('[NFR-01][DEV-08][US-205] opened after a day offline, the board shows its l
   await expect(maya.getByRole('button', { name: 'Check off Make bed', exact: true })).toHaveCount(
     0,
   );
-  await page.context().setOffline(false);
+  await goOnline(page.context());
   await page.close();
 });
