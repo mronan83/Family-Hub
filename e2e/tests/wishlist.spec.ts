@@ -142,6 +142,8 @@ test('[PTS-05] a bonus turned off pays nothing; back on it counts from today; ar
 
   await rules.getByRole('button', { name: `Archive: ${RULE}`, exact: true }).click();
   await expect(admin.getByRole('status')).toHaveText('Archived. Bonuses it paid stay.');
+  // Archived ones are folded away under their own disclosure.
+  await admin.getByText(/^Archived bonuses \(\d+\)$/).click();
   await expect(admin.getByRole('list', { name: 'Archived bonuses', exact: true })).toContainText(
     RULE,
   );
@@ -174,7 +176,8 @@ test('[PTS-06][US-1108] on the board Leo chooses a wish, sees how far he is, and
   await picker.getByRole('button', { name: /Stay up 30 minutes late/ }).click();
   await expect(card).toContainText('Stay up 30 minutes late');
   await expect.poll(() => pin(leo)).toBe(`${STAY_UP}:device`);
-  const his = balance(leo);
+  // Points to earn back count as none saved.
+  const his = Math.max(0, balance(leo));
   await expect(card).toContainText(
     his >= 25 ? 'You have enough! Ask a grown-up for it.' : `${25 - his} more`,
   );
