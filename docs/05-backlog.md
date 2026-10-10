@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.46: WP-30 done (PR #35): bonus rules and the wishlist. Nothing waits on it.
 > v0.8.45: WP-30 in review (PR #35): bonus rules and the wishlist (D-57).
 > v0.8.44: WP-19 done (PR #34): goals and the progress pipeline. WP-20 and WP-39 are ready.
 > v0.8.43: WP-19 in review (PR #34): goals and the progress pipeline (D-56).
@@ -128,7 +129,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Ready |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Queued |
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Queued |
-| WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | In review (PR #35) |
+| WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Done (PR #35) |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Queued |
 | WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Ready |
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
