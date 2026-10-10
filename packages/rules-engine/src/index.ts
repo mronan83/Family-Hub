@@ -1,10 +1,16 @@
 // Pure reward logic shared by server and board (D-10). No I/O and no clock: "today" is an input.
-// Contract: docs/02-data-model.md §5. evaluateGoal and evaluateHistory land in WP-15.
+// Contract: docs/02-data-model.md §5 (WP-15).
+import type { OccurrenceStatus } from './types';
 
-export type RuleType = 'COUNT' | 'STREAK' | 'DAILY_ALL_DONE' | 'POINTS';
+export type * from './types';
+export { evaluateGoal } from './goal';
+export { evaluateHistory } from './history';
 
-export type OccurrenceStatus =
-  'scheduled' | 'completed' | 'pending_approval' | 'approved' | 'rejected' | 'skipped' | 'missed';
+/**
+ * Stored on every derived row (reward_rule_progress, member_daily_summary, streak_segment). Bump it
+ * when a rule's meaning changes, so the nightly job recomputes everything with the new rules.
+ */
+export const ENGINE_VERSION = 1;
 
 export const OCCURRENCE_STATUSES: readonly OccurrenceStatus[] = [
   'scheduled',
@@ -15,37 +21,6 @@ export const OCCURRENCE_STATUSES: readonly OccurrenceStatus[] = [
   'skipped',
   'missed',
 ];
-
-export interface RuleScope {
-  all?: boolean;
-  chore_ids?: string[];
-  tags?: string[];
-}
-
-export interface StreakParams {
-  /** Goal streaks only: misses forgiven per household week (default 1). */
-  grace_per_week: number;
-  qualify: { mode: 'all_scheduled' | 'min_count' | 'min_pct'; value?: number };
-}
-
-export interface Rule {
-  id: string;
-  type: RuleType;
-  target: number;
-  scope: RuleScope;
-  params: Record<string, unknown>;
-}
-
-/** One row of chore_occurrence as the engine sees it. */
-export interface OccurrenceFact {
-  id: string;
-  chore_id: string;
-  member_id: string;
-  tags: string[];
-  due_date: string;
-  status: OccurrenceStatus;
-  points: number;
-}
 
 /** How an occurrence status counts toward progress, streaks and history (02 §4.2). */
 export type StatusWeight = 'done' | 'neutral' | 'bad' | 'not_counted';
