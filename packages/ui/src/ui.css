@@ -360,6 +360,13 @@ body {
   color: var(--text);
   font: inherit;
 }
+/* A file picker's built-in width ("Choose File · No file chosen") would push a phone's column wider
+   than the screen; it shrinks with the column instead (WP-19; the shop's photo field too). */
+.fw-input[type='file'] {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
 .fw-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1381,4 +1388,106 @@ span.fw-heat__cell {
   .fw-today__flame[data-glow] svg {
     animation: none;
   }
+}
+
+/* Goals (WP-19): a parent's goals in play, each a card with its rules' meters, and the goal form's
+   rule rows. Achieved reads in the reward colour with a trophy, never by colour alone. */
+.fw-goals__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.fw-goals__head h1 {
+  margin: 0;
+}
+.fw-goals {
+  display: grid;
+  gap: var(--s-4);
+  margin: var(--s-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-goal {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+}
+.fw-goal > .fw-item {
+  flex-wrap: wrap;
+}
+.fw-goal > .fw-item > .fw-item__body {
+  flex: 1 1 200px;
+}
+.fw-goal__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-1) var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-weight: 700;
+  font-size: var(--t-small);
+}
+.fw-goal__status[data-status='achieved'] {
+  background: var(--reward-tint);
+  color: var(--reward-text);
+}
+.fw-goal__status[data-status='scheduled'] {
+  background: transparent;
+  border: var(--border-w) solid var(--line);
+  color: var(--text-soft);
+}
+.fw-goal__description {
+  margin: 0;
+}
+.fw-goal__rules {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-goal__rules > p {
+  margin: 0;
+}
+.fw-goal__rule {
+  display: grid;
+  gap: var(--s-1);
+}
+.fw-goal__flag {
+  display: inline-flex;
+  margin-top: var(--s-1);
+  align-items: center;
+  gap: var(--s-1);
+  color: var(--missed-text);
+  font-weight: 700;
+}
+.fw-goal__review {
+  display: grid;
+  gap: var(--s-3);
+  justify-items: start;
+}
+.fw-goal-form__dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+}
+.fw-goal-form__dates > .fw-field {
+  flex: 1 1 180px;
+}
+.fw-goal-rule {
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+}
+.fw-goal-rule__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+}
+.fw-goal-rule__head > .fw-field {
+  flex: 1 1 160px;
 }

@@ -2,6 +2,7 @@
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
 > v0.8.21: bonus rules and the wishlist (WP-30, D-57): `points_rule` as built, `wishlist_pin`, the ledger's `points_rule_id`, `apply_points_rules()` and `pin_wish()`, and the snapshot's `shop` and each earner's `wish` (§3.3b, §4.2b, §4.6).
+> v0.8.20: goals as built (WP-19, D-56): `reward_goal`, `reward_rule`, `reward_goal_progress`, `reward_rule_progress` and `reward_goal_event`; the dirty marks; `save_goal()`, `redeem_goal()`, `cancel_goal()`, `clear_goal_review()` and the pipeline's `goals_to_evaluate()`, `goal_facts()` and `save_goal_evaluation()` (§3.3, §4.3, §4.7).
 > v0.8.19: streak history and insights (WP-17, D-55): `member_daily_summary` and `streak_segment` as built, the marks and functions that keep them, `member_insights()`, and the snapshot's streak (§3.3, §4.6, §4.7); `evaluateHistory` takes `through`, so stored days are judged as of today (§5).
 > v0.8.18: the board through an outage (WP-13, D-54): no schema change; the snapshot is what a board saves in IndexedDB, and a board reads its household's `job_health()` through job_run's RLS (§4.6).
 > v0.8.17: the rewards shop as built (WP-18, D-53): `reward_catalog_item` with icon, photo, stock and weekly limit; `redemption` with who asked; the ledger's `redemption_id`; the redemption functions and the `rewards` Storage bucket (§3.3b, §4.2b).
@@ -429,6 +430,15 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 | `reward_goal_progress` | `goal_id` PK, `pct`, `is_achieved`, `dirty`, `computed_at`, `engine_version` | **Derived.** `dirty` set by trigger. |
 | `reward_goal_event` | `goal_id`, `type` (`created`, `activated`, `rules_changed`, `achieved`, `unachieved`, `payout_reversed`, `needs_review`, `redeemed`, `expired`, `cancelled`, `recomputed`), `actor`, `payload jsonb`, `at` | Lifecycle log; drives celebrations and history. |
 
+**As built (WP-19, D-56).** Every goal table carries `household_id`; the derived and log tables reference `reward_goal (household_id, id)` and `reward_rule (household_id, id)`.
+
+- `reward_goal`: `id` is made by the form, so a form sent twice saves one goal. `icon` (default `trophy`) and an optional photo in the shop's private `rewards` bucket (`{household}/{goal}/{file}`, D-53) say what it is, so there is no `reward_kind`. `payout` defaults to `{type: 'custom'}` (payouts are WP-39). It also has `achievement_count` (n of the latest achievement), `needs_review`, `created_by` and `updated_at`. A new goal is `scheduled`, and the engine starts it on its start date. `draft` is allowed but nothing makes one yet.
+- `reward_rule`: `target` is 1 to 100 000. `save_goal()` stores `scope` as `{all: true}` or sorted, distinct `tag_ids` and/or `chore_ids` of the household. A STREAK's `params` are `{grace_per_week}` (0 to 3, default 1), so an unchanged rule list compares equal.
+- `reward_goal_progress`: also `marked_at` (the last mark, so a save clears only marks made before its read), `rules_version` (the goal's, as computed) and `computed_at` (null until the first evaluation). `pct` is `numeric(5,2)`.
+- `reward_rule_progress`: also `pct`.
+- `reward_goal_event`: also `edited` (name, description or picture only). `actor_type` is `admin` or `system`.
+- **Access.** Parents read all five tables. Boards read goals, rules and both progress tables (for WP-20), not the log. Only the functions in §4.7 write. Goals are never deleted (cancelled instead). A parent's goal and rule changes are audited (`audit_row`).
+
 ### 3.3b Points economy and streak history
 
 | Table | Key columns | Notes |
@@ -848,6 +858,13 @@ create trigger trg_cce_dirty after insert on chore_completion_event
   for each row execute function private.mark_goals_dirty();
 ```
 
+**As built (WP-19, D-56).** The marks follow the occurrence, not the event, so a late credit, an uncheck and day close count as well as a check-off:
+
+- `trg_occurrence_goals_dirty` (`private.mark_goals_dirty_for_occurrence`) runs per row when an occurrence's `status`, `done_by` or `points_snapshot` changes. It marks the household's family goals, and the goals of its assignees and of whoever did it, before and after, whose dates hold its due date (a task, which counts on the day it was done, marks whatever its date). Goals that are scheduled, active, achieved, expired (a late credit may still achieve one) or redeemed (a reversal flags one) are marked.
+- `private.mark_household_goals_dirty` runs once per statement on occurrence insert and delete (planned days, D-45 re-plans) and on `chore_tag` insert and delete. It marks every scheduled, active or achieved goal of the households concerned.
+
+A mark sets `dirty` and `marked_at`.
+
 ### 4.4 Day type
 
 ```sql
@@ -1042,6 +1059,9 @@ All are `SECURITY DEFINER` with `search_path = ''`, and errors carry a stable co
 | `public.device_heartbeat(app_version)` | the board itself | Records `last_seen_at` (at most once a minute) and the app version. |
 | `public.board_snapshot(from, to)` | the board itself (security invoker) | Everything the board shows, in one read (§4.6); null for anyone but an active board. |
 | `public.member_history_facts(member, through)`, `public.save_member_history(member, through, days, segments, engine_version, read_at)` | the day-close job (service role), or a parent of the member's household | Read all of a member's facts for `evaluateHistory` (02 §5), every item whatever its visibility; replace their stored days and runs, leaving unchanged rows as they were, and clear their mark unless it is newer than the read (WP-17). |
+| `public.save_goal(goal)` | a parent of the goal's household | [RWD-01] Adds a goal or changes one with its rules (`{id, household_id, member_id, title, description, icon, image_path?, start_date, end_date, rule_logic, rules}`). It checks the person earns rewards (or it is the family's), the dates, and 1 to 5 rules with this household's tags and items. It refuses a started goal's new person or start date, and a finished goal's new rules or dates. New dates, logic or rules start a new `rules_version` (`rules_changed`, with before and after) and mark the goal. Saving the same thing again changes nothing (WP-19). |
+| `public.redeem_goal(goal)`, `public.cancel_goal(goal)`, `public.clear_goal_review(goal)` | a parent of the goal's household | [RWD-09] An achieved goal becomes `redeemed`, with who and when. A goal that isn't redeemed becomes `cancelled` and moves to history. A redeemed goal's review flag clears. Each is safe to send twice (WP-19). |
+| `public.goals_to_evaluate(household, engine_version)`, `public.goal_facts(goal)`, `public.save_goal_evaluation(goal, status, rules_version, evaluation, engine_version, read_at)` | `progress_reconcile` (service role), or a parent of the household | [RWD-04] The goals to evaluate now. One goal's input for `evaluateGoal` (02 §5), with the household's today. Storing an evaluation and applying its status changes once, refused if the goal's status or rules changed since the read (WP-19, D-56). |
 | `public.history_dirty_members(household, engine_version)` | the job only | The members to rebuild: marked, or with rows an older engine made. |
 | `public.member_history_stale(member, engine_version)` | a parent of the household | Whether the Insights page must rebuild the member first. |
 | `public.member_insights(member, from, to)` | parents (security invoker: RLS applies) | One member's insights over 1 to 367 closed days: streaks over all history, routines done of those that counted, the days, the five most missed, completion by tag, and what a parent did next to their check-offs (RWD-12). |

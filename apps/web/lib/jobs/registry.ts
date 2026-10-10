@@ -1,7 +1,9 @@
 import { ENGINE_VERSION } from '@familywise/rules-engine';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { isoDay } from '../format';
+import { evaluateHouseholdGoals } from '../goals';
 import { dayBefore, rebuildMemberHistory } from '../history';
+import { log } from '../log';
 
 export type JobContext = {
   db: SupabaseClient;
@@ -97,6 +99,22 @@ export const JOBS: Record<string, Job> = {
       );
     }
     return { status: 'ok', stats: report };
+  },
+
+  // [RWD-04][US-407] Goal progress (WP-19, D-56): evaluates every goal of the household that needs it
+  // (marked dirty by a check-off, an uncheck, day close or new rules; due to start or end; or not yet
+  // evaluated today) with the rules engine, stores the progress and applies the status changes once.
+  // A goal that fails stays dirty for the next run, 5 minutes later; the run fails so Health shows it.
+  async progress_reconcile({ db, householdId }) {
+    const errors: string[] = [];
+    const stats = await evaluateHouseholdGoals(db, householdId, (goalId, e) => {
+      errors.push(`${goalId}: ${e instanceof Error ? e.message : String(e)}`);
+      log('warn', 'goal not evaluated', { goalId, error: String(e) });
+    });
+    if (errors.length > 0) {
+      throw new Error(`${errors.length} goal(s) not evaluated: ${errors.join('; ')}`);
+    }
+    return { status: 'ok', stats: { ...stats } };
   },
 };
 

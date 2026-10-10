@@ -2,6 +2,7 @@
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
 > v0.8.19: US-1107 and US-1108 as built (WP-30, D-57): bonus rules on the Rewards page, paid by day close from the stored history; the wish card and picker on a child's own screen. Asking for the wish from the board comes with WP-20's shop.
+> v0.8.18: US-401, US-405, US-407 and US-406's log (`rules_changed`, then `recomputed` with the progress before and after) as built in the admin app and the database (WP-19, D-56); the preview of a rule change is WP-39; the board's goal meter, nudge and celebration (US-403, US-404) come with WP-20.
 > v0.8.17: US-408 as built (WP-17, D-55): Insights for a member over 7, 30 or 90 days, history rebuilt from every check-off, and the board's streak flame.
 > v0.8.16: US-205 and US-206 as built (WP-13, D-54): the board keeps its check-offs, snapshot and page through an outage and a reload, says when it is offline or its data is old, and marks points not yet saved.
 > v0.8.15: US-1103, US-1104 and US-1105 as built in the admin app, the database and the board's API (WP-18, D-53); the board's shop screen comes with WP-20.
