@@ -15,6 +15,8 @@ import {
 import { AdminHeader } from '../header';
 import { changeMealEntry, copyLastWeek } from './actions';
 import { EntryForm } from './entry-form';
+import { LunchSection } from './lunch-section';
+import type { LunchChild } from '@/lib/lunch';
 
 export interface MealsViewProps {
   /** The first day of the week shown, and today, both household dates. */
@@ -28,6 +30,8 @@ export interface MealsViewProps {
   addAt: { day: string; slot: Slot } | null;
   /** The new entry's id, made by the page. */
   newId: string;
+  /** Each child's school lunch for the week (WP-26). */
+  lunch: LunchChild[];
   notice: string | null;
   error: string | null;
 }
@@ -47,6 +51,7 @@ export function MealsView({
   members,
   addAt,
   newId,
+  lunch,
   notice,
   error,
 }: MealsViewProps) {
@@ -195,6 +200,13 @@ export function MealsView({
           })}
         </ol>
       </section>
+
+      <LunchSection
+        week={week}
+        days={days}
+        lunch={lunch}
+        names={new Map(members.map((m) => [m.id, m.displayName]))}
+      />
 
       <section className="fw-card" id="add" aria-labelledby="add-heading">
         <h2 id="add-heading">Add to the plan</h2>

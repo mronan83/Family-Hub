@@ -183,7 +183,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | MEAL-01 | US-701 | WP-25 | ADM, BRD | meal_plan_entry | U, DB, E2E |
 | MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | U, DB, E2E |
 | MEAL-03 | US-702 | WP-25 | ADM, API | meal_plan_entry | DB, E2E, INT |
-| MEAL-04 | US-703 | WP-26 | ADM, DB | lunch_override, member_school_profile | DB, E2E |
+| MEAL-04 | US-703 | WP-26 | ADM, DB | lunch_override, member_lunch | U, DB, E2E |
 | MEAL-05 | US-704 | WP-27 | MENUIMP, BRD, ADM | school_menu_day, lunch_override | E2E |
 | MEAL-06 | US-705 | WP-28 | BRD | meal_plan_entry, lunch_override | E2E |
 | MEAL-07 | US-706 | WP-36 | ADM | meal | U |
@@ -399,6 +399,8 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.85 | WP-26 done (PR #56): approved by the owner and merged once CI and e2e were green on the preview (124 passed, no retries, on `45a9735`, and on `02cae73` before main was merged in; the done-when: pgTAP 350 across a break week, and in `meals.spec` a usual week set and a day changed and changed back). The user guide says how (version 0.10, A15, B1.15, B3). |
+| 0.8.84 | WP-26 lunch buy or bring (MEAL-04, US-703, D-78), in review (PR #56): each child's usual lunch Monday to Friday and a school day changed, on the Meals page; only school days have a lunch, by the child's own day type. Tests: pgTAP 350 (the done-when: the effective mode across a break week, a child on another school's year, a change and its undoing, new usuals clearing matching changes, who may); unit (`lunch`); the UI suite (`meals.spec`: the lunch table and the usual week); e2e (`meals.spec`: a usual week set, a day changed and changed back). |
 | 0.8.83 | WP-25 done (PR #55): approved by the owner and merged once CI and e2e were green on the preview (123 passed, no retries, on `f63e95e`; the done-when in `meals.spec`: a meal added to the library, a dinner planned every day of a week and two snacks put in order, the week copied on keeping and then replacing what was planned, and a copy removed without touching the original). The user guide says how (version 0.9, A15, B1.15, B3, B7). |
 | 0.8.82 | WP-25 meal library and weekly planner (MEAL-01, MEAL-02, MEAL-03, MEAL-08, US-701, US-702, D-77), in review (PR #55): **Meals** in the admin app, a household week with each day's breakfast, snack, lunch and dinner; entries from the library or written in, for everyone or one person, with a note, in an order a parent sets; the meal library (good for, recipe link, icon, archive); copy last week, keeping or replacing what is planned. Tests: pgTAP 340 (the library's checks, adding, ordering, removing, copy with skip and overwrite, who may); unit (`meals`: the week, the order, the forms, the words); the UI suite (`meals.spec`: the week, Change, Add to the plan, copy, the library, on a phone and a laptop); e2e (`meals.spec`: the done-when). |
 | 0.8.81 | WP-39 done (PR #53): approved by the owner and merged once CI and e2e were green on the preview (120 passed, no retries, on `5f1d9c6`; the done-when in `goal-payouts.spec`: Maya's goal paid 10 points once however often it was worked out, unchecking her bed took them back once, checking it again paid achievement 2, and the Preview of a higher target said what it would take back and saved nothing; a shop reward already given raising the review flag is pgTAP 320's). The user guide says how (version 0.8, A7, B1.8, B3, B5, B7). |

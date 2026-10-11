@@ -8,6 +8,7 @@ import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { addDays } from '@/lib/board-calendar';
 import { isoDay } from '@/lib/format';
 import { log } from '@/lib/log';
+import { parseUsualLunch } from '@/lib/lunch';
 import { mealRefusal, parseEntryForm, parseMealForm, weekDays, weekFrom } from '@/lib/meals';
 import { serverClient } from '@/lib/supabase/server';
 
@@ -156,4 +157,48 @@ export async function setMealArchived(form: FormData): Promise<void> {
   }
   revalidatePath('/admin/meals', 'layout');
   redirect(`/admin/meals/library?did=${archive ? 'archived' : 'restored'}`);
+}
+
+/**
+ * [MEAL-04][US-703] Changes one school day's lunch for a child, buy or bring. Changing it back to
+ * their usual removes the change. Back to the week, at the lunch table.
+ */
+export async function setLunchDay(form: FormData): Promise<void> {
+  const { db, household } = await context('/admin/meals');
+  const week = weekOf(form, household);
+  const [member, date, mode] = String(form.get('lunch') ?? '').split(':');
+  if (
+    !member ||
+    !GUID.test(member) ||
+    !date ||
+    !weekDays(week).includes(date) ||
+    !['buy', 'bring'].includes(mode ?? '')
+  ) {
+    redirect(`/admin/meals?week=${week}`);
+  }
+  const { error } = await db.rpc('set_lunch', { p_member: member, p_date: date, p_mode: mode });
+  if (error) {
+    log('warn', 'lunch not set', { code: error.code, hint: error.hint });
+    redirect(`/admin/meals?week=${week}&lunch=${encodeURIComponent(error.hint || 'failed')}#lunch`);
+  }
+  revalidatePath('/admin/meals');
+  redirect(`/admin/meals?week=${week}&did=lunch#lunch`);
+}
+
+/** [MEAL-04][US-703] Sets a child's usual lunch for each weekday, buy or bring. */
+export async function setUsualLunch(form: FormData): Promise<void> {
+  const { db, household } = await context('/admin/meals');
+  const week = weekOf(form, household);
+  const member = String(form.get('member') ?? '');
+  if (!GUID.test(member)) redirect(`/admin/meals?week=${week}`);
+  const { error } = await db.rpc('set_lunch_defaults', {
+    p_member: member,
+    p_defaults: parseUsualLunch(form),
+  });
+  if (error) {
+    log('warn', 'usual lunch not set', { code: error.code, hint: error.hint });
+    redirect(`/admin/meals?week=${week}&lunch=${encodeURIComponent(error.hint || 'failed')}#lunch`);
+  }
+  revalidatePath('/admin/meals');
+  redirect(`/admin/meals?week=${week}&did=usual#lunch`);
 }

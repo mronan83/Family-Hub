@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.34: school lunch (WP-26, D-78): `member_lunch`, `lunch_override` as built; `lunch_mode()`, `lunch_week()`, `set_lunch()`, `set_lunch_defaults()` (§3.6).
 > v0.8.33: meals (WP-25, D-77): `meal` and `meal_plan_entry` as built, and the functions that plan (§3.6).
 > v0.8.32: goal payouts (WP-39, D-75): `points_ledger.goal_id`/`goal_n` and `redemption.goal_id`/`goal_n`; a goal's shop reward costs nothing (`cost_snapshot` 0, `requested_by_type` `system`); `payout_restored` events; `pay_goal`, `settle_goal_points`, `take_back_goal`; `goal_preview_facts()` (§3.3, §3.3b, §4.2b, §5).
 > v0.8.31: a board's text size (WP-47, D-73): `device.board_config.text_size`, one of `smaller`, `standard`, `larger`, `largest` (none is Standard), checked like its theme; the snapshot's `device.text_size`.
@@ -525,6 +526,7 @@ When a closure or school year changes, the generator re-resolves and regenerates
 | `meal` | `name`, `description`, `meal_types text[]`, `tags text[]`, `recipe_url`, `ingredients jsonb default '[]'`, `image_path`, `archived_at` | `ingredients` is carried now so a grocery list (MEAL-07) is additive later. |
 | `meal_plan_entry` | `plan_date`, `slot` (`breakfast`/`snack`/`lunch`/`dinner`), `sort_order`, `member_id?` (null = whole household), `meal_id?`, `free_text?`, `notes` | Check: `meal_id IS NOT NULL OR free_text IS NOT NULL`. Multiple rows per slot allowed (snacks). |
 | `lunch_override` | `member_id`, `date`, `mode` (`buy`/`bring`), `menu_item_ref?` | `UNIQUE (member_id, date)`. |
+| `member_lunch` | `member_id` (one per child), `defaults jsonb` (`{"mon":"buy",…}`, Monday to Friday; none set is bring) | A child's usual lunches (WP-26, D-78), whatever school year they follow. |
 | `menu_source` | `name`, `adapter` (`nutrislice`/`schoolcafe`/`linq`/`csv`/`manual`), `config jsonb`, `status`, `last_fetch_at`, `last_success_at`, `last_error`, `fetch_window_days` (28) | Adapter is selected by `adapter`; config is adapter-specific. |
 | `school_menu_day` | `menu_source_id`, `menu_date`, `meal_service` (`breakfast`/`lunch`), `items jsonb`, `no_service bool`, `origin` (`adapter`/`csv`/`manual`), `is_override`, `fetched_at`, `content_hash` | `UNIQUE (menu_source_id, menu_date, meal_service)`. Adapter refresh **never** overwrites `is_override = true`. |
 
@@ -541,6 +543,8 @@ if resolve_day_type(m, d) <> 'school_day'  -> none
 else coalesce(lunch_override(m, d).mode,
               member_school_profile.lunch_defaults[weekday(d)])
 ```
+
+**As built (WP-26, D-78).** The usual lunches live on the child, not the school profile: `member_lunch` (`member_id`, `defaults` `{mon … fri: 'buy' | 'bring'}`; none set is bring). `lunch_override` is as above (`lunch_date`, `mode`, `created_by`), and holds only differences from the usual. `public.lunch_mode(member, date)`: null for an adult or a day that isn't a school day for the child, else the change or the usual. `set_lunch(member, date, mode)` (a school day only; the usual removes the change) and `set_lunch_defaults(member, defaults)` (also removes later changes that now match) are a parent's; `lunch_week(household, from)` gives each child's seven days (day type, mode, changed) to a parent or a board.
 
 If the effective mode is `buy`, the board shows `school_menu_day` for `(menu_source, d, 'lunch')`; if `bring`, it shows the planned `meal_plan_entry` for the lunch slot.
 

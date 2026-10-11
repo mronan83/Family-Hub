@@ -182,3 +182,27 @@ test('[MEAL-02] the library: each meal, what it’s good for and its recipe; arc
     page.getByRole('form', { name: 'Edit Tacos' }).getByRole('checkbox', { name: 'Dinner' }),
   ).toBeChecked();
 });
+
+test('[MEAL-04][US-703] school lunch: each child’s school days, buy or bring, a changed day marked; no lunch on a day off or the weekend', async ({
+  page,
+}) => {
+  await page.goto('/dev/meals');
+  const lunch = page.getByRole('region', { name: 'School lunch' });
+  const leo = lunch.getByRole('row', { name: /^Leo/ });
+  await expect(leo.getByRole('cell')).toHaveText([
+    'Weekend',
+    'Bring',
+    'BuyChanged',
+    'Buy',
+    'No school',
+    'Bring',
+    'Weekend',
+  ]);
+  await expect(
+    leo.getByRole('button', { name: 'Leo, Tue, Oct 13: buy (changed). Change to bring' }),
+  ).toHaveAttribute('value', 'f2000000-0000-4000-8000-000000000002:2026-10-13:bring');
+  await expect(lunch.getByRole('row', { name: /^Maya/ }).getByRole('button')).toHaveCount(4);
+  const usual = lunch.getByRole('form', { name: 'Maya’s usual lunches' });
+  await expect(usual.getByRole('combobox', { name: 'Friday' })).toHaveValue('buy');
+  await expect(usual.getByRole('combobox', { name: 'Monday' })).toHaveValue('bring');
+});

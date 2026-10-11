@@ -202,6 +202,8 @@ const SHOTS = [
   },
   // Meals (WP-25): the week on a laptop, and the library on a phone.
   { name: 'admin-meals-laptop', device: 'laptop', url: '/dev/meals', maxHeight: 1900, quality: 62 },
+  // School lunch (WP-26): the section itself.
+  { name: 'admin-lunch-laptop', device: 'laptop', url: '/dev/meals', element: '#lunch' },
   {
     name: 'admin-meal-library-phone',
     device: 'phone',

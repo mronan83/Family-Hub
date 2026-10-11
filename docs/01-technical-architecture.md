@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.48: school lunch (WP-26, D-78): buy or bring per child and school day, through `set_lunch()`, `set_lunch_defaults()` and `lunch_week()`.
 > v0.8.47: meal planning (WP-25, D-77): the admin app's Meals page and meal library, through RLS and `add_meal_entry()`, `move_meal_entry()`, `copy_meal_week()`.
 > v0.8.46: goal payouts and the preview of a change (WP-39, D-75): `save_goal_evaluation()` pays an achievement in the same transaction and undoes it when the goal is undone (§6.2, §8); the goal form's Preview reads `goal_preview_facts()` and runs the engine without saving.
 > v0.8.45: the jobs' queries stop after 60 seconds (D-76, §5.6).
