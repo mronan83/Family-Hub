@@ -112,16 +112,22 @@ test.describe('text sizes on a 1080p screen', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1280);
   });
 
-  test('[BRD-08] the board starts at the text size it last had, before it has read anything', async ({
-    page,
-  }) => {
-    await page.goto('/dev/board?text=larger');
-    await expect(page.locator('html')).toHaveAttribute('data-text-size', 'larger');
-    // Only the page's own first-paint scripts run: no app code, as before a board's first read.
-    await page.route('**/_next/static/chunks/**', (route) => route.abort());
-    await page.goto('/dev/board');
-    expect(await zoom(page)).toBe(1.15);
-    await expect(page.locator('html')).toHaveAttribute('data-text-size', 'larger');
+  // With no service worker: it would serve the app's code from its cache, past the blocked
+  // requests below, and the app would set the dev page's own size (Standard) before the check.
+  test.describe('before any app code', () => {
+    test.use({ serviceWorkers: 'block' });
+
+    test('[BRD-08] the board starts at the text size it last had, before it has read anything', async ({
+      page,
+    }) => {
+      await page.goto('/dev/board?text=larger');
+      await expect(page.locator('html')).toHaveAttribute('data-text-size', 'larger');
+      // Only the page's own first-paint scripts run: no app code, as before a board's first read.
+      await page.route('**/_next/static/chunks/**', (route) => route.abort());
+      await page.goto('/dev/board');
+      expect(await zoom(page)).toBe(1.15);
+      await expect(page.locator('html')).toHaveAttribute('data-text-size', 'larger');
+    });
   });
 });
 
