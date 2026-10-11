@@ -32,6 +32,8 @@ export interface MealsViewProps {
   newId: string;
   /** Each child's school lunch for the week (WP-26). */
   lunch: LunchChild[];
+  /** The household's school menus, for each child's choice (WP-27). */
+  menus?: { id: string; name: string }[];
   notice: string | null;
   error: string | null;
 }
@@ -52,6 +54,7 @@ export function MealsView({
   addAt,
   newId,
   lunch,
+  menus = [],
   notice,
   error,
 }: MealsViewProps) {
@@ -205,6 +208,7 @@ export function MealsView({
         week={week}
         days={days}
         lunch={lunch}
+        menus={menus}
         names={new Map(members.map((m) => [m.id, m.displayName]))}
       />
 

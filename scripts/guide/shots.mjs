@@ -204,6 +204,14 @@ const SHOTS = [
   { name: 'admin-meals-laptop', device: 'laptop', url: '/dev/meals', maxHeight: 1900, quality: 62 },
   // School lunch (WP-26): the section itself.
   { name: 'admin-lunch-laptop', device: 'laptop', url: '/dev/meals', element: '#lunch' },
+  // School menus (WP-27): the page on a laptop, and adding one on a phone with the schools found.
+  { name: 'admin-menus-laptop', device: 'laptop', url: '/dev/menus', maxHeight: 1500, quality: 62 },
+  {
+    name: 'admin-menu-add-phone',
+    device: 'phone',
+    url: '/dev/menus?add=1',
+    element: 'section[aria-labelledby="add-menu-heading"]',
+  },
   {
     name: 'admin-meal-library-phone',
     device: 'phone',

@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.35: school menus (WP-27, D-79): `menu_source` and `school_menu_day` as built, `member_lunch.menu_source_id`; `save_menu_source()`, `save_menu_days()`, `clear_menu_day()`, `save_menu_fetch()`, `menu_sources_due()`, `set_child_menu()`; `lunch_week()` with the menu on buy days (§3.6).
 > v0.8.34: school lunch (WP-26, D-78): `member_lunch`, `lunch_override` as built; `lunch_mode()`, `lunch_week()`, `set_lunch()`, `set_lunch_defaults()` (§3.6).
 > v0.8.33: meals (WP-25, D-77): `meal` and `meal_plan_entry` as built, and the functions that plan (§3.6).
 > v0.8.32: goal payouts (WP-39, D-75): `points_ledger.goal_id`/`goal_n` and `redemption.goal_id`/`goal_n`; a goal's shop reward costs nothing (`cost_snapshot` 0, `requested_by_type` `system`); `payout_restored` events; `pay_goal`, `settle_goal_points`, `take_back_goal`; `goal_preview_facts()` (§3.3, §3.3b, §4.2b, §5).
@@ -547,6 +548,15 @@ else coalesce(lunch_override(m, d).mode,
 **As built (WP-26, D-78).** The usual lunches live on the child, not the school profile: `member_lunch` (`member_id`, `defaults` `{mon … fri: 'buy' | 'bring'}`; none set is bring). `lunch_override` is as above (`lunch_date`, `mode`, `created_by`), and holds only differences from the usual. `public.lunch_mode(member, date)`: null for an adult or a day that isn't a school day for the child, else the change or the usual. `set_lunch(member, date, mode)` (a school day only; the usual removes the change) and `set_lunch_defaults(member, defaults)` (also removes later changes that now match) are a parent's; `lunch_week(household, from)` gives each child's seven days (day type, mode, changed) to a parent or a board.
 
 If the effective mode is `buy`, the board shows `school_menu_day` for `(menu_source, d, 'lunch')`; if `bring`, it shows the planned `meal_plan_entry` for the lunch slot.
+
+**As built (WP-27, D-79).**
+
+- `menu_source`: `name` (1 to 40), `adapter` (`nutrislice`, `csv` or `manual`; it keeps its kind), `config` (Nutrislice: `{district, school, menu_type}` as in the menu's address, plus the `school_name` and `menu_type_name` the picker showed; nothing for the others), `status` (`pending`, `ok`, `error`), `last_fetch_at`, `last_success_at`, `last_error`, `content_hash`. The window is a fixed 28 days, so there is no `fetch_window_days`.
+- `school_menu_day`: `menu_date`, `meal_service` (`lunch`; `breakfast` is allowed for later), `items` (`[{name, section?}]`, up to 60, names up to 120), `no_service` and `note` (a holiday), `origin` (`adapter`, `csv`, `manual`), `is_override` (a parent's own, from a file or typed in), `fetched_at`. `UNIQUE (source_id, menu_date, meal_service)`.
+- A child's menu is `member_lunch.menu_source_id` (set with `set_child_menu()`; removing the source unlinks them), not `member_school_profile.menu_source_id`, so it sits with their usual lunches (D-78).
+- `save_menu_source()` adds or renames a source and changes a feed's settings (new settings wait for the next fetch); `remove_menu_source()`; `save_menu_days(source, days, 'csv' | 'manual')` stores up to 120 days as the parent's own; `clear_menu_day()`; `menu_sources_due()` (service role) and `save_menu_fetch()` (the job, or an admin adding a feed): a feed's days in its window, never over a parent's own, its dropped days removed, days over 60 days old dropped; a failure changes only the status and error.
+- `lunch_week()` now gives each child's `menu_source_id` and, on a day they buy, that day's `menu` (`{items, no_service, note, own}`, or null).
+- Parents and the household's boards read both tables; every change goes through the functions. A parent's own days and the source's name and settings are audited, the feed's days are not.
 
 ### 3.7 Reminders
 

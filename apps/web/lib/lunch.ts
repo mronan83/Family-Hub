@@ -2,6 +2,9 @@
 // lunches form, and the words. The database decides which days have a school lunch (the child's day
 // type) and what a day's lunch is (its change, else the usual).
 
+import type { MenuItem } from './menu/nutrislice';
+import type { LunchMenu } from './menus';
+
 export type LunchMode = 'buy' | 'bring';
 export const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri'] as const;
 export type Weekday = (typeof WEEKDAYS)[number];
@@ -21,11 +24,15 @@ export interface LunchDay {
   mode: LunchMode | null;
   /** True when the day was changed from the usual. */
   changed: boolean;
+  /** [MEAL-05] On a buy day, that day's school menu; null when there is none (or no menu chosen). */
+  menu?: LunchMenu | null;
 }
 
 export interface LunchChild {
   memberId: string;
   usual: Partial<Record<Weekday, LunchMode>>;
+  /** [MENU-01] The school menu their lunch comes from, if any. */
+  menuSourceId?: string | null;
   days: LunchDay[];
 }
 
@@ -34,7 +41,14 @@ export function lunchFromDb(
   raw: {
     member_id: string;
     usual: Record<string, string>;
-    days: { date: string; day_type: string; mode: string | null; changed: boolean }[];
+    menu_source_id?: string | null;
+    days: {
+      date: string;
+      day_type: string;
+      mode: string | null;
+      changed: boolean;
+      menu?: { items: MenuItem[]; no_service: boolean; note: string | null } | null;
+    }[];
   }[],
 ): LunchChild[] {
   return raw.map((c) => ({
@@ -44,11 +58,15 @@ export function lunchFromDb(
         ([k, v]) => (WEEKDAYS as readonly string[]).includes(k) && (v === 'buy' || v === 'bring'),
       ),
     ) as LunchChild['usual'],
+    menuSourceId: c.menu_source_id ?? null,
     days: c.days.map((d) => ({
       date: d.date,
       dayType: d.day_type,
       mode: d.mode === 'buy' || d.mode === 'bring' ? d.mode : null,
       changed: d.changed,
+      menu: d.menu
+        ? { items: d.menu.items ?? [], noService: d.menu.no_service, note: d.menu.note ?? null }
+        : null,
     })),
   }));
 }

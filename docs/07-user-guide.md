@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.11: school menus (WP-27, D-79): **School menus** from Nutrislice, a file or typed in, and the menu on a buy day (A15, B1.15, B3, B7).
 > v0.10: school lunch, buy or bring (WP-26, D-78): A15, B1.15, B3.
 > v0.9: meal planning (WP-25, D-77): the week's meals and the meal library on **Meals** (A15, B1.15, B3, B7).
 > v0.8: goals pay out (WP-39, D-75): points or a reward from the shop when a goal is reached, taken back if a check-off it needed is undone; **Preview** before changing a goal (A7, B1.8, B3, B5, B7).
@@ -739,7 +740,7 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credi
 > **Tip:** Stand where the family usually reads the board. If the words for each item are hard to make out, try **Larger text**. On a 32-inch 4K panel read from about two metres, **Larger** suits most families; a smaller screen, or one read from further away, may want **Largest**.
 
 ### A15 Planning meals
-<!-- covers: US-701 US-702 US-703 -->
+<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 -->
 
 **What this is.** The week's breakfasts, snacks, lunches and dinners, planned ahead, and a library of the meals your family makes again. **When.** Once a week, say on Sunday, so nobody decides at 5 pm. **How.** On **Meals** in the menu.
 
@@ -781,6 +782,23 @@ Under **Copy last week**, choose what happens where this week already has someth
 - **The usual week:** under **Usual week**, choose **Buy** or **Bring** for each weekday for a child, then **Save** (their name)**'s usual lunches**. A day you had changed to what is now the usual stops being a change.
 
 ![School lunch on a laptop: Leo and Maya across the week, Buy or Bring on school days, Leo's Tuesday changed, Thursday no school; then each child's usual week.](guide/img/admin-lunch-laptop.jpg "School lunch, on a laptop")
+
+#### School menus: what the school serves
+
+A day a child buys can show what the school serves that day. Open **School menus** (the button beside **School lunch** on **Meals**) and add the school's menu once:
+
+- **From the school's Nutrislice menus**, if your school's lunch menu is on Nutrislice (its address ends in nutrislice.com). Type the name at the start of that address (for menus at example.nutrislice.com, type example) or paste the whole address, then **Find the schools**. Choose the school and its lunch menu, then **Add the menu**: FamilyWise fetches the next four weeks straight away, and again every morning.
+- **From a file**, for a school whose menu comes another way: a spreadsheet saved as CSV with a row for each item, and the columns **date** (like 2027-02-01, or 2/1/2027), **item** and, if you like, **section** (Main Line, Beverages). A date with no item means no lunch that day, and its section says why (Presidents' Day). **Look at the file** shows how many days it holds and the first few; **Load** stores them.
+- **Typed in**, a day at a time with **Add a day**.
+
+Then, under **Usual week** on **Meals**, choose each child's **School menu**. A day they buy shows what's served, or **No menu yet**.
+
+- **Change a day:** each day's **Change** lets you write it yourself: an item a line (start a line with a section and a colon to group it, like Beverages: Milk), or **No lunch that day** with a note. A day you change is **Yours**: the morning's fetch never replaces it. **Use Nutrislice's menu again** hands it back.
+- **When Nutrislice can't be reached:** the menu says **Can't fetch**, why, and when it last worked. The menus you have stay, and it tries again the next morning; **Fetch now** tries at once.
+
+![School menus on a laptop: Maple Elementary from Nutrislice, fetched, its days with one marked Yours and a day with no lunch; a menu from a file; a feed that can't fetch keeping its menus.](guide/img/admin-menus-laptop.jpg "School menus, on a laptop")
+
+![Adding a school menu on a phone: the district typed, then the school and its menu to choose.](guide/img/admin-menu-add-phone.jpg "Adding a school menu, on a phone")
 
 On the board, the week's meals come with the **Dinner and lunch** card (see [Coming soon](#b7-coming-soon)).
 
@@ -998,7 +1016,7 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | Invite | **Join** (household): **Join household**, or **Create account and join**, or **Sign out** to switch account. |
 
 #### B1.15 Meals
-<!-- covers: US-701 US-702 US-703 -->
+<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 -->
 
 | Part | What it shows or does |
 |---|---|
@@ -1007,9 +1025,11 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | The week | Each day (today marked) with **Breakfast**, **Snack**, **Lunch** and **Dinner**: what is planned in order, with who it's for and its note; **Change** (**Earlier**, **Later**, **Remove**); **Add**. |
 | **Add to the plan** | **Day**, **Meal**, **What** (**From the library** or **Something else**), **For** (**Everyone** or one person), **Note (optional)**, **Add to the plan**. |
 | **Copy last week** | **Keep it** or **Replace it with last week's**, **Copy last week here**. |
-| **School lunch** | Each child's week: **Buy** or **Bring** on school days (a tap changes it; **Changed** marks a change), **Weekend**, **Break** or **No school** otherwise; **Usual week**, Monday to Friday, **Save** (name)**'s usual lunches**. |
+| **School lunch** | **School menus**. Each child's week: **Buy** or **Bring** on school days (a tap changes it; **Changed** marks a change; a buy day shows what the school serves, or **No menu yet**), **Weekend**, **Break** or **No school** otherwise; **Usual week**, Monday to Friday, and **School menu**, **Save** (name)**'s usual lunches**. |
 
 **The meal library:** **Add a meal** (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe link (optional)**, **Icon**, **Add meal**); **Our meals**, each with what it's good for and its recipe, **Edit** and **Archive**; **Archived**, with **Restore**.
+
+**School menus:** each menu with where it comes from (**From Nutrislice**, **From a file**, **Typed in**), whose lunch it is, and for Nutrislice **Fetched**, **Not fetched yet** or **Can't fetch** (why, and when it last worked); its next four weeks, each day with **Change** (**What's for lunch**, **No lunch that day**, **Note (optional)**, **Save the day**; a day you wrote is **Yours**, with **Use Nutrislice's menu again**, or **Remove** for a file's); **Load a file into** (name) (**Menu file (CSV)**, **Look at the file**, **Load** N **days**); **Add a day to** (name); **Fetch** (name) **now**; **Rename** and **Remove**. **Add a school menu:** **Name**, **Where the menu comes from**, and for Nutrislice **Your district on Nutrislice**, **Find the schools**, **School and menu**; **Add the menu**.
 
 ### B2 The board, screen by screen
 
@@ -1237,6 +1257,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Reward cost | 1 to 100,000 points; weekly limit 1 to 100 |
 | Bonus | 1 to 1,000 points; a streak of 2 to 365 days |
 | Lunch | Buy or bring, on a child's school days only; a usual for each weekday, Monday to Friday |
+| School menu | A name up to 40 characters; up to 60 items a day, each up to 120 characters; a file up to 512 KB and 120 days; Nutrislice fetched each morning for the next four weeks |
 | Meals | Something written in up to 80 characters, a note up to 200; any number in a meal of a day; one library meal of a name at a time |
 | Goal | 1 to 5 rules; target 1 to 100,000; 0 to 3 misses forgiven a week; pays 1 to 10,000 points, or one reward from the shop (a child's goal) |
 | Photos | JPEG, PNG or WebP, up to 2 MB |
@@ -1369,7 +1390,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 
 These are planned but not built yet. This guide will cover each as it arrives.
 
-- **Meals on the board:** the school lunch menu, and the **Dinner and lunch** card on the board.
+- **Meals on the board:** the **Dinner and lunch** card on the board.
 - **Audit log:** a page showing who changed what, and when.
 - **Export and delete** your household's data.
 - **Sign in with Apple** and passkeys.

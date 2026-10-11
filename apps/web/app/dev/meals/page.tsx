@@ -7,7 +7,7 @@ import { type MealRow, type PlanEntry, type Slot, weekDays } from '@/lib/meals';
 // The admin Meals pages (WP-25) with a made-up family and no database, for the UI suite and the
 // guide's pictures: the week in Day or Evening (?theme=evening), opened to add a Wednesday snack
 // (?add=1), and the meal library (?page=library). School lunch (WP-26): Thursday is a day off, Leo's
-// Tuesday is changed to buy.
+// Tuesday is changed to buy. School menus (WP-27): both have Maple Elementary's; a buy day shows it.
 export const metadata: Metadata = { title: 'Meals', robots: { index: false } };
 
 const MAYA = 'f2000000-0000-4000-8000-000000000001';
@@ -85,16 +85,39 @@ const lunchDays = (modes: (LunchMode | null)[], changed: number[] = []) =>
     mode: modes[i] ?? null,
     changed: changed.includes(i),
   }));
+const MAPLE = 'f2f00000-0000-4000-8000-000000000001';
+// The school's menu on the days someone buys: Tuesday, Wednesday and Friday.
+const MENU: Record<number, LunchChild['days'][number]['menu']> = {
+  2: {
+    items: [{ name: 'Chicken Nuggets' }, { name: 'Carrot Sticks' }, { name: 'Apple' }],
+    noService: false,
+    note: null,
+  },
+  3: {
+    items: [{ name: 'Cheese Pizza' }, { name: 'Green Beans' }, { name: 'Milk' }],
+    noService: false,
+    note: null,
+  },
+  5: {
+    items: [{ name: 'Fish Tacos' }, { name: 'Corn' }, { name: 'Orange' }],
+    noService: false,
+    note: null,
+  },
+};
+const withMenu = (days: LunchChild['days']) =>
+  days.map((d, i) => (d.mode === 'buy' ? { ...d, menu: MENU[i] ?? null } : d));
 const LUNCH: LunchChild[] = [
   {
     memberId: LEO,
     usual: { wed: 'buy' },
-    days: lunchDays([null, 'bring', 'buy', 'buy', null, 'bring', null], [2]),
+    menuSourceId: MAPLE,
+    days: withMenu(lunchDays([null, 'bring', 'buy', 'buy', null, 'bring', null], [2])),
   },
   {
     memberId: MAYA,
     usual: { fri: 'buy' },
-    days: lunchDays([null, 'bring', 'bring', 'bring', null, 'buy', null]),
+    menuSourceId: MAPLE,
+    days: withMenu(lunchDays([null, 'bring', 'bring', 'bring', null, 'buy', null])),
   },
 ];
 
@@ -124,6 +147,7 @@ export default async function DevMealsPage({
           addAt={p.add ? { day: TODAY, slot: 'snack' } : null}
           newId="f2e10000-0000-4000-8000-0000000000ff"
           lunch={LUNCH}
+          menus={[{ id: MAPLE, name: 'Maple Elementary' }]}
           notice={null}
           error={null}
         />

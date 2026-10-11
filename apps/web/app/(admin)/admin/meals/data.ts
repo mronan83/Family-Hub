@@ -82,3 +82,17 @@ export async function loadLunch(
   if (error) throw new Error(`lunch: ${error.message}`);
   return lunchFromDb(data as Parameters<typeof lunchFromDb>[0]);
 }
+
+/** [MENU-01] The household's school menus by name, for each child's choice (WP-27). */
+export async function loadMenuNames(
+  db: SupabaseClient,
+  householdId: string,
+): Promise<{ id: string; name: string }[]> {
+  const { data, error } = await db
+    .from('menu_source')
+    .select('id, name')
+    .eq('household_id', householdId)
+    .order('name');
+  if (error) throw new Error(`menus: ${error.message}`);
+  return (data ?? []).map((m) => ({ id: m.id as string, name: m.name as string }));
+}

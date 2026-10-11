@@ -192,8 +192,8 @@ test('[MEAL-04][US-703] school lunch: each child’s school days, buy or bring, 
   await expect(leo.getByRole('cell')).toHaveText([
     'Weekend',
     'Bring',
-    'BuyChanged',
-    'Buy',
+    'BuyChangedChicken Nuggets, Carrot Sticks, Apple',
+    'BuyCheese Pizza, Green Beans, Milk',
     'No school',
     'Bring',
     'Weekend',
@@ -205,4 +205,15 @@ test('[MEAL-04][US-703] school lunch: each child’s school days, buy or bring, 
   const usual = lunch.getByRole('form', { name: 'Maya’s usual lunches' });
   await expect(usual.getByRole('combobox', { name: 'Friday' })).toHaveValue('buy');
   await expect(usual.getByRole('combobox', { name: 'Monday' })).toHaveValue('bring');
+  // [MEAL-05][MENU-01] Her school menu, and what it serves on her buy day (WP-27).
+  await expect(usual.getByRole('combobox', { name: 'School menu' })).toHaveValue(
+    'f2f00000-0000-4000-8000-000000000001',
+  );
+  await expect(lunch.getByRole('row', { name: /^Maya/ }).getByRole('cell').nth(5)).toHaveText(
+    'BuyFish Tacos, Corn, Orange',
+  );
+  await expect(lunch.getByRole('link', { name: 'School menus' })).toHaveAttribute(
+    'href',
+    '/admin/meals/menus',
+  );
 });

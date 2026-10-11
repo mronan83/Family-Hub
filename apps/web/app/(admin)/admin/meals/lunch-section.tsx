@@ -1,31 +1,43 @@
-import { Button } from '@familywise/ui';
+import { Button, Icon } from '@familywise/ui';
+import Link from 'next/link';
 import { dayName } from '@/lib/board-calendar';
 import { type LunchChild, MODE_WORDS, noLunchWords, WEEKDAY_WORDS, WEEKDAYS } from '@/lib/lunch';
+import { menuWords } from '@/lib/menus';
 import { setLunchDay, setUsualLunch } from './actions';
 
 /**
  * [MEAL-04][US-703] School lunch for the week: each child's school days, buy or bring, a tap to
- * change one (a day changed from the usual says so); days with no school lunch say why. Then each
- * child's usual week, Monday to Friday.
+ * change one (a day changed from the usual says so); days with no school lunch say why. [MEAL-05]
+ * A buy day shows what the school serves, from the child's school menu (WP-27). Then each child's
+ * usual week, Monday to Friday, and the school menu their lunch comes from.
  */
 export function LunchSection({
   week,
   days,
   lunch,
+  menus = [],
   names,
 }: {
   week: string;
   days: string[];
   lunch: LunchChild[];
+  /** The household's school menus (WP-27). */
+  menus?: { id: string; name: string }[];
   names: Map<string, string>;
 }) {
   if (lunch.length === 0) return null;
   return (
     <section className="fw-card" id="lunch" aria-labelledby="lunch-heading">
-      <h2 id="lunch-heading">School lunch</h2>
+      <div className="fw-goals__head">
+        <h2 id="lunch-heading">School lunch</h2>
+        <Link href="/admin/meals/menus" className="fw-btn fw-btn--secondary">
+          <Icon name="lunch" className="fw-btn__icon" />
+          <span>School menus</span>
+        </Link>
+      </div>
       <p className="fw-muted">
         Buy or bring, on each child’s school days. Tap a day to change it; set each child’s usual
-        week below.
+        week and school menu below. A day they buy shows what the school serves.
       </p>
       <div className="fw-lunch__table">
         <table>
@@ -60,6 +72,11 @@ export function LunchSection({
                             {MODE_WORDS[d.mode]}
                           </Button>
                           {d.changed ? <span className="fw-lunch__changed">Changed</span> : null}
+                          {d.mode === 'buy' && c.menuSourceId ? (
+                            <span className="fw-lunch__menu">
+                              {d.menu ? menuWords(d.menu) : 'No menu yet'}
+                            </span>
+                          ) : null}
                         </form>
                       ) : (
                         <span className="fw-muted">{noLunchWords(d.dayType)}</span>
@@ -101,6 +118,19 @@ export function LunchSection({
                 </label>
               ))}
             </div>
+            {menus.length > 0 ? (
+              <label className="fw-field">
+                <span className="fw-field__label">School menu</span>
+                <select className="fw-input" name="menu" defaultValue={c.menuSourceId ?? ''}>
+                  <option value="">None</option>
+                  {menus.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
             <div className="fw-actions">
               <Button type="submit" variant="secondary" icon="check">
                 {`Save ${name}’s usual lunches`}

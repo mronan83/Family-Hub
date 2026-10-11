@@ -195,9 +195,16 @@ export async function setUsualLunch(form: FormData): Promise<void> {
     p_member: member,
     p_defaults: parseUsualLunch(form),
   });
-  if (error) {
-    log('warn', 'usual lunch not set', { code: error.code, hint: error.hint });
-    redirect(`/admin/meals?week=${week}&lunch=${encodeURIComponent(error.hint || 'failed')}#lunch`);
+  // [MENU-01] The school menu their lunch comes from, when the form offers one ('' is none).
+  const menu = form.has('menu') ? String(form.get('menu') ?? '') : null;
+  const menuError =
+    error || menu === null || (menu !== '' && !GUID.test(menu))
+      ? null
+      : (await db.rpc('set_child_menu', { p_member: member, p_source: menu || null })).error;
+  if (error || menuError) {
+    const e = (error ?? menuError)!;
+    log('warn', 'usual lunch not set', { code: e.code, hint: e.hint });
+    redirect(`/admin/meals?week=${week}&lunch=${encodeURIComponent(e.hint || 'failed')}#lunch`);
   }
   revalidatePath('/admin/meals');
   redirect(`/admin/meals?week=${week}&did=usual#lunch`);

@@ -184,15 +184,15 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | U, DB, E2E |
 | MEAL-03 | US-702 | WP-25 | ADM, API | meal_plan_entry | DB, E2E, INT |
 | MEAL-04 | US-703 | WP-26 | ADM, DB | lunch_override, member_lunch | U, DB, E2E |
-| MEAL-05 | US-704 | WP-27 | MENUIMP, BRD, ADM | school_menu_day, lunch_override | E2E |
+| MEAL-05 | US-704 | WP-27 | MENUIMP, BRD, ADM | school_menu_day, member_lunch | U, DB, E2E |
 | MEAL-06 | US-705 | WP-28 | BRD | meal_plan_entry, lunch_override | E2E |
 | MEAL-07 | US-706 | WP-36 | ADM | meal | U |
 | MEAL-08 | US-701 | WP-25 | ADM | meal_plan_entry | U, DB, E2E |
-| MENU-01 | US-801 | WP-27 | ADM, MENUIMP | menu_source, member_school_profile | E2E |
-| MENU-02 | US-801 | WP-27 | MENUIMP | menu_source | U, INT |
-| MENU-03 | US-802 | WP-27 | ADM, MENUIMP | school_menu_day | E2E, INT |
-| MENU-04 | US-803 | WP-27 | MENUIMP, ADM, OBS | school_menu_day, job_run | INT |
-| MENU-05 | US-803 | WP-27 | MENUIMP, SCHED | school_menu_day | INT |
+| MENU-01 | US-801 | WP-27 | ADM, MENUIMP | menu_source, member_lunch | U, DB, E2E |
+| MENU-02 | US-801 | WP-27 | MENUIMP | menu_source | U, DB, E2E |
+| MENU-03 | US-802 | WP-27 | ADM, MENUIMP | school_menu_day | U, DB, E2E |
+| MENU-04 | US-803 | WP-27 | MENUIMP, ADM, OBS | school_menu_day, menu_source | U, DB, E2E |
+| MENU-05 | US-803 | WP-27 | MENUIMP, SCHED | school_menu_day | U, DB, E2E |
 | BRD-01 | US-303, US-1001 | WP-11, WP-35 | BRD | board_snapshot | E2E |
 | BRD-02 | US-1002 | WP-11 | BRD | member | E2E |
 | BRD-03 | US-905 | WP-11 | BRD | — | E2E, HW, REV |
@@ -399,6 +399,8 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.87 | WP-27 done (PR #57): approved by the owner and merged once CI and e2e were green on the preview (126 passed on `473e1d4`, the school menus migration applied; its one retry was WP-26's lunch test, whose race was fixed in #56; the done-when in `menus.spec`: four weeks loaded from a made-up file through the page, the job's code against a made-up Nutrislice fetched, failing with its menus kept and **Can't fetch** shown, then fetched again with the parent's own day kept, and Maya's buy day showing her menu). The user guide says how (version 0.11, A15, B1.15, B3, B7). |
+| 0.8.86 | WP-27 school menu adapters and import (MENU-01..05, MEAL-05, US-704, US-801..803, D-79), in review (PR #57): **School menus** from Meals: a school's Nutrislice menus (the district typed, the school and its menu picked from Nutrislice's list; adding fetches four weeks at once), a CSV file looked at before loading, or days typed in; a parent's own days are never replaced by the feed; the `menu_import` job daily over 28 days, a failed fetch keeping its menus and saying why; each child's school menu with their usual lunches, and a buy day showing it. Tests: pgTAP 360 (the done-when: four weeks from a file, and a failing feed keeping its cached days and its error; a parent's day surviving fetches, a dropped day removed, clearing handing a day back, the menu on a buy day, who may); unit (`lib/menu/menu`: Nutrislice's schools and weeks, files, the fetch and the job, on made-up menus; `menus`); the UI suite (`menus.spec`, `meals.spec`: the menu under a buy day); e2e (`menus.spec`: four weeks loaded from a file through the page, the job's code against a made-up Nutrislice that works, fails and works again, a parent's day kept, Maya's buy day showing her menu). |
 | 0.8.85 | WP-26 done (PR #56): approved by the owner and merged once CI and e2e were green on the preview (124 passed, no retries, on `45a9735`, and on `02cae73` before main was merged in; the done-when: pgTAP 350 across a break week, and in `meals.spec` a usual week set and a day changed and changed back). The user guide says how (version 0.10, A15, B1.15, B3). |
 | 0.8.84 | WP-26 lunch buy or bring (MEAL-04, US-703, D-78), in review (PR #56): each child's usual lunch Monday to Friday and a school day changed, on the Meals page; only school days have a lunch, by the child's own day type. Tests: pgTAP 350 (the done-when: the effective mode across a break week, a child on another school's year, a change and its undoing, new usuals clearing matching changes, who may); unit (`lunch`); the UI suite (`meals.spec`: the lunch table and the usual week); e2e (`meals.spec`: a usual week set, a day changed and changed back). |
 | 0.8.83 | WP-25 done (PR #55): approved by the owner and merged once CI and e2e were green on the preview (123 passed, no retries, on `f63e95e`; the done-when in `meals.spec`: a meal added to the library, a dinner planned every day of a week and two snacks put in order, the week copied on keeping and then replacing what was planned, and a copy removed without touching the original). The user guide says how (version 0.9, A15, B1.15, B3, B7). |

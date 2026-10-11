@@ -327,3 +327,29 @@ insert into public.member_lunch (member_id, household_id, defaults)
 select m.id, m.household_id, case m.display_name when 'Leo' then '{"wed": "buy"}' else '{"fri": "buy"}' end::jsonb
   from public.member m
  where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name in ('Leo', 'Maya');
+
+-- [MENU-01][MENU-03][MEAL-05] School menus (WP-27): a made-up school's lunch menu from a file, the next
+-- four weeks of weekdays, five lunches in turn; Leo's and Maya's lunch comes from it. No real school's
+-- menu or identifiers (NFR-05).
+do $$
+declare
+  v_demo  uuid := '0de00000-0000-4000-8000-000000000001';
+  v_today date := private.household_today(v_demo);
+  v_src   uuid := '0de00000-0000-4000-8000-000000073001';
+begin
+  insert into public.menu_source (id, household_id, name, adapter, status)
+  values (v_src, v_demo, 'Maple Elementary', 'csv', 'ok');
+  insert into public.school_menu_day (household_id, source_id, menu_date, items, origin, is_override)
+  select v_demo, v_src, d::date,
+         (array['[{"name": "Chicken Nuggets"}, {"name": "Carrot Sticks"}, {"name": "Apple"}]',
+                '[{"name": "Cheese Pizza"}, {"name": "Green Beans"}, {"name": "Milk"}]',
+                '[{"name": "Beef Tacos"}, {"name": "Corn"}, {"name": "Orange"}]',
+                '[{"name": "Spaghetti"}, {"name": "Garlic Bread"}, {"name": "Pear"}]',
+                '[{"name": "Fish Tacos"}, {"name": "Rice"}, {"name": "Banana"}]'])[extract(isodow from d)::int]::jsonb,
+         'csv', true
+    from generate_series(v_today, v_today + 27, interval '1 day') d
+   where extract(isodow from d) < 6;
+  update public.member_lunch l set menu_source_id = v_src
+    from public.member m
+   where m.id = l.member_id and m.household_id = v_demo and m.display_name in ('Leo', 'Maya');
+end $$;

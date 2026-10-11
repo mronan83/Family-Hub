@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.49: school menus (WP-27, D-79): the Nutrislice adapter, a CSV file and days typed in; the `menu_import` job daily over 28 days; a parent's days never replaced; a failed fetch keeps its menus (§5.5, §5.6).
 > v0.8.48: school lunch (WP-26, D-78): buy or bring per child and school day, through `set_lunch()`, `set_lunch_defaults()` and `lunch_week()`.
 > v0.8.47: meal planning (WP-25, D-77): the admin app's Meals page and meal library, through RLS and `add_meal_entry()`, `move_meal_entry()`, `copy_meal_week()`.
 > v0.8.46: goal payouts and the preview of a change (WP-39, D-75): `save_goal_evaluation()` pays an achievement in the same transaction and undoes it when the goal is undone (§6.2, §8); the goal form's Preview reads `goal_preview_facts()` and runs the engine without saving.
@@ -376,6 +377,13 @@ sequenceDiagram
 - `https://{district}.api.nutrislice.com/menu/api/weeks/school/{school}/menu-type/{type}/{yyyy}/{mm}/{dd}/` returns one Sunday-to-Saturday week: `days[].menu_items[]`, where section titles (`is_section_title`) group entrées and sides, `food.name` is the item, and `is_holiday` marks closures. A week is about 250 KB, mostly nutrition data the adapter discards; a 28-day refresh is four requests.
 - `menu_source.config` for this adapter is `{district, school, menu_type}`. The household's actual identifiers are entered in the admin portal and are kept out of the repo and fixtures (NFR-05).
 
+**As built (WP-27, D-79).** `lib/menu/nutrislice.ts` (the addresses, the schools list, a week's days: items under their section titles, a holiday item as no lunch with its text), `lib/menu/csv.ts` (a file: `date`, `item`, optional `section`, a row per item; a date with no item is no lunch) and `lib/menu/import.ts` (the fetch); the database side is `20261011090000_school_menus.sql` (`02` §3.6).
+
+- **Picked, not typed.** On School menus a parent types their district, or pastes their menu's address; **Find the schools** reads `…/menu/api/schools/` and offers each school's menus to pick. Adding the feed fetches it at once as the parent (`save_menu_fetch()` accepts a household's admins as well as the job), so they see its first weeks or what's wrong.
+- **The job.** `menu_import` daily at 10:29 UTC: for each household, `menu_sources_due()` (service role only) lists the feeds not tried for 20 hours. Each fetches the Sunday-to-Saturday weeks covering today to 27 days on (15 s and 4 MB at most each), hashes the window's first day and the days, and skips writing when the hash matches; otherwise `save_menu_fetch()` locks the source, upserts each day unless it is a parent's own, removes the feed's days in the window it no longer has, drops days over 60 days old, and records the success. A failure records only the status and error (MENU-04).
+- **A parent's days.** `save_menu_days()` stores a file's days or one typed in as the parent's own (`is_override`); `clear_menu_day()` removes one, and on a feed clears the hash so the next fetch fills it in again.
+- **Tests.** Unit (`lib/menu/menu.test.ts` on made-up Nutrislice weeks and files; `menus.test.ts`), pgTAP `360_school_menus` (31), the UI suite on `/dev/menus`, and e2e: four weeks of a made-up file loaded on the preview, then the job's own code on the e2e runner against a made-up Nutrislice that works, fails, and works again (`menus.spec.ts`).
+
 ### 5.6 Background jobs
 
 | Job | Cadence | Target | Notes |
@@ -384,7 +392,7 @@ sequenceDiagram
 | `purge_history` | daily 03:43 UTC (SQL, no call) | — | deletes cron run history after 7 days, `job_run` after 90, `private.app_error` after 30 |
 | `calendar_sync` | every 15 min (minutes 3, 18, 33, 48) | `/api/jobs/calendar-sync` | each household's calendars due, one at a time (`calendar_sources_due()`); storing locks the calendar's row; a calendar whose link fails keeps its last good events and its own error, and the run stays `ok` (D-63, §5.4) |
 | `weather` | every 30 min (minutes 9, 39) | `/api/jobs/weather` | each household with a place: Open-Meteo's forecast for it (now, today's high and low, in the household's zone and unit; 10 s at most) through `save_weather()`; a failed read is the reading's own state (the boards stop showing it, Home says why) and the run stays `ok`; no place: `skipped` (WP-45, D-69) |
-| `menu_import` | daily | `/api/jobs/menu-import` | window 28 days ahead; skips override rows |
+| `menu_import` | daily 10:29 UTC | `/api/jobs/menu-import` | each household's Nutrislice feeds not tried for 20 hours (`menu_sources_due()`), the next 28 days; a parent's own days are never replaced; a feed that fails keeps its days and its own error, and the run stays `ok`; no feed is `skipped` (D-79, §5.5) |
 | `occurrence_gen` | hourly (minute 23); edits re-plan at once in the database | `/api/jobs/occurrence-gen` | calls `generate_household_occurrences()`: tomorrow to 14 days ahead, one occurrence per item per due date, or per person for an item where everyone does their own (D-47) (`UNIQUE NULLS NOT DISTINCT (chore_id, due_date, member_id)` + `ON CONFLICT DO NOTHING`) with its `chore_occurrence_assignee` snapshot; idempotent. Triggers re-plan on edits (D-45): an item, its assignees or a member from today, in place; a school year, closure or school profile from tomorrow (D-24) |
 | `day_close` | hourly (minute 4; acts once a household's local day has ended) | `/api/jobs/day-close` | `close_household_day()` → `close_past_due()` marks unresolved routines `missed` and stamps `finalized_at` (tasks stay open, D-31); catches up every earlier day; idempotent (WP-10). Writing `member_daily_summary` and rebuilding `streak_segment` join it with WP-17; then the household's bonus rules are applied (`apply_points_rules()`, WP-30, D-57) |
 | `status_check` | daily 09:38 UTC | `/api/jobs/status-check` | `occurrence_status_drift()`: re-folds the past 14 days and the planned 14 ahead, and checks that each member holds exactly the points each of those occurrences owes them (WP-16), report-only; any drift fails the run, so System Health shows it (NFR-06, WP-10) |

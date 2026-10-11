@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.32: US-704 and US-801 to US-803 as built (WP-27, D-79): School menus from Nutrislice (picked), a file or typed in; a parent's days kept; a failing feed keeps its menus; a buy day shows the menu.
 > v0.8.31: US-703 as built (WP-26, D-78): school lunch, buy or bring, on Meals.
 > v0.8.30: US-701 and US-702 as built (WP-25, D-77): the week's meals and the meal library; copy last week, keeping or replacing what is planned.
 > v0.8.29: US-409 and US-406's preview as built (WP-39, D-75): goals pay points or a reward from the shop when reached, undone with the goal; Preview before saving a change.
@@ -501,6 +502,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P2 · **Reqs:** MEAL-05
 - Given Friday is "buy" and a menu exists, when I view Friday, then I see the school's lunch items.
 - Given no menu exists for that date, when I view it, then I see "Menu unavailable" and can enter it manually.
+- As built (WP-27, D-79): on **Meals**, a day a child buys shows what their school menu serves (or **No menu yet**); **School menus** has **Add a day** to write one in.
 
 ### US-705 — Kid sees what's for dinner
 **As a** kid **I want** to see today's meals on the board **so that** I know what's coming.
@@ -523,18 +525,21 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P2 · **Reqs:** MENU-01, MENU-02
 - Given I choose an adapter and enter school identifiers, when I test the connection, then I see a sample week.
 - Given my district's platform has no adapter, when I choose Manual/CSV, then planning still works fully.
+- As built (WP-27, D-79): **School menus** (from **Meals**): **Add a school menu** from **The school's Nutrislice menus** (type the district, **Find the schools**, pick the school and its menu; adding fetches its next four weeks at once), **A file**, or **Typed in**. Each child's **School menu** is chosen with their usual lunches.
 
 ### US-802 — Import or enter menus manually
 **As an** admin **I want** to upload a CSV or edit a day's menu **so that** I can always fix or fill in menus.
 **Priority:** Must · **Phase:** P2 · **Reqs:** MENU-03
 - Given a valid CSV, when I upload it, then days are created with origin `csv` and a preview before commit.
 - Given I edit a day's items, when I save, then it is flagged `is_override` and later adapter imports do not replace it.
+- As built (WP-27, D-79): **Load a file**, **Look at the file** (how many days, from when to when, the first five), then **Load N days**. Each day's **Change** writes it in (a line an item; **No lunch that day** with a note); on a feed it is marked **Yours** and **Use Nutrislice's menu again** hands it back.
 
 ### US-803 — Survive broken feeds
 **As an** admin **I want** import failures surfaced and the last good menu kept **so that** lunch planning never breaks.
 **Priority:** Must · **Phase:** P2 · **Reqs:** MENU-04, MENU-05
 - Given the feed errors, when the daily import runs, then I see the error and last success time while the cached menu remains.
 - Given a daily schedule, when it runs, then it fetches the next 28 days and leaves override rows untouched.
+- As built (WP-27, D-79): a feed shows **Fetched** (when, and that it fetches every morning), **Not fetched yet**, or **Can't fetch** with why and when it last worked (its menus stay); **Fetch now** tries at once.
 
 ---
 
