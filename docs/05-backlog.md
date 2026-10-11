@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.62: fixes found while writing the user guide, in review (PR #48): a board's own layout kept on a second Save, Disconnect asks first, the idle return closes "Who did …?", the points form's help. No work package changes status.
 > v0.8.61: WP-35 done (PR #44): the family dashboard and the home screen's layout. WP-45 is ready.
 > v0.8.60: WP-35 in review (PR #44): the family dashboard and the home screen's layout (D-66, D-67). WP-45 (weather on the board, BRD-04) is split out of WP-35 and waits for it.
 > v0.8.59: WP-23 done (PR #43): calendar views and per-board selection. WP-35 is ready.

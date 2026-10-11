@@ -196,6 +196,22 @@ test('[BRD-07] cancelling the picker records nothing', async ({ page }) => {
   expect(await posts(page)).toHaveLength(0);
 });
 
+test('[BRD-06] an unanswered "Who did …?" closes with the return home, recording nothing', async ({
+  page,
+}) => {
+  await page.clock.install();
+  await chores(page);
+  await page.getByRole('button', { name: 'Check off Feed the dog' }).first().click();
+  await expect(page.getByRole('dialog', { name: 'Who did Feed the dog?' })).toBeVisible();
+  await page.clock.runFor(91_000);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(people(page).getByRole('button', { name: 'Home', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  expect(await posts(page)).toHaveLength(0);
+});
+
 test("[RWD-08][US-1006] a child's check-off celebrates; an adult's does not", async ({ page }) => {
   await chores(page);
   const everyone = page.getByRole('region', { name: 'Everyone today' });
