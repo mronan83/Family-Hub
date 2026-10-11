@@ -1,4 +1,4 @@
-// Client behavior shared by the five pages: search and chip filters, deep links that open and reveal
+// Client behavior shared by the pages: search and chip filters, deep links that open and reveal
 // their target, contents highlighting, expand/collapse, and hover cards for every linked ID.
 (() => {
   const $ = (s, r = document) => r.querySelector(s);

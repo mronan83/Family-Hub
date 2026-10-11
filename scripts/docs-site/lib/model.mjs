@@ -1,4 +1,4 @@
-// One model of the build docs (00–05) joined with what the repository contains. Pages render from it;
+// One model of the build docs (00–05, and the user guide 07) joined with what the repository contains. Pages render from it;
 // nothing here is hand-maintained, so the pages cannot drift from the markdown.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -91,6 +91,7 @@ export function loadModel(root) {
     stories: parseDoc(read('03-user-stories.md')),
     reqs: parseDoc(read('04-requirements-traceability.md')),
     backlog: parseDoc(read('05-backlog.md')),
+    guide: parseDoc(read('07-user-guide.md')),
   };
   const m = { src, git: gitInfo(root) };
 
