@@ -54,8 +54,7 @@ export function MenuFileForm({
           <ul className="fw-menu-days">
             {state.preview.sample.map((d) => (
               <li key={d.date}>
-                <span className="fw-menu-days__date">{dayName(d.date)}</span>{' '}
-                {menuWords(d)}
+                <span className="fw-menu-days__date">{dayName(d.date)}</span> {menuWords(d)}
               </li>
             ))}
           </ul>
