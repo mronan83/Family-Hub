@@ -3,8 +3,10 @@
 export const BRAND_NAME = 'FamilyWise';
 
 export { ICONS, ICON_NAMES, type IconName } from './generated/icons';
+export { ICON_GROUPS, ICON_INDEX } from './generated/icon-index';
 export { BRAND_COLORS } from './generated/colors';
 export { Icon, iconLabel, type IconProps } from './Icon';
+export { IconPicker, iconMatches, type IconPickerProps } from './IconPicker';
 export {
   Avatar,
   AVATAR_KEYS,

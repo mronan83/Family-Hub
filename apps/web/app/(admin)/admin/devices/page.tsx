@@ -245,7 +245,7 @@ export default async function DevicesPage({
                                     />
                                     <span
                                       className="fw-swatch fw-swatch--small"
-                                      style={{ background: `var(--${c.color})` }}
+                                      style={{ background: `var(--${c.color}-line)` }}
                                       aria-hidden
                                     />
                                     {c.name}

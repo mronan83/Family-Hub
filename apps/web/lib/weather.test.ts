@@ -218,6 +218,21 @@ describe('the sky', () => {
     ]);
     expect(skyFor(42, true).word).toBe('Cloudy');
   });
+
+  it('[BRD-04][D-70] each sky has its own icon from the larger set', () => {
+    expect([0, 2, 3, 45, 53, 63, 73, 81, 95].map((c) => skyFor(c, true).icon)).toEqual([
+      'sun',
+      'cloud-sun',
+      'cloudy',
+      'cloud-fog',
+      'cloud-drizzle',
+      'rain',
+      'cloud-snow',
+      'rain',
+      'cloud-lightning',
+    ]);
+    expect(skyFor(2, false).icon).toBe('cloud-moon');
+  });
 });
 
 describe('finding the place', () => {

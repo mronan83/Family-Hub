@@ -627,7 +627,10 @@
   "category": "chores",
   "keywords": [
    "trash",
-   "garbage"
+   "garbage",
+   "rubbish",
+   "bin",
+   "recycling"
   ],
   "file": "icons/chores/chore-bin.svg"
  },
@@ -657,7 +660,9 @@
   "keywords": [
    "pet",
    "paw",
-   "feed"
+   "feed",
+   "dog",
+   "cat"
   ],
   "file": "icons/chores/chore-pet.svg"
  },
@@ -739,7 +744,9 @@
   "category": "chores",
   "keywords": [
    "practice",
-   "music"
+   "music",
+   "song",
+   "instrument"
   ],
   "file": "icons/chores/chore-music.svg"
  },
@@ -760,5 +767,3257 @@
    "backpack"
   ],
   "file": "icons/chores/chore-pack.svg"
+ },
+ {
+  "name": "chore-vacuum",
+  "category": "chores",
+  "keywords": [
+   "vacuum",
+   "hoover",
+   "carpet",
+   "floor"
+  ],
+  "file": "icons/chores/chore-vacuum.svg"
+ },
+ {
+  "name": "chore-iron",
+  "category": "chores",
+  "keywords": [
+   "iron",
+   "ironing",
+   "clothes",
+   "press"
+  ],
+  "file": "icons/chores/chore-iron.svg"
+ },
+ {
+  "name": "bed-double",
+  "category": "home",
+  "keywords": [
+   "bed",
+   "make the bed",
+   "sleep",
+   "hotel",
+   "furniture"
+  ],
+  "file": "icons/lucide/bed-double.svg"
+ },
+ {
+  "name": "bed-single",
+  "category": "home",
+  "keywords": [
+   "bed",
+   "make the bed",
+   "bunk",
+   "sleep",
+   "hotel",
+   "furniture"
+  ],
+  "file": "icons/lucide/bed-single.svg"
+ },
+ {
+  "name": "bathtub",
+  "category": "home",
+  "keywords": [
+   "bathtub",
+   "bath",
+   "tub",
+   "wash",
+   "amenities",
+   "services",
+   "bathroom",
+   "shower"
+  ],
+  "file": "icons/lucide/bathtub.svg"
+ },
+ {
+  "name": "shower-head",
+  "category": "home",
+  "keywords": [
+   "shower",
+   "wash",
+   "bath",
+   "bathroom",
+   "amenities",
+   "services"
+  ],
+  "file": "icons/lucide/shower-head.svg"
+ },
+ {
+  "name": "toothbrush",
+  "category": "home",
+  "keywords": [
+   "teeth",
+   "brush",
+   "floss",
+   "dental care",
+   "oral hygiene",
+   "brushing",
+   "dentist",
+   "bathroom",
+   "toiletries",
+   "personal care",
+   "cleaning",
+   "bristles",
+   "handle",
+   "plaque",
+   "toothpaste",
+   "selfcare",
+   "grooming"
+  ],
+  "file": "icons/lucide/toothbrush.svg"
+ },
+ {
+  "name": "brush-cleaning",
+  "category": "home",
+  "keywords": [
+   "scrub",
+   "clean",
+   "toilet",
+   "cleaning",
+   "utensil",
+   "housekeeping",
+   "tool",
+   "sweeping",
+   "scrubbing",
+   "hygiene",
+   "maintenance",
+   "household",
+   "cleaner",
+   "chores",
+   "equipment",
+   "sanitation",
+   "bristles",
+   "handle",
+   "home care",
+   "sanitize",
+   "purify",
+   "wash",
+   "disinfect",
+   "sterilize",
+   "polish",
+   "decontaminate",
+   "wipe",
+   "spotless",
+   "remove",
+   "empty",
+   "erase",
+   "purge",
+   "eliminate"
+  ],
+  "file": "icons/lucide/brush-cleaning.svg"
+ },
+ {
+  "name": "spray-can",
+  "category": "home",
+  "keywords": [
+   "clean",
+   "wipe",
+   "spray",
+   "paint",
+   "color",
+   "graffiti",
+   "decoration",
+   "aerosol",
+   "deodorant",
+   "shaving foam",
+   "air freshener"
+  ],
+  "file": "icons/lucide/spray-can.svg"
+ },
+ {
+  "name": "washing-machine",
+  "category": "home",
+  "keywords": [
+   "laundry",
+   "washing",
+   "clothes",
+   "tumble dryer",
+   "amenities",
+   "electronics",
+   "cycle",
+   "rinse",
+   "spin",
+   "drum"
+  ],
+  "file": "icons/lucide/washing-machine.svg"
+ },
+ {
+  "name": "shirt",
+  "category": "home",
+  "keywords": [
+   "clothes",
+   "dress",
+   "uniform",
+   "fold",
+   "t-shirt",
+   "shopping",
+   "store",
+   "clothing"
+  ],
+  "file": "icons/lucide/shirt.svg"
+ },
+ {
+  "name": "recycle",
+  "category": "home",
+  "keywords": [
+   "recycling",
+   "bin",
+   "sustainability",
+   "salvage",
+   "arrows"
+  ],
+  "file": "icons/lucide/recycle.svg"
+ },
+ {
+  "name": "sofa",
+  "category": "home",
+  "keywords": [
+   "armchair",
+   "furniture",
+   "leisure",
+   "lounge",
+   "loveseat",
+   "couch"
+  ],
+  "file": "icons/lucide/sofa.svg"
+ },
+ {
+  "name": "lamp",
+  "category": "home",
+  "keywords": [
+   "lighting",
+   "household",
+   "home",
+   "furniture"
+  ],
+  "file": "icons/lucide/lamp.svg"
+ },
+ {
+  "name": "door-open",
+  "category": "home",
+  "keywords": [
+   "entrance",
+   "entry",
+   "exit",
+   "ingress",
+   "egress",
+   "gate",
+   "gateway",
+   "emergency exit"
+  ],
+  "file": "icons/lucide/door-open.svg"
+ },
+ {
+  "name": "key-round",
+  "category": "home",
+  "keywords": [
+   "password",
+   "login",
+   "authentication",
+   "secure",
+   "unlock"
+  ],
+  "file": "icons/lucide/key-round.svg"
+ },
+ {
+  "name": "paint-roller",
+  "category": "home",
+  "keywords": [
+   "brush",
+   "color",
+   "colour",
+   "decoration",
+   "diy"
+  ],
+  "file": "icons/lucide/paint-roller.svg"
+ },
+ {
+  "name": "hammer",
+  "category": "home",
+  "keywords": [
+   "mallet",
+   "nails",
+   "diy",
+   "toolbox",
+   "build",
+   "construction"
+  ],
+  "file": "icons/lucide/hammer.svg"
+ },
+ {
+  "name": "wrench",
+  "category": "home",
+  "keywords": [
+   "account",
+   "settings",
+   "spanner",
+   "diy",
+   "toolbox",
+   "build",
+   "construction"
+  ],
+  "file": "icons/lucide/wrench.svg"
+ },
+ {
+  "name": "drill",
+  "category": "home",
+  "keywords": [
+   "power",
+   "bit",
+   "head",
+   "hole",
+   "diy",
+   "toolbox",
+   "build",
+   "construction"
+  ],
+  "file": "icons/lucide/drill.svg"
+ },
+ {
+  "name": "lightbulb",
+  "category": "home",
+  "keywords": [
+   "idea",
+   "bright",
+   "lights"
+  ],
+  "file": "icons/lucide/lightbulb.svg"
+ },
+ {
+  "name": "plug",
+  "category": "home",
+  "keywords": [
+   "electricity",
+   "energy",
+   "electronics",
+   "socket",
+   "outlet",
+   "power",
+   "voltage",
+   "current",
+   "charger"
+  ],
+  "file": "icons/lucide/plug.svg"
+ },
+ {
+  "name": "package",
+  "category": "home",
+  "keywords": [
+   "box",
+   "container",
+   "storage",
+   "sealed",
+   "delivery",
+   "undelivered",
+   "unopened",
+   "packed",
+   "archive",
+   "zip",
+   "module"
+  ],
+  "file": "icons/lucide/package.svg"
+ },
+ {
+  "name": "boxes",
+  "category": "home",
+  "keywords": [
+   "cubes",
+   "packages",
+   "parts",
+   "group",
+   "units",
+   "collection",
+   "cluster",
+   "geometry"
+  ],
+  "file": "icons/lucide/boxes.svg"
+ },
+ {
+  "name": "archive",
+  "category": "home",
+  "keywords": [
+   "index",
+   "backup",
+   "box",
+   "storage",
+   "records"
+  ],
+  "file": "icons/lucide/archive.svg"
+ },
+ {
+  "name": "house",
+  "category": "home",
+  "keywords": [
+   "home",
+   "living",
+   "building",
+   "residence",
+   "architecture"
+  ],
+  "file": "icons/lucide/house.svg"
+ },
+ {
+  "name": "fence",
+  "category": "home",
+  "keywords": [
+   "picket",
+   "panels",
+   "woodwork",
+   "diy",
+   "materials",
+   "suburban",
+   "garden",
+   "property",
+   "territory"
+  ],
+  "file": "icons/lucide/fence.svg"
+ },
+ {
+  "name": "car",
+  "category": "home",
+  "keywords": [
+   "drive",
+   "school run",
+   "wash the car",
+   "vehicle",
+   "trip",
+   "journey"
+  ],
+  "file": "icons/lucide/car.svg"
+ },
+ {
+  "name": "droplets",
+  "category": "home",
+  "keywords": [
+   "water",
+   "weather",
+   "liquid",
+   "fluid",
+   "wet",
+   "moisture",
+   "damp",
+   "bead",
+   "globule"
+  ],
+  "file": "icons/lucide/droplets.svg"
+ },
+ {
+  "name": "utensils-crossed",
+  "category": "kitchen",
+  "keywords": [
+   "dinner",
+   "meal",
+   "eat",
+   "fork",
+   "knife",
+   "cutlery",
+   "flatware",
+   "tableware",
+   "silverware",
+   "food",
+   "restaurant",
+   "breakfast",
+   "supper"
+  ],
+  "file": "icons/lucide/utensils-crossed.svg"
+ },
+ {
+  "name": "cooking-pot",
+  "category": "kitchen",
+  "keywords": [
+   "cook",
+   "dinner",
+   "meal",
+   "pod",
+   "cooking",
+   "recipe",
+   "food",
+   "kitchen",
+   "chef",
+   "restaurant",
+   "lunch",
+   "breakfast",
+   "eat"
+  ],
+  "file": "icons/lucide/cooking-pot.svg"
+ },
+ {
+  "name": "chef-hat",
+  "category": "kitchen",
+  "keywords": [
+   "cook",
+   "bake",
+   "chef",
+   "cooking",
+   "food",
+   "kitchen",
+   "restaurant"
+  ],
+  "file": "icons/lucide/chef-hat.svg"
+ },
+ {
+  "name": "soup",
+  "category": "kitchen",
+  "keywords": [
+   "food",
+   "dish",
+   "restaurant",
+   "course",
+   "meal",
+   "bowl",
+   "starter"
+  ],
+  "file": "icons/lucide/soup.svg"
+ },
+ {
+  "name": "salad",
+  "category": "kitchen",
+  "keywords": [
+   "food",
+   "vegetarian",
+   "dish",
+   "restaurant",
+   "course",
+   "meal",
+   "side",
+   "vegetables",
+   "health"
+  ],
+  "file": "icons/lucide/salad.svg"
+ },
+ {
+  "name": "sandwich",
+  "category": "kitchen",
+  "keywords": [
+   "food",
+   "snack",
+   "dish",
+   "restaurant",
+   "lunch",
+   "meal"
+  ],
+  "file": "icons/lucide/sandwich.svg"
+ },
+ {
+  "name": "pizza",
+  "category": "kitchen",
+  "keywords": [
+   "pie",
+   "quiche",
+   "food"
+  ],
+  "file": "icons/lucide/pizza.svg"
+ },
+ {
+  "name": "egg-fried",
+  "category": "kitchen",
+  "keywords": [
+   "food",
+   "breakfast"
+  ],
+  "file": "icons/lucide/egg-fried.svg"
+ },
+ {
+  "name": "croissant",
+  "category": "kitchen",
+  "keywords": [
+   "bakery",
+   "cooking",
+   "food",
+   "pastry"
+  ],
+  "file": "icons/lucide/croissant.svg"
+ },
+ {
+  "name": "coffee",
+  "category": "kitchen",
+  "keywords": [
+   "drink",
+   "cup",
+   "mug",
+   "tea",
+   "cafe",
+   "hot",
+   "beverage"
+  ],
+  "file": "icons/lucide/coffee.svg"
+ },
+ {
+  "name": "milk",
+  "category": "kitchen",
+  "keywords": [
+   "lactose",
+   "bottle",
+   "beverage",
+   "drink",
+   "water",
+   "diet"
+  ],
+  "file": "icons/lucide/milk.svg"
+ },
+ {
+  "name": "glass-water",
+  "category": "kitchen",
+  "keywords": [
+   "drink",
+   "water",
+   "beverage",
+   "glass"
+  ],
+  "file": "icons/lucide/glass-water.svg"
+ },
+ {
+  "name": "apple",
+  "category": "kitchen",
+  "keywords": [
+   "snack",
+   "fruit",
+   "healthy",
+   "food",
+   "nutrition",
+   "fresh",
+   "produce",
+   "grocery",
+   "organic",
+   "harvest",
+   "vitamin",
+   "red",
+   "green",
+   "juicy",
+   "sweet",
+   "tart",
+   "bite",
+   "orchard",
+   "plant",
+   "core",
+   "raw",
+   "diet"
+  ],
+  "file": "icons/lucide/apple.svg"
+ },
+ {
+  "name": "carrot",
+  "category": "kitchen",
+  "keywords": [
+   "orange",
+   "healthy",
+   "nature",
+   "fresh",
+   "root",
+   "produce",
+   "organic",
+   "nutrition",
+   "vegetable",
+   "food",
+   "eat"
+  ],
+  "file": "icons/lucide/carrot.svg"
+ },
+ {
+  "name": "banana",
+  "category": "kitchen",
+  "keywords": [
+   "fruit",
+   "food"
+  ],
+  "file": "icons/lucide/banana.svg"
+ },
+ {
+  "name": "cherry",
+  "category": "kitchen",
+  "keywords": [
+   "fruit",
+   "food"
+  ],
+  "file": "icons/lucide/cherry.svg"
+ },
+ {
+  "name": "grape",
+  "category": "kitchen",
+  "keywords": [
+   "fruit",
+   "wine",
+   "food"
+  ],
+  "file": "icons/lucide/grape.svg"
+ },
+ {
+  "name": "citrus",
+  "category": "kitchen",
+  "keywords": [
+   "lemon",
+   "orange",
+   "grapefruit",
+   "fruit"
+  ],
+  "file": "icons/lucide/citrus.svg"
+ },
+ {
+  "name": "wheat",
+  "category": "kitchen",
+  "keywords": [
+   "corn",
+   "cereal",
+   "grain",
+   "gluten"
+  ],
+  "file": "icons/lucide/wheat.svg"
+ },
+ {
+  "name": "beef",
+  "category": "kitchen",
+  "keywords": [
+   "food",
+   "dish",
+   "restaurant",
+   "course",
+   "meal",
+   "meat",
+   "bbq",
+   "steak"
+  ],
+  "file": "icons/lucide/beef.svg"
+ },
+ {
+  "name": "drumstick",
+  "category": "kitchen",
+  "keywords": [
+   "food",
+   "chicken",
+   "meat"
+  ],
+  "file": "icons/lucide/drumstick.svg"
+ },
+ {
+  "name": "fish",
+  "category": "kitchen",
+  "keywords": [
+   "feed",
+   "tank",
+   "pet",
+   "dish",
+   "restaurant",
+   "course",
+   "meal",
+   "seafood",
+   "sea",
+   "marine"
+  ],
+  "file": "icons/lucide/fish.svg"
+ },
+ {
+  "name": "cookie",
+  "category": "kitchen",
+  "keywords": [
+   "biscuit",
+   "snack",
+   "dessert",
+   "food",
+   "sweet",
+   "bakery",
+   "consent",
+   "privacy",
+   "legal",
+   "tracking",
+   "browser",
+   "website"
+  ],
+  "file": "icons/lucide/cookie.svg"
+ },
+ {
+  "name": "cake-slice",
+  "category": "kitchen",
+  "keywords": [
+   "birthday",
+   "birthdate",
+   "celebration",
+   "party",
+   "surprise",
+   "gateaux",
+   "dessert",
+   "candles",
+   "wish",
+   "fondant",
+   "icing sugar",
+   "sweet",
+   "baking"
+  ],
+  "file": "icons/lucide/cake-slice.svg"
+ },
+ {
+  "name": "ice-cream-cone",
+  "category": "kitchen",
+  "keywords": [
+   "gelato",
+   "food"
+  ],
+  "file": "icons/lucide/ice-cream-cone.svg"
+ },
+ {
+  "name": "candy",
+  "category": "kitchen",
+  "keywords": [
+   "sugar",
+   "food",
+   "sweet"
+  ],
+  "file": "icons/lucide/candy.svg"
+ },
+ {
+  "name": "popcorn",
+  "category": "kitchen",
+  "keywords": [
+   "cinema",
+   "movies",
+   "films",
+   "salted",
+   "sweet",
+   "sugar",
+   "candy",
+   "snack"
+  ],
+  "file": "icons/lucide/popcorn.svg"
+ },
+ {
+  "name": "cup-soda",
+  "category": "kitchen",
+  "keywords": [
+   "beverage",
+   "cup",
+   "drink",
+   "soda",
+   "straw",
+   "water"
+  ],
+  "file": "icons/lucide/cup-soda.svg"
+ },
+ {
+  "name": "refrigerator",
+  "category": "kitchen",
+  "keywords": [
+   "frigerator",
+   "fridge",
+   "freezer",
+   "cooler",
+   "icebox",
+   "chiller",
+   "cold storage"
+  ],
+  "file": "icons/lucide/refrigerator.svg"
+ },
+ {
+  "name": "microwave",
+  "category": "kitchen",
+  "keywords": [
+   "oven",
+   "cooker",
+   "toaster oven",
+   "bake"
+  ],
+  "file": "icons/lucide/microwave.svg"
+ },
+ {
+  "name": "dog",
+  "category": "pets",
+  "keywords": [
+   "walk",
+   "feed",
+   "pet",
+   "animal",
+   "puppy",
+   "hound",
+   "canine"
+  ],
+  "file": "icons/lucide/dog.svg"
+ },
+ {
+  "name": "cat",
+  "category": "pets",
+  "keywords": [
+   "feed",
+   "litter",
+   "pet",
+   "animal",
+   "kitten",
+   "feline"
+  ],
+  "file": "icons/lucide/cat.svg"
+ },
+ {
+  "name": "bird",
+  "category": "pets",
+  "keywords": [
+   "peace",
+   "freedom",
+   "wing",
+   "avian",
+   "tweet"
+  ],
+  "file": "icons/lucide/bird.svg"
+ },
+ {
+  "name": "rabbit",
+  "category": "pets",
+  "keywords": [
+   "animal",
+   "rodent",
+   "pet",
+   "pest",
+   "bunny",
+   "hare",
+   "fast",
+   "speed",
+   "hop"
+  ],
+  "file": "icons/lucide/rabbit.svg"
+ },
+ {
+  "name": "squirrel",
+  "category": "pets",
+  "keywords": [
+   "animal",
+   "rodent",
+   "pet",
+   "pest",
+   "nuts",
+   "retrieve",
+   "updates",
+   "storage",
+   "stash"
+  ],
+  "file": "icons/lucide/squirrel.svg"
+ },
+ {
+  "name": "turtle",
+  "category": "pets",
+  "keywords": [
+   "animal",
+   "pet",
+   "tortoise",
+   "slow",
+   "speed"
+  ],
+  "file": "icons/lucide/turtle.svg"
+ },
+ {
+  "name": "paw-print",
+  "category": "pets",
+  "keywords": [
+   "pet",
+   "animal",
+   "pets",
+   "vets",
+   "veterinarian",
+   "domesticated",
+   "cat",
+   "dog",
+   "bear"
+  ],
+  "file": "icons/lucide/paw-print.svg"
+ },
+ {
+  "name": "bone",
+  "category": "pets",
+  "keywords": [
+   "health",
+   "skeleton",
+   "skull",
+   "death",
+   "pets",
+   "dog"
+  ],
+  "file": "icons/lucide/bone.svg"
+ },
+ {
+  "name": "egg",
+  "category": "pets",
+  "keywords": [
+   "bird",
+   "chicken",
+   "nest",
+   "hatch",
+   "shell",
+   "incubate",
+   "soft boiled",
+   "hard",
+   "breakfast",
+   "brunch",
+   "morning",
+   "easter"
+  ],
+  "file": "icons/lucide/egg.svg"
+ },
+ {
+  "name": "sprout",
+  "category": "pets",
+  "keywords": [
+   "water",
+   "plants",
+   "garden",
+   "eco",
+   "green",
+   "growth",
+   "leaf",
+   "nature",
+   "plant",
+   "seed",
+   "spring",
+   "sustainability"
+  ],
+  "file": "icons/lucide/sprout.svg"
+ },
+ {
+  "name": "leaf",
+  "category": "pets",
+  "keywords": [
+   "sustainability",
+   "nature",
+   "energy",
+   "plant",
+   "autumn"
+  ],
+  "file": "icons/lucide/leaf.svg"
+ },
+ {
+  "name": "flower",
+  "category": "pets",
+  "keywords": [
+   "garden",
+   "water",
+   "sustainability",
+   "nature",
+   "plant",
+   "spring"
+  ],
+  "file": "icons/lucide/flower.svg"
+ },
+ {
+  "name": "daisy",
+  "category": "pets",
+  "keywords": [
+   "daisy",
+   "flower",
+   "garden",
+   "sustainability",
+   "nature",
+   "plant"
+  ],
+  "file": "icons/lucide/daisy.svg"
+ },
+ {
+  "name": "trees",
+  "category": "pets",
+  "keywords": [
+   "tree",
+   "forest",
+   "park",
+   "nature"
+  ],
+  "file": "icons/lucide/trees.svg"
+ },
+ {
+  "name": "tree-deciduous",
+  "category": "pets",
+  "keywords": [
+   "tree",
+   "forest",
+   "park",
+   "nature"
+  ],
+  "file": "icons/lucide/tree-deciduous.svg"
+ },
+ {
+  "name": "shovel",
+  "category": "pets",
+  "keywords": [
+   "dig",
+   "garden",
+   "snow",
+   "spade",
+   "treasure"
+  ],
+  "file": "icons/lucide/shovel.svg"
+ },
+ {
+  "name": "bug",
+  "category": "pets",
+  "keywords": [
+   "issue",
+   "error",
+   "defect",
+   "testing",
+   "troubleshoot",
+   "problem",
+   "report",
+   "debug",
+   "code",
+   "insect",
+   "beetle"
+  ],
+  "file": "icons/lucide/bug.svg"
+ },
+ {
+  "name": "snail",
+  "category": "pets",
+  "keywords": [
+   "animal",
+   "insect",
+   "slow",
+   "speed",
+   "delicacy",
+   "spiral"
+  ],
+  "file": "icons/lucide/snail.svg"
+ },
+ {
+  "name": "smile",
+  "category": "health",
+  "keywords": [],
+  "file": "icons/lucide/smile.svg"
+ },
+ {
+  "name": "heart",
+  "category": "health",
+  "keywords": [
+   "like",
+   "love",
+   "emotion",
+   "suit",
+   "playing",
+   "cards"
+  ],
+  "file": "icons/lucide/heart.svg"
+ },
+ {
+  "name": "heart-pulse",
+  "category": "health",
+  "keywords": [
+   "heartbeat",
+   "pulse",
+   "health",
+   "medical",
+   "blood pressure",
+   "cardiac",
+   "systole",
+   "diastole"
+  ],
+  "file": "icons/lucide/heart-pulse.svg"
+ },
+ {
+  "name": "pill",
+  "category": "health",
+  "keywords": [
+   "medicine",
+   "vitamins",
+   "medication",
+   "drug",
+   "prescription",
+   "tablet",
+   "pharmacy"
+  ],
+  "file": "icons/lucide/pill.svg"
+ },
+ {
+  "name": "stethoscope",
+  "category": "health",
+  "keywords": [
+   "phonendoscope",
+   "medical",
+   "heart",
+   "lungs",
+   "sound"
+  ],
+  "file": "icons/lucide/stethoscope.svg"
+ },
+ {
+  "name": "bandage",
+  "category": "health",
+  "keywords": [
+   "plaster",
+   "band-aid",
+   "first aid",
+   "medical",
+   "health",
+   "wound",
+   "injury",
+   "care",
+   "treatment",
+   "healing",
+   "protection",
+   "emergency",
+   "aid",
+   "safety",
+   "patch"
+  ],
+  "file": "icons/lucide/bandage.svg"
+ },
+ {
+  "name": "thermometer",
+  "category": "health",
+  "keywords": [
+   "temperature",
+   "celsius",
+   "fahrenheit",
+   "weather"
+  ],
+  "file": "icons/lucide/thermometer.svg"
+ },
+ {
+  "name": "syringe",
+  "category": "health",
+  "keywords": [
+   "medicine",
+   "medical",
+   "needle",
+   "pump",
+   "plunger",
+   "nozzle",
+   "blood"
+  ],
+  "file": "icons/lucide/syringe.svg"
+ },
+ {
+  "name": "activity",
+  "category": "health",
+  "keywords": [
+   "pulse",
+   "action",
+   "motion",
+   "movement",
+   "exercise",
+   "fitness",
+   "healthcare",
+   "heart rate monitor",
+   "vital signs",
+   "vitals",
+   "emergency room",
+   "er",
+   "intensive care",
+   "hospital",
+   "defibrillator",
+   "earthquake",
+   "seismic",
+   "magnitude",
+   "richter scale",
+   "aftershock",
+   "tremor",
+   "shockwave",
+   "audio",
+   "waveform",
+   "synthesizer",
+   "synthesiser",
+   "music"
+  ],
+  "file": "icons/lucide/activity.svg"
+ },
+ {
+  "name": "dumbbell",
+  "category": "health",
+  "keywords": [
+   "barbell",
+   "weight",
+   "workout",
+   "gym"
+  ],
+  "file": "icons/lucide/dumbbell.svg"
+ },
+ {
+  "name": "footprints",
+  "category": "health",
+  "keywords": [
+   "steps",
+   "walking",
+   "foot",
+   "feet",
+   "trail",
+   "shoe"
+  ],
+  "file": "icons/lucide/footprints.svg"
+ },
+ {
+  "name": "person-standing",
+  "category": "health",
+  "keywords": [
+   "people",
+   "human",
+   "accessibility",
+   "stick figure"
+  ],
+  "file": "icons/lucide/person-standing.svg"
+ },
+ {
+  "name": "alarm-clock",
+  "category": "health",
+  "keywords": [
+   "morning"
+  ],
+  "file": "icons/lucide/alarm-clock.svg"
+ },
+ {
+  "name": "moon-star",
+  "category": "health",
+  "keywords": [
+   "dark",
+   "night",
+   "star"
+  ],
+  "file": "icons/lucide/moon-star.svg"
+ },
+ {
+  "name": "glasses",
+  "category": "health",
+  "keywords": [
+   "glasses",
+   "spectacles"
+  ],
+  "file": "icons/lucide/glasses.svg"
+ },
+ {
+  "name": "scissors",
+  "category": "health",
+  "keywords": [
+   "cut",
+   "snip",
+   "chop",
+   "stationery",
+   "crafts"
+  ],
+  "file": "icons/lucide/scissors.svg"
+ },
+ {
+  "name": "hand-heart",
+  "category": "health",
+  "keywords": [
+   "love",
+   "like",
+   "emotion"
+  ],
+  "file": "icons/lucide/hand-heart.svg"
+ },
+ {
+  "name": "brain",
+  "category": "health",
+  "keywords": [
+   "medical",
+   "mind",
+   "mental",
+   "intellect",
+   "cerebral",
+   "consciousness",
+   "genius",
+   "artificial intelligence",
+   "ai",
+   "think",
+   "thought",
+   "insight",
+   "intelligent",
+   "smart"
+  ],
+  "file": "icons/lucide/brain.svg"
+ },
+ {
+  "name": "baby",
+  "category": "health",
+  "keywords": [
+   "child",
+   "childproof",
+   "children"
+  ],
+  "file": "icons/lucide/baby.svg"
+ },
+ {
+  "name": "book-open",
+  "category": "school",
+  "keywords": [
+   "read",
+   "reading",
+   "pages",
+   "booklet",
+   "magazine",
+   "leaflet",
+   "pamphlet",
+   "library",
+   "writing",
+   "written",
+   "writer",
+   "author",
+   "story",
+   "script",
+   "screenplay",
+   "fiction",
+   "novel",
+   "information",
+   "knowledge",
+   "education",
+   "high school",
+   "university",
+   "college",
+   "academy",
+   "student",
+   "study",
+   "learning",
+   "homework",
+   "research",
+   "documentation",
+   "revealed",
+   "blank",
+   "plain"
+  ],
+  "file": "icons/lucide/book-open.svg"
+ },
+ {
+  "name": "book",
+  "category": "school",
+  "keywords": [
+   "reading",
+   "paperback",
+   "booklet",
+   "magazine",
+   "leaflet",
+   "pamphlet",
+   "tome",
+   "library",
+   "writing",
+   "written",
+   "writer",
+   "author",
+   "story",
+   "script",
+   "fiction",
+   "novel",
+   "information",
+   "knowledge",
+   "education",
+   "high school",
+   "university",
+   "college",
+   "academy",
+   "student",
+   "study",
+   "learning",
+   "homework",
+   "research",
+   "documentation"
+  ],
+  "file": "icons/lucide/book.svg"
+ },
+ {
+  "name": "library",
+  "category": "school",
+  "keywords": [
+   "books",
+   "reading",
+   "written",
+   "authors",
+   "stories",
+   "fiction",
+   "novels",
+   "information",
+   "knowledge",
+   "education",
+   "high school",
+   "university",
+   "college",
+   "academy",
+   "learning",
+   "study",
+   "research",
+   "collection",
+   "vinyl",
+   "records",
+   "albums",
+   "music",
+   "package"
+  ],
+  "file": "icons/lucide/library.svg"
+ },
+ {
+  "name": "notebook-pen",
+  "category": "school",
+  "keywords": [
+   "homework",
+   "journal",
+   "write",
+   "pencil",
+   "notepad",
+   "notes",
+   "noted",
+   "stationery",
+   "sketchbook",
+   "organizer",
+   "organiser",
+   "planner",
+   "diary",
+   "writing",
+   "written",
+   "reading",
+   "high school",
+   "university",
+   "college",
+   "academy",
+   "student",
+   "study",
+   "research",
+   "eraser",
+   "rubber"
+  ],
+  "file": "icons/lucide/notebook-pen.svg"
+ },
+ {
+  "name": "pencil",
+  "category": "school",
+  "keywords": [
+   "write",
+   "homework",
+   "rubber",
+   "edit",
+   "create",
+   "draw",
+   "sketch",
+   "draft",
+   "writer",
+   "writing",
+   "stationery",
+   "artist"
+  ],
+  "file": "icons/lucide/pencil.svg"
+ },
+ {
+  "name": "pen-line",
+  "category": "school",
+  "keywords": [
+   "pencil",
+   "change",
+   "create",
+   "draw",
+   "writer",
+   "writing",
+   "biro",
+   "ink",
+   "marker",
+   "felt tip",
+   "stationery",
+   "artist"
+  ],
+  "file": "icons/lucide/pen-line.svg"
+ },
+ {
+  "name": "ruler",
+  "category": "school",
+  "keywords": [
+   "measurements",
+   "centimeters",
+   "cm",
+   "millimeters",
+   "mm",
+   "metre",
+   "foot",
+   "feet",
+   "inches",
+   "units",
+   "size",
+   "length",
+   "width",
+   "height",
+   "dimensions",
+   "depth",
+   "breadth",
+   "extent",
+   "stationery"
+  ],
+  "file": "icons/lucide/ruler.svg"
+ },
+ {
+  "name": "calculator",
+  "category": "school",
+  "keywords": [
+   "maths",
+   "math",
+   "homework",
+   "count",
+   "calculating machine"
+  ],
+  "file": "icons/lucide/calculator.svg"
+ },
+ {
+  "name": "graduation-cap",
+  "category": "school",
+  "keywords": [
+   "school",
+   "university",
+   "learn",
+   "study",
+   "mortarboard",
+   "education",
+   "ceremony",
+   "academic",
+   "hat",
+   "diploma",
+   "bachelors",
+   "masters",
+   "doctorate"
+  ],
+  "file": "icons/lucide/graduation-cap.svg"
+ },
+ {
+  "name": "school",
+  "category": "school",
+  "keywords": [
+   "building",
+   "education",
+   "childhood",
+   "university",
+   "learning",
+   "campus",
+   "scholar",
+   "student",
+   "lecture",
+   "degree",
+   "course",
+   "academia",
+   "study",
+   "knowledge",
+   "classroom",
+   "research",
+   "diploma",
+   "graduation",
+   "professor",
+   "tutorial",
+   "homework",
+   "assignment",
+   "exam"
+  ],
+  "file": "icons/lucide/school.svg"
+ },
+ {
+  "name": "globe",
+  "category": "school",
+  "keywords": [
+   "world",
+   "browser",
+   "language",
+   "translate"
+  ],
+  "file": "icons/lucide/globe.svg"
+ },
+ {
+  "name": "microscope",
+  "category": "school",
+  "keywords": [
+   "medical",
+   "education",
+   "science",
+   "imaging",
+   "research"
+  ],
+  "file": "icons/lucide/microscope.svg"
+ },
+ {
+  "name": "flask-conical",
+  "category": "school",
+  "keywords": [
+   "beaker",
+   "erlenmeyer",
+   "lab",
+   "chemistry",
+   "experiment",
+   "test"
+  ],
+  "file": "icons/lucide/flask-conical.svg"
+ },
+ {
+  "name": "atom",
+  "category": "school",
+  "keywords": [
+   "atomic",
+   "nuclear",
+   "physics",
+   "particle",
+   "element",
+   "molecule",
+   "electricity",
+   "energy",
+   "chemistry"
+  ],
+  "file": "icons/lucide/atom.svg"
+ },
+ {
+  "name": "languages",
+  "category": "school",
+  "keywords": [
+   "translate"
+  ],
+  "file": "icons/lucide/languages.svg"
+ },
+ {
+  "name": "puzzle",
+  "category": "school",
+  "keywords": [
+   "component",
+   "module",
+   "part",
+   "piece"
+  ],
+  "file": "icons/lucide/puzzle.svg"
+ },
+ {
+  "name": "clipboard-list",
+  "category": "school",
+  "keywords": [
+   "copy",
+   "paste",
+   "tasks"
+  ],
+  "file": "icons/lucide/clipboard-list.svg"
+ },
+ {
+  "name": "presentation",
+  "category": "school",
+  "keywords": [
+   "screen",
+   "whiteboard",
+   "marker pens",
+   "markers",
+   "blackboard",
+   "chalk",
+   "easel",
+   "school",
+   "learning",
+   "lesson",
+   "office",
+   "meeting",
+   "project",
+   "planning"
+  ],
+  "file": "icons/lucide/presentation.svg"
+ },
+ {
+  "name": "laptop",
+  "category": "school",
+  "keywords": [
+   "computer",
+   "screen",
+   "remote"
+  ],
+  "file": "icons/lucide/laptop.svg"
+ },
+ {
+  "name": "tablet-smartphone",
+  "category": "school",
+  "keywords": [
+   "phone",
+   "cellphone",
+   "device",
+   "mobile",
+   "screen",
+   "display",
+   "touchscreen",
+   "portable",
+   "responsive",
+   "screens",
+   "browser",
+   "testing"
+  ],
+  "file": "icons/lucide/tablet-smartphone.svg"
+ },
+ {
+  "name": "piano",
+  "category": "arts",
+  "keywords": [
+   "practice",
+   "music",
+   "lessons",
+   "audio",
+   "sound",
+   "noise",
+   "notes",
+   "chord",
+   "keys",
+   "octave",
+   "acoustic",
+   "instrument",
+   "play",
+   "pianist",
+   "performance",
+   "concert"
+  ],
+  "file": "icons/lucide/piano.svg"
+ },
+ {
+  "name": "guitar",
+  "category": "arts",
+  "keywords": [
+   "practice",
+   "music",
+   "lessons",
+   "acoustic",
+   "instrument",
+   "strings",
+   "riff",
+   "rock",
+   "band",
+   "country",
+   "concert",
+   "performance",
+   "play",
+   "lead",
+   "loud",
+   "audio",
+   "sound",
+   "noise"
+  ],
+  "file": "icons/lucide/guitar.svg"
+ },
+ {
+  "name": "drum",
+  "category": "arts",
+  "keywords": [
+   "drummer",
+   "kit",
+   "sticks",
+   "instrument",
+   "beat",
+   "bang",
+   "bass",
+   "backing track",
+   "band",
+   "play",
+   "performance",
+   "concert",
+   "march",
+   "music",
+   "audio",
+   "sound",
+   "noise",
+   "loud"
+  ],
+  "file": "icons/lucide/drum.svg"
+ },
+ {
+  "name": "mic",
+  "category": "arts",
+  "keywords": [
+   "record",
+   "sound",
+   "listen",
+   "radio",
+   "podcast",
+   "microphone"
+  ],
+  "file": "icons/lucide/mic.svg"
+ },
+ {
+  "name": "headphones",
+  "category": "arts",
+  "keywords": [
+   "music",
+   "audio",
+   "sound"
+  ],
+  "file": "icons/lucide/headphones.svg"
+ },
+ {
+  "name": "palette",
+  "category": "arts",
+  "keywords": [
+   "colors",
+   "colours",
+   "theme",
+   "scheme",
+   "paint",
+   "watercolor",
+   "watercolour",
+   "artist"
+  ],
+  "file": "icons/lucide/palette.svg"
+ },
+ {
+  "name": "paintbrush",
+  "category": "arts",
+  "keywords": [
+   "brush",
+   "paintbrush",
+   "design",
+   "color",
+   "colour",
+   "decoration",
+   "diy"
+  ],
+  "file": "icons/lucide/paintbrush.svg"
+ },
+ {
+  "name": "brush",
+  "category": "arts",
+  "keywords": [
+   "clean",
+   "sweep",
+   "refactor",
+   "remove",
+   "draw",
+   "paint",
+   "color",
+   "artist"
+  ],
+  "file": "icons/lucide/brush.svg"
+ },
+ {
+  "name": "pen-tool",
+  "category": "arts",
+  "keywords": [
+   "vector",
+   "drawing",
+   "path"
+  ],
+  "file": "icons/lucide/pen-tool.svg"
+ },
+ {
+  "name": "camera",
+  "category": "arts",
+  "keywords": [
+   "photography",
+   "lens",
+   "focus",
+   "capture",
+   "shot",
+   "visual",
+   "image",
+   "device",
+   "equipment",
+   "photo",
+   "webcam",
+   "video"
+  ],
+  "file": "icons/lucide/camera.svg"
+ },
+ {
+  "name": "clapperboard",
+  "category": "arts",
+  "keywords": [
+   "movie",
+   "film",
+   "video",
+   "camera",
+   "cinema",
+   "cut",
+   "action",
+   "television",
+   "tv",
+   "show",
+   "entertainment"
+  ],
+  "file": "icons/lucide/clapperboard.svg"
+ },
+ {
+  "name": "drama",
+  "category": "arts",
+  "keywords": [
+   "drama",
+   "masks",
+   "theater",
+   "theatre",
+   "entertainment",
+   "show"
+  ],
+  "file": "icons/lucide/drama.svg"
+ },
+ {
+  "name": "shapes",
+  "category": "arts",
+  "keywords": [
+   "triangle",
+   "equilateral",
+   "square",
+   "circle",
+   "classification",
+   "different",
+   "collection",
+   "toy",
+   "blocks",
+   "learning"
+  ],
+  "file": "icons/lucide/shapes.svg"
+ },
+ {
+  "name": "volleyball",
+  "category": "sport",
+  "keywords": [
+   "ball",
+   "sport",
+   "practice",
+   "beach",
+   "sand",
+   "net",
+   "holiday",
+   "vacation",
+   "summer",
+   "soccer",
+   "football",
+   "futbol",
+   "kick",
+   "pitch",
+   "goal",
+   "score",
+   "bounce",
+   "leather",
+   "wool",
+   "yarn",
+   "knitting",
+   "sewing",
+   "thread",
+   "embroidery",
+   "textile"
+  ],
+  "file": "icons/lucide/volleyball.svg"
+ },
+ {
+  "name": "medal",
+  "category": "sport",
+  "keywords": [
+   "prize",
+   "sports",
+   "winner",
+   "trophy",
+   "award",
+   "achievement"
+  ],
+  "file": "icons/lucide/medal.svg"
+ },
+ {
+  "name": "goal",
+  "category": "sport",
+  "keywords": [
+   "soccer",
+   "football",
+   "practice",
+   "flag",
+   "bullseye"
+  ],
+  "file": "icons/lucide/goal.svg"
+ },
+ {
+  "name": "bike",
+  "category": "sport",
+  "keywords": [
+   "ride",
+   "cycle",
+   "bicycle",
+   "transport",
+   "trip"
+  ],
+  "file": "icons/lucide/bike.svg"
+ },
+ {
+  "name": "tent",
+  "category": "sport",
+  "keywords": [
+   "tipi",
+   "teepee",
+   "wigwam",
+   "lodge",
+   "camping",
+   "campsite",
+   "holiday",
+   "retreat",
+   "nomadic",
+   "native american",
+   "indian",
+   "wilderness",
+   "outdoors"
+  ],
+  "file": "icons/lucide/tent.svg"
+ },
+ {
+  "name": "mountain",
+  "category": "sport",
+  "keywords": [
+   "climb",
+   "hike",
+   "rock"
+  ],
+  "file": "icons/lucide/mountain.svg"
+ },
+ {
+  "name": "waves",
+  "category": "sport",
+  "keywords": [],
+  "file": "icons/lucide/waves.svg"
+ },
+ {
+  "name": "sailboat",
+  "category": "sport",
+  "keywords": [
+   "ship",
+   "boat",
+   "harbor",
+   "harbour",
+   "dock"
+  ],
+  "file": "icons/lucide/sailboat.svg"
+ },
+ {
+  "name": "dice-5",
+  "category": "sport",
+  "keywords": [
+   "dice",
+   "random",
+   "tabletop",
+   "5",
+   "board",
+   "game"
+  ],
+  "file": "icons/lucide/dice-5.svg"
+ },
+ {
+  "name": "toy-brick",
+  "category": "sport",
+  "keywords": [
+   "lego",
+   "block",
+   "addon",
+   "plugin",
+   "integration"
+  ],
+  "file": "icons/lucide/toy-brick.svg"
+ },
+ {
+  "name": "blocks",
+  "category": "sport",
+  "keywords": [
+   "addon",
+   "plugin",
+   "integration",
+   "extension",
+   "package",
+   "build",
+   "stack",
+   "toys",
+   "kids",
+   "children",
+   "learning",
+   "squares",
+   "corner"
+  ],
+  "file": "icons/lucide/blocks.svg"
+ },
+ {
+  "name": "gamepad-2",
+  "category": "sport",
+  "keywords": [
+   "games",
+   "video games",
+   "screen time",
+   "console"
+  ],
+  "file": "icons/lucide/gamepad-2.svg"
+ },
+ {
+  "name": "swords",
+  "category": "sport",
+  "keywords": [
+   "battle",
+   "challenge",
+   "combat",
+   "conflict",
+   "crossed",
+   "duel",
+   "faction",
+   "fantasy",
+   "game",
+   "melee",
+   "medieval",
+   "opponent",
+   "rivalry",
+   "rpg",
+   "versus",
+   "weapon",
+   "war",
+   "warrior"
+  ],
+  "file": "icons/lucide/swords.svg"
+ },
+ {
+  "name": "shopping-cart",
+  "category": "errands",
+  "keywords": [
+   "shopping",
+   "groceries",
+   "buy",
+   "trolley",
+   "cart",
+   "basket",
+   "e-commerce",
+   "store",
+   "purchase",
+   "products",
+   "items",
+   "ingredients"
+  ],
+  "file": "icons/lucide/shopping-cart.svg"
+ },
+ {
+  "name": "shopping-bag",
+  "category": "errands",
+  "keywords": [
+   "shopping",
+   "errand",
+   "ecommerce",
+   "cart",
+   "purchase",
+   "store"
+  ],
+  "file": "icons/lucide/shopping-bag.svg"
+ },
+ {
+  "name": "store",
+  "category": "errands",
+  "keywords": [
+   "shop",
+   "supermarket",
+   "stand",
+   "boutique",
+   "building"
+  ],
+  "file": "icons/lucide/store.svg"
+ },
+ {
+  "name": "receipt",
+  "category": "errands",
+  "keywords": [
+   "bill",
+   "voucher",
+   "slip",
+   "check",
+   "counterfoil",
+   "currency",
+   "dollar",
+   "usd"
+  ],
+  "file": "icons/lucide/receipt.svg"
+ },
+ {
+  "name": "wallet",
+  "category": "errands",
+  "keywords": [
+   "money",
+   "pay",
+   "finance",
+   "pocket"
+  ],
+  "file": "icons/lucide/wallet.svg"
+ },
+ {
+  "name": "credit-card",
+  "category": "errands",
+  "keywords": [
+   "bank",
+   "purchase",
+   "payment",
+   "cc"
+  ],
+  "file": "icons/lucide/credit-card.svg"
+ },
+ {
+  "name": "piggy-bank",
+  "category": "errands",
+  "keywords": [
+   "save",
+   "savings",
+   "money"
+  ],
+  "file": "icons/lucide/piggy-bank.svg"
+ },
+ {
+  "name": "banknote",
+  "category": "errands",
+  "keywords": [
+   "currency",
+   "money",
+   "payment"
+  ],
+  "file": "icons/lucide/banknote.svg"
+ },
+ {
+  "name": "hand-coins",
+  "category": "errands",
+  "keywords": [
+   "savings",
+   "banking",
+   "money",
+   "finance",
+   "offers",
+   "mortgage",
+   "payment",
+   "received",
+   "wage",
+   "payroll",
+   "allowance",
+   "pocket money",
+   "handout",
+   "pennies"
+  ],
+  "file": "icons/lucide/hand-coins.svg"
+ },
+ {
+  "name": "coins",
+  "category": "errands",
+  "keywords": [
+   "money",
+   "cash",
+   "finance",
+   "gamble"
+  ],
+  "file": "icons/lucide/coins.svg"
+ },
+ {
+  "name": "mail",
+  "category": "errands",
+  "keywords": [
+   "post",
+   "letter",
+   "email",
+   "message",
+   "unread"
+  ],
+  "file": "icons/lucide/mail.svg"
+ },
+ {
+  "name": "send",
+  "category": "errands",
+  "keywords": [
+   "email",
+   "message",
+   "mail",
+   "paper airplane",
+   "paper aeroplane",
+   "submit"
+  ],
+  "file": "icons/lucide/send.svg"
+ },
+ {
+  "name": "phone",
+  "category": "errands",
+  "keywords": [
+   "call",
+   "ring"
+  ],
+  "file": "icons/lucide/phone.svg"
+ },
+ {
+  "name": "smartphone",
+  "category": "errands",
+  "keywords": [
+   "phone",
+   "cellphone",
+   "device",
+   "mobile",
+   "screen",
+   "display",
+   "touchscreen",
+   "portable",
+   "responsive"
+  ],
+  "file": "icons/lucide/smartphone.svg"
+ },
+ {
+  "name": "calendar-check",
+  "category": "errands",
+  "keywords": [
+   "date",
+   "day",
+   "month",
+   "year",
+   "event",
+   "confirm",
+   "subscribe",
+   "schedule",
+   "done",
+   "todo",
+   "tick",
+   "complete",
+   "task"
+  ],
+  "file": "icons/lucide/calendar-check.svg"
+ },
+ {
+  "name": "clipboard-check",
+  "category": "errands",
+  "keywords": [
+   "copied",
+   "pasted",
+   "done",
+   "todo",
+   "tick",
+   "complete",
+   "task"
+  ],
+  "file": "icons/lucide/clipboard-check.svg"
+ },
+ {
+  "name": "file-text",
+  "category": "errands",
+  "keywords": [
+   "data",
+   "txt",
+   "pdf",
+   "document"
+  ],
+  "file": "icons/lucide/file-text.svg"
+ },
+ {
+  "name": "printer",
+  "category": "errands",
+  "keywords": [
+   "fax",
+   "office",
+   "device"
+  ],
+  "file": "icons/lucide/printer.svg"
+ },
+ {
+  "name": "briefcase",
+  "category": "errands",
+  "keywords": [
+   "work",
+   "bag",
+   "baggage",
+   "folder"
+  ],
+  "file": "icons/lucide/briefcase.svg"
+ },
+ {
+  "name": "truck",
+  "category": "errands",
+  "keywords": [
+   "delivery",
+   "van",
+   "shipping",
+   "haulage",
+   "lorry"
+  ],
+  "file": "icons/lucide/truck.svg"
+ },
+ {
+  "name": "fuel",
+  "category": "errands",
+  "keywords": [
+   "filling-station",
+   "gas",
+   "petrol",
+   "tank"
+  ],
+  "file": "icons/lucide/fuel.svg"
+ },
+ {
+  "name": "map-pin",
+  "category": "errands",
+  "keywords": [
+   "location",
+   "waypoint",
+   "marker",
+   "drop"
+  ],
+  "file": "icons/lucide/map-pin.svg"
+ },
+ {
+  "name": "bus",
+  "category": "travel",
+  "keywords": [
+   "bus",
+   "vehicle",
+   "transport",
+   "trip"
+  ],
+  "file": "icons/lucide/bus.svg"
+ },
+ {
+  "name": "train-front",
+  "category": "travel",
+  "keywords": [
+   "railway",
+   "metro",
+   "subway",
+   "underground",
+   "high-speed",
+   "bullet",
+   "fast",
+   "track",
+   "line"
+  ],
+  "file": "icons/lucide/train-front.svg"
+ },
+ {
+  "name": "plane",
+  "category": "travel",
+  "keywords": [
+   "plane",
+   "trip",
+   "airplane"
+  ],
+  "file": "icons/lucide/plane.svg"
+ },
+ {
+  "name": "ship",
+  "category": "travel",
+  "keywords": [
+   "boat",
+   "knots",
+   "nautical mile",
+   "maritime",
+   "sailing",
+   "yacht",
+   "cruise",
+   "ocean liner",
+   "tanker",
+   "vessel",
+   "navy",
+   "trip",
+   "releases"
+  ],
+  "file": "icons/lucide/ship.svg"
+ },
+ {
+  "name": "map",
+  "category": "travel",
+  "keywords": [
+   "location",
+   "navigation",
+   "travel"
+  ],
+  "file": "icons/lucide/map.svg"
+ },
+ {
+  "name": "compass",
+  "category": "travel",
+  "keywords": [
+   "direction",
+   "north",
+   "east",
+   "south",
+   "west",
+   "browser"
+  ],
+  "file": "icons/lucide/compass.svg"
+ },
+ {
+  "name": "luggage",
+  "category": "travel",
+  "keywords": [
+   "baggage",
+   "luggage",
+   "travel",
+   "suitcase"
+  ],
+  "file": "icons/lucide/luggage.svg"
+ },
+ {
+  "name": "hotel",
+  "category": "travel",
+  "keywords": [
+   "building",
+   "hostel",
+   "motel",
+   "inn"
+  ],
+  "file": "icons/lucide/hotel.svg"
+ },
+ {
+  "name": "caravan",
+  "category": "travel",
+  "keywords": [
+   "trailer",
+   "tow",
+   "camping",
+   "campsite",
+   "mobile home",
+   "holiday",
+   "nomadic",
+   "wilderness",
+   "outdoors"
+  ],
+  "file": "icons/lucide/caravan.svg"
+ },
+ {
+  "name": "church",
+  "category": "travel",
+  "keywords": [
+   "temple",
+   "building"
+  ],
+  "file": "icons/lucide/church.svg"
+ },
+ {
+  "name": "hospital",
+  "category": "travel",
+  "keywords": [
+   "infirmary",
+   "sanatorium",
+   "healthcare",
+   "doctor",
+   "hospice",
+   "clinic",
+   "emergency room",
+   "ward",
+   "building",
+   "medical",
+   "vet"
+  ],
+  "file": "icons/lucide/hospital.svg"
+ },
+ {
+  "name": "building-2",
+  "category": "travel",
+  "keywords": [],
+  "file": "icons/lucide/building-2.svg"
+ },
+ {
+  "name": "landmark",
+  "category": "travel",
+  "keywords": [
+   "bank",
+   "building",
+   "capitol",
+   "finance",
+   "money",
+   "museum",
+   "art gallery",
+   "hall",
+   "institute",
+   "pediment",
+   "portico",
+   "doric",
+   "columns",
+   "pillars",
+   "classical",
+   "architecture",
+   "government",
+   "institution",
+   "monument",
+   "site",
+   "history",
+   "historic",
+   "library",
+   "temple",
+   "ancient",
+   "structure"
+  ],
+  "file": "icons/lucide/landmark.svg"
+ },
+ {
+  "name": "crown",
+  "category": "rewards",
+  "keywords": [
+   "king",
+   "queen",
+   "best",
+   "diadem",
+   "tiara",
+   "circlet",
+   "corona",
+   "ruler",
+   "winner",
+   "favourite"
+  ],
+  "file": "icons/lucide/crown.svg"
+ },
+ {
+  "name": "gem",
+  "category": "rewards",
+  "keywords": [
+   "diamond",
+   "crystal",
+   "ruby",
+   "jewellery",
+   "price",
+   "special",
+   "present",
+   "gift",
+   "ring",
+   "wedding",
+   "proposal",
+   "marriage",
+   "rubygems"
+  ],
+  "file": "icons/lucide/gem.svg"
+ },
+ {
+  "name": "tickets",
+  "category": "rewards",
+  "keywords": [
+   "trip",
+   "travel",
+   "pass",
+   "entry",
+   "voucher",
+   "event",
+   "concert",
+   "show",
+   "perforated",
+   "dashed"
+  ],
+  "file": "icons/lucide/tickets.svg"
+ },
+ {
+  "name": "party-popper",
+  "category": "rewards",
+  "keywords": [
+   "party",
+   "celebrate",
+   "birthday",
+   "emoji",
+   "congratulations",
+   "celebration",
+   "tada",
+   "excitement",
+   "exciting",
+   "excites",
+   "confetti"
+  ],
+  "file": "icons/lucide/party-popper.svg"
+ },
+ {
+  "name": "rocket",
+  "category": "rewards",
+  "keywords": [
+   "release",
+   "boost",
+   "launch",
+   "space",
+   "version"
+  ],
+  "file": "icons/lucide/rocket.svg"
+ },
+ {
+  "name": "ferris-wheel",
+  "category": "rewards",
+  "keywords": [
+   "big wheel",
+   "daisy wheel",
+   "observation",
+   "attraction",
+   "entertainment",
+   "amusement park",
+   "theme park",
+   "funfair"
+  ],
+  "file": "icons/lucide/ferris-wheel.svg"
+ },
+ {
+  "name": "tv",
+  "category": "rewards",
+  "keywords": [
+   "screen time",
+   "show",
+   "movie",
+   "television",
+   "stream",
+   "display",
+   "widescreen",
+   "high-definition",
+   "hd",
+   "1080p",
+   "4k",
+   "8k",
+   "smart",
+   "digital",
+   "video",
+   "entertainment",
+   "showtime",
+   "channels",
+   "terrestrial",
+   "satellite",
+   "cable",
+   "broadcast",
+   "live",
+   "frequency",
+   "tune",
+   "scan",
+   "aerial",
+   "receiver",
+   "transmission",
+   "signal",
+   "connection",
+   "connectivity"
+  ],
+  "file": "icons/lucide/tv.svg"
+ },
+ {
+  "name": "cake",
+  "category": "rewards",
+  "keywords": [
+   "birthday",
+   "party",
+   "birthdate",
+   "celebration",
+   "surprise",
+   "gateaux",
+   "dessert",
+   "fondant",
+   "icing sugar",
+   "sweet",
+   "baking"
+  ],
+  "file": "icons/lucide/cake.svg"
+ },
+ {
+  "name": "cloud-sun",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "partly"
+  ],
+  "file": "icons/lucide/cloud-sun.svg"
+ },
+ {
+  "name": "cloud-moon",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "night"
+  ],
+  "file": "icons/lucide/cloud-moon.svg"
+ },
+ {
+  "name": "cloudy",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "clouds"
+  ],
+  "file": "icons/lucide/cloudy.svg"
+ },
+ {
+  "name": "cloud-drizzle",
+  "category": "weather",
+  "keywords": [
+   "drizzle",
+   "light rain",
+   "weather",
+   "shower"
+  ],
+  "file": "icons/lucide/cloud-drizzle.svg"
+ },
+ {
+  "name": "cloud-rain-wind",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "rainfall"
+  ],
+  "file": "icons/lucide/cloud-rain-wind.svg"
+ },
+ {
+  "name": "cloud-snow",
+  "category": "weather",
+  "keywords": [
+   "snow",
+   "winter",
+   "weather",
+   "blizzard"
+  ],
+  "file": "icons/lucide/cloud-snow.svg"
+ },
+ {
+  "name": "snowflake",
+  "category": "weather",
+  "keywords": [
+   "snow",
+   "cold",
+   "winter",
+   "weather",
+   "freeze"
+  ],
+  "file": "icons/lucide/snowflake.svg"
+ },
+ {
+  "name": "cloud-hail",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "rainfall"
+  ],
+  "file": "icons/lucide/cloud-hail.svg"
+ },
+ {
+  "name": "cloud-fog",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "mist"
+  ],
+  "file": "icons/lucide/cloud-fog.svg"
+ },
+ {
+  "name": "haze",
+  "category": "weather",
+  "keywords": [
+   "mist",
+   "fog"
+  ],
+  "file": "icons/lucide/haze.svg"
+ },
+ {
+  "name": "cloud-lightning",
+  "category": "weather",
+  "keywords": [
+   "storm",
+   "thunder",
+   "weather",
+   "bolt"
+  ],
+  "file": "icons/lucide/cloud-lightning.svg"
+ },
+ {
+  "name": "zap",
+  "category": "weather",
+  "keywords": [
+   "flash",
+   "camera",
+   "lightning",
+   "electricity",
+   "energy",
+   "power",
+   "quick"
+  ],
+  "file": "icons/lucide/zap.svg"
+ },
+ {
+  "name": "wind",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "air",
+   "blow"
+  ],
+  "file": "icons/lucide/wind.svg"
+ },
+ {
+  "name": "tornado",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "wind",
+   "storm",
+   "hurricane"
+  ],
+  "file": "icons/lucide/tornado.svg"
+ },
+ {
+  "name": "umbrella",
+  "category": "weather",
+  "keywords": [
+   "rain",
+   "weather"
+  ],
+  "file": "icons/lucide/umbrella.svg"
+ },
+ {
+  "name": "thermometer-sun",
+  "category": "weather",
+  "keywords": [
+   "temperature",
+   "celsius",
+   "fahrenheit",
+   "weather",
+   "warm",
+   "hot"
+  ],
+  "file": "icons/lucide/thermometer-sun.svg"
+ },
+ {
+  "name": "thermometer-snowflake",
+  "category": "weather",
+  "keywords": [
+   "temperature",
+   "celsius",
+   "fahrenheit",
+   "weather",
+   "cold",
+   "freeze",
+   "freezing"
+  ],
+  "file": "icons/lucide/thermometer-snowflake.svg"
+ },
+ {
+  "name": "sunrise",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "time",
+   "morning",
+   "day"
+  ],
+  "file": "icons/lucide/sunrise.svg"
+ },
+ {
+  "name": "sunset",
+  "category": "weather",
+  "keywords": [
+   "weather",
+   "time",
+   "evening",
+   "night"
+  ],
+  "file": "icons/lucide/sunset.svg"
+ },
+ {
+  "name": "rainbow",
+  "category": "weather",
+  "keywords": [
+   "colors",
+   "colours",
+   "spectrum",
+   "light",
+   "prism",
+   "arc",
+   "clear",
+   "sunshine"
+  ],
+  "file": "icons/lucide/rainbow.svg"
+ },
+ {
+  "name": "tag",
+  "category": "tags",
+  "keywords": [
+   "label",
+   "badge",
+   "ticket",
+   "mark"
+  ],
+  "file": "icons/lucide/tag.svg"
+ },
+ {
+  "name": "tags",
+  "category": "tags",
+  "keywords": [
+   "labels",
+   "badges",
+   "tickets",
+   "marks",
+   "copy",
+   "multiple"
+  ],
+  "file": "icons/lucide/tags.svg"
+ },
+ {
+  "name": "flag",
+  "category": "tags",
+  "keywords": [
+   "important",
+   "priority",
+   "report",
+   "marker",
+   "notification",
+   "warning",
+   "milestone",
+   "goal",
+   "notice",
+   "signal",
+   "attention",
+   "banner"
+  ],
+  "file": "icons/lucide/flag.svg"
+ },
+ {
+  "name": "shield",
+  "category": "tags",
+  "keywords": [
+   "cybersecurity",
+   "secure",
+   "safety",
+   "protection",
+   "guardian",
+   "armored",
+   "armoured",
+   "defense",
+   "defence",
+   "defender",
+   "block",
+   "threat",
+   "prevention",
+   "antivirus",
+   "vigilance",
+   "vigilant",
+   "detection",
+   "scan",
+   "find",
+   "strength",
+   "strong",
+   "tough",
+   "invincible",
+   "invincibility",
+   "invulnerable",
+   "undamaged",
+   "audit",
+   "admin",
+   "verification",
+   "crest",
+   "bravery",
+   "knight",
+   "foot soldier",
+   "infantry",
+   "trooper",
+   "pawn",
+   "battle",
+   "war",
+   "military",
+   "army",
+   "cadet",
+   "scout"
+  ],
+  "file": "icons/lucide/shield.svg"
+ },
+ {
+  "name": "circle-alert",
+  "category": "tags",
+  "keywords": [
+   "warning",
+   "alert",
+   "danger",
+   "exclamation mark"
+  ],
+  "file": "icons/lucide/circle-alert.svg"
+ },
+ {
+  "name": "repeat",
+  "category": "tags",
+  "keywords": [
+   "every day",
+   "routine",
+   "repeat",
+   "loop",
+   "arrows"
+  ],
+  "file": "icons/lucide/repeat.svg"
+ },
+ {
+  "name": "users",
+  "category": "tags",
+  "keywords": [
+   "group",
+   "people"
+  ],
+  "file": "icons/lucide/users.svg"
+ },
+ {
+  "name": "user",
+  "category": "tags",
+  "keywords": [
+   "person",
+   "account",
+   "contact"
+  ],
+  "file": "icons/lucide/user.svg"
+ },
+ {
+  "name": "eye-off",
+  "category": "tags",
+  "keywords": [
+   "private",
+   "hidden",
+   "view",
+   "watch",
+   "see",
+   "hide",
+   "conceal",
+   "mask",
+   "visibility",
+   "vision"
+  ],
+  "file": "icons/lucide/eye-off.svg"
+ },
+ {
+  "name": "pin",
+  "category": "tags",
+  "keywords": [
+   "save",
+   "map",
+   "lock",
+   "fix"
+  ],
+  "file": "icons/lucide/pin.svg"
+ },
+ {
+  "name": "thumbs-up",
+  "category": "tags",
+  "keywords": [
+   "like",
+   "good",
+   "emotion"
+  ],
+  "file": "icons/lucide/thumbs-up.svg"
+ },
+ {
+  "name": "circle-dot",
+  "category": "tags",
+  "keywords": [
+   "pending",
+   "dot",
+   "progress",
+   "issue",
+   "code",
+   "coding",
+   "version control",
+   "choices",
+   "multiple choice",
+   "choose",
+   "album",
+   "music",
+   "songs",
+   "format",
+   "cd",
+   "dvd",
+   "vinyl",
+   "sleeve",
+   "cover",
+   "platinum",
+   "compilation",
+   "ep",
+   "recording",
+   "playback",
+   "spin",
+   "rotate",
+   "rpm",
+   "dj"
+  ],
+  "file": "icons/lucide/circle-dot.svg"
+ },
+ {
+  "name": "square",
+  "category": "tags",
+  "keywords": [
+   "stop",
+   "playback",
+   "music",
+   "audio",
+   "video",
+   "rectangle",
+   "aspect ratio",
+   "1:1",
+   "shape"
+  ],
+  "file": "icons/lucide/square.svg"
+ },
+ {
+  "name": "triangle",
+  "category": "tags",
+  "keywords": [
+   "equilateral",
+   "delta",
+   "shape",
+   "pyramid",
+   "hierarchy"
+  ],
+  "file": "icons/lucide/triangle.svg"
+ },
+ {
+  "name": "hexagon",
+  "category": "tags",
+  "keywords": [
+   "shape",
+   "node.js",
+   "logo"
+  ],
+  "file": "icons/lucide/hexagon.svg"
  }
 ]

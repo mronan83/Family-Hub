@@ -1,7 +1,8 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.16 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-45, WP-47)
-> v1.16: the board fits its screen and has a text size (§5.1, WP-47, D-73).
+> Version 1.17 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-45, WP-46, WP-47)
+> v1.17: the board fits its screen and has a text size (§5.1, WP-47, D-73).
+> v1.16: sixteen colors for members, tags and calendars, each with a lighter Evening shade for lines and dots (§4.2); the icon set grows to 305 with Lucide's icons and our vacuum and iron, and one icon picker with groups and a search (§8, WP-46, D-70).
 > v1.15: the weather beside the board's clock and Weather on the boards on Home (§7.2, §7.3, WP-45).
 > v1.14: the board's home screen as a family dashboard (WP-35, D-66): the calendar panel and the month's dots, today's list with a face per person, the cards, the top bar with each person's points, tiles of one height and "More info"; the home screen's layout on Boards (§7.2, §7.3).
 > v1.13: the board's Calendar (Day, Week, Month), events in their calendar's color with whose they are, and a board's calendars on Boards (§7.2, §7.3, WP-23).
@@ -129,7 +130,20 @@ Defined once in `brand/familywise-tokens.css`. Use the **role** tokens (`--prima
 - **Ratio:** about 80% Paper/Surface and Ink, 15% Teal, 5% Sun. Sun is a reward signal; if everything is gold, nothing is.
 - **Never use red** for a child-visible state. A miss is Plum, a warning is Sun, an error in admin forms is Plum with an icon and text.
 - **Never rely on color alone.** Every state pairs color with an icon and a label (see 7.1).
-- **Family member colors** (`--member-1..6`, all ≥ 5.18:1 with white) are assigned per person. Always pair with the member's avatar or initial; never color-code alone.
+- **Family member colors** (`--member-1..16`, all ≥ 4.92:1 with white) are assigned per person, and also color tags and calendars. Always pair with the member's avatar or initial, or a name; never color-code alone. Sixteen (D-70), each named for the pickers and screen readers:
+
+| Token | Name | Day (fill and line) | Evening line | | Token | Name | Day (fill and line) | Evening line |
+|---|---|---|---|---|---|---|---|---|
+| `member-1` | Blue | `#0369A1` | `#38BDF8` | | `member-9` | Lime | `#4D7C0F` | `#A3E635` |
+| `member-2` | Rose | `#BE3A5B` | `#FB7194` | | `member-10` | Cyan | `#0E7490` | `#22D3EE` |
+| `member-3` | Orange | `#C2410C` | `#FB923C` | | `member-11` | Navy | `#1E40AF` | `#7DA2F8` |
+| `member-4` | Violet | `#6D5BD0` | `#A79BF5` | | `member-12` | Indigo | `#4338CA` | `#A5B4FC` |
+| `member-5` | Green | `#2F6B3A` | `#6CC17A` | | `member-13` | Purple | `#7E22CE` | `#C084FC` |
+| `member-6` | Teal | `#0F766E` | `#2DD4BF` | | `member-14` | Magenta | `#A21CAF` | `#E879F9` |
+| `member-7` | Red | `#B91C1C` | `#F87171` | | `member-15` | Brown | `#8B4513` | `#D9A066` |
+| `member-8` | Gold | `#A16207` | `#FACC15` | | `member-16` | Slate | `#475569` | `#A3B1C6` |
+
+- **Fill or line.** A color behind white initials (an avatar) uses `--member-N` in both themes. A color drawn as a line or dot (an event's edge, a calendar's dot, a tag's or calendar's swatch) uses `--member-N-line`: the same color by day, the lighter shade in the Evening theme, where the color itself is under 3:1 on the dark surface. Every line shade is at least 5.25:1 on the Evening surface; a unit test and the UI suite check both themes. Red is a member color only: it never marks a state.
 - **Burn-in:** the board avoids large static bright fills. Use tints for large areas; reserve saturated teal and sun for small controls and chips.
 
 ---
@@ -214,7 +228,7 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 - **Goal celebration (WP-20):** full screen over a dimmed board: the goal's photo or icon at 160 px in Sun, "Leo reached Bike ride!" at title size, "Well done! A grown-up will sort out the reward.", and a primary "Yay!" (`sparkles`, 96 px tall) that has the focus. Sun and Teal sparks fly out from the middle and the card pops (transform and opacity only, 1.6 s); with reduced motion there are no sparks and no pop. It closes on "Yay!" or after 10 seconds, and comes once per achievement.
 - **Calendar (WP-23):** "Calendar" with `calendar` (64 px) after the people. A pill of three views, each icon and word (`view-day` Day, `view-week` Week, `view-month` Month, 96 px tall, the chosen one in Teal tint); round 96 px arrows (`chevron-left`, `chevron-right`) around the title at title size ("Tuesday, October 20", "Oct 18 – 24", "October 2026"), and "Today" (dashed while showing today). Each event on a surface card with a 10 px bar in its calendar's color (14 px in Day), the time in soft text at 28 px ("5:00 pm", "All day", "Until 1:00 am") then the title, and the avatar of whose calendar it is. Week: seven columns, today's in Teal tint with a Teal border. Month: whole weeks; each day a button with its number, three titles with a color bar, then "+N more" in soft text; days of other months dashed. A calendar behind: a Sun-tint pill with `hourglass`, "School hasn’t updated since Sat, Oct 10 at 12:34 pm. Showing its last good events." Offline beyond the board's dates: `wifi-off`, "Showing what this board has for these dates." A person's side column lists today's events under "Today".
 - **Family dashboard (WP-35, D-66):** the home screen. The bar (household, date, clock, health lines) and the top bar (Home with `home`; each person's avatar, name and points chip; Chores with `list-check`; Calendar) stay pinned while the rest scrolls. Below, panels on Surface with a line border and 24 px radius, each headed at heading size with a Teal icon and a soft note on the right. **Calendar** (left, everything but 680 px): 3, 5 or 7 day columns, today Teal-tinted, each day's head a 56 px button ("Tue 13", "Today"), events as in the Week view (at 7 days, titles at small size with tighter padding, about 140 px a day; a word longer than its day breaks inside its event, never past it); or the **month**: a 7-column grid of 104 px day buttons, the date at body size, a row of 18 px dots in each calendar's color (four at most), today Teal-outlined, days outside the month soft. **Today's list** (right, 680 px): parts of the day as in §7.1's columns; a row per item 104 px tall: its icon (48), the title on one line (Nunito 700, body size, cut with an ellipsis), the points chip under it, then a face per person: their 56 px avatar in a 72 px button with a 4 px ring (Sun: past its time or overdue; Teal with a `check` badge: done; dashed Sun with `hourglass`: waiting for a parent; dashed line: done by someone else, or skipped); "Anyone" is a dashed `family` circle. A row whose items are all done reads its title soft and struck through. **Cards** under the calendar, two to a row: Goals (each goal compact, with whose it is), Waiting for a parent (faces, what, a points chip), Coming up (a 8 px stripe in the calendar's color, the date, the title, whose, "In 4 days"). **Tiles are one height** in any list (168 px on a person's screen, 212 px in Chores; the title two lines at most). **More info** is a 56 px round button with `info` on a row or tile; it opens a dialog with the icon and title, the description at body size, When, Points and Who (each face and how it stands), and Close.
-- **Weather (WP-45, D-69):** beside the clock in the bar: the sky's icon in Teal at 64 px (`sun` by day or `moon` at night when clear; `cloud` for cloud, fog and snow; `rain` for drizzle, rain, showers and storms), the temperature now in whole degrees at title size (Nunito 800), and three lines in Text-soft at small size: the sky's word ("Partly cloudy", "Snow"), "High 61°", and the licence's credit "Weather by Open-Meteo.com". The three lines (line-height 1.1) are no taller than the clock, so the bar is the same with weather or without; with no reading nothing shows in its place. On Home, **Weather on the boards** has the place search (a search field and **Find**, then **Use this** on each match), the last read in a muted line or a notice when it failed, °F or °C as a picker, and the credit link.
+- **Weather (WP-45, D-69):** beside the clock in the bar: the sky's icon in Teal at 64 px (`sun` by day or `moon` at night when clear; `cloud-sun` or `cloud-moon` when partly cloudy; `cloudy`, `cloud-fog`, `cloud-drizzle`, `rain` for rain and showers, `cloud-snow`, and `cloud-lightning` for storms, the Lucide ones since WP-46), the temperature now in whole degrees at title size (Nunito 800), and three lines in Text-soft at small size: the sky's word ("Partly cloudy", "Snow"), "High 61°", and the licence's credit "Weather by Open-Meteo.com". The three lines (line-height 1.1) are no taller than the clock, so the bar is the same with weather or without; with no reading nothing shows in its place. On Home, **Weather on the boards** has the place search (a search field and **Find**, then **Use this** on each match), the last read in a muted line or a notice when it failed, °F or °C as a picker, and the credit link.
 - **Banners:** `hourglass` for stale, `wifi-off` for offline. Sun tint and Plum tint respectively; never red; never cover chores. On the board they are pills in the bar under the clock: "Offline: your check-offs are saved", "Updated 12 minutes ago", "Today's list may be out of date"; not a second live region.
 - **Buttons:** primary (teal, white text), secondary (teal tint), ghost (line border). Minimum height 56, label Nunito 800, always icon + word on the board.
 
@@ -234,7 +248,7 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 
 ## 8. Iconography
 
-**Set:** 85 custom icons in `brand/icons/` (`ui/` and `chores/`), drawn on a 24 px grid, **2 px stroke, round caps and joins**, `currentColor`, no fills except tiny dots. They inherit text color and size with the font. See `icons/index.json` for names, categories, and search keywords, and `icons/sprite.svg` for the sprite (`<use href="#fw-check"/>`).
+**Set:** 305 icons, all on a 24 px grid, **2 px stroke, round caps and joins**, `currentColor`, no fills except tiny dots. They inherit text color and size with the font. **87 are our own** in `brand/icons/` (`ui/` and `chores/`, now with vacuum and iron); **218 come from [Lucide](https://lucide.dev)** (ISC licence, `icons/LICENSE-lucide.txt`), which shares the grid and stroke, listed in `icons/lucide.json` with a picker group and everyday search words and copied into `icons/lucide/` by `pnpm --filter @familywise/ui brand:lucide` (D-70). See `icons/index.json` for every icon's name, category and search words, `icons/groups.json` for the picker's groups, and `icons/sprite.svg` for the sprite of our own (`<use href="#fw-check"/>`).
 
 | Category | Icons |
 |---|---|
@@ -248,8 +262,8 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 | Chores (picker) | bed, dishes, table, bin, teeth, laundry, pet, plant, toys, shoes, broom, bath, read, homework, outdoors, music, exercise, pack |
 
 **Sizes (logical px):** board 56 (tiles), 36 (chips and rows), 28 (inline); admin 24 and 20. Touch targets are never the icon size; pad to 56 (board) or 44 (admin).
-**Rules:** one icon per meaning (`hourglass` means time has passed: stale data, overdue, past its time); don't mix in other icon sets; don't fill the outline icons; for new icons keep the grid, stroke, and 2 px minimum gaps.
-**Chore icon picker:** show the 18 chore icons first; allow search by keyword; store the icon name in `chore.icon`.
+**Rules:** one icon per meaning (`hourglass` means time has passed: stale data, overdue, past its time); only our own icons and the Lucide icons in `lucide.json`, no other set; don't fill the outline icons; for new icons keep the grid, stroke, and 2 px minimum gaps. Every icon has its own spoken name (a Lucide icon that would sound like one of ours takes a name of its own, like `bathtub`), and the UI suite checks that each Lucide icon draws exactly as Lucide draws it.
+**The icon picker (one, for chores, tasks, tags, rewards and goals):** the chosen icon and its name; a search over names and everyday words ("laundry" finds the washing machine); a row of group chips that scrolls sideways on a phone (All, Home, Kitchen and food, School and learning, Pets and garden, Health and care, Play and sport, Music and making, Errands and money, Out and about, Treats and rewards, Weather and time, People and labels); and the icons as 44 px square tiles in a box of its own height. Each form starts with its own group first (chores Home, tags People and labels, rewards and goals Treats and rewards). The app's own controls (chevrons, close, menu, trash) are never offered; an icon chosen before that the picker no longer offers stays chosen. The radios are the form field, so an icon hidden by a search stays chosen and the picker works before its script loads. The icon's name is stored (`chore.icon`, `tag.icon`, `reward.icon`, `goal.icon`).
 
 ### 8.1 Avatars
 Eight friendly characters (`brand/avatars/`): owl, bear, fox, cat, bunny, dog, frog, panda, in 64 px circles on soft tints. Store the file stem in `member.avatar_key` (for example `owl`). Adults can use initials on their member color. The owl is the default and nods to the "Wise" in the name; it is **not** a mascot and does not appear in UI chrome.
@@ -307,7 +321,9 @@ brand/
 ├── specimen.html                everything rendered (open in a browser)
 ├── logo/                        lockups, wordmarks, marks, glyphs (SVG + PNG)
 ├── app-icons/                   favicon, touch icon, PWA icons, manifest, splash
-├── icons/ui, icons/chores       85 SVG icons
-├── icons/sprite.svg, index.json sprite and searchable index
+├── icons/ui, icons/chores       our 87 SVG icons
+├── icons/lucide/, lucide.json   218 Lucide icons and the list they come from (D-70)
+├── icons/sprite.svg, index.json sprite of our own; searchable index of all 305
+├── icons/groups.json            the icon picker's groups
 └── avatars/                     8 member avatars
 ```

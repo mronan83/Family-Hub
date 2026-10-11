@@ -1,5 +1,6 @@
 'use server';
 
+import { ICON_NAMES } from '@familywise/ui';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { FormState } from '@/lib/auth/messages';
@@ -8,7 +9,6 @@ import { goalPayload, goalRefusal, parseGoalForm } from '@/lib/goals';
 import { log } from '@/lib/log';
 import { checkPhoto } from '@/lib/rewards';
 import { serverClient } from '@/lib/supabase/server';
-import { GOAL_ICONS } from './data';
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -35,7 +35,7 @@ export async function saveGoal(_prev: FormState, form: FormData): Promise<FormSt
     .eq('earns_rewards', true)
     .is('archived_at', null);
   const parsed = parseGoalForm(form, {
-    icons: GOAL_ICONS,
+    icons: ICON_NAMES,
     memberIds: (members ?? []).map((m) => m.id as string),
   });
   if (!parsed.ok) return { message: parsed.message };

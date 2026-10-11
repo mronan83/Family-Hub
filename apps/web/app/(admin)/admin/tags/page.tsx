@@ -58,7 +58,7 @@ export default async function TagsPage({
                   <span className="fw-pill fw-pill--tag">
                     <span
                       className="fw-swatch fw-swatch--small"
-                      style={{ background: `var(--${t.color})` }}
+                      style={{ background: `var(--${t.color}-line)` }}
                       aria-hidden
                     />
                     {t.icon ? <Icon name={t.icon} size={20} /> : null}
