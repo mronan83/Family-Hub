@@ -2,11 +2,13 @@ import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { sql as query } from '../support/db';
 
-// [MEAL-01][MEAL-02][MEAL-03][MEAL-08] Meals on the preview (WP-25, D-77), as Alex of the demo family.
+// [MEAL-01][MEAL-02][MEAL-03][MEAL-04][MEAL-08] Meals on the preview (WP-25, D-77; lunch WP-26, D-78), as
+// Alex of the demo family.
 // The done-when: a full week is planned through the app (a meal added to the library, a dinner every
 // day, two snacks put in order), then copied to the week after with skip (a dinner already planned
-// there is kept) and with overwrite (it is replaced). The weeks used are two and three weeks ahead,
-// clear of the seeded week, and are cleared again afterwards.
+// there is kept) and with overwrite (it is replaced). Then school lunch: Maya's usual week set, one
+// school day changed and changed back. The weeks used are two and three weeks ahead, clear of the
+// seeded week, and are cleared again afterwards (Maya's usual lunch put back as seeded).
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const MEAL = 'Lasagne e2e';
@@ -32,10 +34,15 @@ const plan = (from: string) =>
          left join public.meal m on m.id = e.meal_id
          left join public.member p on p.id = e.member_id
         where e.household_id = '${DEMO}' and e.plan_date between '${from}' and '${addDays(from, 6)}'`);
+const maya = () =>
+  sql(`select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`);
 const clear = () =>
   sql(`delete from public.meal_plan_entry where household_id = '${DEMO}'
          and plan_date between '${weekStart(2)}' and '${addDays(weekStart(3), 6)}';
-       delete from public.meal where household_id = '${DEMO}' and name = '${MEAL}'`);
+       delete from public.meal where household_id = '${DEMO}' and name = '${MEAL}';
+       delete from public.lunch_override where household_id = '${DEMO}';
+       update public.member_lunch set defaults = '{"fri": "buy"}'
+        where household_id = '${DEMO}' and member_id = '${maya()}'`);
 
 test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
@@ -165,4 +172,45 @@ test('[MEAL-03][US-702] done-when: copied to the next week with skip, then with 
   await expect(admin.getByRole('status')).toHaveText('Removed from the plan.');
   expect(plan(first)).toContain(`${first} dinner ${MEAL}`);
   expect(plan(second)).not.toContain(`${second} dinner ${MEAL}`);
+});
+
+test('[MEAL-04][US-703] school lunch: Maya’s usual week set, then one school day changed and changed back', async () => {
+  // The first school day of the week two weeks on, as Maya's school year has it.
+  const day =
+    sql(`select d::date::text from generate_series('${first}'::date, '${first}'::date + 6, '1 day') d
+                    where public.resolve_day_type('${maya()}', d::date) = 'school_day' order by d limit 1`);
+  test.skip(!day, 'no school day that week in the demo family’s year');
+  const weekday = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][
+    new Date(`${day}T12:00:00Z`).getUTCDay()
+  ]!;
+  const words: Record<string, string> = {
+    mon: 'Monday',
+    tue: 'Tuesday',
+    wed: 'Wednesday',
+    thu: 'Thursday',
+    fri: 'Friday',
+  };
+  await admin.goto(`/admin/meals?week=${first}`);
+  const usual = admin.getByRole('form', { name: 'Maya’s usual lunches' });
+  await usual.getByRole('combobox', { name: words[weekday] }).selectOption('buy');
+  await usual.getByRole('button', { name: 'Save Maya’s usual lunches' }).click();
+  await expect(admin.getByRole('status')).toHaveText('Usual lunches saved.');
+  expect(sql(`select public.lunch_mode('${maya()}', '${day}')`)).toBe('buy');
+
+  const lunch = admin.getByRole('region', { name: 'School lunch' });
+  await lunch
+    .getByRole('button', { name: new RegExp(`^Maya, .*: buy\\. Change to bring$`) })
+    .first()
+    .click();
+  await expect(admin.getByRole('status')).toHaveText('Lunch changed.');
+  expect(
+    sql(`select public.lunch_mode('${maya()}', '${day}') || ':' || count(*) from public.lunch_override
+               where member_id = '${maya()}'`),
+  ).toBe('bring:1');
+  await expect(lunch.getByRole('row', { name: /^Maya/ })).toContainText('Changed');
+  await lunch
+    .getByRole('button', { name: /^Maya, .*: bring \(changed\)\. Change to buy$/ })
+    .click();
+  await expect(admin.getByRole('status')).toHaveText('Lunch changed.');
+  expect(sql(`select count(*) from public.lunch_override where member_id = '${maya()}'`)).toBe('0');
 });

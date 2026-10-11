@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.81: WP-26 in review (PR #56): lunch, buy or bring (D-78).
 > v0.8.80: WP-25 in review (PR #55): the meal library and the weekly planner (D-77).
 > v0.8.73: WP-47 done (PR #50): the board fits its screen, and a text size per board.
 > v0.8.72: WP-47 in review (PR #50): the board fits its screen, and a text size per board (D-73).
@@ -153,7 +154,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Done (PR #43) |
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
 | WP-25 | Meal library and weekly planner | P2 | M | WP-04 | In review (PR #55) |
-| WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Queued |
+| WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | In review (PR #56) |
 | WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Ready |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Queued |
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Ready (SPIKE-02's CalDAV part first) |
@@ -681,6 +682,10 @@ flowchart LR
 **Phase:** P2 · **Size:** S · **Depends on:** WP-21, WP-25 · **Reqs:** MEAL-04
 - `lunch_override`, weekday defaults per child, per-date overrides, only on school days.
 - **Done when:** the effective mode resolves correctly across a break week (pgTAP).
+- As built (D-78):
+  - **School lunch** on **Meals**: each child's week, a school day's **Buy** or **Bring** a tap to change, a changed day marked, other days saying why; each child's **Usual week**, Monday to Friday.
+  - **Database:** `member_lunch` (the usual week, on the child), `lunch_override` (differences only); `lunch_mode()`, `lunch_week()`, `set_lunch()`, `set_lunch_defaults()`. Only children, only their school days.
+  - **Done when:** pgTAP `350_lunch` (19): the effective mode across a break week, and Leo on his own school's year choosing all that week; the preview's `meals.spec.ts` sets a usual week and changes a day and back.
 
 ### WP-27 — School menu adapters and import
 **Phase:** P2 · **Size:** L · **Depends on:** WP-21, WP-07 · **Reqs:** MENU-01, MENU-02, MENU-03, MENU-04, MENU-05, MEAL-05

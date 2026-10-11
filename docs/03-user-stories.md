@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.31: US-703 as built (WP-26, D-78): school lunch, buy or bring, on Meals.
 > v0.8.30: US-701 and US-702 as built (WP-25, D-77): the week's meals and the meal library; copy last week, keeping or replacing what is planned.
 > v0.8.27: US-1007 (WP-47, D-73): the board fits any screen, and each board has a text size.
 > v0.8.26: US-1003 as built (WP-45, D-69): the board shows the sky, the temperature now and today's high beside the clock, credited to Open-Meteo; the place is set once on Home by town or ZIP code, in °F or °C; with the source failing the weather hides and nothing else changes.
@@ -489,6 +490,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P2 · **Reqs:** MEAL-04
 - Given defaults of Friday = buy and others = bring, when I open a school week, then each day shows the default and I can override a single date.
 - Given a weekend or break day, when I view lunch, then no buy/bring selector is shown.
+- As built (WP-26, D-78): **School lunch** on **Meals**: each child's week, a school day's **Buy** or **Bring** a tap to change (a changed day says **Changed**; changing it back to the usual removes the change), other days saying why (**Weekend**, **Break**, **No school**); then each child's **Usual week**, Monday to Friday.
 
 ### US-704 — See the school menu on buy days
 **As an** admin **I want** buy days to show that day's school lunch **so that** I know what my child is choosing from.

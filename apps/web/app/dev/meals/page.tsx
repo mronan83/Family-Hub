@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import { MealLibraryView } from '../../(admin)/admin/meals/library/view';
 import { MealsView } from '../../(admin)/admin/meals/view';
+import type { LunchChild, LunchMode } from '@/lib/lunch';
 import { type MealRow, type PlanEntry, type Slot, weekDays } from '@/lib/meals';
 
 // The admin Meals pages (WP-25) with a made-up family and no database, for the UI suite and the
 // guide's pictures: the week in Day or Evening (?theme=evening), opened to add a Wednesday snack
-// (?add=1), and the meal library (?page=library).
+// (?add=1), and the meal library (?page=library). School lunch (WP-26): Thursday is a day off, Leo's
+// Tuesday is changed to buy.
 export const metadata: Metadata = { title: 'Meals', robots: { index: false } };
 
 const MAYA = 'f2000000-0000-4000-8000-000000000001';
@@ -75,6 +77,27 @@ const ENTRIES: PlanEntry[] = [
   entry(6, 'breakfast', { meal: 4 }),
 ];
 
+// Sun … Sat: weekends and Thursday's day off have no school lunch.
+const lunchDays = (modes: (LunchMode | null)[], changed: number[] = []) =>
+  weekDays(WEEK).map((date, i) => ({
+    date,
+    dayType: i === 0 || i === 6 ? 'weekend' : i === 4 ? 'no_school' : 'school_day',
+    mode: modes[i] ?? null,
+    changed: changed.includes(i),
+  }));
+const LUNCH: LunchChild[] = [
+  {
+    memberId: LEO,
+    usual: { wed: 'buy' },
+    days: lunchDays([null, 'bring', 'buy', 'buy', null, 'bring', null], [2]),
+  },
+  {
+    memberId: MAYA,
+    usual: { fri: 'buy' },
+    days: lunchDays([null, 'bring', 'bring', 'bring', null, 'buy', null]),
+  },
+];
+
 export default async function DevMealsPage({
   searchParams,
 }: {
@@ -100,6 +123,7 @@ export default async function DevMealsPage({
           ]}
           addAt={p.add ? { day: TODAY, slot: 'snack' } : null}
           newId="f2e10000-0000-4000-8000-0000000000ff"
+          lunch={LUNCH}
           notice={null}
           error={null}
         />

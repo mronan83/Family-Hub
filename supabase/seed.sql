@@ -321,3 +321,9 @@ begin
     ('0de00000-0000-4000-8000-000000072008', v_demo, v_week + 5, 'dinner', 1, null, null, 'Pizza and a movie', null, v_alex),
     ('0de00000-0000-4000-8000-000000072009', v_demo, v_week + 6, 'breakfast', 1, null, '0de00000-0000-4000-8000-000000071004', null, null, v_alex);
 end $$;
+
+-- [MEAL-04] School lunch (WP-26): Leo buys on Wednesdays, Maya on Fridays; they bring the rest.
+insert into public.member_lunch (member_id, household_id, defaults)
+select m.id, m.household_id, case m.display_name when 'Leo' then '{"wed": "buy"}' else '{"fri": "buy"}' end::jsonb
+  from public.member m
+ where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name in ('Leo', 'Maya');

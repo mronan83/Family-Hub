@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { type LunchChild, lunchFromDb } from '@/lib/lunch';
 import type { MealRow, PlanEntry, Slot } from '@/lib/meals';
 
 // Meals (WP-25), read through RLS as the parent: the library, and a week's plan.
@@ -69,4 +70,15 @@ export async function loadPlan(
     freeText: e.free_text,
     notes: e.notes,
   }));
+}
+
+/** [MEAL-04] Each child's lunch for the week from `from`: buy, bring, or none (and why). */
+export async function loadLunch(
+  db: SupabaseClient,
+  householdId: string,
+  from: string,
+): Promise<LunchChild[]> {
+  const { data, error } = await db.rpc('lunch_week', { p_household: householdId, p_from: from });
+  if (error) throw new Error(`lunch: ${error.message}`);
+  return lunchFromDb(data as Parameters<typeof lunchFromDb>[0]);
 }

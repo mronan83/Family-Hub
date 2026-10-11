@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.48: school lunch (WP-26, D-78): buy or bring per child and school day, through `set_lunch()`, `set_lunch_defaults()` and `lunch_week()`.
 > v0.8.47: meal planning (WP-25, D-77): the admin app's Meals page and meal library, through RLS and `add_meal_entry()`, `move_meal_entry()`, `copy_meal_week()`.
 > v0.8.42: the board fits the screen it is on (WP-47, D-73): it zooms its 1920×1080 canvas to the screen, times its text size, so Chromium's device scale factor no longer matters (§7, §8).
 > v0.8.41: Help in the admin app (D-72): `/help` is the user guide (`07`) made into a static page when the app is built, open without signing in (§3, §5.10).
