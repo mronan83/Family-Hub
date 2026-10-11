@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.29: US-409 and US-406's preview as built (WP-39, D-75): goals pay points or a reward from the shop when reached, undone with the goal; Preview before saving a change.
 > v0.8.27: US-1007 (WP-47, D-73): the board fits any screen, and each board has a text size.
 > v0.8.26: US-1003 as built (WP-45, D-69): the board shows the sky, the temperature now and today's high beside the clock, credited to Open-Meteo; the place is set once on Home by town or ZIP code, in °F or °C; with the source failing the weather hides and nothing else changes.
 > v0.8.25: US-1001, US-1002, US-1004 and US-1006 as built (WP-35, D-66, D-67): the home screen is a family dashboard (the calendar, one list of today's items with the faces of whose they are, then cards), laid out by the household or a board's own layout; the column per person moves to Chores; every tile is one height with "More info". US-1003 (weather) moves to WP-45.
@@ -356,6 +357,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a goal is achieved because of a chore that is later reversed, when evaluated, then the goal returns to `active`, its progress drops, and a points payout is reversed by a ledger entry.
 - Given the reward for that goal was already fulfilled, when the goal becomes unachieved, then the fulfilled status is kept and the admin sees a review flag; the points reversal still posts.
 - Given the goal is met again, when evaluated, then it is achieved again with a new celebration and a new payout.
+- As built (WP-39, D-75): the goal form's **What reaching it pays**: just the celebration, points (1 to 10,000; a family goal pays each child who earns rewards), or a reward from the shop (a child's goal only), approved at once and costing nothing. A redeemed goal no longer met is flagged once and its points taken back; met again, they are put back.
 
 ### US-403 — See progress toward the goal
 **As a** kid **I want** a visual path to my reward **so that** I can see how close I am.
@@ -380,6 +382,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P1 · **Reqs:** RWD-10, RWD-04
 - Given an active goal, when I edit a target and open the preview, then I see old vs new progress computed from full history.
 - Given I save, when evaluation runs, then a `rules_changed` and `recomputed` event are logged.
+- As built (WP-39, D-75): **Preview** on the goal form works the goal out from every check-off as the form has it, saving nothing: a line saying what saving would do (reach it and pay, take it back and what it paid, end it, or how its progress moves) and each rule's progress now and after saving.
 
 ### US-407 — Progress stays correct after glitches
 **As a** parent **I want** progress to be correct even after outages or retries **so that** my child never loses credit.

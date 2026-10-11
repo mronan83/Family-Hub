@@ -4,9 +4,9 @@ import type { GoalRow } from '../../(admin)/admin/goals/data';
 import { GoalForm } from '../../(admin)/admin/goals/goal-form';
 import { GoalsView } from '../../(admin)/admin/goals/view';
 
-// The admin Goals page and goal form (WP-19) with a made-up family and no database, for the UI suite:
-// the list in Day or Evening (?theme=evening), the form for a new goal (?form=new) and for one that
-// has started (?form=started).
+// The admin Goals page and goal form (WP-19, WP-39) with a made-up family and no database, for the UI
+// suite: the list in Day or Evening (?theme=evening), the form for a new goal (?form=new), for one
+// that has started (?form=started), and that one with a preview of a change (?form=preview).
 export const metadata: Metadata = { title: 'Goals', robots: { index: false } };
 
 const MAYA = 'f2000000-0000-4000-8000-000000000001';
@@ -14,6 +14,11 @@ const LEO = 'f2000000-0000-4000-8000-000000000002';
 const MORNING = 'f2a00000-0000-4000-8000-000000000001';
 const KITCHEN = 'f2a00000-0000-4000-8000-000000000002';
 const BED = 'f2c00000-0000-4000-8000-000000000001';
+const ICE_CREAM = 'f2f00000-0000-4000-8000-000000000001';
+const PRIZES = [
+  { id: ICE_CREAM, title: 'Ice cream', cost: 30 },
+  { id: 'f2f00000-0000-4000-8000-000000000002', title: 'Stay up 30 minutes late', cost: 25 },
+];
 
 const goal = (o: Partial<GoalRow> & Pick<GoalRow, 'id' | 'title' | 'status'>): GoalRow => ({
   memberId: LEO,
@@ -24,6 +29,7 @@ const goal = (o: Partial<GoalRow> & Pick<GoalRow, 'id' | 'title' | 'status'>): G
   startDate: '2026-10-03',
   endDate: '2026-10-17',
   logic: 'all',
+  payout: { type: 'custom' },
   achievementCount: 0,
   achievedAt: null,
   redeemedAt: null,
@@ -44,6 +50,7 @@ const GOALS: GoalRow[] = [
     description: 'Leo picks the film.',
     icon: 'ticket',
     status: 'active',
+    payout: { type: 'points', amount: 50 },
     pct: 94.74,
     rules: [
       {
@@ -62,6 +69,8 @@ const GOALS: GoalRow[] = [
     memberId: MAYA,
     icon: 'sun',
     status: 'achieved',
+    payout: { type: 'catalog_item', item_id: ICE_CREAM },
+    needsReview: true,
     achievementCount: 2,
     pct: 100,
     logic: 'all',
@@ -161,8 +170,8 @@ export default async function DevGoalsPage({
 }) {
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
-  if (params.form === 'new' || params.form === 'started') {
-    const started = params.form === 'started';
+  if (params.form === 'new' || params.form === 'started' || params.form === 'preview') {
+    const started = params.form !== 'new';
     return (
       <div className={`admin ${theme}`}>
         <main className="fw-page">
@@ -174,8 +183,33 @@ export default async function DevGoalsPage({
               members={MEMBERS}
               tags={TAGS}
               items={ITEMS}
+              prizes={PRIZES}
               today="2026-10-10"
               lock={started ? 'started' : 'none'}
+              preview={
+                params.form === 'preview'
+                  ? {
+                      outcome:
+                        'Saving takes it back to going: 88% there, and Ice cream from the shop is called off (if it was already given, the goal is flagged for a look).',
+                      before: 'Reached',
+                      after: '88% there',
+                      rows: [
+                        {
+                          text: '6 good days in a row (1 miss a week forgiven)',
+                          before: null,
+                          after: '5 of 6',
+                          met: false,
+                        },
+                        {
+                          text: '25 things done, tagged Morning',
+                          before: null,
+                          after: '22 of 25',
+                          met: false,
+                        },
+                      ],
+                    }
+                  : undefined
+              }
               initial={
                 started
                   ? {
@@ -186,6 +220,7 @@ export default async function DevGoalsPage({
                       startDate: '2026-10-03',
                       endDate: '2026-10-24',
                       logic: 'any',
+                      payout: { type: 'catalog_item', item_id: ICE_CREAM },
                       rules: [
                         {
                           type: 'STREAK',
@@ -223,6 +258,7 @@ export default async function DevGoalsPage({
           items: new Map(ITEMS.map((t) => [t.id, t.title])),
         }}
         admins={new Map([['u1', 'Alex']])}
+        prizes={new Map(PRIZES.map((p) => [p.id, p.title]))}
         timezone="America/New_York"
         notice={null}
         error={null}

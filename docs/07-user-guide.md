@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.8: goals pay out (WP-39, D-75): points or a reward from the shop when a goal is reached, taken back if a check-off it needed is undone; **Preview** before changing a goal (A7, B1.8, B3, B5, B7).
 > v0.6: the board fits any screen, and each board has a text size (WP-47, D-73): A14, Boards, the rules, troubleshooting and questions.
 > v0.5: Help in the admin app (D-72): this guide is **Help** in the menu, open before you sign in too.
 > v0.4: more icons and colors (WP-46, D-70): one icon picker everywhere, with **Find an icon** and groups; sixteen named colors; the weather's own sky icons; how the board stays easy to read for everyone (A12).
@@ -511,7 +512,7 @@ A child can pin one reward as their wish. On their screen, **Saving for** shows 
 On **Rewards**, a reward someone is saving for says so ("Maya is saving for it").
 
 ### A7 Goals and celebrations
-<!-- covers: US-401 US-402 US-403 US-404 US-405 US-406 US-407 -->
+<!-- covers: US-401 US-402 US-403 US-404 US-405 US-406 US-407 US-409 -->
 
 **What this is.** Something to work toward, for one child or the whole family, with rules that check-offs fill in. **When.** Whenever you want a target: a movie night after 20 things done, a trip after a week of good days. **How.** On **Goals**, choose **Set a goal**.
 
@@ -527,7 +528,11 @@ On **Rewards**, a reward someone is saving for says so ("Maya is saving for it")
    - **Points earned**: points from items done.
 5. Choose **What counts**: **Everything**, **Some tags** or **Some items**.
 6. Optionally, **Add a rule** (up to 5), and choose whether **It's reached when** **Every rule is met** or **Any one rule is met**.
-7. Pick an **Icon**, or add a **Photo**, then choose **Set goal**.
+7. Choose **What reaching it pays**:
+   - **Just the celebration**: you give the reward yourself and mark it redeemed.
+   - **Points**: **Points paid** (1 to 10,000) go to the child when it's reached. A family goal pays them to each child who earns rewards.
+   - **A reward from the shop** (a child's goal only): choose the **Reward**. It is approved for them at once and costs them nothing; you mark it given on **Rewards** as usual. A reward taken out of the shop can still be a goal's prize.
+8. Pick an **Icon**, or add a **Photo**. To see where it would start from what's already done, choose **Preview**. Then choose **Set goal**.
 
 ![The goal form on a phone: Name, Description, Who it's for (Maya, Leo or The whole family), Starts, Ends, a rule with Counts, Target and What counts, Add a rule, the icon picker (Chosen: trophy, Find an icon, the groups and their icons), Photo and Set goal.](guide/img/admin-goal-form-phone.jpg "Setting a goal, on a phone")
 
@@ -545,17 +550,26 @@ The board celebrates it full-screen, once, on whichever board shows it first: "L
 
 ![The board celebrating: "Leo reached Bike ride!", "Well done! A grown-up will sort out the reward." and a Yay! button.](guide/img/board-celebrate.jpg "A goal reached, celebrated once")
 
-Then, on **Goals**, give the reward in real life and choose **Mark redeemed**. The goal moves to **History**.
+What it pays is paid at the same moment, once, however often its progress is worked out: the points show in the child's points, or the reward from the shop is on **Rewards** under **To give**, marked "Reached" and the goal's name. Then, on **Goals**, give the reward in real life and choose **Mark redeemed**. The goal moves to **History**.
+
+If a check-off the goal needed is undone, the goal goes back to going and what it paid is undone too, once: its points are taken back (the balance can go below zero), and a reward from the shop not yet given is called off. Reached again, it pays again. A reward already marked given stays given, and the goal is marked **Needs a look**.
 
 A child's own check-offs celebrate too, in a small way: when a check-off earns points, the check pops and the points count up. A check-off by someone who doesn't earn rewards doesn't celebrate.
 
 #### Change or cancel a goal
 
-Choose **Change** to open a goal. Before it starts, everything can change. Once it has started, who it's for and its start date stay as they are; changing its rules or end date works its progress out again from every check-off. Once it is redeemed, ended or cancelled, its rules and dates stay as they are.
+Choose **Change** to open a goal. Before it starts, everything can change. Once it has started, who it's for and its start date stay as they are; changing its rules or end date works its progress out again from every check-off. What it pays can change until it finishes, and applies the next time it is reached. Once it is redeemed, ended or cancelled, its rules, dates and payout stay as they are.
+
+Before you save a change, choose **Preview**. It works the goal out from every check-off as the form has it, and nothing is saved:
+
+- a line saying what saving would do: reach it now (and what it pays), take it back to going (and take back what it paid), end it, or how its progress moves;
+- a table with each rule's progress **Now** and **After saving** (a rule you changed shows **New or changed**), and the goal's.
+
+![The preview of a change on a phone: "Saving takes it back to going: 88% there, and Ice cream from the shop is called off", then each rule now and after saving.](guide/img/admin-goal-preview-phone.jpg "Preview before saving a change")
 
 The goal's page lists **What happened** to it, with when and who. **Cancel** (the goal's name) stops it counting and moves it to **History**. Goals are never deleted.
 
-A goal marked **Needs a look** was redeemed and then a check-off it needed was undone. Have a look, then choose **Clear**.
+A goal marked **Needs a look** had its reward given (redeemed, or its reward from the shop marked given) and then a check-off it needed was undone. A redeemed goal stays redeemed; points it paid are taken back, and put back if it is met again. Have a look, then choose **Clear**: it isn't marked again unless it stops being met again.
 
 ### A8 Streaks and insights
 <!-- covers: US-408 -->
@@ -853,17 +867,17 @@ A member who doesn't earn rewards can't be given points; what they earned before
 **The reward form:** **Name** (up to 80), **Cost in points** (1 to 100,000), **Description (optional)** (up to 300), **Icon, shown when there's no photo**, **Photo (optional)** (JPEG, PNG or WebP, up to 2 MB), **How many there are (optional)** (blank for as many as are asked for), **Times each child may ask in a week (optional)** (1 to 100), **In the shop now**. **Add reward** or **Save changes**. A reward's page also has **Remove photo** and **Archive** / **Put back**.
 
 #### B1.8 Goals
-<!-- covers: US-401 US-405 US-406 -->
+<!-- covers: US-401 US-405 US-406 US-409 -->
 
 | Part | What it shows or does |
 |---|---|
 | **Set a goal** | Opens the goal form. |
-| Goals in play | Each goal: picture, name, who and dates, state (**Starts later**, **Going**, **Achieved**, **Achieved again**), a meter per rule, **Mark redeemed** when achieved, **Change**. "Working out its progress…" before its first evaluation. |
+| Goals in play | Each goal: picture, name, who and dates, what it pays ("Pays 10 points", "Pays Ice cream from the shop"), **Needs a look** if flagged, state (**Starts later**, **Going**, **Achieved**, **Achieved again**), a meter per rule, **Mark redeemed** when achieved, **Change**. "Working out its progress…" before its first evaluation. |
 | **History** | Goals **Redeemed** (when and by whom), **Ended**, or **Cancelled**; **Needs a look** if flagged; **Details**. |
 
-**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Starts**, **Ends (optional)**, one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **What counts**), **Add a rule**, **It's reached when**, an icon, **Photo (optional)**. **Set goal** or **Save changes**.
+**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Starts**, **Ends (optional)**, one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **What counts**), **Add a rule**, **It's reached when**, **What reaching it pays** (**Just the celebration**, **Points** with **Points paid** 1 to 10,000, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
 
-**A goal's page:** who, state and "% there"; **Clear** for a **Needs a look** flag; **Remove photo**; the form (locked as the goal progresses, see [A7](#change-or-cancel-a-goal)); **What happened** (set up, started, rules or dates changed, progress worked out again with the old and new %, achieved, back to going, redeemed, ended, cancelled); **Cancel**.
+**A goal's page:** who, state and "% there"; **Clear** for a **Needs a look** flag; **Remove photo**; the form (locked as the goal progresses, see [A7](#change-or-cancel-a-goal)); **What happened** (set up, started, rules or dates changed, what it pays changed, progress worked out again with the old and new %, achieved and what it paid, back to going, payout undone, points put back, needs a look, redeemed, ended, cancelled); **Cancel**.
 
 #### B1.9 Insights
 <!-- covers: US-408 -->
@@ -1076,6 +1090,7 @@ Every state is an icon, a word and a color together, in both themes. The board u
 | "Last seen" on **Boards** | The board reports in every 5 minutes while open. |
 | Sending saved check-offs | Retried after 1, 2, 5 and 10 seconds, then every 30 seconds, and at once when the network returns. |
 | Goal celebration | Once per achievement, on one board; up to 10 seconds. |
+| Goal payout | Once per achievement, when it is reached. Undone once if the goal goes back to going (points taken back, a reward not yet given called off); paid again when it is reached again. |
 | A new day | At the household's midnight, the board reads the new day by itself. |
 | Weather | Read every 30 minutes; hidden once the last good reading is over 75 minutes old. Offline, the last reading stays for that day. |
 
@@ -1155,7 +1170,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Points by hand | 1 to 10,000, with a reason of up to 200 characters |
 | Reward cost | 1 to 100,000 points; weekly limit 1 to 100 |
 | Bonus | 1 to 1,000 points; a streak of 2 to 365 days |
-| Goal | 1 to 5 rules; target 1 to 100,000; 0 to 3 misses forgiven a week |
+| Goal | 1 to 5 rules; target 1 to 100,000; 0 to 3 misses forgiven a week; pays 1 to 10,000 points, or one reward from the shop (a child's goal) |
 | Photos | JPEG, PNG or WebP, up to 2 MB |
 | Password | At least 8 characters |
 | Setup code · invite link · pairing code | Once, for 24 hours · once, for 7 days · once, for 10 minutes |
@@ -1224,7 +1239,9 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 
 **We have two boards. Do they differ?** Each board can have its own calendars, its own home screen layout and its own theme. A reached goal is celebrated on one board only.
 
-**A goal was reached. Where's the reward?** You give it in real life, then choose **Mark redeemed** on **Goals**. Goals don't pay out points or rewards by themselves yet.
+**A goal was reached. Where's the reward?** If it pays points, they are already in the child's points. If it pays a reward from the shop, it is on **Rewards** under **To give**. Either way, or if it pays just the celebration, you give the reward in real life, then choose **Mark redeemed** on **Goals**.
+
+**Points from a goal disappeared.** A check-off the goal needed was undone, so the goal went back to going and its points were taken back. Check the item off again and the goal is reached again, and pays again. The goal's **What happened** says when.
 
 **Does an adult earn points?** Only with **Earns rewards** switched on, for example for a family challenge.
 
@@ -1285,7 +1302,6 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 These are planned but not built yet. This guide will cover each as it arrives.
 
 - **Meals:** a weekly meal plan, lunch bought or brought, the school lunch menu, and the **Dinner and lunch** card on the board.
-- **Goal payouts:** a goal that pays points or a reward by itself, and a preview before changing a goal's rules.
 - **Audit log:** a page showing who changed what, and when.
 - **Export and delete** your household's data.
 - **Sign in with Apple** and passkeys.

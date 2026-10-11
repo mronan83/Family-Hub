@@ -157,7 +157,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | RWD-01 | US-401 | WP-19 | ADM, API | reward_goal | E2E |
 | RWD-02 | US-312, US-401 | WP-15 | RULES, DB | reward_rule, tag | U |
 | RWD-03 | US-401 | WP-15 | RULES | reward_goal | U |
-| RWD-04 | US-406, US-407 | WP-19, WP-39 | RULES, API, SCHED, DB | reward_rule_progress, reward_goal_progress | U, INT, DB |
+| RWD-04 | US-406, US-407 | WP-19, WP-39 | RULES, API, SCHED, DB | reward_rule_progress, reward_goal_progress, points_ledger | U, INT, DB, E2E |
 | RWD-05 | US-402 | WP-15 | RULES | reward_rule | U |
 | RWD-06 | US-405 | WP-19 | RULES, SCHED, API | reward_goal, reward_goal_event | U, INT |
 | RWD-07 | US-403 | WP-20, WP-44 | BRD | reward_goal_progress | E2E |
@@ -166,7 +166,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | RWD-10 | US-406 | WP-39 | ADM, RULES | reward_goal, reward_rule | U, E2E |
 | RWD-11 | US-408 | WP-15, WP-17 | DB, SCHED, RULES | member_daily_summary, streak_segment | U, DB, INT, E2E |
 | RWD-12 | US-408 | WP-17 | ADM, RULES | member_daily_summary, streak_segment | E2E, U, DB |
-| RWD-13 | US-409 | WP-39 | RULES, API, DB | reward_goal, points_ledger, redemption | U, INT |
+| RWD-13 | US-409 | WP-39 | RULES, API, DB | reward_goal, points_ledger, redemption | U, INT, DB, E2E |
 | CAL-01 | US-501 | WP-22 | ADM, CALSYNC, VAULT | calendar_source | INT, E2E |
 | CAL-02 | US-502 | WP-22 | CALSYNC, SCHED | calendar_event, calendar_event_instance | U, INT |
 | CAL-03 | US-501 | WP-22 | CALSYNC, ADM, BRD | — | REV |
@@ -397,6 +397,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.77 | WP-39 goal payouts, payout reversal and the rule-change preview (RWD-04, RWD-10, RWD-13, US-406, US-409, D-75), in review (PR #53): a goal pays points (to each child who earns rewards, for a family goal) or a reward from the shop (approved at once, costing nothing) in the transaction that records its achievement; undone, its points are taken back once and an ungiven reward called off, a given one flagging the goal; reached again, it pays as n + 1; a redeemed goal's points are taken back and put back as it stops and starts being met; the goal form's Preview says what saving would do and shows each rule now and after, saving nothing. Tests: pgTAP 320 (43: what a goal may pay, paid once with the job twice, taken back once, n + 1, the shop reward called off without a refund and kept once given with the flag, the family goal, the redeemed goal's swings, the preview's facts and who may read them), 140 and 170 (the ledger writer's new arguments); unit (`goals`: the payout in the form, the preview and its words, the history's words); the UI suite (`goals.spec`: what each goal pays, the payout field, the preview, on a phone and a laptop; `rewards.spec`: a goal's reward to give); e2e (`goal-payouts.spec`: the done-when, and the preview on the preview). |
 | 0.8.73 | WP-47 done (PR #50): approved by the owner and merged once CI and e2e were green on the preview (116 passed, no retries, on `82cc230`; the done-when: a parent set the paired board to Larger on Boards and the board zoomed to 1.15 377 ms after the save, without a reload). The user guide says how (version 0.6, A14). |
 | 0.8.72 | WP-47 the board fits its screen, and a text size per board (BRD-08, US-1007, D-73), in review (PR #50): the board zooms its 1920×1080 layout to the screen (the smaller of width ÷ 1920 and height ÷ 1080, 0.5 to 4×), set before the first paint by `boardFitScript()` and on every resize, so a 4K panel at device scale 1 shows the 1080p layout twice as large and a laptop's window smaller; **Text size** on Boards (Smaller 0.85×, Standard, Larger 1.15×, Largest 1.3×) in `board_config.text_size`, checked, carried by the snapshot, remembered by the board for its next start; under 1800 board px the dashboard puts the list under the calendar; viewport units, the bar's height and the calendar's swipe are in the board's own px. Tests: pgTAP 310 (the four sizes, who sets them, the snapshot) and 070; unit (`board-fit`: the zoom, the first-paint script agreeing with it; `board`: the snapshot's size); the UI suite (`board-fit.spec`: five screens, four sizes, More info at Largest, a resize, a swipe at 4K, the first paint at a remembered size); e2e (`board-fit.spec`: the done-when). |
 | 0.8.71 | Help in the admin app (D-72) done (PR #49): approved by the owner and merged once CI and e2e were green on the preview (114 passed, no retries, on `70f00dc`, with WP-46 merged in). The user guide is **Help** in the admin app (version 0.5); the published guide page stays as well. |

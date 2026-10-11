@@ -5,7 +5,19 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { FormState } from '@/lib/auth/messages';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
-import { goalPayload, goalRefusal, parseGoalForm } from '@/lib/goals';
+import {
+  describeRule,
+  type GoalFormValue,
+  type GoalPayout,
+  goalPayload,
+  type GoalRead,
+  goalRefusal,
+  parseGoalForm,
+  payoutWords,
+  previewGoal,
+  previewOutcome,
+  type PreviewRead,
+} from '@/lib/goals';
 import { log } from '@/lib/log';
 import { checkPhoto } from '@/lib/rewards';
 import { serverClient } from '@/lib/supabase/server';
@@ -20,13 +32,122 @@ async function context() {
   return { db: db!, household };
 }
 
+/** One rule's progress before and after, in the parent's words. */
+export interface GoalPreviewRow {
+  text: string;
+  before: string | null;
+  after: string;
+  met: boolean;
+}
+
+/** [RWD-10] What the form's Preview shows: each rule now and after, and what saving would do. */
+export interface GoalPreviewView {
+  outcome: string;
+  before: string | null;
+  after: string;
+  rows: GoalPreviewRow[];
+}
+
+export interface GoalFormState extends FormState {
+  preview?: GoalPreviewView;
+}
+
+const progressWords = (r: { value: number; target: number; met: boolean }) =>
+  `${r.value.toLocaleString('en-US')} of ${r.target.toLocaleString('en-US')}${r.met ? ', met' : ''}`;
+const goalWords = (s: { pct: number; achieved: boolean }) =>
+  s.achieved ? 'Reached' : `${Math.round(s.pct)}% there`;
+
 /**
- * [RWD-01][RWD-02][RWD-03] Sets a goal or changes one: its name, who it's for (a child who earns
- * rewards, or the whole family), its dates, its rules and how they combine, an icon and optionally a
- * photo (the shop's bucket and limits). The form carries the goal's id, so sending it twice is one
+ * [RWD-10][US-406] The goal as the form has it, worked out from every check-off without saving
+ * anything: each rule's progress now and after the change, and what saving would do (reach it and
+ * pay, take it back and what it paid, end it). A goal not yet set shows where it would start.
+ */
+async function preview(
+  db: Awaited<ReturnType<typeof serverClient>> & object,
+  householdId: string,
+  v: GoalFormValue,
+): Promise<GoalFormState> {
+  const read = await db.rpc('goal_preview_facts', {
+    p_goal: {
+      household_id: householdId,
+      id: v.id,
+      member_id: v.memberId,
+      start_date: v.startDate,
+      end_date: v.endDate,
+    },
+  });
+  if (read.error) {
+    log('warn', 'goal preview not read', { code: read.error.code, hint: read.error.hint });
+    return { message: 'The preview couldn’t be worked out just now. Try again in a moment.' };
+  }
+  const facts = read.data as PreviewRead;
+  let stored: GoalRead | null = null;
+  let storedPayout: GoalPayout | null = null;
+  if (facts.saved) {
+    const [old, goal] = await Promise.all([
+      db.rpc('goal_facts', { p_goal: v.id }),
+      db.from('reward_goal').select('payout, achievement_count').eq('id', v.id).maybeSingle(),
+    ]);
+    if (old.error) {
+      log('warn', 'goal preview not read', { code: old.error.code, hint: old.error.hint });
+      return { message: 'The preview couldn’t be worked out just now. Try again in a moment.' };
+    }
+    stored = old.data as GoalRead;
+    storedPayout = (goal.data?.payout as GoalPayout | undefined) ?? null;
+  }
+  const [{ data: tags }, { data: chores }, { data: prizes }] = await Promise.all([
+    db.from('tag').select('id, name').eq('household_id', householdId),
+    db.from('chore').select('id, title').eq('household_id', householdId),
+    db.from('reward_catalog_item').select('id, title').eq('household_id', householdId),
+  ]);
+  const names = {
+    tags: new Map((tags ?? []).map((t) => [t.id as string, t.name as string])),
+    items: new Map((chores ?? []).map((c) => [c.id as string, c.title as string])),
+  };
+  const prize = (id: string) => prizes?.find((p) => p.id === id)?.title as string | undefined;
+  const result = previewGoal(v, facts, stored);
+  const family = v.memberId === null;
+  // A rule's "now" is shown where the saved goal has the same rule in the same place.
+  const same = (i: number) => {
+    const old = stored?.rules[i];
+    return (
+      old !== undefined &&
+      describeRule(old as Parameters<typeof describeRule>[0], names) ===
+        describeRule(v.rules[i]!, names)
+    );
+  };
+  return {
+    preview: {
+      outcome: previewOutcome(result, {
+        saved: facts.saved,
+        pays: payoutWords(v.payout, family, prize),
+        paid: storedPayout ? payoutWords(storedPayout, family, prize) : null,
+        paidItem: storedPayout?.type === 'catalog_item',
+      }),
+      before: result.before ? goalWords(result.before) : null,
+      after: goalWords(result.after),
+      rows: v.rules.map((r, i) => {
+        const after = result.after.rules[i]!;
+        const before = same(i) ? result.before?.rules[i] : undefined;
+        return {
+          text: describeRule(r, names),
+          before: before ? progressWords(before) : null,
+          after: progressWords(after),
+          met: after.met,
+        };
+      }),
+    },
+  };
+}
+
+/**
+ * [RWD-01][RWD-02][RWD-03][RWD-13] Sets a goal or changes one: its name, who it's for (a child who
+ * earns rewards, or the whole family), its dates, its rules and how they combine, what reaching it
+ * pays, an icon and optionally a photo (the shop's bucket and limits). "Preview" (intent=preview)
+ * shows what the change would do instead of saving it (RWD-10). The form carries the goal's id, so sending it twice is one
  * goal. The database checks the rest (D-56) and logs what changed; new rules are recomputed.
  */
-export async function saveGoal(_prev: FormState, form: FormData): Promise<FormState> {
+export async function saveGoal(_prev: GoalFormState, form: FormData): Promise<GoalFormState> {
   const { db, household } = await context();
   const { data: members } = await db
     .from('member')
@@ -39,6 +160,7 @@ export async function saveGoal(_prev: FormState, form: FormData): Promise<FormSt
     memberIds: (members ?? []).map((m) => m.id as string),
   });
   if (!parsed.ok) return { message: parsed.message };
+  if (form.get('intent') === 'preview') return preview(db, household.id, parsed.value);
   const photo = checkPhoto(form.get('photo'));
   if (typeof photo === 'string') return { message: photo };
   const v = parsed.value;

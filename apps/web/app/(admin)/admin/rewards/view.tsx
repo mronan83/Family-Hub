@@ -93,7 +93,9 @@ export function RewardsView({
               {name(r.memberId)}: {title}
             </strong>
             <span className="fw-muted">
-              {pointsWord(r.cost)} · asked {dayAndTime(r.requestedAt, timezone)}
+              {r.goalTitle
+                ? `Reached ${r.goalTitle}, ${dayAndTime(r.requestedAt, timezone)}`
+                : `${pointsWord(r.cost)} · asked ${dayAndTime(r.requestedAt, timezone)}`}
               {extra ? ` · ${extra}` : ''}
             </span>
           </span>
@@ -194,8 +196,10 @@ export function RewardsView({
                     {button(
                       'cancel',
                       r,
-                      'Cancel and refund',
-                      `Cancel ${title} for ${name(r.memberId)} and refund`,
+                      r.goalTitle ? 'Cancel' : 'Cancel and refund',
+                      r.goalTitle
+                        ? `Cancel ${title} for ${name(r.memberId)}`
+                        : `Cancel ${title} for ${name(r.memberId)} and refund`,
                       'undo',
                     )}
                   </>,
