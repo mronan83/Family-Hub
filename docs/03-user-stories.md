@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.33: US-705 as built (WP-28, D-80): today's meals above Today's list on the board, the week on **Meals**, read-only.
 > v0.8.32: US-704 and US-801 to US-803 as built (WP-27, D-79): School menus from Nutrislice (picked), a file or typed in; a parent's days kept; a failing feed keeps its menus; a buy day shows the menu.
 > v0.8.31: US-703 as built (WP-26, D-78): school lunch, buy or bring, on Meals.
 > v0.8.30: US-701 and US-702 as built (WP-25, D-77): the week's meals and the meal library; copy last week, keeping or replacing what is planned.
@@ -509,6 +510,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P2 · **Reqs:** MEAL-06
 - Given today's plan, when I open the Meals tab, then I see today's four slots with pictures and a "Lunch: buying today / bringing today" label.
 - Given I try to edit a meal on the board, when I tap, then nothing changes (read-only).
+- As built (WP-28, D-80): **Today's meals** at the top of the home screen's Today's list (breakfast, snack, lunch, dinner, each with its picture; a child's lunch says **Buys** with the school's menu, or **Brings** with what is planned), and on each person's own screen their part of it. **Meals** in the rail shows the week, today marked, with **School lunch** each day. Nothing on either is a button.
 
 ### US-706 — Ready for a grocery list
 **As an** admin **I want** meals to hold ingredients **so that** a future grocery list can be generated.

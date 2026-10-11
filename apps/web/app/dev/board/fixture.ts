@@ -2,6 +2,8 @@ import type { Answer, CompletionEvent } from '@/lib/outbox';
 import type { MarkCelebrated } from '@/lib/board-goals';
 import type { AskFor, CancelAsk } from '@/lib/shop';
 import { type BoardLayout, DEFAULT_LAYOUT } from '@/lib/board-layout';
+import type { BoardMealEntry, BoardMeals, MealSlot } from '@/lib/board-meals';
+import type { LunchChild, LunchDay } from '@/lib/lunch';
 import type { BoardMember, BoardSnapshot, BoardWeather } from '@/lib/snapshot';
 import type { BoardCalendar, BoardEvent } from '@/lib/snapshot';
 import type { TodayItem } from '@/lib/today';
@@ -48,11 +50,104 @@ export function fixtureWeather(
   return base;
 }
 
+/**
+ * [MEAL-06] The made-up family's week of meals (WP-28), from Sunday: today is a school day when Leo
+ * buys (the school's menu says what) and Maya brings leftovers; tomorrow has no school; the weekend
+ * none. Breakfast, a snack each and dinner today. ?meals=none: a board with no meals planned.
+ */
+export function fixtureMeals(kind: string | undefined, today: string): BoardMeals | null {
+  if (kind === 'none') return null;
+  const dow = new Date(`${today}T12:00:00Z`).getUTCDay();
+  const weekFrom = day(-dow, today);
+  const dates = Array.from({ length: 7 }, (_, i) => day(i - dow, today));
+  let n = 0;
+  const entry = (
+    date: string,
+    slot: MealSlot,
+    name: string,
+    o: Partial<BoardMealEntry> = {},
+  ): BoardMealEntry => ({
+    id: `meal-${++n}`,
+    date,
+    slot,
+    memberId: null,
+    name,
+    icon: null,
+    notes: null,
+    ...o,
+  });
+  const dinners = [
+    'Roast chicken',
+    'Chicken soup',
+    'Tacos',
+    'Fish pie',
+    'Pizza and a movie',
+    'Stir fry',
+    'Pancakes',
+  ];
+  const entries: BoardMealEntry[] = [
+    entry(today, 'breakfast', 'Porridge', { icon: 'breakfast' }),
+    entry(today, 'snack', 'Apple slices', { icon: 'apple' }),
+    entry(today, 'snack', 'Crackers', { memberId: MAYA }),
+    entry(today, 'lunch', 'Leftover spaghetti', { memberId: MAYA }),
+    ...dates
+      .filter((d) => d !== today)
+      .map((d, i) => entry(d, 'dinner', dinners[i]!, { icon: i === 2 ? 'pizza' : null })),
+    entry(today, 'dinner', 'Spaghetti', { icon: 'cooking-pot', notes: 'Make extra' }),
+    entry(dates[6]!, 'lunch', 'Grilled cheese', { icon: 'sandwich' }),
+  ].sort((a, b) => a.date.localeCompare(b.date));
+  const diff = (d: string) => (Date.parse(d) - Date.parse(today)) / 86_400_000;
+  const type = (d: string) =>
+    d === today
+      ? 'school_day'
+      : diff(d) === 1
+        ? 'no_school'
+        : [0, 6].includes(new Date(`${d}T12:00:00Z`).getUTCDay())
+          ? 'weekend'
+          : 'school_day';
+  const menus: Record<number, string[]> = {
+    0: ['Cheese Pizza', 'Green Beans', 'Milk'],
+    2: ['Chicken Nuggets', 'Carrot Sticks'],
+    [-2]: ['Beef Tacos', 'Corn'],
+  };
+  const lunchDay = (d: string, buys: (k: number) => boolean, menu: boolean): LunchDay => {
+    const school = type(d) === 'school_day';
+    const mode = school ? (buys(diff(d)) ? 'buy' : 'bring') : null;
+    const items = menus[diff(d)];
+    return {
+      date: d,
+      dayType: type(d),
+      mode,
+      changed: false,
+      menu:
+        mode === 'buy' && menu && items
+          ? { items: items.map((name) => ({ name })), noService: false, note: null }
+          : null,
+    };
+  };
+  const lunch: LunchChild[] = [
+    {
+      memberId: LEO,
+      usual: {},
+      menuSourceId: 'menu-maple',
+      days: dates.map((d) => lunchDay(d, (k) => k % 2 === 0, true)),
+    },
+    {
+      memberId: MAYA,
+      usual: {},
+      menuSourceId: null,
+      days: dates.map((d) => lunchDay(d, (k) => k === 2, false)),
+    },
+  ];
+  return { weekFrom, entries, lunch };
+}
+
 export function fixtureSnapshot(
   today: string,
   now: Date,
   layout?: BoardLayout,
   weather: BoardWeather | null = fixtureWeather(undefined, today, now),
+  meals: BoardMeals | null = fixtureMeals(undefined, today),
 ): BoardSnapshot {
   const item = (id: string, o: Partial<TodayItem>): TodayItem => ({
     id,
@@ -401,6 +496,7 @@ export function fixtureSnapshot(
     ],
     calendar: fixtureCalendar(today, now, day(-1, today), day(21, today)),
     weather,
+    meals,
   };
 }
 

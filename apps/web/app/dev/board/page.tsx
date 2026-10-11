@@ -10,7 +10,7 @@ import { DevBoard } from './dev-board';
 // screen's layout (WP-35): the calendar's span (?span=3|5|7|month) and the cards shown, in order
 // (?cards=goals,coming; the others hidden); the weather beside the clock (WP-45: ?weather=rain|snow|
 // night|celsius|yesterday|none, or ?weather=off for a layout that turns it off); the board fitted to
-// the window at a text size (WP-47: ?text=smaller|larger|largest).
+// the window at a text size (WP-47: ?text=smaller|larger|largest); no meals planned (WP-28: ?meals=none).
 export const metadata: Metadata = { title: 'Board Today', robots: { index: false } };
 
 export default async function DevBoardPage({
@@ -27,6 +27,7 @@ export default async function DevBoardPage({
     cards?: string;
     weather?: string;
     text?: string;
+    meals?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -64,6 +65,7 @@ export default async function DevBoardPage({
         calBehind={params.calbehind === '1'}
         layout={layout}
         weather={params.weather}
+        meals={params.meals}
         textSize={textSizeOf(params.text)}
       />
     </div>

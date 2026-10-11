@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.12: meals on the board (WP-28, D-80): **Today's meals** above Today's list, the **Meals** screen, and a person's own meals (A5, A11, A15, B1.12, B2, B7).
 > v0.11: school menus (WP-27, D-79): **School menus** from Nutrislice, a file or typed in, and the menu on a buy day (A15, B1.15, B3, B7).
 > v0.10: school lunch, buy or bring (WP-26, D-78): A15, B1.15, B3.
 > v0.9: meal planning (WP-25, D-77): the week's meals and the meal library on **Meals** (A15, B1.15, B3, B7).
@@ -321,21 +322,22 @@ Switch on **Private** for a surprise or a personal item. A private item never sh
 At the top of **Chores**, filter by **Person**, **Tag**, **Kind**, **Time of day**, and **Show** (**Active** or **Archived**), then choose **Filter**. **Clear** shows everything again. Each line shows how often it happens, its due time, its points, when it is next due ("Next: Today"), and "Overdue since" for an open task.
 
 ### A5 The family at the board
-<!-- covers: US-303 US-304 US-305 US-1001 US-1002 US-1005 US-1006 US-1008 US-905 -->
+<!-- covers: US-303 US-304 US-305 US-1001 US-1002 US-1005 US-1006 US-1008 US-905 US-705 -->
 
 **What this is.** The wall board: the family's day, for everyone. **When.** All day. **How.** Just tap. Every button on the board is big enough for a child's finger and answers at once.
 
-![The board's home screen: the rail down the left with Home, Leo and Maya with their points, Alex, Sam, then Chores and Calendar; the bar with the household name, date, weather and clock; the next five days of the calendar with Month, 7 days, 5 days and 3 days; Today's list on the right with a face for each person on each item; Goals, Waiting for a parent and Coming up in a row under the calendar.](guide/img/board-home.jpg "The board's home screen")
+![The board's home screen: the rail down the left with Home, Leo and Maya with their points, Alex, Sam, then Chores, Calendar and Meals; the bar with the household name, date, weather and clock; the next five days of the calendar with Month, 7 days, 5 days and 3 days; Today's meals at the top right (breakfast, snacks, Leo buying lunch and Maya bringing hers, dinner), then Today's list with a face for each person on each item; Goals, Waiting for a parent and Coming up in a row under the calendar.](guide/img/board-home.jpg "The board's home screen")
 
 #### The home screen
 
 The home screen fits the screen: nothing hides under the bar, and the page never scrolls. It has three parts:
 
 - **The calendar** on the left: the next few days (5 by default) with each event in its calendar's color. Tap a day's heading to open it in **Calendar**. To look further ahead, tap **Month**, **7 days**, **5 days** or **3 days** at the top of the calendar. That changes only this board, and only for now: when the board goes home after 90 seconds untouched, it is back to the view set on **Boards**.
-- **Today's list** on the right: one list for the whole family, grouped into **Overdue**, **Morning**, **After school**, **Evening** and **Anytime**, with "2 of 9 done" at the top. Each row shows the item, its points, and a face for each person it is for.
+- **Today's meals** at the top on the right, on a day with meals planned: **Breakfast**, **Snack**, **Lunch** and **Dinner**, each with its picture, and a face when it is one person's. On **Lunch**, each child says **Buys** with what the school serves, or **Brings** with what is planned for their lunch. A parent can hide it (see [A11](#a11-the-boards-home-screen-layout)).
+- **Today's list** on the right, under today's meals: one list for the whole family, grouped into **Overdue**, **Morning**, **After school**, **Evening** and **Anytime**, with "2 of 9 done" at the top. Each row shows the item, its points, and a face for each person it is for.
 - **Cards** in a row under the calendar: **Goals**, **Waiting for a parent** and **Coming up** (all-day events in the next three weeks). A parent chooses which cards show, and in what order (see [A11](#a11-the-boards-home-screen-layout)). Tap a goal to open that child's screen (a family goal opens **Chores**), a request to open the child who asked, or an event to open **Calendar** on its day. When a list is longer than its card, it scrolls inside the card.
 
-Down the left is the rail: **Home**, a button for each person (with their points, if they earn rewards), and **Chores** and **Calendar** at the bottom. It never moves. Every other screen scrolls inside itself, under the bar and beside the rail.
+Down the left is the rail: **Home**, a button for each person (with their points, if they earn rewards), and **Chores**, **Calendar** and **Meals** at the bottom. It never moves. Every other screen scrolls inside itself, under the bar and beside the rail.
 
 ![The home screen scrolled down to the cards: Waiting for a parent lists a reward Maya asked for and Homework to check; Coming up lists the grandparents' visit and picture day; Goals shows each goal's progress.](guide/img/board-home-cards.jpg "The cards, here in the order Waiting for a parent, Coming up, Goals")
 
@@ -381,7 +383,7 @@ For someone who earns rewards (usually a child), the screen also shows:
 - a **Points** card with their five latest points and a **Shop** button;
 - **Asked for** (their requests), **Saving for** (their wish) and **Goals**.
 
-Anyone's screen also lists **Today**: today's events from their own calendars and the family's.
+Anyone's screen also lists **Today**: today's events from their own calendars and the family's, and **Today's meals**: what's planned for everyone and for them, and a child's own lunch.
 
 ![Maya's screen: Maya's items as tiles on the left; on the right their points, the Shop button, their latest points, what they asked for, what they are saving for and their goals.](guide/img/board-person.jpg "A child's own screen")
 
@@ -674,10 +676,11 @@ Changes to the school year start tomorrow: today stays as it was planned. Days a
 **Home screen for every board.** Under **Home screen** on **Boards**:
 
 1. Choose what **The calendar shows**: **3 days**, **5 days** (the default), **7 days** or **Month**. In the month, a colored dot marks each calendar with something on a day.
-2. Under **Under the calendar, in this order**, tick the cards to show: **Dinner and lunch** (it stays hidden until the board shows meals, see [Coming soon](#b7-coming-soon)), **Goals**, **Waiting for a parent** and **Coming up**.
-3. Move a card with **Up** or **Down**. Each move saves at once.
-4. Tick or untick **Show the weather beside the clock** (see [A13](#a13-weather-on-the-board)).
-5. Choose **Save layout**.
+2. Tick or untick **Show today's meals** (above **Today's list**, on days with meals planned; see [A15](#meals-on-the-board)).
+3. Under **Under the calendar, in this order**, tick the cards to show: **Goals**, **Waiting for a parent** and **Coming up**.
+4. Move a card with **Up** or **Down**. Each move saves at once.
+5. Tick or untick **Show the weather beside the clock** (see [A13](#a13-weather-on-the-board)).
+6. Choose **Save layout**.
 
 The boards change within seconds.
 
@@ -740,7 +743,7 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credi
 > **Tip:** Stand where the family usually reads the board. If the words for each item are hard to make out, try **Larger text**. On a 32-inch 4K panel read from about two metres, **Larger** suits most families; a smaller screen, or one read from further away, may want **Largest**.
 
 ### A15 Planning meals
-<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 -->
+<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-705 -->
 
 **What this is.** The week's breakfasts, snacks, lunches and dinners, planned ahead, and a library of the meals your family makes again. **When.** Once a week, say on Sunday, so nobody decides at 5 pm. **How.** On **Meals** in the menu.
 
@@ -800,7 +803,15 @@ Then, under **Usual week** on **Meals**, choose each child's **School menu**. A 
 
 ![Adding a school menu on a phone: the district typed, then the school and its menu to choose.](guide/img/admin-menu-add-phone.jpg "Adding a school menu, on a phone")
 
-On the board, the week's meals come with the **Dinner and lunch** card (see [Coming soon](#b7-coming-soon)).
+#### Meals on the board
+
+What you plan shows on the boards within seconds; nothing about meals can be changed on a board.
+
+- **Home:** **Today's meals** above **Today's list**: today's breakfast, snacks, lunch and dinner, with each child's school lunch (**Buys** and what the school serves, or **Brings** and what you planned for their lunch, like "Leftover spaghetti" for that child). A day with nothing planned and no school lunch shows nothing.
+- **Meals** in the rail: the whole week, a column a day (today marked) and a row for each meal of the day, then **School lunch**: who buys, with the menu, and who brings, each day; **Weekend** or **No school** when there is none.
+- **A person's screen:** their part of today's meals.
+
+![The board's Meals screen: Meals this week, Sunday to Saturday with today marked; breakfast, snacks and lunch where planned, a dinner every day; School lunch with Leo buying and Maya bringing, No school tomorrow and the weekend.](guide/img/board-meals-week.jpg "Meals on the board: the week")
 
 ## Part B — User Manual
 
@@ -988,7 +999,7 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 | **Disconnect** (name) | Asks first: it says what will happen, and **Yes, disconnect** (name) disconnects the board for good. It reads nothing more and can't sign in again; pair it again for a new start. |
 | **Calendars on** (name) | Which calendars it shows; **Save calendars** makes it choose its own. |
 | **Home screen on** (name) | "its own layout" or "the household's layout"; **Give** (name) **its own layout**, **Save**; then its own layout form. |
-| **Home screen** | The household's layout: **The calendar shows**, **Under the calendar, in this order** with **Up** / **Down**, **Show the weather beside the clock**, **Save layout**. |
+| **Home screen** | The household's layout: **The calendar shows**, **Show the weather beside the clock**, **Show today's meals**, **Under the calendar, in this order** with **Up** / **Down**, **Save layout**. |
 | **Add a board** | **Board name**, **Get a pairing code**: 8 digits, once, for 10 minutes. |
 | **Disconnected** | Boards disconnected, with when. |
 
@@ -1039,7 +1050,9 @@ flowchart TD
   P[A person's screen<br/>their day, points, shop, goals]
   C[Chores<br/>a column per person]
   K[Calendar<br/>Day, Week, Month]
+  F[Meals<br/>the week, read-only]
   H -- tap a person --> P
+  H -- Meals --> F
   H -- Chores --> C
   H -- Calendar, or tap a day --> K
   P -- Shop --> S[The shop]
@@ -1050,6 +1063,7 @@ flowchart TD
   P -. 90 seconds untouched .-> H
   C -. 90 seconds untouched .-> H
   K -. 90 seconds untouched .-> H
+  F -. 90 seconds untouched .-> H
 ```
 
 #### B2.1 The rail and the bar
@@ -1066,11 +1080,12 @@ flowchart TD
 | A button per person | Children first, then adults, each by name. Someone who earns rewards has their points on their button. Opens their screen. |
 | **Chores** | Everyone's day, a column each. |
 | **Calendar** | The family's calendar. |
+| **Meals** | The week's meals (see [B2.9](#b29-meals)). |
 
 The board's name is beside the date.
 
 #### B2.2 Home
-<!-- covers: US-1001 US-1006 -->
+<!-- covers: US-1001 US-1006 US-705 -->
 
 | Part | What it shows or does |
 |---|---|
@@ -1080,7 +1095,7 @@ The board's name is beside the date.
 | **Goals** card | Every goal in play, whose (an avatar or **Family**), a meter per rule, when it ends; "Reached! A grown-up will sort out the reward." Tap one: that child's screen (a family goal: **Chores**). |
 | **Waiting for a parent** card | "Asked for" rewards with their cost, and check-offs to approve ("Homework: check it's done"). Parents decide them in the admin app. Tap one: the child who asked. |
 | **Coming up** card | Up to five all-day events in the next three weeks, with "Tomorrow" or "In N days". Tap one: **Calendar** on that day. |
-| **Dinner and lunch** card | Not shown yet: it appears once the board shows the planned meals. |
+| **Today's meals** | Above **Today's list**, on a day with meals planned, unless the layout hides it: **Breakfast**, **Snack**, **Lunch**, **Dinner**, each thing planned with its picture and, when it's one person's, their face. On **Lunch**, each child: **Buys** and the school's menu (or **No menu yet**), or **Brings** and what is planned for their lunch. Nothing to tap. |
 
 #### B2.3 A person's screen
 <!-- covers: US-1002 US-1102 US-1108 US-403 -->
@@ -1094,6 +1109,7 @@ The board's name is beside the date.
 | **Saving for** | The wish with a **Saved** meter, "N more points to go." or "You have enough!", **Ask for it**, **Choose a wish** or **Change**. |
 | **Goals** | Their goals, then the family's: a meter per rule, "All of these:" or "Any one of these:", "Ends Saturday". |
 | **Today** | Today's events from their calendars and the family's. |
+| **Today's meals** | What's planned today for everyone and for them; a child's own lunch, buying or bringing. |
 
 Points, the shop, wishes, goals and the flame appear only for someone who earns rewards. On anyone's screen, a tap credits that person.
 
@@ -1158,6 +1174,17 @@ Every state is an icon, a word and a color together, in both themes. The board u
 | **Done!** · by (name) | Done by (name) | Done by someone else for a shared item, or by several people. |
 
 ![Tiles in every state: To do, Done!, Waiting for a parent, Approved, Try again, Skipped today, Missed, Overdue, Past its time, Done! by Maya, Covered by Maya, and a private item as the admin app shows it.](guide/img/tile-states.jpg "Every state, as a tile")
+
+#### B2.9 Meals
+<!-- covers: US-705 -->
+
+| Part | What it shows or does |
+|---|---|
+| **Meals this week** | The household week, first day to last ("Sun, Oct 11 to Sat, Oct 17"). |
+| Days | A column each; today's heading says **Today** and its column stands out. |
+| **Breakfast**, **Snack**, **Lunch**, **Dinner** | A row each: what's planned, with its picture and, when it's one person's, their face; "–" for nothing. **Dinner** always shows; the others when planned on some day that week. |
+| **School lunch** | Each child who has school that day: **Buys** and the school's menu (or **No menu yet**), or **Brings** and what is planned for their lunch. **Weekend**, **Break** or **No school** on a day none of them has school. |
+| Read-only | Nothing here is a button: meals are planned on **Meals** in the admin app. |
 
 ### B3 Rules and limits
 <!-- covers: US-907 US-1101 US-320 US-311 US-315 US-1109 -->
@@ -1390,7 +1417,6 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 
 These are planned but not built yet. This guide will cover each as it arrives.
 
-- **Meals on the board:** the **Dinner and lunch** card on the board.
 - **Audit log:** a page showing who changed what, and when.
 - **Export and delete** your household's data.
 - **Sign in with Apple** and passkeys.

@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.36: meals on the board (WP-28, D-80): `board_snapshot()` gains `meals` (§4.6); `meal`, `meal_plan_entry`, `member_lunch`, `lunch_override` and `school_menu_day` in the `supabase_realtime` publication.
 > v0.8.35: school menus (WP-27, D-79): `menu_source` and `school_menu_day` as built, `member_lunch.menu_source_id`; `save_menu_source()`, `save_menu_days()`, `clear_menu_day()`, `save_menu_fetch()`, `menu_sources_due()`, `set_child_menu()`; `lunch_week()` with the menu on buy days (§3.6).
 > v0.8.34: school lunch (WP-26, D-78): `member_lunch`, `lunch_override` as built; `lunch_mode()`, `lunch_week()`, `set_lunch()`, `set_lunch_defaults()` (§3.6).
 > v0.8.33: meals (WP-25, D-77): `meal` and `meal_plan_entry` as built, and the functions that plan (§3.6).
@@ -1054,6 +1055,8 @@ create policy chore_completion_event_device_insert on public.chore_completion_ev
 **Layout, descriptions and window (WP-35, D-66, D-67):** `layout {household, board}`: the household's layout and this board's own (`board_config.layout`, null when it has none); the board shows its own, else the household's, else the defaults. Each item in `occurrences` carries its chore's `description` (null when none) for "More info". The default window is yesterday through three weeks ahead (was two), for "Coming up".
 
 **Calendar (WP-23, D-65):** `calendar` is `board_calendar(range.from, range.to)`: `{from, to, calendars, events}` for the calendars this board shows (§3.4). `calendar_source` and `device_calendar` are in the `supabase_realtime` publication, so a sync or a change to this board's choice tells it to read again (pgTAP `270_board_calendars`). The board reads a snapshot without it (an older database) as no calendar.
+
+**Meals (WP-28, D-80):** `meals {week_from, entries, lunch}` for the household week holding today (from its `week_start`): `entries` are its `meal_plan_entry` rows, `{id, date, slot, member_id, name, icon, notes}` (`name` the library meal's or the text written in, `icon` the library meal's), by day, meal of the day (breakfast, snack, lunch, dinner) and order; `lunch` is `lunch_week(household, week_from)`. The five meal tables are in the `supabase_realtime` publication (070, 370 pin it).
 
 **Full shape**, as the slices arrive:
 

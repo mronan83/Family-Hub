@@ -81,6 +81,26 @@ describe('changing a layout', () => {
     expect(DEFAULT_LAYOUT.cards[1]!.id).toBe('goals');
   });
 
+  it('[MEAL-06][D-80] today’s meals have no place in the row: cards move past them, they don’t move', () => {
+    const layout = {
+      ...DEFAULT_LAYOUT,
+      cards: [
+        { id: 'goals' as const, show: true },
+        { id: 'meals' as const, show: true },
+        { id: 'waiting' as const, show: true },
+        { id: 'coming' as const, show: true },
+      ],
+    };
+    expect(moveCard(layout, 'goals', 1).cards.map((c) => c.id)).toEqual([
+      'waiting',
+      'meals',
+      'goals',
+      'coming',
+    ]);
+    expect(moveCard(DEFAULT_LAYOUT, 'goals', -1)).toBe(DEFAULT_LAYOUT);
+    expect(moveCard(layout, 'meals', 1)).toBe(layout);
+  });
+
   it('[US-1004] the admin form: its span, its order, and the cards ticked to show', () => {
     expect(layoutFromForm('month', ['coming', 'goals', 'bogus'], ['goals'])).toEqual({
       calendar: 'month',

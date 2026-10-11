@@ -20,7 +20,7 @@ export const SPAN_LABELS: Record<CalendarSpan, string> = {
 };
 
 export const CARD_LABELS: Record<CardId, { label: string; note: string }> = {
-  meals: { label: 'Dinner and lunch', note: 'Shows once meals are planned' },
+  meals: { label: 'Today’s meals', note: 'Above Today’s list, on days with meals planned' },
   goals: { label: 'Goals', note: 'Everyone’s goals and how close they are' },
   waiting: { label: 'Waiting for a parent', note: 'Requests and check-offs to approve' },
   coming: { label: 'Coming up', note: 'All-day events in the next three weeks' },
@@ -74,11 +74,19 @@ export function effectiveLayout(household: unknown, board: unknown): BoardLayout
   return readLayout(board) ?? readLayout(household) ?? structuredClone(DEFAULT_LAYOUT);
 }
 
-/** One card a place up (-1) or down (1); at either end, as it was. */
+/**
+ * [MEAL-06][D-80] Today's meals sit above Today's list, not in the row of cards: it shows or hides,
+ * but has no place in the order.
+ */
+export const isRowCard = (id: CardId) => id !== 'meals';
+
+/** One card of the row a place up (-1) or down (1), past today's meals; at either end, as it was. */
 export function moveCard(layout: BoardLayout, id: CardId, dir: -1 | 1): BoardLayout {
   const i = layout.cards.findIndex((c) => c.id === id);
-  const j = i + dir;
-  if (i < 0 || j < 0 || j >= layout.cards.length) return layout;
+  if (i < 0 || !isRowCard(id)) return layout;
+  let j = i + dir;
+  while (j >= 0 && j < layout.cards.length && !isRowCard(layout.cards[j]!.id)) j += dir;
+  if (j < 0 || j >= layout.cards.length) return layout;
   const cards = [...layout.cards];
   [cards[i], cards[j]] = [cards[j]!, cards[i]!];
   return { ...layout, cards };

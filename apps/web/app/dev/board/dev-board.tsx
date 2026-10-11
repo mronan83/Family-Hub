@@ -20,6 +20,7 @@ import {
   fixtureMark,
   fixturePin,
   fixturePost,
+  fixtureMeals,
   fixtureSnapshot,
   fixtureWeather,
   reachedBike,
@@ -44,6 +45,7 @@ export function DevBoard({
   calBehind = false,
   layout,
   weather,
+  meals,
   textSize = 'standard',
 }: {
   theme: Theme;
@@ -56,6 +58,8 @@ export function DevBoard({
   layout?: BoardLayout;
   /** [BRD-04] Which made-up weather (WP-45): see fixtureWeather. */
   weather?: string;
+  /** [MEAL-06] Which made-up meals (WP-28): see fixtureMeals. */
+  meals?: string;
   /** [BRD-08] The board's text size (WP-47). */
   textSize?: TextSize;
 }) {
@@ -88,6 +92,7 @@ export function DevBoard({
       opened,
       layout,
       fixtureWeather(weather, isoDay(TZ, opened), opened),
+      fixtureMeals(meals, isoDay(TZ, opened)),
     );
     if (busy || calBehind) {
       s = {

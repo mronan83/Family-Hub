@@ -25,6 +25,7 @@ import type { BoardMember, BoardSnapshot } from '@/lib/snapshot';
 import { progress, type TodayItem } from '@/lib/today';
 import { EventLine, type LoadCalendar, useCalendar } from './calendar-ui';
 import { GoalItem } from './goals-ui';
+import { TodayMeals } from './meals-ui';
 import { iconOf, type PhotoUrl } from './picture';
 
 /**
@@ -312,8 +313,8 @@ function Who({ ids, people }: { ids: string[]; people: Map<string, BoardMember> 
 /**
  * [BRD-01][BRD-05][BRD-07][US-1006] The board's home screen: a family dashboard (WP-35, D-66). The
  * calendar leads (3, 5 or 7 days, or the month; a day opens as a day), today's list sits beside it
- * with a face for each person on an item (a tap checks it off for them), and the cards follow in the
- * order the layout sets: dinner and lunch (once meals exist), goals, what waits for a parent, and
+ * with a face for each person on an item (a tap checks it off for them) under today's meals (WP-28,
+ * D-80), and the cards follow in the order the layout sets: goals, what waits for a parent, and
  * what's coming up.
  */
 export function Dashboard({
@@ -370,6 +371,7 @@ export function Dashboard({
     return () => clearTimeout(t);
   }, [armed]);
   const p = progress(items);
+  const showMeals = layout.cards.find((c) => c.id === 'meals')?.show ?? true;
 
   const onFace = (c: Chip) => {
     const key = `${c.item.id}:${c.memberId ?? 'anyone'}`;
@@ -383,7 +385,7 @@ export function Dashboard({
   };
 
   const cards: Record<CardId, () => ReactNode> = {
-    // [MEAL-06] Dinner and the school lunch menu arrive with the meal planner (WP-25, WP-28).
+    // [MEAL-06][D-80] Today's meals sit above Today's list, not in the row of cards.
     meals: () => null,
     goals: () => {
       const goals = snapshot.goals;
@@ -529,42 +531,45 @@ export function Dashboard({
           <DayColumns snapshot={snapshot} dates={dates} load={load} onOpenDay={onOpenDay} />
         )}
       </section>
-      <section className="fw-dash__list" aria-labelledby="dash-list">
-        <h2 id="dash-list" className="fw-dash__head">
-          <Icon name="list-check" size={40} />
-          Today’s list
-          <span className="fw-dash__sub">
-            {p.total ? `${p.done} of ${p.total} done` : 'Nothing today'}
-          </span>
-        </h2>
-        <div className="fw-dash__list-body">
-          {list.length === 0 ? (
-            <p className="fw-today__empty">Nothing on the list today.</p>
-          ) : (
-            list.map((s) => (
-              <section key={s.key} className="fw-dash__part" aria-labelledby={`dash-${s.key}`}>
-                <h3 id={`dash-${s.key}`} className="fw-today__part-title" data-part={s.key}>
-                  {s.label}
-                </h3>
-                <ul className="fw-dash__rows" aria-labelledby={`dash-${s.key}`}>
-                  {s.rows.map((r) => (
-                    <Row
-                      key={r.key}
-                      row={r}
-                      people={people}
-                      armed={armed}
-                      canUndo={canUndo}
-                      celebrating={celebrating}
-                      onFace={onFace}
-                      onMore={onMore}
-                    />
-                  ))}
-                </ul>
-              </section>
-            ))
-          )}
-        </div>
-      </section>
+      <div className="fw-dash__list">
+        {showMeals ? <TodayMeals meals={snapshot.meals} today={today} members={members} /> : null}
+        <section className="fw-dash__todo" aria-labelledby="dash-list">
+          <h2 id="dash-list" className="fw-dash__head">
+            <Icon name="list-check" size={40} />
+            Today’s list
+            <span className="fw-dash__sub">
+              {p.total ? `${p.done} of ${p.total} done` : 'Nothing today'}
+            </span>
+          </h2>
+          <div className="fw-dash__list-body">
+            {list.length === 0 ? (
+              <p className="fw-today__empty">Nothing on the list today.</p>
+            ) : (
+              list.map((s) => (
+                <section key={s.key} className="fw-dash__part" aria-labelledby={`dash-${s.key}`}>
+                  <h3 id={`dash-${s.key}`} className="fw-today__part-title" data-part={s.key}>
+                    {s.label}
+                  </h3>
+                  <ul className="fw-dash__rows" aria-labelledby={`dash-${s.key}`}>
+                    {s.rows.map((r) => (
+                      <Row
+                        key={r.key}
+                        row={r}
+                        people={people}
+                        armed={armed}
+                        canUndo={canUndo}
+                        celebrating={celebrating}
+                        onFace={onFace}
+                        onMore={onMore}
+                      />
+                    ))}
+                  </ul>
+                </section>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
       <div className="fw-dash__cards">
         {layout.cards.filter((c) => c.show).map((c) => cards[c.id]())}
       </div>

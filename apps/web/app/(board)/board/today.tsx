@@ -51,6 +51,7 @@ import { calendarDay, clock, DAY_PART_LABELS, dayPart } from '@/lib/chores';
 import { type Chip, CHIP_WORDS, familyList, type ListRow } from '@/lib/dashboard';
 import { CalendarScreen, type LoadCalendar } from './calendar-ui';
 import { Dashboard } from './dashboard';
+import { MealsWeek, TodayMeals } from './meals-ui';
 import { Celebration, FamilyGoals, GoalsCard, useCelebrations } from './goals-ui';
 import { iconOf, type PhotoUrl } from './picture';
 import { RequestsCard, ShopDialog, useShop } from './shop-ui';
@@ -957,7 +958,7 @@ export function Today({
   const party = useCelebrations(snapshot.goals, markCelebrated);
   const online = useOnline();
   const { members, household, today } = snapshot;
-  // 'home' (the dashboard), 'chores', 'calendar', or a member's id.
+  // 'home' (the dashboard), 'chores', 'calendar', 'meals', or a member's id.
   const [view, setView] = useState<string>('home');
   // [D-66] A day tapped on the dashboard opens the calendar on that day.
   const [calDay, setCalDay] = useState<string | null>(null);
@@ -1115,6 +1116,18 @@ export function Today({
           >
             <Icon name="calendar" size={64} />
             <span>Calendar</span>
+          </button>
+        </li>
+        {/* [MEAL-06] The week's meals (WP-28, D-80). */}
+        <li>
+          <button
+            type="button"
+            className="fw-today__person fw-today__person--all"
+            aria-pressed={view === 'meals'}
+            onClick={() => open('meals')}
+          >
+            <Icon name="utensils" size={64} />
+            <span>Meals</span>
           </button>
         </li>
       </ul>
@@ -1306,11 +1319,19 @@ export function Today({
                     </section>
                   ) : null;
                 })()}
-                {/* Kept for a later work package: meals (WP-28). The streak flame (WP-17) is beside
-                  the name. */}
+                {/* [MEAL-06] Today's meals for them (WP-28). The streak flame (WP-17) is beside the
+                  name. */}
+                <TodayMeals
+                  meals={snapshot.meals}
+                  today={today}
+                  members={members}
+                  memberId={member.id}
+                />
               </aside>
             </div>
           </section>
+        ) : view === 'meals' ? (
+          <MealsWeek meals={snapshot.meals} today={today} members={members} />
         ) : view === 'calendar' ? (
           <CalendarScreen
             key={calDay ?? 'week'}
