@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.76: WP-48 done (PR #52): the board's home screen on one screen, with a rail.
 > v0.8.75: WP-48 in review: the home screen on one screen, with a rail, and the calendar's view chosen on the board (D-74).
 > v0.8.73: WP-47 done (PR #50): the board fits its screen, and a text size per board.
 > v0.8.72: WP-47 in review (PR #50): the board fits its screen, and a text size per board (D-73).
@@ -168,7 +169,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-45 | Weather on the board | P3 | S | WP-35 | Done (PR #45) |
 | WP-46 | More icons, one icon picker, sixteen colors | P3 | M | WP-08, WP-22, WP-37 | Done (PR #47) |
 | WP-47 | The board fits its screen; text size per board | P3 | M | WP-06, WP-35 | Done (PR #50) |
-| WP-48 | The home screen on one screen, with a rail | P3 | M | WP-35, WP-47 | In review |
+| WP-48 | The home screen on one screen, with a rail | P3 | M | WP-35, WP-47 | Done (PR #52) |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
