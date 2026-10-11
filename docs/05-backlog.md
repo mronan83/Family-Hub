@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.80: WP-39 done (PR #53): goal payouts, payout reversal and the rule-change preview.
 > v0.8.79: WP-39 in review (PR #53): goal payouts, payout reversal and the rule-change preview (D-75).
 > v0.8.78: the jobs' queries stop after 60 seconds (D-76), done (PR #54). No work package changes status.
 > v0.8.77: the jobs' queries stop after 60 seconds (D-76), in review (PR #54). No work package changes status.
@@ -151,7 +152,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Done (PR #33) |
 | WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Done (PR #31) |
 | WP-19 | Goals admin and progress pipeline | P1c | L | WP-15, WP-16 | Done (PR #34) |
-| WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | In review (PR #53) |
+| WP-39 | Goal payouts, payout reversal, and rule-change preview | P1c | M | WP-18, WP-19 | Done (PR #53) |
 | WP-20 | Board points, shop, and goals UI | P1c | L | WP-11, WP-18, WP-19 | Done (PR #37) |
 | WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Done (PR #41) |
 | WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Done (PR #43) |
