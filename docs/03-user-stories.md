@@ -640,9 +640,9 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - As built (WP-35, D-67): on Boards, the household's home screen layout (the calendar's span: 3, 5 or 7 days, or the month; the cards under it, each shown or not, moved up or down with one tap) and, for any board, its own layout instead, starting as a copy of the household's. A board without its own follows the household's.
 
 ### US-1005 — Come back home automatically
-**As a** parent **I want** the board to return to Today after a period of inactivity **so that** it's never left on a random screen.
+**As a** parent **I want** the board to return to its home screen after a period of inactivity **so that** it's never left on a random screen.
 **Priority:** Must · **Phase:** P1 · **Reqs:** BRD-06
-- Given the child is on the Calendar tab, when 60 seconds pass without touch, then the board returns to Today.
+- Given the child is on the Calendar tab, when 90 seconds pass without touch, then the board returns to its home screen (D-71).
 - Given a celebration is playing, when idle time elapses, then the return waits until it finishes.
 
 ### US-1006 — See the whole family's day
