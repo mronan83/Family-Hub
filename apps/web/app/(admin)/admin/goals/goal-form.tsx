@@ -7,7 +7,7 @@ import {
   Banner,
   Button,
   Icon,
-  iconLabel,
+  IconPicker,
   type IconName,
   type MemberColor,
 } from '@familywise/ui';
@@ -76,7 +76,6 @@ export function GoalForm({
   members,
   tags,
   items,
-  icons,
   today,
   lock = 'none',
   hasPhoto = false,
@@ -86,7 +85,6 @@ export function GoalForm({
   members: { id: string; displayName: string; avatarKey: AvatarKey | null; color: MemberColor }[];
   tags: { id: string; name: string }[];
   items: { id: string; title: string }[];
-  icons: IconName[];
   today: string;
   lock?: GoalLock;
   hasPhoto?: boolean;
@@ -247,24 +245,11 @@ export function GoalForm({
         <input type="hidden" name="logic" value="all" />
       )}
 
-      <fieldset className="fw-field fw-fieldset">
-        <legend className="fw-field__label">Icon, shown when there’s no photo</legend>
-        <div className="fw-picker">
-          {icons.map((name) => (
-            <label key={name} className="fw-picker__item fw-picker__item--icon">
-              <input
-                type="radio"
-                name="icon"
-                value={name}
-                defaultChecked={(initial?.icon ?? 'trophy') === name}
-                className="fw-visually-hidden"
-              />
-              <Icon name={name} size={24} />
-              <span className="fw-visually-hidden">{iconLabel(name)}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <IconPicker
+        legend="Icon, shown when there’s no photo"
+        selected={initial?.icon ?? 'trophy'}
+        start="rewards"
+      />
       <label className="fw-field">
         <span className="fw-field__label">
           {hasPhoto ? 'A new photo (optional)' : 'Photo (optional)'}

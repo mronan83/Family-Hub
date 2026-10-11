@@ -6,20 +6,6 @@ import type { RedemptionStatus } from '@/lib/rewards';
 // The rewards shop (WP-18), read through RLS as the admin. Photos are private: each comes with a
 // signed link that lasts an hour. Also the bonus rules and what each child is saving for (WP-30).
 
-/** The icons a reward can take (06 §5), gift first. */
-export const REWARD_ICONS: IconName[] = [
-  'gift',
-  'ticket',
-  'star',
-  'trophy',
-  'sparkles',
-  'utensils',
-  'snack',
-  'moon',
-  'sun',
-  'calendar',
-];
-
 export interface RewardRow {
   id: string;
   title: string;

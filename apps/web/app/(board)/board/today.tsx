@@ -1286,7 +1286,7 @@ export function Today({
                           key={e.id}
                           className="fw-bcal__event"
                           style={{
-                            ['--cal' as string]: `var(--${theirs.get(e.calendarId)?.color ?? 'member-6'})`,
+                            ['--cal' as string]: `var(--${theirs.get(e.calendarId)?.color ?? 'member-6'}-line)`,
                           }}
                         >
                           <span className="fw-bcal__when">

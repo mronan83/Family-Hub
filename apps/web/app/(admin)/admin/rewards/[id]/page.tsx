@@ -6,7 +6,7 @@ import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
 import { removePhoto, setRewardArchived } from '../actions';
-import { loadCatalog, REWARD_ICONS } from '../data';
+import { loadCatalog } from '../data';
 import { RewardForm } from '../reward-form';
 
 export const metadata: Metadata = { title: 'Edit reward' };
@@ -52,7 +52,7 @@ export default async function EditRewardPage({
             </form>
           </div>
         ) : null}
-        <RewardForm id={item.id} initial={item} icons={REWARD_ICONS} hasPhoto={!!item.imagePath} />
+        <RewardForm id={item.id} initial={item} hasPhoto={!!item.imagePath} />
       </section>
       <section className="fw-card" aria-labelledby="archive-heading">
         <h2 id="archive-heading">{item.archivedAt ? 'Put back' : 'Archive'}</h2>
