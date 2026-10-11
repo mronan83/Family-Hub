@@ -1,6 +1,8 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.88: WP-28 done (PR #58): meals on the board.
+> v0.8.87: WP-28 in review (PR #58): meals on the board (D-80).
 > v0.8.86: WP-27 done (PR #57): school menus from Nutrislice, a file or by hand.
 > v0.8.85: WP-27 in review (PR #57): school menus from Nutrislice, a file or by hand (D-79).
 > v0.8.84: WP-26 done (PR #56): school lunch, buy or bring.
@@ -166,7 +168,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Done (PR #55) |
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Done (PR #56) |
 | WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Done (PR #57) |
-| WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Ready |
+| WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Done (PR #58) |
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Ready (SPIKE-02's CalDAV part first) |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Done (PR #35) |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Ready |
@@ -722,6 +724,11 @@ flowchart LR
 **Phase:** P2 · **Size:** S · **Depends on:** WP-25, WP-06 · **Reqs:** MEAL-06
 - Today's meals and a weekly read-only view on the board.
 - **Done when:** the Today screen shows the day's four slots and the lunch mode.
+- As built (D-80; the owner chose the mockups' option B):
+  - **Home screen:** **Today's meals** at the top of Today's list's column: breakfast, snack, lunch and dinner when planned, each with its picture and, when it is one person's, their face; on lunch each child's **Buys** (the school's menu, or **No menu yet**) or **Brings** (what is planned for their lunch). None on a day with nothing; Today's list keeps at least 40% of the column. **Boards** shows or hides it (the layout's `meals` card), apart from the cards' order.
+  - **Meals screen:** **Meals** in the rail, after Calendar: the household week, a column a day and a row a meal of the day, then **School lunch** (**Weekend**, **No school** on days without); today marked; nothing to tap. A person's own screen has their part of today's.
+  - **Database:** `board_snapshot()` gains `meals` (the week's entries and `lunch_week()`); `meal`, `meal_plan_entry`, `member_lunch`, `lunch_override`, `school_menu_day` in Realtime.
+  - **Done when:** pgTAP `370_board_meals` (8); the preview's `board-meals.spec.ts`: a board shows today's four meals and each child's lunch as `lunch_mode()` has it, a dinner changed reaches it through Realtime, and **Meals** shows each child's lunch each day of the week. Unit `board-meals.test.ts`; the UI suite's `board-meals.spec.ts`.
 
 ### WP-29 — CalDAV (secondary account)
 **Phase:** P2 · **Size:** M · **Depends on:** WP-22 · **Reqs:** CAL-08

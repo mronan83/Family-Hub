@@ -31,6 +31,28 @@ const RAW = {
     for_date: '2026-10-11',
     read_at: '2026-10-11T14:09:00Z',
   },
+  // [MEAL-06] The week's meals (WP-28): tonight's dinner, and Maya buys lunch today.
+  meals: {
+    week_from: '2026-10-11',
+    entries: [
+      {
+        id: 'e1',
+        date: '2026-10-11',
+        slot: 'dinner',
+        member_id: null,
+        name: 'Tacos',
+        icon: null,
+        notes: null,
+      },
+    ],
+    lunch: [
+      {
+        member_id: 'm1',
+        usual: { mon: 'buy' },
+        days: [{ date: '2026-10-11', day_type: 'school_day', mode: 'buy', changed: false }],
+      },
+    ],
+  },
   members: [
     {
       id: 'm1',
@@ -121,6 +143,36 @@ describe('board snapshot', () => {
         unit: 'fahrenheit',
         forDate: '2026-10-11',
         readAt: '2026-10-11T14:09:00Z',
+      },
+      meals: {
+        weekFrom: '2026-10-11',
+        entries: [
+          {
+            id: 'e1',
+            date: '2026-10-11',
+            slot: 'dinner',
+            memberId: null,
+            name: 'Tacos',
+            icon: null,
+            notes: null,
+          },
+        ],
+        lunch: [
+          {
+            memberId: 'm1',
+            usual: { mon: 'buy' },
+            menuSourceId: null,
+            days: [
+              {
+                date: '2026-10-11',
+                dayType: 'school_day',
+                mode: 'buy',
+                changed: false,
+                menu: null,
+              },
+            ],
+          },
+        ],
       },
       members: [
         {
@@ -462,6 +514,11 @@ describe('notify, then refetch', () => {
       { table: 'calendar_source', filter: 'household_id=eq.h1' },
       { table: 'device_calendar', filter: 'device_id=eq.d1' },
       { table: 'weather_reading', filter: 'household_id=eq.h1' },
+      { table: 'meal', filter: 'household_id=eq.h1' },
+      { table: 'meal_plan_entry', filter: 'household_id=eq.h1' },
+      { table: 'member_lunch', filter: 'household_id=eq.h1' },
+      { table: 'lunch_override', filter: 'household_id=eq.h1' },
+      { table: 'school_menu_day', filter: 'household_id=eq.h1' },
     ]);
   });
 

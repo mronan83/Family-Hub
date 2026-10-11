@@ -2520,8 +2520,12 @@ span.fw-heat__cell {
     min-height: auto;
   }
   .fw-dash .fw-dash__cal,
-  .fw-dash .fw-dash__list {
+  .fw-dash .fw-dash__todo {
     grid-template-rows: auto auto;
+    overflow: visible;
+  }
+  .fw-dash .fw-dash__list,
+  .fw-dash .fw-dash__meals {
     overflow: visible;
   }
   .fw-dash .fw-dash__list-body,
@@ -2607,12 +2611,20 @@ span.fw-heat__cell {
   background: var(--primary);
   color: var(--on-primary);
 }
-/* Today's list: its heading stays, its parts scroll inside the card. */
+/* [D-80] The column beside the calendar: today's meals (WP-28) when there are any, then Today's list. */
 .fw-dash__list {
-  grid-template-rows: auto minmax(0, 1fr);
-  align-content: stretch;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   overflow: hidden;
+}
+/* Today's list: its heading stays, its parts scroll inside the card. */
+.fw-dash__todo {
+  display: grid;
+  flex: 1 0 40%;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--s-4);
+  min-height: 0;
 }
 .fw-dash__list-body {
   position: relative;
@@ -2630,6 +2642,201 @@ span.fw-heat__cell {
   font-size: var(--t-small);
   font-weight: 500;
 }
+/* [MEAL-06][D-80] Today's meals (WP-28): a line a meal, its name beside what's planned; dinner
+   leads in size. Today's list keeps at least 40% of the column; past that, the meals scroll. */
+.fw-dash__meals {
+  display: grid;
+  flex: 0 1 auto;
+  gap: var(--s-3);
+  min-height: 0;
+  padding-bottom: var(--s-4);
+  border-bottom: var(--border-w) solid var(--line);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.fw-meals {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--s-2) var(--s-4);
+  margin: 0;
+}
+.fw-meals__slot {
+  display: contents;
+}
+.fw-meals dt {
+  padding-top: var(--s-1);
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.fw-meals dd {
+  min-width: 0;
+  margin: 0;
+}
+.fw-meals__list {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-meals__entry,
+.fw-meals__lunch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  min-width: 0;
+  font-size: var(--t-small);
+  font-weight: 600;
+  line-height: 1.25;
+}
+.fw-meals__entry .fw-avatar,
+.fw-meals__lunch .fw-avatar,
+.fw-meals__icon {
+  flex: none;
+}
+.fw-meals__icon {
+  color: var(--primary-text);
+}
+.fw-meals__name {
+  min-width: 0;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+.fw-meals__name[data-none] {
+  color: var(--text-soft);
+  font-weight: 500;
+}
+.fw-meals__slot[data-slot='dinner'] .fw-meals__entry {
+  color: var(--primary-text);
+  font-family: var(--font-display);
+  font-size: var(--t-body);
+  font-weight: 800;
+}
+.fw-meals__mode {
+  flex: none;
+  padding: 2px var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: var(--t-small);
+  font-weight: 800;
+}
+.fw-meals__lunch[data-mode='buy'] .fw-meals__mode {
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+
+/* [MEAL-06][D-80] The Meals screen (WP-28): the week, a column a day; today stands out. */
+.fw-mweek {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: var(--s-4);
+  min-height: 0;
+}
+.fw-board .fw-today__screen[data-screen='meals'] {
+  grid-template-rows: minmax(0, 1fr);
+  align-content: stretch;
+}
+.fw-mweek__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0;
+  font-size: var(--t-title);
+}
+.fw-mweek__title > svg {
+  color: var(--primary-text);
+}
+.fw-mweek__sub {
+  margin-left: auto;
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 500;
+}
+.fw-mweek__wrap {
+  min-height: 0;
+  padding: var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.fw-mweek__grid {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 6px;
+}
+.fw-mweek__grid thead td {
+  width: 150px;
+}
+.fw-mweek__grid th,
+.fw-mweek__grid td {
+  padding: var(--s-2) 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.fw-mweek__grid tbody th {
+  vertical-align: middle;
+  color: var(--text-soft);
+  font-family: var(--font-display);
+  font-size: var(--t-small);
+  font-weight: 800;
+  line-height: 1.15;
+}
+.fw-mweek__day {
+  border-radius: var(--r-md);
+  font-family: var(--font-display);
+  font-size: var(--t-small);
+  font-weight: 800;
+  white-space: nowrap;
+}
+.fw-mweek__day[aria-current='date'] {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.fw-mweek__today {
+  display: block;
+  font-size: var(--t-small);
+}
+.fw-mweek__grid tbody td {
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg);
+}
+.fw-mweek__grid tbody td[aria-current='date'] {
+  border: 2px solid var(--primary);
+  background: var(--primary-tint);
+}
+/* In a day's narrow column the picture sits beside the words, which wrap under themselves, and a
+   face goes under them. */
+.fw-mweek__grid .fw-meals__list {
+  gap: var(--s-1);
+}
+.fw-mweek__grid .fw-meals__entry {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--s-1) var(--s-2);
+}
+.fw-mweek__grid .fw-meals__entry .fw-avatar {
+  grid-column: 2;
+}
+.fw-mweek__grid tr[data-slot='dinner'] .fw-meals__entry {
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+.fw-mweek__empty {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+
 /* [CAL-04] Three, five or seven days as columns; each day's head opens it as a day. */
 .fw-dash__days {
   display: grid;

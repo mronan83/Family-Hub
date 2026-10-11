@@ -1,11 +1,17 @@
 import { Button } from '@familywise/ui';
-import { type BoardLayout, CALENDAR_SPANS, CARD_LABELS, SPAN_LABELS } from '@/lib/board-layout';
+import {
+  type BoardLayout,
+  CALENDAR_SPANS,
+  CARD_LABELS,
+  isRowCard,
+  SPAN_LABELS,
+} from '@/lib/board-layout';
 import { saveBoardLayout } from './actions';
 
 /**
  * [BRD-05][US-1004] A home screen layout (WP-35, D-67): what the calendar shows, and the cards under
- * it, ticked to show and in order; and (WP-45) whether the weather shows. Moving a card saves at
- * once; so does Save.
+ * it, ticked to show and in order; (WP-45) whether the weather shows; and (WP-28) whether today's
+ * meals show above Today's list. Moving a card saves at once; so does Save.
  */
 export function LayoutForm({
   layout,
@@ -19,6 +25,8 @@ export function LayoutForm({
   name: string;
 }) {
   const key = device ?? 'household';
+  const row = layout.cards.filter((c) => isRowCard(c.id));
+  const meals = layout.cards.find((c) => c.id === 'meals');
   return (
     <form
       action={saveBoardLayout}
@@ -56,10 +64,24 @@ export function LayoutForm({
           </span>
         </span>
       </label>
+      {/* [MEAL-06][D-80] Today's meals (WP-28), above Today's list: shown or not, with no place in the order. */}
+      <label className="fw-picker__item" htmlFor={`show-${key}-meals`}>
+        <input
+          id={`show-${key}-meals`}
+          type="checkbox"
+          name="show"
+          value="meals"
+          defaultChecked={meals?.show ?? true}
+        />
+        <span>
+          Show {CARD_LABELS.meals.label.toLowerCase()}
+          <span className="fw-muted fw-layout-cards__note">{CARD_LABELS.meals.note}</span>
+        </span>
+      </label>
       <fieldset className="fw-field fw-fieldset">
         <legend className="fw-field__label">Under the calendar, in this order</legend>
         <ol className="fw-layout-cards">
-          {layout.cards.map((c, i) => {
+          {row.map((c, i) => {
             const { label, note } = CARD_LABELS[c.id];
             return (
               <li key={c.id} className="fw-layout-cards__row">
@@ -94,7 +116,7 @@ export function LayoutForm({
                     value={`${c.id}:1`}
                     variant="ghost"
                     icon="chevron-down"
-                    disabled={i === layout.cards.length - 1}
+                    disabled={i === row.length - 1}
                     aria-label={`Move ${label} down`}
                   >
                     Down

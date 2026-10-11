@@ -137,6 +137,12 @@ const SHOTS = [
     },
   },
   {
+    name: 'board-meals-week',
+    device: 'board',
+    url: '/dev/board',
+    act: (page) => person(page, 'Meals').click(),
+  },
+  {
     name: 'board-shop',
     device: 'board',
     url: '/dev/board',

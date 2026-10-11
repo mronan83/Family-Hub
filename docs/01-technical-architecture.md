@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.50: meals on the board (WP-28, D-80): the snapshot's `meals`, five meal tables in Realtime, today's meals above Today's list and the Meals screen (§7).
 > v0.8.49: school menus (WP-27, D-79): the Nutrislice adapter, a CSV file and days typed in; the `menu_import` job daily over 28 days; a parent's days never replaced; a failed fetch keeps its menus (§5.5, §5.6).
 > v0.8.48: school lunch (WP-26, D-78): buy or bring per child and school day, through `set_lunch()`, `set_lunch_defaults()` and `lunch_week()`.
 > v0.8.47: meal planning (WP-25, D-77): the admin app's Meals page and meal library, through RLS and `add_meal_entry()`, `move_meal_entry()`, `copy_meal_week()`.
@@ -636,6 +637,8 @@ sequenceDiagram
 **As built (WP-48, D-74): one screen, with a rail.** `.fw-board` is a grid exactly the screen's height in the board's own px (`100dvh ÷ --fw-zoom`): the rail of people down the left, the bar along the top, and `.fw-today__screen`, which scrolls inside itself; `.fw-today` is `display: contents` so its rail and screen sit in that grid, and the board is positioned so nothing positioned inside spills into a page scroll. The home screen fills the screen: the calendar and today's list stretch, the cards are one row under the calendar, and lists scroll inside their cards; under 1800 board px it stacks and the screen scrolls. The calendar's view on the board is client state in `Today` (`span`), cleared by the idle timer with everything else; the layout's saved view (D-67) is untouched.
 
 **As built (WP-45, D-69): the weather.** The snapshot's `weather` is the household's last good read (`weather_reading`) while the last read worked and is under 75 minutes old, else null. The board shows it beside the clock unless its layout turns it off (`layout.weather`), and only for the household's date it was read for, so a board offline overnight shows none. `weather_reading` is in the publication, so each read reaches the boards like any other change. The board never calls Open-Meteo: the `weather` job and Home's save do (`lib/weather.ts`), with the place's coordinates kept to two decimals.
+
+**As built (WP-28, D-80): meals.** The snapshot's `meals` is the household week's (from its first day, `week_from`): every planned entry in order (day, meal of the day, then their order), each with its name (the library meal's, or what was written in), icon, note and whose it is, and each child's `lunch_week()` (buy or bring, and the school's menu on a buy day). `lib/board-meals.ts` reads it and makes a day of it: a lunch planned for a child who brings that day goes with them. Today's meals sit at the top of Today's list's column on the home screen (shown when the layout's `meals` card is, and the day has any); **Meals** in the rail shows the week as a table; a person's screen has theirs. `meal`, `meal_plan_entry`, `member_lunch`, `lunch_override` and `school_menu_day` are in the publication and the listener. A change to the school calendar itself (a closure added) reaches the board with its next read (every four minutes, or the next change).
 
 **Offline rules**
 

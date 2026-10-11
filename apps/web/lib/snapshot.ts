@@ -10,6 +10,7 @@ import type { LedgerEntry, LedgerEntryType } from './points';
 import type { RedemptionStatus } from './rewards';
 import type { TodayItem } from './today';
 import { type BoardLayout, DEFAULT_LAYOUT, readLayout } from './board-layout';
+import { type BoardMeals, readMeals } from './board-meals';
 
 /**
  * [DEV-05] What `public.board_snapshot()` returns (02 §4.6): the one read a paired board makes, and
@@ -48,6 +49,8 @@ export interface BoardSnapshot {
    * read worked and is recent; null when there is no place, the source is failing, or none yet.
    */
   weather: BoardWeather | null;
+  /** [MEAL-06] The household week's meals and each child's school lunch (WP-28); null before it. */
+  meals: BoardMeals | null;
 }
 
 /** [BRD-04] The temperature now, today's high and low, and the sky, in the household's unit. */
@@ -517,5 +520,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
     calendar: readCalendar(data.calendar),
     // A snapshot from before WP-45 has no weather.
     weather: readWeather(data.weather),
+    // A snapshot from before WP-28 has no meals.
+    meals: readMeals(data.meals),
   };
 }

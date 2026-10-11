@@ -35,6 +35,12 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     { table: 'device_calendar', filter: `device_id=eq.${deviceId}` },
     // The weather (WP-45): each read, or a read failing.
     { table: 'weather_reading', filter: `household_id=eq.${householdId}` },
+    // Meals (WP-28): the plan and its library, school lunch, and the schools' menus.
+    { table: 'meal', filter: `household_id=eq.${householdId}` },
+    { table: 'meal_plan_entry', filter: `household_id=eq.${householdId}` },
+    { table: 'member_lunch', filter: `household_id=eq.${householdId}` },
+    { table: 'lunch_override', filter: `household_id=eq.${householdId}` },
+    { table: 'school_menu_day', filter: `household_id=eq.${householdId}` },
   ];
 }
 
