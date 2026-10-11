@@ -287,3 +287,37 @@ begin
    cross join (values ('created', 'admin'), ('activated', 'system')) e (type, actor)
    where g.household_id = v_demo;
 end $$;
+
+-- [MEAL-01][MEAL-02][MEAL-08] Meals (WP-25): the library (one meal archived) and this week's plan, from
+-- the household week's first day (Sunday): a dinner most days, two breakfasts, Leo's packed lunch and
+-- Maya's snack after school, two snacks today, one written in.
+do $$
+declare
+  v_demo  constant uuid := '0de00000-0000-4000-8000-000000000001';
+  v_alex  constant uuid := '0de00000-0000-4000-8000-0000000000a1';
+  v_today date := (now() at time zone 'America/New_York')::date;
+  v_week  date := v_today - extract(dow from v_today)::integer;
+  v_maya  uuid := (select id from public.member where household_id = v_demo and display_name = 'Maya');
+  v_leo   uuid := (select id from public.member where household_id = v_demo and display_name = 'Leo');
+begin
+  insert into public.meal (id, household_id, name, description, icon, meal_types, recipe_url, archived_at) values
+    ('0de00000-0000-4000-8000-000000071001', v_demo, 'Tacos', null, 'utensils', '{dinner}', 'https://example.com/tacos', null),
+    ('0de00000-0000-4000-8000-000000071002', v_demo, 'Spaghetti', 'With the sauce from the freezer', 'dinner', '{dinner}', null, null),
+    ('0de00000-0000-4000-8000-000000071003', v_demo, 'Porridge', null, 'breakfast', '{breakfast}', null, null),
+    ('0de00000-0000-4000-8000-000000071004', v_demo, 'Pancakes', 'Saturdays', 'breakfast', '{breakfast}', null, null),
+    ('0de00000-0000-4000-8000-000000071005', v_demo, 'Chicken soup', null, 'soup', '{lunch,dinner}', null, null),
+    ('0de00000-0000-4000-8000-000000071006', v_demo, 'Apple slices', null, 'apple', '{snack}', null, null),
+    ('0de00000-0000-4000-8000-000000071007', v_demo, 'Old casserole', null, 'dinner', '{}', null, now() - interval '30 days');
+  insert into public.meal_plan_entry (id, household_id, plan_date, slot, sort_order, member_id, meal_id, free_text,
+                                      notes, created_by)
+  values
+    ('0de00000-0000-4000-8000-000000072001', v_demo, v_week, 'dinner', 1, null, '0de00000-0000-4000-8000-000000071005', null, null, v_alex),
+    ('0de00000-0000-4000-8000-000000072002', v_demo, v_week + 1, 'breakfast', 1, null, '0de00000-0000-4000-8000-000000071003', null, null, v_alex),
+    ('0de00000-0000-4000-8000-000000072003', v_demo, v_week + 1, 'dinner', 1, null, '0de00000-0000-4000-8000-000000071001', null, 'Make extra for lunch', v_alex),
+    ('0de00000-0000-4000-8000-000000072004', v_demo, v_week + 2, 'lunch', 1, v_leo, null, 'Leftover tacos', null, v_alex),
+    ('0de00000-0000-4000-8000-000000072005', v_demo, v_week + 2, 'dinner', 1, null, '0de00000-0000-4000-8000-000000071002', null, null, v_alex),
+    ('0de00000-0000-4000-8000-000000072006', v_demo, v_today, 'snack', 1, v_maya, '0de00000-0000-4000-8000-000000071006', null, 'After school', v_alex),
+    ('0de00000-0000-4000-8000-000000072007', v_demo, v_today, 'snack', 2, null, null, 'Crackers', null, v_alex),
+    ('0de00000-0000-4000-8000-000000072008', v_demo, v_week + 5, 'dinner', 1, null, null, 'Pizza and a movie', null, v_alex),
+    ('0de00000-0000-4000-8000-000000072009', v_demo, v_week + 6, 'breakfast', 1, null, '0de00000-0000-4000-8000-000000071004', null, null, v_alex);
+end $$;

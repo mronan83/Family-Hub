@@ -11,6 +11,7 @@ const LINKS = [
   { href: '/admin/members', label: 'Members' },
   { href: '/admin/rewards', label: 'Rewards' },
   { href: '/admin/goals', label: 'Goals' },
+  { href: '/admin/meals', label: 'Meals' },
   { href: '/admin/insights', label: 'Insights' },
   { href: '/admin/school', label: 'School' },
   { href: '/admin/calendars', label: 'Calendars' },

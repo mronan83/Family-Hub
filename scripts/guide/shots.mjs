@@ -193,6 +193,14 @@ const SHOTS = [
     // Taller since the icon picker (WP-46), so a little more compressed to stay under 120 KB.
     quality: 58,
   },
+  // Meals (WP-25): the week on a laptop, and the library on a phone.
+  { name: 'admin-meals-laptop', device: 'laptop', url: '/dev/meals', maxHeight: 1900, quality: 62 },
+  {
+    name: 'admin-meal-library-phone',
+    device: 'phone',
+    url: '/dev/meals?page=library',
+    maxHeight: 1500,
+  },
   { name: 'admin-calendars-phone', device: 'phone', url: '/dev/calendars', maxHeight: 1330 },
   {
     name: 'admin-calendar-add-phone',

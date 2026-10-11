@@ -1,0 +1,230 @@
+import { addDays, dayName, weekStartOf } from './board-calendar';
+
+// Meals (WP-25, D-77): the family's meal library and the week's plan, in the parent's words. The
+// database decides who may and what is the family's (add_meal_entry(), copy_meal_week()); this reads
+// the forms, lays out a week and finds the words.
+
+export const SLOTS = ['breakfast', 'snack', 'lunch', 'dinner'] as const;
+export type Slot = (typeof SLOTS)[number];
+
+export const SLOT_WORDS: Record<Slot, string> = {
+  breakfast: 'Breakfast',
+  snack: 'Snack',
+  lunch: 'Lunch',
+  dinner: 'Dinner',
+};
+
+/** The icon each slot shows by. */
+export const SLOT_ICONS: Record<Slot, 'breakfast' | 'snack' | 'lunch' | 'dinner'> = {
+  breakfast: 'breakfast',
+  snack: 'snack',
+  lunch: 'lunch',
+  dinner: 'dinner',
+};
+
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+const realDay = (s: string) =>
+  ISO_DAY.test(s) && new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s;
+
+export interface MealRow {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string;
+  mealTypes: Slot[];
+  recipeUrl: string | null;
+  archivedAt: string | null;
+}
+
+export interface PlanEntry {
+  id: string;
+  planDate: string;
+  slot: Slot;
+  sortOrder: number;
+  memberId: string | null;
+  mealId: string | null;
+  freeText: string | null;
+  notes: string | null;
+}
+
+// ---------------------------------------------------------------------------------------------
+// The week
+// ---------------------------------------------------------------------------------------------
+
+/** [MEAL-01] The week to show: the household week holding `asked` (a day), or today's. */
+export function weekFrom(asked: string | undefined, today: string, weekStart: number): string {
+  return weekStartOf(asked && realDay(asked) ? asked : today, weekStart);
+}
+
+/** The seven days of the week starting `from`. */
+export function weekDays(from: string): string[] {
+  return Array.from({ length: 7 }, (_, i) => addDays(from, i));
+}
+
+/** "Week of Sun, Oct 11". */
+export function weekLabel(from: string): string {
+  return `Week of ${dayName(from)}`;
+}
+
+/** [MEAL-01][MEAL-08] A week's entries by day and slot, each slot in its order. */
+export function planByDay(
+  entries: PlanEntry[],
+  days: string[],
+): Map<string, Record<Slot, PlanEntry[]>> {
+  const out = new Map<string, Record<Slot, PlanEntry[]>>();
+  for (const d of days) out.set(d, { breakfast: [], snack: [], lunch: [], dinner: [] });
+  for (const e of entries) out.get(e.planDate)?.[e.slot].push(e);
+  for (const slots of out.values()) {
+    for (const s of SLOTS)
+      slots[s].sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id));
+  }
+  return out;
+}
+
+/** What an entry says: the meal's name (a removed meal keeps it), or what was written in. */
+export function entryName(e: PlanEntry, meals: Map<string, MealRow>): string {
+  return e.mealId ? (meals.get(e.mealId)?.name ?? 'A meal') : (e.freeText ?? '');
+}
+
+/**
+ * [MEAL-01] The library's meals to offer for a slot: those good for it first (or good for anything),
+ * then the rest, each by name; archived ones are not offered.
+ */
+export function mealsFor(slot: Slot | null, meals: MealRow[]): MealRow[] {
+  const fits = (m: MealRow) => !slot || m.mealTypes.length === 0 || m.mealTypes.includes(slot);
+  return meals
+    .filter((m) => !m.archivedAt)
+    .sort((a, b) => Number(fits(b)) - Number(fits(a)) || a.name.localeCompare(b.name));
+}
+
+/** [MEAL-03] What a copy did, in a line. */
+export function copyWords(r: { copied: number; skipped: number; replaced: number }): string {
+  if (r.copied === 0 && r.skipped === 0) return 'Last week has nothing planned to copy.';
+  const n = (k: number, one: string, many: string) => `${k} ${k === 1 ? one : many}`;
+  const parts = [`Copied ${n(r.copied, 'thing', 'things')} from last week.`];
+  if (r.skipped) parts.push(`${n(r.skipped, 'meal was', 'meals were')} already planned and kept.`);
+  if (r.replaced) parts.push(`${n(r.replaced, 'meal was', 'meals were')} replaced.`);
+  return parts.join(' ');
+}
+
+// ---------------------------------------------------------------------------------------------
+// The forms
+// ---------------------------------------------------------------------------------------------
+
+export interface MealFormValue {
+  name: string;
+  description: string | null;
+  icon: string;
+  mealTypes: Slot[];
+  recipeUrl: string | null;
+}
+
+/** [MEAL-02] The library's form, or a line saying what to fix. */
+export function parseMealForm(
+  form: FormData,
+  icons: readonly string[],
+): { ok: true; value: MealFormValue } | { ok: false; message: string } {
+  const name = String(form.get('name') ?? '').trim();
+  if (name.length < 1 || name.length > 80) {
+    return { ok: false, message: 'Give the meal a name, up to 80 characters.' };
+  }
+  const description = String(form.get('description') ?? '').trim();
+  if (description.length > 300) {
+    return { ok: false, message: 'Keep the description to 300 characters.' };
+  }
+  const recipe = String(form.get('recipeUrl') ?? '').trim();
+  if (recipe && (!/^https?:\/\/\S+$/i.test(recipe) || recipe.length > 500)) {
+    return { ok: false, message: 'A recipe link starts with https:// (or leave it blank).' };
+  }
+  const types = form
+    .getAll('mealTypes')
+    .map(String)
+    .filter((t): t is Slot => (SLOTS as readonly string[]).includes(t));
+  const icon = String(form.get('icon') ?? 'utensils');
+  return {
+    ok: true,
+    value: {
+      name,
+      description: description || null,
+      icon: icons.includes(icon) ? icon : 'utensils',
+      mealTypes: SLOTS.filter((s) => types.includes(s)),
+      recipeUrl: recipe || null,
+    },
+  };
+}
+
+export interface EntryFormValue {
+  id: string;
+  planDate: string;
+  slot: Slot;
+  memberId: string | null;
+  mealId: string | null;
+  freeText: string | null;
+  notes: string | null;
+}
+
+/**
+ * [MEAL-01][MEAL-02][MEAL-08] "Add to the plan": a day of the week shown, a slot, a meal from the
+ * library or something written in, for everyone or one person, and a note.
+ */
+export function parseEntryForm(
+  form: FormData,
+  ctx: { days: readonly string[]; memberIds: readonly string[] },
+): { ok: true; value: EntryFormValue } | { ok: false; message: string } {
+  const id = String(form.get('id') ?? '');
+  if (!GUID.test(id)) return { ok: false, message: 'That form is out of date. Reload the page.' };
+  const planDate = String(form.get('planDate') ?? '');
+  if (!ctx.days.includes(planDate)) return { ok: false, message: 'Choose a day of this week.' };
+  const slot = String(form.get('slot') ?? '') as Slot;
+  if (!SLOTS.includes(slot))
+    return { ok: false, message: 'Choose breakfast, snack, lunch or dinner.' };
+  const who = String(form.get('member') ?? 'everyone');
+  if (who !== 'everyone' && !ctx.memberIds.includes(who)) {
+    return { ok: false, message: 'Choose who it’s for.' };
+  }
+  let mealId: string | null = null;
+  let freeText: string | null = null;
+  if (form.get('what') === 'text') {
+    freeText = String(form.get('freeText') ?? '').trim();
+    if (freeText.length < 1 || freeText.length > 80) {
+      return { ok: false, message: 'Write what it is, up to 80 characters.' };
+    }
+  } else {
+    mealId = String(form.get('mealId') ?? '');
+    if (!GUID.test(mealId)) return { ok: false, message: 'Choose a meal from the library.' };
+  }
+  const notes = String(form.get('notes') ?? '').trim();
+  if (notes.length > 200) return { ok: false, message: 'Keep the note to 200 characters.' };
+  return {
+    ok: true,
+    value: {
+      id,
+      planDate,
+      slot,
+      memberId: who === 'everyone' ? null : who,
+      mealId,
+      freeText,
+      notes: notes || null,
+    },
+  };
+}
+
+/** A database refusal of a meal change in the parent's words. */
+export function mealRefusal(error: { code?: string | null; hint?: string | null }): string {
+  if (error.code === '23505') return 'The library already has a meal of that name.';
+  switch (error.hint) {
+    case 'meal_gone':
+      return 'That meal isn’t in the library any more. Choose another.';
+    case 'member_gone':
+      return 'That person isn’t in the family any more.';
+    case 'meal_or_text':
+      return 'Choose a meal from the library, or write something in.';
+    case 'same_week':
+      return 'That’s the same week.';
+    case 'not_allowed':
+      return 'Only a parent of this family can do that.';
+    default:
+      return 'That didn’t save. Try again in a moment.';
+  }
+}

@@ -179,14 +179,14 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | SCH-02 | US-602 | WP-21 | DB | resolve_day_type | DB, E2E |
 | SCH-03 | US-302, US-602 | WP-09, WP-21 | OCCGEN, DB | chore, chore_occurrence | DB, E2E |
 | SCH-04 | US-603 | WP-36 | ADM, CALSYNC | school_closure, calendar_event_instance | INT |
-| MEAL-01 | US-701 | WP-25 | ADM, BRD | meal_plan_entry | E2E |
-| MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | E2E |
-| MEAL-03 | US-702 | WP-25 | ADM, API | meal_plan_entry | E2E, INT |
+| MEAL-01 | US-701 | WP-25 | ADM, BRD | meal_plan_entry | U, DB, E2E |
+| MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | U, DB, E2E |
+| MEAL-03 | US-702 | WP-25 | ADM, API | meal_plan_entry | DB, E2E, INT |
 | MEAL-04 | US-703 | WP-26 | ADM, DB | lunch_override, member_school_profile | DB, E2E |
 | MEAL-05 | US-704 | WP-27 | MENUIMP, BRD, ADM | school_menu_day, lunch_override | E2E |
 | MEAL-06 | US-705 | WP-28 | BRD | meal_plan_entry, lunch_override | E2E |
 | MEAL-07 | US-706 | WP-36 | ADM | meal | U |
-| MEAL-08 | US-701 | WP-25 | ADM | meal_plan_entry | E2E |
+| MEAL-08 | US-701 | WP-25 | ADM | meal_plan_entry | U, DB, E2E |
 | MENU-01 | US-801 | WP-27 | ADM, MENUIMP | menu_source, member_school_profile | E2E |
 | MENU-02 | US-801 | WP-27 | MENUIMP | menu_source | U, INT |
 | MENU-03 | US-802 | WP-27 | ADM, MENUIMP | school_menu_day | E2E, INT |
@@ -397,6 +397,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.80 | WP-25 meal library and weekly planner (MEAL-01, MEAL-02, MEAL-03, MEAL-08, US-701, US-702, D-77), in review (PR #55): **Meals** in the admin app, a household week with each day's breakfast, snack, lunch and dinner; entries from the library or written in, for everyone or one person, with a note, in an order a parent sets; the meal library (good for, recipe link, icon, archive); copy last week, keeping or replacing what is planned. Tests: pgTAP 340 (the library's checks, adding, ordering, removing, copy with skip and overwrite, who may); unit (`meals`: the week, the order, the forms, the words); the UI suite (`meals.spec`: the week, Change, Add to the plan, copy, the library, on a phone and a laptop); e2e (`meals.spec`: the done-when). |
 | 0.8.73 | WP-47 done (PR #50): approved by the owner and merged once CI and e2e were green on the preview (116 passed, no retries, on `82cc230`; the done-when: a parent set the paired board to Larger on Boards and the board zoomed to 1.15 377 ms after the save, without a reload). The user guide says how (version 0.6, A14). |
 | 0.8.72 | WP-47 the board fits its screen, and a text size per board (BRD-08, US-1007, D-73), in review (PR #50): the board zooms its 1920×1080 layout to the screen (the smaller of width ÷ 1920 and height ÷ 1080, 0.5 to 4×), set before the first paint by `boardFitScript()` and on every resize, so a 4K panel at device scale 1 shows the 1080p layout twice as large and a laptop's window smaller; **Text size** on Boards (Smaller 0.85×, Standard, Larger 1.15×, Largest 1.3×) in `board_config.text_size`, checked, carried by the snapshot, remembered by the board for its next start; under 1800 board px the dashboard puts the list under the calendar; viewport units, the bar's height and the calendar's swipe are in the board's own px. Tests: pgTAP 310 (the four sizes, who sets them, the snapshot) and 070; unit (`board-fit`: the zoom, the first-paint script agreeing with it; `board`: the snapshot's size); the UI suite (`board-fit.spec`: five screens, four sizes, More info at Largest, a resize, a swipe at 4K, the first paint at a remembered size); e2e (`board-fit.spec`: the done-when). |
 | 0.8.71 | Help in the admin app (D-72) done (PR #49): approved by the owner and merged once CI and e2e were green on the preview (114 passed, no retries, on `70f00dc`, with WP-46 merged in). The user guide is **Help** in the admin app (version 0.5); the published guide page stays as well. |

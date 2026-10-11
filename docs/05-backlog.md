@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.80: WP-25 in review (PR #55): the meal library and the weekly planner (D-77).
 > v0.8.73: WP-47 done (PR #50): the board fits its screen, and a text size per board.
 > v0.8.72: WP-47 in review (PR #50): the board fits its screen, and a text size per board (D-73).
 > v0.8.71: Help in the admin app (D-72) done (PR #49): the user guide at `/help` (version 0.5). No work package changes status.
@@ -151,7 +152,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Done (PR #41) |
 | WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Done (PR #43) |
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
-| WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Ready |
+| WP-25 | Meal library and weekly planner | P2 | M | WP-04 | In review (PR #55) |
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Queued |
 | WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Ready |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Queued |
@@ -670,6 +671,11 @@ flowchart LR
 **Phase:** P2 · **Size:** M · **Depends on:** WP-04 · **Reqs:** MEAL-01, MEAL-02, MEAL-03, MEAL-08
 - `meal`, `meal_plan_entry`; weekly grid for breakfast, snack, lunch, dinner; multiple ordered entries per slot; copy last week with skip or overwrite.
 - **Done when:** a full week can be planned in the E2E flow, including copy-week with skip and overwrite.
+- As built (D-77):
+  - **Meals** (`/admin/meals`, in the menu): a household week (`?week=`), each day with **Breakfast**, **Snack**, **Lunch** and **Dinner**, what is planned in order with who it's for and its note, **Change** (**Earlier**, **Later**, **Remove**) and **Add** (which fills in the day and meal of **Add to the plan**). **Add to the plan**: a meal from the library (those good for that meal first) or something written in, for **Everyone** or one person, a note. **Copy last week**: keep or replace what this week already has.
+  - **Meal library** (`/admin/meals/library`): name, description, good for, recipe link, icon; edit, archive (plans keep the name), restore.
+  - **Database:** `meal`, `meal_plan_entry`; `add_meal_entry()`, `move_meal_entry()`, `copy_meal_week()`; removing through RLS; boards may read both (for WP-28). The demo family has a library and this week's meals.
+  - **Done when:** the preview's `meals.spec.ts`: Alex adds a meal to the library, plans a dinner every day of a week and two snacks put in order, then copies the week on with skip (a dinner already planned is kept) and with overwrite (it is replaced), and removes a copy without touching the original. pgTAP `340_meals` (29); unit `meals.test.ts`; the UI suite's `meals.spec.ts`.
 
 ### WP-26 — Lunch buy or bring
 **Phase:** P2 · **Size:** S · **Depends on:** WP-21, WP-25 · **Reqs:** MEAL-04
