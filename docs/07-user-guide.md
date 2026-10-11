@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.7: the home screen on one screen, with a rail (WP-48, D-74): A5, B2.1 and B2.2; the calendar's view on the board; tapping goals, requests and events on the cards; the weather on one line, its credit here in A13.
 > v0.6: the board fits any screen, and each board has a text size (WP-47, D-73): A14, Boards, the rules, troubleshooting and questions.
 > v0.5: Help in the admin app (D-72): this guide is **Help** in the menu, open before you sign in too.
 > v0.4: more icons and colors (WP-46, D-70): one icon picker everywhere, with **Find an icon** and groups; sixteen named colors; the weather's own sky icons; how the board stays easy to read for everyone (A12).
@@ -315,21 +316,21 @@ Switch on **Private** for a surprise or a personal item. A private item never sh
 At the top of **Chores**, filter by **Person**, **Tag**, **Kind**, **Time of day**, and **Show** (**Active** or **Archived**), then choose **Filter**. **Clear** shows everything again. Each line shows how often it happens, its due time, its points, when it is next due ("Next: Today"), and "Overdue since" for an open task.
 
 ### A5 The family at the board
-<!-- covers: US-303 US-304 US-305 US-1001 US-1002 US-1005 US-1006 US-905 -->
+<!-- covers: US-303 US-304 US-305 US-1001 US-1002 US-1005 US-1006 US-1008 US-905 -->
 
 **What this is.** The wall board: the family's day, for everyone. **When.** All day. **How.** Just tap. Every button on the board is big enough for a child's finger and answers at once.
 
-![The board's home screen: the household name, date and clock; the top bar with Home, Leo, Maya, Alex, Sam, Chores and Calendar; the next five days of the calendar on the left; Today's list on the right with a face for each person on each item.](guide/img/board-home.jpg "The board's home screen")
+![The board's home screen: the rail down the left with Home, Leo and Maya with their points, Alex, Sam, then Chores and Calendar; the bar with the household name, date, weather and clock; the next five days of the calendar with Month, 7 days, 5 days and 3 days; Today's list on the right with a face for each person on each item; Goals, Waiting for a parent and Coming up in a row under the calendar.](guide/img/board-home.jpg "The board's home screen")
 
 #### The home screen
 
-The home screen has three parts:
+The home screen fits the screen: nothing hides under the bar, and the page never scrolls. It has three parts:
 
-- **The calendar** on the left: the next few days (5 by default) with each event in its calendar's color. Tap a day's heading to open it in **Calendar**.
+- **The calendar** on the left: the next few days (5 by default) with each event in its calendar's color. Tap a day's heading to open it in **Calendar**. To look further ahead, tap **Month**, **7 days**, **5 days** or **3 days** at the top of the calendar. That changes only this board, and only for now: when the board goes home after 90 seconds untouched, it is back to the view set on **Boards**.
 - **Today's list** on the right: one list for the whole family, grouped into **Overdue**, **Morning**, **After school**, **Evening** and **Anytime**, with "2 of 9 done" at the top. Each row shows the item, its points, and a face for each person it is for.
-- **Cards** under the calendar: **Goals**, **Waiting for a parent** and **Coming up** (all-day events in the next three weeks). A parent chooses which cards show, and in what order (see [A11](#a11-the-boards-home-screen-layout)).
+- **Cards** in a row under the calendar: **Goals**, **Waiting for a parent** and **Coming up** (all-day events in the next three weeks). A parent chooses which cards show, and in what order (see [A11](#a11-the-boards-home-screen-layout)). Tap a goal to open that child's screen (a family goal opens **Chores**), a request to open the child who asked, or an event to open **Calendar** on its day. When a list is longer than its card, it scrolls inside the card.
 
-The top bar stays in place while the screen scrolls: **Home**, a button for each person (with their points, if they earn rewards), **Chores** and **Calendar**.
+Down the left is the rail: **Home**, a button for each person (with their points, if they earn rewards), and **Chores** and **Calendar** at the bottom. It never moves. Every other screen scrolls inside itself, under the bar and beside the rail.
 
 ![The home screen scrolled down to the cards: Waiting for a parent lists a reward Maya asked for and Homework to check; Coming up lists the grandparents' visit and picture day; Goals shows each goal's progress.](guide/img/board-home-cards.jpg "The cards, here in the order Waiting for a parent, Coming up, Goals")
 
@@ -366,7 +367,7 @@ After 2 minutes the **Undo** button goes away. A parent can still change it in t
 
 #### A person's screen
 
-Tap a person in the top bar to see their own day: their name, "3 of 4 done", and their items as big tiles. A tap on a tile checks it off for them, even a shared one. When everything is done it says "All done today. Nice work!"
+Tap a person in the rail to see their own day: their name, "3 of 4 done", and their items as big tiles. A tap on a tile checks it off for them, even a shared one. When everything is done it says "All done today. Nice work!"
 
 For someone who earns rewards (usually a child), the screen also shows:
 
@@ -404,18 +405,18 @@ After **90 seconds** with nobody touching it, the board goes back to the home sc
 
 The board keeps working without the internet. Check-offs and undos still work and show at once; the board saves them and sends them as soon as it can, each exactly once, even after a reload.
 
-While it waits, the top bar says **Offline: your check-offs are saved**, and a balance that counts unsaved check-offs has a dashed ring and a no-wifi mark ("Not saved yet"). When the connection returns, everything is sent and the board shows what the server recorded.
+While it waits, the bar says **Offline: your check-offs are saved**, and a balance that counts unsaved check-offs has a dashed ring and a no-wifi mark ("Not saved yet"). When the connection returns, everything is sent and the board shows what the server recorded.
 
 Asking for a reward, calling a request off and choosing a wish need the internet. Offline, the board says so ("Asking needs the internet", "Choosing a wish needs the internet.") or greys the button out.
 
-![Leo's screen while offline: the top bar says Offline: your check-offs are saved, Set the table is done, and Leo's points have a dashed ring.](guide/img/board-offline.jpg "Offline: check-offs are kept and sent later")
+![Leo's screen while offline: the bar says Offline: your check-offs are saved, Set the table is done, and Leo's points have a dashed ring.](guide/img/board-offline.jpg "Offline: check-offs are kept and sent later")
 
 The board also tells you when what it shows may be old:
 
 - **Updated 12 minutes ago** (or hours, or days): it hasn't been able to read the latest for over 5 minutes.
 - **Today's list may be out of date**: the jobs that plan the days ahead or close the day are late or failing.
 
-![The board's top bar with the line Updated 12 minutes ago under the clock.](guide/img/board-stale.jpg "The board says when its information is old")
+![The board's bar with the line Updated 12 minutes ago beside the clock.](guide/img/board-stale.jpg "The board says when its information is old")
 
 Changes a parent makes in the admin app reach the board within seconds while it is connected.
 
@@ -693,9 +694,11 @@ Both looks use the same colors for the same things, never color alone: every sta
 
 Home says "Saved. The boards show the weather in a moment." and, once the weather is read, the last reading, like "Last read at 4:09 pm: 64°F, partly cloudy, high 68°F."
 
-![The board's top bar with the weather beside the clock: a rain cloud, 50°, Rain, High 52°, and the line Weather by Open-Meteo.com.](guide/img/board-weather.jpg "The weather beside the clock")
+![The board's bar with the weather beside the clock: a rain cloud, 50°, and Rain · High 52° on one line.](guide/img/board-weather.jpg "The weather beside the clock")
 
-**On the board** the weather sits beside the clock: an icon and a word for the sky (**Sunny**, **Partly cloudy**, **Rain**, **Snow** and so on), the temperature now in large numbers, and **High** with today's high. Temperatures are whole degrees. The small line **Weather by Open-Meteo.com** credits where the weather comes from.
+**On the board** the weather sits beside the clock: an icon and a word for the sky (**Sunny**, **Partly cloudy**, **Rain**, **Snow** and so on), the temperature now in large numbers, and **High** with today's high. Temperatures are whole degrees. The sky and today's high share one line, like "Partly cloudy · High 61°".
+
+Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credit is here and on Home, beside where you set your place, rather than on the board.
 
 - **How fresh it is.** FamilyWise reads the weather every 30 minutes. The board never asks the weather service itself, so it costs the board nothing.
 - **When it can't be read.** If the weather can't be read, or the last reading is more than 75 minutes old, the board simply shows no weather; nothing else on it moves. Home says what went wrong ("Couldn't read the weather at …") and tries again on its own.
@@ -952,34 +955,34 @@ flowchart TD
   K -. 90 seconds untouched .-> H
 ```
 
-#### B2.1 The top bar
-<!-- covers: US-1002 US-204 -->
+#### B2.1 The rail and the bar
+<!-- covers: US-1002 US-204 US-1008 -->
 
 | Part | What it shows or does |
 |---|---|
-| Household name and date | Always shown. |
+| Household name, date and the board's name | Always shown, in the bar along the top. |
 | Clock | In the household's timezone. |
-| Weather | Beside the clock, when the household has a place: the sky's icon and word, the temperature now, **High** and today's high, and **Weather by Open-Meteo.com**. Not shown when the layout turns it off or the last reading is over 75 minutes old. |
+| Weather | Beside the clock, when the household has a place: the sky's icon, the temperature now, and the sky's word with **High** and today's high on one line. Not shown when the layout turns it off or the last reading is over 75 minutes old. |
 | Connection | **Live** (changes arrive within seconds), **Connecting…**, or **Reconnecting…** (the board reads everything again when it reconnects). |
 | Health lines | **Offline: your check-offs are saved**; **Updated N minutes ago**; **Today's list may be out of date**. |
-| **Home** | The family dashboard. |
+| **Home** | The family dashboard. The rail's buttons are down the left of every screen. |
 | A button per person | Children first, then adults, each by name. Someone who earns rewards has their points on their button. Opens their screen. |
 | **Chores** | Everyone's day, a column each. |
 | **Calendar** | The family's calendar. |
 
-The board's name is at the bottom of every screen.
+The board's name is beside the date.
 
 #### B2.2 Home
 <!-- covers: US-1001 US-1006 -->
 
 | Part | What it shows or does |
 |---|---|
-| Calendar | "Next 5 days" (or 3 or 7) from today with the dates, a column per day with its events (time or "All day", the event, whose avatar). Or the month ("Tap a day to see it") with a dot per calendar on each day with events, up to four. Tapping a day opens it in **Calendar**. |
+| Calendar | **Month**, **7 days**, **5 days** and **3 days** at the top choose the view on this board until it goes home (90 seconds untouched); the one set on **Boards** shows otherwise. "Next 5 days" (or 3 or 7) from today with the dates, a column per day with its events (time or "All day", the event, whose avatar). Or the month ("Tap a day to see it") with a dot per calendar on each day with events, up to four. Tapping a day opens it in **Calendar**. |
 | **Today's list** | "N of M done", then **Overdue**, **Morning**, **After school**, **Evening**, **Anytime**. A row per item: icon, name, points, **More info** when needed, and faces. |
 | Faces | Tap an open face: done for that person. Tap a done face twice (within 4 seconds, inside the undo window): undone. **Anyone**: asks who. |
-| **Goals** card | Every goal in play, whose (an avatar or **Family**), a meter per rule, when it ends; "Reached! A grown-up will sort out the reward." |
-| **Waiting for a parent** card | "Asked for" rewards with their cost, and check-offs to approve ("Homework: check it's done"). Parents decide them in the admin app. |
-| **Coming up** card | Up to five all-day events in the next three weeks, with "Tomorrow" or "In N days". |
+| **Goals** card | Every goal in play, whose (an avatar or **Family**), a meter per rule, when it ends; "Reached! A grown-up will sort out the reward." Tap one: that child's screen (a family goal: **Chores**). |
+| **Waiting for a parent** card | "Asked for" rewards with their cost, and check-offs to approve ("Homework: check it's done"). Parents decide them in the admin app. Tap one: the child who asked. |
+| **Coming up** card | Up to five all-day events in the next three weeks, with "Tomorrow" or "In N days". Tap one: **Calendar** on that day. |
 | **Dinner and lunch** card | Not shown yet: it appears once meals can be planned. |
 
 #### B2.3 A person's screen
@@ -1025,7 +1028,7 @@ A column per person: avatar, name, flame and points (for those who earn rewards)
 | **What is** (name) **saving for?** | The shop's rewards; tap one; **No wish**; **Cancel**. |
 | Celebration | "(Name) reached (goal)!" or "The family reached (goal)!", "Well done! A grown-up will sort out the reward.", **Yay!**. Closes after 10 seconds. |
 
-Short messages appear under the top bar for 6 seconds: "Asked for Movie night. A grown-up will say yes or not this time.", "Called off … Those points are free again.", "Too late to undo here. Ask a parent.", "That one changed. A parent took it off today.", "Ask a parent for that one.", "That didn't save. Try again."
+Short messages appear under the bar for 6 seconds: "Asked for Movie night. A grown-up will say yes or not this time.", "Called off … Those points are free again.", "Too late to undo here. Ask a parent.", "That one changed. A parent took it off today.", "Ask a parent for that one.", "That didn't save. Try again."
 
 #### B2.7 Pairing and other screens
 <!-- covers: US-201 US-202 -->

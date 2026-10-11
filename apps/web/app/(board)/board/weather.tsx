@@ -21,15 +21,13 @@ export function WeatherNow({ weather, today }: { weather: BoardWeather | null; t
       aria-label={`Weather: ${now} degrees ${unit}, ${sky.word.toLowerCase()}, high ${high}`}
       data-sky={sky.key}
     >
-      <Icon name={sky.icon} size={64} className="fw-weather__icon" />
+      <Icon name={sky.icon} size={56} className="fw-weather__icon" />
       <span className="fw-weather__now" aria-hidden>
         {now}°
       </span>
-      <span className="fw-weather__more">
-        <span aria-hidden>{sky.word}</span>
-        <span aria-hidden>High {high}°</span>
-        {/* Open-Meteo's licence (CC BY 4.0) asks for credit next to its data. */}
-        <span className="fw-weather__credit">Weather by Open-Meteo.com</span>
+      {/* One line beside the clock (D-74). Open-Meteo's credit (CC BY 4.0) is in Help and on Home. */}
+      <span className="fw-weather__more" aria-hidden>
+        {sky.word} · High {high}°
       </span>
     </div>
   );

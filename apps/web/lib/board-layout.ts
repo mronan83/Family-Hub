@@ -7,6 +7,8 @@ export type CalendarSpan = '3' | '5' | '7' | 'month';
 export type CardId = 'meals' | 'goals' | 'waiting' | 'coming';
 
 export const CALENDAR_SPANS: readonly CalendarSpan[] = ['3', '5', '7', 'month'];
+/** [D-74] The calendar's views as the board's switch lists them, the month first. */
+export const SWITCH_SPANS: readonly CalendarSpan[] = ['month', '7', '5', '3'];
 /** The cards in their default order. */
 export const CARD_IDS: readonly CardId[] = ['meals', 'goals', 'waiting', 'coming'];
 
