@@ -3,7 +3,13 @@
 import { Avatar, Icon, PointsChip } from '@familywise/ui';
 import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { addDays, dayName, eventsOn, heading } from '@/lib/board-calendar';
-import type { BoardLayout, CardId } from '@/lib/board-layout';
+import {
+  type BoardLayout,
+  type CalendarSpan,
+  type CardId,
+  SPAN_LABELS,
+  SWITCH_SPANS,
+} from '@/lib/board-layout';
 import {
   type Chip,
   CHIP_WORDS,
@@ -20,6 +26,14 @@ import { progress, type TodayItem } from '@/lib/today';
 import { EventLine, type LoadCalendar, useCalendar } from './calendar-ui';
 import { GoalItem } from './goals-ui';
 import { iconOf, type PhotoUrl } from './picture';
+
+/**
+ * [D-74] A button over a whole row or goal on the dashboard, so all of it can be tapped; what it
+ * opens is in its name.
+ */
+function Open({ label, onOpen }: { label: string; onOpen: () => void }) {
+  return <button type="button" className="fw-dash__open" aria-label={label} onClick={onOpen} />;
+}
 
 /** How long "Tap again to undo" waits for the second tap. */
 const ARM_MS = 4_000;
@@ -306,6 +320,8 @@ export function Dashboard({
   snapshot,
   items,
   layout,
+  span,
+  onSpan,
   nowTime,
   load,
   photoUrl,
@@ -315,10 +331,15 @@ export function Dashboard({
   onUndo,
   onMore,
   onOpenDay,
+  onOpenPerson,
+  onOpenFamily,
 }: {
   snapshot: BoardSnapshot;
   items: TodayItem[];
   layout: BoardLayout;
+  /** [D-74] The calendar's view now: the board's own, or one chosen on the board until it idles. */
+  span: CalendarSpan;
+  onSpan: (span: CalendarSpan) => void;
   nowTime: string;
   load?: LoadCalendar;
   photoUrl?: PhotoUrl;
@@ -328,6 +349,9 @@ export function Dashboard({
   onUndo: (item: TodayItem) => void;
   onMore: (row: ListRow) => void;
   onOpenDay: (date: string) => void;
+  /** [D-74] A goal or a request opens the person it is for; a family goal opens everyone's. */
+  onOpenPerson: (memberId: string) => void;
+  onOpenFamily: () => void;
 }) {
   const { today, household, members } = snapshot;
   const people = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
@@ -336,8 +360,8 @@ export function Dashboard({
     [items, members, today, nowTime],
   );
   const dates = useMemo(
-    () => spanDates(layout.calendar, today, household.weekStart),
-    [layout.calendar, today, household.weekStart],
+    () => spanDates(span, today, household.weekStart),
+    [span, today, household.weekStart],
   );
   const [armed, setArmed] = useState<string | null>(null);
   useEffect(() => {
@@ -378,6 +402,16 @@ export function Dashboard({
                   today={today}
                   photoUrl={photoUrl}
                   compact
+                  action={
+                    <Open
+                      label={
+                        g.memberId
+                          ? `Open ${people.get(g.memberId)?.displayName ?? 'their'}’s goals`
+                          : 'Open everyone’s goals'
+                      }
+                      onOpen={() => (g.memberId ? onOpenPerson(g.memberId) : onOpenFamily())}
+                    />
+                  }
                   who={
                     g.memberId ? (
                       <Who ids={[g.memberId]} people={people} />
@@ -403,12 +437,20 @@ export function Dashboard({
             Waiting for a parent
           </h2>
           {waits.length ? (
-            <ul className="fw-dash__lines" aria-labelledby="dash-waiting">
+            <ul className="fw-dash__lines fw-dash__waiting" aria-labelledby="dash-waiting">
               {waits.map((w) => (
                 <li key={w.key}>
                   <Who ids={w.memberIds} people={people} />
                   <span className="fw-dash__line-text">{w.text}</span>
                   {w.cost !== null ? <PointsChip points={w.cost} size="board" /> : null}
+                  {w.memberIds.length === 1 ? (
+                    <Open
+                      label={`Open ${people.get(w.memberIds[0]!)?.displayName ?? 'them'}: ${w.text}`}
+                      onOpen={() => onOpenPerson(w.memberIds[0]!)}
+                    />
+                  ) : (
+                    <Open label={`Open everyone: ${w.text}`} onOpen={onOpenFamily} />
+                  )}
                 </li>
               ))}
             </ul>
@@ -440,6 +482,10 @@ export function Dashboard({
                     <Who ids={[u.calendar.memberId]} people={people} />
                   ) : null}
                   <span className="fw-dash__line-when">{inDays(u.days)}</span>
+                  <Open
+                    label={`Open ${dayName(u.date)}: ${u.event.title || 'Untitled event'}`}
+                    onOpen={() => onOpenDay(u.date)}
+                  />
                 </li>
               ))}
             </ul>
@@ -451,7 +497,6 @@ export function Dashboard({
     },
   };
 
-  const span = layout.calendar;
   return (
     <div className="fw-dash" data-span={span}>
       <section className="fw-dash__cal" aria-labelledby="dash-cal">
@@ -464,6 +509,20 @@ export function Dashboard({
               : `${dayName(today)} to ${dayName(addDays(today, Number(span) - 1))}`}
           </span>
         </h2>
+        {/* [D-74] The view, chosen on the board; it goes back to the board's own when idle. */}
+        <div className="fw-dash__spans" role="group" aria-label="Calendar view">
+          {SWITCH_SPANS.map((s) => (
+            <button
+              key={s}
+              type="button"
+              className="fw-dash__span"
+              aria-pressed={s === span}
+              onClick={() => onSpan(s)}
+            >
+              {SPAN_LABELS[s]}
+            </button>
+          ))}
+        </div>
         {span === 'month' ? (
           <MonthDots snapshot={snapshot} dates={dates} load={load} onOpenDay={onOpenDay} />
         ) : (
@@ -478,31 +537,33 @@ export function Dashboard({
             {p.total ? `${p.done} of ${p.total} done` : 'Nothing today'}
           </span>
         </h2>
-        {list.length === 0 ? (
-          <p className="fw-today__empty">Nothing on the list today.</p>
-        ) : (
-          list.map((s) => (
-            <section key={s.key} className="fw-dash__part" aria-labelledby={`dash-${s.key}`}>
-              <h3 id={`dash-${s.key}`} className="fw-today__part-title" data-part={s.key}>
-                {s.label}
-              </h3>
-              <ul className="fw-dash__rows" aria-labelledby={`dash-${s.key}`}>
-                {s.rows.map((r) => (
-                  <Row
-                    key={r.key}
-                    row={r}
-                    people={people}
-                    armed={armed}
-                    canUndo={canUndo}
-                    celebrating={celebrating}
-                    onFace={onFace}
-                    onMore={onMore}
-                  />
-                ))}
-              </ul>
-            </section>
-          ))
-        )}
+        <div className="fw-dash__list-body">
+          {list.length === 0 ? (
+            <p className="fw-today__empty">Nothing on the list today.</p>
+          ) : (
+            list.map((s) => (
+              <section key={s.key} className="fw-dash__part" aria-labelledby={`dash-${s.key}`}>
+                <h3 id={`dash-${s.key}`} className="fw-today__part-title" data-part={s.key}>
+                  {s.label}
+                </h3>
+                <ul className="fw-dash__rows" aria-labelledby={`dash-${s.key}`}>
+                  {s.rows.map((r) => (
+                    <Row
+                      key={r.key}
+                      row={r}
+                      people={people}
+                      armed={armed}
+                      canUndo={canUndo}
+                      celebrating={celebrating}
+                      onFace={onFace}
+                      onMore={onMore}
+                    />
+                  ))}
+                </ul>
+              </section>
+            ))
+          )}
+        </div>
       </section>
       <div className="fw-dash__cards">
         {layout.cards.filter((c) => c.show).map((c) => cards[c.id]())}
