@@ -15,6 +15,8 @@ const RAW = {
     undo_window_seconds: 120,
   },
   device: { id: 'd1', name: 'Kitchen', theme: 'auto' },
+  // [BRD-05] The household's layout (seven days, Goals first) and no layout of this board's own.
+  layout: { household: { calendar: '7', cards: [{ id: 'goals', show: true }] }, board: null },
   members: [
     {
       id: 'm1',
@@ -83,6 +85,18 @@ describe('board snapshot', () => {
         undoWindowSeconds: 120,
       },
       device: { id: 'd1', name: 'Kitchen', theme: 'auto' },
+      layout: {
+        household: {
+          calendar: '7',
+          cards: [
+            { id: 'goals', show: true },
+            { id: 'meals', show: true },
+            { id: 'waiting', show: true },
+            { id: 'coming', show: true },
+          ],
+        },
+        board: null,
+      },
       members: [
         {
           id: 'm1',
@@ -144,6 +158,7 @@ describe('board snapshot', () => {
           points: 5,
           requiresApproval: false,
           checkedAt: '2026-10-09T12:31:00Z',
+          description: null,
         },
       ],
     });

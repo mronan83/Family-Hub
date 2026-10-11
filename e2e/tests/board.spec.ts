@@ -4,10 +4,11 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { retireBoard } from '../support/board';
 
 // [BRD-01][BRD-03][BRD-07][CHR-04][NFR-03][US-305] The board's Today on the preview (WP-11, D-50): a
-// board paired to the demo family shows everyone's day, checks items off by click and by touch, counts
-// a rapid double tap once and moves the balance once, undoes with a second tap, asks who did a shared
-// item, and shows a check-off made elsewhere live. Everything it checks off it puts back, so the specs
-// after it find today as the seed left it. The database is read with psql to confirm what was posted.
+// board paired to the demo family opens on the family dashboard (WP-35, D-66), shows everyone's day
+// on Chores, checks items off by click and by touch, counts a rapid double tap once and moves the
+// balance once, undoes with a second tap, asks who did a shared item, and shows a check-off made
+// elsewhere live. Everything it checks off it puts back, so the specs after it find today as the seed
+// left it. The database is read with psql to confirm what was posted.
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const BOARD = 'Hall e2e';
@@ -110,7 +111,32 @@ test.afterAll(async () => {
   await retireBoard(board, BOARD);
 });
 
-test("[BRD-01][BRD-07] the board opens on everyone's day: a column each, today's items by part of day", async () => {
+test("[BRD-01][BRD-07][D-66] the board opens on the family dashboard; Chores has a column each, today's items by part of day", async () => {
+  await expect(people().getByRole('button', { name: 'Home', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  // Today's list: Make bed is one row with a face for each who makes their own (D-47); the dog is
+  // Maya's and Alex's, not Leo's.
+  const row = (title: string) =>
+    board.locator('.fw-dash__list li[data-row]', { has: board.getByText(title, { exact: true }) });
+  await expect(row('Make bed')).toHaveCount(1);
+  for (const name of ['Maya', 'Leo']) {
+    await expect(
+      row('Make bed').getByRole('button', { name: `Check off Make bed for ${name}`, exact: true }),
+    ).toBeVisible();
+  }
+  for (const name of ['Maya', 'Alex']) {
+    await expect(
+      row('Feed the dog').getByRole('button', {
+        name: `Check off Feed the dog for ${name}`,
+        exact: true,
+      }),
+    ).toBeVisible();
+  }
+  await expect(row('Feed the dog').getByRole('button', { name: /for Leo$/ })).toHaveCount(0);
+
+  await people().getByRole('button', { name: 'Chores', exact: true }).click();
   for (const name of ['Maya', 'Leo', 'Alex', 'Sam']) {
     await expect(everyone().getByRole('heading', { name, level: 2 })).toBeVisible();
   }
@@ -211,7 +237,7 @@ test('[US-305][PTS-01] undo needs a second tap, then puts each back and gives it
 });
 
 test('[BRD-07][US-1006][CHR-09] who did it: the shared Feed the dog asks; Maya and Alex are both credited, only Maya earns', async () => {
-  await people().getByRole('button', { name: 'Everyone', exact: true }).click();
+  await people().getByRole('button', { name: 'Chores', exact: true }).click();
   const [maya, alex] = [memberId('Maya'), memberId('Alex')];
   const dog = todayOf(FEED_THE_DOG);
   await column('Alex').getByRole('button', { name: 'Check off Feed the dog', exact: true }).click();

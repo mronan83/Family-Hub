@@ -95,14 +95,14 @@ test('[NFR-01] a day offline: the board keeps running on its cached page, then s
     'Offline: your check-offs are saved',
     'Updated 1 day ago',
   ]);
-  // Back on everyone's day after a while untouched, with Maya's bed still done.
-  const maya = page
-    .getByRole('region', { name: 'Everyone today' })
-    .locator('section', { has: page.getByRole('heading', { name: 'Maya', level: 2 }) });
-  await expect(maya.getByRole('heading', { name: 'Make bed' })).toBeVisible();
-  await expect(maya.getByRole('button', { name: 'Check off Make bed', exact: true })).toHaveCount(
-    0,
-  );
+  // Back on the dashboard after a while untouched (D-66), with Maya's bed still done.
+  const list = page.locator('.fw-dash__list');
+  await expect(
+    list.getByRole('button', { name: 'Make bed: done for Maya', exact: true }),
+  ).toBeVisible();
+  await expect(
+    list.getByRole('button', { name: 'Check off Make bed for Maya', exact: true }),
+  ).toHaveCount(0);
   expect(await posts(page)).toEqual([]);
   await context.setOffline(false);
   await page.clock.runFor(1_000);

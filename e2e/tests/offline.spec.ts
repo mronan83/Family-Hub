@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { type BrowserContext, expect, test, type Page } from '@playwright/test';
 import { retireBoard } from '../support/board';
+import { networkSwitch, type NetworkSwitch } from '../support/network';
 
 // [DEV-06][DEV-08][NFR-01][US-205] A board offline on the preview (WP-13), paired to the demo family:
 // it goes offline, checks off three of Maya's items, reloads with no network (its page from the
@@ -50,18 +51,20 @@ const checkOff = (page: Page, title: string) =>
   page.getByRole('button', { name: `Check off ${title}`, exact: true });
 
 /**
- * Offline as far as the database is concerned. Playwright's offline mode can attach to a reloaded
- * page, and to the service worker that serves it, a moment after the board's first scripts run
- * (seen on CI after D-64), so the board's check-offs could still leave then. Blocking them at the
- * browser context holds from the first request, whatever controls the page.
+ * Offline: the board's browser says so, and its network is cut below the browser. Playwright's
+ * offline mode, and its routes, attach to a reloaded page a moment after the board's first scripts
+ * run, so in that moment the board saw itself online and its check-offs went out (seen on CI after
+ * D-64, and once more with a route blocking them). The board's context sends everything through
+ * a local proxy (support/network), which drops every connection while off; it is set before any page
+ * exists, so it holds from the first byte, for the page and its service worker alike.
  */
-const COMPLETIONS = '**/api/completions';
+let net: NetworkSwitch;
 async function goOffline(context: BrowserContext) {
-  await context.route(COMPLETIONS, (route) => route.abort('internetdisconnected'));
+  net.set(false);
   await context.setOffline(true);
 }
 async function goOnline(context: BrowserContext) {
-  await context.unroute(COMPLETIONS);
+  net.set(true);
   await context.setOffline(false);
 }
 
@@ -91,7 +94,8 @@ test.beforeAll(async ({ browser }, testInfo) => {
   code = (await admin.getByTestId('pairing-code').textContent())?.replace(/\D/g, '') ?? '';
   await admin.close();
 
-  board = await (await browser.newContext()).newPage();
+  net = await networkSwitch();
+  board = await (await browser.newContext({ proxy: { server: net.server } })).newPage();
   await board.goto('/board');
   await board.getByLabel('Pairing code from the admin app', { exact: true }).fill(code);
   await board.getByRole('button', { name: 'Pair this board', exact: true }).click();
@@ -107,6 +111,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
 test.afterAll(async () => {
   putBack();
   await retireBoard(board, BOARD);
+  await net?.close();
 });
 
 test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no network, exactly three events; a parent’s later uncheck wins', async () => {
@@ -196,14 +201,14 @@ test('[NFR-01][DEV-08][US-205] opened after a day offline, the board shows its l
     'Offline: your check-offs are saved',
     'Updated 1 day ago',
   ]);
-  // Its last day: everyone's column, with Maya's bed done as the database had it.
-  const maya = page
-    .getByRole('region', { name: 'Everyone today' })
-    .locator('section', { has: page.getByRole('heading', { name: 'Maya', level: 2 }) });
-  await expect(maya.getByRole('heading', { name: 'Make bed' })).toBeVisible();
-  await expect(maya.getByRole('button', { name: 'Check off Make bed', exact: true })).toHaveCount(
-    0,
-  );
+  // Its last day: the family dashboard (D-66), with Maya's bed done as the database had it.
+  const bed = page.locator('.fw-dash__list li[data-row]', {
+    has: page.getByText('Make bed', { exact: true }),
+  });
+  await expect(bed).toBeVisible();
+  await expect(
+    bed.getByRole('button', { name: 'Check off Make bed for Maya', exact: true }),
+  ).toHaveCount(0);
   await goOnline(page.context());
   await page.close();
 });

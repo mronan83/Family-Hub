@@ -69,8 +69,8 @@ select is((select (s ->> 'today')::date from snap), (now() at time zone 'Pacific
   '[DEV-05] today is the household''s date, not the server''s');
 select is((select s -> 'range' from snap),
   jsonb_build_object('from', (now() at time zone 'Pacific/Kiritimati')::date - 1,
-                     'to', (now() at time zone 'Pacific/Kiritimati')::date + 14),
-  '[DEV-05] by default it covers yesterday through two weeks ahead');
+                     'to', (now() at time zone 'Pacific/Kiritimati')::date + 21),
+  '[DEV-05] by default it covers yesterday through three weeks ahead (D-66)');
 select is((select (s ->> 'v')::int from snap), 1, '[DEV-05] the snapshot says which shape it has');
 select ok((select (s ->> 'fetched_at')::timestamptz = now() from snap), '[DEV-05] and when it was read');
 select is(public.board_snapshot('2026-10-01', '2026-10-07') -> 'range', '{"from": "2026-10-01", "to": "2026-10-07"}'::jsonb,

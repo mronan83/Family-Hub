@@ -108,6 +108,11 @@ test('[RWD-05] a board shows Maya’s run from her stored history', async ({ bro
   await board.getByLabel('Pairing code from the admin app', { exact: true }).fill(code);
   await board.getByRole('button', { name: 'Pair this board', exact: true }).click();
   await expect(board).toHaveURL(/\/board$/);
+  // Each person's flame heads their column on Chores (D-66).
+  await board
+    .getByRole('list', { name: 'Family', exact: true })
+    .getByRole('button', { name: 'Chores', exact: true })
+    .click();
   const flame = board
     .getByRole('region', { name: 'Everyone today' })
     .locator('section', { has: board.getByRole('heading', { name: 'Maya', level: 2 }) })

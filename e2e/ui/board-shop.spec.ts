@@ -253,10 +253,14 @@ test('[RWD-07][US-403] goals: a meter per rule, the run now, when it ends; a nud
   await expect(page.getByRole('region', { name: 'Goals' })).toHaveCount(0);
 });
 
-test("[RWD-07] everyone's day: each child's own nudge in their column; the family's goals below", async ({
+test("[RWD-07] everyone's day on Chores: each child's own nudge in their column; the family's goals below", async ({
   page,
 }) => {
   await page.goto('/dev/board');
+  await page
+    .getByRole('list', { name: 'Family', exact: true })
+    .getByRole('button', { name: 'Chores', exact: true })
+    .click();
   const column = (name: string) =>
     page
       .getByRole('region', { name: 'Everyone today' })
@@ -330,6 +334,15 @@ for (const theme of ['day', 'evening'] as const) {
     // The dev board sets its theme once it is running (ThemeLock); nothing is tapped here first, so
     // wait for it, or the contrast check can read a button halfway between Day and Evening.
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    // With reduced motion every style change is a 1 ms transition (the brand's reduced-motion rule),
+    // which Chromium can take a few hundred ms to finish while the page loads: the colours trail it.
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => document.getAnimations().filter((a) => a instanceof CSSTransition).length,
+        ),
+      )
+      .toBe(0);
     expect(await fit(page, '.fw-celebrate')).toEqual({ small: [], tiny: [], wide: 1920 });
     await contrastOk(page);
   });

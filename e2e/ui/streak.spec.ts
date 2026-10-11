@@ -11,9 +11,17 @@ const column = (page: Page, name: string) =>
     .getByRole('region', { name: 'Everyone today' })
     .locator('section', { has: page.getByRole('heading', { name, level: 2 }) });
 const flame = (page: Page, name: string) => column(page, name).locator('.fw-today__flame');
+/** [D-66] Everyone's day in a column each is the Chores screen. */
+async function chores(page: Page) {
+  await page
+    .getByRole('list', { name: 'Family', exact: true })
+    .getByRole('button', { name: 'Chores', exact: true })
+    .click();
+}
 
 test('[RWD-05] each child’s run shows beside their name; adults have none', async ({ page }) => {
   await page.goto('/dev/board');
+  await chores(page);
   await expect(flame(page, 'Leo')).toHaveText('6 days in a row');
   await expect(flame(page, 'Leo')).toHaveAttribute('data-tier', '1');
   await expect(flame(page, 'Maya')).toHaveText('2 days in a row');
@@ -27,6 +35,7 @@ test('[RWD-05][US-408] finishing today adds today to the run, and reaching 7 glo
   page,
 }) => {
   await page.goto('/dev/board');
+  await chores(page);
   const leo = column(page, 'Leo');
   await leo.getByRole('button', { name: 'Check off Make bed', exact: true }).click();
   // Still a routine to do: today isn't good yet, and never bad.
@@ -45,6 +54,7 @@ test('[RWD-05][US-408] finishing today adds today to the run, and reaching 7 glo
 test('[RWD-08] with reduced motion the flame changes without moving', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/dev/board');
+  await chores(page);
   const leo = column(page, 'Leo');
   await leo.getByRole('button', { name: 'Check off Make bed', exact: true }).click();
   await leo.getByRole('button', { name: 'Check off Set the table', exact: true }).click();

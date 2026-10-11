@@ -3,6 +3,7 @@ import type { OccurrenceStatus, RuleType } from '@familywise/rules-engine';
 import type { LedgerEntry, LedgerEntryType } from './points';
 import type { RedemptionStatus } from './rewards';
 import type { TodayItem } from './today';
+import { type BoardLayout, DEFAULT_LAYOUT, readLayout } from './board-layout';
 
 /**
  * [DEV-05] What `public.board_snapshot()` returns (02 §4.6): the one read a paired board makes, and
@@ -24,6 +25,8 @@ export interface BoardSnapshot {
     undoWindowSeconds: number;
   };
   device: { id: string; name: string; theme: ThemeOverride };
+  /** [BRD-05] The home screen's layout: the household's, and this board's own if it has one (D-67). */
+  layout: { household: BoardLayout; board: BoardLayout | null };
   members: BoardMember[];
   /** [BRD-01] Today's family-visible items and the open overdue tasks (WP-11). */
   occurrences: TodayItem[];
@@ -335,6 +338,9 @@ function readOccurrence(o: unknown): TodayItem {
     points: Number(o.points) || 0,
     requiresApproval: o.requires_approval === true,
     checkedAt: typeof o.checked_at === 'string' ? o.checked_at : null,
+    // [D-66] What "More info" shows; a snapshot from before WP-35 has none.
+    description:
+      typeof o.description === 'string' && o.description.trim() ? o.description.trim() : null,
   };
 }
 
@@ -422,6 +428,13 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
       name: str(d, 'name'),
       theme: theme === 'day' || theme === 'evening' ? theme : 'auto',
     },
+    // A snapshot from before WP-35 has no layout: the defaults.
+    layout: isObject(data.layout)
+      ? {
+          household: readLayout(data.layout.household) ?? structuredClone(DEFAULT_LAYOUT),
+          board: readLayout(data.layout.board),
+        }
+      : { household: structuredClone(DEFAULT_LAYOUT), board: null },
     members: data.members.map((m) => {
       if (!isObject(m)) throw new Error('snapshot: member is not an object');
       return {

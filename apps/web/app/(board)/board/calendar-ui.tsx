@@ -40,7 +40,12 @@ const SWIPE_PX = 120;
  * what `load` reads, read again whenever the snapshot is (a change heard through Realtime). While a
  * read is out, or when it fails, the snapshot's events for those dates show, with `partial` set.
  */
-function useCalendar(snapshot: BoardSnapshot, from: string, to: string, load?: LoadCalendar) {
+export function useCalendar(
+  snapshot: BoardSnapshot,
+  from: string,
+  to: string,
+  load?: LoadCalendar,
+) {
   const inSnapshot = covers(snapshot.calendar, from, to);
   const range = `${from}|${to}`;
   const [fetched, setFetched] = useState<{ range: string; cal: BoardCalendar | null } | null>(null);
@@ -60,7 +65,7 @@ function useCalendar(snapshot: BoardSnapshot, from: string, to: string, load?: L
   return { cal: snapshot.calendar, partial: true };
 }
 
-function EventLine({
+export function EventLine({
   event,
   date,
   calendar,
@@ -103,15 +108,20 @@ export function CalendarScreen({
   snapshot,
   now,
   load,
+  initialView = 'week',
+  initialDate,
 }: {
   snapshot: BoardSnapshot;
   now: Date;
   load?: LoadCalendar;
+  /** [D-66] Where it opens: a day tapped on the dashboard opens as that day. */
+  initialView?: CalendarView;
+  initialDate?: string;
 }) {
   const { today, household, members } = snapshot;
   const tz = household.timezone;
-  const [view, setView] = useState<CalendarView>('week');
-  const [anchor, setAnchor] = useState(today);
+  const [view, setView] = useState<CalendarView>(initialView);
+  const [anchor, setAnchor] = useState(initialDate ?? today);
   const { from, to, days } = useMemo(
     () => rangeFor(view, anchor, household.weekStart),
     [view, anchor, household.weekStart],

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { GENERIC, hintMessage } from '@/lib/auth/messages';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { BOARD_THEMES } from '@/lib/devices';
+import { type BoardLayout, effectiveLayout, layoutFromForm, moveCard } from '@/lib/board-layout';
 import { log } from '@/lib/log';
 import { serverClient } from '@/lib/supabase/server';
 
@@ -110,4 +111,68 @@ export async function setBoardCalendars(form: FormData): Promise<void> {
       ? '/admin/devices?error=calendars'
       : `/admin/devices?did=calendars&name=${encodeURIComponent(name)}`,
   );
+}
+
+/** Back to the layout just saved (the household's, or a board's, opened), its notice beside it. */
+function layoutDone(where: string, name: string, failed: boolean): string {
+  const at = `board=${encodeURIComponent(where)}#layout-${where}`;
+  return failed
+    ? `/admin/devices?error=layout&${at}`
+    : `/admin/devices?did=layout&name=${encodeURIComponent(name)}&${at}`;
+}
+
+/**
+ * [BRD-05][US-1004] Saves a home screen layout (WP-35, D-67): the household's (no board), or a
+ * board's own. The calendar's span, the cards ticked to show, in their order; a Move button saves
+ * with that card a place up or down. The boards hear it through Realtime.
+ */
+export async function saveBoardLayout(form: FormData): Promise<void> {
+  const { db, household } = await context();
+  const device = String(form.get('device') ?? '') || null;
+  const name = String(form.get('name') ?? '');
+  let layout = layoutFromForm(
+    form.get('span'),
+    form.getAll('order').map(String),
+    form.getAll('show').map(String),
+  );
+  const [id, dir] = String(form.get('move') ?? '').split(':');
+  if (id && (dir === '-1' || dir === '1')) {
+    const card = layout.cards.find((c) => c.id === id);
+    if (card) layout = moveCard(layout, card.id, dir === '-1' ? -1 : 1);
+  }
+  const { error } = await db.rpc('set_board_layout', {
+    p_household: household.id,
+    p_device: device,
+    p_layout: layout,
+  });
+  if (error) log('warn', 'board layout not saved', { code: error.code, hint: error.hint });
+  revalidatePath('/admin/devices');
+  redirect(layoutDone(device ?? 'household', name, !!error));
+}
+
+/**
+ * [BRD-05][D-67] Gives a board its own layout, starting from the household's, or sends it back to
+ * the household's.
+ */
+export async function setOwnLayout(form: FormData): Promise<void> {
+  const { db, household } = await context();
+  const device = String(form.get('id') ?? '');
+  const name = String(form.get('name') ?? '');
+  let layout: BoardLayout | null = null;
+  if (form.get('own') === 'on') {
+    const { data } = await db
+      .from('household_settings')
+      .select('board_layout')
+      .eq('household_id', household.id)
+      .maybeSingle();
+    layout = effectiveLayout(data?.board_layout, null);
+  }
+  const { error } = await db.rpc('set_board_layout', {
+    p_household: household.id,
+    p_device: device,
+    p_layout: layout,
+  });
+  if (error) log('warn', 'board layout not set', { code: error.code, hint: error.hint });
+  revalidatePath('/admin/devices');
+  redirect(layoutDone(device, name, !!error));
 }

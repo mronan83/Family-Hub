@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.25: US-1001, US-1002, US-1004 and US-1006 as built (WP-35, D-66, D-67): the home screen is a family dashboard (the calendar, one list of today's items with the faces of whose they are, then cards), laid out by the household or a board's own layout; the column per person moves to Chores; every tile is one height with "More info". US-1003 (weather) moves to WP-45.
 > v0.8.24: US-503, US-504 and US-507 as built (WP-23, D-65): the board's Calendar (Week, Day, Month; arrows, a swipe or Today), each event in its calendar's color with whose it is, and each board's own choice of calendars on Boards; offline, a range beyond the board's two weeks says it shows what the board has.
 > v0.8.23: US-501 and US-505 as built (WP-22, D-63): saving a link syncs it at once and Calendars lists what's coming up, or what's wrong with the link; a calendar that can't sync says what to do, keeps its last good events and is named on System Health.
 > v0.8.22: US-104 and US-316: a parent whose sign-in isn't linked links it to themselves in one tap from My tasks, Reminders or their page on Members; a Child record says only an adult can have a sign-in (D-61).
@@ -617,12 +618,13 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** BRD-01
 - Given I open the board, when Today loads, then I see date/time, my chores, up to five events, today's meals (P2), and the active goal meter.
 - Given nothing is scheduled, when Today loads, then a friendly empty state appears.
+- As built (WP-35, D-66): the home screen is the family dashboard. The calendar comes first (3, 5 or 7 days, or the month with a dot per calendar on each day with events; tapping a day opens it), today's list beside it with each item's people as faces, then goals, what's waiting for a parent and what's coming up. It scrolls under a pinned bar; each person's points are in their top-bar button.
 
 ### US-1002 — Switch between family members
 **As a** kid **I want** to pick my own profile **so that** I only see my items and goals.
 **Priority:** Must · **Phase:** P1 · **Reqs:** BRD-02
 - Given several family members, when I tap my avatar, then the screen filters to my items, and to my points and goals if I earn rewards.
-- Given the board is idle, when the idle timer elapses (90 seconds untouched), then it returns to the household default view: everyone's day.
+- Given the board is idle, when the idle timer elapses (90 seconds untouched), then it returns to the household default view: the family dashboard, scrolled to the top (D-66).
 
 ### US-1003 — Weather at a glance
 **As a** parent **I want** the board to show local weather **so that** we dress for the day.
@@ -635,6 +637,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P3 · **Reqs:** BRD-05
 - Given I disable the Meals panel, when the board refreshes, then it no longer appears.
 - Given I reorder panels, when saved, then the board reflects the new order within 3 seconds.
+- As built (WP-35, D-67): on Boards, the household's home screen layout (the calendar's span: 3, 5 or 7 days, or the month; the cards under it, each shown or not, moved up or down with one tap) and, for any board, its own layout instead, starting as a copy of the household's. A board without its own follows the household's.
 
 ### US-1005 — Come back home automatically
 **As a** parent **I want** the board to return to Today after a period of inactivity **so that** it's never left on a random screen.
@@ -646,6 +649,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As a** family **we want** a Family view on the board **so that** everyone can see who is doing what today.
 **Priority:** Must · **Phase:** P1 · **Reqs:** BRD-07, CHR-04
 - Given each member has family-visible items today, when I open the Family view, then I see a column per person grouped by part of day, with overdue tasks first.
+- As built (WP-35, D-66): the home screen's list is the Family view: a row per item grouped by part of day, overdue first, with a face for each person it is for (an item everyone does their own is one row with a face each); tapping a face checks it off for that person, and a shared item with nobody on it shows "Anyone", which asks who. The column per person is the Chores screen in the top bar. Every tile is one height, and "More info" opens an item with a description or a title too long for its tile.
 - Given I tap an item with several assignees, when the who-did-it picker appears, then the assignees are listed first and I can pick anyone in the family, or several people.
 - Given an adult who does not earn rewards checks off an item, when it saves, then no points or celebration appear; a child's item still celebrates.
 - Given an item is private, when the Family view loads, then it is not shown.

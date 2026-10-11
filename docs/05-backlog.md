@@ -1,6 +1,8 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.61: WP-35 done (PR #44): the family dashboard and the home screen's layout. WP-45 is ready.
+> v0.8.60: WP-35 in review (PR #44): the family dashboard and the home screen's layout (D-66, D-67). WP-45 (weather on the board, BRD-04) is split out of WP-35 and waits for it.
 > v0.8.59: WP-23 done (PR #43): calendar views and per-board selection. WP-35 is ready.
 > v0.8.58: WP-23 in review (PR #43): calendar views and per-board selection (D-65).
 > v0.8.57: change (D-64), done (PR #42): the board's outbox sends nothing while the browser says it is offline. No work package changes status.
@@ -149,7 +151,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
 | WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
-| WP-35 | Board layout configuration and weather | P3 | M | WP-23 | Ready |
+| WP-35 | Family dashboard and board layout | P3 | L | WP-23 | Done (PR #44) |
+| WP-45 | Weather on the board | P3 | S | WP-35 | Ready |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -254,7 +257,8 @@ flowchart LR
     WP03 --> WP32[WP-32 Audit log]
     WP04 --> WP33[WP-33 Export and delete]
     WP14 --> WP34[WP-34 Quiet hours]
-    WP23 --> WP35[WP-35 Layout and weather]
+    WP23 --> WP35[WP-35 Family dashboard and layout]
+    WP35 --> WP45[WP-45 Weather]
     WP22 --> WP36[WP-36 Closure import, grocery-ready]
     WP25 --> WP36
     WP03 --> WP38[WP-38 Apple sign-in and passkeys]
@@ -722,10 +726,22 @@ flowchart LR
 - Scheduled dim/sleep, wake on touch, subtle pixel shifting.
 - **Done when:** the panel sleeps and wakes on schedule over a 3-day hardware test.
 
-### WP-35 — Board layout configuration and weather
-**Phase:** P3 · **Size:** M · **Depends on:** WP-23 · **Reqs:** BRD-04, BRD-05
-- Panel on/off and ordering; optional local weather widget.
+### WP-35 — Family dashboard and board layout
+**Phase:** P3 · **Size:** L · **Depends on:** WP-23 · **Reqs:** BRD-01, BRD-05, BRD-07
+- Panel on/off and ordering. Weather moved to WP-45 (D-67).
 - **Done when:** reordering panels updates the board within 3 seconds.
+- As built (D-66, D-67; the owner chose "Side by side" from mockups on the board itself):
+  - **The home screen is a family dashboard.** The calendar on the left two-thirds: 3, 5 or 7 days from today (5 by default), or the month with a dot per calendar on each day with events; a day's head or a month's day opens the Calendar on that day. Today's list beside it: a row per item by part of the day, overdue first, a face for each person it is for (a tap checks it off for them; "Anyone" asks who; a second tap undoes within the window). Under the calendar, cards in the layout's order: dinner and lunch (hidden until meals exist), goals, waiting for a parent, coming up (all-day events in the next three weeks).
+  - **The top bar:** Home, each person with their points, Chores (the column per person, as the Family view was), Calendar. The bar and the people stay pinned while the dashboard scrolls; 90 seconds untouched, any screen goes back to the dashboard at the top.
+  - **Tiles are one height** wherever they are listed (two lines of title at most); an item with a description, or a title cut short, has "More info", which opens it in full.
+  - **Layout:** the household's (`household_settings.board_layout`) and a board's own (`device.board_config.layout`), checked by `private.valid_board_layout()`, saved by `set_board_layout()`; on Boards, a "Home screen" section and, per board, "Give it its own layout" (a copy of the household's to start). Up and Down move a card and save at once; each save comes back to the layout it changed, which says so.
+  - **Data:** the snapshot carries both layouts, each item's description, and three weeks ahead (was two).
+  - **Tests:** pgTAP 280 (shape, who may save, a board's own, audit); the UI suite's dashboard spec at 1920×1080 in Day and Evening; e2e `board-layout.spec.ts`, the done-when timed in the board's page from the moment Up is pressed on Boards. `offline.spec` now cuts the board's network with a local proxy while offline (D-64): the route it used before let the check-offs out once on this PR's first run.
+
+### WP-45 — Weather on the board
+**Phase:** P3 · **Size:** S · **Depends on:** WP-35 · **Reqs:** BRD-04
+- The temperature now and today's high in the board's bar, beside the clock, from Open-Meteo (free, no key). The household's location set once on Settings by town or ZIP code, kept to about 1 km; a job reads the weather every 30 minutes into the database, so the board never calls the weather service and shows its last reading offline. °F or °C as a household setting; a layout switch to hide it.
+- **Done when:** with a location set, the board shows the temperature now and today's high; with the source failing, the widget hides and nothing else on the board changes.
 
 ### WP-36 — Closure import and grocery-ready ingredients
 **Phase:** P3 · **Size:** M · **Depends on:** WP-22, WP-25 · **Reqs:** SCH-04, MEAL-07

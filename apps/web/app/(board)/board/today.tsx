@@ -1,7 +1,15 @@
 'use client';
 
 import { Avatar, Button, ChoreTile, GoalMeter, Icon, PointsChip } from '@familywise/ui';
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   type Answer,
   type CompletionEvent,
@@ -38,7 +46,11 @@ import {
 } from '@/lib/today';
 import { type PinWish, wishLine } from '@/lib/wishes';
 import { eventsOn, eventWhen } from '@/lib/board-calendar';
+import { effectiveLayout } from '@/lib/board-layout';
+import { calendarDay, clock, DAY_PART_LABELS, dayPart } from '@/lib/chores';
+import { type Chip, CHIP_WORDS, familyList, type ListRow } from '@/lib/dashboard';
 import { CalendarScreen, type LoadCalendar } from './calendar-ui';
+import { Dashboard } from './dashboard';
 import { Celebration, FamilyGoals, GoalsCard, useCelebrations } from './goals-ui';
 import { iconOf, type PhotoUrl } from './picture';
 import { RequestsCard, ShopDialog, useShop } from './shop-ui';
@@ -46,7 +58,7 @@ import { useOnline } from './use-online';
 
 /** A tap within this long of the last one on the same tile is the same tap (NFR-03). */
 const DEBOUNCE_MS = 500;
-/** A person's own screen goes back to everyone after this long untouched. */
+/** Any screen goes back to the dashboard, scrolled to the top, after this long untouched (BRD-06). */
 const IDLE_MS = 90_000;
 /** How long "Tap again to undo" waits for the second tap. */
 const ARM_MS = 4_000;
@@ -425,6 +437,8 @@ interface TileProps {
   undoable: boolean;
   onTap: () => void;
   onUndo: () => void;
+  /** [D-66] Opens the item in full: its description, or a title too long for the tile. */
+  onMore: () => void;
 }
 
 /**
@@ -443,16 +457,30 @@ function Tile({
   undoable,
   onTap,
   onUndo,
+  onMore,
 }: TileProps) {
   const view = tileView(item, viewer, today, nowTime, name);
   const [armed, setArmed] = useState(false);
+  // [D-66] Tiles are all one height: a title that doesn't fit, or a description, gets "More info".
+  const box = useRef<HTMLLIElement>(null);
+  const [clipped, setClipped] = useState(false);
+  useLayoutEffect(() => {
+    const title = box.current?.querySelector<HTMLElement>('.fw-tile__title');
+    if (title) setClipped(title.scrollHeight > title.clientHeight + 1);
+  }, [item.title]);
+  const more = Boolean(item.description) || clipped;
   useEffect(() => {
     if (!armed) return;
     const t = setTimeout(() => setArmed(false), ARM_MS);
     return () => clearTimeout(t);
   }, [armed]);
   return (
-    <li className="fw-today__tile" data-celebrate={celebrate || undefined} data-item={item.id}>
+    <li
+      ref={box}
+      className={`fw-today__tile${more ? ' fw-today__tile--more' : ''}`}
+      data-celebrate={celebrate || undefined}
+      data-item={item.id}
+    >
       <ChoreTile
         title={item.title}
         icon={iconOf(item.icon)}
@@ -470,6 +498,16 @@ function Tile({
           aria-label={`Check off ${item.title}`}
           onClick={onTap}
         />
+      ) : null}
+      {more ? (
+        <button
+          type="button"
+          className="fw-info-btn fw-today__more"
+          aria-label={`More info about ${item.title}`}
+          onClick={onMore}
+        >
+          <Icon name="info" size={36} />
+        </button>
       ) : null}
       {undoable ? (
         <Button
@@ -582,6 +620,97 @@ function WhoDidIt({
           </Button>
           <Button variant="ghost" icon="close" onClick={onCancel}>
             Cancel
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * [D-66] An item in full, from a row's or a tile's "More info": its description, when it's due, its
+ * points, and how it stands for each person. Read only; it closes with Close, Escape or idle.
+ */
+function ItemDetails({
+  row,
+  members,
+  today,
+  onClose,
+}: {
+  row: ListRow;
+  members: BoardMember[];
+  today: string;
+  onClose: () => void;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    box.current?.querySelector<HTMLButtonElement>('.fw-details__close')?.focus();
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, [onClose]);
+  const people = new Map(members.map((m) => [m.id, m]));
+  const when =
+    row.dueDate < today
+      ? `Overdue since ${calendarDay(row.dueDate)}`
+      : row.dueTime
+        ? `By ${clock(row.dueTime)} (${DAY_PART_LABELS[dayPart(row.dueTime)].toLowerCase()})`
+        : DAY_PART_LABELS.anytime;
+  return (
+    <div className="fw-today__scrim">
+      <div
+        ref={box}
+        className="fw-today__picker fw-details"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="details-title"
+      >
+        <header className="fw-details__head">
+          <Icon name={iconOf(row.icon)} size={64} />
+          <h2 id="details-title">{row.title}</h2>
+        </header>
+        {row.description ? <p className="fw-details__text">{row.description}</p> : null}
+        <dl className="fw-details__facts">
+          <dt>When</dt>
+          <dd>{when}</dd>
+          {row.points ? (
+            <>
+              <dt>Points</dt>
+              <dd>
+                <PointsChip points={row.points} signed />
+              </dd>
+            </>
+          ) : null}
+          <dt>Who</dt>
+          <dd>
+            <ul className="fw-details__who">
+              {row.chips.map((c) => {
+                const m = c.memberId ? people.get(c.memberId) : undefined;
+                return (
+                  <li key={`${c.item.id}:${c.memberId ?? 'anyone'}`}>
+                    {m ? (
+                      <Avatar
+                        name={m.displayName}
+                        avatarKey={m.avatarKey}
+                        color={m.color}
+                        size={56}
+                        decorative
+                      />
+                    ) : (
+                      <Icon name="family" size={56} />
+                    )}
+                    <span>
+                      {m?.displayName ?? 'Anyone'}: {CHIP_WORDS[c.state]}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </dd>
+        </dl>
+        <div className="fw-today__picker-actions">
+          <Button variant="secondary" icon="close" className="fw-details__close" onClick={onClose}>
+            Close
           </Button>
         </div>
       </div>
@@ -783,11 +912,12 @@ const noCancel: CancelAsk = async () => ({ ok: false, offline: true });
 const noMark: MarkCelebrated = async () => false;
 
 /**
- * [BRD-01][BRD-02][BRD-07][PTS-02][PTS-04][RWD-07][RWD-08] The board's Today: everyone's day in a
- * column each with the family's goals below, or one person's own day with their points, the shop,
- * what they've asked for, what they're saving for and their goals. Tap a person to see theirs; it goes
- * back to everyone after a while untouched. A reached goal is celebrated once, whoever is showing.
- * Slots for events and meals are kept for the work packages that fill them.
+ * [BRD-01][BRD-02][BRD-05][BRD-07][PTS-02][PTS-04][RWD-07][RWD-08] The board: its home is the family
+ * dashboard (WP-35, D-66) laid out as the household or this board says (D-67). A person's own screen
+ * has their day with their points, the shop, what they've asked for, what they're saving for and
+ * their goals; Chores has everyone's day in a column each; Calendar opens on the week, or on a day
+ * tapped on the dashboard. Every screen goes back to the dashboard after a while untouched. A reached
+ * goal is celebrated once, whoever is showing.
  */
 export function Today({
   snapshot,
@@ -827,7 +957,12 @@ export function Today({
   const party = useCelebrations(snapshot.goals, markCelebrated);
   const online = useOnline();
   const { members, household, today } = snapshot;
-  const [view, setView] = useState<string>('family');
+  // 'home' (the dashboard), 'chores', 'calendar', or a member's id.
+  const [view, setView] = useState<string>('home');
+  // [D-66] A day tapped on the dashboard opens the calendar on that day.
+  const [calDay, setCalDay] = useState<string | null>(null);
+  const [details, setDetails] = useState<ListRow | null>(null);
+  const layout = effectiveLayout(snapshot.layout.household, snapshot.layout.board);
   const [picker, setPicker] = useState<{ item: TodayItem; initial: string[] } | null>(null);
   // Whose wish is being chosen: the picker closes with the person's screen.
   const [wishing, setWishing] = useState<string | null>(null);
@@ -859,9 +994,13 @@ export function Today({
   const touched = useCallback(() => {
     if (idle.current) clearTimeout(idle.current);
     idle.current = setTimeout(() => {
-      setView('family');
+      setView('home');
+      setCalDay(null);
+      setDetails(null);
       setWishing(null);
       setShopping(null);
+      // [D-66] The dashboard scrolls; untouched, it goes back to the top.
+      window.scrollTo({ top: 0 });
     }, IDLE_MS);
   }, []);
   useEffect(() => () => (idle.current ? clearTimeout(idle.current) : undefined), []);
@@ -888,8 +1027,18 @@ export function Today({
         else setPicker({ item: i, initial: i.assignees.includes(viewer) ? [viewer] : [] });
       }}
       onUndo={() => t.undo(i)}
+      onMore={() => {
+        const row = familyList([i], members, today, nowTime)[0]?.rows[0];
+        if (row) setDetails(row);
+      }}
     />
   );
+  const canUndo = (i: TodayItem) => (undoUntil(i, windowSeconds) ?? 0) > second;
+  const open = (next: string) => {
+    setView(next);
+    setCalDay(null);
+    window.scrollTo({ top: 0 });
+  };
 
   const shopFor = member && shopping?.member === member.id ? member : null;
 
@@ -900,11 +1049,11 @@ export function Today({
           <button
             type="button"
             className="fw-today__person fw-today__person--all"
-            aria-pressed={view === 'family'}
-            onClick={() => setView('family')}
+            aria-pressed={view === 'home'}
+            onClick={() => open('home')}
           >
-            <Icon name="family" size={64} />
-            <span>Everyone</span>
+            <Icon name="home" size={64} />
+            <span>Home</span>
           </button>
         </li>
         {members.map((m) => (
@@ -913,7 +1062,7 @@ export function Today({
               type="button"
               className="fw-today__person"
               aria-pressed={view === m.id}
-              onClick={() => setView(m.id)}
+              onClick={() => open(m.id)}
             >
               <Avatar
                 name={m.displayName}
@@ -923,16 +1072,38 @@ export function Today({
                 decorative
               />
               <span className="fw-today__person-name">{m.displayName}</span>
+              {/* [PTS-02][D-66] Each balance in the top bar, in sight while the dashboard scrolls. */}
+              {m.points ? (
+                <span
+                  className="fw-today__pill-balance"
+                  data-pill-balance={t.balance(m)}
+                  aria-hidden
+                >
+                  <PointsChip points={t.balance(m)} />
+                </span>
+              ) : null}
             </button>
           </li>
         ))}
+        {/* [BRD-07][D-66] Everyone's day in a column each. */}
+        <li>
+          <button
+            type="button"
+            className="fw-today__person fw-today__person--all"
+            aria-pressed={view === 'chores'}
+            onClick={() => open('chores')}
+          >
+            <Icon name="list-check" size={64} />
+            <span>Chores</span>
+          </button>
+        </li>
         {/* [CAL-04] The family's calendar (WP-23). */}
         <li>
           <button
             type="button"
             className="fw-today__person fw-today__person--all"
             aria-pressed={view === 'calendar'}
-            onClick={() => setView('calendar')}
+            onClick={() => open('calendar')}
           >
             <Icon name="calendar" size={64} />
             <span>Calendar</span>
@@ -1132,7 +1303,36 @@ export function Today({
           </div>
         </section>
       ) : view === 'calendar' ? (
-        <CalendarScreen snapshot={snapshot} now={now} load={loadCalendar} />
+        <CalendarScreen
+          key={calDay ?? 'week'}
+          snapshot={snapshot}
+          now={now}
+          load={loadCalendar}
+          initialView={calDay ? 'day' : 'week'}
+          initialDate={calDay ?? undefined}
+        />
+      ) : view === 'home' ? (
+        <Dashboard
+          snapshot={snapshot}
+          items={t.items}
+          layout={layout}
+          nowTime={nowTime}
+          load={loadCalendar}
+          photoUrl={photoUrl}
+          canUndo={canUndo}
+          celebrating={t.celebrating}
+          onCheck={(c: Chip) => {
+            if (c.memberId) t.checkOff(c.item, [c.memberId]);
+            else setPicker({ item: c.item, initial: [] });
+          }}
+          onUndo={(i) => t.undo(i)}
+          onMore={setDetails}
+          onOpenDay={(d) => {
+            setCalDay(d);
+            setView('calendar');
+            window.scrollTo({ top: 0 });
+          }}
+        />
       ) : (
         <>
           <div className="fw-today__family" role="region" aria-label="Everyone today">
@@ -1202,6 +1402,15 @@ export function Today({
             shop.askFor(shopFor, item);
             setShopping(null);
           }}
+        />
+      ) : null}
+
+      {details ? (
+        <ItemDetails
+          row={details}
+          members={members}
+          today={today}
+          onClose={() => setDetails(null)}
         />
       ) : null}
 
