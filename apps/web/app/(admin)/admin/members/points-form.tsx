@@ -67,9 +67,11 @@ export function PointsForm({
           required
           autoComplete="off"
         />
+        {/* [D-50] The board never says why points were taken away. */}
         <span className="fw-field__help">
-          Kept with the points and shown in {name}&rsquo;s history on the board, so word it for the
-          family.
+          {direction === 'add'
+            ? `Shown with the points in ${name}’s history on the board, so word it for the family.`
+            : `Kept here for the parents. The board says only “A parent changed your points.”`}
         </span>
       </label>
       {state.message ? <Banner kind="notice">{state.message}</Banner> : null}

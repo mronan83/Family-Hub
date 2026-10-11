@@ -345,7 +345,9 @@ test('[DEV-03] the admin sees the board, renames it and disconnects it; the boar
   await expect(boards).toContainText(BOARD);
   await expect(boards).toContainText('Last seen');
 
-  await admin.getByRole('button', { name: `Disconnect ${BOARD}`, exact: true }).click();
+  // Disconnecting asks first (06 §6): nothing happens until "Yes, disconnect".
+  await admin.getByText(`Disconnect ${BOARD}`, { exact: true }).click();
+  await admin.getByRole('button', { name: `Yes, disconnect ${BOARD}`, exact: true }).click();
   await expect(admin.getByRole('list', { name: 'Disconnected boards', exact: true })).toContainText(
     BOARD,
   );
