@@ -134,6 +134,7 @@ export async function saveBoardLayout(form: FormData): Promise<void> {
     form.get('span'),
     form.getAll('order').map(String),
     form.getAll('show').map(String),
+    form.get('weather'),
   );
   const [id, dir] = String(form.get('move') ?? '').split(':');
   if (id && (dir === '-1' || dir === '1')) {

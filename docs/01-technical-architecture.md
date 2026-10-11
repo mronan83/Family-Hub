@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.39: weather on the board (WP-45, D-69): Open-Meteo through the `weather` job every 30 minutes and a read when Home changes the place or unit; the board reads it from the snapshot only (§2, §3, §5.6, §7).
 > v0.8.38: the board's home screen is a family dashboard, laid out by the household or a board's own layout (WP-35, D-66, D-67): what the snapshot carries for it, and the three-week window (§7).
 > v0.8.37: calendars on the boards (WP-23, D-65): each board's own choice of calendars, the snapshot's calendar slice and `board_calendar()` for other ranges, and the board's Day, Week and Month (§7).
 > v0.8.36: the board's outbox sends nothing while the browser says it is offline, and sends at once when it says it is back (D-64, §7).
@@ -80,6 +81,7 @@ flowchart LR
 
   apple[("iCloud Calendar<br/>ICS / CalDAV, read-only")]
   menu[("School menu source<br/>Nutrislice / SchoolCafe / CSV")]
+  meteo[("Open-Meteo<br/>weather + place search")]
 
   kid -->|"check off, browse"| board
   parents -->|"configure, approve, my tasks"| admin
@@ -87,6 +89,7 @@ flowchart LR
   parents -.->|"edit events"| apple
   core -->|"scheduled pull"| apple
   core -->|"adapter / import"| menu
+  core -->|"weather every 30 min, place search"| meteo
 ```
 
 ---
@@ -140,6 +143,9 @@ flowchart TB
   CALSYNC --> VAULT
   MENUIMP --> DB
   CALSYNC -- "ICS / CalDAV" --> ICLOUD[("iCloud Calendar")]
+  SCHED -- "signed HTTP" --> WEATHER
+  WEATHER --> DB
+  WEATHER -- "HTTPS JSON" --> METEO[("Open-Meteo")]
   MENUIMP -- "adapter fetch" --> MSRC[("School menu source")]
   SCHED -- "signed HTTP" --> NOTIFY
   NOTIFY --> DB
@@ -153,7 +159,7 @@ flowchart TB
 
 | ID | Component | Responsibility | Tech | Primary requirements |
 |---|---|---|---|---|
-| `BRD` | Board App | Family-facing UI: a family dashboard as home (calendar, today's list, cards; D-66), Today per member, Chores (everyone's day in columns), Calendar, Goals, Meals. Optimistic check-off with a who-did-it picker for shared items, notify-then-refetch realtime, idle auto-return, offline cache. Never shows private items. | Next.js route group `(board)`, PWA (Serwist), Dexie (IndexedDB), Tailwind | BRD-*, DEV-04..08, CHR-04, RWD-07/08, CAL-04, MEAL-06 |
+| `BRD` | Board App | Family-facing UI: a family dashboard as home (calendar, today's list, cards; D-66) with the weather beside the clock (D-69), Today per member, Chores (everyone's day in columns), Calendar, Goals, Meals. Optimistic check-off with a who-did-it picker for shared items, notify-then-refetch realtime, idle auto-return, offline cache. Never shows private items. | Next.js route group `(board)`, PWA (Serwist), Dexie (IndexedDB), Tailwind | BRD-*, DEV-04..08, CHR-04, RWD-07/08, CAL-04, MEAL-06 |
 | `ADM` | Admin App | Responsive parent portal: members (incl. the earns-rewards switch), devices, the family list of chores and tasks with tags and visibility, My tasks on the phone, goals, calendars, school year, meal plan, menu, audit. | Next.js route group `(admin)`, server actions, shadcn/ui | ACC-*, DEV-03, CHR-01/05/06, RWD-01/09/10, CAL-05/06, SCH-*, MEAL-*, MENU-* |
 | `API` | API layer | Validated writes (zod), derives `household_id` from the verified session (never from the body), passes `done_by` for check-offs (the database validates it and fixes `rewarded`), invokes `RULES`, uses service role only for derived tables. Owns the redemption workflow (request, approve, deny, fulfill). | Next.js route handlers | CHR-04, RWD-04, DEV-06, PTS-04 |
 | `AUTH` | Pairing + device auth | Pairing codes; `redeem_pairing_code` creates the board's own sign-in in the database; the board's credential cookie and unattended sign-in; disconnecting (D-40, §5.1). | Database functions, server actions, `/board/resume` | DEV-01/02/03 |
@@ -368,6 +374,7 @@ sequenceDiagram
 | `heartbeat` | hourly (minute 17) | `/api/jobs/heartbeat` | sample job (WP-07): counts members, reports how late the call arrived; reads only |
 | `purge_history` | daily 03:43 UTC (SQL, no call) | — | deletes cron run history after 7 days, `job_run` after 90, `private.app_error` after 30 |
 | `calendar_sync` | every 15 min (minutes 3, 18, 33, 48) | `/api/jobs/calendar-sync` | each household's calendars due, one at a time (`calendar_sources_due()`); storing locks the calendar's row; a calendar whose link fails keeps its last good events and its own error, and the run stays `ok` (D-63, §5.4) |
+| `weather` | every 30 min (minutes 9, 39) | `/api/jobs/weather` | each household with a place: Open-Meteo's forecast for it (now, today's high and low, in the household's zone and unit; 10 s at most) through `save_weather()`; a failed read is the reading's own state (the boards stop showing it, Home says why) and the run stays `ok`; no place: `skipped` (WP-45, D-69) |
 | `menu_import` | daily | `/api/jobs/menu-import` | window 28 days ahead; skips override rows |
 | `occurrence_gen` | hourly (minute 23); edits re-plan at once in the database | `/api/jobs/occurrence-gen` | calls `generate_household_occurrences()`: tomorrow to 14 days ahead, one occurrence per item per due date, or per person for an item where everyone does their own (D-47) (`UNIQUE NULLS NOT DISTINCT (chore_id, due_date, member_id)` + `ON CONFLICT DO NOTHING`) with its `chore_occurrence_assignee` snapshot; idempotent. Triggers re-plan on edits (D-45): an item, its assignees or a member from today, in place; a school year, closure or school profile from tomorrow (D-24) |
 | `day_close` | hourly (minute 4; acts once a household's local day has ended) | `/api/jobs/day-close` | `close_household_day()` → `close_past_due()` marks unresolved routines `missed` and stamps `finalized_at` (tasks stay open, D-31); catches up every earlier day; idempotent (WP-10). Writing `member_daily_summary` and rebuilding `streak_segment` join it with WP-17; then the household's bonus rules are applied (`apply_points_rules()`, WP-30, D-57) |
@@ -607,6 +614,8 @@ sequenceDiagram
 **As built (WP-23, D-65): the board's calendar.** The snapshot's `calendar` slice holds the calendars this board shows and their events over the snapshot's window; a range beyond it (a later week or month) is read when the calendar screen opens it, with `board_calendar(from, to)` (62 days at most, as the board under RLS), and read again whenever the snapshot is. Offline, the screen shows what the snapshot has for those dates and says so. Which calendars a board shows: its own choice once an admin saves one on Boards (`device_calendar`, `set_board_calendars()`), else each calendar's "show on the boards". `calendar_source` and `device_calendar` are in Realtime: a sync updates its calendar's row last, and a board's choice is its own rows, so the board reads again on either; unticking a calendar takes its events off within seconds (the done-when, e2e `board-calendar.spec.ts`). The screen is "Calendar" beside the people: Week (default), Day or Month, by the arrows, a sideways swipe of 120 px or "Today"; it returns to Everyone with the rest of the board when left alone.
 
 **As built (WP-35, D-66, D-67): the home screen.** The board opens on a family dashboard: the calendar (3, 5 or 7 days from today, or the month; ranges beyond the snapshot read as in WP-23), today's list (`lib/dashboard.ts` turns the snapshot's items into a row per item with a face per person, by part of the day), then cards in the layout's order. The layout is in the snapshot (`layout {household, board}`, D-67); `household_settings` and `device` were already in the publication, so a layout saved on Boards reaches the board like any other change, within the 3-second budget (e2e times it). The page scrolls; the bar and the people are `position: sticky`, and the idle timer (90 s) returns to the dashboard at the top. Per-person columns are the Chores screen.
+
+**As built (WP-45, D-69): the weather.** The snapshot's `weather` is the household's last good read (`weather_reading`) while the last read worked and is under 75 minutes old, else null. The board shows it beside the clock unless its layout turns it off (`layout.weather`), and only for the household's date it was read for, so a board offline overnight shows none. `weather_reading` is in the publication, so each read reaches the boards like any other change. The board never calls Open-Meteo: the `weather` job and Home's save do (`lib/weather.ts`), with the place's coordinates kept to two decimals.
 
 **Offline rules**
 

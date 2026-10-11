@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.26: US-1003 as built (WP-45, D-69): the board shows the sky, the temperature now and today's high beside the clock, credited to Open-Meteo; the place is set once on Home by town or ZIP code, in °F or °C; with the source failing the weather hides and nothing else changes.
 > v0.8.25: US-1001, US-1002, US-1004 and US-1006 as built (WP-35, D-66, D-67): the home screen is a family dashboard (the calendar, one list of today's items with the faces of whose they are, then cards), laid out by the household or a board's own layout; the column per person moves to Chores; every tile is one height with "More info". US-1003 (weather) moves to WP-45.
 > v0.8.24: US-503, US-504 and US-507 as built (WP-23, D-65): the board's Calendar (Week, Day, Month; arrows, a swipe or Today), each event in its calendar's color with whose it is, and each board's own choice of calendars on Boards; offline, a range beyond the board's two weeks says it shows what the board has.
 > v0.8.23: US-501 and US-505 as built (WP-22, D-63): saving a link syncs it at once and Calendars lists what's coming up, or what's wrong with the link; a calendar that can't sync says what to do, keeps its last good events and is named on System Health.
@@ -631,6 +632,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Could · **Phase:** P3 · **Reqs:** BRD-04
 - Given a household location is set, when Today loads, then current and daily-high temperature display.
 - Given the weather source fails, when Today loads, then the widget hides without affecting other content.
+- As built (WP-45, D-69): an admin sets the place once on Home (**Weather on the boards**): a town's name or a US ZIP code, then **Use this** on the right match; °F or °C. The board shows the sky (an icon and a word), the temperature now and **High** today beside the clock, with "Weather by Open-Meteo.com"; it reads the weather every 30 minutes and at once after a change. When a read fails, the weather hides, nothing else on the board moves, and Home says why; offline, the board keeps its last reading until the day is over. **Show the weather beside the clock** on Boards turns it off for every board or one.
 
 ### US-1004 — Configure the board layout
 **As an** admin **I want** to choose which panels appear and in what order **so that** the board fits our routine.

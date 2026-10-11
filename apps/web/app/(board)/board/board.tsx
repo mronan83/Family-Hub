@@ -12,12 +12,14 @@ import { browserClient } from '@/lib/supabase/browser';
 import { postCelebrated } from '@/lib/board-goals';
 import { postAsk, postCancelAsk } from '@/lib/shop';
 import { postWish } from '@/lib/wishes';
+import { effectiveLayout } from '@/lib/board-layout';
 import { HealthLines } from './health-lines';
 import type { PhotoUrl } from './picture';
 import { type QueueState, Today } from './today';
 import { useMinute } from './use-minute';
 import { useBarHeight } from './use-bar-height';
 import { useHydrated, useOnline } from './use-online';
+import { WeatherNow } from './weather';
 
 type Link = 'connecting' | 'live' | 'offline';
 
@@ -266,9 +268,16 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
           </p>
         </div>
         <div className="fw-board__status">
-          <time className="fw-board__clock" dateTime={now.toISOString()} suppressHydrationWarning>
-            {time(now, tz)}
-          </time>
+          <div className="fw-board__now">
+            {/* [BRD-04] The weather beside the clock (WP-45), unless the layout turns it off. */}
+            {hydrated &&
+            effectiveLayout(snapshot.layout.household, snapshot.layout.board).weather ? (
+              <WeatherNow weather={snapshot.weather} today={localDay} />
+            ) : null}
+            <time className="fw-board__clock" dateTime={now.toISOString()} suppressHydrationWarning>
+              {time(now, tz)}
+            </time>
+          </div>
           <LiveStatus link={link} events={events} />
           {hydrated ? <HealthLines offline={health.offline} stale={health.stale} /> : null}
         </div>

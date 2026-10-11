@@ -8,7 +8,8 @@ import { DevBoard } from './dev-board';
 // (?jobs=1) for the board's health lines (WP-13); a goal just reached (?celebrate=1, WP-20); a busy
 // month (?busy=1) or a calendar that can't sync (?calbehind=1) on the calendar (WP-23); the home
 // screen's layout (WP-35): the calendar's span (?span=3|5|7|month) and the cards shown, in order
-// (?cards=goals,coming; the others hidden).
+// (?cards=goals,coming; the others hidden); the weather beside the clock (WP-45: ?weather=rain|snow|
+// night|celsius|yesterday|none, or ?weather=off for a layout that turns it off).
 export const metadata: Metadata = { title: 'Board Today', robots: { index: false } };
 
 export default async function DevBoardPage({
@@ -23,14 +24,16 @@ export default async function DevBoardPage({
     calbehind?: string;
     span?: string;
     cards?: string;
+    weather?: string;
   }>;
 }) {
   const params = await searchParams;
   const theme: Theme = params.theme === 'evening' ? 'evening' : 'day';
   const shown = params.cards?.split(',') ?? [];
   const layout =
-    params.span || params.cards
+    params.span || params.cards || params.weather === 'off'
       ? (readLayout({
+          ...(params.weather === 'off' ? { weather: false } : {}),
           ...(params.span ? { calendar: params.span } : {}),
           ...(params.cards
             ? {
@@ -57,6 +60,7 @@ export default async function DevBoardPage({
         busy={params.busy === '1'}
         calBehind={params.calbehind === '1'}
         layout={layout}
+        weather={params.weather}
       />
     </div>
   );

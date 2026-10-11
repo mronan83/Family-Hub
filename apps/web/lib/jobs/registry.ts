@@ -6,6 +6,7 @@ import { evaluateHouseholdGoals } from '../goals';
 import { dayBefore, rebuildMemberHistory } from '../history';
 import { log } from '../log';
 import { runReminders, vapidFromEnv, webPushSender } from '../reminders';
+import { runWeather } from '../weather';
 
 export type JobContext = {
   db: SupabaseClient;
@@ -95,6 +96,15 @@ export const JOBS: Record<string, Job> = {
   async calendar_sync({ db, householdId }) {
     const stats = await runCalendarSync(db, householdId);
     return { status: 'ok', stats: { ...stats } };
+  },
+
+  // [BRD-04] The weather (WP-45, D-69), every 30 minutes: reads the household's place from
+  // Open-Meteo and stores it through save_weather. No place, nothing to do. The service failing is
+  // the reading's own state (the boards stop showing it; Home says why), not the job's: only a
+  // database that can't store it fails the run. Repeating it stores the same reading again.
+  async weather({ db, householdId }) {
+    const outcome = await runWeather(db, householdId);
+    return { status: outcome === 'no_place' ? 'skipped' : 'ok', stats: { outcome } };
   },
 
   // [NFR-06] The nightly check (WP-10): re-folds the last 14 days of events and compares them with

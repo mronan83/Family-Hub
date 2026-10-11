@@ -33,11 +33,14 @@ export interface LayoutCard {
 export interface BoardLayout {
   calendar: CalendarSpan;
   cards: LayoutCard[];
+  /** [BRD-04] Whether the weather shows beside the clock (WP-45); on unless turned off. */
+  weather: boolean;
 }
 
 export const DEFAULT_LAYOUT: BoardLayout = {
   calendar: '5',
   cards: CARD_IDS.map((id) => ({ id, show: true })),
+  weather: true,
 };
 
 const isObject = (x: unknown): x is Record<string, unknown> =>
@@ -61,7 +64,7 @@ export function readLayout(x: unknown): BoardLayout | null {
     }
   }
   for (const id of CARD_IDS) if (!cards.some((c) => c.id === id)) cards.push({ id, show: true });
-  return { calendar, cards };
+  return { calendar, cards, weather: x.weather !== false };
 }
 
 /** What a board shows: its own layout if it has one, else the household's, else the defaults. */
@@ -79,11 +82,20 @@ export function moveCard(layout: BoardLayout, id: CardId, dir: -1 | 1): BoardLay
   return { ...layout, cards };
 }
 
-/** Parses the admin form: the span, the order (ids), and the ids ticked to show. */
-export function layoutFromForm(span: unknown, order: unknown[], shown: unknown[]): BoardLayout {
+/** Parses the admin form: the span, the order (ids), the ids ticked to show, and the weather box. */
+export function layoutFromForm(
+  span: unknown,
+  order: unknown[],
+  shown: unknown[],
+  weather: unknown = 'on',
+): BoardLayout {
   const calendar = CALENDAR_SPANS.find((s) => s === span) ?? DEFAULT_LAYOUT.calendar;
   const ids = order.filter((o): o is CardId => CARD_IDS.includes(o as CardId));
   const listed = [...new Set(ids)];
   for (const id of CARD_IDS) if (!listed.includes(id)) listed.push(id);
-  return { calendar, cards: listed.map((id) => ({ id, show: shown.includes(id) })) };
+  return {
+    calendar,
+    cards: listed.map((id) => ({ id, show: shown.includes(id) })),
+    weather: weather === 'on',
+  };
 }
