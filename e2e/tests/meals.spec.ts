@@ -211,6 +211,8 @@ test('[MEAL-04][US-703] school lunch: Maya’s usual week set, then one school d
   await lunch
     .getByRole('button', { name: /^Maya, .*: bring \(changed\)\. Change to buy$/ })
     .click();
-  await expect(admin.getByRole('status')).toHaveText('Lunch changed.');
+  // The status already says "Lunch changed." from the first tap, so wait for the row itself: once
+  // the change is undone and the page is back, Maya's week has no changed day.
+  await expect(lunch.getByRole('row', { name: /^Maya/ })).not.toContainText('Changed');
   expect(sql(`select count(*) from public.lunch_override where member_id = '${maya()}'`)).toBe('0');
 });
