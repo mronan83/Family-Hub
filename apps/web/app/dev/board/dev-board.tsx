@@ -1,13 +1,12 @@
 'use client';
 
 import { ThemeLock, type TextSize, type Theme } from '@familywise/ui';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { boardHealth, type JobHealth } from '@/lib/board-health';
 import { openBoardStore } from '@/lib/board-store';
 import { day, isoDay, time } from '@/lib/format';
 import { HealthLines } from '../../(board)/board/health-lines';
 import { useMinute } from '../../(board)/board/use-minute';
-import { useBarHeight } from '../../(board)/board/use-bar-height';
 import { useOnline } from '../../(board)/board/use-online';
 import { useBoardTextSize } from '../../(board)/board/use-text-size';
 import { WeatherNow } from '../../(board)/board/weather';
@@ -63,8 +62,6 @@ export function DevBoard({
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
   const now = useMinute();
-  const bar = useRef<HTMLElement>(null);
-  useBarHeight(bar);
   useBoardTextSize(textSize);
   // A School sync that failed three hours ago, when asked for.
   const withSchool = useCallback(
@@ -132,10 +129,13 @@ export function DevBoard({
   return (
     <main className="fw-board">
       <ThemeLock theme={theme} />
-      <header ref={bar} className="fw-board__bar">
+      <header className="fw-board__bar">
         <div className="fw-board__title">
           <h1>{snapshot.household.name}</h1>
-          <p className="fw-board__date">{day(now, TZ)}</p>
+          <p className="fw-board__date">
+            {day(now, TZ)}
+            <span className="fw-board__device"> · {snapshot.device.name}</span>
+          </p>
         </div>
         <div className="fw-board__status">
           <div className="fw-board__now">
@@ -161,7 +161,6 @@ export function DevBoard({
         markCelebrated={markCelebrated}
         loadCalendar={loadCalendar}
       />
-      <footer className="fw-board__foot">{snapshot.device.name}</footer>
     </main>
   );
 }

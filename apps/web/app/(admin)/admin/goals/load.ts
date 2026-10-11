@@ -3,6 +3,7 @@ import { evaluateHouseholdGoals } from '@/lib/goals';
 import { log } from '@/lib/log';
 import { loadChores, loadTags } from '../chores/data';
 import { loadAdmins, loadMembers } from '../members/data';
+import { loadCatalog } from '../rewards/data';
 
 /**
  * [RWD-04] Brings the household's goals up to date before a parent reads them (D-56): each goal that
@@ -27,13 +28,17 @@ export async function bringGoalsUpToDate(
   }
 }
 
-/** What the goal pages need besides the goals: who earns rewards, names for tags and items, parents. */
-export async function loadGoalContext(db: SupabaseClient, householdId: string) {
-  const [members, tags, chores, admins] = await Promise.all([
+/**
+ * What the goal pages need besides the goals: who earns rewards, names for tags and items, parents,
+ * and the shop's rewards a goal can pay (those not removed; `keep` also keeps a goal's own prize).
+ */
+export async function loadGoalContext(db: SupabaseClient, householdId: string, keep?: string) {
+  const [members, tags, chores, admins, catalog] = await Promise.all([
     loadMembers(db, householdId),
     loadTags(db, householdId),
     loadChores(db, householdId),
     loadAdmins(db, householdId),
+    loadCatalog(db, householdId),
   ]);
   const earners = members.filter((m) => m.earnsRewards && !m.archivedAt);
   const adminNames = new Map(
@@ -55,5 +60,9 @@ export async function loadGoalContext(db: SupabaseClient, householdId: string) {
       items: new Map(chores.map((c) => [c.id, c.title])),
     },
     adminNames,
+    prizes: catalog
+      .filter((i) => !i.archivedAt || i.id === keep)
+      .map((i) => ({ id: i.id, title: i.title, cost: i.costPoints })),
+    prizeNames: new Map(catalog.map((i) => [i.id, i.title])),
   };
 }

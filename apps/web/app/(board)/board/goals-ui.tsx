@@ -31,6 +31,7 @@ export function GoalItem({
   photoUrl,
   compact = false,
   who,
+  action,
 }: {
   goal: BoardGoal;
   today: string;
@@ -38,6 +39,8 @@ export function GoalItem({
   compact?: boolean;
   /** [D-66] Whose goal it is, on the dashboard where everyone's show together. */
   who?: ReactNode;
+  /** [D-74] A button over the whole goal, on the dashboard: it opens whose goal it is. */
+  action?: ReactNode;
 }) {
   const ends = endsLine(goal.endDate, today);
   return (
@@ -79,6 +82,7 @@ export function GoalItem({
           {ends ? <p className="fw-today__goal-ends">{ends}</p> : null}
         </>
       )}
+      {action}
     </li>
   );
 }

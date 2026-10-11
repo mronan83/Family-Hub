@@ -17,7 +17,6 @@ import { HealthLines } from './health-lines';
 import type { PhotoUrl } from './picture';
 import { type QueueState, Today } from './today';
 import { useMinute } from './use-minute';
-import { useBarHeight } from './use-bar-height';
 import { useBoardTextSize } from './use-text-size';
 import { useHydrated, useOnline } from './use-online';
 import { WeatherNow } from './weather';
@@ -241,8 +240,6 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
   const online = useOnline();
   const hydrated = useHydrated();
   const now = useMinute();
-  const bar = useRef<HTMLElement>(null);
-  useBarHeight(bar);
   useBoardTextSize(snapshot.device.textSize);
   const health = boardHealth({
     fetchedAt: snapshot.fetchedAt,
@@ -262,11 +259,13 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
   return (
     <main className="fw-board" data-fetched-at={snapshot.fetchedAt}>
       <BoardThemeController timeZone={tz} override={device.theme} />
-      <header ref={bar} className="fw-board__bar">
+      <header className="fw-board__bar">
         <div className="fw-board__title">
           <h1>{household.name}</h1>
           <p className="fw-board__date" suppressHydrationWarning>
             {day(now, tz)}
+            {/* Which board this is, beside the date (D-74). */}
+            <span className="fw-board__device"> · {device.name}</span>
           </p>
         </div>
         <div className="fw-board__status">
@@ -297,7 +296,6 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
         photoUrl={photoUrl}
         loadCalendar={loadCalendar}
       />
-      <footer className="fw-board__foot">{device.name}</footer>
     </main>
   );
 }

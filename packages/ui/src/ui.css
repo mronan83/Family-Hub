@@ -367,6 +367,12 @@ body {
   max-width: 100%;
   overflow: hidden;
 }
+/* A list whose longest choice is wider than a phone (a goal's reward from the shop, WP-39) shrinks
+   with the column too; the open list still shows each choice in full. */
+select.fw-input {
+  min-width: 0;
+  max-width: 100%;
+}
 .fw-actions {
   display: flex;
   flex-wrap: wrap;
@@ -856,46 +862,73 @@ html:has(.board) {
   -webkit-tap-highlight-color: transparent;
 }
 .fw-board {
+  --rail-w: 216px;
   box-sizing: border-box;
   /* [BRD-08] Its width in the board's own px, for the dashboard to fit larger text (WP-47). */
   container: board / inline-size;
+  /* [D-74] One screen: the rail down the left, the bar along the top, and the screen in what is
+     left, scrolling inside itself. The page never scrolls, so nothing hides under the bar. */
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: var(--s-8);
-  min-height: calc(100vh / var(--fw-zoom, 1));
-  min-height: calc(100dvh / var(--fw-zoom, 1));
-  padding: var(--s-8) var(--s-12);
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  column-gap: var(--s-8);
+  height: calc(100vh / var(--fw-zoom, 1));
+  height: calc(100dvh / var(--fw-zoom, 1));
+  overflow: hidden;
+  /* Positioned, so what is positioned inside (a face's badge) is clipped here and in each part that
+     scrolls, never spilling into a page scroll. */
+  position: relative;
+}
+/* The rail's column runs the full height. */
+.fw-board::before {
+  content: '';
+  grid-column: 1;
+  grid-row: 1 / -1;
+  border-right: var(--border-w) solid var(--line);
+  background: var(--surface);
 }
 .fw-board__bar {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  align-items: center;
   gap: var(--s-8);
+  min-width: 0;
+  padding: var(--s-4) var(--s-8) var(--s-3) 0;
+}
+.fw-board__title {
+  min-width: 0;
+  margin-right: auto;
 }
 .fw-board__title h1 {
   margin: 0;
-  font-size: var(--t-title);
+  overflow: hidden;
+  font-size: 48px;
   line-height: 1.1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .fw-board__date {
-  margin: var(--s-2) 0 0;
-  color: var(--text-soft);
-}
-.fw-board__status {
-  display: grid;
-  justify-items: end;
-  gap: var(--s-2);
-}
-.fw-board__clock {
-  font-size: var(--t-hero);
-  font-weight: 800;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.fw-board__foot {
+  margin: var(--s-1) 0 0;
   color: var(--text-soft);
   font-size: var(--t-small);
+  white-space: nowrap;
 }
+.fw-board__status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-3) var(--s-6);
+}
+.fw-board__clock {
+  font-size: 80px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .fw-live {
   display: inline-flex;
   align-items: center;
@@ -918,37 +951,92 @@ html:has(.board) {
 
 /* Board Today (WP-11) ------------------------------------------------------------------------ */
 .fw-today {
-  display: grid;
-  align-content: start;
-  gap: var(--s-6);
-  min-width: 0;
+  /* [D-74] Its parts sit in the board's grid: the rail, the notice and the screen. */
+  display: contents;
 }
+/* [D-74] The rail: Home, each person with their stars, then Chores and the Calendar at its foot. */
 .fw-today__people {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  z-index: 1;
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-4);
+  flex-direction: column;
+  gap: var(--s-2);
+  min-height: 0;
   margin: 0;
-  padding: 0;
+  padding: var(--s-4) var(--s-3);
+  overflow-y: auto;
   list-style: none;
 }
+.fw-today__rail-end {
+  margin-top: auto;
+}
 .fw-today__person {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--s-3);
+  justify-content: center;
+  gap: var(--s-1);
+  width: 100%;
   min-height: var(--touch-primary);
-  padding: var(--s-2) var(--s-6) var(--s-2) var(--s-2);
+  padding: var(--s-2);
   border: var(--border-w) solid var(--line);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-lg);
   background: var(--surface);
   color: var(--text);
   font: inherit;
   font-family: var(--font-display);
-  font-size: var(--t-body);
+  font-size: var(--t-small);
   font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
   cursor: pointer;
 }
+/* Home, Chores and the Calendar: the icon beside the word, so the people get the height. */
 .fw-today__person--all {
-  padding-left: var(--s-4);
+  flex-direction: row;
+  gap: var(--s-3);
+}
+.fw-today__people svg {
+  width: 48px;
+  height: 48px;
+}
+.fw-today__people .fw-avatar,
+.fw-today__people .fw-avatar svg {
+  width: 56px;
+  height: 56px;
+}
+.fw-today__people .fw-points {
+  min-height: 44px;
+  font-size: var(--t-small);
+}
+.fw-today__people .fw-points svg {
+  width: 28px;
+  height: 28px;
+}
+.fw-today__person-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fw-today__notice {
+  grid-column: 2;
+  grid-row: 2;
+  padding-right: var(--s-8);
+}
+/* [D-74] The screen scrolls inside itself; the bar and the rail stay where they are. */
+.fw-today__screen {
+  grid-column: 2;
+  grid-row: 3;
+  display: grid;
+  align-content: start;
+  gap: var(--s-6);
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  padding: var(--s-2) var(--s-8) var(--s-6) 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .fw-today__person[aria-pressed='true'] {
   border-color: var(--primary);
@@ -1875,6 +1963,48 @@ span.fw-heat__cell {
   }
 }
 
+/* A goal change's preview (WP-39): what saving would do, each rule now and after. -------------- */
+.fw-goal-preview {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+}
+.fw-goal-preview h2 {
+  margin: 0;
+}
+.fw-goal-preview__outcome {
+  margin: 0;
+  font-weight: 600;
+}
+.fw-goal-preview__table {
+  overflow-x: auto;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+}
+.fw-goal-preview__table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.fw-goal-preview__table :is(th, td) {
+  padding: var(--s-2);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: var(--border-w) solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.fw-goal-preview__table tbody th {
+  font-weight: 400;
+}
+.fw-goal-preview__table :is(thead th, tfoot :is(th, td)) {
+  background: var(--surface);
+  font-weight: 600;
+}
+.fw-goal-preview__table tfoot :is(th, td) {
+  border-bottom: 0;
+}
+
 /* Reminders (WP-40): whether they are on, this device, quiet hours side by side, the bell. ------- */
 .fw-reminders__state {
   display: flex;
@@ -2238,36 +2368,24 @@ span.fw-heat__cell {
 }
 
 /* The board's home: a family dashboard (WP-35, D-66). ------------------------------------------ */
-/* The bar and the people stay in sight while the dashboard scrolls (--bar-h is the bar's height). */
-.fw-board__bar {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  margin-top: calc(-1 * var(--s-4));
-  padding-block: var(--s-4) var(--s-2);
-  background: var(--bg);
-}
-.fw-today__people {
-  position: sticky;
-  top: var(--bar-h, 0px);
-  z-index: 2;
-  margin-block: calc(-1 * var(--s-2));
-  padding-block: var(--s-2);
-  background: var(--bg);
-}
 .fw-today__pill-balance {
   display: inline-flex;
 }
+/* [D-74] The home screen is exactly the screen: the calendar and the list fill it, the cards sit
+   under the calendar, and each scrolls inside itself when it has more than fits. */
+.fw-today__screen[data-screen='home'] {
+  align-content: stretch;
+}
 .fw-dash {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 680px;
+  grid-template-columns: minmax(0, 1fr) 560px;
   grid-template-areas:
     'cal list'
     'cards list';
-  grid-template-rows: auto 1fr;
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: var(--s-6);
-  align-items: start;
   min-width: 0;
+  min-height: 0;
 }
 .fw-dash__cal {
   grid-area: cal;
@@ -2285,6 +2403,32 @@ span.fw-heat__cell {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: 'cal' 'list' 'cards';
     grid-template-rows: auto;
+  }
+  /* Too big for one screen: the screen scrolls, and each part is as tall as it needs. */
+  .fw-board .fw-today__screen[data-screen='home'] {
+    display: block;
+  }
+  .fw-board .fw-dash {
+    min-height: auto;
+  }
+  .fw-dash .fw-dash__cal,
+  .fw-dash .fw-dash__list {
+    grid-template-rows: auto auto;
+    overflow: visible;
+  }
+  .fw-dash .fw-dash__list-body,
+  .fw-dash .fw-dash__day,
+  .fw-dash .fw-dash__card {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+  .fw-dash .fw-dash__cells {
+    grid-auto-rows: auto;
+  }
+  .fw-dash .fw-dash__cards {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 .fw-dash__cal,
@@ -2312,6 +2456,65 @@ span.fw-heat__cell {
 .fw-dash__card h2 > svg {
   color: var(--primary-text);
 }
+/* [D-74] The calendar card: its heading and the view switch on one row, the days filling the rest. */
+.fw-dash__cal {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: stretch;
+  column-gap: var(--s-4);
+  min-height: 0;
+  overflow: hidden;
+}
+.fw-dash__cal .fw-dash__sub {
+  flex-basis: 100%;
+  margin-left: 0;
+}
+.fw-dash__cal > :not(.fw-dash__head, .fw-dash__spans) {
+  grid-column: 1 / -1;
+  min-height: 0;
+}
+.fw-dash__spans {
+  display: flex;
+  align-self: start;
+  gap: var(--s-1);
+  padding: var(--s-1);
+  border-radius: var(--r-pill);
+  background: var(--bg);
+}
+.fw-dash__span {
+  min-height: var(--touch);
+  padding: 0 var(--s-4);
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.fw-dash__span[aria-pressed='true'] {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+/* Today's list: its heading stays, its parts scroll inside the card. */
+.fw-dash__list {
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: stretch;
+  min-height: 0;
+  overflow: hidden;
+}
+.fw-dash__list-body {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--s-4);
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 .fw-dash__sub {
   margin-left: auto;
   color: var(--text-soft);
@@ -2330,6 +2533,8 @@ span.fw-heat__cell {
   align-content: start;
   gap: var(--s-2);
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
   padding: var(--s-2);
   border: var(--border-w) solid var(--line);
   border-radius: var(--r-md);
@@ -2356,6 +2561,15 @@ span.fw-heat__cell {
   text-align: left;
   cursor: pointer;
 }
+.fw-dash[data-span='5'] .fw-dash__today,
+.fw-dash[data-span='7'] .fw-dash__today {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .fw-dash__today {
   color: var(--primary-text);
   font-family: var(--font-body);
@@ -2369,24 +2583,26 @@ span.fw-heat__cell {
   border: var(--border-w) solid var(--line);
   border-left: 10px solid var(--cal);
 }
-/* A word wider than its day ("Grandparents" in seven days) breaks inside the event, not past it. */
+/* A word wider than its day ("Grandparents" in seven days) is hyphenated where the language
+   allows, and only broken when it can't be (D-74). */
 .fw-dash__day .fw-bcal__title {
   max-width: 100%;
-  overflow-wrap: anywhere;
+  font-size: var(--t-small);
+  overflow-wrap: break-word;
   hyphens: auto;
 }
 /* Seven days beside today's list leave each day about 140 px: the board's smallest text and less
    padding, so most words still fit whole. */
-.fw-dash[data-span='7'] .fw-dash__days {
+.fw-dash:is([data-span='5'], [data-span='7']) .fw-dash__days {
   gap: var(--s-2);
 }
-.fw-dash[data-span='7'] .fw-dash__day {
+.fw-dash:is([data-span='5'], [data-span='7']) .fw-dash__day {
   padding: var(--s-1);
 }
-.fw-dash[data-span='7'] .fw-dash__day-head {
+.fw-dash:is([data-span='5'], [data-span='7']) .fw-dash__day-head {
   padding: var(--s-1);
 }
-.fw-dash[data-span='7'] .fw-dash__day .fw-bcal__event {
+.fw-dash:is([data-span='5'], [data-span='7']) .fw-dash__day .fw-bcal__event {
   padding: var(--s-1) var(--s-2);
   border-left-width: 6px;
 }
@@ -2397,7 +2613,26 @@ span.fw-heat__cell {
 /* [CAL-04] The month: a dot per calendar with something on a day; a tap opens the day. */
 .fw-dash__month {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: var(--s-2);
+}
+.fw-dash__cells {
+  grid-auto-rows: minmax(0, 1fr);
+}
+.fw-dash__cells > li {
+  min-height: 0;
+}
+.fw-dash__cells .fw-dash__cell {
+  gap: var(--s-1);
+  padding: var(--s-1);
+  font-size: var(--t-small);
+}
+.fw-dash__cells .fw-dash__dots i {
+  width: 14px;
+  height: 14px;
+}
+.fw-dash__cells .fw-dash__dots {
+  min-height: 14px;
 }
 .fw-dash__weekdays,
 .fw-dash__cells {
@@ -2420,7 +2655,8 @@ span.fw-heat__cell {
   align-content: center;
   gap: var(--s-2);
   width: 100%;
-  min-height: 104px;
+  height: 100%;
+  min-height: 72px;
   padding: var(--s-2);
   border: var(--border-w) solid var(--line);
   border-radius: var(--r-md);
@@ -2587,12 +2823,45 @@ span.fw-heat__cell {
   color: var(--primary-text);
   cursor: pointer;
 }
-/* The cards under the calendar, in the order the layout sets. */
+/* The cards under the calendar, in the order the layout sets: one row, side by side. */
 .fw-dash__cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
   gap: var(--s-6);
-  align-items: start;
+  align-items: stretch;
+}
+.fw-dash__card {
+  position: relative;
+  height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.fw-dash__card h2 {
+  font-size: 32px;
+}
+.fw-dash__card .fw-today__goal-head,
+.fw-dash__card .fw-today__muted {
+  font-size: var(--t-small);
+}
+/* [D-74] A row or a goal on a card opens what it is about: one button over all of it. */
+.fw-dash__lines li,
+.fw-dash__card .fw-today__goal {
+  position: relative;
+}
+.fw-dash__open {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  cursor: pointer;
+}
+.fw-dash__open:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }
 .fw-dash__cards:empty {
   display: none;
@@ -2628,6 +2897,49 @@ span.fw-heat__cell {
 .fw-dash__coming {
   padding-left: var(--s-3);
   border-left: 8px solid var(--cal);
+}
+/* [D-74] On the card, a request on two lines: what, then who asked and what it costs. */
+.fw-dash__card .fw-dash__waiting li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'text text text' 'who . cost';
+  align-items: center;
+  column-gap: var(--s-3);
+  row-gap: var(--s-1);
+}
+.fw-dash__waiting .fw-dash__line-text {
+  grid-area: text;
+}
+.fw-dash__waiting .fw-dash__who {
+  grid-area: who;
+}
+.fw-dash__waiting .fw-points {
+  grid-area: cost;
+}
+/* [D-74] On the card, each event on two lines: when, then what (and whose). */
+.fw-dash__card .fw-dash__coming {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'date when' 'text who';
+  align-items: center;
+  column-gap: var(--s-3);
+  row-gap: 0;
+}
+.fw-dash__coming .fw-dash__line-date {
+  grid-area: date;
+  min-width: 0;
+}
+.fw-dash__coming .fw-dash__line-when {
+  grid-area: when;
+}
+.fw-dash__coming .fw-dash__line-text {
+  grid-area: text;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.fw-dash__coming .fw-dash__who {
+  grid-area: who;
 }
 .fw-dash__who {
   display: inline-flex;
@@ -2754,13 +3066,12 @@ span.fw-heat__cell {
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
-/* Three lines (the sky, the high, the licence's credit) no taller than the clock beside them, so
-   the bar is the same with weather or without. */
+/* [D-74] The sky's word and today's high on one line. Open-Meteo's credit is in Help and on Home. */
 .fw-weather__more {
-  display: grid;
   color: var(--text-soft);
   font-size: var(--t-small);
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 /* Help (D-72): the user guide and manual, built from docs/07. Text in a readable column; pictures,

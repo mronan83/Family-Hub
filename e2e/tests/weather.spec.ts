@@ -121,7 +121,8 @@ test('[BRD-04][US-1003] the done-when: with a place set, the board shows the tem
   await expect(weather()).toHaveAccessibleName('Weather: 63 degrees Fahrenheit, rain, high 68');
   await expect(weather()).toContainText('63°');
   await expect(weather()).toContainText('High 68°');
-  await expect(weather()).toContainText('Weather by Open-Meteo.com');
+  // [D-74] The credit is in Help and on Home, not on the board.
+  await expect(weather()).not.toContainText('Open-Meteo');
 });
 
 test('[BRD-04][US-1003] the done-when: with the source failing, the weather hides and nothing else on the board changes', async () => {

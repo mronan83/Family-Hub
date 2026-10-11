@@ -46,7 +46,7 @@ import {
 } from '@/lib/today';
 import { type PinWish, wishLine } from '@/lib/wishes';
 import { eventsOn, eventWhen } from '@/lib/board-calendar';
-import { effectiveLayout } from '@/lib/board-layout';
+import { type CalendarSpan, effectiveLayout } from '@/lib/board-layout';
 import { calendarDay, clock, DAY_PART_LABELS, dayPart } from '@/lib/chores';
 import { type Chip, CHIP_WORDS, familyList, type ListRow } from '@/lib/dashboard';
 import { CalendarScreen, type LoadCalendar } from './calendar-ui';
@@ -963,6 +963,11 @@ export function Today({
   const [calDay, setCalDay] = useState<string | null>(null);
   const [details, setDetails] = useState<ListRow | null>(null);
   const layout = effectiveLayout(snapshot.layout.household, snapshot.layout.board);
+  // [D-74] The calendar's view chosen on the board itself; the board's own (Boards) when untouched.
+  const [span, setSpan] = useState<CalendarSpan | null>(null);
+  // [D-74] The screen scrolls inside itself, under a bar and beside a rail that never move.
+  const screen = useRef<HTMLDivElement>(null);
+  const toTop = useCallback(() => screen.current?.scrollTo({ top: 0 }), []);
   const [picker, setPicker] = useState<{ item: TodayItem; initial: string[] } | null>(null);
   // Whose wish is being chosen: the picker closes with the person's screen.
   const [wishing, setWishing] = useState<string | null>(null);
@@ -1001,10 +1006,11 @@ export function Today({
       setShopping(null);
       // An unanswered "Who did …?" closes too, recording nothing, as Cancel does.
       setPicker(null);
-      // [D-66] The dashboard scrolls; untouched, it goes back to the top.
-      window.scrollTo({ top: 0 });
+      // [D-74] The calendar goes back to the board's own view.
+      setSpan(null);
+      toTop();
     }, IDLE_MS);
-  }, []);
+  }, [toTop]);
   useEffect(() => () => (idle.current ? clearTimeout(idle.current) : undefined), []);
   const celebrating = party.current;
   const endCelebration = useCallback(() => {
@@ -1039,7 +1045,7 @@ export function Today({
   const open = (next: string) => {
     setView(next);
     setCalDay(null);
-    window.scrollTo({ top: 0 });
+    toTop();
   };
 
   const shopFor = member && shopping?.member === member.id ? member : null;
@@ -1088,7 +1094,7 @@ export function Today({
           </li>
         ))}
         {/* [BRD-07][D-66] Everyone's day in a column each. */}
-        <li>
+        <li className="fw-today__rail-end">
           <button
             type="button"
             className="fw-today__person fw-today__person--all"
@@ -1122,261 +1128,267 @@ export function Today({
         ) : null}
       </div>
 
-      {member ? (
-        <section className="fw-today__me" aria-labelledby="me-name">
-          <header className="fw-today__me-head">
-            <Avatar
-              name={member.displayName}
-              avatarKey={member.avatarKey}
-              color={member.color}
-              size={96}
-              decorative
-            />
-            <div>
-              <h2 id="me-name">{member.displayName}</h2>
-              <p className="fw-today__progress">
+      <div ref={screen} className="fw-today__screen" data-screen={member ? 'member' : view}>
+        {member ? (
+          <section className="fw-today__me" aria-labelledby="me-name">
+            <header className="fw-today__me-head">
+              <Avatar
+                name={member.displayName}
+                avatarKey={member.avatarKey}
+                color={member.color}
+                size={96}
+                decorative
+              />
+              <div>
+                <h2 id="me-name">{member.displayName}</h2>
+                <p className="fw-today__progress">
+                  {(() => {
+                    const p = progress(itemsFor(t.items, member.id));
+                    return p.total ? `${p.done} of ${p.total} done` : 'Nothing on the list today';
+                  })()}
+                </p>
+                {(() => {
+                  const line = member.earnsRewards ? nudgeFor(snapshot.goals, member.id) : null;
+                  return line ? (
+                    <p className="fw-today__nudge">
+                      <Icon name="target" size={32} />
+                      <span>{line}</span>
+                    </p>
+                  ) : null;
+                })()}
+              </div>
+              {member.streak ? (
+                <Flame days={flameDays(member.streak, t.items, member.id, today)} />
+              ) : null}
+              {member.points ? (
+                <CountingChip points={t.balance(member)} provisional={t.provisional(member)} />
+              ) : null}
+            </header>
+            <div className="fw-today__me-body">
+              <div className="fw-today__list">
+                <Parts
+                  items={itemsFor(t.items, member.id)}
+                  idPrefix="me"
+                  today={today}
+                  empty="Nothing on the list today."
+                  tile={(i) => tile(i, member.id, 'member')}
+                />
                 {(() => {
                   const p = progress(itemsFor(t.items, member.id));
-                  return p.total ? `${p.done} of ${p.total} done` : 'Nothing on the list today';
+                  return p.total > 0 && p.done === p.total ? (
+                    <p className="fw-today__empty">All done today. Nice work!</p>
+                  ) : null;
                 })()}
-              </p>
-              {(() => {
-                const line = member.earnsRewards ? nudgeFor(snapshot.goals, member.id) : null;
-                return line ? (
-                  <p className="fw-today__nudge">
-                    <Icon name="target" size={32} />
-                    <span>{line}</span>
-                  </p>
-                ) : null;
-              })()}
-            </div>
-            {member.streak ? (
-              <Flame days={flameDays(member.streak, t.items, member.id, today)} />
-            ) : null}
-            {member.points ? (
-              <CountingChip points={t.balance(member)} provisional={t.provisional(member)} />
-            ) : null}
-          </header>
-          <div className="fw-today__me-body">
-            <div className="fw-today__list">
-              <Parts
-                items={itemsFor(t.items, member.id)}
-                idPrefix="me"
-                today={today}
-                empty="Nothing on the list today."
-                tile={(i) => tile(i, member.id, 'member')}
-              />
-              {(() => {
-                const p = progress(itemsFor(t.items, member.id));
-                return p.total > 0 && p.done === p.total ? (
-                  <p className="fw-today__empty">All done today. Nice work!</p>
-                ) : null;
-              })()}
-            </div>
-            <aside className="fw-today__side" aria-label={`More for ${member.displayName}`}>
-              {member.points ? (
-                <section className="fw-today__card" aria-labelledby="me-points">
-                  <div className="fw-today__card-head">
-                    <h3 id="me-points">Points</h3>
-                    {snapshot.shop.length > 0 ? (
-                      <Button
-                        variant="secondary"
-                        icon="gift"
-                        onClick={() => setShopping({ member: member.id, item: null })}
-                      >
-                        Shop
-                      </Button>
-                    ) : null}
-                  </div>
-                  {(() => {
-                    const held = t.balance(member) - spendable(member);
-                    return held > 0 ? (
-                      <p className="fw-today__spend" data-available={spendable(member)}>
-                        {Math.max(0, spendable(member))} to spend · {held} waiting for a grown-up
-                      </p>
-                    ) : null;
-                  })()}
-                  {member.points.recent.length === 0 ? (
-                    <p className="fw-today__muted">Points arrive as chores get done.</p>
-                  ) : (
-                    <ul className="fw-today__activity" aria-labelledby="me-points">
-                      {member.points.recent.map((e) => (
-                        <li key={e.id}>
-                          <span>{boardActivity(e)}</span>
-                          <strong>{signed(e.amount)}</strong>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </section>
-              ) : null}
-              {member.earnsRewards ? (
-                <RequestsCard
-                  requests={shop.requestsOf(member)}
-                  sending={shop.sending}
-                  cancelling={shop.cancelling}
-                  online={online}
-                  onCancel={shop.cancel}
-                />
-              ) : null}
-              {member.earnsRewards
-                ? (() => {
-                    const wish = w.wishOf(member);
-                    const item = wish
-                      ? (snapshot.shop.find((i) => i.id === wish.id) ?? wish)
-                      : null;
-                    const open = item
-                      ? (shop
-                          .requestsOf(member)
-                          .find(
-                            (r) =>
-                              r.itemId === item.id &&
-                              (r.status === 'requested' || r.status === 'approved'),
-                          ) ?? null)
-                      : null;
-                    return (
-                      <WishCard
-                        wish={wish}
-                        balance={spendable(member)}
-                        shopOpen={snapshot.shop.length > 0}
-                        online={online}
-                        ask={
-                          item
-                            ? {
-                                state: askState(
-                                  item,
-                                  { available: spendable(member), limited: member.limited },
-                                  online,
-                                ),
-                                open,
-                              }
-                            : null
-                        }
-                        onChoose={() => setWishing(member.id)}
-                        onAsk={() => item && setShopping({ member: member.id, item: item.id })}
-                      />
-                    );
-                  })()
-                : null}
-              {member.earnsRewards ? (
-                <GoalsCard
-                  goals={goalsFor(snapshot.goals, member.id)}
-                  today={today}
-                  photoUrl={photoUrl}
-                />
-              ) : null}
-              {(() => {
-                // [CAL-04] Today's events: this person's calendars and the whole family's (WP-23).
-                const cal = snapshot.calendar;
-                const theirs = new Map(
-                  (cal?.calendars ?? [])
-                    .filter((c) => c.memberId === null || c.memberId === member.id)
-                    .map((c) => [c.id, c]),
-                );
-                const list = eventsOn(
-                  (cal?.events ?? []).filter((e) => theirs.has(e.calendarId)),
-                  today,
-                );
-                return list.length ? (
-                  <section className="fw-today__card" aria-labelledby="me-events">
-                    <h3 id="me-events">Today</h3>
-                    <ol className="fw-bcal__list">
-                      {list.map((e) => (
-                        <li
-                          key={e.id}
-                          className="fw-bcal__event"
-                          style={{
-                            ['--cal' as string]: `var(--${theirs.get(e.calendarId)?.color ?? 'member-6'}-line)`,
-                          }}
+              </div>
+              <aside className="fw-today__side" aria-label={`More for ${member.displayName}`}>
+                {member.points ? (
+                  <section className="fw-today__card" aria-labelledby="me-points">
+                    <div className="fw-today__card-head">
+                      <h3 id="me-points">Points</h3>
+                      {snapshot.shop.length > 0 ? (
+                        <Button
+                          variant="secondary"
+                          icon="gift"
+                          onClick={() => setShopping({ member: member.id, item: null })}
                         >
-                          <span className="fw-bcal__when">
-                            {eventWhen(e, today, household.timezone)}
-                          </span>
-                          <span className="fw-bcal__title">{e.title || 'Untitled event'}</span>
-                        </li>
-                      ))}
-                    </ol>
+                          Shop
+                        </Button>
+                      ) : null}
+                    </div>
+                    {(() => {
+                      const held = t.balance(member) - spendable(member);
+                      return held > 0 ? (
+                        <p className="fw-today__spend" data-available={spendable(member)}>
+                          {Math.max(0, spendable(member))} to spend · {held} waiting for a grown-up
+                        </p>
+                      ) : null;
+                    })()}
+                    {member.points.recent.length === 0 ? (
+                      <p className="fw-today__muted">Points arrive as chores get done.</p>
+                    ) : (
+                      <ul className="fw-today__activity" aria-labelledby="me-points">
+                        {member.points.recent.map((e) => (
+                          <li key={e.id}>
+                            <span>{boardActivity(e)}</span>
+                            <strong>{signed(e.amount)}</strong>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </section>
-                ) : null;
-              })()}
-              {/* Kept for a later work package: meals (WP-28). The streak flame (WP-17) is beside
-                  the name. */}
-            </aside>
-          </div>
-        </section>
-      ) : view === 'calendar' ? (
-        <CalendarScreen
-          key={calDay ?? 'week'}
-          snapshot={snapshot}
-          now={now}
-          load={loadCalendar}
-          initialView={calDay ? 'day' : 'week'}
-          initialDate={calDay ?? undefined}
-        />
-      ) : view === 'home' ? (
-        <Dashboard
-          snapshot={snapshot}
-          items={t.items}
-          layout={layout}
-          nowTime={nowTime}
-          load={loadCalendar}
-          photoUrl={photoUrl}
-          canUndo={canUndo}
-          celebrating={t.celebrating}
-          onCheck={(c: Chip) => {
-            if (c.memberId) t.checkOff(c.item, [c.memberId]);
-            else setPicker({ item: c.item, initial: [] });
-          }}
-          onUndo={(i) => t.undo(i)}
-          onMore={setDetails}
-          onOpenDay={(d) => {
-            setCalDay(d);
-            setView('calendar');
-            window.scrollTo({ top: 0 });
-          }}
-        />
-      ) : (
-        <>
-          <div className="fw-today__family" role="region" aria-label="Everyone today">
-            {members.map((m) => {
-              const mine = itemsFor(t.items, m.id);
-              const nudge = m.earnsRewards ? nudgeFor(snapshot.goals, m.id, { own: true }) : null;
-              return (
-                <section key={m.id} className="fw-today__col" aria-labelledby={`col-${m.id}`}>
-                  <header className="fw-today__col-head">
-                    <Avatar
-                      name={m.displayName}
-                      avatarKey={m.avatarKey}
-                      color={m.color}
-                      size={64}
-                      decorative
-                    />
-                    <h2 id={`col-${m.id}`}>{m.displayName}</h2>
-                    {m.streak ? <Flame days={flameDays(m.streak, t.items, m.id, today)} /> : null}
-                    {m.points ? (
-                      <CountingChip points={t.balance(m)} provisional={t.provisional(m)} />
-                    ) : null}
-                  </header>
-                  {nudge ? (
-                    <p className="fw-today__nudge fw-today__nudge--col">
-                      <Icon name="target" size={28} />
-                      <span>{nudge}</span>
-                    </p>
-                  ) : null}
-                  <Parts
-                    items={mine}
-                    idPrefix={`col-${m.id}`}
-                    today={today}
-                    empty="Nothing today"
-                    tile={(i) => tile(i, m.id, 'family')}
+                ) : null}
+                {member.earnsRewards ? (
+                  <RequestsCard
+                    requests={shop.requestsOf(member)}
+                    sending={shop.sending}
+                    cancelling={shop.cancelling}
+                    online={online}
+                    onCancel={shop.cancel}
                   />
-                </section>
-              );
-            })}
-          </div>
-          <FamilyGoals goals={familyGoals} today={today} photoUrl={photoUrl} />
-        </>
-      )}
+                ) : null}
+                {member.earnsRewards
+                  ? (() => {
+                      const wish = w.wishOf(member);
+                      const item = wish
+                        ? (snapshot.shop.find((i) => i.id === wish.id) ?? wish)
+                        : null;
+                      const open = item
+                        ? (shop
+                            .requestsOf(member)
+                            .find(
+                              (r) =>
+                                r.itemId === item.id &&
+                                (r.status === 'requested' || r.status === 'approved'),
+                            ) ?? null)
+                        : null;
+                      return (
+                        <WishCard
+                          wish={wish}
+                          balance={spendable(member)}
+                          shopOpen={snapshot.shop.length > 0}
+                          online={online}
+                          ask={
+                            item
+                              ? {
+                                  state: askState(
+                                    item,
+                                    { available: spendable(member), limited: member.limited },
+                                    online,
+                                  ),
+                                  open,
+                                }
+                              : null
+                          }
+                          onChoose={() => setWishing(member.id)}
+                          onAsk={() => item && setShopping({ member: member.id, item: item.id })}
+                        />
+                      );
+                    })()
+                  : null}
+                {member.earnsRewards ? (
+                  <GoalsCard
+                    goals={goalsFor(snapshot.goals, member.id)}
+                    today={today}
+                    photoUrl={photoUrl}
+                  />
+                ) : null}
+                {(() => {
+                  // [CAL-04] Today's events: this person's calendars and the whole family's (WP-23).
+                  const cal = snapshot.calendar;
+                  const theirs = new Map(
+                    (cal?.calendars ?? [])
+                      .filter((c) => c.memberId === null || c.memberId === member.id)
+                      .map((c) => [c.id, c]),
+                  );
+                  const list = eventsOn(
+                    (cal?.events ?? []).filter((e) => theirs.has(e.calendarId)),
+                    today,
+                  );
+                  return list.length ? (
+                    <section className="fw-today__card" aria-labelledby="me-events">
+                      <h3 id="me-events">Today</h3>
+                      <ol className="fw-bcal__list">
+                        {list.map((e) => (
+                          <li
+                            key={e.id}
+                            className="fw-bcal__event"
+                            style={{
+                              ['--cal' as string]: `var(--${theirs.get(e.calendarId)?.color ?? 'member-6'}-line)`,
+                            }}
+                          >
+                            <span className="fw-bcal__when">
+                              {eventWhen(e, today, household.timezone)}
+                            </span>
+                            <span className="fw-bcal__title">{e.title || 'Untitled event'}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </section>
+                  ) : null;
+                })()}
+                {/* Kept for a later work package: meals (WP-28). The streak flame (WP-17) is beside
+                  the name. */}
+              </aside>
+            </div>
+          </section>
+        ) : view === 'calendar' ? (
+          <CalendarScreen
+            key={calDay ?? 'week'}
+            snapshot={snapshot}
+            now={now}
+            load={loadCalendar}
+            initialView={calDay ? 'day' : 'week'}
+            initialDate={calDay ?? undefined}
+          />
+        ) : view === 'home' ? (
+          <Dashboard
+            snapshot={snapshot}
+            items={t.items}
+            layout={layout}
+            span={span ?? layout.calendar}
+            onSpan={setSpan}
+            nowTime={nowTime}
+            load={loadCalendar}
+            photoUrl={photoUrl}
+            canUndo={canUndo}
+            celebrating={t.celebrating}
+            onCheck={(c: Chip) => {
+              if (c.memberId) t.checkOff(c.item, [c.memberId]);
+              else setPicker({ item: c.item, initial: [] });
+            }}
+            onUndo={(i) => t.undo(i)}
+            onMore={setDetails}
+            onOpenDay={(d) => {
+              setCalDay(d);
+              setView('calendar');
+              toTop();
+            }}
+            onOpenPerson={(id) => open(id)}
+            onOpenFamily={() => open('chores')}
+          />
+        ) : (
+          <>
+            <div className="fw-today__family" role="region" aria-label="Everyone today">
+              {members.map((m) => {
+                const mine = itemsFor(t.items, m.id);
+                const nudge = m.earnsRewards ? nudgeFor(snapshot.goals, m.id, { own: true }) : null;
+                return (
+                  <section key={m.id} className="fw-today__col" aria-labelledby={`col-${m.id}`}>
+                    <header className="fw-today__col-head">
+                      <Avatar
+                        name={m.displayName}
+                        avatarKey={m.avatarKey}
+                        color={m.color}
+                        size={64}
+                        decorative
+                      />
+                      <h2 id={`col-${m.id}`}>{m.displayName}</h2>
+                      {m.streak ? <Flame days={flameDays(m.streak, t.items, m.id, today)} /> : null}
+                      {m.points ? (
+                        <CountingChip points={t.balance(m)} provisional={t.provisional(m)} />
+                      ) : null}
+                    </header>
+                    {nudge ? (
+                      <p className="fw-today__nudge fw-today__nudge--col">
+                        <Icon name="target" size={28} />
+                        <span>{nudge}</span>
+                      </p>
+                    ) : null}
+                    <Parts
+                      items={mine}
+                      idPrefix={`col-${m.id}`}
+                      today={today}
+                      empty="Nothing today"
+                      tile={(i) => tile(i, m.id, 'family')}
+                    />
+                  </section>
+                );
+              })}
+            </div>
+            <FamilyGoals goals={familyGoals} today={today} photoUrl={photoUrl} />
+          </>
+        )}
+      </div>
 
       {member && wishing === member.id ? (
         <WishPicker

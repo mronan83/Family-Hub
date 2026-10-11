@@ -3,8 +3,9 @@ import { expect, test, type Page } from '@playwright/test';
 
 // [BRD-01][BRD-05][BRD-07][US-1001][US-1004][US-1006] The family dashboard (WP-35, D-66) on
 // /dev/board: the board's home screen, its calendar (?span=3|5|7|month), today's list with a face per
-// person, the cards in the layout's order (?cards=…), "More info", tiles of one height, the pinned
-// top bar and the idle return. At the board's 1920×1080. Saving a layout on Boards and seeing it on a
+// person, the cards in the layout's order (?cards=…), "More info", tiles of one height, and (D-74)
+// one screen with the rail, the calendar's view chosen on the board, the cards' rows opening what
+// they are about, and the idle return. At the board's 1920×1080. Saving a layout on Boards and seeing it on a
 // real board within 3 seconds runs in e2e/tests/board-layout.spec.ts.
 test.use({ viewport: { width: 1920, height: 1080 } });
 
@@ -249,21 +250,110 @@ test('[D-66] every tile in a list is one height, on Chores and on a person’s s
   }
 });
 
-test('[BRD-06][D-66] the top stays pinned while the dashboard scrolls; untouched, it goes back to the top', async ({
+const screen = (page: Page) => page.locator('.fw-today__screen');
+const scrolled = (page: Page) => screen(page).evaluate((el) => el.scrollTop);
+const view = (page: Page) => page.getByRole('group', { name: 'Calendar view' });
+
+test('[BRD-01][BRD-09][US-1008][D-74] one screen: the page never scrolls; the rail, the bar and every card are in sight', async ({
+  page,
+}) => {
+  await page.goto('/dev/board');
+  await expect(page.locator('.fw-dash')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(1080);
+  for (const part of [
+    people(page).getByRole('button', { name: 'Calendar', exact: true }),
+    page.locator('.fw-board__bar'),
+    page.locator('.fw-dash__cal'),
+    list(page),
+    ...['Goals', 'Waiting for a parent', 'Coming up'].map((name) =>
+      page.locator('.fw-dash__card').filter({ has: page.getByRole('heading', { name }) }),
+    ),
+  ]) {
+    const box = (await part.boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(1080);
+  }
+  // The rail runs down the left, beside everything else.
+  const rail = (await people(page).boundingBox())!;
+  const bar = (await page.locator('.fw-board__bar').boundingBox())!;
+  expect(rail.x).toBe(0);
+  expect(bar.x).toBeGreaterThanOrEqual(rail.x + rail.width);
+});
+
+test('[CAL-04][BRD-09][US-1008][D-74] the calendar’s view is chosen on the board: Month, 7, 5 or 3 days', async ({
+  page,
+}) => {
+  await page.goto('/dev/board');
+  await expect(view(page).getByRole('button')).toHaveText(['Month', '7 days', '5 days', '3 days']);
+  await expect(view(page).getByRole('button', { name: '5 days' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  for (const [label, span, days] of [
+    ['3 days', '3', 3],
+    ['7 days', '7', 7],
+  ] as const) {
+    await view(page).getByRole('button', { name: label }).click();
+    await expect(page.locator('.fw-dash')).toHaveAttribute('data-span', span);
+    await expect(page.locator('.fw-dash__day')).toHaveCount(days);
+  }
+  await view(page).getByRole('button', { name: 'Month' }).click();
+  await expect(page.locator('.fw-dash')).toHaveAttribute('data-span', 'month');
+  await expect(page.locator('.fw-dash__cells [data-today]')).toHaveCount(1);
+  expect(await fit(page)).toEqual({ wide: 1920, small: [], tiny: [] });
+});
+
+test('[BRD-06][BRD-09][D-74] a screen scrolls inside itself, the rail and bar still; untouched, home, the top, and the board’s own view', async ({
   page,
 }) => {
   await page.clock.install();
   await page.goto('/dev/board');
+  await view(page).getByRole('button', { name: 'Month' }).click();
   await people(page).getByRole('button', { name: 'Chores', exact: true }).click();
+  const railBefore = (await people(page).boundingBox())!;
+  await screen(page).hover();
   await page.mouse.wheel(0, 800);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
-  const pinned = (await people(page).boundingBox())!;
-  expect(pinned.y).toBeGreaterThanOrEqual(0);
-  expect(pinned.y).toBeLessThan(300);
+  await expect.poll(() => scrolled(page)).toBeGreaterThan(300);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  expect((await people(page).boundingBox())!.y).toBe(railBefore.y);
+  expect((await page.locator('.fw-board__bar').boundingBox())!.y).toBe(0);
   await page.clock.runFor(91_000);
   await expect(people(page).getByRole('button', { name: 'Home', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   );
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect.poll(() => scrolled(page)).toBe(0);
+  // The month was chosen on the board: back to the board's own five days.
+  await expect(page.locator('.fw-dash')).toHaveAttribute('data-span', '5');
+});
+
+test('[BRD-09][US-1008][D-74] a goal, a request and an event on the cards open what they are about', async ({
+  page,
+}) => {
+  await page.goto('/dev/board');
+  // A child's goal opens their screen.
+  await page.getByRole('button', { name: 'Open Leo’s goals' }).first().click();
+  await expect(page.getByRole('heading', { name: 'Leo', level: 2 })).toBeVisible();
+  // An event coming up opens the calendar on its day.
+  await people(page).getByRole('button', { name: 'Home', exact: true }).click();
+  await page.locator('.fw-dash__coming .fw-dash__open').first().click();
+  await expect(people(page).getByRole('button', { name: 'Calendar', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  // A request waiting for a parent opens the child who asked.
+  await people(page).getByRole('button', { name: 'Maya', exact: true }).click();
+  await page.getByRole('button', { name: 'Shop', exact: true }).click();
+  const late = page
+    .getByRole('dialog', { name: 'Maya’s shop' })
+    .getByRole('listitem')
+    .filter({ hasText: 'Stay up 30 minutes late' });
+  await late.getByRole('button', { name: 'Ask for this: Stay up 30 minutes late' }).click();
+  await page.getByRole('button', { name: 'Yes, ask' }).click();
+  await people(page).getByRole('button', { name: 'Home', exact: true }).click();
+  const waiting = page.locator('.fw-dash__card').filter({
+    has: page.getByRole('heading', { name: 'Waiting for a parent' }),
+  });
+  await waiting.locator('.fw-dash__open').first().click();
+  await expect(page.getByRole('heading', { name: 'Maya', level: 2 })).toBeVisible();
 });

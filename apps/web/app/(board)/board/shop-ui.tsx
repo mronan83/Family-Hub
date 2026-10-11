@@ -277,7 +277,8 @@ export function RequestsCard({
             >
               <Icon name={iconOf(r.icon, 'gift')} size={40} />
               <span className="fw-today__ask-title">{r.title}</span>
-              <PointsChip points={r.cost} />
+              {/* A reward a goal paid cost nothing (RWD-13). */}
+              {r.cost > 0 ? <PointsChip points={r.cost} /> : <span />}
               <span className="fw-today__ask-state">
                 {r.status === 'approved' || r.status === 'fulfilled' ? (
                   <Icon name="sparkles" size={28} />

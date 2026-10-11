@@ -34,6 +34,8 @@ export interface RedemptionRow {
   fulfilledAt: string | null;
   cancelledAt: string | null;
   note: string | null;
+  /** The goal that paid it (RWD-13): approved at once, costing nothing. */
+  goalTitle: string | null;
 }
 
 /** [PTS-03] The household's rewards, with what is left of each one's stock and its photo's link. */
@@ -101,26 +103,32 @@ export async function loadRedemptions(
   const { data, error } = await db
     .from('redemption')
     .select(
-      'id, member_id, catalog_item_id, cost_snapshot, status, requested_at, decided_at, fulfilled_at, cancelled_at, note',
+      'id, member_id, catalog_item_id, cost_snapshot, status, requested_at, decided_at, fulfilled_at, cancelled_at, note, goal_id',
     )
     .eq('household_id', householdId)
     .order('requested_at', { ascending: false })
     .limit(60);
   if (error) throw new Error(`redemptions: ${error.message}`);
-  return (
-    data as {
-      id: string;
-      member_id: string;
-      catalog_item_id: string;
-      cost_snapshot: number;
-      status: RedemptionStatus;
-      requested_at: string;
-      decided_at: string | null;
-      fulfilled_at: string | null;
-      cancelled_at: string | null;
-      note: string | null;
-    }[]
-  ).map((r) => ({
+  const rows = data as {
+    id: string;
+    member_id: string;
+    catalog_item_id: string;
+    cost_snapshot: number;
+    status: RedemptionStatus;
+    requested_at: string;
+    decided_at: string | null;
+    fulfilled_at: string | null;
+    cancelled_at: string | null;
+    note: string | null;
+    goal_id: string | null;
+  }[];
+  const goalIds = [...new Set(rows.map((r) => r.goal_id).filter((g): g is string => g !== null))];
+  const goals = new Map<string, string>();
+  if (goalIds.length) {
+    const { data: g } = await db.from('reward_goal').select('id, title').in('id', goalIds);
+    for (const x of (g ?? []) as { id: string; title: string }[]) goals.set(x.id, x.title);
+  }
+  return rows.map((r) => ({
     id: r.id,
     memberId: r.member_id,
     itemId: r.catalog_item_id,
@@ -131,6 +139,7 @@ export async function loadRedemptions(
     fulfilledAt: r.fulfilled_at,
     cancelledAt: r.cancelled_at,
     note: r.note,
+    goalTitle: r.goal_id ? (goals.get(r.goal_id) ?? 'a goal') : null,
   }));
 }
 
