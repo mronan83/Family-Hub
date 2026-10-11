@@ -177,12 +177,6 @@ export default async function DevicesPage({
                       Set theme
                     </Button>
                   </form>
-                  <form action={disconnectDevice}>
-                    <input type="hidden" name="id" value={d.id} />
-                    <Button type="submit" variant="ghost" icon="minus-circle">
-                      Disconnect {d.name}
-                    </Button>
-                  </form>
                 </span>
                 {calendars.length > 0
                   ? (() => {
@@ -277,6 +271,20 @@ export default async function DevicesPage({
                     </details>
                   );
                 })()}
+                {/* Disconnecting is for good, so it asks first (06 §6). */}
+                <details className="fw-more fw-board-cals">
+                  <summary>Disconnect {d.name}</summary>
+                  <p className="fw-muted">
+                    It stops showing FamilyWise at once and can’t sign in again. To use this screen
+                    again, pair it with a new code.
+                  </p>
+                  <form action={disconnectDevice}>
+                    <input type="hidden" name="id" value={d.id} />
+                    <Button type="submit" variant="ghost" icon="minus-circle">
+                      Yes, disconnect {d.name}
+                    </Button>
+                  </form>
+                </details>
               </li>
             ))}
           </ul>

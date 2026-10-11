@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
-> Version 0.2 · Status: living document · Maintained by Claude Code
+> Version 0.3 · Status: living document · Maintained by Claude Code
+> v0.3: fixes found while writing this guide (PR #48): a board's own layout is kept when you save again; Disconnect asks first; the return home also closes an unanswered "Who did …?"; the board waits 90 seconds before going home (D-71).
 > v0.2: weather on the board (WP-45): A13, and the weather on Home, Boards, the board's top bar, the rules, troubleshooting and questions; no longer "coming soon".
 > v0.1: first version (D-68): Part A, the User Guide by task, and Part B, the User Manual, for everything built up to WP-35; screenshots from the made-up demo family; a check that every built story is covered.
 > Companions: `03-user-stories.md` (the stories each section covers) · `05-backlog.md` (what is built) · `06-brand-and-style-guide.md` (the words the app uses)
@@ -387,7 +388,7 @@ Every tile is the same height and a name may be cut short. A row or tile whose n
 
 #### Back home on its own
 
-After **90 seconds** with nobody touching it, the board goes back to the home screen, scrolled to the top, and closes the shop, the wish picker and More info. The next person always finds the whole family.
+After **90 seconds** with nobody touching it, the board goes back to the home screen, scrolled to the top, and closes the shop, the wish picker, More info and an unanswered **Who did** question (which records nothing, as **Cancel** does). The next person always finds the whole family.
 
 #### When the internet drops
 <!-- covers: US-205 US-206 US-204 -->
@@ -654,7 +655,7 @@ The boards change within seconds.
 
 **A board's own layout.** A board can have its own layout instead, for example a month on the kitchen board and three days in the hall. On **Boards**, open **Home screen on** (the board's name), tick **Give** (the board) **its own layout** and choose **Save**. It starts as a copy of the household's; then change it in the form that appears. Untick and **Save** to follow the household's layout again.
 
-> **Note:** Saving with **Give … its own layout** ticked always starts the board's own layout again from a copy of the household's. To change a board's own layout, use the form under it and **Save layout**.
+> **Tip:** To change a board's own layout, use the form under it and **Save layout**. Choosing **Save** again with **Give … its own layout** still ticked keeps the layout it has.
 
 ![The board's home screen with the calendar showing the month, with colored dots on days with events.](guide/img/board-home-month.jpg "The home screen with the month")
 
@@ -874,7 +875,7 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 | Each board | Name and "Last seen" (or "Not seen yet"). |
 | **Rename** | A new name (up to 60 characters). |
 | Theme and **Set theme** | **Automatic, by time of day**, **Always Day** or **Always Evening**. |
-| **Disconnect** (name) | Disconnects the board for good, at once, with no second question. It reads nothing more and can't sign in again; pair it again for a new start. |
+| **Disconnect** (name) | Asks first: it says what will happen, and **Yes, disconnect** (name) disconnects the board for good. It reads nothing more and can't sign in again; pair it again for a new start. |
 | **Calendars on** (name) | Which calendars it shows; **Save calendars** makes it choose its own. |
 | **Home screen on** (name) | "its own layout" or "the household's layout"; **Give** (name) **its own layout**, **Save**; then its own layout form. |
 | **Home screen** | The household's layout: **The calendar shows**, **Under the calendar, in this order** with **Up** / **Down**, **Show the weather beside the clock**, **Save layout**. |
@@ -1197,7 +1198,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 
 **Why is there no description in More info?** The admin app can't add descriptions to items yet, so **More info** mostly appears for names too long for a tile.
 
-**How do I replace or move a board?** Pair the new screen on **Boards**, then **Disconnect** the old one.
+**How do I replace or move a board?** Pair the new screen on **Boards**, then **Disconnect** the old one and choose **Yes, disconnect**.
 
 **Where does the weather come from?** From Open-Meteo, read every 30 minutes for the place you set on Home. Only your place, to about a kilometre, is sent.
 
