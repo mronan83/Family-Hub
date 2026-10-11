@@ -3,6 +3,8 @@
 > Version 0.6 · Status: living document · Maintained by Claude Code
 > v0.10: school lunch, buy or bring (WP-26, D-78): A15, B1.15, B3.
 > v0.9: meal planning (WP-25, D-77): the week's meals and the meal library on **Meals** (A15, B1.15, B3, B7).
+> v0.8: goals pay out (WP-39, D-75): points or a reward from the shop when a goal is reached, taken back if a check-off it needed is undone; **Preview** before changing a goal (A7, B1.8, B3, B5, B7).
+> v0.7: the home screen on one screen, with a rail (WP-48, D-74): A5, B2.1 and B2.2; the calendar's view on the board; tapping goals, requests and events on the cards; the weather on one line, its credit here in A13.
 > v0.6: the board fits any screen, and each board has a text size (WP-47, D-73): A14, Boards, the rules, troubleshooting and questions.
 > v0.5: Help in the admin app (D-72): this guide is **Help** in the menu, open before you sign in too.
 > v0.4: more icons and colors (WP-46, D-70): one icon picker everywhere, with **Find an icon** and groups; sixteen named colors; the weather's own sky icons; how the board stays easy to read for everyone (A12).
@@ -318,21 +320,21 @@ Switch on **Private** for a surprise or a personal item. A private item never sh
 At the top of **Chores**, filter by **Person**, **Tag**, **Kind**, **Time of day**, and **Show** (**Active** or **Archived**), then choose **Filter**. **Clear** shows everything again. Each line shows how often it happens, its due time, its points, when it is next due ("Next: Today"), and "Overdue since" for an open task.
 
 ### A5 The family at the board
-<!-- covers: US-303 US-304 US-305 US-1001 US-1002 US-1005 US-1006 US-905 -->
+<!-- covers: US-303 US-304 US-305 US-1001 US-1002 US-1005 US-1006 US-1008 US-905 -->
 
 **What this is.** The wall board: the family's day, for everyone. **When.** All day. **How.** Just tap. Every button on the board is big enough for a child's finger and answers at once.
 
-![The board's home screen: the household name, date and clock; the top bar with Home, Leo, Maya, Alex, Sam, Chores and Calendar; the next five days of the calendar on the left; Today's list on the right with a face for each person on each item.](guide/img/board-home.jpg "The board's home screen")
+![The board's home screen: the rail down the left with Home, Leo and Maya with their points, Alex, Sam, then Chores and Calendar; the bar with the household name, date, weather and clock; the next five days of the calendar with Month, 7 days, 5 days and 3 days; Today's list on the right with a face for each person on each item; Goals, Waiting for a parent and Coming up in a row under the calendar.](guide/img/board-home.jpg "The board's home screen")
 
 #### The home screen
 
-The home screen has three parts:
+The home screen fits the screen: nothing hides under the bar, and the page never scrolls. It has three parts:
 
-- **The calendar** on the left: the next few days (5 by default) with each event in its calendar's color. Tap a day's heading to open it in **Calendar**.
+- **The calendar** on the left: the next few days (5 by default) with each event in its calendar's color. Tap a day's heading to open it in **Calendar**. To look further ahead, tap **Month**, **7 days**, **5 days** or **3 days** at the top of the calendar. That changes only this board, and only for now: when the board goes home after 90 seconds untouched, it is back to the view set on **Boards**.
 - **Today's list** on the right: one list for the whole family, grouped into **Overdue**, **Morning**, **After school**, **Evening** and **Anytime**, with "2 of 9 done" at the top. Each row shows the item, its points, and a face for each person it is for.
-- **Cards** under the calendar: **Goals**, **Waiting for a parent** and **Coming up** (all-day events in the next three weeks). A parent chooses which cards show, and in what order (see [A11](#a11-the-boards-home-screen-layout)).
+- **Cards** in a row under the calendar: **Goals**, **Waiting for a parent** and **Coming up** (all-day events in the next three weeks). A parent chooses which cards show, and in what order (see [A11](#a11-the-boards-home-screen-layout)). Tap a goal to open that child's screen (a family goal opens **Chores**), a request to open the child who asked, or an event to open **Calendar** on its day. When a list is longer than its card, it scrolls inside the card.
 
-The top bar stays in place while the screen scrolls: **Home**, a button for each person (with their points, if they earn rewards), **Chores** and **Calendar**.
+Down the left is the rail: **Home**, a button for each person (with their points, if they earn rewards), and **Chores** and **Calendar** at the bottom. It never moves. Every other screen scrolls inside itself, under the bar and beside the rail.
 
 ![The home screen scrolled down to the cards: Waiting for a parent lists a reward Maya asked for and Homework to check; Coming up lists the grandparents' visit and picture day; Goals shows each goal's progress.](guide/img/board-home-cards.jpg "The cards, here in the order Waiting for a parent, Coming up, Goals")
 
@@ -369,7 +371,7 @@ After 2 minutes the **Undo** button goes away. A parent can still change it in t
 
 #### A person's screen
 
-Tap a person in the top bar to see their own day: their name, "3 of 4 done", and their items as big tiles. A tap on a tile checks it off for them, even a shared one. When everything is done it says "All done today. Nice work!"
+Tap a person in the rail to see their own day: their name, "3 of 4 done", and their items as big tiles. A tap on a tile checks it off for them, even a shared one. When everything is done it says "All done today. Nice work!"
 
 For someone who earns rewards (usually a child), the screen also shows:
 
@@ -407,18 +409,18 @@ After **90 seconds** with nobody touching it, the board goes back to the home sc
 
 The board keeps working without the internet. Check-offs and undos still work and show at once; the board saves them and sends them as soon as it can, each exactly once, even after a reload.
 
-While it waits, the top bar says **Offline: your check-offs are saved**, and a balance that counts unsaved check-offs has a dashed ring and a no-wifi mark ("Not saved yet"). When the connection returns, everything is sent and the board shows what the server recorded.
+While it waits, the bar says **Offline: your check-offs are saved**, and a balance that counts unsaved check-offs has a dashed ring and a no-wifi mark ("Not saved yet"). When the connection returns, everything is sent and the board shows what the server recorded.
 
 Asking for a reward, calling a request off and choosing a wish need the internet. Offline, the board says so ("Asking needs the internet", "Choosing a wish needs the internet.") or greys the button out.
 
-![Leo's screen while offline: the top bar says Offline: your check-offs are saved, Set the table is done, and Leo's points have a dashed ring.](guide/img/board-offline.jpg "Offline: check-offs are kept and sent later")
+![Leo's screen while offline: the bar says Offline: your check-offs are saved, Set the table is done, and Leo's points have a dashed ring.](guide/img/board-offline.jpg "Offline: check-offs are kept and sent later")
 
 The board also tells you when what it shows may be old:
 
 - **Updated 12 minutes ago** (or hours, or days): it hasn't been able to read the latest for over 5 minutes.
 - **Today's list may be out of date**: the jobs that plan the days ahead or close the day are late or failing.
 
-![The board's top bar with the line Updated 12 minutes ago under the clock.](guide/img/board-stale.jpg "The board says when its information is old")
+![The board's bar with the line Updated 12 minutes ago beside the clock.](guide/img/board-stale.jpg "The board says when its information is old")
 
 Changes a parent makes in the admin app reach the board within seconds while it is connected.
 
@@ -514,7 +516,7 @@ A child can pin one reward as their wish. On their screen, **Saving for** shows 
 On **Rewards**, a reward someone is saving for says so ("Maya is saving for it").
 
 ### A7 Goals and celebrations
-<!-- covers: US-401 US-402 US-403 US-404 US-405 US-406 US-407 -->
+<!-- covers: US-401 US-402 US-403 US-404 US-405 US-406 US-407 US-409 -->
 
 **What this is.** Something to work toward, for one child or the whole family, with rules that check-offs fill in. **When.** Whenever you want a target: a movie night after 20 things done, a trip after a week of good days. **How.** On **Goals**, choose **Set a goal**.
 
@@ -530,7 +532,11 @@ On **Rewards**, a reward someone is saving for says so ("Maya is saving for it")
    - **Points earned**: points from items done.
 5. Choose **What counts**: **Everything**, **Some tags** or **Some items**.
 6. Optionally, **Add a rule** (up to 5), and choose whether **It's reached when** **Every rule is met** or **Any one rule is met**.
-7. Pick an **Icon**, or add a **Photo**, then choose **Set goal**.
+7. Choose **What reaching it pays**:
+   - **Just the celebration**: you give the reward yourself and mark it redeemed.
+   - **Points**: **Points paid** (1 to 10,000) go to the child when it's reached. A family goal pays them to each child who earns rewards.
+   - **A reward from the shop** (a child's goal only): choose the **Reward**. It is approved for them at once and costs them nothing; you mark it given on **Rewards** as usual. A reward taken out of the shop can still be a goal's prize.
+8. Pick an **Icon**, or add a **Photo**. To see where it would start from what's already done, choose **Preview**. Then choose **Set goal**.
 
 ![The goal form on a phone: Name, Description, Who it's for (Maya, Leo or The whole family), Starts, Ends, a rule with Counts, Target and What counts, Add a rule, the icon picker (Chosen: trophy, Find an icon, the groups and their icons), Photo and Set goal.](guide/img/admin-goal-form-phone.jpg "Setting a goal, on a phone")
 
@@ -548,17 +554,26 @@ The board celebrates it full-screen, once, on whichever board shows it first: "L
 
 ![The board celebrating: "Leo reached Bike ride!", "Well done! A grown-up will sort out the reward." and a Yay! button.](guide/img/board-celebrate.jpg "A goal reached, celebrated once")
 
-Then, on **Goals**, give the reward in real life and choose **Mark redeemed**. The goal moves to **History**.
+What it pays is paid at the same moment, once, however often its progress is worked out: the points show in the child's points, or the reward from the shop is on **Rewards** under **To give**, marked "Reached" and the goal's name. Then, on **Goals**, give the reward in real life and choose **Mark redeemed**. The goal moves to **History**.
+
+If a check-off the goal needed is undone, the goal goes back to going and what it paid is undone too, once: its points are taken back (the balance can go below zero), and a reward from the shop not yet given is called off. Reached again, it pays again. A reward already marked given stays given, and the goal is marked **Needs a look**.
 
 A child's own check-offs celebrate too, in a small way: when a check-off earns points, the check pops and the points count up. A check-off by someone who doesn't earn rewards doesn't celebrate.
 
 #### Change or cancel a goal
 
-Choose **Change** to open a goal. Before it starts, everything can change. Once it has started, who it's for and its start date stay as they are; changing its rules or end date works its progress out again from every check-off. Once it is redeemed, ended or cancelled, its rules and dates stay as they are.
+Choose **Change** to open a goal. Before it starts, everything can change. Once it has started, who it's for and its start date stay as they are; changing its rules or end date works its progress out again from every check-off. What it pays can change until it finishes, and applies the next time it is reached. Once it is redeemed, ended or cancelled, its rules, dates and payout stay as they are.
+
+Before you save a change, choose **Preview**. It works the goal out from every check-off as the form has it, and nothing is saved:
+
+- a line saying what saving would do: reach it now (and what it pays), take it back to going (and take back what it paid), end it, or how its progress moves;
+- a table with each rule's progress **Now** and **After saving** (a rule you changed shows **New or changed**), and the goal's.
+
+![The preview of a change on a phone: "Saving takes it back to going: 88% there, and Ice cream from the shop is called off", then each rule now and after saving.](guide/img/admin-goal-preview-phone.jpg "Preview before saving a change")
 
 The goal's page lists **What happened** to it, with when and who. **Cancel** (the goal's name) stops it counting and moves it to **History**. Goals are never deleted.
 
-A goal marked **Needs a look** was redeemed and then a check-off it needed was undone. Have a look, then choose **Clear**.
+A goal marked **Needs a look** had its reward given (redeemed, or its reward from the shop marked given) and then a check-off it needed was undone. A redeemed goal stays redeemed; points it paid are taken back, and put back if it is met again. Have a look, then choose **Clear**: it isn't marked again unless it stops being met again.
 
 ### A8 Streaks and insights
 <!-- covers: US-408 -->
@@ -696,9 +711,11 @@ Both looks use the same colors for the same things, never color alone: every sta
 
 Home says "Saved. The boards show the weather in a moment." and, once the weather is read, the last reading, like "Last read at 4:09 pm: 64°F, partly cloudy, high 68°F."
 
-![The board's top bar with the weather beside the clock: a rain cloud, 50°, Rain, High 52°, and the line Weather by Open-Meteo.com.](guide/img/board-weather.jpg "The weather beside the clock")
+![The board's bar with the weather beside the clock: a rain cloud, 50°, and Rain · High 52° on one line.](guide/img/board-weather.jpg "The weather beside the clock")
 
-**On the board** the weather sits beside the clock: an icon and a word for the sky (**Sunny**, **Partly cloudy**, **Rain**, **Snow** and so on), the temperature now in large numbers, and **High** with today's high. Temperatures are whole degrees. The small line **Weather by Open-Meteo.com** credits where the weather comes from.
+**On the board** the weather sits beside the clock: an icon and a word for the sky (**Sunny**, **Partly cloudy**, **Rain**, **Snow** and so on), the temperature now in large numbers, and **High** with today's high. Temperatures are whole degrees. The sky and today's high share one line, like "Partly cloudy · High 61°".
+
+Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credit is here and on Home, beside where you set your place, rather than on the board.
 
 - **How fresh it is.** FamilyWise reads the weather every 30 minutes. The board never asks the weather service itself, so it costs the board nothing.
 - **When it can't be read.** If the weather can't be read, or the last reading is more than 75 minutes old, the board simply shows no weather; nothing else on it moves. Home says what went wrong ("Couldn't read the weather at …") and tries again on its own.
@@ -902,17 +919,17 @@ A member who doesn't earn rewards can't be given points; what they earned before
 **The reward form:** **Name** (up to 80), **Cost in points** (1 to 100,000), **Description (optional)** (up to 300), **Icon, shown when there's no photo**, **Photo (optional)** (JPEG, PNG or WebP, up to 2 MB), **How many there are (optional)** (blank for as many as are asked for), **Times each child may ask in a week (optional)** (1 to 100), **In the shop now**. **Add reward** or **Save changes**. A reward's page also has **Remove photo** and **Archive** / **Put back**.
 
 #### B1.8 Goals
-<!-- covers: US-401 US-405 US-406 -->
+<!-- covers: US-401 US-405 US-406 US-409 -->
 
 | Part | What it shows or does |
 |---|---|
 | **Set a goal** | Opens the goal form. |
-| Goals in play | Each goal: picture, name, who and dates, state (**Starts later**, **Going**, **Achieved**, **Achieved again**), a meter per rule, **Mark redeemed** when achieved, **Change**. "Working out its progress…" before its first evaluation. |
+| Goals in play | Each goal: picture, name, who and dates, what it pays ("Pays 10 points", "Pays Ice cream from the shop"), **Needs a look** if flagged, state (**Starts later**, **Going**, **Achieved**, **Achieved again**), a meter per rule, **Mark redeemed** when achieved, **Change**. "Working out its progress…" before its first evaluation. |
 | **History** | Goals **Redeemed** (when and by whom), **Ended**, or **Cancelled**; **Needs a look** if flagged; **Details**. |
 
-**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Starts**, **Ends (optional)**, one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **What counts**), **Add a rule**, **It's reached when**, an icon, **Photo (optional)**. **Set goal** or **Save changes**.
+**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Starts**, **Ends (optional)**, one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **What counts**), **Add a rule**, **It's reached when**, **What reaching it pays** (**Just the celebration**, **Points** with **Points paid** 1 to 10,000, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
 
-**A goal's page:** who, state and "% there"; **Clear** for a **Needs a look** flag; **Remove photo**; the form (locked as the goal progresses, see [A7](#change-or-cancel-a-goal)); **What happened** (set up, started, rules or dates changed, progress worked out again with the old and new %, achieved, back to going, redeemed, ended, cancelled); **Cancel**.
+**A goal's page:** who, state and "% there"; **Clear** for a **Needs a look** flag; **Remove photo**; the form (locked as the goal progresses, see [A7](#change-or-cancel-a-goal)); **What happened** (set up, started, rules or dates changed, what it pays changed, progress worked out again with the old and new %, achieved and what it paid, back to going, payout undone, points put back, needs a look, redeemed, ended, cancelled); **Cancel**.
 
 #### B1.9 Insights
 <!-- covers: US-408 -->
@@ -1015,34 +1032,34 @@ flowchart TD
   K -. 90 seconds untouched .-> H
 ```
 
-#### B2.1 The top bar
-<!-- covers: US-1002 US-204 -->
+#### B2.1 The rail and the bar
+<!-- covers: US-1002 US-204 US-1008 -->
 
 | Part | What it shows or does |
 |---|---|
-| Household name and date | Always shown. |
+| Household name, date and the board's name | Always shown, in the bar along the top. |
 | Clock | In the household's timezone. |
-| Weather | Beside the clock, when the household has a place: the sky's icon and word, the temperature now, **High** and today's high, and **Weather by Open-Meteo.com**. Not shown when the layout turns it off or the last reading is over 75 minutes old. |
+| Weather | Beside the clock, when the household has a place: the sky's icon, the temperature now, and the sky's word with **High** and today's high on one line. Not shown when the layout turns it off or the last reading is over 75 minutes old. |
 | Connection | **Live** (changes arrive within seconds), **Connecting…**, or **Reconnecting…** (the board reads everything again when it reconnects). |
 | Health lines | **Offline: your check-offs are saved**; **Updated N minutes ago**; **Today's list may be out of date**. |
-| **Home** | The family dashboard. |
+| **Home** | The family dashboard. The rail's buttons are down the left of every screen. |
 | A button per person | Children first, then adults, each by name. Someone who earns rewards has their points on their button. Opens their screen. |
 | **Chores** | Everyone's day, a column each. |
 | **Calendar** | The family's calendar. |
 
-The board's name is at the bottom of every screen.
+The board's name is beside the date.
 
 #### B2.2 Home
 <!-- covers: US-1001 US-1006 -->
 
 | Part | What it shows or does |
 |---|---|
-| Calendar | "Next 5 days" (or 3 or 7) from today with the dates, a column per day with its events (time or "All day", the event, whose avatar). Or the month ("Tap a day to see it") with a dot per calendar on each day with events, up to four. Tapping a day opens it in **Calendar**. |
+| Calendar | **Month**, **7 days**, **5 days** and **3 days** at the top choose the view on this board until it goes home (90 seconds untouched); the one set on **Boards** shows otherwise. "Next 5 days" (or 3 or 7) from today with the dates, a column per day with its events (time or "All day", the event, whose avatar). Or the month ("Tap a day to see it") with a dot per calendar on each day with events, up to four. Tapping a day opens it in **Calendar**. |
 | **Today's list** | "N of M done", then **Overdue**, **Morning**, **After school**, **Evening**, **Anytime**. A row per item: icon, name, points, **More info** when needed, and faces. |
 | Faces | Tap an open face: done for that person. Tap a done face twice (within 4 seconds, inside the undo window): undone. **Anyone**: asks who. |
-| **Goals** card | Every goal in play, whose (an avatar or **Family**), a meter per rule, when it ends; "Reached! A grown-up will sort out the reward." |
-| **Waiting for a parent** card | "Asked for" rewards with their cost, and check-offs to approve ("Homework: check it's done"). Parents decide them in the admin app. |
-| **Coming up** card | Up to five all-day events in the next three weeks, with "Tomorrow" or "In N days". |
+| **Goals** card | Every goal in play, whose (an avatar or **Family**), a meter per rule, when it ends; "Reached! A grown-up will sort out the reward." Tap one: that child's screen (a family goal: **Chores**). |
+| **Waiting for a parent** card | "Asked for" rewards with their cost, and check-offs to approve ("Homework: check it's done"). Parents decide them in the admin app. Tap one: the child who asked. |
+| **Coming up** card | Up to five all-day events in the next three weeks, with "Tomorrow" or "In N days". Tap one: **Calendar** on that day. |
 | **Dinner and lunch** card | Not shown yet: it appears once the board shows the planned meals. |
 
 #### B2.3 A person's screen
@@ -1088,7 +1105,7 @@ A column per person: avatar, name, flame and points (for those who earn rewards)
 | **What is** (name) **saving for?** | The shop's rewards; tap one; **No wish**; **Cancel**. |
 | Celebration | "(Name) reached (goal)!" or "The family reached (goal)!", "Well done! A grown-up will sort out the reward.", **Yay!**. Closes after 10 seconds. |
 
-Short messages appear under the top bar for 6 seconds: "Asked for Movie night. A grown-up will say yes or not this time.", "Called off … Those points are free again.", "Too late to undo here. Ask a parent.", "That one changed. A parent took it off today.", "Ask a parent for that one.", "That didn't save. Try again."
+Short messages appear under the bar for 6 seconds: "Asked for Movie night. A grown-up will say yes or not this time.", "Called off … Those points are free again.", "Too late to undo here. Ask a parent.", "That one changed. A parent took it off today.", "Ask a parent for that one.", "That didn't save. Try again."
 
 #### B2.7 Pairing and other screens
 <!-- covers: US-201 US-202 -->
@@ -1139,6 +1156,7 @@ Every state is an icon, a word and a color together, in both themes. The board u
 | "Last seen" on **Boards** | The board reports in every 5 minutes while open. |
 | Sending saved check-offs | Retried after 1, 2, 5 and 10 seconds, then every 30 seconds, and at once when the network returns. |
 | Goal celebration | Once per achievement, on one board; up to 10 seconds. |
+| Goal payout | Once per achievement, when it is reached. Undone once if the goal goes back to going (points taken back, a reward not yet given called off); paid again when it is reached again. |
 | A new day | At the household's midnight, the board reads the new day by itself. |
 | Weather | Read every 30 minutes; hidden once the last good reading is over 75 minutes old. Offline, the last reading stays for that day. |
 
@@ -1220,7 +1238,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Bonus | 1 to 1,000 points; a streak of 2 to 365 days |
 | Lunch | Buy or bring, on a child's school days only; a usual for each weekday, Monday to Friday |
 | Meals | Something written in up to 80 characters, a note up to 200; any number in a meal of a day; one library meal of a name at a time |
-| Goal | 1 to 5 rules; target 1 to 100,000; 0 to 3 misses forgiven a week |
+| Goal | 1 to 5 rules; target 1 to 100,000; 0 to 3 misses forgiven a week; pays 1 to 10,000 points, or one reward from the shop (a child's goal) |
 | Photos | JPEG, PNG or WebP, up to 2 MB |
 | Password | At least 8 characters |
 | Setup code · invite link · pairing code | Once, for 24 hours · once, for 7 days · once, for 10 minutes |
@@ -1289,7 +1307,9 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 
 **We have two boards. Do they differ?** Each board can have its own calendars, its own home screen layout and its own theme. A reached goal is celebrated on one board only.
 
-**A goal was reached. Where's the reward?** You give it in real life, then choose **Mark redeemed** on **Goals**. Goals don't pay out points or rewards by themselves yet.
+**A goal was reached. Where's the reward?** If it pays points, they are already in the child's points. If it pays a reward from the shop, it is on **Rewards** under **To give**. Either way, or if it pays just the celebration, you give the reward in real life, then choose **Mark redeemed** on **Goals**.
+
+**Points from a goal disappeared.** A check-off the goal needed was undone, so the goal went back to going and its points were taken back. Check the item off again and the goal is reached again, and pays again. The goal's **What happened** says when.
 
 **Does an adult earn points?** Only with **Earns rewards** switched on, for example for a family challenge.
 
@@ -1350,7 +1370,6 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 These are planned but not built yet. This guide will cover each as it arrives.
 
 - **Meals on the board:** the school lunch menu, and the **Dinner and lunch** card on the board.
-- **Goal payouts:** a goal that pays points or a reward by itself, and a preview before changing a goal's rules.
 - **Audit log:** a page showing who changed what, and when.
 - **Export and delete** your household's data.
 - **Sign in with Apple** and passkeys.

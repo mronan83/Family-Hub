@@ -62,6 +62,24 @@ test('[PTS-04][US-1105] approved rewards are to give: mark given, or cancel and 
   await expect(page.getByRole('list', { name: 'Lately' })).toContainText('Not this time');
 });
 
+test('[RWD-13][US-409] a reward a goal paid is to give too: no cost, and cancelling it refunds nothing', async ({
+  page,
+}) => {
+  await page.goto('/dev/rewards');
+  const row = page
+    .getByRole('list', { name: 'To give' })
+    .getByRole('listitem')
+    .filter({ hasText: 'Leo' });
+  await expect(row).toContainText('Reached Tidy week');
+  await expect(row).not.toContainText('points');
+  await expect(
+    row.getByRole('button', { name: 'Mark Pick the dinner given to Leo' }),
+  ).toBeVisible();
+  await expect(
+    row.getByRole('button', { name: 'Cancel Pick the dinner for Leo', exact: true }),
+  ).toBeVisible();
+});
+
 test('[PTS-03][US-1103] the shop: each reward’s cost, what is left, its limit; a photo or its icon; archived ones aside', async ({
   page,
 }) => {

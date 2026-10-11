@@ -12,6 +12,9 @@ import {
   goalRefusal,
   ordinal,
   parseGoalForm,
+  payoutWords,
+  previewGoal,
+  previewOutcome,
   streakLine,
 } from './goals';
 
@@ -72,8 +75,88 @@ describe('the goal form', () => {
           { type: 'COUNT', target: 20, scope: { tag_ids: [MORNING, KITCHEN].sort() }, params: {} },
           { type: 'STREAK', target: 5, scope: { all: true }, params: { grace_per_week: 2 } },
         ],
+        payout: { type: 'custom' },
       },
     });
+  });
+
+  it('[RWD-13] reads what reaching it pays: points, or a reward from the shop for a child', () => {
+    const rule: [string, string][] = [
+      ['rule-keys', 'a'],
+      ['rule-a-type', 'COUNT'],
+      ['rule-a-target', '3'],
+    ];
+    const pays = (extra: [string, string][], who = LEO) =>
+      parseGoalForm(
+        form([...base.filter(([k]) => k !== 'member'), ['member', who], ...rule, ...extra]),
+        ctx,
+      );
+    expect(
+      pays([
+        ['payout', 'points'],
+        ['payoutPoints', '50'],
+      ]),
+    ).toMatchObject({
+      ok: true,
+      value: { payout: { type: 'points', amount: 50 } },
+    });
+    expect(
+      pays([
+        ['payout', 'item'],
+        ['payoutItem', BED],
+      ]),
+    ).toMatchObject({
+      ok: true,
+      value: { payout: { type: 'catalog_item', item_id: BED } },
+    });
+    expect(
+      pays([
+        ['payout', 'points'],
+        ['payoutPoints', '0'],
+      ]),
+    ).toEqual({
+      ok: false,
+      message: 'Points paid: a whole number from 1 to 10,000.',
+    });
+    expect(
+      pays([
+        ['payout', 'points'],
+        ['payoutPoints', '10001'],
+      ]),
+    ).toMatchObject({ ok: false });
+    expect(
+      pays([
+        ['payout', 'points'],
+        ['payoutPoints', '2.5'],
+      ]),
+    ).toMatchObject({ ok: false });
+    expect(
+      pays([
+        ['payout', 'item'],
+        ['payoutItem', ''],
+      ]),
+    ).toEqual({
+      ok: false,
+      message: 'Choose the reward from the shop.',
+    });
+    expect(
+      pays(
+        [
+          ['payout', 'item'],
+          ['payoutItem', BED],
+        ],
+        'family',
+      ),
+    ).toEqual({
+      ok: false,
+      message: 'A family goal pays points to each child, or just the celebration.',
+    });
+    const p = pays([
+      ['payout', 'points'],
+      ['payoutPoints', '50'],
+    ]);
+    if (!p.ok) throw new Error(p.message);
+    expect(goalPayload(p.value, 'h1')).toHaveProperty('payout', { type: 'points', amount: 50 });
   });
 
   it('[RWD-01] a family goal, no end date, one rule counting some items', () => {
@@ -161,6 +244,8 @@ describe('the goal form', () => {
       'Goals are for someone who earns rewards, or the whole family.',
     );
     expect(goalRefusal({ hint: 'goal_started' })).toContain('has started');
+    expect(goalRefusal({ hint: 'payout_item' })).toContain('isn’t in the shop');
+    expect(goalRefusal({ hint: 'payout_family_item' })).toContain('each child');
     expect(goalRefusal({ code: '23514' })).toContain('isn’t right');
     expect(goalRefusal({})).toBe('That didn’t save. Try again in a moment.');
   });
@@ -227,6 +312,50 @@ describe('the Goals page’s words', () => {
     expect(eventWords({ type: 'recomputed', payload: { from_pct: 100, to_pct: 50 } })).toBe(
       'Progress worked out again: 100% to 50%',
     );
+  });
+
+  it('[RWD-13][US-409] tells what a goal paid, took back and put back', () => {
+    expect(
+      eventWords({
+        type: 'achieved',
+        payload: { n: 2, paid: { type: 'points', amount: 10, children: 1 } },
+      }),
+    ).toBe('Achieved again (2nd time): paid 10 points');
+    expect(
+      eventWords({
+        type: 'achieved',
+        payload: { n: 1, paid: { type: 'points', amount: 5, children: 2 } },
+      }),
+    ).toBe('Achieved: paid 5 points each');
+    expect(
+      eventWords({ type: 'achieved', payload: { n: 1, paid: { type: 'catalog_item' } } }),
+    ).toBe('Achieved: its reward from the shop is approved');
+    expect(eventWords({ type: 'payout_reversed', payload: { n: 1, points: 10, item: null } })).toBe(
+      'Payout undone: 10 points taken back',
+    );
+    expect(
+      eventWords({ type: 'payout_reversed', payload: { n: 1, points: 0, item: 'called_off' } }),
+    ).toBe('Payout undone: its reward from the shop called off');
+    expect(eventWords({ type: 'payout_restored', payload: { n: 1, points: 1 } })).toBe(
+      'Met again: 1 point put back',
+    );
+    expect(eventWords({ type: 'needs_review', payload: { why: 'reward_given' } })).toContain(
+      'after its reward was given',
+    );
+    expect(eventWords({ type: 'edited', payload: { payout: {} } })).toBe('What it pays changed');
+  });
+
+  it('[RWD-13] says what a goal pays', () => {
+    const item = (id: string) => (id === BED ? 'Ice cream' : undefined);
+    expect(payoutWords({ type: 'points', amount: 1 }, false, item)).toBe('1 point');
+    expect(payoutWords({ type: 'points', amount: 1500 }, true, item)).toBe('1,500 points each');
+    expect(payoutWords({ type: 'catalog_item', item_id: BED }, false, item)).toBe(
+      'Ice cream from the shop',
+    );
+    expect(payoutWords({ type: 'catalog_item', item_id: 'gone' }, false, item)).toBe(
+      'a reward from the shop',
+    );
+    expect(payoutWords({ type: 'custom' }, false, item)).toBeNull();
   });
 });
 
@@ -371,5 +500,86 @@ describe('evaluating a stored goal', () => {
     await evaluateAfterCompletions(db, ['o1', 'o2', 'o1'], onError);
     expect(evaluated).toEqual(['h1']);
     expect(onError).not.toHaveBeenCalled();
+  });
+});
+
+describe('the preview of a change', () => {
+  const v = (target: number, endDate: string | null = day(17)) => ({
+    id: GOAL,
+    memberId: LEO,
+    title: 'Movie night',
+    description: null,
+    icon: 'ticket',
+    startDate: day(3),
+    endDate,
+    logic: 'all' as const,
+    rules: [{ type: 'COUNT' as const, target, scope: { all: true as const }, params: {} }],
+    payout: { type: 'points' as const, amount: 10 },
+  });
+  const facts = (f: OccurrenceFact[], status = 'active', saved = true) => ({
+    as_of: day(10),
+    week_start: 0,
+    status: status as 'active',
+    saved,
+    facts: f,
+  });
+
+  it('[RWD-10][US-406] old and new progress from every check-off, and what saving would do', () => {
+    // Leo has 20 things done; the goal asks 21. Lowering it to 20 reaches it.
+    const p = previewGoal(v(20), facts(WEEK), read(WEEK));
+    expect(p.before).toMatchObject({
+      pct: 95.24,
+      achieved: false,
+      rules: [{ value: 20, target: 21 }],
+    });
+    expect(p.after).toMatchObject({ pct: 100, achieved: true, rules: [{ value: 20, met: true }] });
+    expect(p.transitions).toEqual(['achieved']);
+    expect(previewOutcome(p, { saved: true, pays: '10 points', paid: null, paidItem: false })).toBe(
+      'Saving reaches it now, and it pays 10 points.',
+    );
+  });
+
+  it('[RWD-10][RWD-04] raising the target of a reached goal takes it back, and what it paid', () => {
+    const done = [...WEEK, fact(10, 'completed')];
+    const p = previewGoal(v(30), facts(done, 'achieved'), read(done, 'achieved'));
+    expect(p.transitions).toEqual(['unachieved']);
+    expect(
+      previewOutcome(p, { saved: true, pays: '10 points', paid: '10 points', paidItem: false }),
+    ).toBe('Saving takes it back to going: 70% there, and what it paid (10 points) is taken back.');
+    expect(
+      previewOutcome(p, {
+        saved: true,
+        pays: null,
+        paid: 'Ice cream from the shop',
+        paidItem: true,
+      }),
+    ).toBe(
+      'Saving takes it back to going: 70% there, and Ice cream from the shop is called off (if it was already given, the goal is flagged for a look).',
+    );
+  });
+
+  it('[RWD-10] a new goal starts from what is already done; an end date already past ends it', () => {
+    const fresh = previewGoal(v(40), facts(WEEK, 'scheduled', false), null);
+    expect(fresh.before).toBeNull();
+    expect(previewOutcome(fresh, { saved: false, pays: null, paid: null, paidItem: false })).toBe(
+      'It starts 50% of the way there, from what’s already done.',
+    );
+    const reached = previewGoal(v(5), facts(WEEK, 'scheduled', false), null);
+    expect(previewOutcome(reached, { saved: false, pays: null, paid: null, paidItem: false })).toBe(
+      'Setting it reaches it at once.',
+    );
+    const ended = previewGoal(v(40, day(8)), facts(WEEK), read(WEEK));
+    expect(ended.transitions).toEqual(['expired']);
+    expect(previewOutcome(ended, { saved: true, pays: null, paid: null, paidItem: false })).toBe(
+      'Saving ends it: its end date has passed at 45%.',
+    );
+    const same = previewGoal(v(21), facts(WEEK), read(WEEK));
+    expect(previewOutcome(same, { saved: true, pays: null, paid: null, paidItem: false })).toBe(
+      'Its progress stays at 95%.',
+    );
+    const lower = previewGoal(v(25), facts(WEEK), read(WEEK));
+    expect(previewOutcome(lower, { saved: true, pays: null, paid: null, paidItem: false })).toBe(
+      'Its progress goes from 95% to 80%.',
+    );
   });
 });

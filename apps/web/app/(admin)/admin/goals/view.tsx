@@ -2,7 +2,7 @@ import { Banner, Button, GoalMeter, Icon, type IconName } from '@familywise/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { day } from '@/lib/format';
-import { describeRule, OPEN_STATUSES, STATUS_WORDS, streakLine } from '@/lib/goals';
+import { describeRule, OPEN_STATUSES, payoutWords, STATUS_WORDS, streakLine } from '@/lib/goals';
 import { AdminHeader } from '../header';
 import { goalAction } from './actions';
 import type { GoalRow } from './data';
@@ -14,6 +14,8 @@ export interface GoalsViewProps {
   names: { tags: Map<string, string>; items: Map<string, string> };
   /** The household's parents, for "redeemed by". */
   admins: Map<string, string>;
+  /** The shop's rewards by id, for what a goal pays. */
+  prizes: Map<string, string>;
   timezone: string;
   notice: string | null;
   error: string | null;
@@ -64,10 +66,15 @@ export function GoalsView({
   members,
   names,
   admins,
+  prizes,
   timezone,
   notice,
   error,
 }: GoalsViewProps) {
+  const pays = (g: GoalRow) => {
+    const words = payoutWords(g.payout, g.memberId === null, (i) => prizes.get(i));
+    return words ? ` · Pays ${words}` : '';
+  };
   const who = (id: string | null) =>
     id === null ? 'The whole family' : (members.find((m) => m.id === id)?.displayName ?? 'Someone');
   const open = goals
@@ -108,7 +115,14 @@ export function GoalsView({
                     <strong id={`goal-${g.id}`}>{g.title}</strong>
                     <span className="fw-muted">
                       {who(g.memberId)} · {dates(g)}
+                      {pays(g)}
                     </span>
+                    {g.needsReview ? (
+                      <span className="fw-goal__flag">
+                        <Icon name="warning" size={20} />
+                        Needs a look
+                      </span>
+                    ) : null}
                   </span>
                   <span className="fw-goal__status" data-status={g.status}>
                     {g.status === 'achieved' ? <Icon name="trophy" size={20} /> : null}

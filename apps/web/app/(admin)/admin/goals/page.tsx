@@ -42,6 +42,7 @@ export default async function GoalsPage({
       members={ctx.members}
       names={ctx.names}
       admins={ctx.adminNames}
+      prizes={ctx.prizeNames}
       timezone={household.timezone}
       notice={notice}
       error={params.error ? goalRefusal({ hint: params.error }) : null}

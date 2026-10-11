@@ -214,13 +214,21 @@ test('[RWD-08][US-404] a goal reached is celebrated once, by the board that show
       { cause: e },
     );
   }
+  const uncelebrated = () =>
+    sql(`select count(*) from public.reward_goal
+          where household_id = '${DEMO}' and status = 'achieved' and celebrated_at is null`);
   const seen: string[] = [];
-  while (await party.isVisible()) {
+  for (;;) {
     const line = (await party.getByRole('heading').textContent()) ?? '';
     seen.push(line);
     await party.getByRole('button', { name: 'Yay!', exact: true }).click();
     await expect(board.getByRole('dialog', { name: line, exact: true })).toHaveCount(0);
-    await board.waitForTimeout(500);
+    // The next one shows once the board has heard this one was celebrated, which can take a few
+    // seconds over Realtime; the run ends when the database has none left to celebrate.
+    await expect
+      .poll(async () => (await party.isVisible()) || uncelebrated() === '0', { timeout: 15_000 })
+      .toBe(true);
+    if (!(await party.isVisible())) break;
   }
   expect(seen).toContain(`Maya reached ${GOAL_TITLE}!`);
   expect(new Set(seen).size).toBe(seen.length);

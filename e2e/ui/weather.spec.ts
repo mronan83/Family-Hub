@@ -2,7 +2,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 // [BRD-04][US-1003] Weather on the board (WP-45, D-69) on /dev/board: the sky, the temperature now and
-// today's high beside the clock, with the service's credit; none when there is no reading (no place,
+// today's high beside the clock on one line, its credit in Help and on Home (D-74); none when there
+// is no reading (no place,
 // the source failing), when a layout turns it off, or when it is yesterday's; and nothing else on the
 // board moves. Weather on the boards on Home (/dev/admin?view=weather) on a phone and a laptop. The
 // job storing reads and a failing source on a real board run in e2e/tests/weather.spec.ts.
@@ -39,8 +40,13 @@ test.describe('on the board', () => {
       await expect(weather(page)).toContainText('54°');
       await expect(weather(page)).toContainText('Partly cloudy');
       await expect(weather(page)).toContainText('High 61°');
-      // The licence's credit, next to the data.
-      await expect(weather(page)).toContainText('Weather by Open-Meteo.com');
+      // [D-74] One line, and the licence's credit off the board (Help and Home carry it).
+      await expect(weather(page)).not.toContainText('Open-Meteo');
+      const lines = await page.evaluate(() => {
+        const more = document.querySelector<HTMLElement>('.fw-weather__more')!;
+        return Math.round(more.offsetHeight / parseFloat(getComputedStyle(more).lineHeight));
+      });
+      expect(lines).toBe(1);
       const sizes = await page.evaluate(() =>
         [...document.querySelectorAll('.fw-weather *')]
           .filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim()))

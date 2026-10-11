@@ -57,7 +57,8 @@ const SHOTS = [
   { name: 'board-home', device: 'board', url: '/dev/board' },
   {
     // The cards in another order (Waiting for a parent first), with something waiting: Maya asks
-    // for a reward and checks off Homework, which needs a parent.
+    // for a reward and checks off Homework, which needs a parent. Since WP-48 the cards are on the
+    // first screen, so this is the whole home screen.
     name: 'board-home-cards',
     device: 'board',
     url: '/dev/board?cards=waiting,coming,goals',
@@ -70,7 +71,6 @@ const SHOTS = [
       await tap(page, 'Check off Homework for Maya').click();
     },
     wait: 1600,
-    clip: { x: 0, y: 940, width: 1920, height: 1080 },
   },
   { name: 'board-home-month', device: 'board', url: '/dev/board?span=month' },
   { name: 'board-home-evening', device: 'board', url: '/dev/board?theme=evening&span=3' },
@@ -81,7 +81,7 @@ const SHOTS = [
     name: 'board-weather',
     device: 'board',
     url: '/dev/board?weather=rain',
-    clip: { x: 880, y: 20, width: 1040, height: 150 },
+    clip: { x: 960, y: 0, width: 960, height: 130 },
   },
   {
     name: 'board-more-info',
@@ -94,7 +94,6 @@ const SHOTS = [
     device: 'board',
     url: '/dev/board',
     act: (page) => person(page, 'Maya').click(),
-    maxHeight: 1500,
   },
   {
     name: 'board-undo',
@@ -190,8 +189,16 @@ const SHOTS = [
     device: 'phone',
     url: '/dev/goals?form=new',
     full: true,
-    // Taller since the icon picker (WP-46), so a little more compressed to stay under 120 KB.
-    quality: 58,
+    // Taller since the icon picker (WP-46) and what a goal pays (WP-39), so more compressed to stay
+    // under 120 KB.
+    quality: 48,
+  },
+  // The preview of a change (WP-39): the panel itself, under the form.
+  {
+    name: 'admin-goal-preview-phone',
+    device: 'phone',
+    url: '/dev/goals?form=preview',
+    element: '.fw-goal-preview',
   },
   // Meals (WP-25): the week on a laptop, and the library on a phone.
   { name: 'admin-meals-laptop', device: 'laptop', url: '/dev/meals', maxHeight: 1900, quality: 62 },
