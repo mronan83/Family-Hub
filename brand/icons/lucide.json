@@ -1,0 +1,1128 @@
+{
+ "$comment": "Icons taken from Lucide (https://lucide.dev, ISC licence; brand/icons/LICENSE-lucide.txt) at the version below, each in a picker group with extra everyday words for the search. packages/ui/scripts/lucide.mjs copies them into brand/icons/lucide/ and brand/icons/index.json (WP-46, D-70). An icon whose name would sound the same as another's takes its own name, with Lucide's under \"from\". To add an icon, add it here and run pnpm --filter @familywise/ui brand:lucide.",
+ "version": "1.48.0",
+ "icons": [
+  {
+   "name": "bed-double",
+   "group": "home",
+   "keywords": [
+    "bed",
+    "make the bed"
+   ]
+  },
+  {
+   "name": "bed-single",
+   "group": "home",
+   "keywords": [
+    "bed",
+    "make the bed",
+    "bunk"
+   ]
+  },
+  {
+   "name": "bathtub",
+   "from": "bath",
+   "group": "home",
+   "keywords": [
+    "bathtub",
+    "bath",
+    "tub",
+    "wash"
+   ]
+  },
+  {
+   "name": "shower-head",
+   "group": "home",
+   "keywords": [
+    "shower",
+    "wash"
+   ]
+  },
+  {
+   "name": "toothbrush",
+   "group": "home",
+   "keywords": [
+    "teeth",
+    "brush",
+    "floss"
+   ]
+  },
+  {
+   "name": "brush-cleaning",
+   "group": "home",
+   "keywords": [
+    "scrub",
+    "clean",
+    "toilet"
+   ]
+  },
+  {
+   "name": "spray-can",
+   "group": "home",
+   "keywords": [
+    "clean",
+    "wipe",
+    "spray"
+   ]
+  },
+  {
+   "name": "washing-machine",
+   "group": "home",
+   "keywords": [
+    "laundry",
+    "washing",
+    "clothes"
+   ]
+  },
+  {
+   "name": "shirt",
+   "group": "home",
+   "keywords": [
+    "clothes",
+    "dress",
+    "uniform",
+    "fold"
+   ]
+  },
+  {
+   "name": "recycle",
+   "group": "home",
+   "keywords": [
+    "recycling",
+    "bin"
+   ]
+  },
+  {
+   "name": "sofa",
+   "group": "home"
+  },
+  {
+   "name": "lamp",
+   "group": "home"
+  },
+  {
+   "name": "door-open",
+   "group": "home"
+  },
+  {
+   "name": "key-round",
+   "group": "home"
+  },
+  {
+   "name": "paint-roller",
+   "group": "home"
+  },
+  {
+   "name": "hammer",
+   "group": "home"
+  },
+  {
+   "name": "wrench",
+   "group": "home"
+  },
+  {
+   "name": "drill",
+   "group": "home"
+  },
+  {
+   "name": "lightbulb",
+   "group": "home"
+  },
+  {
+   "name": "plug",
+   "group": "home"
+  },
+  {
+   "name": "package",
+   "group": "home"
+  },
+  {
+   "name": "boxes",
+   "group": "home"
+  },
+  {
+   "name": "archive",
+   "group": "home"
+  },
+  {
+   "name": "house",
+   "group": "home"
+  },
+  {
+   "name": "fence",
+   "group": "home"
+  },
+  {
+   "name": "car",
+   "group": "home",
+   "keywords": [
+    "drive",
+    "school run",
+    "wash the car"
+   ]
+  },
+  {
+   "name": "droplets",
+   "group": "home"
+  },
+  {
+   "name": "utensils-crossed",
+   "group": "kitchen",
+   "keywords": [
+    "dinner",
+    "meal",
+    "eat"
+   ]
+  },
+  {
+   "name": "cooking-pot",
+   "group": "kitchen",
+   "keywords": [
+    "cook",
+    "dinner",
+    "meal"
+   ]
+  },
+  {
+   "name": "chef-hat",
+   "group": "kitchen",
+   "keywords": [
+    "cook",
+    "bake",
+    "chef"
+   ]
+  },
+  {
+   "name": "soup",
+   "group": "kitchen"
+  },
+  {
+   "name": "salad",
+   "group": "kitchen"
+  },
+  {
+   "name": "sandwich",
+   "group": "kitchen"
+  },
+  {
+   "name": "pizza",
+   "group": "kitchen"
+  },
+  {
+   "name": "egg-fried",
+   "group": "kitchen"
+  },
+  {
+   "name": "croissant",
+   "group": "kitchen"
+  },
+  {
+   "name": "coffee",
+   "group": "kitchen"
+  },
+  {
+   "name": "milk",
+   "group": "kitchen"
+  },
+  {
+   "name": "glass-water",
+   "group": "kitchen",
+   "keywords": [
+    "drink",
+    "water"
+   ]
+  },
+  {
+   "name": "apple",
+   "group": "kitchen",
+   "keywords": [
+    "snack",
+    "fruit",
+    "healthy"
+   ]
+  },
+  {
+   "name": "carrot",
+   "group": "kitchen"
+  },
+  {
+   "name": "banana",
+   "group": "kitchen"
+  },
+  {
+   "name": "cherry",
+   "group": "kitchen"
+  },
+  {
+   "name": "grape",
+   "group": "kitchen"
+  },
+  {
+   "name": "citrus",
+   "group": "kitchen"
+  },
+  {
+   "name": "wheat",
+   "group": "kitchen"
+  },
+  {
+   "name": "beef",
+   "group": "kitchen"
+  },
+  {
+   "name": "drumstick",
+   "group": "kitchen"
+  },
+  {
+   "name": "fish",
+   "group": "kitchen",
+   "keywords": [
+    "feed",
+    "tank",
+    "pet"
+   ]
+  },
+  {
+   "name": "cookie",
+   "group": "kitchen"
+  },
+  {
+   "name": "cake-slice",
+   "group": "kitchen"
+  },
+  {
+   "name": "ice-cream-cone",
+   "group": "kitchen"
+  },
+  {
+   "name": "candy",
+   "group": "kitchen"
+  },
+  {
+   "name": "popcorn",
+   "group": "kitchen"
+  },
+  {
+   "name": "cup-soda",
+   "group": "kitchen"
+  },
+  {
+   "name": "refrigerator",
+   "group": "kitchen"
+  },
+  {
+   "name": "microwave",
+   "group": "kitchen"
+  },
+  {
+   "name": "dog",
+   "group": "pets",
+   "keywords": [
+    "walk",
+    "feed",
+    "pet"
+   ]
+  },
+  {
+   "name": "cat",
+   "group": "pets",
+   "keywords": [
+    "feed",
+    "litter",
+    "pet"
+   ]
+  },
+  {
+   "name": "bird",
+   "group": "pets"
+  },
+  {
+   "name": "rabbit",
+   "group": "pets"
+  },
+  {
+   "name": "squirrel",
+   "group": "pets"
+  },
+  {
+   "name": "turtle",
+   "group": "pets"
+  },
+  {
+   "name": "paw-print",
+   "group": "pets",
+   "keywords": [
+    "pet",
+    "animal"
+   ]
+  },
+  {
+   "name": "bone",
+   "group": "pets"
+  },
+  {
+   "name": "egg",
+   "group": "pets"
+  },
+  {
+   "name": "sprout",
+   "group": "pets",
+   "keywords": [
+    "water",
+    "plants",
+    "garden"
+   ]
+  },
+  {
+   "name": "leaf",
+   "group": "pets"
+  },
+  {
+   "name": "flower",
+   "group": "pets",
+   "keywords": [
+    "garden",
+    "water"
+   ]
+  },
+  {
+   "name": "daisy",
+   "from": "flower-2",
+   "group": "pets",
+   "keywords": [
+    "daisy",
+    "flower",
+    "garden"
+   ]
+  },
+  {
+   "name": "trees",
+   "group": "pets"
+  },
+  {
+   "name": "tree-deciduous",
+   "group": "pets"
+  },
+  {
+   "name": "shovel",
+   "group": "pets",
+   "keywords": [
+    "dig",
+    "garden",
+    "snow"
+   ]
+  },
+  {
+   "name": "bug",
+   "group": "pets"
+  },
+  {
+   "name": "snail",
+   "group": "pets"
+  },
+  {
+   "name": "smile",
+   "group": "health"
+  },
+  {
+   "name": "heart",
+   "group": "health"
+  },
+  {
+   "name": "heart-pulse",
+   "group": "health"
+  },
+  {
+   "name": "pill",
+   "group": "health",
+   "keywords": [
+    "medicine",
+    "vitamins"
+   ]
+  },
+  {
+   "name": "stethoscope",
+   "group": "health"
+  },
+  {
+   "name": "bandage",
+   "group": "health"
+  },
+  {
+   "name": "thermometer",
+   "group": "health"
+  },
+  {
+   "name": "syringe",
+   "group": "health"
+  },
+  {
+   "name": "activity",
+   "group": "health"
+  },
+  {
+   "name": "dumbbell",
+   "group": "health"
+  },
+  {
+   "name": "footprints",
+   "group": "health"
+  },
+  {
+   "name": "person-standing",
+   "group": "health"
+  },
+  {
+   "name": "alarm-clock",
+   "group": "health"
+  },
+  {
+   "name": "moon-star",
+   "group": "health"
+  },
+  {
+   "name": "glasses",
+   "group": "health"
+  },
+  {
+   "name": "scissors",
+   "group": "health"
+  },
+  {
+   "name": "hand-heart",
+   "group": "health"
+  },
+  {
+   "name": "brain",
+   "group": "health"
+  },
+  {
+   "name": "baby",
+   "group": "health"
+  },
+  {
+   "name": "book-open",
+   "group": "school",
+   "keywords": [
+    "read",
+    "reading"
+   ]
+  },
+  {
+   "name": "book",
+   "group": "school"
+  },
+  {
+   "name": "library",
+   "group": "school"
+  },
+  {
+   "name": "notebook-pen",
+   "group": "school",
+   "keywords": [
+    "homework",
+    "journal",
+    "write"
+   ]
+  },
+  {
+   "name": "pencil",
+   "group": "school",
+   "keywords": [
+    "write",
+    "homework"
+   ]
+  },
+  {
+   "name": "pen-line",
+   "group": "school"
+  },
+  {
+   "name": "ruler",
+   "group": "school"
+  },
+  {
+   "name": "calculator",
+   "group": "school",
+   "keywords": [
+    "maths",
+    "math",
+    "homework"
+   ]
+  },
+  {
+   "name": "graduation-cap",
+   "group": "school"
+  },
+  {
+   "name": "school",
+   "group": "school"
+  },
+  {
+   "name": "globe",
+   "group": "school"
+  },
+  {
+   "name": "microscope",
+   "group": "school"
+  },
+  {
+   "name": "flask-conical",
+   "group": "school"
+  },
+  {
+   "name": "atom",
+   "group": "school"
+  },
+  {
+   "name": "languages",
+   "group": "school"
+  },
+  {
+   "name": "puzzle",
+   "group": "school"
+  },
+  {
+   "name": "clipboard-list",
+   "group": "school"
+  },
+  {
+   "name": "presentation",
+   "group": "school"
+  },
+  {
+   "name": "laptop",
+   "group": "school"
+  },
+  {
+   "name": "tablet-smartphone",
+   "group": "school"
+  },
+  {
+   "name": "piano",
+   "group": "arts",
+   "keywords": [
+    "practice",
+    "music",
+    "lessons"
+   ]
+  },
+  {
+   "name": "guitar",
+   "group": "arts",
+   "keywords": [
+    "practice",
+    "music",
+    "lessons"
+   ]
+  },
+  {
+   "name": "drum",
+   "group": "arts"
+  },
+  {
+   "name": "mic",
+   "group": "arts"
+  },
+  {
+   "name": "headphones",
+   "group": "arts"
+  },
+  {
+   "name": "palette",
+   "group": "arts"
+  },
+  {
+   "name": "paintbrush",
+   "group": "arts"
+  },
+  {
+   "name": "brush",
+   "group": "arts"
+  },
+  {
+   "name": "pen-tool",
+   "group": "arts"
+  },
+  {
+   "name": "camera",
+   "group": "arts"
+  },
+  {
+   "name": "clapperboard",
+   "group": "arts"
+  },
+  {
+   "name": "drama",
+   "group": "arts"
+  },
+  {
+   "name": "shapes",
+   "group": "arts"
+  },
+  {
+   "name": "volleyball",
+   "group": "sport",
+   "keywords": [
+    "ball",
+    "sport",
+    "practice"
+   ]
+  },
+  {
+   "name": "medal",
+   "group": "sport"
+  },
+  {
+   "name": "goal",
+   "group": "sport",
+   "keywords": [
+    "soccer",
+    "football",
+    "practice"
+   ]
+  },
+  {
+   "name": "bike",
+   "group": "sport",
+   "keywords": [
+    "ride",
+    "cycle"
+   ]
+  },
+  {
+   "name": "tent",
+   "group": "sport"
+  },
+  {
+   "name": "mountain",
+   "group": "sport"
+  },
+  {
+   "name": "waves",
+   "group": "sport"
+  },
+  {
+   "name": "sailboat",
+   "group": "sport"
+  },
+  {
+   "name": "dice-5",
+   "group": "sport"
+  },
+  {
+   "name": "toy-brick",
+   "group": "sport"
+  },
+  {
+   "name": "blocks",
+   "group": "sport"
+  },
+  {
+   "name": "gamepad-2",
+   "group": "sport",
+   "keywords": [
+    "games",
+    "video games",
+    "screen time"
+   ]
+  },
+  {
+   "name": "swords",
+   "group": "sport"
+  },
+  {
+   "name": "shopping-cart",
+   "group": "errands",
+   "keywords": [
+    "shopping",
+    "groceries",
+    "buy"
+   ]
+  },
+  {
+   "name": "shopping-bag",
+   "group": "errands",
+   "keywords": [
+    "shopping",
+    "errand"
+   ]
+  },
+  {
+   "name": "store",
+   "group": "errands"
+  },
+  {
+   "name": "receipt",
+   "group": "errands"
+  },
+  {
+   "name": "wallet",
+   "group": "errands",
+   "keywords": [
+    "money",
+    "pay"
+   ]
+  },
+  {
+   "name": "credit-card",
+   "group": "errands"
+  },
+  {
+   "name": "piggy-bank",
+   "group": "errands",
+   "keywords": [
+    "save",
+    "savings",
+    "money"
+   ]
+  },
+  {
+   "name": "banknote",
+   "group": "errands"
+  },
+  {
+   "name": "hand-coins",
+   "group": "errands"
+  },
+  {
+   "name": "coins",
+   "group": "errands"
+  },
+  {
+   "name": "mail",
+   "group": "errands",
+   "keywords": [
+    "post",
+    "letter"
+   ]
+  },
+  {
+   "name": "send",
+   "group": "errands"
+  },
+  {
+   "name": "phone",
+   "group": "errands",
+   "keywords": [
+    "call",
+    "ring"
+   ]
+  },
+  {
+   "name": "smartphone",
+   "group": "errands"
+  },
+  {
+   "name": "calendar-check",
+   "group": "errands"
+  },
+  {
+   "name": "clipboard-check",
+   "group": "errands"
+  },
+  {
+   "name": "file-text",
+   "group": "errands"
+  },
+  {
+   "name": "printer",
+   "group": "errands"
+  },
+  {
+   "name": "briefcase",
+   "group": "errands"
+  },
+  {
+   "name": "truck",
+   "group": "errands"
+  },
+  {
+   "name": "fuel",
+   "group": "errands"
+  },
+  {
+   "name": "map-pin",
+   "group": "errands"
+  },
+  {
+   "name": "bus",
+   "group": "travel"
+  },
+  {
+   "name": "train-front",
+   "group": "travel"
+  },
+  {
+   "name": "plane",
+   "group": "travel"
+  },
+  {
+   "name": "ship",
+   "group": "travel"
+  },
+  {
+   "name": "map",
+   "group": "travel"
+  },
+  {
+   "name": "compass",
+   "group": "travel"
+  },
+  {
+   "name": "luggage",
+   "group": "travel"
+  },
+  {
+   "name": "hotel",
+   "group": "travel"
+  },
+  {
+   "name": "caravan",
+   "group": "travel"
+  },
+  {
+   "name": "church",
+   "group": "travel"
+  },
+  {
+   "name": "hospital",
+   "group": "travel"
+  },
+  {
+   "name": "building-2",
+   "group": "travel"
+  },
+  {
+   "name": "landmark",
+   "group": "travel"
+  },
+  {
+   "name": "crown",
+   "group": "rewards",
+   "keywords": [
+    "king",
+    "queen",
+    "best"
+   ]
+  },
+  {
+   "name": "gem",
+   "group": "rewards"
+  },
+  {
+   "name": "tickets",
+   "group": "rewards"
+  },
+  {
+   "name": "party-popper",
+   "group": "rewards",
+   "keywords": [
+    "party",
+    "celebrate",
+    "birthday"
+   ]
+  },
+  {
+   "name": "rocket",
+   "group": "rewards"
+  },
+  {
+   "name": "ferris-wheel",
+   "group": "rewards"
+  },
+  {
+   "name": "tv",
+   "group": "rewards",
+   "keywords": [
+    "screen time",
+    "show",
+    "movie"
+   ]
+  },
+  {
+   "name": "cake",
+   "group": "rewards",
+   "keywords": [
+    "birthday",
+    "party"
+   ]
+  },
+  {
+   "name": "cloud-sun",
+   "group": "weather"
+  },
+  {
+   "name": "cloud-moon",
+   "group": "weather"
+  },
+  {
+   "name": "cloudy",
+   "group": "weather"
+  },
+  {
+   "name": "cloud-drizzle",
+   "group": "weather",
+   "keywords": [
+    "drizzle",
+    "light rain"
+   ]
+  },
+  {
+   "name": "cloud-rain-wind",
+   "group": "weather"
+  },
+  {
+   "name": "cloud-snow",
+   "group": "weather",
+   "keywords": [
+    "snow",
+    "winter"
+   ]
+  },
+  {
+   "name": "snowflake",
+   "group": "weather",
+   "keywords": [
+    "snow",
+    "cold",
+    "winter"
+   ]
+  },
+  {
+   "name": "cloud-hail",
+   "group": "weather"
+  },
+  {
+   "name": "cloud-fog",
+   "group": "weather"
+  },
+  {
+   "name": "haze",
+   "group": "weather"
+  },
+  {
+   "name": "cloud-lightning",
+   "group": "weather",
+   "keywords": [
+    "storm",
+    "thunder"
+   ]
+  },
+  {
+   "name": "zap",
+   "group": "weather"
+  },
+  {
+   "name": "wind",
+   "group": "weather"
+  },
+  {
+   "name": "tornado",
+   "group": "weather"
+  },
+  {
+   "name": "umbrella",
+   "group": "weather",
+   "keywords": [
+    "rain"
+   ]
+  },
+  {
+   "name": "thermometer-sun",
+   "group": "weather"
+  },
+  {
+   "name": "thermometer-snowflake",
+   "group": "weather"
+  },
+  {
+   "name": "sunrise",
+   "group": "weather"
+  },
+  {
+   "name": "sunset",
+   "group": "weather"
+  },
+  {
+   "name": "rainbow",
+   "group": "weather"
+  },
+  {
+   "name": "tag",
+   "group": "tags",
+   "keywords": [
+    "label"
+   ]
+  },
+  {
+   "name": "tags",
+   "group": "tags"
+  },
+  {
+   "name": "flag",
+   "group": "tags",
+   "keywords": [
+    "important",
+    "priority"
+   ]
+  },
+  {
+   "name": "shield",
+   "group": "tags"
+  },
+  {
+   "name": "circle-alert",
+   "group": "tags"
+  },
+  {
+   "name": "repeat",
+   "group": "tags",
+   "keywords": [
+    "every day",
+    "routine",
+    "repeat"
+   ]
+  },
+  {
+   "name": "users",
+   "group": "tags"
+  },
+  {
+   "name": "user",
+   "group": "tags"
+  },
+  {
+   "name": "eye-off",
+   "group": "tags",
+   "keywords": [
+    "private",
+    "hidden"
+   ]
+  },
+  {
+   "name": "pin",
+   "group": "tags"
+  },
+  {
+   "name": "thumbs-up",
+   "group": "tags"
+  },
+  {
+   "name": "circle-dot",
+   "group": "tags"
+  },
+  {
+   "name": "square",
+   "group": "tags"
+  },
+  {
+   "name": "triangle",
+   "group": "tags"
+  },
+  {
+   "name": "hexagon",
+   "group": "tags"
+  }
+ ]
+}

@@ -1,23 +1,10 @@
 import { ICON_NAMES, MEMBER_COLORS, type IconName, type MemberColor } from '@familywise/ui';
 
-// [CHR-10] Household tags (D-33): a name, one of the six categorical colors and an optional icon.
+// [CHR-10] Household tags (D-33): a name, one of the sixteen colors (D-70) and any icon, or none.
 // Goals, filters and insights keep the tag's id, so renaming or archiving one never breaks a goal.
 // A tag always shows its name; the color is never the only signal (06 §4.2).
 
 export const TAG_COLORS = MEMBER_COLORS;
-
-/** Icons offered for a tag: the chore icons and a few for times of day, school and rewards. */
-export const TAG_ICONS: IconName[] = [
-  'sun',
-  'moon',
-  'backpack',
-  'home',
-  'utensils',
-  'star',
-  'gift',
-  'calendar',
-  ...ICON_NAMES.filter((n) => n.startsWith('chore-')),
-];
 
 export interface TagInput {
   name: string;

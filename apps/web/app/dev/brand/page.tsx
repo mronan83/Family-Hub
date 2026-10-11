@@ -5,7 +5,7 @@ import {
   Button,
   ChoreTile,
   GoalMeter,
-  ICONS,
+  ICON_INDEX,
   ICON_NAMES,
   Icon,
   Logo,
@@ -16,6 +16,7 @@ import {
   type Theme,
 } from '@familywise/ui';
 import type { Metadata } from 'next';
+import { COLOR_NAMES } from '@/lib/members';
 import './brand.css';
 
 // The brand specimen rendered from the real components (WP-37). Day and Evening sit side by side;
@@ -163,17 +164,27 @@ export default async function BrandPage({
           {AVATAR_KEYS.map((key) => (
             <Avatar key={key} name={key} avatarKey={key} />
           ))}
-          {MEMBER_COLORS.map((color, i) => (
-            <Avatar key={color} name={['Sam', 'Alex', 'Jo', 'Pat', 'Kai', 'Lee'][i]!} color={color} />
+          {MEMBER_COLORS.map((color) => (
+            <Avatar key={color} name={COLOR_NAMES[color]} color={color} />
           ))}
         </div>
+        <ul className="specimen-swatches" aria-label="Colors as lines and dots">
+          {MEMBER_COLORS.map((color) => (
+            <li key={color}>
+              <span className="specimen-swatch" style={{ background: `var(--${color}-line)` }} />
+              <code>
+                {COLOR_NAMES[color]} --{color}-line
+              </code>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="specimen-section">
         <h2>Icons ({ICON_NAMES.length})</h2>
         <ul className="specimen-icons">
           {ICON_NAMES.map((name) => (
-            <li key={name} title={ICONS[name].keywords.join(', ')}>
+            <li key={name} title={ICON_INDEX[name].keywords.join(', ')}>
               <Icon name={name} size={view === 'board' ? 36 : 24} />
               <span>{name}</span>
             </li>

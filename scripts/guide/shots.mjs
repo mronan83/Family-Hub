@@ -183,13 +183,22 @@ const SHOTS = [
     quality: 64,
   },
   { name: 'admin-goals-laptop', device: 'laptop', url: '/dev/goals', maxHeight: 1430 },
-  { name: 'admin-goal-form-phone', device: 'phone', url: '/dev/goals?form=new', full: true },
+  {
+    name: 'admin-goal-form-phone',
+    device: 'phone',
+    url: '/dev/goals?form=new',
+    full: true,
+    // Taller since the icon picker (WP-46), so a little more compressed to stay under 120 KB.
+    quality: 58,
+  },
   { name: 'admin-calendars-phone', device: 'phone', url: '/dev/calendars', maxHeight: 1330 },
   {
     name: 'admin-calendar-add-phone',
     device: 'phone',
     url: '/dev/calendars?state=empty',
     full: true,
+    // Sixteen colors to choose from (WP-46).
+    quality: 66,
     // A made-up link on a reserved domain, so the picture shows a filled-in form.
     act: async (page) => {
       await page.getByLabel('Name', { exact: true }).fill('Family');

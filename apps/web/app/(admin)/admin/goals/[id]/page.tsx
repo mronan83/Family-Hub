@@ -8,7 +8,7 @@ import { eventWords, STATUS_WORDS } from '@/lib/goals';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
 import { goalAction, removeGoalPhoto } from '../actions';
-import { GOAL_ICONS, loadGoalEvents, loadGoals } from '../data';
+import { loadGoalEvents, loadGoals } from '../data';
 import { GoalForm, type GoalLock } from '../goal-form';
 import { bringGoalsUpToDate, loadGoalContext } from '../load';
 
@@ -126,7 +126,6 @@ export default async function GoalPage({
           members={ctx.earners}
           tags={ctx.tags}
           items={ctx.items}
-          icons={GOAL_ICONS}
           today={isoDay(household.timezone)}
           lock={lock}
           hasPhoto={!!goal.imagePath}

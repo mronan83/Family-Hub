@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
-> Version 0.3 · Status: living document · Maintained by Claude Code
+> Version 0.4 · Status: living document · Maintained by Claude Code
+> v0.4: more icons and colors (WP-46, D-70): one icon picker everywhere, with **Find an icon** and groups; sixteen named colors; the weather's own sky icons; how the board stays easy to read for everyone (A12).
 > v0.3: fixes found while writing this guide (PR #48): a board's own layout is kept when you save again; Disconnect asks first; the return home also closes an unanswered "Who did …?"; the board waits 90 seconds before going home (D-71).
 > v0.2: weather on the board (WP-45): A13, and the weather on Home, Boards, the board's top bar, the rules, troubleshooting and questions; no longer "coming soon".
 > v0.1: first version (D-68): Part A, the User Guide by task, and Part B, the User Manual, for everything built up to WP-35; screenshots from the made-up demo family; a check that every built story is covered.
@@ -114,7 +115,7 @@ Everyone in the family is a **member**: children and adults. Chores, tasks, poin
 1. Go to **Members** and choose **Add a member**.
 2. Enter a **Name** (a first name or nickname is enough, up to 40 characters).
 3. Choose **Who they are**: **Child** or **Adult**. Children never sign in; they use the board.
-4. Pick an **Avatar** (an animal, or **Initials**) and a **Color**. The board shows both, so each person is easy to spot.
+4. Pick an **Avatar** (an animal, or **Initials**) and a **Color**, one of sixteen, each with its name. The board shows both, so each person is easy to spot.
 5. Optionally, a **Birth year**.
 6. Check **Earns rewards**. It starts on for a child and off for an adult. Members who earn rewards collect points, go through approval, and can have goals and streaks. You can change it for anyone, any time.
 7. Choose **Add member**.
@@ -268,7 +269,7 @@ Reminders come only for items you are on, at most once each, and never after the
    - **Any one of them**: done once, by whoever gets to it, like feeding the dog. New tasks start like this.
 5. Choose **How often**: **Every day**, **Some days** (tick the days), **Monthly** (a **Day of the month**; the 31st falls on the last day of a shorter month) or **Once** (a date).
 6. Optionally, a **Due time**. It orders the day into Morning (before noon), After school (noon to 5 pm) and Evening (from 5 pm); items without one are **Anytime**. It never changes points.
-7. Pick an **Icon**. **More icons** has the rest.
+7. Pick an **Icon**. Type a word in **Find an icon** (like *fish*, *laundry* or *piano*), or choose a group such as **Home** or **Pets and garden**. **Chosen:** under the picker names the one you picked.
 8. Set **Points**: 5 for a new chore and 0 for a new task, until you change it. Only members who earn rewards collect points.
 9. Optionally, tick **Tags** (see below).
 10. Optionally, switch on **Private** (see below).
@@ -276,6 +277,8 @@ Reminders come only for items you are on, at most once each, and never after the
 12. Choose **Save**, or **Save and add another** to enter the next one straight away.
 
 > **Tip:** **Save and add another** keeps the same kind (chore or task), so you can enter the whole family list in a few minutes.
+
+> **Tip:** Searching or choosing a group only changes which icons you see. The icon you chose stays chosen, even when it is out of sight, until you pick another.
 
 #### Change or archive an item
 
@@ -293,7 +296,7 @@ An item for several people with **Any one of them** is one item a day, shared. W
 Tags group the list, like Morning or Kitchen. Use them to filter **Chores** and to set goals that count by category.
 
 1. On **Chores**, choose **Tags** (the link under the list), or **Add or change tags** in an item's form.
-2. Enter a **Name** (up to 30 characters), pick a **Color** and, optionally, an **Icon**, then **Add tag**.
+2. Enter a **Name** (up to 30 characters), pick a **Color** and, optionally, an **Icon** (**People and labels** comes first among the groups; **No icon** leaves it without one), then **Add tag**.
 
 Renaming a tag keeps every goal working. **Archive** a tag to stop offering it; goals and history that use it keep working, and **Restore** brings it back.
 
@@ -520,7 +523,7 @@ On **Rewards**, a reward someone is saving for says so ("Maya is saving for it")
 6. Optionally, **Add a rule** (up to 5), and choose whether **It's reached when** **Every rule is met** or **Any one rule is met**.
 7. Pick an **Icon**, or add a **Photo**, then choose **Set goal**.
 
-![The goal form on a phone: Name, Description, Who it's for (Maya, Leo or The whole family), Starts, Ends, a rule with Counts, Target and What counts, Add a rule, the icons, Photo and Set goal.](guide/img/admin-goal-form-phone.jpg "Setting a goal, on a phone")
+![The goal form on a phone: Name, Description, Who it's for (Maya, Leo or The whole family), Starts, Ends, a rule with Counts, Target and What counts, Add a rule, the icon picker (Chosen: trophy, Find an icon, the groups and their icons), Photo and Set goal.](guide/img/admin-goal-form-phone.jpg "Setting a goal, on a phone")
 
 #### Follow a goal
 
@@ -660,7 +663,7 @@ The boards change within seconds.
 ![The board's home screen with the calendar showing the month, with colored dots on days with events.](guide/img/board-home-month.jpg "The home screen with the month")
 
 ### A12 Day and Evening themes
-<!-- covers: US-910 -->
+<!-- covers: US-910 US-906 -->
 
 **What this is.** Two looks: **Day** (light) and **Evening** (dark, easier on the eyes at night). **When.** Automatic. **How.**
 
@@ -668,6 +671,8 @@ The boards change within seconds.
 - **The admin app** follows your phone's or computer's dark mode: Evening when dark mode is on.
 
 Both looks use the same colors for the same things, never color alone: every state also has an icon and a word.
+
+**Easy to read for everyone.** In both looks, words meet the WCAG AA contrast level, and each of the sixteen colors, used as a line or a dot, stands out at least 3 to 1 from what is behind it; in the Evening, lines and dots use a lighter shade of each color so they still do. With **reduce motion** turned on in the screen's or the browser's settings, celebrations and points don't move or count up; the words are the same.
 
 ![The board's home screen in the Evening theme, with the calendar showing three days.](guide/img/board-home-evening.jpg "Evening, here with three days in the calendar")
 
@@ -783,7 +788,7 @@ If a device can no longer get notifications, it is removed and the page says so:
 | **How often** | **Every day**, **Some days** (weekdays ticked to start), **Monthly** (**Day of the month** 1 to 31), **Once** (**Date**, or **Due date** for a task; today to start). |
 | **Due time (optional)** | Sets the part of the day. Never changes points. |
 | **Reminders** | **As each person chose**, or **At the due time**, **15 minutes before**, **1 hour before**, **1 day before**. |
-| **Icon** | The chore icons; **More icons** for the rest. |
+| **Icon** | The icon picker, as in every form with an icon: **Chosen:** names the one picked; **Find an icon** searches by everyday words ("No icon matches" when nothing does); **Icon groups**: **All**, **Home**, **Kitchen and food**, **School and learning**, **Pets and garden**, **Health and care**, **Play and sport**, **Music and making**, **Errands and money**, **Out and about**, **Treats and rewards**, **Weather and time**, **People and labels**. The groups most likely to fit come first: **Home** for a chore. |
 | **Points** | 0 to 1,000. 5 for a new chore, 0 for a new task. |
 | **Tags** | Any active tags. |
 | **Private** | Only for the item's creator. Off the board; seen only by its creator and the people it's for who sign in. |
@@ -1138,6 +1143,8 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Board, offline | Keeps today, its saved check-offs, and the calendar from yesterday to three weeks ahead |
 | Reminders | Checked every 5 minutes; at most once each; never more than two hours late |
 | Layout | Calendar of 3, 5 or 7 days, or the month; four cards, each shown or not, in any order; the weather on or off |
+| Colors | Sixteen, for people, tags and calendars: Blue, Rose, Orange, Violet, Green, Teal, Red, Gold, Lime, Cyan, Navy, Indigo, Purple, Magenta, Brown, Slate. In Evening, lines and dots use a lighter shade of each, so they show on the dark board |
+| Icons | 305 to choose from, in twelve groups; any icon can be used for a chore, task, tag, reward or goal |
 
 ### B4 Troubleshooting
 <!-- covers: US-206 US-505 US-904 US-1003 -->
