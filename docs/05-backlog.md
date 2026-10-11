@@ -1,7 +1,8 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.84: WP-27 in review (PR #57): school menus from Nutrislice, a file or by hand (D-79).
+> v0.8.85: WP-27 in review (PR #57): school menus from Nutrislice, a file or by hand (D-79).
+> v0.8.84: WP-26 done (PR #56): school lunch, buy or bring.
 > v0.8.83: WP-26 in review (PR #56): lunch, buy or bring (D-78).
 > v0.8.82: WP-25 done (PR #55): the meal library and the weekly planner. WP-28 is ready.
 > v0.8.81: WP-25 in review (PR #55): the meal library and the weekly planner (D-77).
@@ -162,7 +163,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Done (PR #43) |
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
 | WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Done (PR #55) |
-| WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | In review (PR #56) |
+| WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Done (PR #56) |
 | WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | In review (PR #57) |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Ready |
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Ready (SPIKE-02's CalDAV part first) |
