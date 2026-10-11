@@ -110,7 +110,7 @@
 | PTS-06 | A child may pin a catalog item as a saving goal and see progress toward its cost. | S | P2 | Derived |
 | PTS-07 | Each member shall have an earns-rewards switch, on by default for a child and off for an adult. Only credited members with it on earn points, go through approval, count toward goals, and show reward streaks. | M | P1 | User |
 | NFR-12 | The rules engine shall have at least 90% unit coverage, RLS shall be pgTAP-tested, and CI shall gate on e2e including offline. | M | P0 | Design |
-| NFR-13 | The product shall be branded FamilyWise and implement the brand and style guide: design tokens (light and Evening themes), self-hosted fonts, logo and app icons, the 85-icon set, member avatars, and a status-to-visual mapping with icon, label and color for every occurrence status. | M | P0 | User |
+| NFR-13 | The product shall be branded FamilyWise and implement the brand and style guide: design tokens (light and Evening themes), self-hosted fonts, logo and app icons, the icon set (our own and Lucide's, D-70), member avatars, and a status-to-visual mapping with icon, label and color for every occurrence status. | M | P0 | User |
 | NFR-14 | Every change shall reach production only through a pull request that passes CI gates (lint, typecheck, unit, pgTAP, traceability, build) and e2e on its preview deployment, which runs as the demo family in the one database with the PR's additive migrations applied, and that the owner has approved after viewing its preview; merging applies migrations before deploying the app. No Docker and no staging environment. | M | P0 | User |
 
 ---
@@ -124,7 +124,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | ACC-01 | US-101 | WP-02, WP-03 | ADM, DB | household, household_settings | DB, E2E |
 | ACC-02 | US-102 | WP-03 | ADM, SAUTH | household_user | E2E, U |
 | ACC-03 | US-103 | WP-03 | ADM, API, SAUTH | invite, household_user | E2E, DB |
-| ACC-04 | US-104 | WP-04 | ADM, DB | member | E2E, DB, U |
+| ACC-04 | US-104 | WP-04, WP-46 | ADM, DB | member | E2E, DB, U |
 | ACC-05 | US-105 | WP-03, WP-32 | DB, ADM | audit_log | DB, E2E |
 | ACC-06 | US-106 | WP-38 | ADM, SAUTH | household_user | E2E |
 | DEV-01 | US-201 | WP-05 | ADM, API, AUTH, BRD, SAUTH | device_pairing, device | E2E, DB |
@@ -135,7 +135,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | DEV-06 | US-205 | WP-13 | OUTBOX, BRD, API | chore_completion_event | E2E, U |
 | DEV-07 | US-207 | WP-34 | PI, BRD | household_settings | HW |
 | DEV-08 | US-206 | WP-13 | BRD, OBS | job_run | E2E, U, DB |
-| CHR-01 | US-301 | WP-08 | ADM, API | chore, chore_assignee | U, DB, E2E |
+| CHR-01 | US-301 | WP-08, WP-46 | ADM, API | chore, chore_assignee | U, DB, E2E |
 | CHR-02 | US-302 | WP-09 | OCCGEN, DB | chore, school_closure | U, DB, E2E |
 | CHR-03 | US-303, US-308, US-311 | WP-09 | OCCGEN, SCHED, DB | chore_occurrence | DB, U, E2E |
 | CHR-04 | US-304, US-305, US-1006 | WP-10, WP-11 | BRD, OUTBOX, API, DB | chore_completion_event, chore_occurrence | E2E, DB, U |
@@ -144,7 +144,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CHR-07 | US-307, US-314 | WP-10 | DB, SCHED, BRD, ADM | chore_occurrence, chore_completion_event | DB, U, E2E |
 | CHR-08 | US-309 | WP-12 | ADM, API, DB | chore_completion_event, points_ledger | E2E, DB |
 | CHR-09 | US-304, US-311, US-316, US-320 | WP-08, WP-09, WP-10, WP-43 | ADM, BRD, API, OCCGEN, DB | chore_assignee, chore_occurrence_assignee, chore_completion_event | DB, E2E |
-| CHR-10 | US-312 | WP-08, WP-15, WP-19 | ADM, RULES, DB | tag, chore_tag, reward_rule | DB, U, E2E |
+| CHR-10 | US-312 | WP-08, WP-15, WP-19, WP-46 | ADM, RULES, DB | tag, chore_tag, reward_rule | DB, U, E2E |
 | CHR-11 | US-313 | WP-08, WP-09, WP-11 | ADM, BRD, OCCGEN | chore, chore_occurrence | E2E, U |
 | CHR-12 | US-303, US-314 | WP-09, WP-10, WP-11 | OCCGEN, SCHED, DB, BRD | chore_occurrence | DB, INT, E2E |
 | CHR-13 | US-315 | WP-08 | ADM, BRD, API, DB | chore, chore_assignee, chore_tag, audit_log | U, DB, E2E |
@@ -170,7 +170,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CAL-02 | US-502 | WP-22 | CALSYNC, SCHED | calendar_event, calendar_event_instance | U, INT |
 | CAL-03 | US-501 | WP-22 | CALSYNC, ADM, BRD | — | REV |
 | CAL-04 | US-503 | WP-23 | BRD | calendar_event_instance | E2E |
-| CAL-05 | US-504, US-507 | WP-23 | ADM, BRD, DB | calendar_source, device_calendar | E2E, DB |
+| CAL-05 | US-504, US-507 | WP-23, WP-46 | ADM, BRD, DB | calendar_source, device_calendar | E2E, DB |
 | CAL-06 | US-505 | WP-22 | CALSYNC, ADM, OBS | calendar_source, job_run | INT, E2E |
 | CAL-07 | US-502 | WP-22 | CALSYNC | calendar_event, calendar_event_instance | U |
 | CAL-08 | US-506 | WP-29 | CALSYNC, VAULT | calendar_source | INT |
@@ -208,7 +208,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-08 | US-909 | WP-01, WP-41, WP-42 | CICD, OBS | private.usage_sample | U, DB, E2E, REV |
 | NFR-09 | US-101, US-901 | WP-02 | DB | all tables | DB |
 | NFR-10 | US-903 | WP-24 | DB | — | REV |
-| NFR-11 | US-906 | WP-31 | BRD, ADM, UI | — | E2E, REV |
+| NFR-11 | US-906 | WP-31, WP-46 | BRD, ADM, UI | — | E2E, REV |
 | PTS-01 | US-309, US-1101, US-1106 | WP-16 | DB, API, ADM | points_ledger, chore_occurrence | DB, U, E2E |
 | PTS-02 | US-1102 | WP-11, WP-16, WP-20 | BRD, DB | v_points_balance, points_ledger | E2E |
 | PTS-03 | US-1103 | WP-18 | ADM, API, BRD | reward_catalog_item | E2E, DB |
@@ -217,7 +217,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | PTS-06 | US-1108 | WP-30 | BRD, API, ADM, DB | wishlist_pin, reward_catalog_item, v_points_balance | U, DB, E2E |
 | PTS-07 | US-1109 | WP-02, WP-04, WP-16 | ADM, DB, RULES | member, points_ledger | DB, E2E |
 | NFR-12 | US-908, US-911 | WP-01, WP-02, WP-15 | all | — | CI |
-| NFR-13 | US-910 | WP-37 | BRD, ADM, UI | — | E2E, REV |
+| NFR-13 | US-910 | WP-37, WP-46 | BRD, ADM, UI | — | E2E, REV |
 | NFR-14 | US-911 | WP-01, WP-41 | CICD | — | CI, REV |
 
 ---
@@ -233,7 +233,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | **Total** | **77** | **17** | **4** | **98** |
 
 - Requirements: **98** · with at least one story: **98** · stories: **87** (P0: 12 · P1: 52 · P2: 15 · P3: 8).
-- With at least one work package: **98** · work packages: **45**.
+- With at least one work package: **98** · work packages: **46**.
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -395,6 +395,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.62 | WP-46 more icons, one icon picker and sixteen colors (D-70), in review (PR #47): 218 Lucide icons join our own (now 87, with a vacuum and an iron) for 305, each with a picker group and everyday search words (`brand/icons/lucide.json`, `groups.json`, `pnpm --filter @familywise/ui brand:lucide`); the board's icon module carries drawings only, the words and groups load in the admin (`icon-index.ts`). One picker (`IconPicker`) for chores, tasks, tags, rewards and goals: search, group chips, the chosen icon named; every form accepts any icon in the set. Sixteen member colors, each with an Evening line shade (`--member-N-line`) for event edges, calendar dots and swatches; migration `20261011020000_sixteen_colors.sql` widens the member, tag and calendar color checks. NFR-13 now names the icon set rather than 85 icons. Traced by unit tests (`icons.test.tsx`: names fit the database, one group each, unique spoken names, search, the picker's radios; `contrast.test.ts`: white initials and every line shade in both themes), pgTAP (`300_sixteen_colors`, 16), the UI suite (`icons.spec.ts` on `/dev/forms`: the four forms on a phone and a laptop in Day and Evening; search, groups, a hidden choice kept, an icon no longer offered kept; every Lucide icon pixel-identical to Lucide's; every line shade at 3:1) and e2e on the preview (`icons.spec.ts`: the done-when, a chore saved with the fish icon found by search shows on the board with it; a tag in Navy with a Lucide icon; Leo in Magenta initials on the board). |
 | 0.8.61 | WP-35 done (PR #44): approved by the owner and merged once CI and e2e were green on the preview (108 passed, no retries, on `7625152`; the done-when: a card moved up on Boards reached the board 806 ms after the press, against 3 s, and 908 ms on the first run). The first run's only retry was `offline.spec`: the three offline check-offs reached the database early although a route blocked them, so the spec now cuts the board's network with a local proxy (D-64). The screenshots for the owner's preview showed a long word ("Grandparents") running past its event in five and seven days; titles now break inside their event, seven days use the board's smallest text, and the UI suite checks that no title runs past its event (`a4d2de1`). WP-45 is ready. |
 | 0.8.60 | WP-35 family dashboard and board layout (D-66, D-67), in review (PR #44): the board's home screen is a family dashboard (the calendar: 3, 5 or 7 days, or the month with a dot per calendar, a day opening as a day; today's list beside it, a row per item with a face for each person it is for; then goals, waiting for a parent and coming up, in the layout's order), and its layout is the household's or a board's own, set on Boards. BRD-07's Family view is the dashboard's list (a column per person is the Chores screen); every tile is one height, with "More info". Traced by pgTAP (`280_board_layout`, 27: the layout's shape where it is stored, saving the household's and a board's own and only by its household's admins, what each board reads, the items' descriptions and the three-week window), unit tests (`lib/board-layout`, `lib/dashboard`, `lib/board`), the UI suite (`dashboard.spec`: the dashboard at 1920×1080 in Day and Evening, 56 px targets, 28 px text, contrast; the month's dots and a day opening; faces checking off and undoing; "More info"; tiles one height; Chores) and e2e on the preview (`board-layout.spec`: the done-when, reordering cards on Boards reaching a paired board within 3 seconds, and a board's own layout). BRD-04 (weather) moves to WP-45. Also: `offline.spec` cuts the board's network below the browser while offline (a local proxy, `e2e/support/network.ts`), as the route it used let the three check-offs out early once on the first preview run (D-64 updated). |
 | 0.8.59 | WP-23 done (PR #43): approved by the owner and merged once CI and e2e were green on the preview (105 passed, no retries; the done-when: School's events left the board 829 ms after Save, against 3 s). The first run's only failure was the e2e's own check of School's color: it compared the board's computed `--cal` with the text `var(--member-3)`, but a custom property's computed value comes with `var()` resolved (`#c2410c`); it now compares it with `--member-3` on the same event. WP-35 is ready. |

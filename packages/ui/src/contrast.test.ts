@@ -59,13 +59,32 @@ describe.each([
   });
 });
 
+const MEMBERS = Array.from({ length: 16 }, (_, i) => `--member-${i + 1}`);
+
 describe('member colors', () => {
-  it.each(['--member-1', '--member-2', '--member-3', '--member-4', '--member-5', '--member-6'])(
-    '[NFR-11] white initials on %s meet 4.5:1',
-    (name) => {
-      expect(contrast(hexOf(day, name), '#FFFFFF')).toBeGreaterThanOrEqual(4.5);
-    },
-  );
+  it.each(MEMBERS)('[NFR-11] white initials on %s meet 4.5:1', (name) => {
+    expect(contrast(hexOf(day, name), '#FFFFFF')).toBeGreaterThanOrEqual(4.5);
+  });
+
+  // [D-70] A color drawn as a line or dot (an event's edge, a tag's dot) is a graphic: 3:1 against
+  // the card and the page in both themes. The Evening theme uses a lighter shade of each.
+  describe.each([
+    ['Day', day],
+    ['Evening', evening],
+  ])('%s lines', (_name, tokens) => {
+    it.each(MEMBERS)('[NFR-11] %s-line meets 3:1 on the surface and background', (name) => {
+      for (const bg of ['--surface', '--bg']) {
+        expect(contrast(hexOf(tokens, `${name}-line`), hexOf(tokens, bg))).toBeGreaterThanOrEqual(
+          3,
+        );
+      }
+    });
+  });
+
+  it('[D-70] the colors are 16, each different', () => {
+    expect(new Set(MEMBERS.map((m) => hexOf(day, m))).size).toBe(16);
+    expect(new Set(MEMBERS.map((m) => hexOf(evening, `${m}-line`))).size).toBe(16);
+  });
 });
 
 it('[NFR-13] Evening success is fixed: Leaf 600 failed on the Evening surface', () => {

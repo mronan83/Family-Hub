@@ -1,4 +1,4 @@
-/* FamilyWise design tokens v1.1 — single source of truth for board and admin.
+/* FamilyWise design tokens v1.2 — single source of truth for board and admin.
    Light = "Day" theme (default). Dark = "Evening" theme (board auto-switches, admin follows OS).
    All text/background pairs listed in 06-brand-and-style-guide.md meet WCAG AA (verified).
    The theme is set on <html> with data-theme; .theme-day and .theme-evening force one theme on a
@@ -48,9 +48,22 @@
   --info: var(--fw-sky-600);
   --focus: #0369A1;
 
-  /* Family member colors (assign one per person; always pair with avatar or initial) */
-  --member-1: #0369A1;  --member-2: #BE3A5B;  --member-3: #C2410C;
-  --member-4: #6D5BD0;  --member-5: #2F6B3A;  --member-6: #0F766E;
+  /* Family member colors (assign one per person; always pair with avatar or initial). Also the
+     colors for tags and calendars. Each carries white initials at 4.5:1 or better. */
+  --member-1: #0369A1;  --member-2: #BE3A5B;  --member-3: #C2410C;  --member-4: #6D5BD0;
+  --member-5: #2F6B3A;  --member-6: #0F766E;  --member-7: #B91C1C;  --member-8: #A16207;
+  --member-9: #4D7C0F;  --member-10: #0E7490; --member-11: #1E40AF; --member-12: #4338CA;
+  --member-13: #7E22CE; --member-14: #A21CAF; --member-15: #8B4513; --member-16: #475569;
+  /* The same colors as lines, dots and swatches (an event's edge, a tag's dot): the color itself by
+     day; a lighter shade in the Evening theme, where the color itself is under 3:1 (D-70). */
+  --member-1-line: var(--member-1);   --member-2-line: var(--member-2);
+  --member-3-line: var(--member-3);   --member-4-line: var(--member-4);
+  --member-5-line: var(--member-5);   --member-6-line: var(--member-6);
+  --member-7-line: var(--member-7);   --member-8-line: var(--member-8);
+  --member-9-line: var(--member-9);   --member-10-line: var(--member-10);
+  --member-11-line: var(--member-11); --member-12-line: var(--member-12);
+  --member-13-line: var(--member-13); --member-14-line: var(--member-14);
+  --member-15-line: var(--member-15); --member-16-line: var(--member-16);
 
   /* Type */
   --font-display: "Nunito", ui-rounded, system-ui, sans-serif;
@@ -92,6 +105,12 @@
   --missed-text: #E2C9EA;
   --info: #7DD3FC;
   --focus: #7DD3FC;
+  --member-1-line: #38BDF8;  --member-2-line: #FB7194;  --member-3-line: #FB923C;
+  --member-4-line: #A79BF5;  --member-5-line: #6CC17A;  --member-6-line: #2DD4BF;
+  --member-7-line: #F87171;  --member-8-line: #FACC15;  --member-9-line: #A3E635;
+  --member-10-line: #22D3EE; --member-11-line: #7DA2F8; --member-12-line: #A5B4FC;
+  --member-13-line: #C084FC; --member-14-line: #E879F9; --member-15-line: #D9A066;
+  --member-16-line: #A3B1C6;
   --shadow-1: 0 1px 2px rgb(0 0 0 / .4);
   --shadow-2: 0 4px 16px rgb(0 0 0 / .5);
 }

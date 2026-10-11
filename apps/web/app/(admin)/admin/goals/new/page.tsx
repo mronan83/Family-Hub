@@ -4,7 +4,6 @@ import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
-import { GOAL_ICONS } from '../data';
 import { GoalForm } from '../goal-form';
 import { loadGoalContext } from '../load';
 
@@ -27,7 +26,6 @@ export default async function NewGoalPage() {
           members={ctx.earners}
           tags={ctx.tags}
           items={ctx.items}
-          icons={GOAL_ICONS}
           today={isoDay(household.timezone)}
         />
       </section>

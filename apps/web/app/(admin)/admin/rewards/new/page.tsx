@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
-import { REWARD_ICONS } from '../data';
 import { RewardForm } from '../reward-form';
 
 export const metadata: Metadata = { title: 'Add a reward' };
@@ -19,7 +18,7 @@ export default async function NewRewardPage() {
       <AdminHeader current="/admin/rewards" />
       <section className="fw-card">
         <h1>Add a reward</h1>
-        <RewardForm icons={REWARD_ICONS} />
+        <RewardForm />
       </section>
     </main>
   );

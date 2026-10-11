@@ -11,6 +11,16 @@ export const MEMBER_COLORS = [
   'member-4',
   'member-5',
   'member-6',
+  'member-7',
+  'member-8',
+  'member-9',
+  'member-10',
+  'member-11',
+  'member-12',
+  'member-13',
+  'member-14',
+  'member-15',
+  'member-16',
 ] as const;
 export type MemberColor = (typeof MEMBER_COLORS)[number];
 
