@@ -74,6 +74,13 @@ const SHOTS = [
   },
   { name: 'board-home-month', device: 'board', url: '/dev/board?span=month' },
   { name: 'board-home-evening', device: 'board', url: '/dev/board?theme=evening&span=3' },
+  // The weather beside the clock (WP-45), from the dev board's made-up rainy reading.
+  {
+    name: 'board-weather',
+    device: 'board',
+    url: '/dev/board?weather=rain',
+    clip: { x: 880, y: 20, width: 1040, height: 150 },
+  },
   {
     name: 'board-more-info',
     device: 'board',

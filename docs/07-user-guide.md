@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
-> Version 0.1 · Status: living document · Maintained by Claude Code
+> Version 0.2 · Status: living document · Maintained by Claude Code
+> v0.2: weather on the board (WP-45): A13, and the weather on Home, Boards, the board's top bar, the rules, troubleshooting and questions; no longer "coming soon".
 > v0.1: first version (D-68): Part A, the User Guide by task, and Part B, the User Manual, for everything built up to WP-35; screenshots from the made-up demo family; a check that every built story is covered.
 > Companions: `03-user-stories.md` (the stories each section covers) · `05-backlog.md` (what is built) · `06-brand-and-style-guide.md` (the words the app uses)
 
@@ -35,6 +36,7 @@ Button and label names are in **bold**, exactly as the app shows them. The pictu
   - [A10 School year and day types](#a10-school-year-and-day-types)
   - [A11 The board's home screen layout](#a11-the-boards-home-screen-layout)
   - [A12 Day and Evening themes](#a12-day-and-evening-themes)
+  - [A13 Weather on the board](#a13-weather-on-the-board)
 - [Part B — User Manual](#part-b--user-manual)
   - [B1 The admin app, page by page](#b1-the-admin-app-page-by-page)
   - [B2 The board, screen by screen](#b2-the-board-screen-by-screen)
@@ -645,7 +647,8 @@ Changes to the school year start tomorrow: today stays as it was planned. Days a
 1. Choose what **The calendar shows**: **3 days**, **5 days** (the default), **7 days** or **Month**. In the month, a colored dot marks each calendar with something on a day.
 2. Under **Under the calendar, in this order**, tick the cards to show: **Dinner and lunch** (it stays hidden until meal planning arrives, see [Coming soon](#b7-coming-soon)), **Goals**, **Waiting for a parent** and **Coming up**.
 3. Move a card with **Up** or **Down**. Each move saves at once.
-4. Choose **Save layout**.
+4. Tick or untick **Show the weather beside the clock** (see [A13](#a13-weather-on-the-board)).
+5. Choose **Save layout**.
 
 The boards change within seconds.
 
@@ -666,6 +669,29 @@ The boards change within seconds.
 Both looks use the same colors for the same things, never color alone: every state also has an icon and a word.
 
 ![The board's home screen in the Evening theme, with the calendar showing three days.](guide/img/board-home-evening.jpg "Evening, here with three days in the calendar")
+
+### A13 Weather on the board
+<!-- covers: US-1003 -->
+
+**What this is.** The sky, the temperature now and today's high, beside the clock on the board. **When.** Once, to set your place; after that it looks after itself. **How.** On **Home**, under **Weather on the boards**.
+
+1. Under **Town or ZIP code**, type your town's name or a US ZIP code, and choose **Find**.
+2. Under the places it found, choose **Use this** beside yours. Each is named with its state and country, so two towns with the same name are easy to tell apart.
+3. Under **Show temperatures in**, choose **Fahrenheit (°F)** (the default) or **Celsius (°C)**, and choose **Save**.
+
+Home says "Saved. The boards show the weather in a moment." and, once the weather is read, the last reading, like "Last read at 4:09 pm: 64°F, partly cloudy, high 68°F."
+
+![The board's top bar with the weather beside the clock: a rain cloud, 50°, Rain, High 52°, and the line Weather by Open-Meteo.com.](guide/img/board-weather.jpg "The weather beside the clock")
+
+**On the board** the weather sits beside the clock: an icon and a word for the sky (**Sunny**, **Partly cloudy**, **Rain**, **Snow** and so on), the temperature now in large numbers, and **High** with today's high. Temperatures are whole degrees. The small line **Weather by Open-Meteo.com** credits where the weather comes from.
+
+- **How fresh it is.** FamilyWise reads the weather every 30 minutes. The board never asks the weather service itself, so it costs the board nothing.
+- **When it can't be read.** If the weather can't be read, or the last reading is more than 75 minutes old, the board simply shows no weather; nothing else on it moves. Home says what went wrong ("Couldn't read the weather at …") and tries again on its own.
+- **Offline.** A board without the internet keeps showing its last reading for the rest of that day.
+- **One board without it.** Untick **Show the weather beside the clock** in that board's layout on **Boards** (see [A11](#a11-the-boards-home-screen-layout)).
+- **Stop it everywhere.** **Stop showing the weather** on Home forgets your place.
+
+> **Note:** FamilyWise keeps your place to about a kilometre (two decimal places), and only that goes to the weather service. Town names are found through Open-Meteo, and US ZIP codes through Zippopotam.us.
 
 ## Part B — User Manual
 
@@ -690,7 +716,7 @@ The admin app is for parents, on a phone or a laptop. The menu at the top has ev
 | **Health** | System health | Background jobs, errors, usage |
 
 #### B1.1 Home
-<!-- covers: US-310 US-103 -->
+<!-- covers: US-310 US-103 US-1003 -->
 
 | Part | What it shows or does |
 |---|---|
@@ -698,6 +724,7 @@ The admin app is for parents, on a phone or a laptop. The menu at the top has ev
 | **Check-offs** | **When a child checks something off**: **It counts straight away; a parent can uncheck it later** or **It waits for a parent to approve it**. **Save** applies it to what's still to do. |
 | **Admins** | Everyone who can manage the household, as **Owner** or **Admin**. |
 | **Invite an admin** | **Their email**, **Create invite link**, then **Copy link** or **Share**. **Waiting to join** lists open invites with when they expire, and **Cancel invite**. |
+| **Weather on the boards** | The place the boards show the weather for, and the last reading (or why it failed). **Town or ZIP code** (or **Change the place**) and **Find**; **Use this** on a place found; **Show temperatures in**: **Fahrenheit (°F)** or **Celsius (°C)**, **Save**; **Stop showing the weather**. See [A13](#a13-weather-on-the-board). |
 
 #### B1.2 Today
 <!-- covers: US-306 US-307 US-309 -->
@@ -850,7 +877,7 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 | **Disconnect** (name) | Disconnects the board for good, at once, with no second question. It reads nothing more and can't sign in again; pair it again for a new start. |
 | **Calendars on** (name) | Which calendars it shows; **Save calendars** makes it choose its own. |
 | **Home screen on** (name) | "its own layout" or "the household's layout"; **Give** (name) **its own layout**, **Save**; then its own layout form. |
-| **Home screen** | The household's layout: **The calendar shows**, **Under the calendar, in this order** with **Up** / **Down**, **Save layout**. |
+| **Home screen** | The household's layout: **The calendar shows**, **Under the calendar, in this order** with **Up** / **Down**, **Show the weather beside the clock**, **Save layout**. |
 | **Add a board** | **Board name**, **Get a pairing code**: 8 digits, once, for 10 minutes. |
 | **Disconnected** | Boards disconnected, with when. |
 
@@ -905,6 +932,7 @@ flowchart TD
 |---|---|
 | Household name and date | Always shown. |
 | Clock | In the household's timezone. |
+| Weather | Beside the clock, when the household has a place: the sky's icon and word, the temperature now, **High** and today's high, and **Weather by Open-Meteo.com**. Not shown when the layout turns it off or the last reading is over 75 minutes old. |
 | Connection | **Live** (changes arrive within seconds), **Connecting…**, or **Reconnecting…** (the board reads everything again when it reconnects). |
 | Health lines | **Offline: your check-offs are saved**; **Updated N minutes ago**; **Today's list may be out of date**. |
 | **Home** | The family dashboard. |
@@ -1022,6 +1050,7 @@ Every state is an icon, a word and a color together, in both themes. The board u
 | Sending saved check-offs | Retried after 1, 2, 5 and 10 seconds, then every 30 seconds, and at once when the network returns. |
 | Goal celebration | Once per achievement, on one board; up to 10 seconds. |
 | A new day | At the household's midnight, the board reads the new day by itself. |
+| Weather | Read every 30 minutes; hidden once the last good reading is over 75 minutes old. Offline, the last reading stays for that day. |
 
 #### Approval
 
@@ -1107,10 +1136,10 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Calendar | Synced every 15 minutes, from a week back to four months ahead; up to 5 MB and 5,000 events |
 | Board, offline | Keeps today, its saved check-offs, and the calendar from yesterday to three weeks ahead |
 | Reminders | Checked every 5 minutes; at most once each; never more than two hours late |
-| Layout | Calendar of 3, 5 or 7 days, or the month; four cards, each shown or not, in any order |
+| Layout | Calendar of 3, 5 or 7 days, or the month; four cards, each shown or not, in any order; the weather on or off |
 
 ### B4 Troubleshooting
-<!-- covers: US-206 US-505 US-904 -->
+<!-- covers: US-206 US-505 US-904 US-1003 -->
 
 | What you see | What it means | What to do |
 |---|---|---|
@@ -1137,6 +1166,8 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Sign in: a link by email never arrives | FamilyWise has no email service of its own yet. | Use your password. |
 | Points didn't arrive | The person doesn't earn rewards, the check-off waits for a parent, or it was undone. | Check **Members** (**Earns rewards**) and **Today**. |
 | Health: a job **Late** or **Failing** | A background job is behind. | It usually recovers by itself; if it stays, tell whoever runs FamilyWise. |
+| Board: no weather beside the clock | No place is set, the board's layout turns it off, or the weather couldn't be read for over 75 minutes. | On **Home**, check **Weather on the boards** (it says why a read failed); on **Boards**, check **Show the weather beside the clock**. |
+| Home: "No places found" | The name or code didn't match a place. | Try the town's name, or another code. |
 
 ### B5 Questions and answers
 
@@ -1167,6 +1198,8 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 **Why is there no description in More info?** The admin app can't add descriptions to items yet, so **More info** mostly appears for names too long for a tile.
 
 **How do I replace or move a board?** Pair the new screen on **Boards**, then **Disconnect** the old one.
+
+**Where does the weather come from?** From Open-Meteo, read every 30 minutes for the place you set on Home. Only your place, to about a kilometre, is sent.
 
 **What if the internet is down all day?** The board keeps working with what it has and sends the day's check-offs when it's back.
 
@@ -1219,7 +1252,6 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 These are planned but not built yet. This guide will cover each as it arrives.
 
 - **Meals:** a weekly meal plan, lunch bought or brought, the school lunch menu, and the **Dinner and lunch** card on the board.
-- **Weather** on the board.
 - **Goal payouts:** a goal that pays points or a reward by itself, and a preview before changing a goal's rules.
 - **Audit log:** a page showing who changed what, and when.
 - **Export and delete** your household's data.
