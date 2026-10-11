@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.71: Help in the admin app (D-72) done (PR #49): the user guide at `/help` (version 0.5). No work package changes status.
 > v0.8.70: Help in the admin app (D-72), in review (PR #49): the user guide at `/help`, from the menu, sign-in and setup. No work package changes status.
 > v0.8.69: WP-46 done (PR #47): more icons, one icon picker and sixteen colors.
 > v0.8.68: WP-46 in review (PR #47): more icons, one icon picker and sixteen colors (D-70).
