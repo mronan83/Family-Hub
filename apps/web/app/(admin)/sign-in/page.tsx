@@ -75,6 +75,9 @@ export default async function SignInPage({
         New here? FamilyWise is by invitation. Open the invite link an admin shared with you, or
         start a household with a <a href="/setup">setup code</a>.
       </p>
+      <p className="fw-muted">
+        <a href="/help">Help: how FamilyWise works</a>
+      </p>
     </main>
   );
 }
