@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.62: fixes found while writing the user guide, in review (PR #48): a board's own layout kept on a second Save, Disconnect asks first, the idle return closes "Who did …?", the points form's help; the board waits 90 seconds before going home (D-71). No work package changes status.
 > v0.8.61: WP-35 done (PR #44): the family dashboard and the home screen's layout. WP-45 is ready.
 > v0.8.60: WP-35 in review (PR #44): the family dashboard and the home screen's layout (D-66, D-67). WP-45 (weather on the board, BRD-04) is split out of WP-35 and waits for it.
 > v0.8.59: WP-23 done (PR #43): calendar views and per-board selection. WP-35 is ready.
@@ -530,7 +531,7 @@ flowchart LR
 **Phase:** P1a · **Size:** M · **Depends on:** WP-06 · **Reqs:** DEV-04, BRD-06, NFR-02
 - SPIKE-03 first (hardware).
 - Pi 5 image/provisioning notes: Chromium kiosk flags, route lockdown to `/board`, watchdog restart, SSD boot, screen power control.
-- Logical 1920×1080 layout at device scale factor 2 for the 3840×2160 panel; idle-return to Today after 60 seconds (deferred during a celebration).
+- Logical 1920×1080 layout at device scale factor 2 for the 3840×2160 panel; idle-return to the home screen after 90 seconds (D-71; a celebration playing is not cut short).
 - Hardware acceptance checklist from `04` §F.
 - **Done when:** the Pi boots to the board unattended, survives a power pull, and the animation budget from SPIKE-03 is met or the 1080p fallback is adopted and documented.
 
@@ -727,7 +728,7 @@ flowchart LR
 - **Done when:** the panel sleeps and wakes on schedule over a 3-day hardware test.
 
 ### WP-35 — Family dashboard and board layout
-**Phase:** P3 · **Size:** L · **Depends on:** WP-23 · **Reqs:** BRD-01, BRD-05, BRD-07
+**Phase:** P3 · **Size:** L · **Depends on:** WP-23 · **Reqs:** BRD-01, BRD-05, BRD-06, BRD-07
 - Panel on/off and ordering. Weather moved to WP-45 (D-67).
 - **Done when:** reordering panels updates the board within 3 seconds.
 - As built (D-66, D-67; the owner chose "Side by side" from mockups on the board itself):

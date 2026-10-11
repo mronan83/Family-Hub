@@ -5,7 +5,13 @@ import { redirect } from 'next/navigation';
 import { GENERIC, hintMessage } from '@/lib/auth/messages';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { BOARD_THEMES } from '@/lib/devices';
-import { type BoardLayout, effectiveLayout, layoutFromForm, moveCard } from '@/lib/board-layout';
+import {
+  type BoardLayout,
+  effectiveLayout,
+  layoutFromForm,
+  moveCard,
+  readLayout,
+} from '@/lib/board-layout';
 import { log } from '@/lib/log';
 import { serverClient } from '@/lib/supabase/server';
 
@@ -152,7 +158,7 @@ export async function saveBoardLayout(form: FormData): Promise<void> {
 
 /**
  * [BRD-05][D-67] Gives a board its own layout, starting from the household's, or sends it back to
- * the household's.
+ * the household's. Saving with "its own layout" still ticked keeps the one it has.
  */
 export async function setOwnLayout(form: FormData): Promise<void> {
   const { db, household } = await context();
@@ -160,6 +166,15 @@ export async function setOwnLayout(form: FormData): Promise<void> {
   const name = String(form.get('name') ?? '');
   let layout: BoardLayout | null = null;
   if (form.get('own') === 'on') {
+    const { data: board } = await db
+      .from('device')
+      .select('board_config')
+      .eq('household_id', household.id)
+      .eq('id', device)
+      .maybeSingle();
+    if (readLayout((board?.board_config as { layout?: unknown } | null)?.layout)) {
+      redirect(layoutDone(device, name, false));
+    }
     const { data } = await db
       .from('household_settings')
       .select('board_layout')

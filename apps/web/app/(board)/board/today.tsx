@@ -999,6 +999,8 @@ export function Today({
       setDetails(null);
       setWishing(null);
       setShopping(null);
+      // An unanswered "Who did …?" closes too, recording nothing, as Cancel does.
+      setPicker(null);
       // [D-66] The dashboard scrolls; untouched, it goes back to the top.
       window.scrollTo({ top: 0 });
     }, IDLE_MS);
