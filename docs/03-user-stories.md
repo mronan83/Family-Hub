@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.35: US-107 as built (WP-51, D-81): one admin menu, Settings with each part's status, Tags in Settings.
 > v0.8.34: US-107, US-508 and US-707 added (WP-49 to WP-51): one admin menu with Settings and Tags; a calendar for one or more people; next week's lunches picked on the board.
 > v0.8.33: US-705 as built (WP-28, D-80): today's meals above Today's list on the board, the week on **Meals**, read-only.
 > v0.8.32: US-704 and US-801 to US-803 as built (WP-27, D-79): School menus from Nutrislice (picked), a file or typed in; a parent's days kept; a failing feed keeps its menus; a buy day shows the menu.
@@ -110,6 +111,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P3 · **Reqs:** NFR-15
 - Given any admin page on a phone or a laptop, when I open the menu, then I see the pages in groups (the day, the family's set-up, Settings), the page I am on marked.
 - Given Settings, when I open it, then School, Calendars, Boards, Tags, Reminders and Health are each one tap away.
+- As built (WP-51, D-81): the menu's groups are **Your day**, **The family** and **Set-up** (Settings); on a laptop it stays down the left, on a phone **Menu** opens it. **Settings** shows a tile for each of its six pages with how it stands; **Today** in the menu says how many check-offs wait for you.
 
 ---
 

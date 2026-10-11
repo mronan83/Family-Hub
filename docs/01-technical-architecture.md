@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.51: one admin menu (WP-51, D-81): the admin app's menu in three groups, Settings with each part's status, Today's count (§4).
 > v0.8.50: meals on the board (WP-28, D-80): the snapshot's `meals`, five meal tables in Realtime, today's meals above Today's list and the Meals screen (§7).
 > v0.8.49: school menus (WP-27, D-79): the Nutrislice adapter, a CSV file and days typed in; the `menu_import` job daily over 28 days; a parent's days never replaced; a failed fetch keeps its menus (§5.5, §5.6).
 > v0.8.48: school lunch (WP-26, D-78): buy or bring per child and school day, through `set_lunch()`, `set_lunch_defaults()` and `lunch_week()`.
@@ -189,6 +190,8 @@ flowchart TB
 | `OBS` | Observability | Structured JSON logs without PII (`lib/log.ts`). Server errors and failed jobs are kept 30 days in `private.app_error` (`onRequestError`), each with the household it happened for. `job_run` and `job_health()`. Usage: the database size, read live, and the Vercel account's usage, read daily by the usage workflow. All shown on System Health, where each household sees only its own jobs and errors (WP-42, D-42). | Vercel runtime logs, Postgres, GitHub Actions | NFR-07, NFR-08, CAL-06 |
 | `UI` | Design system | FamilyWise tokens (Day and Evening, sixteen member colors with Evening line shades), self-hosted fonts, typed icon set (our own and Lucide's, D-70), avatars and brand components (`ChoreTile`, `PointsChip`, `GoalMeter`, `Banner`, `Button`, `Logo`, `BootSplash`, `IconPicker`) shared by board and admin. `brand/` is the source of truth: `packages/ui/scripts/lucide.mjs` copies the Lucide icons listed in `brand/icons/lucide.json` into the kit, and `packages/ui/scripts/brand.mjs` generates the typed icons (drawings for every surface; words and picker groups in a module only the admin loads) and theme colors (committed, checked in CI) and, before every dev run and build, copies fonts, logos, avatars and app icons into `apps/web/public` and writes the two manifests and the font-precaching service worker. | `packages/ui`, `brand/` | NFR-13, NFR-11 |
 | `CICD` | Delivery pipeline | Pull-request gates, preview environments, ordered production deploys (migrations, then app), docs traceability. No Docker, no staging. | GitHub Actions, Vercel, Supabase CLI, `psql`/`pg_dump` | NFR-14, NFR-12, NFR-08, NFR-10 |
+
+**As built (WP-51, D-81): the admin app's menu.** Every admin page starts with `AdminHeader` (a server component): it reads who is signed in and how many check-offs wait for a parent (`chore_occurrence` `pending_approval`, through RLS), and renders `AdminNav` (a client component): `NAV_GROUPS` from `lib/admin-nav.ts` (Your day, The family, Set-up), Help, and the person with **Sign out**. From 1024 px the menu is fixed down the left and `.admin:has(.fw-shell)` makes room for it; below, a **Menu** button opens it over the page. `/admin/settings` reads each part's state (`lib/settings-status.ts`: the school year, calendars that can't sync, boards, tags, the parent's own reminders, jobs needing a look). A page `SETTINGS_PAGES` lists marks Settings and shows the way back.
 
 ---
 

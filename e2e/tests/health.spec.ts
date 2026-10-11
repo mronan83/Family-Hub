@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { openSetting } from '../support/settings';
 
 // [NFR-07][NFR-08] System Health on the preview (WP-42, D-42), as Alex of the demo family: a failing
 // job shows with its message and clears after a good run, a server error recorded for the household
@@ -25,10 +26,7 @@ async function asAlexOnHealth(page: Page) {
   await page.goto('/sign-in');
   await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
   await page.waitForURL(/\/admin$/);
-  await page
-    .getByRole('navigation', { name: 'Admin' })
-    .getByRole('link', { name: 'Health', exact: true })
-    .click();
+  await openSetting(page, 'Health');
   await expect(page.getByRole('heading', { name: 'System health', level: 1 })).toBeVisible();
 }
 

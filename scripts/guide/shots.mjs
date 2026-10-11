@@ -178,6 +178,14 @@ const SHOTS = [
   },
 
   // The admin app -------------------------------------------------------------------------------
+  // The menu and Settings (WP-51): Settings on a laptop with the menu beside it, the menu on a phone.
+  { name: 'admin-settings-laptop', device: 'laptop', url: '/dev/settings' },
+  {
+    name: 'admin-menu-phone',
+    device: 'phone',
+    url: '/dev/settings',
+    act: (page) => page.getByRole('button', { name: /^Menu/ }).click(),
+  },
   { name: 'admin-today-laptop', device: 'laptop', url: '/dev/admin', full: true },
   { name: 'admin-not-done-phone', device: 'phone', url: '/dev/admin?notice=1', maxHeight: 1300 },
   { name: 'admin-my-tasks-phone', device: 'phone', url: '/dev/admin?view=my', full: true },
