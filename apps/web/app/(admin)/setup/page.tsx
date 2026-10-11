@@ -49,6 +49,9 @@ export default async function SetupPage() {
       <p className="fw-muted">
         Joining a household someone else runs? Open the invite link they shared with you.
       </p>
+      <p className="fw-muted">
+        <a href="/help#a1-getting-started">Help: getting started, step by step</a>
+      </p>
     </main>
   );
 }

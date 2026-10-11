@@ -14,6 +14,31 @@ const posts = (page: Page) =>
 const people = (page: Page) => page.getByRole('list', { name: 'Family', exact: true });
 const health = (page: Page) => page.locator('[data-health]');
 
+/**
+ * What the board has written to IndexedDB: the events waiting in its outbox, and the items it shows
+ * as done ahead of the server. A tap shows at once, and both are written a moment later (the second
+ * after React's next render), so a reload must wait for them, as a real board's restart would.
+ */
+const persisted = (page: Page) =>
+  page.evaluate(
+    () =>
+      new Promise<{ queued: number; shown: number }>((resolve, reject) => {
+        const open = indexedDB.open('familywise-dev-board');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction(['outbox', 'saved'], 'readonly');
+          const queued = tx.objectStore('outbox').count();
+          const shown = tx.objectStore('saved').get('overrides');
+          tx.oncomplete = () => {
+            db.close();
+            const value = (shown.result as { value?: unknown[] } | undefined)?.value;
+            resolve({ queued: queued.result, shown: Array.isArray(value) ? value.length : 0 });
+          };
+        };
+      }),
+  );
+
 /** The page as the service worker controls it, with its page and files cached. */
 async function controlled(page: Page, path = '/dev/board') {
   await page.goto(path);
@@ -50,6 +75,7 @@ test('[DEV-06][NFR-01][US-205] three check-offs offline outlast a reload with no
   }
   await expect(page.locator('[data-provisional]')).toContainText('Not saved yet');
   expect(await posts(page)).toEqual([]);
+  await expect.poll(() => persisted(page)).toEqual({ queued: 3, shown: 3 });
 
   // A reload with no network: the page is the worker's copy, and the check-offs are still there.
   await page.reload();

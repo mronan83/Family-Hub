@@ -16,6 +16,8 @@ const LINKS = [
   { href: '/admin/calendars', label: 'Calendars' },
   { href: '/admin/devices', label: 'Boards' },
   { href: '/admin/health', label: 'Health' },
+  // [D-72] The user guide, built from docs/07.
+  { href: '/help', label: 'Help' },
 ] as const;
 
 /** The admin app's header: logo, sections, sign out. `current` marks the page you are on. */
