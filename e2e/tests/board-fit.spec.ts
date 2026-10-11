@@ -29,12 +29,18 @@ const zoom = (page: Page) =>
     Number(getComputedStyle(document.querySelector('.board')!).getPropertyValue('--fw-zoom')),
   );
 
-async function setTextSize(label: string) {
+const savedSize = () =>
+  sql(`select coalesce(board_config ->> 'text_size', 'standard') from public.device
+        where household_id = '${DEMO}' and name = '${BOARD}'`);
+
+/** Chooses a text size on Boards, and waits until it is saved (the page is already on Boards). */
+async function setTextSize(label: string, value: string) {
+  // A fresh load, so no earlier save is still settling on the admin page.
   await admin.goto('/admin/devices');
   const form = admin.getByRole('form', { name: `Text size for ${BOARD}`, exact: true });
   await form.getByLabel(`Text size for ${BOARD}`, { exact: true }).selectOption({ label });
   await form.getByRole('button', { name: 'Set text size', exact: true }).click();
-  await admin.waitForURL(/\/admin\/devices$/);
+  await expect.poll(savedSize, { timeout: 10_000 }).toBe(value);
 }
 
 test.beforeAll(async ({ browser }, testInfo) => {
@@ -70,14 +76,11 @@ test('[BRD-08][US-1007] done-when: Larger on Boards zooms the board at once, and
   expect(await zoom(board)).toBe(1);
   await expect(board.locator('html')).toHaveAttribute('data-text-size', 'standard');
 
+  await setTextSize('Larger text', 'larger');
+  // From the database's save to the board's new size.
   const saved = Date.now();
-  await setTextSize('Larger text');
-  expect(
-    sql(`select board_config ->> 'text_size' from public.device
-          where household_id = '${DEMO}' and name = '${BOARD}'`),
-  ).toBe('larger');
   await expect.poll(() => zoom(board), { timeout: 10_000 }).toBe(1.15);
-  report(`WP-47: Larger reached the board in ${Date.now() - saved} ms`);
+  report(`WP-47: Larger reached the board ${Date.now() - saved} ms after it was saved`);
   const [cal, list] = await Promise.all([
     board.locator('.fw-dash__cal').boundingBox(),
     board.locator('.fw-dash__list').boundingBox(),
@@ -92,7 +95,7 @@ test('[BRD-08][US-1007] done-when: Larger on Boards zooms the board at once, and
 });
 
 test('[BRD-08] Standard puts the board back', async () => {
-  await setTextSize('Standard text');
+  await setTextSize('Standard text', 'standard');
   await expect.poll(() => zoom(board), { timeout: 10_000 }).toBe(1);
   const [cal, list] = await Promise.all([
     board.locator('.fw-dash__cal').boundingBox(),
