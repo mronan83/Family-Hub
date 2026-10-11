@@ -58,6 +58,13 @@
       "purpose": "Every 30 minutes (minutes 9 and 39): reads the temperature now and today's high and low at each household's place from Open-Meteo and stores it for the boards; a read that fails is recorded and the boards stop showing the weather (WP-45, D-69)."
     },
     {
+      "name": "menu_import",
+      "kind": "http",
+      "cron": "29 10 * * *",
+      "everyMinutes": 1440,
+      "purpose": "Daily at 10:29 UTC: fetches each household's Nutrislice school menus for the next 28 days and stores them; a parent's own days are never replaced, and a feed that fails keeps its last good menus (WP-27, D-79)."
+    },
+    {
       "name": "purge_history",
       "kind": "sql",
       "cron": "43 3 * * *",

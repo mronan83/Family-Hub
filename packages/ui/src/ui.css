@@ -438,6 +438,7 @@ select.fw-input {
   cursor: pointer;
 }
 .fw-choice input {
+  flex: none; /* a label that wraps never shrinks its box */
   width: 20px;
   height: 20px;
   margin: 0;
@@ -2006,6 +2007,68 @@ span.fw-heat__cell {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
   gap: var(--s-3);
+}
+
+/* School menus (WP-27): a menu's days, a line each (the date, then what's served), the parent's own
+   marked; a buy day's menu under it in the lunch table, wrapping in its cell. --------------------- */
+.fw-lunch__menu {
+  display: block;
+  max-width: 14rem;
+  margin-top: var(--s-1);
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.fw-menu-days {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+.fw-menu-days > li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-2);
+  align-items: baseline;
+}
+.fw-menu-days > li[data-today] .fw-menu-days__date {
+  color: var(--primary-text);
+}
+.fw-menu-days__date {
+  min-width: 7rem;
+  font-weight: 600;
+}
+.fw-menu-days__change {
+  margin-left: auto;
+}
+.fw-menu-days__change > summary {
+  color: var(--primary-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+.fw-menu-days__change[open] {
+  flex-basis: 100%;
+  margin-left: 0;
+}
+.fw-menu-picker,
+.fw-menu-preview {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-menu-preview {
+  padding: var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+}
+.fw-menu-preview p {
+  margin: 0;
+}
+.fw-menu-problems {
+  margin: var(--s-1) 0 0;
+  padding-left: var(--s-4);
 }
 
 /* A goal change's preview (WP-39): what saving would do, each rule now and after. -------------- */

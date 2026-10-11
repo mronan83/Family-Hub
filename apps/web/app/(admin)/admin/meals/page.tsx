@@ -6,7 +6,7 @@ import { copyWords, type Slot, SLOTS, weekDays, weekFrom } from '@/lib/meals';
 import { serverClient } from '@/lib/supabase/server';
 import { loadMembers } from '../members/data';
 import { lunchRefusal } from '@/lib/lunch';
-import { loadLunch, loadMeals, loadPlan } from './data';
+import { loadLunch, loadMeals, loadMenuNames, loadPlan } from './data';
 import { MealsView } from './view';
 
 export const metadata: Metadata = { title: 'Meals' };
@@ -33,11 +33,12 @@ export default async function MealsPage({
   const today = isoDay(household.timezone);
   const week = weekFrom(p.week, today, household.weekStart);
   const days = weekDays(week);
-  const [entries, meals, members, lunch] = await Promise.all([
+  const [entries, meals, members, lunch, menus] = await Promise.all([
     loadPlan(db!, household.id, days[0]!, days[6]!),
     loadMeals(db!, household.id),
     loadMembers(db!, household.id),
     loadLunch(db!, household.id, week),
+    loadMenuNames(db!, household.id),
   ]);
   const addAt =
     p.day && days.includes(p.day) && SLOTS.includes(p.slot as Slot)
@@ -64,6 +65,7 @@ export default async function MealsPage({
       addAt={addAt}
       newId={crypto.randomUUID()}
       lunch={lunch}
+      menus={menus}
       notice={copied ?? (p.did ? (DID[p.did] ?? null) : null)}
       error={
         p.lunch

@@ -2,6 +2,7 @@ import { ENGINE_VERSION } from '@familywise/rules-engine';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { isoDay } from '../format';
 import { runCalendarSync } from '../calendar/sync';
+import { runMenuImport } from '../menu/import';
 import { evaluateHouseholdGoals } from '../goals';
 import { dayBefore, rebuildMemberHistory } from '../history';
 import { log } from '../log';
@@ -96,6 +97,15 @@ export const JOBS: Record<string, Job> = {
   async calendar_sync({ db, householdId }) {
     const stats = await runCalendarSync(db, householdId);
     return { status: 'ok', stats: { ...stats } };
+  },
+
+  // [MENU-02][MENU-04][MENU-05] School menus (WP-27, D-79), daily: each of the household's Nutrislice
+  // feeds is fetched over the next 28 days and stored; a parent's own days are never replaced. A feed
+  // that fails keeps its cached days and shows its error on School menus; like calendar_sync, only a
+  // database that can't record it fails the run.
+  async menu_import({ db, householdId }) {
+    const stats = await runMenuImport(db, householdId);
+    return { status: stats.due === 0 ? 'skipped' : 'ok', stats: { ...stats } };
   },
 
   // [BRD-04] The weather (WP-45, D-69), every 30 minutes: reads the household's place from

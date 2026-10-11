@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.84: WP-27 in review (PR #57): school menus from Nutrislice, a file or by hand (D-79).
 > v0.8.82: WP-26 in review (PR #56): lunch, buy or bring (D-78).
 > v0.8.81: WP-25 in review (PR #55): the meal library and the weekly planner (D-77).
 > v0.8.80: WP-39 done (PR #53): goal payouts, payout reversal and the rule-change preview.
@@ -161,7 +162,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
 | WP-25 | Meal library and weekly planner | P2 | M | WP-04 | In review (PR #55) |
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | In review (PR #56) |
-| WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Ready |
+| WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | In review (PR #57) |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Queued |
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Ready (SPIKE-02's CalDAV part first) |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Done (PR #35) |
@@ -707,6 +708,12 @@ flowchart LR
 **Phase:** P2 · **Size:** L · **Depends on:** WP-21, WP-07 · **Reqs:** MENU-01, MENU-02, MENU-03, MENU-04, MENU-05, MEAL-05
 - `menu_source`, `school_menu_day`; adapter interface with CSV and manual, plus the Nutrislice adapter (SPIKE-04, `01` §5.5) with a district → school → menu-type picker; overrides never overwritten; 28-day daily refresh; failure surfacing; menu shown on buy days.
 - **Done when:** four weeks load via CSV, and a failing adapter leaves cached menus and a visible warning.
+- As built (D-79):
+  - **School menus** (`/admin/meals/menus`, from **Meals**): each menu with where it comes from, whose lunch it is, how its fetches are going, and its next four weeks, a day at a time to change (the parent's own from then on) or hand back to the feed; **Add a school menu** from Nutrislice (district typed, school and menu picked; fetched at once), a file, or typed in; **Load a file** looked at before loading; **Fetch now**, rename, remove. Each child's **School menu** with their usual lunches; a buy day on Meals shows the menu.
+  - **Adapters:** Nutrislice (`lib/menu/nutrislice.ts`), CSV (`lib/menu/csv.ts`), typed in. MENU-02 also names SchoolCafe and Linq Connect, which no work package builds yet.
+  - **Database:** `menu_source`, `school_menu_day`, `member_lunch.menu_source_id`; `save_menu_source()`, `save_menu_days()`, `clear_menu_day()`, `menu_sources_due()`, `save_menu_fetch()`, `set_child_menu()`; `lunch_week()` gives the menu on buy days. The demo family has a made-up school's menu from a file.
+  - **Job:** `menu_import` daily at 10:29 UTC.
+  - **Done when:** pgTAP `360_school_menus` (31) and the preview's `menus.spec.ts`: four weeks loaded from a made-up file through the page; the job's own code against a made-up Nutrislice: fetched, then failing (its menus kept, **Can't fetch** with why), then fetched again with the parent's own day kept. Unit `lib/menu/menu.test.ts`, `menus.test.ts`; the UI suite's `menus.spec.ts`.
 
 ### WP-28 — Board meals panel
 **Phase:** P2 · **Size:** S · **Depends on:** WP-25, WP-06 · **Reqs:** MEAL-06
