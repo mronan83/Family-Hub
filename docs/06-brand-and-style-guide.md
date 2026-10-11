@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.14 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35)
+> Version 1.15 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-46)
+> v1.15: sixteen colors for members, tags and calendars, each with a lighter Evening shade for lines and dots (§4.2); the icon set grows to 305 with Lucide's icons and our vacuum and iron, and one icon picker with groups and a search (§8, WP-46, D-70).
 > v1.14: the board's home screen as a family dashboard (WP-35, D-66): the calendar panel and the month's dots, today's list with a face per person, the cards, the top bar with each person's points, tiles of one height and "More info"; the home screen's layout on Boards (§7.2, §7.3).
 > v1.13: the board's Calendar (Day, Week, Month), events in their calendar's color with whose they are, and a board's calendars on Boards (§7.2, §7.3, WP-23).
 > v1.12: Calendars in the admin portal: each calendar's color pill, its sync in words beside an icon, and what's coming up (§7.3, WP-22).
@@ -127,7 +128,20 @@ Defined once in `brand/familywise-tokens.css`. Use the **role** tokens (`--prima
 - **Ratio:** about 80% Paper/Surface and Ink, 15% Teal, 5% Sun. Sun is a reward signal; if everything is gold, nothing is.
 - **Never use red** for a child-visible state. A miss is Plum, a warning is Sun, an error in admin forms is Plum with an icon and text.
 - **Never rely on color alone.** Every state pairs color with an icon and a label (see 7.1).
-- **Family member colors** (`--member-1..6`, all ≥ 5.18:1 with white) are assigned per person. Always pair with the member's avatar or initial; never color-code alone.
+- **Family member colors** (`--member-1..16`, all ≥ 4.92:1 with white) are assigned per person, and also color tags and calendars. Always pair with the member's avatar or initial, or a name; never color-code alone. Sixteen (D-70), each named for the pickers and screen readers:
+
+| Token | Name | Day (fill and line) | Evening line | | Token | Name | Day (fill and line) | Evening line |
+|---|---|---|---|---|---|---|---|---|
+| `member-1` | Blue | `#0369A1` | `#38BDF8` | | `member-9` | Lime | `#4D7C0F` | `#A3E635` |
+| `member-2` | Rose | `#BE3A5B` | `#FB7194` | | `member-10` | Cyan | `#0E7490` | `#22D3EE` |
+| `member-3` | Orange | `#C2410C` | `#FB923C` | | `member-11` | Navy | `#1E40AF` | `#7DA2F8` |
+| `member-4` | Violet | `#6D5BD0` | `#A79BF5` | | `member-12` | Indigo | `#4338CA` | `#A5B4FC` |
+| `member-5` | Green | `#2F6B3A` | `#6CC17A` | | `member-13` | Purple | `#7E22CE` | `#C084FC` |
+| `member-6` | Teal | `#0F766E` | `#2DD4BF` | | `member-14` | Magenta | `#A21CAF` | `#E879F9` |
+| `member-7` | Red | `#B91C1C` | `#F87171` | | `member-15` | Brown | `#8B4513` | `#D9A066` |
+| `member-8` | Gold | `#A16207` | `#FACC15` | | `member-16` | Slate | `#475569` | `#A3B1C6` |
+
+- **Fill or line.** A color behind white initials (an avatar) uses `--member-N` in both themes. A color drawn as a line or dot (an event's edge, a calendar's dot, a tag's or calendar's swatch) uses `--member-N-line`: the same color by day, the lighter shade in the Evening theme, where the color itself is under 3:1 on the dark surface. Every line shade is at least 5.25:1 on the Evening surface; a unit test and the UI suite check both themes. Red is a member color only: it never marks a state.
 - **Burn-in:** the board avoids large static bright fills. Use tints for large areas; reserve saturated teal and sun for small controls and chips.
 
 ---
@@ -231,7 +245,7 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 
 ## 8. Iconography
 
-**Set:** 85 custom icons in `brand/icons/` (`ui/` and `chores/`), drawn on a 24 px grid, **2 px stroke, round caps and joins**, `currentColor`, no fills except tiny dots. They inherit text color and size with the font. See `icons/index.json` for names, categories, and search keywords, and `icons/sprite.svg` for the sprite (`<use href="#fw-check"/>`).
+**Set:** 305 icons, all on a 24 px grid, **2 px stroke, round caps and joins**, `currentColor`, no fills except tiny dots. They inherit text color and size with the font. **87 are our own** in `brand/icons/` (`ui/` and `chores/`, now with vacuum and iron); **218 come from [Lucide](https://lucide.dev)** (ISC licence, `icons/LICENSE-lucide.txt`), which shares the grid and stroke, listed in `icons/lucide.json` with a picker group and everyday search words and copied into `icons/lucide/` by `pnpm --filter @familywise/ui brand:lucide` (D-70). See `icons/index.json` for every icon's name, category and search words, `icons/groups.json` for the picker's groups, and `icons/sprite.svg` for the sprite of our own (`<use href="#fw-check"/>`).
 
 | Category | Icons |
 |---|---|
@@ -245,8 +259,8 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 | Chores (picker) | bed, dishes, table, bin, teeth, laundry, pet, plant, toys, shoes, broom, bath, read, homework, outdoors, music, exercise, pack |
 
 **Sizes (logical px):** board 56 (tiles), 36 (chips and rows), 28 (inline); admin 24 and 20. Touch targets are never the icon size; pad to 56 (board) or 44 (admin).
-**Rules:** one icon per meaning (`hourglass` means time has passed: stale data, overdue, past its time); don't mix in other icon sets; don't fill the outline icons; for new icons keep the grid, stroke, and 2 px minimum gaps.
-**Chore icon picker:** show the 18 chore icons first; allow search by keyword; store the icon name in `chore.icon`.
+**Rules:** one icon per meaning (`hourglass` means time has passed: stale data, overdue, past its time); only our own icons and the Lucide icons in `lucide.json`, no other set; don't fill the outline icons; for new icons keep the grid, stroke, and 2 px minimum gaps. Every icon has its own spoken name (a Lucide icon that would sound like one of ours takes a name of its own, like `bathtub`), and the UI suite checks that each Lucide icon draws exactly as Lucide draws it.
+**The icon picker (one, for chores, tasks, tags, rewards and goals):** the chosen icon and its name; a search over names and everyday words ("laundry" finds the washing machine); a row of group chips that scrolls sideways on a phone (All, Home, Kitchen and food, School and learning, Pets and garden, Health and care, Play and sport, Music and making, Errands and money, Out and about, Treats and rewards, Weather and time, People and labels); and the icons as 44 px square tiles in a box of its own height. Each form starts with its own group first (chores Home, tags People and labels, rewards and goals Treats and rewards). The app's own controls (chevrons, close, menu, trash) are never offered; an icon chosen before that the picker no longer offers stays chosen. The radios are the form field, so an icon hidden by a search stays chosen and the picker works before its script loads. The icon's name is stored (`chore.icon`, `tag.icon`, `reward.icon`, `goal.icon`).
 
 ### 8.1 Avatars
 Eight friendly characters (`brand/avatars/`): owl, bear, fox, cat, bunny, dog, frog, panda, in 64 px circles on soft tints. Store the file stem in `member.avatar_key` (for example `owl`). Adults can use initials on their member color. The owl is the default and nods to the "Wise" in the name; it is **not** a mascot and does not appear in UI chrome.
@@ -304,7 +318,9 @@ brand/
 ├── specimen.html                everything rendered (open in a browser)
 ├── logo/                        lockups, wordmarks, marks, glyphs (SVG + PNG)
 ├── app-icons/                   favicon, touch icon, PWA icons, manifest, splash
-├── icons/ui, icons/chores       85 SVG icons
-├── icons/sprite.svg, index.json sprite and searchable index
+├── icons/ui, icons/chores       our 87 SVG icons
+├── icons/lucide/, lucide.json   218 Lucide icons and the list they come from (D-70)
+├── icons/sprite.svg, index.json sprite of our own; searchable index of all 305
+├── icons/groups.json            the icon picker's groups
 └── avatars/                     8 member avatars
 ```

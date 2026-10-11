@@ -497,6 +497,74 @@ body {
   justify-content: center;
   min-width: var(--touch);
 }
+/* The icon picker (WP-46, D-70): the chosen icon, a search, group chips that scroll sideways on a
+   phone, and the icons in a box of their own height so the form stays short. */
+.fw-iconpick {
+  display: grid;
+  gap: var(--s-2);
+  min-width: 0;
+}
+.fw-iconpick [hidden] {
+  display: none !important;
+}
+.fw-iconpick__chosen {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+}
+.fw-iconpick__groups {
+  display: flex;
+  gap: var(--s-2);
+  overflow-x: auto;
+  padding: 2px 2px var(--s-1);
+  scrollbar-width: thin;
+}
+.fw-iconpick__group {
+  flex: none;
+  min-height: var(--touch);
+  padding: var(--s-1) var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.fw-iconpick__group[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-weight: 600;
+}
+.fw-iconpick__grid {
+  position: relative;
+  display: grid;
+  gap: var(--s-3);
+  max-height: 22rem;
+  overflow-y: auto;
+  padding: 4px;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  overscroll-behavior: contain;
+}
+/* Square tiles in an even grid: six to a row on a phone, every one a full touch target. */
+.fw-iconpick__icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--touch), 1fr));
+}
+.fw-iconpick__grid .fw-picker__item--icon {
+  min-width: 0;
+  min-height: var(--touch);
+  padding: var(--s-1);
+  border-radius: var(--r-sm);
+}
+.fw-iconpick__heading {
+  margin: 0 0 var(--s-1);
+  font-size: var(--t-small);
+  font-weight: 600;
+  color: var(--text-soft);
+}
 /* An outline pill: Private (06 §7.1 display states) and tags, always with words. */
 .fw-pill {
   display: inline-flex;

@@ -43,9 +43,6 @@ export const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] 
 export const FREQS = ['daily', 'weekly', 'monthly', 'once'] as const;
 export type Freq = (typeof FREQS)[number];
 
-/** The chore icons the picker shows first (06 §8); any icon in the set may be stored. */
-export const CHORE_ICONS = ICON_NAMES.filter((n) => n.startsWith('chore-'));
-
 const uniqueInts = (lo: number, hi: number) =>
   z
     .array(z.int().min(lo).max(hi))

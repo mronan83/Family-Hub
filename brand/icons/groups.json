@@ -1,0 +1,65 @@
+{
+ "$comment": "The icon picker's groups, in the order the picker shows them (WP-46, D-70). Each group lists our own icons first (by name), then holds the Lucide icons whose group in lucide.json is its key. An icon in no group (the app's own controls, like chevron-left or close) is never offered, but one already chosen still shows as chosen. packages/ui/scripts/brand.mjs checks every name and that no icon is in two groups.",
+ "groups": [
+  {
+   "key": "home",
+   "label": "Home",
+   "own": ["chore-bed", "chore-broom", "chore-vacuum", "chore-laundry", "chore-iron", "chore-bin", "chore-toys", "chore-shoes", "chore-bath", "chore-teeth", "home"]
+  },
+  {
+   "key": "kitchen",
+   "label": "Kitchen and food",
+   "own": ["chore-dishes", "chore-table", "utensils", "breakfast", "lunch", "dinner", "snack"]
+  },
+  {
+   "key": "school",
+   "label": "School and learning",
+   "own": ["backpack", "chore-homework", "chore-read", "chore-pack", "bring", "buy"]
+  },
+  {
+   "key": "pets",
+   "label": "Pets and garden",
+   "own": ["chore-pet", "chore-plant"]
+  },
+  {
+   "key": "health",
+   "label": "Health and care",
+   "own": []
+  },
+  {
+   "key": "sport",
+   "label": "Play and sport",
+   "own": ["chore-exercise", "chore-outdoors"]
+  },
+  {
+   "key": "arts",
+   "label": "Music and making",
+   "own": ["chore-music"]
+  },
+  {
+   "key": "errands",
+   "label": "Errands and money",
+   "own": []
+  },
+  {
+   "key": "travel",
+   "label": "Out and about",
+   "own": []
+  },
+  {
+   "key": "rewards",
+   "label": "Treats and rewards",
+   "own": ["gift", "star", "sparkles", "trophy", "ticket", "target", "flame", "bookmark"]
+  },
+  {
+   "key": "weather",
+   "label": "Weather and time",
+   "own": ["sun", "moon", "cloud", "rain", "clock", "hourglass", "calendar"]
+  },
+  {
+   "key": "tags",
+   "label": "People and labels",
+   "own": ["family", "person", "list-check", "bell", "lock"]
+  }
+ ]
+}

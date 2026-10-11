@@ -263,7 +263,7 @@ function MonthDots({
                 <span className="fw-dash__date">{Number(d.slice(8))}</span>
                 <span className="fw-dash__dots" data-dots={dots.length}>
                   {dots.map((c) => (
-                    <i key={c} style={{ ['--cal' as string]: `var(--${c})` }} />
+                    <i key={c} style={{ ['--cal' as string]: `var(--${c}-line)` }} />
                   ))}
                 </span>
               </button>
@@ -432,7 +432,7 @@ export function Dashboard({
                 <li
                   key={`${u.date}:${u.event.id}`}
                   className="fw-dash__coming"
-                  style={{ ['--cal' as string]: `var(--${u.calendar?.color ?? 'member-6'})` }}
+                  style={{ ['--cal' as string]: `var(--${u.calendar?.color ?? 'member-6'}-line)` }}
                 >
                   <span className="fw-dash__line-date">{dayName(u.date)}</span>
                   <span className="fw-dash__line-text">{u.event.title || 'Untitled event'}</span>

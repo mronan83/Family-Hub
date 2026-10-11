@@ -190,12 +190,13 @@ test('[US-507] ticked again, School is back in its own color, with its person', 
   await form.getByRole('button', { name: 'Save calendars' }).click();
   const school = todayColumn().locator('.fw-bcal__event[data-calendar="School e2e"]');
   await expect(school).toContainText('Picture day e2e', { timeout: 3_000 });
-  // The browser gives a custom property's value with var() resolved: School's color is member-3's.
+  // The browser gives a custom property's value with var() resolved: School's color is member-3's,
+  // as a line (D-70): the color itself by day, its lighter shade in the Evening theme.
   const color = await school.evaluate((el) => {
     const style = getComputedStyle(el);
     return {
       cal: style.getPropertyValue('--cal').trim(),
-      own: style.getPropertyValue('--member-3').trim(),
+      own: style.getPropertyValue('--member-3-line').trim(),
     };
   });
   expect(color.cal).not.toBe('');

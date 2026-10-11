@@ -1,5 +1,6 @@
-// The 85-icon set (06 §8): 24 px grid, 2 px round stroke, currentColor. Bodies are generated from
-// brand/icons and checked to contain only drawing elements, so inlining them is safe.
+// The icon set (06 §8): our own icons and the Lucide icons we take (D-70), all on a 24 px grid with a
+// 2 px round stroke in currentColor. Bodies are generated from brand/icons and checked to contain only
+// drawing elements, so inlining them is safe.
 import { ICONS, type IconName } from './generated/icons';
 
 export interface IconProps {
@@ -11,9 +12,15 @@ export interface IconProps {
   className?: string;
 }
 
-/** Screen-reader name from the icon's index name (06 §10), e.g. `wifi-off` → "wifi off". */
+/**
+ * Screen-reader name from the icon's index name (06 §10), e.g. `wifi-off` → "wifi off" and Lucide's
+ * numbered variants like `trash-2` → "trash".
+ */
 export function iconLabel(name: IconName): string {
-  return name.replace(/^chore-/, '').replace(/-/g, ' ');
+  return name
+    .replace(/^chore-/, '')
+    .replace(/-\d+$/, '')
+    .replace(/-/g, ' ');
 }
 
 export function Icon({ name, size = 24, label, className }: IconProps) {
@@ -32,7 +39,7 @@ export function Icon({ name, size = 24, label, className }: IconProps) {
       focusable="false"
       data-icon={name}
       {...a11y}
-      dangerouslySetInnerHTML={{ __html: ICONS[name].body }}
+      dangerouslySetInnerHTML={{ __html: ICONS[name] }}
     />
   );
 }

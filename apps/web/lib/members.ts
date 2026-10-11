@@ -8,6 +8,16 @@ export const COLOR_NAMES: Record<MemberColor, string> = {
   'member-4': 'Violet',
   'member-5': 'Green',
   'member-6': 'Teal',
+  'member-7': 'Red',
+  'member-8': 'Gold',
+  'member-9': 'Lime',
+  'member-10': 'Cyan',
+  'member-11': 'Navy',
+  'member-12': 'Indigo',
+  'member-13': 'Purple',
+  'member-14': 'Magenta',
+  'member-15': 'Brown',
+  'member-16': 'Slate',
 };
 
 export type MemberRole = 'child' | 'adult';

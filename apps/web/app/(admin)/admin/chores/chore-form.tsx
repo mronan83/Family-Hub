@@ -5,8 +5,7 @@ import {
   Banner,
   Button,
   Icon,
-  ICON_NAMES,
-  iconLabel,
+  IconPicker,
   type AvatarKey,
   type IconName,
   type MemberColor,
@@ -17,7 +16,6 @@ import type { FormState } from '@/lib/auth/messages';
 import {
   ASSIGNMENT_LABELS,
   ASSIGNMENTS,
-  CHORE_ICONS,
   DAY_TYPE_LABELS,
   DAY_TYPES,
   defaultAssignment,
@@ -52,21 +50,6 @@ const FREQ_LABELS: Record<Freq, string> = {
   monthly: 'Monthly',
   once: 'Once',
 };
-
-const OTHER_ICONS = ICON_NAMES.filter(
-  (n) =>
-    !n.startsWith('chore-') &&
-    ![
-      'logout',
-      'menu',
-      'close',
-      'chevron-left',
-      'chevron-right',
-      'chevron-up',
-      'chevron-down',
-      'more',
-    ].includes(n),
-);
 
 /**
  * [CHR-01][CHR-09][CHR-10][CHR-11][CHR-13] Add or edit a chore (a routine) or a task (a to-do).
@@ -311,14 +294,7 @@ export function ChoreForm({
         </span>
       </label>
 
-      <fieldset className="fw-field fw-fieldset">
-        <legend className="fw-field__label">Icon</legend>
-        <IconChoices icons={CHORE_ICONS} selected={initial?.icon ?? 'chore-bed'} />
-        <details>
-          <summary>More icons</summary>
-          <IconChoices icons={OTHER_ICONS} selected={initial?.icon ?? 'chore-bed'} />
-        </details>
-      </fieldset>
+      <IconPicker legend="Icon" selected={initial?.icon ?? 'chore-bed'} start="home" />
 
       <label className="fw-field">
         <span className="fw-field__label">Points</span>
@@ -349,7 +325,7 @@ export function ChoreForm({
                 />
                 <span
                   className="fw-swatch fw-swatch--small"
-                  style={{ background: `var(--${t.color})` }}
+                  style={{ background: `var(--${t.color}-line)` }}
                   aria-hidden
                 />
                 {t.icon ? <Icon name={t.icon} size={20} /> : null}
@@ -436,25 +412,5 @@ export function ChoreForm({
         <Link href="/admin/chores">Cancel</Link>
       </div>
     </form>
-  );
-}
-
-function IconChoices({ icons, selected }: { icons: readonly IconName[]; selected: IconName }) {
-  return (
-    <div className="fw-picker">
-      {icons.map((name) => (
-        <label key={name} className="fw-picker__item fw-picker__item--icon">
-          <input
-            type="radio"
-            name="icon"
-            value={name}
-            defaultChecked={selected === name}
-            aria-label={iconLabel(name)}
-            className="fw-visually-hidden"
-          />
-          <Icon name={name} size={28} />
-        </label>
-      ))}
-    </div>
   );
 }

@@ -202,7 +202,7 @@ export default async function ChoresPage({
                             <span key={t.id} className="fw-pill fw-pill--tag">
                               <span
                                 className="fw-swatch fw-swatch--small"
-                                style={{ background: `var(--${t.color})` }}
+                                style={{ background: `var(--${t.color}-line)` }}
                                 aria-hidden
                               />
                               {t.name}

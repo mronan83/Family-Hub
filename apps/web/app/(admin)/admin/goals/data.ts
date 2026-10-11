@@ -6,20 +6,6 @@ import type { RuleFormValue } from '@/lib/goals';
 // Goals (WP-19), read through RLS as the parent: each goal with its rules and what the rules engine
 // last made of them. Photos are private: each comes with a signed link that lasts an hour.
 
-/** The icons a goal can take (06 §5), trophy first. */
-export const GOAL_ICONS: IconName[] = [
-  'trophy',
-  'target',
-  'star',
-  'gift',
-  'ticket',
-  'sparkles',
-  'sun',
-  'moon',
-  'utensils',
-  'snack',
-];
-
 export interface GoalRule {
   id: string;
   type: RuleType;

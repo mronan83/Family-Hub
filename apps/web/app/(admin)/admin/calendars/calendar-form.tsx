@@ -75,7 +75,7 @@ export function CalendarForm({
                 defaultChecked={(initial?.color ?? 'member-6') === c}
                 className="fw-visually-hidden"
               />
-              <span className="fw-swatch" style={{ background: `var(--${c})` }} aria-hidden />
+              <span className="fw-swatch" style={{ background: `var(--${c}-line)` }} aria-hidden />
               <span>{COLOR_NAMES[c]}</span>
             </label>
           ))}

@@ -10,8 +10,9 @@
   },
   "scripts": {
     "brand": "node scripts/brand.mjs",
+    "brand:lucide": "node scripts/lucide.mjs",
     "lint": "eslint .",
-    "typecheck": "node scripts/brand.mjs --check && tsc --noEmit",
+    "typecheck": "node scripts/lucide.mjs --check && node scripts/brand.mjs --check && tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
@@ -24,6 +25,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "eslint": "9.39.5",
+    "lucide-static": "1.48.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "typescript": "6.0.3",

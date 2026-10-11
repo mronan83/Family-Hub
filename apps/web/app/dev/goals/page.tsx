@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { AdminHeader } from '../../(admin)/admin/header';
-import { GOAL_ICONS, type GoalRow } from '../../(admin)/admin/goals/data';
+import type { GoalRow } from '../../(admin)/admin/goals/data';
 import { GoalForm } from '../../(admin)/admin/goals/goal-form';
 import { GoalsView } from '../../(admin)/admin/goals/view';
 
@@ -174,7 +174,6 @@ export default async function DevGoalsPage({
               members={MEMBERS}
               tags={TAGS}
               items={ITEMS}
-              icons={GOAL_ICONS}
               today="2026-10-10"
               lock={started ? 'started' : 'none'}
               initial={
