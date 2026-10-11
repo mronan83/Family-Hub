@@ -1,6 +1,6 @@
 'use client';
 
-import { ThemeLock, type Theme } from '@familywise/ui';
+import { ThemeLock, type TextSize, type Theme } from '@familywise/ui';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { boardHealth, type JobHealth } from '@/lib/board-health';
 import { openBoardStore } from '@/lib/board-store';
@@ -9,6 +9,7 @@ import { HealthLines } from '../../(board)/board/health-lines';
 import { useMinute } from '../../(board)/board/use-minute';
 import { useBarHeight } from '../../(board)/board/use-bar-height';
 import { useOnline } from '../../(board)/board/use-online';
+import { useBoardTextSize } from '../../(board)/board/use-text-size';
 import { WeatherNow } from '../../(board)/board/weather';
 import { type QueueState, Today } from '../../(board)/board/today';
 import type { BoardCalendar } from '@/lib/snapshot';
@@ -44,6 +45,7 @@ export function DevBoard({
   calBehind = false,
   layout,
   weather,
+  textSize = 'standard',
 }: {
   theme: Theme;
   stale: boolean;
@@ -55,12 +57,15 @@ export function DevBoard({
   layout?: BoardLayout;
   /** [BRD-04] Which made-up weather (WP-45): see fixtureWeather. */
   weather?: string;
+  /** [BRD-08] The board's text size (WP-47). */
+  textSize?: TextSize;
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
   const now = useMinute();
   const bar = useRef<HTMLElement>(null);
   useBarHeight(bar);
+  useBoardTextSize(textSize);
   // A School sync that failed three hours ago, when asked for.
   const withSchool = useCallback(
     (cal: BoardCalendar): BoardCalendar =>

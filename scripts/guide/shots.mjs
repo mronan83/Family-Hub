@@ -74,6 +74,8 @@ const SHOTS = [
   },
   { name: 'board-home-month', device: 'board', url: '/dev/board?span=month' },
   { name: 'board-home-evening', device: 'board', url: '/dev/board?theme=evening&span=3' },
+  // [BRD-08] Largest text on a 1080p screen (WP-47): the list goes under the calendar.
+  { name: 'board-home-largest', device: 'board', url: '/dev/board?text=largest' },
   // The weather beside the clock (WP-45), from the dev board's made-up rainy reading.
   {
     name: 'board-weather',

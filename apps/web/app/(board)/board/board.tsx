@@ -18,6 +18,7 @@ import type { PhotoUrl } from './picture';
 import { type QueueState, Today } from './today';
 import { useMinute } from './use-minute';
 import { useBarHeight } from './use-bar-height';
+import { useBoardTextSize } from './use-text-size';
 import { useHydrated, useOnline } from './use-online';
 import { WeatherNow } from './weather';
 
@@ -242,6 +243,7 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
   const now = useMinute();
   const bar = useRef<HTMLElement>(null);
   useBarHeight(bar);
+  useBoardTextSize(snapshot.device.textSize);
   const health = boardHealth({
     fetchedAt: snapshot.fetchedAt,
     now,
