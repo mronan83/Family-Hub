@@ -180,14 +180,14 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | SCH-02 | US-602 | WP-21 | DB | resolve_day_type | DB, E2E |
 | SCH-03 | US-302, US-602 | WP-09, WP-21 | OCCGEN, DB | chore, chore_occurrence | DB, E2E |
 | SCH-04 | US-603 | WP-36 | ADM, CALSYNC | school_closure, calendar_event_instance | INT |
-| MEAL-01 | US-701 | WP-25 | ADM, BRD | meal_plan_entry | E2E |
-| MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | E2E |
-| MEAL-03 | US-702 | WP-25 | ADM, API | meal_plan_entry | E2E, INT |
+| MEAL-01 | US-701 | WP-25 | ADM, BRD | meal_plan_entry | U, DB, E2E |
+| MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | U, DB, E2E |
+| MEAL-03 | US-702 | WP-25 | ADM, API | meal_plan_entry | DB, E2E, INT |
 | MEAL-04 | US-703 | WP-26 | ADM, DB | lunch_override, member_school_profile | DB, E2E |
 | MEAL-05 | US-704 | WP-27 | MENUIMP, BRD, ADM | school_menu_day, lunch_override | E2E |
 | MEAL-06 | US-705 | WP-28 | BRD | meal_plan_entry, lunch_override | E2E |
 | MEAL-07 | US-706 | WP-36 | ADM | meal | U |
-| MEAL-08 | US-701 | WP-25 | ADM | meal_plan_entry | E2E |
+| MEAL-08 | US-701 | WP-25 | ADM | meal_plan_entry | U, DB, E2E |
 | MENU-01 | US-801 | WP-27 | ADM, MENUIMP | menu_source, member_school_profile | E2E |
 | MENU-02 | US-801 | WP-27 | MENUIMP | menu_source | U, INT |
 | MENU-03 | US-802 | WP-27 | ADM, MENUIMP | school_menu_day | E2E, INT |
@@ -399,6 +399,8 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.83 | WP-25 done (PR #55): approved by the owner and merged once CI and e2e were green on the preview (123 passed, no retries, on `f63e95e`; the done-when in `meals.spec`: a meal added to the library, a dinner planned every day of a week and two snacks put in order, the week copied on keeping and then replacing what was planned, and a copy removed without touching the original). The user guide says how (version 0.9, A15, B1.15, B3, B7). |
+| 0.8.82 | WP-25 meal library and weekly planner (MEAL-01, MEAL-02, MEAL-03, MEAL-08, US-701, US-702, D-77), in review (PR #55): **Meals** in the admin app, a household week with each day's breakfast, snack, lunch and dinner; entries from the library or written in, for everyone or one person, with a note, in an order a parent sets; the meal library (good for, recipe link, icon, archive); copy last week, keeping or replacing what is planned. Tests: pgTAP 340 (the library's checks, adding, ordering, removing, copy with skip and overwrite, who may); unit (`meals`: the week, the order, the forms, the words); the UI suite (`meals.spec`: the week, Change, Add to the plan, copy, the library, on a phone and a laptop); e2e (`meals.spec`: the done-when). |
 | 0.8.81 | WP-39 done (PR #53): approved by the owner and merged once CI and e2e were green on the preview (120 passed, no retries, on `5f1d9c6`; the done-when in `goal-payouts.spec`: Maya's goal paid 10 points once however often it was worked out, unchecking her bed took them back once, checking it again paid achievement 2, and the Preview of a higher target said what it would take back and saved nothing; a shop reward already given raising the review flag is pgTAP 320's). The user guide says how (version 0.8, A7, B1.8, B3, B5, B7). |
 | 0.8.80 | WP-39 goal payouts, payout reversal and the rule-change preview (RWD-04, RWD-10, RWD-13, US-406, US-409, D-75), in review (PR #53): a goal pays points (to each child who earns rewards, for a family goal) or a reward from the shop (approved at once, costing nothing) in the transaction that records its achievement; undone, its points are taken back once and an ungiven reward called off, a given one flagging the goal; reached again, it pays as n + 1; a redeemed goal's points are taken back and put back as it stops and starts being met; the goal form's Preview says what saving would do and shows each rule now and after, saving nothing. Tests: pgTAP 320 (43: what a goal may pay, paid once with the job twice, taken back once, n + 1, the shop reward called off without a refund and kept once given with the flag, the family goal, the redeemed goal's swings, the preview's facts and who may read them), 140 and 170 (the ledger writer's new arguments); unit (`goals`: the payout in the form, the preview and its words, the history's words); the UI suite (`goals.spec`: what each goal pays, the payout field, the preview, on a phone and a laptop; `rewards.spec`: a goal's reward to give); e2e (`goal-payouts.spec`: the done-when, and the preview on the preview). |
 | 0.8.79 | The jobs' query limit done (PR #54): approved by the owner and merged once CI and e2e were green on the preview (116 passed on `f4523da`; one flaky, `board-calendar.spec` unticking School, which passed on its retry and is not touched here). The 60-second limit is on `service_role` in the shared database. No work package changes status. |

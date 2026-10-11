@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.9: meal planning (WP-25, D-77): the week's meals and the meal library on **Meals** (A15, B1.15, B3, B7).
 > v0.8: goals pay out (WP-39, D-75): points or a reward from the shop when a goal is reached, taken back if a check-off it needed is undone; **Preview** before changing a goal (A7, B1.8, B3, B5, B7).
 > v0.7: the home screen on one screen, with a rail (WP-48, D-74): A5, B2.1 and B2.2; the calendar's view on the board; tapping goals, requests and events on the cards; the weather on one line, its credit here in A13.
 > v0.6: the board fits any screen, and each board has a text size (WP-47, D-73): A14, Boards, the rules, troubleshooting and questions.
@@ -47,6 +48,7 @@ Button and label names are in **bold**, exactly as the app shows them. The pictu
   - [A12 Day and Evening themes](#a12-day-and-evening-themes)
   - [A13 Weather on the board](#a13-weather-on-the-board)
   - [A14 Screens and text size](#a14-screens-and-text-size)
+  - [A15 Planning meals](#a15-planning-meals)
 - [Part B — User Manual](#part-b--user-manual)
   - [B1 The admin app, page by page](#b1-the-admin-app-page-by-page)
   - [B2 The board, screen by screen](#b2-the-board-screen-by-screen)
@@ -670,7 +672,7 @@ Changes to the school year start tomorrow: today stays as it was planned. Days a
 **Home screen for every board.** Under **Home screen** on **Boards**:
 
 1. Choose what **The calendar shows**: **3 days**, **5 days** (the default), **7 days** or **Month**. In the month, a colored dot marks each calendar with something on a day.
-2. Under **Under the calendar, in this order**, tick the cards to show: **Dinner and lunch** (it stays hidden until meal planning arrives, see [Coming soon](#b7-coming-soon)), **Goals**, **Waiting for a parent** and **Coming up**.
+2. Under **Under the calendar, in this order**, tick the cards to show: **Dinner and lunch** (it stays hidden until the board shows meals, see [Coming soon](#b7-coming-soon)), **Goals**, **Waiting for a parent** and **Coming up**.
 3. Move a card with **Up** or **Down**. Each move saves at once.
 4. Tick or untick **Show the weather beside the clock** (see [A13](#a13-weather-on-the-board)).
 5. Choose **Save layout**.
@@ -734,6 +736,43 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credi
 ![The board's home screen at Largest text: the clock, the people over two rows, and the calendar across the whole width; today's list follows further down.](guide/img/board-home-largest.jpg "Largest text, on a 1080p screen")
 
 > **Tip:** Stand where the family usually reads the board. If the words for each item are hard to make out, try **Larger text**. On a 32-inch 4K panel read from about two metres, **Larger** suits most families; a smaller screen, or one read from further away, may want **Largest**.
+
+### A15 Planning meals
+<!-- covers: US-701 US-702 -->
+
+**What this is.** The week's breakfasts, snacks, lunches and dinners, planned ahead, and a library of the meals your family makes again. **When.** Once a week, say on Sunday, so nobody decides at 5 pm. **How.** On **Meals** in the menu.
+
+#### Build the library
+
+1. On **Meals**, choose **Meal library**.
+2. Enter a **Name** and, if you like, a **Description**.
+3. Tick what it's **Good for**: **Breakfast**, **Snack**, **Lunch**, **Dinner**. These meals are offered first when you plan that meal of the day; none ticked means any.
+4. Optionally add a **Recipe link** and pick an **Icon**, then choose **Add meal**.
+
+Choose **Edit** (the meal's name) to change one. **Archive** takes a meal out of the library: it isn't offered any more, and plans that used it keep its name. **Restore** puts it back.
+
+![The meal library on a phone: the Add a meal form, then Our meals with what each is good for and a recipe link.](guide/img/admin-meal-library-phone.jpg "The meal library, on a phone")
+
+#### Plan the week
+
+**Meals** shows the week, each day with its **Breakfast**, **Snack**, **Lunch** and **Dinner**. **Last week** and **Next week** move between weeks; **This week** comes back. Today is marked.
+
+1. Choose **Add** beside a meal of a day (or go to **Add to the plan**): the **Day** and **Meal** are filled in.
+2. Under **What**, choose **From the library** and pick a meal (those good for that meal of the day come first), or **Something else** and write it in ("Leftovers", "Out for Grandma's birthday").
+3. Under **For**, choose **Everyone**, or one person (a packed lunch, a snack after school).
+4. Add a **Note** if you like ("Make extra for lunch"), then choose **Add to the plan**.
+
+A meal of the day can hold several things, like two snacks. They show in the order you added them; **Change** on one offers **Earlier** and **Later** to reorder it, and **Remove**.
+
+![The week's meals on a laptop: each day across, with its breakfast, snack, lunch and dinner; Wednesday marked today with two snacks.](guide/img/admin-meals-laptop.jpg "The week's meals, on a laptop")
+
+#### Copy last week
+
+Under **Copy last week**, choose what happens where this week already has something planned for a meal of a day: **Keep it**, or **Replace it with last week's**. Then choose **Copy last week here**. Everything planned last week is copied to the same days this week; meals last week left empty stay as they are this week. Each copy is its own, so changing one doesn't change last week.
+
+> **Tip:** Plan a good week once, then copy it forward and change only what's different.
+
+On the board, the week's meals come with the **Dinner and lunch** card (see [Coming soon](#b7-coming-soon)).
 
 ## Part B — User Manual
 
@@ -948,6 +987,19 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | **Set up your household** | **Setup code**, (**Your email**, **Choose a password**), **Household name**, **Timezone**, **Week starts on**, **Create household**. **Help: getting started, step by step** opens [A1 Getting started](#a1-getting-started). |
 | Invite | **Join** (household): **Join household**, or **Create account and join**, or **Sign out** to switch account. |
 
+#### B1.15 Meals
+<!-- covers: US-701 US-702 -->
+
+| Part | What it shows or does |
+|---|---|
+| **Meal library** | Opens the library. |
+| **Last week** · **This week** · **Next week** | Move between weeks. |
+| The week | Each day (today marked) with **Breakfast**, **Snack**, **Lunch** and **Dinner**: what is planned in order, with who it's for and its note; **Change** (**Earlier**, **Later**, **Remove**); **Add**. |
+| **Add to the plan** | **Day**, **Meal**, **What** (**From the library** or **Something else**), **For** (**Everyone** or one person), **Note (optional)**, **Add to the plan**. |
+| **Copy last week** | **Keep it** or **Replace it with last week's**, **Copy last week here**. |
+
+**The meal library:** **Add a meal** (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe link (optional)**, **Icon**, **Add meal**); **Our meals**, each with what it's good for and its recipe, **Edit** and **Archive**; **Archived**, with **Restore**.
+
 ### B2 The board, screen by screen
 
 ```mermaid
@@ -997,7 +1049,7 @@ The board's name is beside the date.
 | **Goals** card | Every goal in play, whose (an avatar or **Family**), a meter per rule, when it ends; "Reached! A grown-up will sort out the reward." Tap one: that child's screen (a family goal: **Chores**). |
 | **Waiting for a parent** card | "Asked for" rewards with their cost, and check-offs to approve ("Homework: check it's done"). Parents decide them in the admin app. Tap one: the child who asked. |
 | **Coming up** card | Up to five all-day events in the next three weeks, with "Tomorrow" or "In N days". Tap one: **Calendar** on that day. |
-| **Dinner and lunch** card | Not shown yet: it appears once meals can be planned. |
+| **Dinner and lunch** card | Not shown yet: it appears once the board shows the planned meals. |
 
 #### B2.3 A person's screen
 <!-- covers: US-1002 US-1102 US-1108 US-403 -->
@@ -1173,6 +1225,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Points by hand | 1 to 10,000, with a reason of up to 200 characters |
 | Reward cost | 1 to 100,000 points; weekly limit 1 to 100 |
 | Bonus | 1 to 1,000 points; a streak of 2 to 365 days |
+| Meals | Something written in up to 80 characters, a note up to 200; any number in a meal of a day; one library meal of a name at a time |
 | Goal | 1 to 5 rules; target 1 to 100,000; 0 to 3 misses forgiven a week; pays 1 to 10,000 points, or one reward from the shop (a child's goal) |
 | Photos | JPEG, PNG or WebP, up to 2 MB |
 | Password | At least 8 characters |
@@ -1304,7 +1357,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 
 These are planned but not built yet. This guide will cover each as it arrives.
 
-- **Meals:** a weekly meal plan, lunch bought or brought, the school lunch menu, and the **Dinner and lunch** card on the board.
+- **Meals on the board:** lunch bought or brought, the school lunch menu, and the **Dinner and lunch** card on the board.
 - **Audit log:** a page showing who changed what, and when.
 - **Export and delete** your household's data.
 - **Sign in with Apple** and passkeys.

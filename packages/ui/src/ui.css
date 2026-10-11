@@ -1880,6 +1880,89 @@ span.fw-heat__cell {
   flex: 1 1 160px;
 }
 
+/* Meals (WP-25): the week's plan, a day per row (its four meals across on a laptop, stacked on a
+   phone), each meal's entries in order with Change and Add. ---------------------------------- */
+.fw-meal-week {
+  display: grid;
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-meal-day {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+}
+.fw-meal-day[data-today] {
+  border-color: var(--primary);
+}
+.fw-meal-day__name {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+  margin: 0;
+  font-size: var(--t-body);
+}
+.fw-meal-slot {
+  display: grid;
+  gap: var(--s-1);
+  align-content: start;
+  min-width: 0;
+}
+.fw-meal-slot__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--s-2);
+  align-items: center;
+  justify-content: space-between;
+}
+.fw-meal-slot__name {
+  display: inline-flex;
+  gap: var(--s-1);
+  align-items: center;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.fw-meal-slot__list {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-meal-entry {
+  display: grid;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+.fw-meal-entry__name {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  align-items: center;
+  font-weight: 600;
+}
+.fw-meal-entry__change > summary,
+.fw-meal-slot__add {
+  display: inline-flex;
+  gap: var(--s-1);
+  align-items: center;
+  min-height: var(--touch);
+  color: var(--primary-text);
+  cursor: pointer;
+}
+@media (min-width: 900px) {
+  .fw-meal-day {
+    grid-template-columns: 8rem repeat(4, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
 /* A goal change's preview (WP-39): what saving would do, each rule now and after. -------------- */
 .fw-goal-preview {
   display: grid;

@@ -200,6 +200,14 @@ const SHOTS = [
     url: '/dev/goals?form=preview',
     element: '.fw-goal-preview',
   },
+  // Meals (WP-25): the week on a laptop, and the library on a phone.
+  { name: 'admin-meals-laptop', device: 'laptop', url: '/dev/meals', maxHeight: 1900, quality: 62 },
+  {
+    name: 'admin-meal-library-phone',
+    device: 'phone',
+    url: '/dev/meals?page=library',
+    maxHeight: 1500,
+  },
   { name: 'admin-calendars-phone', device: 'phone', url: '/dev/calendars', maxHeight: 1330 },
   {
     name: 'admin-calendar-add-phone',

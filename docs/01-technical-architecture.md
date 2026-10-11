@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.47: meal planning (WP-25, D-77): the admin app's Meals page and meal library, through RLS and `add_meal_entry()`, `move_meal_entry()`, `copy_meal_week()`.
 > v0.8.46: goal payouts and the preview of a change (WP-39, D-75): `save_goal_evaluation()` pays an achievement in the same transaction and undoes it when the goal is undone (§6.2, §8); the goal form's Preview reads `goal_preview_facts()` and runs the engine without saving.
 > v0.8.45: the jobs' queries stop after 60 seconds (D-76, §5.6).
 > v0.8.44: the board's home screen is one screen with a rail (WP-48, D-74): the page never scrolls, each screen scrolls inside itself, and the calendar's view can be changed on the board until it goes home (§7).

@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.33: meals (WP-25, D-77): `meal` and `meal_plan_entry` as built, and the functions that plan (§3.6).
 > v0.8.32: goal payouts (WP-39, D-75): `points_ledger.goal_id`/`goal_n` and `redemption.goal_id`/`goal_n`; a goal's shop reward costs nothing (`cost_snapshot` 0, `requested_by_type` `system`); `payout_restored` events; `pay_goal`, `settle_goal_points`, `take_back_goal`; `goal_preview_facts()` (§3.3, §3.3b, §4.2b, §5).
 > v0.8.31: a board's text size (WP-47, D-73): `device.board_config.text_size`, one of `smaller`, `standard`, `larger`, `largest` (none is Standard), checked like its theme; the snapshot's `device.text_size`.
 > v0.8.30: sixteen colors (WP-46, D-70): `member.color`, `tag.color` and `calendar_source.color` take `member-1` to `member-16` (the checks are now `^member-([1-9]|1[0-6])$`); icons stay checked by name only, so the larger icon set needed no change (§3.1, §4.3, §4.7).
@@ -526,6 +527,12 @@ When a closure or school year changes, the generator re-resolves and regenerates
 | `lunch_override` | `member_id`, `date`, `mode` (`buy`/`bring`), `menu_item_ref?` | `UNIQUE (member_id, date)`. |
 | `menu_source` | `name`, `adapter` (`nutrislice`/`schoolcafe`/`linq`/`csv`/`manual`), `config jsonb`, `status`, `last_fetch_at`, `last_success_at`, `last_error`, `fetch_window_days` (28) | Adapter is selected by `adapter`; config is adapter-specific. |
 | `school_menu_day` | `menu_source_id`, `menu_date`, `meal_service` (`breakfast`/`lunch`), `items jsonb`, `no_service bool`, `origin` (`adapter`/`csv`/`manual`), `is_override`, `fetched_at`, `content_hash` | `UNIQUE (menu_source_id, menu_date, meal_service)`. Adapter refresh **never** overwrites `is_override = true`. |
+
+**As built (WP-25, D-77).**
+
+- `meal`: `name` (1 to 80, one of a name at a time among those not archived, whatever its capitals), `description` (up to 300), `icon` (default `utensils`), `meal_types` (any of `breakfast`, `snack`, `lunch`, `dinner`; none means any), `recipe_url` (a web link, up to 500), `ingredients` (an array, empty until MEAL-07), `archived_at`, `created_at`, `updated_at`. No `tags` or `image_path` yet. A parent adds and changes meals through RLS; none is deleted.
+- `meal_plan_entry`: `id` made by the form (adding twice adds once), `plan_date`, `slot`, `sort_order`, `member_id` (null: everyone), exactly one of `meal_id` and `free_text` (1 to 80), `notes` (up to 200), `created_by`, `created_at`. Indexed on `(household_id, plan_date, slot, sort_order)`.
+- `add_meal_entry(entry jsonb)` adds last in its slot (a meal and a person of the household, neither archived); `move_meal_entry(id, ±1)` writes the slot's order afresh with the entry one place earlier or later; `copy_meal_week(household, from, to, 'skip' | 'overwrite')` copies each day and slot the source week has to the same day of the destination week, keeping or replacing a destination slot that already has something, one copy at a time per household, and returns `{copied, skipped, replaced}`. A parent removes an entry through RLS. Only a parent of the household may; its boards read both tables.
 
 **Effective lunch mode** for member *m* on date *d*:
 

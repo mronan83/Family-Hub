@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.30: US-701 and US-702 as built (WP-25, D-77): the week's meals and the meal library; copy last week, keeping or replacing what is planned.
 > v0.8.29: US-409 and US-406's preview as built (WP-39, D-75): goals pay points or a reward from the shop when reached, undone with the goal; Preview before saving a change.
 > v0.8.28: US-1008 (WP-48, D-74): the whole home screen at a glance, and the calendar's view chosen on the board.
 > v0.8.27: US-1007 (WP-47, D-73): the board fits any screen, and each board has a text size.
@@ -478,12 +479,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a week view with 4 slots × 7 days, when I add a saved meal or free text to a slot, then it shows on that day.
 - Given a day, when I add two snacks, then both display in order.
 - Given a family dinner vs a per-child lunch, when I add entries, then I can scope each to the household or one member.
+- As built (WP-25, D-77): **Meals** shows a week (**Last week**, **Next week**), each day's four meals with **Add** and **Change** (**Earlier**, **Later**, **Remove**); **Add to the plan** takes a meal from the library (those good for that meal first) or something written in, for **Everyone** or one person, with a note. The **Meal library** keeps each meal's name, what it's good for, a recipe link and an icon; archived meals keep their place in old plans.
 
 ### US-702 — Copy last week
 **As an** admin **I want** to copy a previous week or reuse meals **so that** planning takes minutes.
 **Priority:** Should · **Phase:** P2 · **Reqs:** MEAL-03
 - Given last week is planned, when I choose "Copy to this week", then all entries are duplicated and editable.
 - Given destination slots already have entries, when I copy, then I choose to skip or overwrite.
+- As built (WP-25, D-77): **Copy last week here**, with **Keep it** (skip) or **Replace it with last week's** (overwrite) for a meal of a day this week already has; it says how many things were copied, kept and replaced.
 
 ### US-703 — Buyer or bringer
 **As an** admin **I want** to set lunch as "buy" or "bring" per school day, with weekday defaults **so that** packed lunches and school lunches are clear.
