@@ -158,7 +158,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | RWD-01 | US-401 | WP-19 | ADM, API | reward_goal | E2E |
 | RWD-02 | US-312, US-401 | WP-15 | RULES, DB | reward_rule, tag | U |
 | RWD-03 | US-401 | WP-15 | RULES | reward_goal | U |
-| RWD-04 | US-406, US-407 | WP-19, WP-39 | RULES, API, SCHED, DB | reward_rule_progress, reward_goal_progress | U, INT, DB |
+| RWD-04 | US-406, US-407 | WP-19, WP-39 | RULES, API, SCHED, DB | reward_rule_progress, reward_goal_progress, points_ledger | U, INT, DB, E2E |
 | RWD-05 | US-402 | WP-15 | RULES | reward_rule | U |
 | RWD-06 | US-405 | WP-19 | RULES, SCHED, API | reward_goal, reward_goal_event | U, INT |
 | RWD-07 | US-403 | WP-20, WP-44 | BRD | reward_goal_progress | E2E |
@@ -167,7 +167,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | RWD-10 | US-406 | WP-39 | ADM, RULES | reward_goal, reward_rule | U, E2E |
 | RWD-11 | US-408 | WP-15, WP-17 | DB, SCHED, RULES | member_daily_summary, streak_segment | U, DB, INT, E2E |
 | RWD-12 | US-408 | WP-17 | ADM, RULES | member_daily_summary, streak_segment | E2E, U, DB |
-| RWD-13 | US-409 | WP-39 | RULES, API, DB | reward_goal, points_ledger, redemption | U, INT |
+| RWD-13 | US-409 | WP-39 | RULES, API, DB | reward_goal, points_ledger, redemption | U, INT, DB, E2E |
 | CAL-01 | US-501 | WP-22 | ADM, CALSYNC, VAULT | calendar_source | INT, E2E |
 | CAL-02 | US-502 | WP-22 | CALSYNC, SCHED | calendar_event, calendar_event_instance | U, INT |
 | CAL-03 | US-501 | WP-22 | CALSYNC, ADM, BRD | — | REV |
@@ -399,6 +399,8 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.81 | WP-39 done (PR #53): approved by the owner and merged once CI and e2e were green on the preview (120 passed, no retries, on `5f1d9c6`; the done-when in `goal-payouts.spec`: Maya's goal paid 10 points once however often it was worked out, unchecking her bed took them back once, checking it again paid achievement 2, and the Preview of a higher target said what it would take back and saved nothing; a shop reward already given raising the review flag is pgTAP 320's). The user guide says how (version 0.8, A7, B1.8, B3, B5, B7). |
+| 0.8.80 | WP-39 goal payouts, payout reversal and the rule-change preview (RWD-04, RWD-10, RWD-13, US-406, US-409, D-75), in review (PR #53): a goal pays points (to each child who earns rewards, for a family goal) or a reward from the shop (approved at once, costing nothing) in the transaction that records its achievement; undone, its points are taken back once and an ungiven reward called off, a given one flagging the goal; reached again, it pays as n + 1; a redeemed goal's points are taken back and put back as it stops and starts being met; the goal form's Preview says what saving would do and shows each rule now and after, saving nothing. Tests: pgTAP 320 (43: what a goal may pay, paid once with the job twice, taken back once, n + 1, the shop reward called off without a refund and kept once given with the flag, the family goal, the redeemed goal's swings, the preview's facts and who may read them), 140 and 170 (the ledger writer's new arguments); unit (`goals`: the payout in the form, the preview and its words, the history's words); the UI suite (`goals.spec`: what each goal pays, the payout field, the preview, on a phone and a laptop; `rewards.spec`: a goal's reward to give); e2e (`goal-payouts.spec`: the done-when, and the preview on the preview). |
 | 0.8.79 | The jobs' query limit done (PR #54): approved by the owner and merged once CI and e2e were green on the preview (116 passed on `f4523da`; one flaky, `board-calendar.spec` unticking School, which passed on its retry and is not touched here). The 60-second limit is on `service_role` in the shared database. No work package changes status. |
 | 0.8.78 | The jobs' queries stop after 60 seconds (NFR-07, D-76), in review (PR #54): `service_role`, the role the jobs reach the database as, has a 60-second statement timeout, after the 11 Oct stall that held the database for six hours. Tests: pgTAP 330. Also a UI-suite check made certain: the board's remembered text size is checked with no service worker, which could serve the app's code past the blocked requests (it failed main's CI once, on `a5a6ef0`). No work package changes status. |
 | 0.8.77 | WP-48 done (PR #52): approved by the owner and merged once CI and e2e were green on the preview (117 passed, no retries, on `8565e3f`; the done-when: the home screen is one screen with no page scroll at 3840×2160 and in a 13" laptop's window, and Month on the board showed the month 62 ms after the tap and saved nothing). The user guide says how (version 0.7, A5, B2.1). |

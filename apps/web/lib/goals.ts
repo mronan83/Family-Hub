@@ -18,7 +18,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
  * evaluation that read the goal before it changed is refused, and the goal is read again).
  */
 
-interface GoalRead {
+export interface GoalRead {
   read_at: string;
   as_of: string;
   week_start: number;
@@ -181,6 +181,12 @@ export interface RuleFormValue {
   params: { grace_per_week?: number };
 }
 
+/** [RWD-13] What reaching a goal pays, as save_goal() stores it. */
+export type GoalPayout =
+  | { type: 'custom' }
+  | { type: 'points'; amount: number }
+  | { type: 'catalog_item'; item_id: string };
+
 export interface GoalFormValue {
   id: string;
   memberId: string | null;
@@ -191,6 +197,7 @@ export interface GoalFormValue {
   endDate: string | null;
   logic: 'all' | 'any';
   rules: RuleFormValue[];
+  payout: GoalPayout;
 }
 
 export type ParsedGoal = { ok: true; value: GoalFormValue } | { ok: false; message: string };
@@ -273,6 +280,27 @@ export function parseGoalForm(
     }
     rules.push({ type, target, scope, params });
   }
+  // [RWD-13] What reaching it pays: the celebration only, points, or a reward from the shop.
+  let payout: GoalPayout = { type: 'custom' };
+  const pays = String(form.get('payout') ?? 'custom');
+  if (pays === 'points') {
+    const raw = String(form.get('payoutPoints') ?? '').trim();
+    const amount = /^\d+$/.test(raw) ? Number(raw) : NaN;
+    if (!(amount >= 1 && amount <= 10_000)) {
+      return { ok: false, message: 'Points paid: a whole number from 1 to 10,000.' };
+    }
+    payout = { type: 'points', amount };
+  } else if (pays === 'item') {
+    if (who === 'family') {
+      return {
+        ok: false,
+        message: 'A family goal pays points to each child, or just the celebration.',
+      };
+    }
+    const item = String(form.get('payoutItem') ?? '');
+    if (!GUID.test(item)) return { ok: false, message: 'Choose the reward from the shop.' };
+    payout = { type: 'catalog_item', item_id: item };
+  }
   return {
     ok: true,
     value: {
@@ -285,6 +313,7 @@ export function parseGoalForm(
       endDate: endRaw || null,
       logic,
       rules,
+      payout,
     },
   };
 }
@@ -306,6 +335,7 @@ export function goalPayload(
     end_date: v.endDate,
     rule_logic: v.logic,
     rules: v.rules,
+    payout: v.payout,
     ...(imagePath !== undefined ? { image_path: imagePath } : {}),
   };
 }
@@ -325,6 +355,12 @@ export function goalRefusal(error: { code?: string | null; hint?: string | null 
       return 'A rule counts a tag or item this family doesn’t have. Choose again.';
     case 'rules_count':
       return 'A goal has 1 to 5 rules.';
+    case 'payout_points':
+      return 'Points paid: a whole number from 1 to 10,000.';
+    case 'payout_item':
+      return 'That reward isn’t in the shop any more. Choose another.';
+    case 'payout_family_item':
+      return 'A family goal pays points to each child, or just the celebration.';
     case 'not_achieved':
       return 'Only an achieved goal can be marked redeemed.';
     case 'goal_redeemed':
@@ -402,23 +438,43 @@ export function ordinal(n: number): string {
 /** A goal event in the parent's words. */
 export function eventWords(e: { type: string; payload: Record<string, unknown> }): string {
   const n = typeof e.payload.n === 'number' ? e.payload.n : null;
+  const points = typeof e.payload.points === 'number' ? e.payload.points : 0;
   switch (e.type) {
     case 'created':
       return 'Set up';
     case 'edited':
-      return 'Name or picture changed';
+      return e.payload.payout ? 'What it pays changed' : 'Name or picture changed';
     case 'activated':
       return 'Started';
     case 'rules_changed':
       return 'Rules or dates changed';
     case 'recomputed':
       return `Progress worked out again: ${e.payload.from_pct}% to ${e.payload.to_pct}%`;
-    case 'achieved':
-      return n && n > 1 ? `Achieved again (${ordinal(n)} time)` : 'Achieved';
+    case 'achieved': {
+      const head = n && n > 1 ? `Achieved again (${ordinal(n)} time)` : 'Achieved';
+      const paid = e.payload.paid as
+        { type?: string; amount?: number; children?: number } | undefined;
+      if (paid?.type === 'points' && paid.amount) {
+        const each = (paid.children ?? 1) > 1 ? ' each' : '';
+        return `${head}: paid ${pointsWord(paid.amount)}${each}`;
+      }
+      if (paid?.type === 'catalog_item') return `${head}: its reward from the shop is approved`;
+      return head;
+    }
     case 'unachieved':
       return 'Back to going: a check-off it needed was undone';
+    case 'payout_reversed': {
+      const parts: string[] = [];
+      if (points > 0) parts.push(`${pointsWord(points)} taken back`);
+      if (e.payload.item === 'called_off') parts.push('its reward from the shop called off');
+      return parts.length ? `Payout undone: ${parts.join(', ')}` : 'Payout undone';
+    }
+    case 'payout_restored':
+      return `Met again: ${pointsWord(points)} put back`;
     case 'needs_review':
-      return 'Needs a look: a check-off it needed was undone after it was redeemed';
+      return e.payload.why === 'reward_given'
+        ? 'Needs a look: a check-off it needed was undone after its reward was given'
+        : 'Needs a look: a check-off it needed was undone after it was redeemed';
     case 'redeemed':
       return 'Redeemed';
     case 'expired':
@@ -428,4 +484,123 @@ export function eventWords(e: { type: string; payload: Record<string, unknown> }
     default:
       return e.type;
   }
+}
+
+function pointsWord(n: number): string {
+  return `${n.toLocaleString('en-US')} ${n === 1 ? 'point' : 'points'}`;
+}
+
+/**
+ * [RWD-13] What a goal pays, in the parent's words: "10 points", "10 points each" (a family goal),
+ * "Ice cream from the shop", or null for the celebration only. `item` names the shop's reward.
+ */
+export function payoutWords(
+  payout: GoalPayout,
+  family: boolean,
+  item: (id: string) => string | undefined,
+): string | null {
+  if (payout.type === 'points') return `${pointsWord(payout.amount)}${family ? ' each' : ''}`;
+  if (payout.type === 'catalog_item') return `${item(payout.item_id) ?? 'a reward'} from the shop`;
+  return null;
+}
+
+// ---------------------------------------------------------------------------------------------
+// [RWD-10][US-406] The preview of a change, before it is saved
+// ---------------------------------------------------------------------------------------------
+
+/** What goal_preview_facts gives: the facts an evaluation would read for the form's dates and person. */
+export interface PreviewRead {
+  as_of: string;
+  week_start: number;
+  status: GoalStatus;
+  saved: boolean;
+  facts: OccurrenceFact[];
+}
+
+export interface PreviewSide {
+  pct: number;
+  achieved: boolean;
+  rules: { value: number; target: number; pct: number; met: boolean }[];
+}
+
+export interface GoalPreviewResult {
+  /** The goal as saved, worked out now; null for a goal not yet set. */
+  before: PreviewSide | null;
+  after: PreviewSide;
+  /** The status changes saving would make: started, achieved, unachieved, expired. */
+  transitions: string[];
+}
+
+const side = (e: GoalEvaluation): PreviewSide => ({
+  pct: e.pct,
+  achieved: e.is_achieved,
+  rules: e.rules.map((r) => ({
+    value: r.current_value,
+    target: r.target_value,
+    pct: r.pct,
+    met: r.is_met,
+  })),
+});
+
+/**
+ * [RWD-10] Old and new progress from every check-off, and what saving would change. Pure: the form's
+ * goal is run through the engine on `read` (its facts as goal_preview_facts gives them), the saved
+ * goal on `stored` (goal_facts, null for a new goal).
+ */
+export function previewGoal(
+  v: GoalFormValue,
+  read: PreviewRead,
+  stored: GoalRead | null,
+): GoalPreviewResult {
+  const after = evaluateGoal({
+    goal: {
+      id: v.id,
+      member_id: v.memberId,
+      start_date: v.startDate,
+      end_date: v.endDate,
+      rule_logic: v.logic,
+      status: read.status,
+    },
+    rules: v.rules.map((r, i) => ({ id: `rule-${i + 1}`, ...r })) as Rule[],
+    occurrences: read.facts,
+    asOf: read.as_of,
+    weekStart: read.week_start,
+  });
+  return {
+    before: stored ? side(evaluateRead(stored)) : null,
+    after: side(after),
+    transitions: after.transitions.map((t) => t.type),
+  };
+}
+
+/**
+ * [RWD-10][RWD-13] What saving would do, in one line: reach it (and pay), take it back (and what it
+ * paid), end it, or leave it reached or going with its progress before and after. `pays` is what the
+ * form says it pays; `paid` what the goal paid when it was last reached.
+ */
+export function previewOutcome(
+  p: GoalPreviewResult,
+  words: { saved: boolean; pays: string | null; paid: string | null; paidItem: boolean },
+): string {
+  const t = p.transitions;
+  const now = p.before ? `${Math.round(p.before.pct)}%` : null;
+  const then = `${Math.round(p.after.pct)}%`;
+  if (t.includes('achieved')) {
+    const verb = words.saved ? 'Saving reaches it now' : 'Setting it reaches it at once';
+    return words.pays ? `${verb}, and it pays ${words.pays}.` : `${verb}.`;
+  }
+  if (t.includes('unachieved')) {
+    const back = !words.paid
+      ? ''
+      : words.paidItem
+        ? `, and ${words.paid} is called off (if it was already given, the goal is flagged for a look)`
+        : `, and what it paid (${words.paid}) is taken back`;
+    return `Saving takes it back to going: ${then} there${back}.`;
+  }
+  if (t.includes('expired')) return `Saving ends it: its end date has passed at ${then}.`;
+  if (p.after.achieved) return 'It stays reached; nothing is paid again.';
+  if (!now) return `It starts ${then} of the way there, from what’s already done.`;
+  return now === then
+    ? `Its progress stays at ${then}.`
+    : `Its progress goes from ${now} to ${then}.`;
 }

@@ -189,8 +189,16 @@ const SHOTS = [
     device: 'phone',
     url: '/dev/goals?form=new',
     full: true,
-    // Taller since the icon picker (WP-46), so a little more compressed to stay under 120 KB.
-    quality: 58,
+    // Taller since the icon picker (WP-46) and what a goal pays (WP-39), so more compressed to stay
+    // under 120 KB.
+    quality: 48,
+  },
+  // The preview of a change (WP-39): the panel itself, under the form.
+  {
+    name: 'admin-goal-preview-phone',
+    device: 'phone',
+    url: '/dev/goals?form=preview',
+    element: '.fw-goal-preview',
   },
   { name: 'admin-calendars-phone', device: 'phone', url: '/dev/calendars', maxHeight: 1330 },
   {

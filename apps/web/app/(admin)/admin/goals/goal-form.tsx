@@ -12,10 +12,9 @@ import {
   type MemberColor,
 } from '@familywise/ui';
 import { useState } from 'react';
-import type { FormState } from '@/lib/auth/messages';
 import { useFormAction } from '@/lib/forms';
-import { RULE_TYPES, RULE_WORDS, type ScopeChoice } from '@/lib/goals';
-import { saveGoal } from './actions';
+import { type GoalPayout, RULE_TYPES, RULE_WORDS, type ScopeChoice } from '@/lib/goals';
+import { type GoalFormState, type GoalPreviewView, saveGoal } from './actions';
 
 export interface GoalFormRule {
   type: RuleType;
@@ -35,6 +34,14 @@ export interface GoalFormInitial {
   endDate: string | null;
   logic: 'all' | 'any';
   rules: GoalFormRule[];
+  payout: GoalPayout;
+}
+
+/** A reward in the shop a goal can pay: those not removed, and the goal's own even if it was. */
+export interface GoalPrize {
+  id: string;
+  title: string;
+  cost: number;
 }
 
 /**
@@ -65,10 +72,14 @@ const SCOPE_WORDS: Record<ScopeChoice, string> = {
 let counter = 0;
 const nextKey = () => `r${(counter += 1)}`;
 
+const PAYOUT_CHOICE = { custom: 'custom', points: 'points', catalog_item: 'item' } as const;
+
 /**
- * [RWD-01][RWD-02][RWD-03] Set a goal for a child who earns rewards, or the whole family: a name, its
- * dates, up to 5 rules (things done, days with everything done, good days in a row, points earned;
- * counting everything, some tags or some items) combined with all or any, and an icon or photo.
+ * [RWD-01][RWD-02][RWD-03][RWD-13] Set a goal for a child who earns rewards, or the whole family: a
+ * name, its dates, up to 5 rules (things done, days with everything done, good days in a row, points
+ * earned; counting everything, some tags or some items) combined with all or any, what reaching it
+ * pays (the celebration, points, or a reward from the shop), and an icon or photo. Preview shows what
+ * the goal would be from every check-off, and what saving would do, before anything is saved (RWD-10).
  */
 export function GoalForm({
   id,
@@ -76,20 +87,25 @@ export function GoalForm({
   members,
   tags,
   items,
+  prizes,
   today,
   lock = 'none',
   hasPhoto = false,
+  preview,
 }: {
   id: string;
   initial?: GoalFormInitial;
   members: { id: string; displayName: string; avatarKey: AvatarKey | null; color: MemberColor }[];
   tags: { id: string; name: string }[];
   items: { id: string; title: string }[];
+  prizes: GoalPrize[];
   today: string;
   lock?: GoalLock;
   hasPhoto?: boolean;
+  /** A preview to show at first (the made-up /dev/goals page). */
+  preview?: GoalPreviewView;
 }) {
-  const [state, onSubmit, pending] = useFormAction(saveGoal, {} as FormState);
+  const [state, onSubmit, pending] = useFormAction<GoalFormState>(saveGoal, { preview });
   const [rows, setRows] = useState<Row[]>(() =>
     (initial?.rules.length ? initial.rules : [NEW_RULE]).map((r) => ({ ...r, key: nextKey() })),
   );
@@ -97,8 +113,15 @@ export function GoalForm({
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   const rulesLocked = lock === 'finished';
   const whoLocked = lock !== 'none';
-  const who = initial ? (initial.memberId ?? 'family') : (members[0]?.id ?? 'family');
+  const [who, setWho] = useState(
+    initial ? (initial.memberId ?? 'family') : (members[0]?.id ?? 'family'),
+  );
+  const [pays, setPays] = useState<'custom' | 'points' | 'item'>(
+    PAYOUT_CHOICE[initial?.payout.type ?? 'custom'],
+  );
   const label = initial ? `Edit ${initial.title}` : 'Set a goal';
+  const points = initial?.payout.type === 'points' ? initial.payout.amount : 10;
+  const prize = initial?.payout.type === 'catalog_item' ? initial.payout.item_id : prizes[0]?.id;
 
   return (
     <form onSubmit={onSubmit} className="fw-form" aria-label={label} encType="multipart/form-data">
@@ -134,7 +157,13 @@ export function GoalForm({
           <div className="fw-picker">
             {members.map((m) => (
               <label key={m.id} className="fw-picker__item">
-                <input type="radio" name="member" value={m.id} defaultChecked={who === m.id} />
+                <input
+                  type="radio"
+                  name="member"
+                  value={m.id}
+                  checked={who === m.id}
+                  onChange={() => setWho(m.id)}
+                />
                 <Avatar
                   name={m.displayName}
                   avatarKey={m.avatarKey}
@@ -146,7 +175,16 @@ export function GoalForm({
               </label>
             ))}
             <label className="fw-picker__item">
-              <input type="radio" name="member" value="family" defaultChecked={who === 'family'} />
+              <input
+                type="radio"
+                name="member"
+                value="family"
+                checked={who === 'family'}
+                onChange={() => {
+                  setWho('family');
+                  if (pays === 'item') setPays('custom');
+                }}
+              />
               <Icon name="family" size={24} />
               The whole family
             </label>
@@ -245,6 +283,16 @@ export function GoalForm({
         <input type="hidden" name="logic" value="all" />
       )}
 
+      <PayoutField
+        locked={rulesLocked}
+        family={who === 'family'}
+        pays={pays}
+        onPays={setPays}
+        points={points}
+        prize={prize}
+        prizes={prizes}
+      />
+
       <IconPicker
         legend="Icon, shown when there’s no photo"
         selected={initial?.icon ?? 'trophy'}
@@ -264,12 +312,173 @@ export function GoalForm({
       </label>
 
       {state.message ? <Banner kind="notice">{state.message}</Banner> : null}
+      {state.preview && !state.message ? <PreviewPanel preview={state.preview} /> : null}
       <div className="fw-actions">
         <Button type="submit" icon="check" disabled={pending}>
           {initial ? 'Save changes' : 'Set goal'}
         </Button>
+        {rulesLocked ? null : (
+          <Button
+            type="submit"
+            name="intent"
+            value="preview"
+            variant="secondary"
+            icon="search"
+            disabled={pending}
+          >
+            Preview
+          </Button>
+        )}
       </div>
     </form>
+  );
+}
+
+/**
+ * [RWD-13] What reaching it pays: just the celebration (a parent gives the reward and marks it
+ * redeemed), points (to each child, for a family goal), or a reward from the shop (a child's goal
+ * only), approved at once and costing nothing. A finished goal's payout is sent back unchanged.
+ */
+function PayoutField({
+  locked,
+  family,
+  pays,
+  onPays,
+  points,
+  prize,
+  prizes,
+}: {
+  locked: boolean;
+  family: boolean;
+  pays: 'custom' | 'points' | 'item';
+  onPays: (p: 'custom' | 'points' | 'item') => void;
+  points: number;
+  prize: string | undefined;
+  prizes: GoalPrize[];
+}) {
+  if (locked) {
+    return (
+      <>
+        <input type="hidden" name="payout" value={pays} />
+        <input type="hidden" name="payoutPoints" value={points} />
+        <input type="hidden" name="payoutItem" value={prize ?? ''} />
+      </>
+    );
+  }
+  const noItem = family || prizes.length === 0;
+  return (
+    <fieldset className="fw-field fw-fieldset">
+      <legend className="fw-field__label">What reaching it pays</legend>
+      <div className="fw-actions">
+        <label className="fw-choice">
+          <input
+            type="radio"
+            name="payout"
+            value="custom"
+            checked={pays === 'custom'}
+            onChange={() => onPays('custom')}
+          />
+          Just the celebration
+        </label>
+        <label className="fw-choice">
+          <input
+            type="radio"
+            name="payout"
+            value="points"
+            checked={pays === 'points'}
+            onChange={() => onPays('points')}
+          />
+          Points
+        </label>
+        <label className="fw-choice">
+          <input
+            type="radio"
+            name="payout"
+            value="item"
+            checked={pays === 'item'}
+            disabled={noItem}
+            onChange={() => onPays('item')}
+          />
+          A reward from the shop
+        </label>
+      </div>
+      {pays === 'points' ? (
+        <label className="fw-field">
+          <span className="fw-field__label">Points paid</span>
+          <input
+            className="fw-input fw-input--short"
+            name="payoutPoints"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={10000}
+            required
+            defaultValue={points}
+          />
+        </label>
+      ) : null}
+      {pays === 'item' && !noItem ? (
+        <label className="fw-field">
+          <span className="fw-field__label">Reward</span>
+          <select className="fw-input" name="payoutItem" defaultValue={prize}>
+            {prizes.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title} ({p.cost.toLocaleString('en-US')} points in the shop)
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+      <span className="fw-field__help">
+        {pays === 'points'
+          ? family
+            ? 'Each child who earns rewards gets them when it’s reached. If a check-off it needed is undone, they’re taken back.'
+            : 'Paid when it’s reached. If a check-off it needed is undone, they’re taken back; reached again, paid again.'
+          : pays === 'item'
+            ? 'Approved for them as soon as it’s reached, at no cost. Mark it given in Rewards as usual.'
+            : family
+              ? 'You give the reward and mark it redeemed. A family goal can pay points to each child; a reward from the shop is for one child’s goal.'
+              : 'You give the reward and mark it redeemed.'}
+      </span>
+    </fieldset>
+  );
+}
+
+/** [RWD-10][US-406] What the change would do, from every check-off; nothing is saved yet. */
+function PreviewPanel({ preview }: { preview: GoalPreviewView }) {
+  return (
+    <section className="fw-goal-preview" aria-labelledby="goal-preview-heading" aria-live="polite">
+      <h2 id="goal-preview-heading">Preview</h2>
+      <p className="fw-goal-preview__outcome">{preview.outcome}</p>
+      <div className="fw-goal-preview__table">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Rule</th>
+              {preview.before !== null ? <th scope="col">Now</th> : null}
+              <th scope="col">{preview.before !== null ? 'After saving' : 'From what’s done'}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {preview.rows.map((r, i) => (
+              <tr key={i}>
+                <th scope="row">{r.text}</th>
+                {preview.before !== null ? <td>{r.before ?? 'New or changed'}</td> : null}
+                <td>{r.after}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row">The goal</th>
+              {preview.before !== null ? <td>{preview.before}</td> : null}
+              <td>{preview.after}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <p className="fw-muted">Nothing is saved until you save.</p>
+    </section>
   );
 }
 

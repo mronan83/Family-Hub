@@ -39,6 +39,7 @@ const ask = (
   fulfilledAt: null,
   cancelledAt: null,
   note: null,
+  goalTitle: null,
   ...o,
 });
 
@@ -96,6 +97,14 @@ export default async function DevRewardsPage({
     ask({ id: 'a1', memberId: LEO, itemId: 'r3', status: 'requested' }),
     ask({ id: 'a2', memberId: MAYA, itemId: 'r1', status: 'requested', cost: 100 }),
     ask({ id: 'a3', memberId: MAYA, itemId: 'r2', status: 'approved', cost: 40 }),
+    ask({
+      id: 'a6',
+      memberId: LEO,
+      itemId: 'r3',
+      status: 'approved',
+      cost: 0,
+      goalTitle: 'Tidy week',
+    }),
     ask({ id: 'a4', memberId: LEO, itemId: 'r4', status: 'fulfilled', cost: 25 }),
     ask({ id: 'a5', memberId: MAYA, itemId: 'r2', status: 'denied', cost: 40 }),
   ];

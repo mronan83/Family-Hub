@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { dayAndTime, isoDay } from '@/lib/format';
-import { eventWords, STATUS_WORDS } from '@/lib/goals';
+import { eventWords, payoutWords, STATUS_WORDS } from '@/lib/goals';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
 import { goalAction, removeGoalPhoto } from '../actions';
@@ -35,7 +35,11 @@ export default async function GoalPage({
   if (!goal) notFound();
   const [events, ctx] = await Promise.all([
     loadGoalEvents(db!, id),
-    loadGoalContext(db!, household.id),
+    loadGoalContext(
+      db!,
+      household.id,
+      goal.payout.type === 'catalog_item' ? goal.payout.item_id : undefined,
+    ),
   ]);
   const removed = (await searchParams).photo === 'removed';
   const lock: GoalLock = ['redeemed', 'expired', 'cancelled'].includes(goal.status)
@@ -47,6 +51,7 @@ export default async function GoalPage({
     goal.memberId === null
       ? 'The whole family'
       : (ctx.members.find((m) => m.id === goal.memberId)?.displayName ?? 'Someone');
+  const pays = payoutWords(goal.payout, goal.memberId === null, (i) => ctx.prizeNames.get(i));
   const actor = (e: (typeof events)[number]) =>
     e.actorType === 'admin' && e.actorId ? ` · ${ctx.adminNames.get(e.actorId) ?? 'A parent'}` : '';
 
@@ -59,12 +64,13 @@ export default async function GoalPage({
         <p className="fw-muted">
           {who} · {STATUS_WORDS[goal.status]}
           {goal.pct !== null ? ` · ${Math.round(goal.pct)}% there` : ''}
+          {pays ? ` · Pays ${pays}` : ''}
         </p>
         {goal.needsReview ? (
           <div className="fw-goal__review">
             <Banner kind="notice">
-              A check-off this goal needed was undone after it was redeemed. Have a look, then clear
-              this.
+              A check-off this goal needed was undone after its reward was given. Have a look (its
+              history below says what happened), then clear this.
             </Banner>
             <form action={goalAction}>
               <Button
@@ -114,6 +120,7 @@ export default async function GoalPage({
             startDate: goal.startDate,
             endDate: goal.endDate,
             logic: goal.logic,
+            payout: goal.payout,
             rules: goal.rules.map((r) => ({
               type: r.type,
               target: r.target,
@@ -126,6 +133,7 @@ export default async function GoalPage({
           members={ctx.earners}
           tags={ctx.tags}
           items={ctx.items}
+          prizes={ctx.prizes}
           today={isoDay(household.timezone)}
           lock={lock}
           hasPhoto={!!goal.imagePath}

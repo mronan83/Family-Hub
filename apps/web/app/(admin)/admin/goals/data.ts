@@ -1,7 +1,7 @@
 import type { GoalStatus, RuleType } from '@familywise/rules-engine';
 import type { IconName } from '@familywise/ui';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { RuleFormValue } from '@/lib/goals';
+import type { GoalPayout, RuleFormValue } from '@/lib/goals';
 
 // Goals (WP-19), read through RLS as the parent: each goal with its rules and what the rules engine
 // last made of them. Photos are private: each comes with a signed link that lasts an hour.
@@ -32,6 +32,8 @@ export interface GoalRow {
   startDate: string;
   endDate: string | null;
   logic: 'all' | 'any';
+  /** What reaching it pays (RWD-13). */
+  payout: GoalPayout;
   status: GoalStatus;
   achievementCount: number;
   achievedAt: string | null;
@@ -61,7 +63,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     db
       .from('reward_goal')
       .select(
-        'id, member_id, title, description, icon, image_path, start_date, end_date, rule_logic, status, achievement_count, achieved_at, redeemed_at, redeemed_by, needs_review, archived_at, created_at',
+        'id, member_id, title, description, icon, image_path, payout, start_date, end_date, rule_logic, status, achievement_count, achieved_at, redeemed_at, redeemed_by, needs_review, archived_at, created_at',
       )
       .eq('household_id', householdId)
       .order('created_at', { ascending: false }),
@@ -139,6 +141,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     start_date: string;
     end_date: string | null;
     rule_logic: 'all' | 'any';
+    payout: GoalPayout;
     status: GoalStatus;
     achievement_count: number;
     achieved_at: string | null;
@@ -167,6 +170,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
       startDate: g.start_date,
       endDate: g.end_date,
       logic: g.rule_logic,
+      payout: g.payout,
       status: g.status,
       achievementCount: g.achievement_count,
       achievedAt: g.achieved_at,

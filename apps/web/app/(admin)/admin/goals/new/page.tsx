@@ -26,6 +26,7 @@ export default async function NewGoalPage() {
           members={ctx.earners}
           tags={ctx.tags}
           items={ctx.items}
+          prizes={ctx.prizes}
           today={isoDay(household.timezone)}
         />
       </section>
