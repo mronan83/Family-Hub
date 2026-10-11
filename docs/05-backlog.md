@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.82: WP-25 done (PR #55): the meal library and the weekly planner. WP-28 is ready.
 > v0.8.81: WP-25 in review (PR #55): the meal library and the weekly planner (D-77).
 > v0.8.80: WP-39 done (PR #53): goal payouts, payout reversal and the rule-change preview.
 > v0.8.79: WP-39 in review (PR #53): goal payouts, payout reversal and the rule-change preview (D-75).
@@ -158,10 +159,10 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-22 | ICS calendar sync | P1d | L | WP-07, WP-03 | Done (PR #41) |
 | WP-23 | Calendar views and per-device selection | P1d | M | WP-22, WP-05 | Done (PR #43) |
 | WP-24 | Backups, runbooks, and soak | P1d | S | WP-07 | Ready |
-| WP-25 | Meal library and weekly planner | P2 | M | WP-04 | In review (PR #55) |
+| WP-25 | Meal library and weekly planner | P2 | M | WP-04 | Done (PR #55) |
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Queued |
 | WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Ready |
-| WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Queued |
+| WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Ready |
 | WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Ready (SPIKE-02's CalDAV part first) |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Done (PR #35) |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Ready |
