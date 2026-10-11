@@ -1,7 +1,9 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.78: WP-39 in review (PR #53): goal payouts, payout reversal and the rule-change preview (D-75).
+> v0.8.79: WP-39 in review (PR #53): goal payouts, payout reversal and the rule-change preview (D-75).
+> v0.8.78: the jobs' queries stop after 60 seconds (D-76), done (PR #54). No work package changes status.
+> v0.8.77: the jobs' queries stop after 60 seconds (D-76), in review (PR #54). No work package changes status.
 > v0.8.76: WP-48 done (PR #52): the board's home screen on one screen, with a rail.
 > v0.8.75: WP-48 in review: the home screen on one screen, with a rail, and the calendar's view chosen on the board (D-74).
 > v0.8.73: WP-47 done (PR #50): the board fits its screen, and a text size per board.
