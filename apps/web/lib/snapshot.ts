@@ -36,6 +36,26 @@ export interface BoardSnapshot {
   goals: BoardGoal[];
   /** [CAL-04][CAL-05] The calendars this board shows and their events over the window (WP-23). */
   calendar: BoardCalendar | null;
+  /**
+   * [BRD-04] The weather at the household's place (WP-45, D-69): the last good read while the last
+   * read worked and is recent; null when there is no place, the source is failing, or none yet.
+   */
+  weather: BoardWeather | null;
+}
+
+/** [BRD-04] The temperature now, today's high and low, and the sky, in the household's unit. */
+export interface BoardWeather {
+  temperature: number;
+  high: number;
+  low: number;
+  /** The WMO weather code (0 clear … 99 thunderstorm with hail). */
+  code: number;
+  /** Day or night at the place, for a sun or a moon. */
+  day: boolean;
+  unit: 'fahrenheit' | 'celsius';
+  /** The place's date the high and low are for: a board offline overnight shows none. */
+  forDate: string;
+  readAt: string;
 }
 
 /** [CAL-05] A calendar a board shows: its name, color and whose it is, and how its sync is going. */
@@ -401,6 +421,24 @@ export function readCalendar(x: unknown): BoardCalendar | null {
  * or disconnected). Throws on a shape this build does not know, so a mismatch shows up as an error
  * instead of a half-drawn board.
  */
+/** [BRD-04] The snapshot's weather, or null when it has none or it doesn't read as one. */
+function readWeather(x: unknown): BoardWeather | null {
+  if (!isObject(x)) return null;
+  const [temperature, high, low, code] = [num(x.temperature), num(x.high), num(x.low), num(x.code)];
+  if (temperature === null || high === null || low === null || code === null) return null;
+  if (typeof x.for_date !== 'string' || typeof x.read_at !== 'string') return null;
+  return {
+    temperature,
+    high,
+    low,
+    code,
+    day: x.day !== false,
+    unit: x.unit === 'celsius' ? 'celsius' : 'fahrenheit',
+    forDate: x.for_date,
+    readAt: x.read_at,
+  };
+}
+
 export function readSnapshot(data: unknown): BoardSnapshot | null {
   if (data === null || data === undefined) return null;
   if (!isObject(data) || data.v !== 1) throw new Error('snapshot: unknown shape');
@@ -469,5 +507,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
     goals: readGoals(data.goals),
     // A snapshot from before WP-23 has no calendar.
     calendar: readCalendar(data.calendar),
+    // A snapshot from before WP-45 has no weather.
+    weather: readWeather(data.weather),
   };
 }

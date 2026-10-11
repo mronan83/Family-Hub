@@ -1,4 +1,4 @@
-// Shared building blocks for the five pages: the shell (masthead, hero, contents, footer), status pills,
+// Shared building blocks for the six pages: the shell (masthead, hero, contents, footer), status pills,
 // ID tags, meters, filter bar, and the hover index. Every color comes from tokens in site.css.
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -36,6 +36,12 @@ export const PAGES = [
     file: 'docs/03-user-stories.md',
   },
   { key: 'backlog', label: 'Backlog', title: 'FamilyWise Backlog', file: 'docs/05-backlog.md' },
+  {
+    key: 'user-guide',
+    label: 'User guide',
+    title: 'FamilyWise User Guide and Manual',
+    file: 'docs/07-user-guide.md',
+  },
 ];
 
 export const icon = (name, cls = 'i') =>
@@ -259,7 +265,7 @@ ${body}
 ${legendHtml}
   </main>
 </div>
-<footer class="foot"><p>${MARK}FamilyWise build docs. Each page is generated from the markdown in <code>docs/</code> and the repository by <code>pnpm docs:build</code>; edit the markdown, not the page. Hover or focus any ID for its title and status; IDs link across the five pages.</p></footer>
+<footer class="foot"><p>${MARK}FamilyWise build docs. Each page is generated from the markdown in <code>docs/</code> and the repository by <code>pnpm docs:build</code>; edit the markdown, not the page. Hover or focus any ID for its title and status; IDs link across the pages.</p></footer>
 </div>
 <script type="application/json" id="fw-index">${index}</script>
 <script>

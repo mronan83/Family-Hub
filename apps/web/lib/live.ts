@@ -33,6 +33,8 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     // The calendars (WP-23): a sync updates its calendar's row last; a board's own choice.
     { table: 'calendar_source', filter: `household_id=eq.${householdId}` },
     { table: 'device_calendar', filter: `device_id=eq.${deviceId}` },
+    // The weather (WP-45): each read, or a read failing.
+    { table: 'weather_reading', filter: `household_id=eq.${householdId}` },
   ];
 }
 

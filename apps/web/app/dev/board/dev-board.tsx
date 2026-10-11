@@ -9,9 +9,10 @@ import { HealthLines } from '../../(board)/board/health-lines';
 import { useMinute } from '../../(board)/board/use-minute';
 import { useBarHeight } from '../../(board)/board/use-bar-height';
 import { useOnline } from '../../(board)/board/use-online';
+import { WeatherNow } from '../../(board)/board/weather';
 import { type QueueState, Today } from '../../(board)/board/today';
 import type { BoardCalendar } from '@/lib/snapshot';
-import type { BoardLayout } from '@/lib/board-layout';
+import { type BoardLayout, effectiveLayout } from '@/lib/board-layout';
 import {
   fixtureAsk,
   fixtureCalendar,
@@ -20,6 +21,7 @@ import {
   fixturePin,
   fixturePost,
   fixtureSnapshot,
+  fixtureWeather,
   reachedBike,
   TZ,
 } from './fixture';
@@ -41,6 +43,7 @@ export function DevBoard({
   busy = false,
   calBehind = false,
   layout,
+  weather,
 }: {
   theme: Theme;
   stale: boolean;
@@ -50,6 +53,8 @@ export function DevBoard({
   calBehind?: boolean;
   /** [BRD-05] The household's home screen layout (WP-35); the defaults without one. */
   layout?: BoardLayout;
+  /** [BRD-04] Which made-up weather (WP-45): see fixtureWeather. */
+  weather?: string;
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
@@ -76,7 +81,12 @@ export function DevBoard({
     [calBehind, opened],
   );
   const [snapshot, setSnapshot] = useState(() => {
-    let s = fixtureSnapshot(isoDay(TZ, opened), opened, layout);
+    let s = fixtureSnapshot(
+      isoDay(TZ, opened),
+      opened,
+      layout,
+      fixtureWeather(weather, isoDay(TZ, opened), opened),
+    );
     if (busy || calBehind) {
       s = {
         ...s,
@@ -123,9 +133,14 @@ export function DevBoard({
           <p className="fw-board__date">{day(now, TZ)}</p>
         </div>
         <div className="fw-board__status">
-          <time className="fw-board__clock" dateTime={now.toISOString()}>
-            {time(now, TZ)}
-          </time>
+          <div className="fw-board__now">
+            {effectiveLayout(snapshot.layout.household, snapshot.layout.board).weather ? (
+              <WeatherNow weather={snapshot.weather} today={isoDay(TZ, now)} />
+            ) : null}
+            <time className="fw-board__clock" dateTime={now.toISOString()}>
+              {time(now, TZ)}
+            </time>
+          </div>
           <HealthLines offline={health.offline} stale={health.stale} />
         </div>
       </header>

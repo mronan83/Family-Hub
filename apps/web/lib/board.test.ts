@@ -16,7 +16,21 @@ const RAW = {
   },
   device: { id: 'd1', name: 'Kitchen', theme: 'auto' },
   // [BRD-05] The household's layout (seven days, Goals first) and no layout of this board's own.
-  layout: { household: { calendar: '7', cards: [{ id: 'goals', show: true }] }, board: null },
+  layout: {
+    household: { calendar: '7', cards: [{ id: 'goals', show: true }], weather: false },
+    board: null,
+  },
+  // [BRD-04] The weather at the household's place (WP-45).
+  weather: {
+    temperature: 54.3,
+    high: 61.2,
+    low: 48,
+    code: 2,
+    day: true,
+    unit: 'fahrenheit',
+    for_date: '2026-10-11',
+    read_at: '2026-10-11T14:09:00Z',
+  },
   members: [
     {
       id: 'm1',
@@ -94,8 +108,19 @@ describe('board snapshot', () => {
             { id: 'waiting', show: true },
             { id: 'coming', show: true },
           ],
+          weather: false,
         },
         board: null,
+      },
+      weather: {
+        temperature: 54.3,
+        high: 61.2,
+        low: 48,
+        code: 2,
+        day: true,
+        unit: 'fahrenheit',
+        forDate: '2026-10-11',
+        readAt: '2026-10-11T14:09:00Z',
       },
       members: [
         {
@@ -426,6 +451,7 @@ describe('notify, then refetch', () => {
       { table: 'reward_rule_progress', filter: 'household_id=eq.h1' },
       { table: 'calendar_source', filter: 'household_id=eq.h1' },
       { table: 'device_calendar', filter: 'device_id=eq.d1' },
+      { table: 'weather_reading', filter: 'household_id=eq.h1' },
     ]);
   });
 

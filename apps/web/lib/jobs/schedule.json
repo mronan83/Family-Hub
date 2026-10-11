@@ -51,6 +51,13 @@
       "purpose": "Every 15 minutes (minutes 3, 18, 33, 48): fetches each household's published calendars that are due, expands them over the window (a week back, 120 days ahead) and stores their events; a broken link keeps its last good events (WP-22, D-63)."
     },
     {
+      "name": "weather",
+      "kind": "http",
+      "cron": "9,39 * * * *",
+      "everyMinutes": 30,
+      "purpose": "Every 30 minutes (minutes 9 and 39): reads the temperature now and today's high and low at each household's place from Open-Meteo and stores it for the boards; a read that fails is recorded and the boards stop showing the weather (WP-45, D-69)."
+    },
+    {
       "name": "purge_history",
       "kind": "sql",
       "cron": "43 3 * * *",
