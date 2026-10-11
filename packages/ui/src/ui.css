@@ -2565,3 +2565,34 @@ span.fw-heat__cell {
   display: block;
   font-size: var(--t-small);
 }
+
+/* [BRD-04] The weather beside the clock (WP-45, 06 §7.3): the sky's icon in Teal, the temperature
+   at title size, the sky's word and today's high in small type beside it. */
+.fw-board__now {
+  display: flex;
+  align-items: center;
+  gap: var(--s-8);
+}
+.fw-weather {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+.fw-weather__icon {
+  color: var(--primary);
+}
+.fw-weather__now {
+  font-family: var(--font-display);
+  font-size: var(--t-title);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+/* Three lines (the sky, the high, the licence's credit) no taller than the clock beside them, so
+   the bar is the same with weather or without. */
+.fw-weather__more {
+  display: grid;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  line-height: 1.1;
+}
