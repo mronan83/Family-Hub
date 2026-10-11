@@ -2203,9 +2203,30 @@ span.fw-heat__cell {
   border: var(--border-w) solid var(--line);
   border-left: 10px solid var(--cal);
 }
+/* A word wider than its day ("Grandparents" in seven days) breaks inside the event, not past it. */
 .fw-dash__day .fw-bcal__title {
-  overflow-wrap: break-word;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   hyphens: auto;
+}
+/* Seven days beside today's list leave each day about 140 px: the board's smallest text and less
+   padding, so most words still fit whole. */
+.fw-dash[data-span='7'] .fw-dash__days {
+  gap: var(--s-2);
+}
+.fw-dash[data-span='7'] .fw-dash__day {
+  padding: var(--s-1);
+}
+.fw-dash[data-span='7'] .fw-dash__day-head {
+  padding: var(--s-1);
+}
+.fw-dash[data-span='7'] .fw-dash__day .fw-bcal__event {
+  padding: var(--s-1) var(--s-2);
+  border-left-width: 6px;
+}
+.fw-dash[data-span='7'] .fw-dash__day .fw-bcal__title {
+  font-size: var(--t-small);
+  font-weight: 600;
 }
 /* [CAL-04] The month: a dot per calendar with something on a day; a tap opens the day. */
 .fw-dash__month {

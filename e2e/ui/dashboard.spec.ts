@@ -44,6 +44,19 @@ const fit = (page: Page) =>
     return { wide: document.documentElement.scrollWidth, small, tiny };
   });
 
+/** Text in the dashboard that runs out of its box: a long word in a narrow day, a long title. */
+const spills = (page: Page) =>
+  page.evaluate(() =>
+    [...document.querySelectorAll('.fw-dash .fw-bcal__title, .fw-dash .fw-dash__title')]
+      .filter((el) => {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const box = (el.closest('.fw-bcal__event, li') ?? el).getBoundingClientRect();
+        return range.getBoundingClientRect().right > box.right + 1;
+      })
+      .map((el) => el.textContent),
+  );
+
 for (const theme of ['day', 'evening'] as const) {
   for (const span of ['5', 'month'] as const) {
     test(`[BRD-03][NFR-11] the dashboard with ${span === 'month' ? 'the month' : 'five days'} fits the board in ${theme}: 56 px targets, 28 px text, AA contrast`, async ({
@@ -52,6 +65,7 @@ for (const theme of ['day', 'evening'] as const) {
       await page.goto(`/dev/board?theme=${theme}&span=${span}`);
       await expect(page.locator('.fw-dash')).toHaveAttribute('data-span', span);
       expect(await fit(page)).toEqual({ wide: 1920, small: [], tiny: [] });
+      expect(await spills(page)).toEqual([]);
       await contrastOk(page);
     });
   }
@@ -160,6 +174,19 @@ test('[CAL-04][D-66] the month: a dot per calendar on a day with events; a tap o
     page.getByRole('group', { name: 'Calendar view' }).getByRole('button', { name: 'Day' }),
   ).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.fw-bcal__event')).toHaveText([/Spelling test/, /Swim/]);
+});
+
+test('[CAL-04][D-66] a word too long for a narrow day wraps inside its event, in five and seven days', async ({
+  page,
+}) => {
+  for (const span of ['5', '7']) {
+    await page.goto(`/dev/board?span=${span}`);
+    await expect(page.locator('.fw-dash__day').first()).toBeVisible();
+    await expect(
+      page.locator('.fw-dash__day .fw-bcal__title', { hasText: 'Grandparents' }).first(),
+    ).toBeVisible();
+    expect(await spills(page), `${span} days`).toEqual([]);
+  }
 });
 
 test('[CAL-04][D-66] a day’s head in the columns opens that day too', async ({ page }) => {
