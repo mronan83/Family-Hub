@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.89: WP-49, WP-50 and WP-51 added at the owner's request; WP-29 waits until the owner says to start it.
 > v0.8.88: WP-28 done (PR #58): meals on the board.
 > v0.8.87: WP-28 in review (PR #58): meals on the board (D-80).
 > v0.8.86: WP-27 done (PR #57): school menus from Nutrislice, a file or by hand.
@@ -169,7 +170,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-26 | Lunch buy or bring | P2 | S | WP-21, WP-25 | Done (PR #56) |
 | WP-27 | School menu adapters and import | P2 | L | WP-21, WP-07 | Done (PR #57) |
 | WP-28 | Board meals panel | P2 | S | WP-25, WP-06 | Done (PR #58) |
-| WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Ready (SPIKE-02's CalDAV part first) |
+| WP-29 | CalDAV (secondary account) | P2 | M | WP-22 | Ready, on hold until the owner says to start (SPIKE-02's CalDAV part first) |
 | WP-30 | Bonus rules and wishlist | P2 | M | WP-16, WP-17 | Done (PR #35) |
 | WP-31 | Accessibility pass | P2 | S | WP-20 | Ready |
 | WP-40 | Reminders (web push) | P2 | M | WP-07, WP-12, WP-37 | Done (PR #36) |
@@ -182,6 +183,9 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-46 | More icons, one icon picker, sixteen colors | P3 | M | WP-08, WP-22, WP-37 | Done (PR #47) |
 | WP-47 | The board fits its screen; text size per board | P3 | M | WP-06, WP-35 | Done (PR #50) |
 | WP-48 | The home screen on one screen, with a rail | P3 | M | WP-35, WP-47 | Done (PR #52) |
+| WP-49 | Next week's lunches picked on the board | P2 | M | WP-26, WP-27, WP-28 | Ready (mockups first) |
+| WP-50 | A calendar for one or more people | P2 | S | WP-22, WP-23 | Ready |
+| WP-51 | One admin menu, with Settings and Tags | P3 | M | WP-03, WP-08 | Ready (mockups first) |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -281,6 +285,11 @@ flowchart LR
     WP20 --> WP44[WP-44 Offline goal projection]
     WP13 --> WP44
     WP15 --> WP44
+    WP26 --> WP49[WP-49 Lunches picked on the board]
+    WP27 --> WP49
+    WP28 --> WP49
+    WP22 --> WP50[WP-50 A calendar for several people]
+    WP23 --> WP50
   end
   subgraph P3[P3 Polish]
     WP03 --> WP32[WP-32 Audit log]
@@ -295,6 +304,8 @@ flowchart LR
     WP06 --> WP47
     WP35 --> WP48[WP-48 One screen, a rail]
     WP47 --> WP48
+    WP03 --> WP51[WP-51 One admin menu, Settings, Tags]
+    WP08 --> WP51
     WP22 --> WP36[WP-36 Closure import, grocery-ready]
     WP25 --> WP36
     WP03 --> WP38[WP-38 Apple sign-in and passkeys]
@@ -853,6 +864,23 @@ flowchart LR
 - Needs the production domain (OQ-06b) and an Apple Developer account. Sign in with Apple with account linking (no duplicate users); passkey enrollment and sign-in; magic link and password stay available.
 - **Done when:** both methods sign in to an existing admin account on the production domain, and cancelling either falls back cleanly.
 
+
+### WP-49 — Next week's lunches picked on the board
+**Phase:** P2 · **Size:** M · **Depends on:** WP-26, WP-27, WP-28 · **Reqs:** MEAL-09
+- The owner's family sits down on Sundays to choose buy or bring for the coming school week; they want the child to do it at the board, not a parent in the admin app. A **Lunches** screen on the board (from **Meals**, and from a child's own screen) shows a child's coming school week: each day's school menu and **Buy** or **Bring**, the usual choice already set; a tap changes a day (through `set_lunch()` as the board, with who changed it recorded). A household item, "Pick next week's lunches", can open it: tapping it on the list opens the child's coming week, and **Done** there checks the item off for them.
+- To settle at the mockups: which week is "coming" on each day (recommended: Monday to Friday after today, so Sunday shows the next five school days); whether today and earlier days are locked (recommended: yes); whether a parent approves a change (recommended: no; Meals shows each change and who made it, as a check-off does); and how an item is linked to the screen (recommended: an item's "opens" setting, Lunches, set on the item in Chores).
+- **Done when:** on the preview, a weekly item opens Maya's coming week on a paired board, a day changed there shows as changed on Meals in the admin app within 3 seconds, and **Done** checks the item off for her.
+
+### WP-50 — A calendar for one or more people
+**Phase:** P2 · **Size:** S · **Depends on:** WP-22, WP-23 · **Reqs:** CAL-09
+- A calendar belongs to **The whole family** or to any number of people, not just one (today: `calendar_source.member_id`). Its people move to `calendar_member`; each calendar's one person is carried over. On **Calendars**, choosing who it's for is **The whole family** or a tick per person. On the board, each event shows the faces of its calendar's people, and a person's screen shows the calendars that include them.
+- **Done when:** pgTAP: a calendar for two people shows on each one's screen and not a third's, and an existing calendar keeps its person; on the preview, a calendar given two people on Calendars shows both faces on the board.
+
+### WP-51 — One admin menu, with Settings and Tags
+**Phase:** P3 · **Size:** M · **Depends on:** WP-03, WP-08 · **Reqs:** NFR-15
+- The admin app's header lists fourteen pages as a row of links, and Tags is reached only from Chores. One menu groups them: the day (Home, Today, My tasks), the family (Chores, Members, Rewards, Goals, Meals, Insights) and **Settings**, a page of its own with School, Calendars, Boards, Tags, Reminders and Health. On a phone it opens from a menu button; on a laptop it stays beside the page. Help stays at hand.
+- **Done when:** the UI suite: on a phone and a laptop every page is two taps or fewer from any other, the page you are on is marked, Tags is under Settings, and nothing scrolls sideways.
+
 ---
 
 ## 6. Size summary
@@ -864,7 +892,7 @@ flowchart LR
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
-| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44 | Menu adapters is the L |
-| P3 | WP-32 – WP-36, WP-38 | — |
+| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50 | Menu adapters is the L |
+| P3 | WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 | — |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

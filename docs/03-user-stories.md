@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.34: US-107, US-508 and US-707 added (WP-49 to WP-51): one admin menu with Settings and Tags; a calendar for one or more people; next week's lunches picked on the board.
 > v0.8.33: US-705 as built (WP-28, D-80): today's meals above Today's list on the board, the week on **Meals**, read-only.
 > v0.8.32: US-704 and US-801 to US-803 as built (WP-27, D-79): School menus from Nutrislice (picked), a file or typed in; a parent's days kept; a failing feed keeps its menus; a buy day shows the menu.
 > v0.8.31: US-703 as built (WP-26, D-78): school lunch, buy or bring, on Meals.
@@ -102,6 +103,13 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given the production domain is configured, when I choose Sign in with Apple and authentication succeeds, then I land on `/admin` for my household and my existing account is linked, not duplicated.
 - Given I am signed in, when I enroll a passkey and later sign in with it, then I land on `/admin` without entering a password.
 - Given either method fails or is cancelled, when I return to sign-in, then magic link and password still work.
+
+
+### US-107 — Find every page from one tidy menu
+**As an** admin **I want** the admin app's pages grouped in one tidy menu, with the set-up pages, Tags among them, under Settings **so that** I can find a page without scanning a row of links, and Tags isn't hidden under Chores.
+**Priority:** Should · **Phase:** P3 · **Reqs:** NFR-15
+- Given any admin page on a phone or a laptop, when I open the menu, then I see the pages in groups (the day, the family's set-up, Settings), the page I am on marked.
+- Given Settings, when I open it, then School, Calendars, Boards, Tags, Reminders and Health are each one tap away.
 
 ---
 
@@ -447,6 +455,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given I add a CalDAV source, when I save, then username and password go to Vault and a warning explains the scope of app-specific passwords.
 - Given sync succeeds, when I view the source, then only the calendars shared with that account are listed.
 
+
+### US-508 — A calendar for more than one person
+**As an** admin **I want** to give a calendar to one or more people, not just one person or the whole family **so that** a calendar the two kids share shows both of them, and each of their screens shows it.
+**Priority:** Should · **Phase:** P2 · **Reqs:** CAL-09
+- Given I add or change a calendar, when I choose who it's for, then I can pick **The whole family** or any number of people.
+- Given a calendar for Leo and Maya, when it shows on the board, then each event has both their faces, and it is on Leo's screen and Maya's screen but not on Alex's.
+- Given a calendar that belonged to one person before, when this ships, then it still belongs to that person.
+
 ---
 
 ## E6 — School year and day context
@@ -517,6 +533,15 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Could · **Phase:** P3 · **Reqs:** MEAL-07
 - Given I add ingredients to a meal, when I save, then they are stored structured and exportable.
 - Given a week is planned, when I request a consolidated ingredient export, then I receive de-duplicated quantities.
+
+
+### US-707 — Kid picks next week's lunches at the board
+**As a** kid **I want** to look at next week's school lunch menu on the board and choose to buy or bring each day **so that** our Sunday lunch planning happens together at the board, not on a parent's phone.
+**Priority:** Should · **Phase:** P2 · **Reqs:** MEAL-09
+- Given the weekly item "Pick next week's lunches" on the family list, when I tap it, then the board opens my coming week: each school day with what the school serves and **Buy** or **Bring**, my usual choice already set.
+- Given a day I want to change, when I tap **Buy** or **Bring**, then it changes at once and **Meals** in the admin app shows it as changed, by the board.
+- Given I have looked at every day, when I tap **Done**, then the weekly item is checked off for me.
+- Given a day with no school, or today and earlier days, when I look, then I can't change it.
 
 ---
 

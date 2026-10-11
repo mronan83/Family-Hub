@@ -66,6 +66,7 @@
 | CAL-05 | Admins shall choose which connected calendars each board displays, with color and optional member association per calendar. | M | P1 | User |
 | CAL-06 | Admins shall see sync health, and the board shall retain last good data when sync fails. | M | P1 | Design |
 | CAL-07 | Calendar handling shall be correct for time zones, DST, and all-day events. | M | P1 | Design |
+| CAL-09 | A calendar shall belong to the whole family or to one or more members; the board shows each of its people with its events, and each person's screen shows the calendars that include them. | S | P2 | User |
 | CAL-08 | The system shall support CalDAV with an app-specific password and guidance to use a secondary read-only Apple ID. | C | P2 | Design |
 | SCH-01 | Admins shall configure school years (dates, terms, breaks, no-school days); multiple years shall coexist. | M | P1 | User |
 | SCH-02 | The system shall resolve a day type (`school_day`, `no_school`, `break`, `weekend`, `summer`) per member and date. | M | P1 | User |
@@ -78,6 +79,7 @@
 | MEAL-05 | Buy days shall display the school menu items for that date. | M | P2 | User |
 | MEAL-06 | The board shall show today's meals and a weekly view, read-only. | M | P2 | Derived |
 | MEAL-07 | Meals shall store structured ingredients so a grocery list can be added later. | C | P3 | Design |
+| MEAL-09 | A child shall choose buy or bring for each school day of the coming week on the board, seeing what the school serves each day; a weekly item on the family list can open it, and parents see the choices and who made them in the admin app. Meals themselves stay read-only on the board (MEAL-06). | S | P2 | User |
 | MEAL-08 | A slot shall allow multiple ordered entries (for example snacks), scoped to the household or a member. | S | P2 | Derived |
 | MENU-01 | Admins shall configure a menu source and link it to a child's school profile. | M | P2 | User |
 | MENU-02 | Menu import shall use a pluggable adapter interface (Nutrislice, SchoolCafe, Linq Connect, CSV, manual). | M | P2 | Design |
@@ -113,6 +115,7 @@
 | PTS-07 | Each member shall have an earns-rewards switch, on by default for a child and off for an adult. Only credited members with it on earn points, go through approval, count toward goals, and show reward streaks. | M | P1 | User |
 | NFR-12 | The rules engine shall have at least 90% unit coverage, RLS shall be pgTAP-tested, and CI shall gate on e2e including offline. | M | P0 | Design |
 | NFR-13 | The product shall be branded FamilyWise and implement the brand and style guide: design tokens (light and Evening themes), self-hosted fonts, logo and app icons, the icon set (our own and Lucide's, D-70), member avatars, and a status-to-visual mapping with icon, label and color for every occurrence status. | M | P0 | User |
+| NFR-15 | The admin app's pages shall be grouped in one menu (the day, the family's set-up, and settings), tidy on a phone and a laptop, with every settings page (school, calendars, boards, tags, reminders, health) reachable from it. | S | P3 | User |
 | NFR-14 | Every change shall reach production only through a pull request that passes CI gates (lint, typecheck, unit, pgTAP, traceability, build) and e2e on its preview deployment, which runs as the demo family in the one database with the PR's additive migrations applied, and that the owner has approved after viewing its preview; merging applies migrations before deploying the app. No Docker and no staging environment. | M | P0 | User |
 
 ---
@@ -176,6 +179,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CAL-06 | US-505 | WP-22 | CALSYNC, ADM, OBS | calendar_source, job_run | INT, E2E |
 | CAL-07 | US-502 | WP-22 | CALSYNC | calendar_event, calendar_event_instance | U |
 | CAL-08 | US-506 | WP-29 | CALSYNC, VAULT | calendar_source | INT |
+| CAL-09 | US-508 | WP-50 | ADM, BRD, DB | calendar_source, calendar_member | DB, E2E |
 | SCH-01 | US-601 | WP-21 | ADM, DB | school_year, school_term, school_closure, member_school_profile | U, DB, E2E |
 | SCH-02 | US-602 | WP-21 | DB | resolve_day_type | DB, E2E |
 | SCH-03 | US-302, US-602 | WP-09, WP-21 | OCCGEN, DB | chore, chore_occurrence | DB, E2E |
@@ -188,6 +192,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | MEAL-06 | US-705 | WP-28 | BRD | meal_plan_entry, lunch_override, member_lunch, school_menu_day | U, DB, E2E |
 | MEAL-07 | US-706 | WP-36 | ADM | meal | U |
 | MEAL-08 | US-701 | WP-25 | ADM | meal_plan_entry | U, DB, E2E |
+| MEAL-09 | US-707 | WP-49 | BRD, API, DB, ADM | lunch_override, member_lunch, school_menu_day, chore | U, DB, E2E |
 | MENU-01 | US-801 | WP-27 | ADM, MENUIMP | menu_source, member_lunch | U, DB, E2E |
 | MENU-02 | US-801 | WP-27 | MENUIMP | menu_source | U, DB, E2E |
 | MENU-03 | US-802 | WP-27 | ADM, MENUIMP | school_menu_day | U, DB, E2E |
@@ -223,6 +228,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-12 | US-908, US-911 | WP-01, WP-02, WP-15 | all | — | CI |
 | NFR-13 | US-910 | WP-37, WP-46 | BRD, ADM, UI | — | E2E, REV |
 | NFR-14 | US-911 | WP-01, WP-41 | CICD | — | CI, REV |
+| NFR-15 | US-107 | WP-51 | ADM, UI | — | E2E |
 
 ---
 
@@ -232,12 +238,12 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 |---|---|---|---|---|
 | P0 | 13 | 1 | 0 | 14 |
 | P1 | 52 | 5 | 0 | 57 |
-| P2 | 12 | 6 | 1 | 19 |
-| P3 | 0 | 7 | 3 | 10 |
-| **Total** | **77** | **19** | **4** | **100** |
+| P2 | 12 | 8 | 1 | 21 |
+| P3 | 0 | 8 | 3 | 11 |
+| **Total** | **77** | **22** | **4** | **103** |
 
-- Requirements: **100** · with at least one story: **100** · stories: **89** (P0: 12 · P1: 52 · P2: 15 · P3: 10).
-- With at least one work package: **100** · work packages: **48**.
+- Requirements: **103** · with at least one story: **103** · stories: **92** (P0: 12 · P1: 52 · P2: 17 · P3: 11).
+- With at least one work package: **103** · work packages: **51**.
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -246,9 +252,9 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 
 | Component | Requirements |
 |---|---|
-| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, BRD-08, BRD-09, CAL-03, CAL-04, CAL-05, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08 |
-| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, BRD-05, BRD-08, CAL-01, CAL-03, CAL-05, CAL-06, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MENU-01, MENU-03, MENU-04, NFR-05, NFR-11, NFR-13, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04 |
-| `API` | ACC-03, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, DEV-01, DEV-06, MEAL-03, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, PTS-06, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13 |
+| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, BRD-08, BRD-09, CAL-03, CAL-04, CAL-05, CAL-09, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, MEAL-09, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08 |
+| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, BRD-05, BRD-08, CAL-01, CAL-03, CAL-05, CAL-06, CAL-09, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MEAL-09, MENU-01, MENU-03, MENU-04, NFR-05, NFR-11, NFR-13, NFR-15, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04 |
+| `API` | ACC-03, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, DEV-01, DEV-06, MEAL-03, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, PTS-06, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13 |
 | `AUTH` | DEV-01, DEV-02, DEV-03 |
 | `RULES` | CHR-10, PTS-05, PTS-07, RWD-02, RWD-03, RWD-04, RWD-05, RWD-06, RWD-10, RWD-11, RWD-12, RWD-13 |
 | `OCCGEN` | CHR-02, CHR-03, CHR-09, CHR-11, CHR-12, CHR-18, SCH-03 |
@@ -257,13 +263,13 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | `NOTIFY` | CHR-15, CHR-16, CHR-17 |
 | `OUTBOX` | CHR-04, DEV-06, NFR-01, PTS-04 |
 | `SCHED` | CAL-02, CHR-03, CHR-07, CHR-12, CHR-16, MENU-05, NFR-07, PTS-05, RWD-04, RWD-06, RWD-11 |
-| `DB` | ACC-01, ACC-04, ACC-05, CAL-05, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, DEV-02, DEV-05, MEAL-04, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03 |
+| `DB` | ACC-01, ACC-04, ACC-05, CAL-05, CAL-09, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, DEV-02, DEV-05, MEAL-04, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03 |
 | `RT` | DEV-05 |
 | `VAULT` | CAL-01, CAL-08, NFR-04 |
 | `SAUTH` | ACC-02, ACC-03, ACC-06, DEV-01, DEV-02, NFR-04 |
 | `PI` | DEV-04, DEV-07, NFR-02 |
 | `OBS` | CAL-06, DEV-08, MENU-04, NFR-07, NFR-08 |
-| `UI` | NFR-11, NFR-13 |
+| `UI` | NFR-11, NFR-13, NFR-15 |
 | `CICD` | NFR-08, NFR-14 |
 
 `all` (NFR-12) applies to every component. Generated by `check_traceability.py --fix`.
@@ -399,6 +405,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.90 | Three work packages added to the backlog at the owner's request (Ready): WP-49 the coming week's school lunches chosen on the board, from a weekly item on the family list (MEAL-09, US-707); WP-50 a calendar for one or more people (CAL-09, US-508); WP-51 one admin menu, with a Settings page that holds Tags (NFR-15, US-107). WP-29 waits until the owner says to start it. |
 | 0.8.89 | WP-28 done (PR #58): approved by the owner and merged once CI and e2e were green on the preview (129 passed on `eddb349`, the board meals migration applied; the done-when in `board-meals.spec`: a paired board showed today's four meals and, on a Sunday, no school lunch, as `lunch_mode()` has it; a changed dinner reached the board in 1,576 ms; **Meals** showed each child's lunch each day of the week. DEV-05 p95 1,252 ms; BRD-05 p90 858 ms. One retry, in `rewards.spec` (a reward added with a photo: the saved notice didn't show within 15 s; the retry passed), code this PR doesn't touch and its first such retry in 25 runs). The user guide says how (version 0.12). |
 | 0.8.88 | WP-28 board meals panel (MEAL-06, US-705, D-80), in review (PR #58): on the board's home screen, **Today's meals** above Today's list (the day's breakfast, snack, lunch and dinner with their pictures, and each child's lunch: **Buys** with the school's menu or **Brings** with what is planned), nothing on a day with nothing; **Meals** in the rail with the week, read-only, today marked and **School lunch** each day; a person's screen has theirs; on **Boards** today's meals show or hide but take no place in the cards' order. `board_snapshot()` gains `meals`, and the five meal tables join Realtime. Tests: pgTAP 370 (8) and 070's publication; unit `board-meals.test.ts`, `board-layout.test.ts`, `board.test.ts`; the UI suite's `board-meals.spec.ts`; the preview's `board-meals.spec.ts` (the done-when: a board shows today's four meals and each child's lunch as `lunch_mode()` has it, a changed dinner arriving through Realtime, and the week's school lunches). The user guide says how (version 0.12, A5, A11, A15, B1.12, B2, B7). |
 | 0.8.87 | WP-27 done (PR #57): approved by the owner and merged once CI and e2e were green on the preview (126 passed on `473e1d4`, the school menus migration applied; its one retry was WP-26's lunch test, whose race was fixed in #56; the done-when in `menus.spec`: four weeks loaded from a made-up file through the page, the job's code against a made-up Nutrislice fetched, failing with its menus kept and **Can't fetch** shown, then fetched again with the parent's own day kept, and Maya's buy day showing her menu). The user guide says how (version 0.11, A15, B1.15, B3, B7). |
