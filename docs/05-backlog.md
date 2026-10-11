@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.63: WP-45 done (PR #45): weather on the board.
 > v0.8.62: WP-45 in review (PR #45): weather on the board (D-69).
 > v0.8.61: WP-35 done (PR #44): the family dashboard and the home screen's layout. WP-45 is ready.
 > v0.8.60: WP-35 in review (PR #44): the family dashboard and the home screen's layout (D-66, D-67). WP-45 (weather on the board, BRD-04) is split out of WP-35 and waits for it.
@@ -153,7 +154,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
 | WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
 | WP-35 | Family dashboard and board layout | P3 | L | WP-23 | Done (PR #44) |
-| WP-45 | Weather on the board | P3 | S | WP-35 | In review (PR #45) |
+| WP-45 | Weather on the board | P3 | S | WP-35 | Done (PR #45) |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
