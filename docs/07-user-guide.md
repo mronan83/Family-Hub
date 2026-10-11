@@ -1,7 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.4 · Status: living document · Maintained by Claude Code
-> v0.4: more icons and colors (WP-46, D-70): one icon picker everywhere, with **Find an icon** and groups; sixteen named colors; the weather's own sky icons.
+> v0.4: more icons and colors (WP-46, D-70): one icon picker everywhere, with **Find an icon** and groups; sixteen named colors; the weather's own sky icons; how the board stays easy to read for everyone (A12).
 > v0.3: fixes found while writing this guide (PR #48): a board's own layout is kept when you save again; Disconnect asks first; the return home also closes an unanswered "Who did …?"; the board waits 90 seconds before going home (D-71).
 > v0.2: weather on the board (WP-45): A13, and the weather on Home, Boards, the board's top bar, the rules, troubleshooting and questions; no longer "coming soon".
 > v0.1: first version (D-68): Part A, the User Guide by task, and Part B, the User Manual, for everything built up to WP-35; screenshots from the made-up demo family; a check that every built story is covered.
@@ -663,7 +663,7 @@ The boards change within seconds.
 ![The board's home screen with the calendar showing the month, with colored dots on days with events.](guide/img/board-home-month.jpg "The home screen with the month")
 
 ### A12 Day and Evening themes
-<!-- covers: US-910 -->
+<!-- covers: US-910 US-906 -->
 
 **What this is.** Two looks: **Day** (light) and **Evening** (dark, easier on the eyes at night). **When.** Automatic. **How.**
 
@@ -671,6 +671,8 @@ The boards change within seconds.
 - **The admin app** follows your phone's or computer's dark mode: Evening when dark mode is on.
 
 Both looks use the same colors for the same things, never color alone: every state also has an icon and a word.
+
+**Easy to read for everyone.** In both looks, words meet the WCAG AA contrast level, and each of the sixteen colors, used as a line or a dot, stands out at least 3 to 1 from what is behind it; in the Evening, lines and dots use a lighter shade of each color so they still do. With **reduce motion** turned on in the screen's or the browser's settings, celebrations and points don't move or count up; the words are the same.
 
 ![The board's home screen in the Evening theme, with the calendar showing three days.](guide/img/board-home-evening.jpg "Evening, here with three days in the calendar")
 
