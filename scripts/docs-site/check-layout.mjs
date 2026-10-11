@@ -14,7 +14,7 @@ const root = resolve(import.meta.dirname, '../..');
 const dist = join(root, 'dist/docs-site');
 const shotsArg = process.argv.find((a) => a.startsWith('--shots='));
 const shots = shotsArg ? resolve(shotsArg.slice(8)) : null;
-const PAGES = ['architecture', 'data-model', 'requirements', 'stories', 'backlog'];
+const PAGES = ['architecture', 'data-model', 'requirements', 'stories', 'backlog', 'user-guide'];
 
 // Logical viewports of real devices (CSS px). Touch devices also get a coarse pointer and no hover.
 const DEVICES = [

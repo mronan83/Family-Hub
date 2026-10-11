@@ -166,6 +166,7 @@ const DOC_PAGE = {
   '03': ['stories'],
   '04': ['requirements'],
   '05': ['backlog'],
+  '07': ['user-guide'],
 };
 
 export function refLink(ctx, id, label = id) {
@@ -253,41 +254,39 @@ export function linkify(html, ctx) {
 // Rendering
 // ---------------------------------------------------------------------------
 
-const marked = new Marked({
-  gfm: true,
-  renderer: {
-    code({ text, lang }) {
-      if (lang === 'mermaid') {
-        return `<figure class="diagram"><pre class="mermaid">${esc(text)}</pre></figure>\n`;
-      }
-      const cls = lang ? ` class="lang-${esc(lang)}"` : '';
-      return `<div class="code"><pre><code${cls}>${esc(text)}</code></pre></div>\n`;
-    },
-    heading({ tokens, depth, text }) {
-      const level = Math.min(6, Math.max(3, depth));
-      return `<h${level} id="${sectionAnchor(text)}">${this.parser.parseInline(tokens)}</h${level}>\n`;
-    },
-    table(token) {
-      const labels = token.header.map((c) => esc(c.text.replace(/[`*]/g, '')));
-      const head = token.header
-        .map((c) => `<th>${this.parser.parseInline(c.tokens)}</th>`)
-        .join('');
-      const body = token.rows
-        .map(
-          (row) =>
-            '<tr>' +
-            row
-              .map(
-                (c, i) => `<td data-label="${labels[i]}">${this.parser.parseInline(c.tokens)}</td>`,
-              )
-              .join('') +
-            '</tr>',
-        )
-        .join('\n');
-      return `<div class="table-wrap"><table class="md"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>\n`;
-    },
+// The renderer every page shares; the user guide swaps in its own headings (pages/user-guide.mjs).
+export const RENDERER = {
+  code({ text, lang }) {
+    if (lang === 'mermaid') {
+      return `<figure class="diagram"><pre class="mermaid">${esc(text)}</pre></figure>\n`;
+    }
+    const cls = lang ? ` class="lang-${esc(lang)}"` : '';
+    return `<div class="code"><pre><code${cls}>${esc(text)}</code></pre></div>\n`;
   },
-});
+  heading({ tokens, depth, text }) {
+    const level = Math.min(6, Math.max(3, depth));
+    return `<h${level} id="${sectionAnchor(text)}">${this.parser.parseInline(tokens)}</h${level}>\n`;
+  },
+  table(token) {
+    const labels = token.header.map((c) => esc(c.text.replace(/[`*]/g, '')));
+    const head = token.header.map((c) => `<th>${this.parser.parseInline(c.tokens)}</th>`).join('');
+    const body = token.rows
+      .map(
+        (row) =>
+          '<tr>' +
+          row
+            .map(
+              (c, i) => `<td data-label="${labels[i]}">${this.parser.parseInline(c.tokens)}</td>`,
+            )
+            .join('') +
+          '</tr>',
+      )
+      .join('\n');
+    return `<div class="table-wrap"><table class="md"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>\n`;
+  },
+};
+
+const marked = new Marked({ gfm: true, renderer: RENDERER });
 
 export const md = (src, ctx) => linkify(marked.parse(src || ''), ctx);
 export const mdInline = (src, ctx) => linkify(marked.parseInline(src || ''), ctx);
