@@ -1,6 +1,6 @@
 'use client';
 
-import { Banner, Button, Icon, iconLabel, type IconName } from '@familywise/ui';
+import { Banner, Button, IconPicker, type IconName } from '@familywise/ui';
 import type { FormState } from '@/lib/auth/messages';
 import { useFormAction } from '@/lib/forms';
 import { saveReward } from './actions';
@@ -22,12 +22,10 @@ export interface RewardInitial {
 export function RewardForm({
   id,
   initial,
-  icons,
   hasPhoto,
 }: {
   id?: string;
   initial?: RewardInitial;
-  icons: IconName[];
   hasPhoto?: boolean;
 }) {
   const [state, onSubmit, pending] = useFormAction(saveReward, {} as FormState);
@@ -70,24 +68,11 @@ export function RewardForm({
           autoComplete="off"
         />
       </label>
-      <fieldset className="fw-field fw-fieldset">
-        <legend className="fw-field__label">Icon, shown when there’s no photo</legend>
-        <div className="fw-picker">
-          {icons.map((name) => (
-            <label key={name} className="fw-picker__item fw-picker__item--icon">
-              <input
-                type="radio"
-                name="icon"
-                value={name}
-                defaultChecked={(initial?.icon ?? 'gift') === name}
-                className="fw-visually-hidden"
-              />
-              <Icon name={name} size={24} />
-              <span className="fw-visually-hidden">{iconLabel(name)}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <IconPicker
+        legend="Icon, shown when there’s no photo"
+        selected={initial?.icon ?? 'gift'}
+        start="rewards"
+      />
       <label className="fw-field">
         <span className="fw-field__label">
           {hasPhoto ? 'A new photo (optional)' : 'Photo (optional)'}

@@ -3,7 +3,7 @@ import base from '../../eslint.config.mjs';
 export default [
   ...base,
   {
-    files: ['scripts/brand.mjs', 'scripts/tokens.mjs'],
+    files: ['scripts/brand.mjs', 'scripts/lucide.mjs', 'scripts/tokens.mjs'],
     languageOptions: { globals: { console: 'readonly', process: 'readonly' } },
   },
   {

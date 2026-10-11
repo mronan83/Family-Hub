@@ -81,7 +81,7 @@ export function EventLine({
   return (
     <li
       className="fw-bcal__event"
-      style={{ ['--cal' as string]: `var(--${calendar?.color ?? 'member-6'})` }}
+      style={{ ['--cal' as string]: `var(--${calendar?.color ?? 'member-6'}-line)` }}
       data-calendar={calendar?.name}
     >
       <span className="fw-bcal__when">{eventWhen(event, date, timeZone)}</span>
@@ -303,7 +303,7 @@ export function CalendarScreen({
                         key={e.id}
                         className="fw-bcal__chip"
                         style={{
-                          ['--cal' as string]: `var(--${calendars.get(e.calendarId)?.color ?? 'member-6'})`,
+                          ['--cal' as string]: `var(--${calendars.get(e.calendarId)?.color ?? 'member-6'}-line)`,
                         }}
                       >
                         {e.title || 'Untitled event'}

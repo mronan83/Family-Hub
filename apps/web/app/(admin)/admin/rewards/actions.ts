@@ -1,6 +1,7 @@
 'use server';
 
 import { ENGINE_VERSION } from '@familywise/rules-engine';
+import { ICON_NAMES } from '@familywise/ui';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { FormState } from '@/lib/auth/messages';
@@ -11,7 +12,6 @@ import { dayBefore, rebuildMemberHistory } from '@/lib/history';
 import { log } from '@/lib/log';
 import { checkPhoto, parseCatalog, refusal } from '@/lib/rewards';
 import { serverClient } from '@/lib/supabase/server';
-import { REWARD_ICONS } from './data';
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -30,7 +30,7 @@ async function context() {
  */
 export async function saveReward(_prev: FormState, form: FormData): Promise<FormState> {
   const { db, household } = await context();
-  const parsed = parseCatalog(form, REWARD_ICONS);
+  const parsed = parseCatalog(form, ICON_NAMES);
   if (!parsed.ok) return { message: parsed.message };
   const photo = checkPhoto(form.get('photo'));
   if (typeof photo === 'string') return { message: photo };

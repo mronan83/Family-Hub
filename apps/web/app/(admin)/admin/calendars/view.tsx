@@ -55,7 +55,7 @@ export function CalendarsView({ calendars, members, timezone, notice, error }: C
                     <span className="fw-pill fw-pill--tag">
                       <span
                         className="fw-swatch fw-swatch--small"
-                        style={{ background: `var(--${c.color})` }}
+                        style={{ background: `var(--${c.color}-line)` }}
                         aria-hidden
                       />
                       <strong>{c.name}</strong>
