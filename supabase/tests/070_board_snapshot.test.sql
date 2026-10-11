@@ -49,8 +49,8 @@ select is((select s -> 'household' from snap),
     "undo_window_seconds": 120}'::jsonb,
   '[DEV-05][CHR-04] the snapshot carries the board''s household, its timezone, week start and undo window');
 select is((select s -> 'device' from snap),
-  '{"id": "dddddddd-0000-4000-8000-000000000001", "name": "Kitchen", "theme": "auto"}'::jsonb,
-  '[DEV-05] and the board itself, with its theme');
+  '{"id": "dddddddd-0000-4000-8000-000000000001", "name": "Kitchen", "theme": "auto", "text_size": "standard"}'::jsonb,
+  '[DEV-05][BRD-08] and the board itself, with its theme and text size');
 select is((select array_agg(m ->> 'display_name') from snap, jsonb_array_elements(s -> 'members') m),
   array['Leo', 'Maya', 'Zoe'],
   '[DEV-05] members of this household only, without archived ones; children first, then by name');

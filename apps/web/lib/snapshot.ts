@@ -1,4 +1,10 @@
-import type { AvatarKey, MemberColor, ThemeOverride } from '@familywise/ui';
+import {
+  type AvatarKey,
+  type MemberColor,
+  type TextSize,
+  textSizeOf,
+  type ThemeOverride,
+} from '@familywise/ui';
 import type { OccurrenceStatus, RuleType } from '@familywise/rules-engine';
 import type { LedgerEntry, LedgerEntryType } from './points';
 import type { RedemptionStatus } from './rewards';
@@ -24,7 +30,8 @@ export interface BoardSnapshot {
     /** How long a check-off can be undone on the board (US-305). */
     undoWindowSeconds: number;
   };
-  device: { id: string; name: string; theme: ThemeOverride };
+  /** The board itself: its name, theme, and text size (BRD-08; Standard before WP-47). */
+  device: { id: string; name: string; theme: ThemeOverride; textSize: TextSize };
   /** [BRD-05] The home screen's layout: the household's, and this board's own if it has one (D-67). */
   layout: { household: BoardLayout; board: BoardLayout | null };
   members: BoardMember[];
@@ -465,6 +472,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
       id: str(d, 'id'),
       name: str(d, 'name'),
       theme: theme === 'day' || theme === 'evening' ? theme : 'auto',
+      textSize: textSizeOf(d.text_size),
     },
     // A snapshot from before WP-35 has no layout: the defaults.
     layout: isObject(data.layout)

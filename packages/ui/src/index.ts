@@ -29,6 +29,16 @@ export { PointsChip, type PointsChipProps } from './PointsChip';
 export { GoalMeter, type GoalMeterProps } from './GoalMeter';
 export { Banner, type BannerKind } from './Banner';
 export { Button, type ButtonProps, type ButtonVariant } from './Button';
+export {
+  applyBoardTextSize,
+  BOARD_CANVAS,
+  boardFitScript,
+  boardZoom,
+  TEXT_SIZES,
+  textSizeOf,
+  zoomAt,
+  type TextSize,
+} from './board-fit';
 export { BootSplash } from './BootSplash';
 export { Logo, type LogoProps } from './Logo';
 export {

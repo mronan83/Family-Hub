@@ -1,3 +1,5 @@
+import { type TextSize, textSizeOf } from '@familywise/ui';
+
 /**
  * [DEV-01][DEV-02] Boards (WP-05, 01 §5.1, D-40). Pairing gives a board the credential of its own
  * Supabase Auth user; the board keeps it in an httpOnly cookie so it can sign in again on its own
@@ -70,4 +72,9 @@ export type BoardThemeSetting = (typeof BOARD_THEMES)[number]['value'];
 export function boardThemeSetting(config: unknown): BoardThemeSetting {
   const theme = (config as { theme?: unknown } | null)?.theme;
   return BOARD_THEMES.find((t) => t.value === theme)?.value ?? 'auto';
+}
+
+/** [BRD-08] The text size a board's settings hold (D-73); none, or anything else, is Standard. */
+export function boardTextSize(config: unknown): TextSize {
+  return textSizeOf((config as { text_size?: unknown } | null)?.text_size);
 }

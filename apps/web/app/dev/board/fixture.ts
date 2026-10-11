@@ -79,7 +79,7 @@ export function fixtureSnapshot(
     today,
     range: { from: day(-1, today), to: day(21, today) },
     household: { id: 'h', name: 'Demo family', timezone: TZ, weekStart: 0, undoWindowSeconds: 120 },
-    device: { id: 'd', name: 'Kitchen', theme: 'auto' },
+    device: { id: 'd', name: 'Kitchen', theme: 'auto', textSize: 'standard' },
     // [BRD-05] The household's layout, the defaults unless the page says otherwise (WP-35).
     layout: { household: layout ?? structuredClone(DEFAULT_LAYOUT), board: null },
     members: [

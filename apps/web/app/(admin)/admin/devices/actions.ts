@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { GENERIC, hintMessage } from '@/lib/auth/messages';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
+import { TEXT_SIZES } from '@familywise/ui';
 import { BOARD_THEMES } from '@/lib/devices';
 import {
   type BoardLayout,
@@ -66,10 +67,28 @@ export async function renameDevice(form: FormData): Promise<void> {
  * board hears the change through Realtime and switches at once.
  */
 export async function setBoardTheme(form: FormData): Promise<void> {
+  const theme = BOARD_THEMES.find((t) => t.value === form.get('theme'))?.value;
+  await setBoardConfig(form, theme ? { theme } : null, 'board theme not set');
+}
+
+/**
+ * [BRD-08] Makes a board's words smaller or larger for where it hangs (D-73), on top of fitting its
+ * screen. The board hears the change through Realtime and resizes at once.
+ */
+export async function setBoardTextSize(form: FormData): Promise<void> {
+  const size = TEXT_SIZES.find((t) => t.value === form.get('text_size'))?.value;
+  await setBoardConfig(form, size ? { text_size: size } : null, 'board text size not set');
+}
+
+/** Puts `change` into the board's settings, keeping the rest, then shows Boards again. */
+async function setBoardConfig(
+  form: FormData,
+  change: Record<string, string> | null,
+  failure: string,
+): Promise<void> {
   const { db, household } = await context();
   const id = String(form.get('id') ?? '');
-  const theme = BOARD_THEMES.find((t) => t.value === form.get('theme'))?.value;
-  if (theme) {
+  if (change) {
     const { data } = await db
       .from('device')
       .select('board_config')
@@ -79,10 +98,10 @@ export async function setBoardTheme(form: FormData): Promise<void> {
     if (data) {
       const { error } = await db
         .from('device')
-        .update({ board_config: { ...(data.board_config as object), theme } })
+        .update({ board_config: { ...(data.board_config as object), ...change } })
         .eq('id', id)
         .eq('household_id', household.id);
-      if (error) log('warn', 'board theme not set', { code: error.code });
+      if (error) log('warn', failure, { code: error.code });
     }
   }
   revalidatePath('/admin/devices');
