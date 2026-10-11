@@ -52,6 +52,18 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.deployment.sha }}
+      # The reset seeds the demo family's history from its own today, and a run takes about 10
+      # minutes. One that crossed the family's midnight would compare yesterday's seed with today's
+      # dates (it did once, at 04:00 UTC: a calendar window and a streak date each off by a day), so
+      # a run that would end past that midnight waits for it to pass, then resets and runs.
+      - name: Not across the demo family's midnight
+        run: |
+          tz=$(psql "$SUPABASE_DB_URL" -AtX -c "select timezone from public.household where id = '0de00000-0000-4000-8000-000000000001'")
+          left=$(( $(TZ="$tz" date -d 'tomorrow 00:00' +%s) - $(date +%s) ))
+          if [ "$left" -lt 1500 ]; then
+            echo "The demo family's midnight ($tz) is ${left} s away: waiting for it to pass."
+            sleep $(( left + 30 ))
+          fi
       - name: Apply new migrations and reset the demo family
         run: bash scripts/preview-db.sh
       - uses: pnpm/action-setup@v6

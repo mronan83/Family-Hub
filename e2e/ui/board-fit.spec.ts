@@ -4,7 +4,8 @@ import { expect, test, type Page } from '@playwright/test';
 // [BRD-08] The board fits the screen it is on (WP-47, D-73), on /dev/board with the made-up family:
 // laid out on the 1920×1080 canvas and zoomed to the screen, so a 4K panel shows it twice as large
 // (sharper, the same layout), a laptop smaller, and a wider or taller screen gives it more room. Each
-// text size zooms it further; with larger text the dashboard puts the list under the calendar. The
+// text size zooms it further; with larger text the dashboard puts the list under the calendar and
+// scrolls inside the screen (D-74), never the page. The
 // zoom follows the window, swipes are measured in the board's own px, and the board starts at the
 // text size it last had before it has read anything. The preview's done-when is in
 // e2e/tests/board-fit.spec.ts.
@@ -39,8 +40,8 @@ for (const [width, height, scale, screen] of [
           boardWidth: board.getBoundingClientRect().width,
           bar: bar.offsetHeight,
           barOnScreen: bar.getBoundingClientRect().height,
-          // The pinned people stay under the bar: --bar-h is in the board's own px.
-          barVar: Number.parseFloat(getComputedStyle(board).getPropertyValue('--bar-h')),
+          // [D-74] One screen: the page itself never scrolls.
+          pageScroll: document.documentElement.scrollHeight - innerHeight,
           smallest: Math.min(...people.map((b) => b.offsetHeight)),
           smallestOnScreen: Math.min(...people.map((b) => b.getBoundingClientRect().height)),
         };
@@ -49,7 +50,7 @@ for (const [width, height, scale, screen] of [
       expect(m.boardWidth).toBeCloseTo(width, 0);
       // offsetHeight is whole px; on screen it is within one board px of that times the zoom.
       expect(Math.abs(m.barOnScreen - m.bar * z)).toBeLessThanOrEqual(z);
-      expect(m.barVar).toBe(m.bar);
+      expect(m.pageScroll).toBeLessThanOrEqual(0);
       // Touch targets keep their 56 px in the board's own px, and grow or shrink with it on screen.
       expect(m.smallest).toBeGreaterThanOrEqual(56);
       expect(Math.abs(m.smallestOnScreen - m.smallest * z)).toBeLessThanOrEqual(z);
@@ -78,10 +79,15 @@ test.describe('text sizes on a 1080p screen', () => {
 
   test('[BRD-08] at Largest, More info opens whole on the screen', async ({ page }) => {
     await page.goto('/dev/board?text=largest');
-    await page
-      .getByRole('button', { name: /More info/ })
-      .first()
-      .click();
+    // At Largest the list is below the fold, in the screen that scrolls (D-74): the tap may come
+    // before the page has hydrated, so tap until the sheet opens.
+    await expect(async () => {
+      await page
+        .getByRole('button', { name: /More info/ })
+        .first()
+        .click();
+      await expect(page.locator('.fw-details')).toBeVisible({ timeout: 1_000 });
+    }).toPass();
     const sheet = (await page.locator('.fw-details').boundingBox())!;
     expect(sheet.x).toBeGreaterThanOrEqual(0);
     expect(sheet.y).toBeGreaterThanOrEqual(0);

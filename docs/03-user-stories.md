@@ -2,6 +2,7 @@
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
 > v0.8.29: US-409 and US-406's preview as built (WP-39, D-75): goals pay points or a reward from the shop when reached, undone with the goal; Preview before saving a change.
+> v0.8.28: US-1008 (WP-48, D-74): the whole home screen at a glance, and the calendar's view chosen on the board.
 > v0.8.27: US-1007 (WP-47, D-73): the board fits any screen, and each board has a text size.
 > v0.8.26: US-1003 as built (WP-45, D-69): the board shows the sky, the temperature now and today's high beside the clock, credited to Open-Meteo; the place is set once on Home by town or ZIP code, in °F or °C; with the source failing the weather hides and nothing else changes.
 > v0.8.25: US-1001, US-1002, US-1004 and US-1006 as built (WP-35, D-66, D-67): the home screen is a family dashboard (the calendar, one list of today's items with the faces of whose they are, then cards), laid out by the household or a board's own layout; the column per person moves to Chores; every tile is one height with "More info". US-1003 (weather) moves to WP-45.
@@ -667,6 +668,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a 13" laptop's browser window, when the board opens, then the whole layout fits the window's width, smaller, and follows the window when it changes size.
 - Given I set a board to Larger on Boards, when the board hears the change, then its words grow without a reload, and the list moves under the calendar if they no longer fit beside it.
 - Given a board that was Larger restarts without the internet, when it first paints, then it is at Larger.
+
+### US-1008 — The whole home screen at a glance, and the calendar the way I want it now
+**As a** family member **I want** the board's home screen to fit on its screen, with the people always beside it, and to switch the calendar between the month and 7, 5 or 3 days right on the board **so that** nothing hides under a bar or below the fold, and I can look further ahead without asking a parent to change the board.
+**Priority:** Should · **Phase:** P3 · **Reqs:** BRD-09, CAL-04
+- Given the board at Standard on a 16:9 screen or a laptop's window, when the home screen shows, then the rail, the bar, the calendar, today's list and every card are in sight and the page doesn't scroll; a long list scrolls inside its card.
+- Given the board shows five days, when I tap **Month** on the calendar, then it shows the month, and nothing is saved for the board.
+- Given I left the board on the month, when it goes home after 90 seconds untouched, then the calendar is back to the board's own view.
+- Given a goal, a request waiting for a parent, or an event coming up on the cards, when I tap it, then the board opens the child's screen, everyone's day, or the Calendar on that day.
 
 ---
 
