@@ -49,8 +49,9 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Pages only: not static files, icons, the service worker, or API routes (jobs use a bearer token).
+  // Pages only: not static files, icons, the guide's pictures, the service worker, or API routes (jobs
+  // use a bearer token).
   matcher: [
-    '/((?!api/|_next/static|_next/image|brand/|icons/|sw\\.js|.*\\.(?:svg|png|ico|webmanifest|woff2)$).*)',
+    '/((?!api/|_next/static|_next/image|brand/|guide/|icons/|sw\\.js|.*\\.(?:svg|png|ico|webmanifest|woff2)$).*)',
   ],
 };

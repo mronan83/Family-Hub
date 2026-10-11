@@ -2,6 +2,7 @@
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
 > v0.6: the board fits any screen, and each board has a text size (WP-47, D-73): A14, Boards, the rules, troubleshooting and questions.
+> v0.5: Help in the admin app (D-72): this guide is **Help** in the menu, open before you sign in too.
 > v0.4: more icons and colors (WP-46, D-70): one icon picker everywhere, with **Find an icon** and groups; sixteen named colors; the weather's own sky icons; how the board stays easy to read for everyone (A12).
 > v0.3: fixes found while writing this guide (PR #48): a board's own layout is kept when you save again; Disconnect asks first; the return home also closes an unanswered "Who did …?"; the board waits 90 seconds before going home (D-71).
 > v0.2: weather on the board (WP-45): A13, and the weather on Home, Boards, the board's top bar, the rules, troubleshooting and questions; no longer "coming soon".
@@ -15,6 +16,8 @@ This guide has two parts:
 - **Part A, the User Guide**, follows the tasks people do: setting up, a parent's day, the family at the board, points and rewards, goals, calendars and the school year. Read it in order the first time.
 - **Part B, the User Manual**, is the reference: every page and screen, what each control does, the rules and limits, troubleshooting, questions, and a glossary.
 
+You can read this guide in the admin app too: **Help** in the menu, and on the sign-in page before you sign in.
+
 Button and label names are in **bold**, exactly as the app shows them. The pictures show the demo family: Maya and Leo (children), Alex and Sam (adults). They are made up, and so is everything they do.
 
 ## How this guide is kept current
@@ -23,6 +26,7 @@ Button and label names are in **bold**, exactly as the app shows them. The pictu
 - **Every built story is covered.** Each section names the user stories it covers. On GitHub that line is hidden; on the published page it shows as a small **Covers** line. `pnpm trace` fails when a story linked to a work package that is Done in `05` is covered by no section, unless it is listed, with a reason, in [Stories this guide covers](#b8-stories-this-guide-covers).
 - **Pictures from made-up data only.** Every screenshot comes from a dev page that draws the demo family without a database. `pnpm guide:shots` takes them again (see `scripts/guide/shots.mjs`).
 - **Published with the other docs.** `pnpm docs:build` turns this file into the **User guide** page. Edit this file, never the page.
+- **In the app as Help.** The admin app's **Help** (`/help`) is this file, made into a page when the app is built, without this section and the stories table (D-72). It changes when the app is next deployed.
 
 ## Contents
 
@@ -718,7 +722,7 @@ Home says "Saved. The boards show the weather in a moment." and, once the weathe
 
 ### B1 The admin app, page by page
 
-The admin app is for parents, on a phone or a laptop. The menu at the top has every page; **Sign out** signs this browser out.
+The admin app is for parents, on a phone or a laptop. The menu at the top has every page and **Help**, this guide; **Sign out** signs this browser out.
 
 | Menu | Page | For |
 |---|---|---|
@@ -735,6 +739,7 @@ The admin app is for parents, on a phone or a laptop. The menu at the top has ev
 | **Calendars** | Calendars | Connecting Apple calendars |
 | **Boards** | Boards | Pairing, themes, calendars and layout per board |
 | **Health** | System health | Background jobs, errors, usage |
+| **Help** | This guide | How everything works, open even before you sign in |
 
 #### B1.1 Home
 <!-- covers: US-310 US-103 US-1003 -->
@@ -921,9 +926,9 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 
 | Page | Controls |
 |---|---|
-| **Sign in** | **With your password** (**Email**, **Password**, **Sign in**, **Forgot your password?**); **With a link by email** (**Email**, **Email me a link**). A wrong password says only that the email and password don't match an account. |
+| **Sign in** | **With your password** (**Email**, **Password**, **Sign in**, **Forgot your password?**); **With a link by email** (**Email**, **Email me a link**). A wrong password says only that the email and password don't match an account. **Help: how FamilyWise works** opens this guide. |
 | Reset password | **Email**, **Email me a reset link**, **Back to sign in**; then **New password**, **Save password**. |
-| **Set up your household** | **Setup code**, (**Your email**, **Choose a password**), **Household name**, **Timezone**, **Week starts on**, **Create household**. |
+| **Set up your household** | **Setup code**, (**Your email**, **Choose a password**), **Household name**, **Timezone**, **Week starts on**, **Create household**. **Help: getting started, step by step** opens [A1 Getting started](#a1-getting-started). |
 | Invite | **Join** (household): **Join household**, or **Create account and join**, or **Sign out** to switch account. |
 
 ### B2 The board, screen by screen

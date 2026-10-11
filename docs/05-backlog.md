@@ -1,7 +1,10 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.71: WP-47 in review: the board fits its screen, and a text size per board (D-73).
+> v0.8.73: WP-47 done (PR #50): the board fits its screen, and a text size per board.
+> v0.8.72: WP-47 in review (PR #50): the board fits its screen, and a text size per board (D-73).
+> v0.8.71: Help in the admin app (D-72) done (PR #49): the user guide at `/help` (version 0.5). No work package changes status.
+> v0.8.70: Help in the admin app (D-72), in review (PR #49): the user guide at `/help`, from the menu, sign-in and setup. No work package changes status.
 > v0.8.69: WP-46 done (PR #47): more icons, one icon picker and sixteen colors.
 > v0.8.68: WP-46 in review (PR #47): more icons, one icon picker and sixteen colors (D-70).
 > v0.8.67: fixes found while writing the user guide, done (PR #48); the user guide says what changed (version 0.3). No work package changes status.
@@ -163,7 +166,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-35 | Family dashboard and board layout | P3 | L | WP-23 | Done (PR #44) |
 | WP-45 | Weather on the board | P3 | S | WP-35 | Done (PR #45) |
 | WP-46 | More icons, one icon picker, sixteen colors | P3 | M | WP-08, WP-22, WP-37 | Done (PR #47) |
-| WP-47 | The board fits its screen; text size per board | P3 | M | WP-06, WP-35 | In review |
+| WP-47 | The board fits its screen; text size per board | P3 | M | WP-06, WP-35 | Done (PR #50) |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
