@@ -1,5 +1,6 @@
 'use server';
 
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -9,6 +10,7 @@ import { requestOrigin } from '@/lib/auth/origin';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { log } from '@/lib/log';
 import { serverClient } from '@/lib/supabase/server';
+import { runWeather } from '@/lib/weather';
 
 export interface InviteState {
   message?: string;
@@ -83,4 +85,58 @@ export async function setApprovalMode(form: FormData): Promise<void> {
   }
   revalidatePath('/admin');
   redirect(`/admin?approval=${mode}`);
+}
+
+/**
+ * [BRD-04][US-1003] The household's place for the weather (WP-45, D-69), as chosen from what matched
+ * a search, or none. A place is read at once, so the boards show it within moments, not at the next
+ * half hour.
+ */
+export async function setWeatherPlace(form: FormData): Promise<void> {
+  const db = await serverClient();
+  const user = await requireSignedIn(db, '/admin');
+  const household = db ? await adminHousehold(db, user.userId) : null;
+  if (!db || !household) redirect('/setup');
+  const clear = form.get('clear') === '1';
+  const { error } = await db.rpc('set_weather_place', {
+    p_household: household.id,
+    p_place: clear ? null : String(form.get('name') ?? ''),
+    p_latitude: clear ? null : Number(form.get('latitude')),
+    p_longitude: clear ? null : Number(form.get('longitude')),
+  });
+  if (error) {
+    log('warn', 'weather place not saved', { code: error.code, hint: error.hint });
+    redirect('/admin?weather=failed#weather');
+  }
+  if (!clear) await readWeatherNow(db, household.id);
+  revalidatePath('/admin');
+  redirect(`/admin?weather=${clear ? 'cleared' : 'saved'}#weather`);
+}
+
+/** [BRD-04] °F or °C for the boards' weather; the weather is read again at once in the new unit. */
+export async function setTemperatureUnit(form: FormData): Promise<void> {
+  const db = await serverClient();
+  const user = await requireSignedIn(db, '/admin');
+  const household = db ? await adminHousehold(db, user.userId) : null;
+  if (!db || !household) redirect('/setup');
+  const { error } = await db.rpc('set_temperature_unit', {
+    p_household: household.id,
+    p_unit: form.get('unit') === 'celsius' ? 'celsius' : 'fahrenheit',
+  });
+  if (error) {
+    log('warn', 'temperature unit not saved', { code: error.code, hint: error.hint });
+    redirect('/admin?weather=failed#weather');
+  }
+  await readWeatherNow(db, household.id);
+  revalidatePath('/admin');
+  redirect('/admin?weather=unit#weather');
+}
+
+/** Reads the weather right after a change. A failure here is the reading's own (Home says why). */
+async function readWeatherNow(db: SupabaseClient, householdId: string) {
+  try {
+    await runWeather(db, householdId);
+  } catch (e) {
+    log('warn', 'weather not read after a change', { error: String(e) });
+  }
 }

@@ -6,6 +6,7 @@ Source of truth:
   03-user-stories.md               (**Reqs:** lines)    -> story -> requirement links
   05-backlog.md                    (**Reqs:** lines)    -> work package -> requirement links
   01-technical-architecture.md     (component table)    -> valid component IDs
+  07-user-guide.md                 (<!-- covers: --> lines, exclusion table) -> stories the guide covers
 
 Checks (errors fail the run):
   * register IDs are unique; every requirement has >= 1 story and >= 1 work package
@@ -16,9 +17,15 @@ Checks (errors fail the run):
     (P0 < P1a < P1b < P1c < P1d < P2 < P3), and forms no cycle; the dependency diagram's edges
     equal the declared dependencies; the status board lists every work package with matching
     milestone, size and dependencies
+  * user guide (D-68): every story linked (by a shared requirement) to a work package whose status
+    is Done in 05 is covered by a section of 07 (`<!-- covers: US-301 US-305 -->` on the line after
+    the section's heading) or listed, with a reason, in 07's exclusion table (between
+    `<!-- guide-exclusions -->` and `<!-- /guide-exclusions -->`); covered and excluded IDs exist,
+    each exclusion gives a reason, and no story is both covered and excluded
 Warnings:
   * a requirement's earliest story or work package is scheduled after the requirement's phase
   * (with --tests DIR) requirements with no test referencing their ID
+  * a story excluded from the user guide that no Done work package builds yet (drop the exclusion)
 
 Usage:
   python check_traceability.py --docs .                 # validate (CI)
@@ -45,11 +52,15 @@ DEPS_RE = re.compile(r"\*\*Depends on:\*\*\s*([^·]*)")
 WP_RE = re.compile(r"\bWP-\d{2}\b")
 EDGE_RE = re.compile(r"WP(\d{2})(?:\[[^\]]*\])?\s*-->\s*WP(\d{2})")
 MILESTONE_ORDER = ["P0", "P1a", "P1b", "P1c", "P1d", "P2", "P3"]
+STORY_RE = re.compile(r"\bUS-\d{3,4}\b")
+COVERS_RE = re.compile(r"<!--\s*covers:(.*?)-->")
+EXCLUSIONS_RE = re.compile(r"<!--\s*guide-exclusions\s*-->(.*?)<!--\s*/guide-exclusions\s*-->", re.S)
 FILES = {
     "arch": "01-technical-architecture.md",
     "stories": "03-user-stories.md",
     "wps": "05-backlog.md",
     "reqs": "04-requirements-traceability.md",
+    "guide": "07-user-guide.md",
 }
 SKIP_DIRS = {"node_modules", ".git", ".next", "dist", "build", ".turbo"}
 
@@ -169,6 +180,87 @@ def check_backlog(wps, wps_text: str, errors: list[str]) -> None:
         for wid in board:
             if wid not in wps:
                 errors.append(f"{wid}: on the status board but has no section")
+
+
+def board_statuses(wps_text: str) -> dict[str, str]:
+    """Each work package's Status cell on 05's status board."""
+    out: dict[str, str] = {}
+    for line in wps_text.splitlines():
+        if line.startswith("| WP-"):
+            cells = split_row(line)
+            if len(cells) >= 6:
+                out[cells[0]] = cells[5]
+    return out
+
+
+def built_stories(stories, wps, wps_text: str) -> dict[str, list[str]]:
+    """Stories linked, by a shared requirement, to a work package whose status is Done in 05."""
+    status = board_statuses(wps_text)
+    done = {w for w, s in status.items() if s.startswith("Done")}
+    out: dict[str, list[str]] = {}
+    for sid, s in stories.items():
+        linked = sorted((w for w in wps if w in done and set(wps[w]["reqs"]) & set(s["reqs"])), key=natural)
+        if linked:
+            out[sid] = linked
+    return out
+
+
+def check_guide(guide_text: str, stories, built: dict[str, list[str]], errors: list[str], warnings: list[str]):
+    """[D-68] Every built story is covered by a section of 07, or excluded there with a reason.
+
+    Returns (built stories covered, built stories excluded)."""
+    lines = guide_text.splitlines()
+    covered: dict[str, int] = defaultdict(int)
+    fence = False
+    for i, line in enumerate(lines):
+        if line.startswith("```"):
+            fence = not fence
+        if fence:
+            continue
+        for m in COVERS_RE.finditer(line):
+            ids = STORY_RE.findall(m.group(1))
+            if not ids or STORY_RE.sub("", m.group(1)).strip():
+                errors.append(f"07 line {i + 1}: a covers line lists story IDs only, like <!-- covers: US-301 US-305 -->")
+            if i == 0 or not lines[i - 1].startswith("#"):
+                errors.append(f"07 line {i + 1}: a covers line goes on the line right after its section's heading")
+            for sid in ids:
+                if sid not in stories:
+                    errors.append(f"07 line {i + 1}: covers unknown story {sid}")
+                covered[sid] += 1
+
+    excluded: dict[str, str] = {}
+    blocks = EXCLUSIONS_RE.findall(guide_text)
+    if len(blocks) != 1:
+        errors.append("07: needs one exclusion table between <!-- guide-exclusions --> and <!-- /guide-exclusions -->")
+    for block in blocks:
+        for line in block.splitlines():
+            if not line.startswith("|"):
+                continue
+            cells = split_row(line)
+            if not cells or not STORY_RE.fullmatch(cells[0]):
+                continue
+            sid, reason = cells[0], (cells[1] if len(cells) > 1 else "").strip()
+            if sid not in stories:
+                errors.append(f"07: excludes unknown story {sid}")
+            if sid in excluded:
+                errors.append(f"07: {sid} is excluded twice")
+            if len(reason) < 10:
+                errors.append(f"07: the exclusion of {sid} needs a reason")
+            excluded[sid] = reason
+
+    for sid in excluded:
+        if covered.get(sid):
+            errors.append(f"07: {sid} is both covered by a section and excluded; keep one")
+        elif sid in stories and sid not in built:
+            warnings.append(f"07: {sid} is excluded, but no Done work package builds it yet; drop the exclusion")
+    for sid, linked in built.items():
+        if not covered.get(sid) and sid not in excluded:
+            errors.append(
+                f"07: {sid} is built ({', '.join(linked)} Done) but no section of the user guide covers it: "
+                f"add <!-- covers: {sid} --> under the heading of the section that explains it, or list it "
+                "in 07's exclusion table with a reason"
+            )
+    return sum(1 for s in built if covered.get(s)), sum(1 for s in built if s in excluded)
 
 
 def coverage_md(register, stories, story_map, wps, wp_map) -> list[str]:
@@ -295,6 +387,16 @@ def main() -> int:
 
     check_backlog(wps, wps_text, errors)
 
+    built = built_stories(stories, wps, wps_text)
+    guide_path = docs / FILES["guide"]
+    if guide_path.exists():
+        guide_covered, guide_excluded = check_guide(
+            guide_path.read_text(encoding="utf-8"), stories, built, errors, warnings
+        )
+    else:
+        errors.append(f"{FILES['guide']} is missing: the user guide covers every built story (D-68)")
+        guide_covered = guide_excluded = 0
+
     for rid, meta in register.items():
         if not story_map.get(rid):
             errors.append(f"{rid}: no story covers this requirement")
@@ -361,6 +463,7 @@ def main() -> int:
         print(f"ERROR {e}")
     print(
         f"\n{len(register)} requirements · {len(stories)} stories · {len(wps)} work packages · "
+        f"user guide: {guide_covered} of {len(built)} built stories covered, {guide_excluded} excluded · "
         f"{len(errors)} error(s) · {len(warnings)} warning(s)"
     )
     return 1 if errors else 0

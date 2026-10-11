@@ -2,7 +2,7 @@ import type { Answer, CompletionEvent } from '@/lib/outbox';
 import type { MarkCelebrated } from '@/lib/board-goals';
 import type { AskFor, CancelAsk } from '@/lib/shop';
 import { type BoardLayout, DEFAULT_LAYOUT } from '@/lib/board-layout';
-import type { BoardMember, BoardSnapshot } from '@/lib/snapshot';
+import type { BoardMember, BoardSnapshot, BoardWeather } from '@/lib/snapshot';
 import type { BoardCalendar, BoardEvent } from '@/lib/snapshot';
 import type { TodayItem } from '@/lib/today';
 import type { PinWish } from '@/lib/wishes';
@@ -18,7 +18,42 @@ const SAM = 'f1000000-0000-4000-8000-000000000004';
 const day = (offset: number, today: string) =>
   new Date(Date.parse(`${today}T12:00:00Z`) + offset * 86_400_000).toISOString().slice(0, 10);
 
-export function fixtureSnapshot(today: string, now: Date, layout?: BoardLayout): BoardSnapshot {
+/**
+ * [BRD-04] The made-up weather (WP-45): partly cloudy, 54° and a high of 61° unless the page asks
+ * for another sky (?weather=rain|snow|night|celsius), none (?weather=none: no place, or the source
+ * failing), or yesterday's (?weather=yesterday: a board offline overnight).
+ */
+export function fixtureWeather(
+  kind: string | undefined,
+  today: string,
+  now: Date,
+): BoardWeather | null {
+  if (kind === 'none') return null;
+  const base: BoardWeather = {
+    temperature: 54.3,
+    high: 61.2,
+    low: 48,
+    code: 2,
+    day: true,
+    unit: 'fahrenheit',
+    forDate: today,
+    readAt: new Date(now.getTime() - 9 * 60_000).toISOString(),
+  };
+  if (kind === 'rain') return { ...base, code: 63, temperature: 49.6, high: 52.4 };
+  if (kind === 'snow') return { ...base, code: 73, temperature: 28.1, high: 31.5, low: 22 };
+  if (kind === 'night') return { ...base, code: 0, day: false, temperature: 46.2 };
+  if (kind === 'celsius')
+    return { ...base, unit: 'celsius', temperature: 12.4, high: 16.2, low: 8.9 };
+  if (kind === 'yesterday') return { ...base, forDate: day(-1, today) };
+  return base;
+}
+
+export function fixtureSnapshot(
+  today: string,
+  now: Date,
+  layout?: BoardLayout,
+  weather: BoardWeather | null = fixtureWeather(undefined, today, now),
+): BoardSnapshot {
   const item = (id: string, o: Partial<TodayItem>): TodayItem => ({
     id,
     choreId: `c-${id}`,
@@ -365,6 +400,7 @@ export function fixtureSnapshot(today: string, now: Date, layout?: BoardLayout):
       },
     ],
     calendar: fixtureCalendar(today, now, day(-1, today), day(21, today)),
+    weather,
   };
 }
 

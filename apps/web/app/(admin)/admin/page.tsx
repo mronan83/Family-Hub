@@ -4,10 +4,12 @@ import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { day } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
+import { searchPlaces } from '@/lib/weather';
 import { revokeInvite, setApprovalMode } from './actions';
 import { loadApprovalMode } from './chores/data';
 import { AdminHeader } from './header';
 import { InviteForm } from './invite-form';
+import { WeatherSection } from './weather-section';
 
 export const metadata: Metadata = { title: 'Home' };
 
@@ -26,7 +28,8 @@ const APPROVAL_NOTICES: Record<string, string> = {
 };
 
 // [ACC-01][ACC-02][ACC-03] Admin home: the household, its admins, and invites. Verified on the
-// server; every query runs as this admin through RLS.
+// server; every query runs as this admin through RLS. [BRD-04] Weather on the boards (WP-45): the
+// place, found by ?place=, and °F or °C.
 export default async function AdminHome({
   searchParams,
 }: {
@@ -35,6 +38,8 @@ export default async function AdminHome({
     joined?: string;
     password?: string;
     approval?: string;
+    place?: string;
+    weather?: string;
   }>;
 }) {
   const db = await serverClient();
@@ -42,7 +47,8 @@ export default async function AdminHome({
   const household = await adminHousehold(db!, user.userId);
   if (!household) redirect('/setup');
 
-  const [admins, invites, approvalMode] = await Promise.all([
+  const params = await searchParams;
+  const [admins, invites, approvalMode, weatherSettings, lastRead, found] = await Promise.all([
     db!.rpc('household_admins', { p_household_id: household.id }),
     db!
       .from('invite')
@@ -53,8 +59,22 @@ export default async function AdminHome({
       .gt('expires_at', new Date().toISOString())
       .order('created_at'),
     loadApprovalMode(db!, household.id),
+    db!
+      .from('household_settings')
+      .select('weather_place, temperature_unit')
+      .eq('household_id', household.id)
+      .maybeSingle(),
+    db!
+      .from('weather_reading')
+      .select('temperature, high, weather_code, is_day, unit, read_at, failed_at, error')
+      .eq('household_id', household.id)
+      .maybeSingle(),
+    params.place ? searchPlaces(params.place) : Promise.resolve(null),
   ]);
-  const params = await searchParams;
+  const w = lastRead.data;
+  const weatherNotice = (['saved', 'cleared', 'unit', 'failed'] as const).find(
+    (n) => n === params.weather,
+  );
   const notice = Object.keys(NOTICES).find((k) => params[k as keyof typeof params]);
   const approvalNotice = params.approval ? APPROVAL_NOTICES[params.approval] : undefined;
 
@@ -111,6 +131,29 @@ export default async function AdminHome({
           </div>
         </form>
       </section>
+
+      <WeatherSection
+        place={weatherSettings.data?.weather_place ?? null}
+        unit={weatherSettings.data?.temperature_unit === 'celsius' ? 'celsius' : 'fahrenheit'}
+        last={
+          w
+            ? {
+                temperature: Number(w.temperature),
+                high: Number(w.high),
+                code: w.weather_code,
+                isDay: w.is_day,
+                unit: w.unit === 'celsius' ? 'celsius' : 'fahrenheit',
+                readAt: w.read_at,
+                failedAt: w.failed_at,
+                error: w.error,
+              }
+            : null
+        }
+        timezone={household.timezone}
+        query={params.place ?? null}
+        found={found ? (found.ok ? { places: found.places } : { error: found.error }) : null}
+        notice={weatherNotice ?? null}
+      />
 
       <section className="fw-card" aria-labelledby="admins-heading">
         <h2 id="admins-heading">Admins</h2>
