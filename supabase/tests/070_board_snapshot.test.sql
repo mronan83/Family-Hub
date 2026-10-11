@@ -110,7 +110,7 @@ select is(
     where pubname = 'supabase_realtime' and schemaname = 'public'),
   array['calendar_source', 'chore', 'chore_occurrence', 'device', 'device_calendar', 'household',
         'household_settings', 'member', 'points_ledger', 'redemption', 'reward_catalog_item', 'reward_goal',
-        'reward_goal_progress', 'reward_rule_progress', 'streak_segment', 'wishlist_pin'],
+        'reward_goal_progress', 'reward_rule_progress', 'streak_segment', 'weather_reading', 'wishlist_pin'],
   '[DEV-05] the board-readable tables notify the board (apps/web/lib/live.ts listens to each)');
 select ok((select bool_and(has_table_privilege('authenticated', format('public.%I', tablename), 'select'))
              from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public'),

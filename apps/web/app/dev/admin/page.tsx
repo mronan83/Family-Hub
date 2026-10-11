@@ -4,11 +4,13 @@ import { isoDay } from '@/lib/format';
 import { MyTasksView } from '../../(admin)/admin/my/view';
 import type { WaitingItem } from '../../(admin)/admin/today/data';
 import { TodayView } from '../../(admin)/admin/today/view';
+import { WeatherSection } from '../../(admin)/admin/weather-section';
 
 // A parent's day and My tasks (WP-12) with a made-up family and no database, for the UI suite: the
 // pages' layout on a phone and a laptop, in Day and Evening (?theme=evening), and every state of a
 // row. ?view=my for My tasks (with each item's reminder bell, WP-40), ?view=unlinked for a sign-in
-// not linked to a member.
+// not linked to a member. [BRD-04] ?view=weather for Weather on the boards on Home (WP-45), with
+// &state=none (no place yet), found (places to choose from), failing (the last read failed).
 export const metadata: Metadata = { title: 'Admin day', robots: { index: false } };
 
 const TZ = 'America/New_York';
@@ -162,7 +164,7 @@ function fixture(today: string) {
 export default async function DevAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; view?: string; notice?: string }>;
+  searchParams: Promise<{ theme?: string; view?: string; notice?: string; state?: string }>;
 }) {
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -171,7 +173,57 @@ export default async function DevAdminPage({
   const request = 'a1000000-0000-4000-8000-000000000001';
   return (
     <div className={`admin ${theme}`}>
-      {params.view === 'my' || params.view === 'unlinked' ? (
+      {params.view === 'weather' ? (
+        <main className="fw-page fw-page--wide">
+          <WeatherSection
+            place={params.state === 'none' ? null : 'Springfield, Illinois, United States'}
+            unit="fahrenheit"
+            last={
+              params.state === 'none'
+                ? null
+                : {
+                    temperature: 54.3,
+                    high: 61.2,
+                    code: 2,
+                    isDay: true,
+                    unit: 'fahrenheit',
+                    readAt: `${today}T14:09:00Z`,
+                    failedAt: params.state === 'failing' ? `${today}T14:39:00Z` : null,
+                    error:
+                      params.state === 'failing'
+                        ? 'The weather service answered 503 (Service Unavailable). FamilyWise tries again in 30 minutes.'
+                        : null,
+                  }
+            }
+            timezone={TZ}
+            query={params.state === 'found' ? 'Springfield' : null}
+            found={
+              params.state === 'found'
+                ? {
+                    places: [
+                      {
+                        label: 'Springfield, Missouri, United States',
+                        latitude: 37.22,
+                        longitude: -93.3,
+                      },
+                      {
+                        label: 'Springfield, Illinois, United States',
+                        latitude: 39.8,
+                        longitude: -89.64,
+                      },
+                      {
+                        label: 'Springfield, Massachusetts, United States',
+                        latitude: 42.1,
+                        longitude: -72.59,
+                      },
+                    ],
+                  }
+                : null
+            }
+            notice={params.notice ? 'saved' : null}
+          />
+        </main>
+      ) : params.view === 'my' || params.view === 'unlinked' ? (
         <MyTasksView
           today={today}
           me={params.view === 'my' ? ALEX : null}

@@ -20,7 +20,14 @@ describe('reading a stored layout', () => {
         { id: 'waiting', show: true },
         { id: 'coming', show: true },
       ],
+      weather: true,
     });
+  });
+
+  it('[BRD-04][BRD-05] the weather shows unless a layout turns it off', () => {
+    expect(readLayout({ weather: false })?.weather).toBe(false);
+    expect(readLayout({ weather: 'no' })?.weather).toBe(true);
+    expect(readLayout({})?.weather).toBe(true);
   });
 
   it('[BRD-05] a card not listed shows after those listed; unknown or repeated ones are left out', () => {
@@ -43,6 +50,7 @@ describe('reading a stored layout', () => {
         { id: 'meals', show: true },
         { id: 'waiting', show: true },
       ],
+      weather: true,
     });
   });
 
@@ -82,7 +90,9 @@ describe('changing a layout', () => {
         { id: 'meals', show: false },
         { id: 'waiting', show: false },
       ],
+      weather: true,
     });
     expect(layoutFromForm('2', [], []).calendar).toBe('5');
+    expect(layoutFromForm('5', [], [], null).weather).toBe(false);
   });
 });

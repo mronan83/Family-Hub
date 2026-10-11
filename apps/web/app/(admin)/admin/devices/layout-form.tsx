@@ -4,7 +4,8 @@ import { saveBoardLayout } from './actions';
 
 /**
  * [BRD-05][US-1004] A home screen layout (WP-35, D-67): what the calendar shows, and the cards under
- * it, ticked to show and in order. Moving a card saves at once; so does Save.
+ * it, ticked to show and in order; and (WP-45) whether the weather shows. Moving a card saves at
+ * once; so does Save.
  */
 export function LayoutForm({
   layout,
@@ -40,6 +41,21 @@ export function LayoutForm({
           ))}
         </div>
       </fieldset>
+      {/* [BRD-04] The weather beside the clock (WP-45), when the household has a place (Home). */}
+      <label className="fw-picker__item" htmlFor={`weather-${key}`}>
+        <input
+          id={`weather-${key}`}
+          type="checkbox"
+          name="weather"
+          defaultChecked={layout.weather}
+        />
+        <span>
+          Show the weather beside the clock
+          <span className="fw-muted fw-layout-cards__note">
+            The temperature now and today’s high, once a place is set on Home
+          </span>
+        </span>
+      </label>
       <fieldset className="fw-field fw-fieldset">
         <legend className="fw-field__label">Under the calendar, in this order</legend>
         <ol className="fw-layout-cards">
