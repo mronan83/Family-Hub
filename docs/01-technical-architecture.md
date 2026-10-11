@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.40: the board fits the screen it is on (WP-47, D-73): it zooms its 1920×1080 canvas to the screen, times its text size, so Chromium's device scale factor no longer matters (§7, §8).
 > v0.8.39: weather on the board (WP-45, D-69): Open-Meteo through the `weather` job every 30 minutes and a read when Home changes the place or unit; the board reads it from the snapshot only (§2, §3, §5.6, §7).
 > v0.8.38: the board's home screen is a family dashboard, laid out by the household or a board's own layout (WP-35, D-66, D-67): what the snapshot carries for it, and the three-week window (§7).
 > v0.8.37: calendars on the boards (WP-23, D-65): each board's own choice of calendars, the snapshot's calendar slice and `board_calendar()` for other ranges, and the board's Day, Week and Month (§7).
@@ -640,13 +641,15 @@ sequenceDiagram
 
 ---
 
+**Fitting the screen (WP-47, D-73).** `boardFitScript()` (packages/ui) runs first inside `.board`: it sets `--fw-zoom` on `<html>` (React replaces `.board` when it redraws a page afresh, never `<html>`) to `boardZoom(width, height, size)` (the smaller of width ÷ 1920 and height ÷ 1080, times the text size, kept between 0.5 and 4), again on every resize, from the text size kept in `localStorage`, so the first paint, online or not, is at the right size. `ui.css` zooms `.board` by it and divides viewport units by it; code that measures the screen (`getBoundingClientRect`, pointer positions) divides by it, and `offsetHeight` is already in the board's own px. The snapshot's `device.text_size` (`board_config.text_size`, checked to the four sizes) is applied through `window.__fwFit`, and Realtime on `device` brings a change at once.
+
 ## 8. Kiosk host (PI)
 
 - Raspberry Pi 5 (8 GB), **NVMe or SSD boot** (SD cards corrupt under power loss), official 27 W PSU, active cooler.
 - Raspberry Pi OS (64-bit), autologin, systemd unit launching Chromium in kiosk mode with the board URL and flags to disable error dialogs, pinch zoom, overscroll navigation, and update prompts (verify flags against the current Chromium and Pi OS release).
 - Watchdog: systemd `Restart=always`, hardware watchdog, optional nightly reboot at low-traffic hour.
 - Display: touch calibration verified, screen blanking/dim schedule controlled by quiet hours (DEV-07) and burn-in mitigation (slow pixel drift / dim idle layout).
-- **4K target (32" 3840×2160):** the Pi 5 can drive 4Kp60 over HDMI. Lay the UI out at 1920×1080 logical pixels and run Chromium with device scale factor 2, so assets stay crisp and touch targets keep a predictable physical size (about 0.37 mm per logical pixel on a 32" panel). Animation performance at 4K on the Pi GPU is the main risk: budget it in SPIKE-03 and keep a 1080p output fallback.
+- **4K target (32" 3840×2160):** the Pi 5 can drive 4Kp60 over HDMI. The UI is laid out at 1920×1080 logical pixels and zooms itself to the screen (D-73): at device scale factor 1 the panel's 3840×2160 CSS px give a zoom of 2, at factor 2 its 1920×1080 give 1, the same picture either way, crisp, with touch targets at a predictable physical size (about 0.37 mm per logical pixel on a 32" panel). Any other screen gets the same layout at its own size; each board's **Text size** zooms it further. Animation performance at 4K on the Pi GPU is the main risk: budget it in SPIKE-03 and keep a 1080p output fallback.
 - No local secrets beyond the paired device session. Remote support: optional Tailscale/SSH on the Pi for maintenance only; not required by the app.
 
 ---

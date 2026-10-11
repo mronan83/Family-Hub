@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.30: a board's text size (WP-47, D-73): `device.board_config.text_size`, one of `smaller`, `standard`, `larger`, `largest` (none is Standard), checked like its theme; the snapshot's `device.text_size`.
 > v0.8.29: weather on the board (WP-45, D-69): the household's place and unit on `household_settings`, `weather_reading`, `set_weather_place()`, `set_temperature_unit()`, `save_weather()`, the snapshot's `weather` and the layout's `weather` switch (§3.1, §4.6, §4.8).
 > v0.8.28: the home screen's layout (WP-35, D-67): `household_settings.board_layout` and a board's own `board_config.layout`, their shape (`private.valid_board_layout()`), `set_board_layout()`, and the snapshot's `layout`, items' `description` and three-week window (§3.1, §4.6, §4.8).
 > v0.8.27: `device_calendar` as built, a board's reads of the calendars, `set_board_calendars()`, `board_calendar()` and the snapshot's `calendar` slice (WP-23, D-65, §3.4, §4.6).

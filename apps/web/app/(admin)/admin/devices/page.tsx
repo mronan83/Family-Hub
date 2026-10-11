@@ -2,7 +2,8 @@ import { Banner, Button } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
-import { BOARD_THEMES, boardThemeSetting } from '@/lib/devices';
+import { TEXT_SIZES } from '@familywise/ui';
+import { BOARD_THEMES, boardTextSize, boardThemeSetting } from '@/lib/devices';
 import { dayAndTime } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../header';
@@ -11,6 +12,7 @@ import {
   disconnectDevice,
   renameDevice,
   setBoardCalendars,
+  setBoardTextSize,
   setBoardTheme,
   setOwnLayout,
 } from './actions';
@@ -40,6 +42,7 @@ interface CalendarRow {
 // each was last seen, and disconnect one that is lost or retired. Disconnected boards stay listed.
 // [CAL-05] Each board's calendars (WP-23): the calendars' own setting until a board's choice is saved.
 // [BRD-05][US-1004] The home screen's layout (WP-35, D-67): the household's, and a board's own.
+// [BRD-08][US-1007] Each board's text size (WP-47, D-73).
 export default async function DevicesPage({
   searchParams,
 }: {
@@ -175,6 +178,33 @@ export default async function DevicesPage({
                     </select>
                     <Button type="submit" variant="secondary">
                       Set theme
+                    </Button>
+                  </form>
+                  {/* [BRD-08] The board fits its screen by itself; this makes its words smaller or
+                      larger for where it hangs (D-73). */}
+                  <form
+                    action={setBoardTextSize}
+                    className="fw-actions"
+                    aria-label={`Text size for ${d.name}`}
+                  >
+                    <input type="hidden" name="id" value={d.id} />
+                    <label className="fw-visually-hidden" htmlFor={`text-size-${d.id}`}>
+                      Text size for {d.name}
+                    </label>
+                    <select
+                      id={`text-size-${d.id}`}
+                      className="fw-input"
+                      name="text_size"
+                      defaultValue={boardTextSize(d.board_config)}
+                    >
+                      {TEXT_SIZES.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.value === 'standard' ? 'Standard text' : `${t.label} text`}
+                        </option>
+                      ))}
+                    </select>
+                    <Button type="submit" variant="secondary">
+                      Set text size
                     </Button>
                   </form>
                 </span>

@@ -98,7 +98,7 @@ describe('board snapshot', () => {
         weekStart: 0,
         undoWindowSeconds: 120,
       },
-      device: { id: 'd1', name: 'Kitchen', theme: 'auto' },
+      device: { id: 'd1', name: 'Kitchen', theme: 'auto', textSize: 'standard' },
       layout: {
         household: {
           calendar: '7',
@@ -223,6 +223,16 @@ describe('board snapshot', () => {
     expect(readSnapshot(held)?.device.theme).toBe('evening');
     const odd = { ...RAW, device: { ...RAW.device, theme: 'dusk' } };
     expect(readSnapshot(odd)?.device.theme).toBe('auto');
+  });
+
+  it("[BRD-08] keeps a board's text size; one from before WP-47, or one it does not know, is Standard", () => {
+    expect(
+      readSnapshot({ ...RAW, device: { ...RAW.device, text_size: 'larger' } })?.device.textSize,
+    ).toBe('larger');
+    expect(readSnapshot(RAW)?.device.textSize).toBe('standard');
+    expect(
+      readSnapshot({ ...RAW, device: { ...RAW.device, text_size: 'huge' } })?.device.textSize,
+    ).toBe('standard');
   });
 
   it('[DEV-05] refuses a shape this build does not know, rather than drawing half a board', () => {

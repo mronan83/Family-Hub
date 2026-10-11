@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.27: US-1007 (WP-47, D-73): the board fits any screen, and each board has a text size.
 > v0.8.26: US-1003 as built (WP-45, D-69): the board shows the sky, the temperature now and today's high beside the clock, credited to Open-Meteo; the place is set once on Home by town or ZIP code, in °F or °C; with the source failing the weather hides and nothing else changes.
 > v0.8.25: US-1001, US-1002, US-1004 and US-1006 as built (WP-35, D-66, D-67): the home screen is a family dashboard (the calendar, one list of today's items with the faces of whose they are, then cards), laid out by the household or a board's own layout; the column per person moves to Chores; every tile is one height with "More info". US-1003 (weather) moves to WP-45.
 > v0.8.24: US-503, US-504 and US-507 as built (WP-23, D-65): the board's Calendar (Week, Day, Month; arrows, a swipe or Today), each event in its calendar's color with whose it is, and each board's own choice of calendars on Boards; offline, a range beyond the board's two weeks says it shows what the board has.
@@ -655,6 +656,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given I tap an item with several assignees, when the who-did-it picker appears, then the assignees are listed first and I can pick anyone in the family, or several people.
 - Given an adult who does not earn rewards checks off an item, when it saves, then no points or celebration appear; a child's item still celebrates.
 - Given an item is private, when the Family view loads, then it is not shown.
+
+### US-1007 — A board that fits its screen, at a size we can read
+**As a** parent **I want** each board to fill the screen it is on, with words big enough for where it hangs **so that** the kitchen's 4K panel, the hallway's 1080p screen and my laptop all show the same board, readable from where we stand.
+**Priority:** Should · **Phase:** P3 · **Reqs:** BRD-08
+- Given a 32" 4K panel at device scale 1, when the board opens, then it shows the same layout as at 1080p, twice as large, with no sideways scroll.
+- Given a 13" laptop's browser window, when the board opens, then the whole layout fits the window's width, smaller, and follows the window when it changes size.
+- Given I set a board to Larger on Boards, when the board hears the change, then its words grow without a reload, and the list moves under the calendar if they no longer fit beside it.
+- Given a board that was Larger restarts without the internet, when it first paints, then it is at Larger.
 
 ---
 

@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.15 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-45)
+> Version 1.16 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-45, WP-47)
+> v1.16: the board fits its screen and has a text size (§5.1, WP-47, D-73).
 > v1.15: the weather beside the board's clock and Weather on the boards on Home (§7.2, §7.3, WP-45).
 > v1.14: the board's home screen as a family dashboard (WP-35, D-66): the calendar panel and the month's dots, today's list with a face per person, the cards, the top bar with each person's points, tiles of one height and "More info"; the home screen's layout on Boards (§7.2, §7.3).
 > v1.13: the board's Calendar (Day, Week, Month), events in their calendar's color with whose they are, and a board's calendars on Boards (§7.2, §7.3, WP-23).
@@ -152,7 +153,7 @@ Both are open source (SIL OFL), **self-hosted** in `brand/fonts/` and loaded by 
 | `--t-body` | **32** | 16 | Nunito 600 / Inter 400 |
 | `--t-small` | 28 (minimum) | 14 | Nunito 600 / Inter 500 |
 
-Why the board is large: one logical pixel is about 0.37 mm on the 32" 4K panel, so 32 px gives a cap height near 8 mm, comfortable at 2 m. **No child-facing text below 28 px.** Line height 1.25 for headings, 1.4 for body. Numbers in points chips use Nunito 800 with tabular figures.
+Why the board is large: one logical pixel is about 0.37 mm on the 32" 4K panel, so 32 px gives a cap height near 8 mm, comfortable at 2 m. **No child-facing text below 28 px.** **Any screen (WP-47, D-73).** These sizes are on the 1920×1080 canvas; the board zooms the canvas to its screen (×2 on a 4K panel at device scale 1, about ×0.77 in a 13" laptop's browser) and by its **Text size**: Smaller ×0.85, Standard, Larger ×1.15, Largest ×1.3. A screen shows more room, never smaller words; under 1800 canvas px the dashboard puts the list under the calendar. Line height 1.25 for headings, 1.4 for body. Numbers in points chips use Nunito 800 with tabular figures.
 
 ---
 

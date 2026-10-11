@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, Icon, type IconName } from '@familywise/ui';
+import { Avatar, Icon, type IconName, zoomAt } from '@familywise/ui';
 import { type PointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 import {
   behind,
@@ -147,8 +147,11 @@ export function CalendarScreen({
     const start = swipe.current;
     swipe.current = null;
     if (!start) return;
-    const dx = e.clientX - start.x;
-    const dy = e.clientY - start.y;
+    // Pointer positions are on screen; the swipe is measured in the board's own px (BRD-08), so it
+    // is the same reach on any screen.
+    const z = zoomAt(e.currentTarget);
+    const dx = (e.clientX - start.x) / z;
+    const dy = (e.clientY - start.y) / z;
     if (Math.abs(dx) > SWIPE_PX && Math.abs(dx) > 2 * Math.abs(dy)) {
       setAnchor((a) => step(view, a, dx < 0 ? 1 : -1));
     }

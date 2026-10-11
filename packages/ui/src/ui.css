@@ -777,7 +777,11 @@ body {
 html:has(.board) {
   overscroll-behavior: none;
 }
+/* [BRD-08] The board fits its screen (WP-47, D-73): laid out on the 1920×1080 canvas and zoomed by
+   --fw-zoom, which boardFitScript sets on <html> from the screen's size and the board's text size.
+   Inside the board, viewport units are divided by it, since zoom scales them too. */
 .board {
+  zoom: var(--fw-zoom, 1);
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
@@ -785,11 +789,13 @@ html:has(.board) {
 }
 .fw-board {
   box-sizing: border-box;
+  /* [BRD-08] Its width in the board's own px, for the dashboard to fit larger text (WP-47). */
+  container: board / inline-size;
   display: grid;
   grid-template-rows: auto 1fr auto;
   gap: var(--s-8);
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: calc(100vh / var(--fw-zoom, 1));
+  min-height: calc(100dvh / var(--fw-zoom, 1));
   padding: var(--s-8) var(--s-12);
 }
 .fw-board__bar {
@@ -1030,7 +1036,7 @@ html:has(.board) {
 .fw-today__picker {
   display: grid;
   gap: var(--s-6);
-  width: min(1200px, 90vw);
+  width: min(1200px, calc(90vw / var(--fw-zoom, 1)));
   padding: var(--s-8);
   border-radius: var(--r-lg);
   background: var(--surface);
@@ -1084,7 +1090,7 @@ html:has(.board) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
   gap: var(--s-4);
-  max-height: 60vh;
+  max-height: calc(60vh / var(--fw-zoom, 1));
   margin: 0;
   padding: 0;
   overflow-y: auto;
@@ -1432,7 +1438,7 @@ html:has(.board) {
   place-content: center;
   justify-items: center;
   gap: var(--s-8);
-  min-height: 100vh;
+  min-height: calc(100vh / var(--fw-zoom, 1));
   margin: 0;
   font-family: var(--font-display);
 }
@@ -1882,8 +1888,8 @@ span.fw-heat__cell {
 /* [PTS-03][PTS-04] A child's shop: a card per reward, what can be asked for outlined in Teal; asking
    asks once more in the card itself. */
 .fw-shop {
-  width: min(1600px, 94vw);
-  max-height: 92vh;
+  width: min(1600px, calc(94vw / var(--fw-zoom, 1)));
+  max-height: calc(92vh / var(--fw-zoom, 1));
   overflow: auto;
 }
 .fw-shop__head {
@@ -1999,7 +2005,7 @@ span.fw-heat__cell {
   }
   100% {
     opacity: 0;
-    transform: rotate(calc(var(--k) * 15deg)) translateY(-45vh) scale(1);
+    transform: rotate(calc(var(--k) * 15deg)) translateY(calc(-45vh / var(--fw-zoom, 1))) scale(1);
   }
 }
 .fw-celebrate__card {
@@ -2007,7 +2013,7 @@ span.fw-heat__cell {
   display: grid;
   justify-items: center;
   gap: var(--s-6);
-  max-width: min(1200px, 90vw);
+  max-width: min(1200px, calc(90vw / var(--fw-zoom, 1)));
   padding: var(--s-12);
   border-radius: var(--r-lg);
   background: var(--surface);
@@ -2120,6 +2126,15 @@ span.fw-heat__cell {
 }
 .fw-dash__cards {
   grid-area: cards;
+}
+/* [BRD-08] Larger text leaves less of the 1920 px canvas (D-73): under 1800 px the list goes under
+   the calendar, so neither is squeezed. */
+@container board (max-width: 1800px) {
+  .fw-dash {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'cal' 'list' 'cards';
+    grid-template-rows: auto;
+  }
 }
 .fw-dash__cal,
 .fw-dash__list,
@@ -2502,7 +2517,7 @@ span.fw-heat__cell {
 }
 /* [D-66] An item in full. */
 .fw-details {
-  width: min(1100px, 92vw);
+  width: min(1100px, calc(92vw / var(--fw-zoom, 1)));
 }
 .fw-details__head {
   display: flex;

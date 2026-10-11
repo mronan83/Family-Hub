@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
-> Version 0.3 · Status: living document · Maintained by Claude Code
+> Version 0.4 · Status: living document · Maintained by Claude Code
+> v0.4: the board fits any screen, and each board has a text size (WP-47, D-73): A14, Boards, the rules, troubleshooting and questions.
 > v0.3: fixes found while writing this guide (PR #48): a board's own layout is kept when you save again; Disconnect asks first; the return home also closes an unanswered "Who did …?"; the board waits 90 seconds before going home (D-71).
 > v0.2: weather on the board (WP-45): A13, and the weather on Home, Boards, the board's top bar, the rules, troubleshooting and questions; no longer "coming soon".
 > v0.1: first version (D-68): Part A, the User Guide by task, and Part B, the User Manual, for everything built up to WP-35; screenshots from the made-up demo family; a check that every built story is covered.
@@ -38,6 +39,7 @@ Button and label names are in **bold**, exactly as the app shows them. The pictu
   - [A11 The board's home screen layout](#a11-the-boards-home-screen-layout)
   - [A12 Day and Evening themes](#a12-day-and-evening-themes)
   - [A13 Weather on the board](#a13-weather-on-the-board)
+  - [A14 Screens and text size](#a14-screens-and-text-size)
 - [Part B — User Manual](#part-b--user-manual)
   - [B1 The admin app, page by page](#b1-the-admin-app-page-by-page)
   - [B2 The board, screen by screen](#b2-the-board-screen-by-screen)
@@ -694,6 +696,19 @@ Home says "Saved. The boards show the weather in a moment." and, once the weathe
 
 > **Note:** FamilyWise keeps your place to about a kilometre (two decimal places), and only that goes to the weather service. Town names are found through Open-Meteo, and US ZIP codes through Zippopotam.us.
 
+### A14 Screens and text size
+<!-- covers: US-1007 -->
+
+**What this is.** The board fills whatever screen it is on, and you choose how big its words are. **When.** When you set up a board, or when someone finds it hard to read from where they stand. **How.** The fit is automatic; the size is on **Boards**.
+
+- **Any screen.** The board is designed for a 1920 by 1080 screen and grows or shrinks to fit yours. A 4K panel shows exactly the same board twice as large, drawn with all its pixels, so it is sharper, not more crowded. A laptop shows it smaller, and it fits again when you change the window's size. A screen wider or taller than usual gives the board more room.
+- **Text size.** On **Boards**, choose **Smaller text**, **Standard text**, **Larger text** or **Largest text** for a board, and choose **Set text size**. The board changes at once and keeps its size, even after a restart without the internet.
+- **What larger text changes.** Larger words take more room. With **Larger** or **Largest**, today's list moves under the calendar instead of beside it, and the people at the top may take two rows. Scroll down for the rest.
+
+![The board's home screen at Largest text: the clock, the people over two rows, and the calendar across the whole width; today's list follows further down.](guide/img/board-home-largest.jpg "Largest text, on a 1080p screen")
+
+> **Tip:** Stand where the family usually reads the board. If the words for each item are hard to make out, try **Larger text**. On a 32-inch 4K panel read from about two metres, **Larger** suits most families; a smaller screen, or one read from further away, may want **Largest**.
+
 ## Part B — User Manual
 
 ### B1 The admin app, page by page
@@ -868,13 +883,14 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 | **Add a calendar** | **Name** (up to 40), **Public link**, **Color**, **Whose calendar (optional)**, **Show on the boards**, **Add calendar** ("Adding and syncing…"). |
 
 #### B1.12 Boards
-<!-- covers: US-201 US-202 US-507 US-1004 -->
+<!-- covers: US-201 US-202 US-507 US-1004 US-1007 -->
 
 | Part | What it shows or does |
 |---|---|
 | Each board | Name and "Last seen" (or "Not seen yet"). |
 | **Rename** | A new name (up to 60 characters). |
 | Theme and **Set theme** | **Automatic, by time of day**, **Always Day** or **Always Evening**. |
+| Text size and **Set text size** | **Smaller text**, **Standard text**, **Larger text** or **Largest text** (see [A14](#a14-screens-and-text-size)). The board changes at once. |
 | **Disconnect** (name) | Asks first: it says what will happen, and **Yes, disconnect** (name) disconnects the board for good. It reads nothing more and can't sign in again; pair it again for a new start. |
 | **Calendars on** (name) | Which calendars it shows; **Save calendars** makes it choose its own. |
 | **Home screen on** (name) | "its own layout" or "the household's layout"; **Give** (name) **its own layout**, **Save**; then its own layout form. |
@@ -1138,9 +1154,10 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Board, offline | Keeps today, its saved check-offs, and the calendar from yesterday to three weeks ahead |
 | Reminders | Checked every 5 minutes; at most once each; never more than two hours late |
 | Layout | Calendar of 3, 5 or 7 days, or the month; four cards, each shown or not, in any order; the weather on or off |
+| Board size | Fits any screen, from half to four times its 1920 by 1080 design; **Text size** ×0.85, ×1, ×1.15 or ×1.3 on top |
 
 ### B4 Troubleshooting
-<!-- covers: US-206 US-505 US-904 US-1003 -->
+<!-- covers: US-206 US-505 US-904 US-1003 US-1007 -->
 
 | What you see | What it means | What to do |
 |---|---|---|
@@ -1148,6 +1165,9 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Board: points with a dashed ring | Points counting check-offs not yet saved. | Wait for the connection; the server's figure replaces it. |
 | Board: **Updated 12 minutes ago** | It couldn't read the latest for a while. | Check the wifi. If it stays, reload the board's page. |
 | Board: **Reconnecting…** | The live connection dropped. | Usually fixes itself; it reads everything again when back. |
+| Board: words too small, or too big, to read from where you stand | Its text size suits a different spot. | On **Boards**, choose a **Text size** for it and **Set text size**. |
+| Board: today's list is under the calendar | It has **Larger** or **Largest** text, which leaves no room beside the calendar. | Scroll down; or choose **Standard text** on **Boards**. |
+| Board in a laptop's browser: the browser's zoom does nothing | The board fits the window, whatever its zoom. | Use the board's **Text size** on **Boards** instead. |
 | Board: **Today's list may be out of date** | Planning or day closing is late or failing. | Open **Health** in the admin app. |
 | Board: **Can't reach FamilyWise** | The page couldn't load. | It tries again every 30 seconds. Check the wifi. |
 | Board: **Pair this board** with "This board was disconnected" | Someone disconnected it on **Boards**. | Get a new code on **Boards**, **Add a board**, and pair it again. |

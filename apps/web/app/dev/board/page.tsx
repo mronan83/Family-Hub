@@ -1,4 +1,4 @@
-import type { Theme } from '@familywise/ui';
+import { boardFitScript, textSizeOf, type Theme } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { CARD_IDS, readLayout } from '@/lib/board-layout';
 import { DevBoard } from './dev-board';
@@ -9,7 +9,8 @@ import { DevBoard } from './dev-board';
 // month (?busy=1) or a calendar that can't sync (?calbehind=1) on the calendar (WP-23); the home
 // screen's layout (WP-35): the calendar's span (?span=3|5|7|month) and the cards shown, in order
 // (?cards=goals,coming; the others hidden); the weather beside the clock (WP-45: ?weather=rain|snow|
-// night|celsius|yesterday|none, or ?weather=off for a layout that turns it off).
+// night|celsius|yesterday|none, or ?weather=off for a layout that turns it off); the board fitted to
+// the window at a text size (WP-47: ?text=smaller|larger|largest).
 export const metadata: Metadata = { title: 'Board Today', robots: { index: false } };
 
 export default async function DevBoardPage({
@@ -25,6 +26,7 @@ export default async function DevBoardPage({
     span?: string;
     cards?: string;
     weather?: string;
+    text?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -52,6 +54,7 @@ export default async function DevBoardPage({
   const rendered = new Date().toISOString();
   return (
     <div className="board" data-rendered={rendered}>
+      <script dangerouslySetInnerHTML={{ __html: boardFitScript() }} />
       <DevBoard
         theme={theme}
         stale={params.stale === '1'}
@@ -61,6 +64,7 @@ export default async function DevBoardPage({
         calBehind={params.calbehind === '1'}
         layout={layout}
         weather={params.weather}
+        textSize={textSizeOf(params.text)}
       />
     </div>
   );
