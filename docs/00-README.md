@@ -12,9 +12,9 @@ Each artifact is also published as an interactive page, generated from these fil
 |---|---|---|
 | `01-technical-architecture.md` | **Technical Architecture** | Context/container diagrams, components, runtime flows, security, offline, jobs, kiosk, delivery pipeline, failure modes |
 | `02-data-model.md` | **Data Model** | ERDs, table catalog, key DDL, RLS pattern, rules-engine contract |
-| `03-user-stories.md` | **User Stories** | 75 stories with Given/When/Then acceptance criteria |
-| `04-requirements-traceability.md` | **Requirements and Traceability** | 86 requirements, traceability matrix, milestones, launch acceptance, risks, spikes, change log |
-| `05-backlog.md` | **Backlog** | 39 work packages and 5 spikes with status, dependency diagram, sizes, done-when criteria |
+| `03-user-stories.md` | **User Stories** | 87 stories with Given/When/Then acceptance criteria |
+| `04-requirements-traceability.md` | **Requirements and Traceability** | 98 requirements, traceability matrix, milestones, launch acceptance, risks, spikes, change log |
+| `05-backlog.md` | **Backlog** | 45 work packages and 5 spikes with status, dependency diagram, sizes, done-when criteria |
 | `06-brand-and-style-guide.md` | Brand reference | FamilyWise brand: voice, logo, color, type, icons, components, accessibility, implementation notes |
 | `07-user-guide.md` | **User Guide and Manual** | For the family: Part A by task (getting started, a parent's day, the board, points and rewards, goals, calendars, school year, layout, themes); Part B for reference (every admin page and board screen, rules and limits, troubleshooting, FAQ, glossary). Screenshots in `guide/img/` come from the dev pages' made-up family (`pnpm guide:shots`) |
 | `../brand/` | Asset kit | Tokens, fonts, logos, app icons, 85 icons, avatars, `specimen.html` |
