@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.13: one admin menu (WP-51, D-81): the menu in three groups, **Settings** with each part's state, Tags in Settings, and Today's count (A4, B1).
 > v0.12: meals on the board (WP-28, D-80): **Today's meals** above Today's list, the **Meals** screen, and a person's own meals (A5, A11, A15, B1.12, B2, B7).
 > v0.11: school menus (WP-27, D-79): **School menus** from Nutrislice, a file or typed in, and the menu on a buy day (A15, B1.15, B3, B7).
 > v0.10: school lunch, buy or bring (WP-26, D-78): A15, B1.15, B3.
@@ -308,7 +309,7 @@ An item for several people with **Any one of them** is one item a day, shared. W
 
 Tags group the list, like Morning or Kitchen. Use them to filter **Chores** and to set goals that count by category.
 
-1. On **Chores**, choose **Tags** (the link under the list), or **Add or change tags** in an item's form.
+1. Open **Settings** and choose **Tags** (or **Tags** under the list on **Chores**, or **Add or change tags** in an item's form).
 2. Enter a **Name** (up to 30 characters), pick a **Color** and, optionally, an **Icon** (**People and labels** comes first among the groups; **No icon** leaves it without one), then **Add tag**.
 
 Renaming a tag keeps every goal working. **Archive** a tag to stop offering it; goals and history that use it keep working, and **Restore** brings it back.
@@ -816,25 +817,38 @@ What you plan shows on the boards within seconds; nothing about meals can be cha
 ## Part B — User Manual
 
 ### B1 The admin app, page by page
+<!-- covers: US-107 -->
 
-The admin app is for parents, on a phone or a laptop. The menu at the top has every page and **Help**, this guide; **Sign out** signs this browser out.
+The admin app is for parents, on a phone or a laptop. On a laptop its menu is down the left of every page; on a phone, tap **Menu** at the top (and **Close** to put it away). The menu has three groups, then **Help** (this guide), who is signed in, and **Sign out**, which signs this browser out. **Today** shows how many check-offs are waiting for you.
 
 | Menu | Page | For |
 |---|---|---|
-| **Home** | The household | Approval switch, admins, invites |
-| **Today** | A parent's day | Approve, mark done, skip, uncheck, Not actually done |
-| **My tasks** | Your own list | Your items, quick add, reminder bells |
-| **Reminders** | Your reminders | Devices and when to remind you |
-| **Chores** | The family list | Chores, tasks and tags |
-| **Members** | The family | People, sign-ins, points |
-| **Rewards** | The shop | Rewards, requests, bonuses |
-| **Goals** | Goals | Goals in play and history |
-| **Insights** | Patterns | Streaks and checking, per member |
+| **Your day** · **Home** | The household | Approval switch, admins, invites, weather |
+| **Your day** · **Today** | A parent's day | Approve, mark done, skip, uncheck, Not actually done |
+| **Your day** · **My tasks** | Your own list | Your items, quick add, reminder bells |
+| **The family** · **Chores** | The family list | Chores and tasks |
+| **The family** · **Members** | The family | People, sign-ins, points |
+| **The family** · **Rewards** | The shop | Rewards, requests, bonuses |
+| **The family** · **Goals** | Goals | Goals in play and history |
+| **The family** · **Meals** | Meals | The week's meals, school lunch, school menus |
+| **The family** · **Insights** | Patterns | Streaks and checking, per member |
+| **Set-up** · **Settings** | Settings | The pages below, each with how it stands |
+| **Help** | This guide | How everything works, open even before you sign in |
+
+**Settings** holds the pages you set once and leave alone. Each tile says how that part stands right now, like "6 tags" or "On for 2 devices"; one that needs a look is in amber with a warning sign, like "School can't sync". Each of these pages has **Settings** at the top, to go back.
+
+| Settings | Page | For |
+|---|---|---|
 | **School** | School years | Day types, breaks, who follows which year |
 | **Calendars** | Calendars | Connecting Apple calendars |
 | **Boards** | Boards | Pairing, themes, calendars and layout per board |
+| **Tags** | Tags | Labels that group chores and let goals count by kind |
+| **Reminders** | Your reminders | Devices and when to remind you |
 | **Health** | System health | Background jobs, errors, usage |
-| **Help** | This guide | How everything works, open even before you sign in |
+
+![Settings on a laptop: the menu down the left in three groups with Today showing 2 and Settings marked, Help and Alex with Sign out at its foot; tiles for School, Calendars (School can't sync), Boards, Tags, Reminders and Health (1 thing to look at).](guide/img/admin-settings-laptop.jpg "Settings, with the menu, on a laptop")
+
+![The menu open on a phone: Your day, The family two to a row, Set-up with Settings, then Help and Sign out.](guide/img/admin-menu-phone.jpg "The menu, on a phone")
 
 #### B1.1 Home
 <!-- covers: US-310 US-103 US-1003 -->

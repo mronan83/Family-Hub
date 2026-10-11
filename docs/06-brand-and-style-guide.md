@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
-> Version 1.18 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-45, WP-46, WP-47, WP-48, WP-28)
+> Version 1.18 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-45, WP-46, WP-47, WP-48, WP-28, WP-51)
+> v1.20: the admin app's one menu and Settings (§7.3, WP-51, D-81).
 > v1.19: meals on the board: today's meals above Today's list, the Meals screen's week, Meals in the rail (§7.2, WP-28, D-80).
 > v1.18: the board's rail, its one-row bar and a home screen that fits the screen; the calendar's view switch; the weather on one line (§7.2, WP-48, D-74).
 > v1.17: the board fits its screen and has a text size (§5.1, WP-47, D-73).
@@ -237,7 +238,7 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 - **Buttons:** primary (teal, white text), secondary (teal tint), ghost (line border). Minimum height 56, label Nunito 800, always icon + word on the board.
 
 ### 7.3 Admin conventions
-- Top app bar with the horizontal logo (112 px) and household name; bottom tab bar on phones (Today, Chores, Rewards, Calendar, More).
+- Top app bar with the horizontal logo (112 px) and household name; bottom tab bar on phones (Today, Chores, Rewards, Calendar, More). As built (WP-51, D-81): one menu instead. From 1024 px it is a 264 px Surface column down the left with a line on its right: the logo, then the groups (Your day, The family, Set-up) under small uppercase soft labels, each page a 48 px row with its icon (22 px) and name in ink, the page you are on in Teal tint with Teal text; Help, the person's avatar and name, and a ghost **Sign out** at its foot. On a phone the logo and a pill **Menu** button head the page; the menu opens over the whole screen with **Close**, the family's six pages two to a row. Today's count is a Sun pill. **Settings** is a grid of Surface tiles (icon in a 44 px Teal-tint square, the name in Nunito 800 at heading size, a chevron, what it is for in soft text, and a status line in Teal text, or in amber with `warning` when it needs a look).
 - Approval queue is a badge on Chores, not a modal.
 - Insights uses the trust panel and heatmap; heatmap cells use Teal (good), Plum (missed), empty (neutral), plus a text legend.
 - Destructive actions: ghost button, confirm dialog stating the consequence ("This reverses 4 chores and 20 points").

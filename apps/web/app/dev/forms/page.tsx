@@ -64,7 +64,9 @@ export default async function DevFormsPage({
   return (
     <div className={`admin ${theme}`}>
       <main className="fw-page">
-        <AdminHeader current={form === 'chore' || form === 'tag' ? '/admin/chores' : '/admin'} />
+        <AdminHeader
+          current={form === 'chore' ? '/admin/chores' : form === 'tag' ? '/admin/tags' : '/admin'}
+        />
         <section className="fw-card">
           {form === 'tag' ? (
             <>

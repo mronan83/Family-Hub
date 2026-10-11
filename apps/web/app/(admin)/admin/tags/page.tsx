@@ -35,7 +35,7 @@ export default async function TagsPage({
 
   return (
     <main className="fw-page">
-      <AdminHeader current="/admin/chores" />
+      <AdminHeader current="/admin/tags" />
       {saved ? <Banner kind="info">Saved {saved}.</Banner> : null}
       <section className="fw-card" aria-labelledby="tags-heading">
         <h1 id="tags-heading">Tags</h1>

@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { openSetting } from '../support/settings';
 
 // [SCH-01][SCH-02][SCH-03] School years on the preview, as the demo family (D-37): the seeded year and
 // next year's, today's day type for each member, the timeline, days off, overlapping defaults, and a
@@ -49,10 +50,7 @@ async function signIn(page: Page) {
   await page.goto('/sign-in');
   await page.getByRole('button', { name: 'Sign in as Alex' }).click();
   await page.waitForURL(/\/admin/);
-  await page
-    .getByRole('navigation', { name: 'Admin' })
-    .getByRole('link', { name: 'School' })
-    .click();
+  await openSetting(page, 'School');
   await expect(page.getByRole('heading', { name: 'School year', level: 1 })).toBeVisible();
 }
 

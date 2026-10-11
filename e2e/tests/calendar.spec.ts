@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { runCalendarSync, type Fetcher } from '../../apps/web/lib/calendar/sync';
 import { serviceRpc, sql as query } from '../support/db';
+import { openSetting } from '../support/settings';
 
 // [CAL-01][CAL-02][CAL-03][CAL-06][CAL-07] Calendar sync on the preview (WP-22, D-63), as Alex of the
 // demo family. Alex adds a calendar by its link on Calendars: the link goes to Vault and nowhere
@@ -112,10 +113,7 @@ async function asAlexOnCalendars(page: Page) {
   await page.goto('/sign-in');
   await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
   await page.waitForURL(/\/admin$/);
-  await page
-    .getByRole('navigation', { name: 'Admin' })
-    .getByRole('link', { name: 'Calendars', exact: true })
-    .click();
+  await openSetting(page, 'Calendars');
   await expect(page.getByRole('heading', { name: 'Calendars', level: 1 })).toBeVisible();
 }
 const row = (page: Page) =>
@@ -216,10 +214,7 @@ test('[CAL-06][US-505] a broken link keeps the last good events and says what to
     'Field trip e2e',
   );
 
-  await page
-    .getByRole('navigation', { name: 'Admin' })
-    .getByRole('link', { name: 'Health', exact: true })
-    .click();
+  await openSetting(page, 'Health');
   await expect(page.getByText(`A calendar can’t sync: ${NAME}.`, { exact: false })).toBeVisible();
 });
 

@@ -116,7 +116,9 @@ test('[CAL-01] with none yet, the page says so and offers the form', async ({ pa
   await page.goto('/dev/calendars?state=empty');
   await expect(page.getByText('No calendars yet. Add one below.')).toBeVisible();
   await expect(page.getByRole('form', { name: 'Add a calendar' })).toBeVisible();
+  // [NFR-15] Calendars is one of Settings' pages (WP-51): Settings is marked, with the way back.
   await expect(
-    page.getByRole('navigation', { name: 'Admin' }).getByRole('link', { name: 'Calendars' }),
+    page.getByRole('navigation', { name: 'Admin' }).getByRole('link', { name: 'Settings' }),
   ).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fw-crumb')).toHaveText('Settings');
 });

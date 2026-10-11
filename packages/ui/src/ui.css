@@ -309,6 +309,282 @@ body {
   color: var(--text);
 }
 
+/* [NFR-15] The admin menu (WP-51, D-81) --------------------------------------------------------
+   On a phone: the logo and a Menu button at the top of the page, the menu over the whole screen when
+   open. From 1024 px: the menu stays down the left of every page, and the page sits beside it. */
+.fw-shell__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.fw-shell__menu,
+.fw-shell__close,
+.fw-shell__out {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch);
+  padding: 0 var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-family: var(--font-display);
+  font-weight: 800;
+  cursor: pointer;
+}
+.fw-shell__out {
+  padding: 0 var(--s-3);
+  font-size: var(--t-small);
+}
+.fw-shell__nav {
+  display: none;
+}
+.fw-shell__nav[data-open] {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  box-sizing: border-box;
+  padding: var(--s-4) var(--s-4) calc(var(--s-6) + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface);
+}
+.fw-shell__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: 0 var(--s-2) var(--s-2);
+}
+.fw-shell__group {
+  display: grid;
+  gap: var(--s-1);
+}
+.fw-shell__label {
+  margin: 0;
+  padding: 0 var(--s-3);
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.fw-shell__list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* On a phone the family's six pages sit two to a row, so the whole menu fits without scrolling. */
+.fw-shell__list[data-pages='6'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.fw-shell__link {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 48px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-weight: 500;
+  text-decoration: none;
+}
+/* (.admin a: the plain links' teal and underline don't apply to the menu, the crumb or a tile.) */
+.admin a.fw-shell__link,
+.admin a.fw-settings__tile {
+  color: var(--text);
+  font-weight: 500;
+}
+.fw-shell__link:hover {
+  background: var(--bg);
+}
+.admin .fw-shell a.fw-shell__link[aria-current='page'] {
+  border-bottom: 0;
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-weight: 700;
+}
+.fw-shell__link > .fw-icon {
+  flex: none;
+}
+.fw-shell__text {
+  flex: 1;
+  min-width: 0;
+}
+.fw-shell__count {
+  flex: none;
+  min-width: 24px;
+  box-sizing: border-box;
+  padding: 1px var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--reward);
+  color: var(--on-reward);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 600;
+  text-align: center;
+}
+.fw-shell__foot {
+  display: grid;
+  gap: var(--s-2);
+  margin-top: auto;
+  padding-top: var(--s-3);
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-shell__who {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 0 var(--s-2);
+}
+.fw-shell__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A page Settings holds: the way back to Settings, above it. */
+.admin a.fw-crumb {
+  text-decoration: none;
+}
+.fw-crumb {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: var(--s-1);
+  min-height: var(--touch);
+  color: var(--primary-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.fw-crumb + * {
+  margin-top: calc(var(--s-6) * -1 + var(--s-1));
+}
+@media (min-width: 1024px) {
+  /* The menu's column is painted on the page too, so it runs the page's whole length. */
+  .admin:has(.fw-shell) {
+    padding-left: 264px;
+    background: linear-gradient(
+      to right,
+      var(--surface) 263px,
+      var(--line) 263px 264px,
+      var(--bg) 264px
+    );
+  }
+  .fw-shell {
+    display: contents;
+  }
+  .fw-shell__top,
+  .fw-shell__close {
+    display: none;
+  }
+  .fw-shell__nav,
+  .fw-shell__nav[data-open] {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    width: 264px;
+    box-sizing: border-box;
+    padding: var(--s-6) var(--s-4);
+    overflow-y: auto;
+    background: var(--surface);
+    border-right: var(--border-w) solid var(--line);
+  }
+  .fw-shell__list[data-pages='6'] {
+    grid-template-columns: none;
+  }
+}
+
+/* [NFR-15] Settings (WP-51): a tile for each page it holds, with how that part stands now. */
+.fw-settings__head {
+  display: grid;
+  gap: var(--s-1);
+}
+.fw-settings__head h1 {
+  margin: 0;
+}
+.fw-settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--s-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-settings__tile {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'icon name go' 'what what what' 'status status status';
+  align-content: start;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  height: 100%;
+  box-sizing: border-box;
+  padding: var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  color: var(--text);
+  text-decoration: none;
+}
+.fw-settings__tile:hover {
+  border-color: var(--primary);
+}
+.fw-settings__icon {
+  grid-area: icon;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-sm);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-settings__name {
+  grid-area: name;
+  font-family: var(--font-display);
+  font-size: var(--t-heading);
+  font-weight: 800;
+}
+.fw-settings__go {
+  grid-area: go;
+  color: var(--text-soft);
+}
+.fw-settings__what {
+  grid-area: what;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-settings__status {
+  grid-area: status;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  color: var(--primary-text);
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.fw-settings__status[data-warn] {
+  color: var(--reward-text);
+}
+
 /* Admin forms and cards (WP-03) ------------------------------------------------------------- */
 .fw-page {
   display: grid;

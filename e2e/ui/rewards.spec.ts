@@ -22,7 +22,8 @@ test.describe('on a phone', () => {
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
       const small = await page.evaluate(() =>
         [...document.querySelectorAll('main button')]
-          .filter((b) => b.getBoundingClientRect().height < 44)
+          // Shown ones: the menu's own buttons wait, hidden, behind Menu (WP-51).
+          .filter((b) => b.getClientRects().length > 0 && b.getBoundingClientRect().height < 44)
           .map((b) => b.getAttribute('aria-label') ?? b.textContent),
       );
       expect(small).toEqual([]);
