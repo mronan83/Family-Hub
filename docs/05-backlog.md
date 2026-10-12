@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.93: WP-52 done (PR #61): the board's calendar as a time grid.
 > v0.8.92: WP-52 added at the owner's request and in review: the board's calendar as a time grid (D-82).
 > v0.8.91: WP-51 done (PR #60): one admin menu, with Settings.
 > v0.8.90: WP-51 in review (PR #60): one admin menu, with Settings (D-81).
@@ -189,7 +190,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-49 | Next week's lunches picked on the board | P2 | M | WP-26, WP-27, WP-28 | Ready (mockups first) |
 | WP-50 | A calendar for one or more people | P2 | S | WP-22, WP-23 | Ready |
 | WP-51 | One admin menu, with Settings and Tags | P3 | M | WP-03, WP-08 | Done (PR #60) |
-| WP-52 | The board's calendar as a time grid | P3 | M | WP-23, WP-48 | In review |
+| WP-52 | The board's calendar as a time grid | P3 | M | WP-23, WP-48 | Done (PR #61) |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
