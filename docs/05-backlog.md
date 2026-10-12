@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.94: WP-53 to WP-56 and SPIKE-06 added at the owner's request: polish with a layout sweep, short school days, the household's AI provider, the school calendar from a document.
 > v0.8.93: WP-52 done (PR #61): the board's calendar as a time grid.
 > v0.8.92: WP-52 added at the owner's request and in review: the board's calendar as a time grid (D-82).
 > v0.8.91: WP-51 done (PR #60): one admin menu, with Settings.
@@ -141,6 +142,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | SPIKE-02 | iCloud ICS fidelity; CalDAV with a secondary Apple ID | P1d | S | — | ICS part done (`01` §5.4); CalDAV part before WP-29 |
 | SPIKE-04 | School menu platform and feed | P2 | S | — | Done: Nutrislice public JSON API (`01` §5.5) |
 | SPIKE-03 | Pi 5 + 32" 4K panel: touch, kiosk flags, power, animation budget | P1a | S | — | Blocked: hardware being sourced (OQ-05b) |
+| SPIKE-06 | Reading a document with AI on the free plan | P3 | S | WP-55 | Queued |
 | WP-01 | Repo, CI/CD pipeline, environments | P0 | M | — | Done (PR #1) |
 | WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | Done (PR #4, #5) |
 | WP-37 | Brand system and design tokens | P0 | M | WP-01 | Done (PR #3) |
@@ -191,6 +193,10 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-50 | A calendar for one or more people | P2 | S | WP-22, WP-23 | Ready |
 | WP-51 | One admin menu, with Settings and Tags | P3 | M | WP-03, WP-08 | Done (PR #60) |
 | WP-52 | The board's calendar as a time grid | P3 | M | WP-23, WP-48 | Done (PR #61) |
+| WP-53 | Polish pass, with a layout sweep in CI | P3 | M | WP-51 | Ready |
+| WP-54 | Short school days: early dismissal and late start | P2 | M | WP-21, WP-26, WP-28 | Ready |
+| WP-55 | The household's AI provider in Settings | P3 | M | WP-51 | Ready |
+| WP-56 | The school calendar from a document | P3 | L | WP-54, WP-55, SPIKE-06 | Queued |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -295,6 +301,9 @@ flowchart LR
     WP28 --> WP49
     WP22 --> WP50[WP-50 A calendar for several people]
     WP23 --> WP50
+    WP21 --> WP54[WP-54 Early dismissal, late start]
+    WP26 --> WP54
+    WP28 --> WP54
   end
   subgraph P3[P3 Polish]
     WP03 --> WP32[WP-32 Audit log]
@@ -313,6 +322,12 @@ flowchart LR
     WP08 --> WP51
     WP23 --> WP52[WP-52 Calendar as a time grid]
     WP48 --> WP52
+    WP51 --> WP53[WP-53 Polish, layout sweep]
+    WP51 --> WP55[WP-55 AI provider in Settings]
+    WP55 --> SP06[SPIKE-06 AI reads a document]
+    WP54 --> WP56[WP-56 School calendar from a document]
+    WP55 --> WP56
+    SP06 --> WP56
     WP22 --> WP36[WP-36 Closure import, grocery-ready]
     WP25 --> WP36
     WP03 --> WP38[WP-38 Apple sign-in and passkeys]
@@ -358,6 +373,12 @@ flowchart LR
 
 ## 5. Work packages
 
+
+### SPIKE-06 — Reading a document with AI on the free plan
+**Milestone:** P3 · **Size:** S · **Gates:** WP-56 · **Reqs:** SCH-06
+- Vercel Hobby takes a request body of about 4.5 MB and stops a function at its time limit (`01` §5.6). Measure, with made-up school calendars of 1, 5 and 20 pages, a photo and a Word file: whether each fits through a server action, or must go to Supabase Storage first; how long Anthropic's and OpenAI's models take to read each at low and high effort; and whether the read must run as a background job that the page waits on.
+- Which types each provider reads directly (PDF, images) and which need converting first (Word); the cost of a read at each effort.
+- **Done when:** the upload path, the time and the cost per document are recorded in `01`, and WP-56's design follows them.
 ### Phase P0 — Foundation
 
 ### WP-01 — Repo, CI/CD pipeline, and environments
@@ -906,6 +927,32 @@ flowchart LR
   - **Sizes:** titles 24 px (22 px in seven days), times, hours and "+N" 20 px; blocks at least 30 px tall; the board's 28 px and 56 px everywhere else, the details included (BRD-03, D-82).
   - **Tests:** unit `board-calendar.test.ts`, `ics.test.ts`, `sync.test.ts`; pgTAP `380_calendar_location`; the UI suite's `board-calendar.spec.ts` and `dashboard.spec.ts`, with the board's floors in `e2e/support/floors.ts`; the preview's `board-calendar.spec.ts` and `calendar.spec.ts`.
 
+### WP-53 — Polish pass, with a layout sweep in CI
+**Phase:** P3 · **Size:** M · **Depends on:** WP-51 · **Reqs:** NFR-16
+- The owner sees drop-downs, buttons and fields across the app, mostly in the admin app, spaced badly or overlapping. First an automated sweep: every admin page and board screen, filled with the demo family's data (and with long names and empty states), at 390, 768 and 1280 px wide (the board at its 1920×1080 canvas) in both themes, checking that no two controls overlap, nothing is clipped or scrolls sideways, and controls in a row share a baseline and a height. Then every finding is fixed at its cause (shared form and toolbar styles before single pages), with screenshots before and after.
+- The sweep stays in the UI suite, so CI fails a change that brings an overlap back.
+- **Done when:** the sweep finds nothing on any page at any of the three widths in either theme, and it runs in CI.
+
+### WP-54 — Short school days: early dismissal and late start
+**Phase:** P2 · **Size:** M · **Depends on:** WP-21, WP-26, WP-28 · **Reqs:** SCH-05
+- A school year gets its usual start and dismissal times, set once for the year. A school day can be marked **Early dismissal** ("Out at") or **Late start** ("Starts at") with its time, on **School** (`school_day_change`, one per year and date); the day stays a school day, so chores and their times do not change.
+- The board shows a banner on the day and the evening before ("Out at 12:30 tomorrow"). On an early-dismissal day there is no school lunch: `lunch_mode()` gives none, and the board and **Meals** hide buy or bring and the menu.
+- **Delay today** on the admin Home: one tap and a start time marks today a late start (a two-hour delay by default).
+- **Done when:** pgTAP: an early-dismissal day is a school day with no lunch, a late start keeps lunch; on the preview, **Delay today** reaches a paired board's banner within 3 seconds, and an early dismissal tomorrow shows its banner the evening before.
+
+### WP-55 — The household's AI provider in Settings
+**Phase:** P3 · **Size:** M · **Depends on:** WP-51 · **Reqs:** ACC-07
+- **AI** in Settings: Anthropic or OpenAI, the household's own API key (to Vault, shown once, used only by the server, never in a snapshot, a board or a preview), a model from the provider's own list of models (read with the key, so new models appear without a release), and an effort level mapped to each provider's own setting (Anthropic's extended thinking budget or effort, OpenAI's reasoning effort), shown only for models that have one. **Test connection** makes the smallest call and shows the provider's answer in plain words. Remove clears the key from Vault.
+- A server-only client (`lib/ai`) for later features, with a timeout, no logging of document text or the key, and errors kept to `private.app_error` without content.
+- **Done when:** unit tests for the effort mapping and the model list; pgTAP: only an owner or admin can set or clear the key and no role can read it back; on the preview, a made-up key's **Test connection** shows the provider's refusal in plain words, and no board response holds a key.
+
+### WP-56 — The school calendar from a document
+**Phase:** P3 · **Size:** L · **Depends on:** WP-54, WP-55, SPIKE-06 · **Reqs:** SCH-06
+- On **School**, **Read the school's calendar**: upload a PDF, a photo or a Word file (by the path SPIKE-06 settles); the household's AI reads it with a fixed instruction and a strict output shape: the year's first and last days, breaks, days off, early dismissals and late starts with their times, each with the page and the words it came from.
+- A review list before anything is saved: each proposal new, a change to what is there, or the same as what is there; a tick for each; **Save** writes only the ticked ones, through the same functions **School** uses. The file is not kept after the read.
+- Tests use made-up school calendars only; the provider is mocked in CI, and one live read runs on the preview only when the owner sets a key there.
+- **Done when:** on the preview, a made-up calendar's proposals are listed with their sources, only the ticked ones are saved, and saving twice adds nothing twice.
+
 ---
 
 ## 6. Size summary
@@ -917,7 +964,7 @@ flowchart LR
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
-| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50 | Menu adapters is the L |
-| P3 | WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51, WP-52 | — |
+| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54 | Menu adapters is the L |
+| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55, WP-56 | WP-56 is the L |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.
