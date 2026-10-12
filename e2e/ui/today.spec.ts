@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { floors } from '../support/floors';
 
 // [BRD-01][BRD-03][BRD-07][CHR-04][NFR-03][RWD-08] The board's Today (WP-11) on /dev/board: a made-up
 // family and a stand-in for the server that counts every batch it is sent (window.__fwPosts), at the
@@ -386,20 +387,8 @@ for (const theme of ['day', 'evening'] as const) {
     await page.goto(`/dev/board?theme=${theme}`);
     for (const view of ['Home', 'Chores', 'Maya']) {
       await people(page).getByRole('button', { name: view, exact: true }).click();
-      const report = await page.evaluate(() => {
-        const small = [...document.querySelectorAll('button')]
-          .filter((b) => b.getBoundingClientRect().height < 56)
-          .map((b) => b.getAttribute('aria-label') ?? b.textContent);
-        const tiny = [...document.querySelectorAll('.fw-today *')]
-          .filter(
-            (el) =>
-              el.childNodes.length &&
-              [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim()),
-          )
-          .filter((el) => parseFloat(getComputedStyle(el).fontSize) < 28)
-          .map((el) => el.textContent?.trim());
-        return { wide: document.documentElement.scrollWidth, small, tiny };
-      });
+      // The calendar on Home keeps its own floors (D-82); everything else the board's.
+      const report = await page.evaluate(floors, { buttons: 'body', text: '.fw-today' });
       expect(report).toEqual({ wide: 1920, small: [], tiny: [] });
       await contrastOk(page);
     }

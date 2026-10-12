@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Locator, test, type Page } from '@playwright/test';
+import { floors } from '../support/floors';
 
 // [MEAL-06][US-705] Meals on the board (WP-28, D-80) on /dev/board, at the board's 1920×1080: today's
 // meals above Today's list on the home screen (breakfast, snacks, lunch with each child's school lunch,
@@ -20,18 +21,8 @@ async function contrastOk(page: Page) {
   );
 }
 
-/** Buttons under 56 px, text under 28 px and the page's width, for BRD-03 and NFR-11. */
-const fit = (page: Page) =>
-  page.evaluate(() => {
-    const small = [...document.querySelectorAll('.fw-board button')]
-      .filter((b) => b.getBoundingClientRect().height < 56)
-      .map((b) => b.getAttribute('aria-label') ?? b.textContent);
-    const tiny = [...document.querySelectorAll('.fw-today *')]
-      .filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim()))
-      .filter((el) => parseFloat(getComputedStyle(el).fontSize) < 28)
-      .map((el) => el.textContent?.trim());
-    return { wide: document.documentElement.scrollWidth, small, tiny };
-  });
+/** Buttons under 56 px, text under 28 px (the calendar's own floors in it, D-82) and the page's width, for BRD-03 and NFR-11. */
+const fit = (page: Page) => page.evaluate(floors, { buttons: '.fw-board', text: '.fw-today' });
 
 /** Each child's lunch in a place, in order, as it is read out. */
 async function lunchIs(scope: Locator, names: string[]) {

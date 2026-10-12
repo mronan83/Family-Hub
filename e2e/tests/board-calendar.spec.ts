@@ -3,7 +3,7 @@ import { runCalendarSync, type Fetcher } from '../../apps/web/lib/calendar/sync'
 import { retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
 
-// [CAL-04][CAL-05][US-507] Calendars on a board, on the preview at the reference panel's 3840×2160
+// [CAL-04][CAL-05][CAL-10][US-507][US-509] Calendars on a board, on the preview at the reference panel's 3840×2160
 // (WP-23, D-65). Two made-up calendars of the demo family (School, Maya's, and Family) are connected
 // as Alex would, and the calendar_sync job's own code fills them on the e2e runner from made-up files
 // around today (previews hold no job secret). A board paired here shows both on its calendar. The
@@ -60,6 +60,7 @@ function calendarFile(uid: string, title: string, allDay: boolean): string {
       : [
           `DTSTART;TZID=America/New_York:${date}T170000`,
           `DTEND;TZID=America/New_York:${date}T180000`,
+          'LOCATION:Community pool e2e',
         ]),
     `SUMMARY:${title}`,
     'END:VEVENT',
@@ -98,7 +99,8 @@ function cleanUp() {
   sql(`delete from public.calendar_source where household_id = '${DEMO}' and name like '% e2e'`);
 }
 
-const todayColumn = () => board.locator('.fw-bcal__col[data-today]');
+/** The week on the board's calendar: today's events in it, all day across the top or by the hour (D-82). */
+const week = () => board.locator('.fw-tgrid');
 /** The board's calendar, opened again if the board went back to Home (90 s untouched). */
 async function boardCalendar() {
   if (await board.locator('#cal-title').isVisible()) return;
@@ -144,20 +146,31 @@ test.afterAll(async () => {
   cleanUp();
 });
 
-test('[CAL-04][CAL-05] a new board shows the calendars set to show on the boards', async () => {
+test('[CAL-04][CAL-05][CAL-10][US-509] a new board shows the calendars set to show on the boards; an event shows in full, with where it is', async () => {
   await boardCalendar();
-  await expect(todayColumn().locator('.fw-bcal__event[data-calendar="School e2e"]')).toContainText(
+  // School's all-day event across the top, Family's at 5 pm in today's hours (D-82).
+  await expect(week().locator('.fw-tgrid__bar[data-calendar="School e2e"]')).toContainText(
     'Picture day e2e',
   );
-  await expect(todayColumn().locator('.fw-bcal__event[data-calendar="Family e2e"]')).toContainText(
-    '5:00 pm',
+  const swim = board.locator(
+    '.fw-bcal__col[data-today] .fw-tgrid__event[data-calendar="Family e2e"]',
   );
-  // School is Maya's calendar: her avatar beside its event.
-  await expect(
-    todayColumn()
-      .locator('.fw-bcal__event[data-calendar="School e2e"]')
-      .getByRole('img', { name: 'Maya' }),
-  ).toBeVisible();
+  await expect(swim).toHaveAccessibleName(/^Swim e2e, .*, 5:00 – 6:00 pm, Family e2e$/);
+  // School is Maya's calendar: its event says so.
+  await expect(week().locator('.fw-tgrid__bar[data-calendar="School e2e"]')).toHaveAccessibleName(
+    /^Picture day e2e, .*, all day, Maya$/,
+  );
+  // [CAL-10] A tap shows the swim in full: the place the sync stored with it.
+  await swim.tap();
+  const sheet = board.getByRole('dialog', { name: 'Swim e2e' });
+  await expect(sheet.locator('dd')).toHaveText([
+    /, 5:00 – 6:00 pm$/,
+    'Community pool e2e',
+    'Family e2e',
+    'Everyone',
+  ]);
+  await sheet.getByRole('button', { name: 'Close' }).tap();
+  await expect(sheet).toBeHidden();
 });
 
 test('[CAL-05][US-507] unticking School for this board takes its events off it within 3 seconds', async () => {
@@ -170,12 +183,12 @@ test('[CAL-05][US-507] unticking School for this board takes its events off it w
   await expect(form.getByRole('checkbox', { name: 'School e2e' })).toBeChecked();
   await form.getByRole('checkbox', { name: 'School e2e' }).uncheck();
   await boardCalendar();
-  await expect(todayColumn()).toContainText('Picture day e2e');
+  await expect(week()).toContainText('Picture day e2e');
   const saved = Date.now();
   await form.getByRole('button', { name: 'Save calendars' }).click();
-  await expect(todayColumn()).not.toContainText('Picture day e2e', { timeout: 3_000 });
+  await expect(week()).not.toContainText('Picture day e2e', { timeout: 3_000 });
   console.log(`[CAL-05] School left the board ${Date.now() - saved} ms after Save`);
-  await expect(todayColumn()).toContainText('Swim e2e');
+  await expect(week()).toContainText('Swim e2e');
   await expect(admin.getByText(`Saved the calendars on ${BOARD}.`, { exact: false })).toBeVisible();
 });
 
@@ -188,7 +201,7 @@ test('[US-507] ticked again, School is back in its own color, with its person', 
   await form.getByRole('checkbox', { name: 'School e2e' }).check();
   await boardCalendar();
   await form.getByRole('button', { name: 'Save calendars' }).click();
-  const school = todayColumn().locator('.fw-bcal__event[data-calendar="School e2e"]');
+  const school = week().locator('.fw-tgrid__bar[data-calendar="School e2e"]');
   await expect(school).toContainText('Picture day e2e', { timeout: 3_000 });
   // The browser gives a custom property's value with var() resolved: School's color is member-3's,
   // as a line (D-70): the color itself by day, its lighter shade in the Evening theme.
@@ -201,7 +214,7 @@ test('[US-507] ticked again, School is back in its own color, with its person', 
   });
   expect(color.cal).not.toBe('');
   expect(color.cal).toBe(color.own);
-  await expect(school.getByRole('img', { name: 'Maya' })).toBeVisible();
+  await expect(school).toHaveAccessibleName(/, Maya$/);
 });
 
 test('[US-507] a calendar connected later stays off a board with its own choice', async () => {
@@ -214,6 +227,6 @@ test('[US-507] a calendar connected later stays off a board with its own choice'
   ).toBe('t');
   await board.reload();
   await boardCalendar();
-  await expect(todayColumn()).toContainText('Picture day e2e');
-  await expect(todayColumn()).not.toContainText('Match e2e');
+  await expect(week()).toContainText('Picture day e2e');
+  await expect(week()).not.toContainText('Match e2e');
 });

@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.14: the board's calendar as a time grid (WP-52, D-82): all-day events across the top, the hours down the side, now, and an event's details at a tap (A5, A9).
 > v0.13: one admin menu (WP-51, D-81): the menu in three groups, **Settings** with each part's state, Tags in Settings, and Today's count (A4, B1).
 > v0.12: meals on the board (WP-28, D-80): **Today's meals** above Today's list, the **Meals** screen, and a person's own meals (A5, A11, A15, B1.12, B2, B7).
 > v0.11: school menus (WP-27, D-79): **School menus** from Nutrislice, a file or typed in, and the menu on a buy day (A15, B1.15, B3, B7).
@@ -333,7 +334,7 @@ At the top of **Chores**, filter by **Person**, **Tag**, **Kind**, **Time of day
 
 The home screen fits the screen: nothing hides under the bar, and the page never scrolls. It has three parts:
 
-- **The calendar** on the left: the next few days (5 by default) with each event in its calendar's color. Tap a day's heading to open it in **Calendar**. To look further ahead, tap **Month**, **7 days**, **5 days** or **3 days** at the top of the calendar. That changes only this board, and only for now: when the board goes home after 90 seconds untouched, it is back to the view set on **Boards**.
+- **The calendar** on the left: the next few days (5 by default). All-day events run across the top; when a day has more than fit, its heading says how many more ("+2"). Under them, each hour with something on has a row, lined up across the days, with the time it starts and a red line at now. Tap an event to see it in full. Tap a day's heading to open it in **Calendar**. To look further ahead, tap **Month**, **7 days**, **5 days** or **3 days** at the top of the calendar. That changes only this board, and only for now: when the board goes home after 90 seconds untouched, it is back to the view set on **Boards**.
 - **Today's meals** at the top on the right, on a day with meals planned: **Breakfast**, **Snack**, **Lunch** and **Dinner**, each with its picture, and a face when it is one person's. On **Lunch**, each child says **Buys** with what the school serves, or **Brings** with what is planned for their lunch. A parent can hide it (see [A11](#a11-the-boards-home-screen-layout)).
 - **Today's list** on the right, under today's meals: one list for the whole family, grouped into **Overdue**, **Morning**, **After school**, **Evening** and **Anytime**, with "2 of 9 done" at the top. Each row shows the item, its points, and a face for each person it is for.
 - **Cards** in a row under the calendar: **Goals**, **Waiting for a parent** and **Coming up** (all-day events in the next three weeks). A parent chooses which cards show, and in what order (see [A11](#a11-the-boards-home-screen-layout)). Tap a goal to open that child's screen (a family goal opens **Chores**), a request to open the child who asked, or an event to open **Calendar** on its day. When a list is longer than its card, it scrolls inside the card.
@@ -603,7 +604,7 @@ A goal marked **Needs a look** had its reward given (redeemed, or its reward fro
 ![Insights for Maya on a laptop: streaks, 86% done, a calendar of good and bad days, missed most, by tag, and checking.](guide/img/admin-insights-laptop.jpg "Insights, on a laptop")
 
 ### A9 Calendars
-<!-- covers: US-501 US-502 US-503 US-504 US-505 US-507 -->
+<!-- covers: US-501 US-502 US-503 US-504 US-505 US-507 US-509 -->
 
 **What this is.** The family's Apple calendars on the board, read only. Events still live in Apple Calendar: add and change them there. **When.** Once per calendar. **How.** On **Calendars**, add each one by its public link.
 
@@ -628,9 +629,22 @@ Each calendar shows how its sync went: **Synced** (with when), **Not synced yet*
 
 #### The calendar on the board
 
-On the board, **Calendar** opens the **Week**; **Day** and **Month** are a tap away. Move with the arrows, by swiping sideways, or back to **Today**. Each event is in its calendar's color, with the avatar of whose calendar it is. A month's day shows three events and "+N more"; tap it to see the day. Tapping a day on the home screen's calendar opens that day here.
+On the board, **Calendar** opens the **Week**; **Day** and **Month** are a tap away. Move with the arrows, by swiping sideways, or back to **Today**. Tapping a day on the home screen's calendar opens that day here.
 
-![The board's calendar in Week view with the Day, Week and Month buttons, the arrows and Today.](guide/img/board-calendar-week.jpg "Calendar: Week")
+It reads like the calendar on your phone:
+
+- **All-day events** run across the top, each in its calendar's color. One that lasts several days is one bar across them. When a day has more than fit, its heading says how many more ("+1"); tap the heading to see the day, with all of them.
+- **The hours** run down the side, from 8 am to 8 pm, or earlier and later when something is on then (or when it's that early or late now). Each event sits at its time, as tall as it lasts. Two at once sit side by side.
+- **Now** is a red line across today, with the time beside it.
+- **Tap an event** to see it in full: **When**, **Where** (when it has a place in Apple Calendar), its **Calendar**, and **Whose** it is. Tap **Close** to go back. Its notes stay in Apple Calendar.
+
+A month's day shows three events and "+N more"; tap it to see the day.
+
+![The board's calendar in Week view: all-day events across the top, Grandparents visit as one bar over three days and "+1" on today; the hours down the side; a red line at now across today.](guide/img/board-calendar-week.jpg "Calendar: Week")
+
+![The board's calendar in Day view: the dentist in the morning, and the team meeting and the orthodontist side by side in the afternoon.](guide/img/board-calendar-day.jpg "Calendar: Day, with two events at once")
+
+![An event in full on the board: the dentist, when, where, its calendar and whose it is, with Close.](guide/img/board-event-details.jpg "An event in full")
 
 ![The board's calendar in Month view: each day with up to three events and "+6 more" on a busy day.](guide/img/board-calendar-month.jpg "Calendar: Month")
 

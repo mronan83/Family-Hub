@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { floors } from '../support/floors';
 
 // [BRD-01][BRD-05][BRD-07][US-1001][US-1004][US-1006] The family dashboard (WP-35, D-66) on
 // /dev/board: the board's home screen, its calendar (?span=3|5|7|month), today's list with a face per
@@ -32,31 +33,34 @@ async function contrastOk(page: Page) {
   );
 }
 
-/** Buttons under 56 px, text under 28 px and the page's width, for BRD-03 and NFR-11. */
-const fit = (page: Page) =>
-  page.evaluate(() => {
-    const small = [...document.querySelectorAll('.fw-board button')]
-      .filter((b) => b.getBoundingClientRect().height < 56)
-      .map((b) => b.getAttribute('aria-label') ?? b.textContent);
-    const tiny = [...document.querySelectorAll('.fw-today *')]
-      .filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim()))
-      .filter((el) => parseFloat(getComputedStyle(el).fontSize) < 28)
-      .map((el) => el.textContent?.trim());
-    return { wide: document.documentElement.scrollWidth, small, tiny };
-  });
+/** Buttons under 56 px, text under 28 px (the calendar's own floors in it, D-82) and the page's width, for BRD-03 and NFR-11. */
+const fit = (page: Page) => page.evaluate(floors, { buttons: '.fw-board', text: '.fw-today' });
 
-/** Text in the dashboard that runs out of its box: a long word in a narrow day, a long title. */
+/**
+ * Text in the dashboard that runs out of its box: a long title in a card; in the calendar, a title
+ * too long for its block that isn't cut short with "…" inside it (D-82).
+ */
 const spills = (page: Page) =>
-  page.evaluate(() =>
-    [...document.querySelectorAll('.fw-dash .fw-bcal__title, .fw-dash .fw-dash__title')]
+  page.evaluate(() => [
+    ...[...document.querySelectorAll('.fw-dash .fw-dash__title')]
       .filter((el) => {
         const range = document.createRange();
         range.selectNodeContents(el);
-        const box = (el.closest('.fw-bcal__event, li') ?? el).getBoundingClientRect();
+        const box = (el.closest('li') ?? el).getBoundingClientRect();
         return range.getBoundingClientRect().right > box.right + 1;
       })
       .map((el) => el.textContent),
-  );
+    ...[...document.querySelectorAll<HTMLElement>('.fw-dash .fw-tgrid__title')]
+      .filter((el) => {
+        const block = el.closest('button')!.getBoundingClientRect();
+        const own = el.getBoundingClientRect();
+        const cut = el.scrollWidth > el.clientWidth + 1;
+        return (
+          own.right > block.right + 1 || (cut && getComputedStyle(el).textOverflow !== 'ellipsis')
+        );
+      })
+      .map((el) => el.textContent),
+  ]);
 
 for (const theme of ['day', 'evening'] as const) {
   for (const span of ['5', 'month'] as const) {
@@ -81,8 +85,8 @@ test('[BRD-01][D-66] home is the dashboard: the calendar first, today’s list b
     'true',
   );
   await expect(page.getByRole('heading', { name: /^Next 5 days/, level: 2 })).toBeVisible();
-  await expect(page.locator('.fw-dash__day')).toHaveCount(5);
-  await expect(page.locator('.fw-dash__day').first()).toHaveAttribute('data-today', '');
+  await expect(page.locator('.fw-dash .fw-tgrid__head')).toHaveCount(5);
+  await expect(page.locator('.fw-dash .fw-tgrid__head').first()).toHaveAttribute('data-today', '');
   await expect(list(page).getByRole('heading', { level: 3 })).toHaveText([
     'Overdue',
     'Morning',
@@ -174,26 +178,59 @@ test('[CAL-04][D-66] the month: a dot per calendar on a day with events; a tap o
   await expect(
     page.getByRole('group', { name: 'Calendar view' }).getByRole('button', { name: 'Day' }),
   ).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.fw-bcal__event')).toHaveText([/Spelling test/, /Swim/]);
+  // Its all-day test across the top, its swim in the hours.
+  await expect(page.locator('.fw-tgrid__bar')).toHaveText([/Spelling test/]);
+  await expect(page.locator('.fw-bcal__event')).toHaveText([/Swim/]);
 });
 
-test('[CAL-04][D-66] a word too long for a narrow day wraps inside its event, in five and seven days', async ({
+test('[CAL-04][D-82] home: all-day events across the top, a row for each hour something starts in, lined up; now a line across today', async ({
+  page,
+}) => {
+  // Monday at 3:10 pm, New York.
+  await page.clock.install({ time: new Date('2026-10-12T15:10:00-04:00') });
+  await page.goto('/dev/board?allday=1');
+  const card = page.locator('.fw-dash__cal');
+  await expect(card.getByRole('heading', { level: 2 })).toContainText('Oct 12 – 16');
+  // Today: four all-day events, two lanes, "+2" on its head.
+  await expect(card.locator('.fw-tgrid__head[data-today]')).toContainText('+2');
+  await expect(card.locator('.fw-tgrid__head[data-today]')).toHaveAccessibleName(
+    'Open Mon, Oct 12, 2 more all-day',
+  );
+  // The hours with something starting: 9 am (the dentist), 2 pm (the meeting and the orthodontist,
+  // one under the other), 5 pm (the swim), 7 pm (book club). Now, 3:10, falls before 5 pm: its
+  // time stands where that row's hour would.
+  await expect(card.locator('.fw-hgrid__rule')).toHaveCount(4);
+  await expect(card.locator('.fw-hgrid__hour')).toHaveText(['9 am', '2 pm', '7 pm']);
+  await expect(card.locator('.fw-tgrid__now-tag')).toHaveText('3:10');
+  const [meeting, ortho] = await Promise.all(
+    ['Team meeting', 'Orthodontist'].map((t) =>
+      card.locator('.fw-tgrid__event', { hasText: t }).boundingBox(),
+    ),
+  );
+  expect(ortho!.x).toBeCloseTo(meeting!.x, 0);
+  expect(ortho!.y).toBeGreaterThanOrEqual(meeting!.y + meeting!.height - 1);
+  // An event's start leads its block; a tap shows it in full.
+  await expect(card.locator('.fw-tgrid__event', { hasText: 'Dentist' })).toHaveText(
+    /^9:30\s*Dentist$/,
+  );
+  await card.locator('.fw-tgrid__event', { hasText: 'Dentist' }).click();
+  await expect(page.getByRole('dialog', { name: 'Dentist' })).toContainText('12 Made-up Street');
+});
+
+test('[CAL-04][D-82] a title too long for its day ends in “…” inside its block, in five and seven days', async ({
   page,
 }) => {
   for (const span of ['5', '7']) {
-    await page.goto(`/dev/board?span=${span}`);
-    await expect(page.locator('.fw-dash__day').first()).toBeVisible();
-    await expect(
-      page.locator('.fw-dash__day .fw-bcal__title', { hasText: 'Grandparents' }).first(),
-    ).toBeVisible();
+    await page.goto(`/dev/board?span=${span}&allday=1`);
+    await expect(page.locator('.fw-tgrid__bar', { hasText: 'Grandparents' })).toBeVisible();
     expect(await spills(page), `${span} days`).toEqual([]);
   }
 });
 
 test('[CAL-04][D-66] a day’s head in the columns opens that day too', async ({ page }) => {
   await page.goto('/dev/board?span=3');
-  await expect(page.locator('.fw-dash__day')).toHaveCount(3);
-  await page.locator('.fw-dash__day').nth(1).getByRole('button').click();
+  await expect(page.locator('.fw-dash .fw-tgrid__head')).toHaveCount(3);
+  await page.locator('.fw-dash .fw-tgrid__head').nth(1).click();
   await expect(
     page.getByRole('group', { name: 'Calendar view' }).getByRole('button', { name: 'Day' }),
   ).toHaveAttribute('aria-pressed', 'true');
@@ -295,7 +332,7 @@ test('[CAL-04][BRD-09][US-1008][D-74] the calendar’s view is chosen on the boa
   ] as const) {
     await view(page).getByRole('button', { name: label }).click();
     await expect(page.locator('.fw-dash')).toHaveAttribute('data-span', span);
-    await expect(page.locator('.fw-dash__day')).toHaveCount(days);
+    await expect(page.locator('.fw-dash .fw-tgrid__head')).toHaveCount(days);
   }
   await view(page).getByRole('button', { name: 'Month' }).click();
   await expect(page.locator('.fw-dash')).toHaveAttribute('data-span', 'month');

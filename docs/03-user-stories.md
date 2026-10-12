@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.36: US-509 added and built (WP-52, D-82): the board's calendar as a time grid, and an event in full on a tap.
 > v0.8.35: US-107 as built (WP-51, D-81): one admin menu, Settings with each part's status, Tags in Settings.
 > v0.8.34: US-107, US-508 and US-707 added (WP-49 to WP-51): one admin menu with Settings and Tags; a calendar for one or more people; next week's lunches picked on the board.
 > v0.8.33: US-705 as built (WP-28, D-80): today's meals above Today's list on the board, the week on **Meals**, read-only.
@@ -464,6 +465,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given I add or change a calendar, when I choose who it's for, then I can pick **The whole family** or any number of people.
 - Given a calendar for Leo and Maya, when it shows on the board, then each event has both their faces, and it is on Leo's screen and Maya's screen but not on Alex's.
 - Given a calendar that belonged to one person before, when this ships, then it still belongs to that person.
+
+### US-509 — A calendar that reads like a calendar
+**As a** family member **I want** the board's calendar laid out like the calendar on my phone, all-day events apart from the rest and the hours down the side, and an event's details at a tap **so that** a busy day doesn't crowd out the week, and I can see when and where something is without opening Apple Calendar.
+**Priority:** Should · **Phase:** P3 · **Reqs:** CAL-10
+- Given a day with four all-day events, when the home screen shows it, then they sit across the top in two lanes and the day's head says "+2", and the timed events are below by the hour, lined up with the other days'.
+- Given the Calendar's Week, when it shows, then the hours run down the side to scale, an event over three days is one bar, two events at once sit side by side, and a line marks now across today.
+- Given an event with a place in Apple Calendar, when I tap it on the board, then I see its title, when it is, where, its calendar and whose it is; and the board never shows its notes.
+- As built (WP-52, D-82): two lanes on the home screen and three on the Calendar; the home screen's rows are the hours something starts in; Week and Day show 8 am to 8 pm at least; titles at 24 px, times and hours at 20 px, cut short with "…".
 
 ---
 

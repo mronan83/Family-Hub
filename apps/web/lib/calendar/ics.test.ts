@@ -125,6 +125,11 @@ describe('the shape iCloud publishes (SPIKE-02)', () => {
     expect(of('Several days').map((i) => [i.start, i.end])).toEqual([['2026-12-26', '2026-12-30']]);
   });
 
+  it('[CAL-10] an event keeps where it is, its lines joined; an event without one has none', () => {
+    expect(of('Set in UTC').map((i) => i.location)).toEqual(['Example Place, 1 Example Street']);
+    expect(of('Yearly day').map((i) => i.location)).toEqual([null]);
+  });
+
   it('scrubbing drops everything personal Apple adds: place, travel, notes, people, links', () => {
     const scrubbed = scrubIcs(icloud);
     for (const gone of [

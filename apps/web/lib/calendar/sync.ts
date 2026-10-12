@@ -18,6 +18,11 @@ export const FETCH_TIMEOUT_MS = 15_000;
 export const MAX_BYTES = 5 * 1024 * 1024;
 /** As many events or instances as save_calendar_sync takes for one calendar. */
 export const MAX_INSTANCES = 5000;
+/**
+ * What a sync keeps, by version: a new one (2: locations, WP-52) changes every calendar's content hash,
+ * so the next sync reads each in full and stores what was not kept before.
+ */
+export const SYNC_VERSION = 2;
 
 /** What an admin reads on Calendars when a sync fails (US-505): what happened and what to do. */
 export const SYNC_ERRORS = {
@@ -128,10 +133,11 @@ export async function syncSource(
   if (!got.ok) return fail(got.error);
 
   // The same file, first day and zone expand to the same events: skip parsing and writing. A new
-  // day changes the hash, so a quiet calendar's window still moves on daily.
+  // day changes the hash, so a quiet calendar's window still moves on daily; so does a new version
+  // of what is kept (SYNC_VERSION), so every calendar is read in full once after it.
   const window = syncWindow(source.timeZone, options.now);
   const contentHash = createHash('sha256')
-    .update(`${window.from}\n${window.timeZone}\n`)
+    .update(`${SYNC_VERSION}\n${window.from}\n${window.timeZone}\n`)
     .update(got.body)
     .digest('hex');
   if (contentHash === source.contentHash) {
@@ -164,6 +170,7 @@ export async function syncSource(
       uid: e.uid,
       recurrence_id: e.recurrenceId,
       title: e.title,
+      location: e.location,
       start: e.start,
       end: e.end,
       all_day: e.allDay,
@@ -174,6 +181,7 @@ export async function syncSource(
       uid: i.uid,
       recurrence_id: i.recurrenceId,
       title: i.title,
+      location: i.location,
       start: i.start,
       end: i.end,
       all_day: i.allDay,

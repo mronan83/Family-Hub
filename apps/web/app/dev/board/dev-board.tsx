@@ -34,7 +34,8 @@ import {
  * 12 minutes old, `jobs` makes a job behind. Asking for a reward, calling it off and celebrating a
  * goal change the snapshot a moment later, as Realtime would (WP-20); `celebrate` opens on Leo
  * reaching their goal. The calendar (WP-23) reads any range from the made-up family's calendars;
- * `busy` adds 40 events this month, `calBehind` makes School's sync fail three hours ago.
+ * `busy` adds 40 events this month, `full` more all-day ones today (WP-52), `calBehind` makes
+ * School's sync fail three hours ago.
  */
 export function DevBoard({
   theme,
@@ -42,6 +43,7 @@ export function DevBoard({
   jobs,
   celebrate,
   busy = false,
+  full = false,
   calBehind = false,
   layout,
   weather,
@@ -53,6 +55,8 @@ export function DevBoard({
   jobs: boolean;
   celebrate: boolean;
   busy?: boolean;
+  /** [D-82] More all-day events today, and an overlap tomorrow (WP-52). */
+  full?: boolean;
   calBehind?: boolean;
   /** [BRD-05] The household's home screen layout (WP-35); the defaults without one. */
   layout?: BoardLayout;
@@ -94,10 +98,12 @@ export function DevBoard({
       fixtureWeather(weather, isoDay(TZ, opened), opened),
       fixtureMeals(meals, isoDay(TZ, opened)),
     );
-    if (busy || calBehind) {
+    if (busy || full || calBehind) {
       s = {
         ...s,
-        calendar: withSchool(fixtureCalendar(s.today, opened, s.range.from, s.range.to, busy)),
+        calendar: withSchool(
+          fixtureCalendar(s.today, opened, s.range.from, s.range.to, busy, full),
+        ),
       };
     }
     if (stale) s = { ...s, fetchedAt: new Date(opened.getTime() - 12 * 60_000).toISOString() };
@@ -109,9 +115,9 @@ export function DevBoard({
     async (from: string, to: string) => {
       if (!navigator.onLine) return null;
       await new Promise((r) => setTimeout(r, 30));
-      return withSchool(fixtureCalendar(snapshot.today, opened, from, to, busy));
+      return withSchool(fixtureCalendar(snapshot.today, opened, from, to, busy, full));
     },
-    [snapshot.today, opened, busy, withSchool],
+    [snapshot.today, opened, busy, full, withSchool],
   );
   const pinWish = useMemo(() => fixturePin(snapshot), [snapshot]);
   const ask = useMemo(() => fixtureAsk(snapshot, setSnapshot), [snapshot]);
