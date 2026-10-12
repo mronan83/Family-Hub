@@ -673,8 +673,10 @@ function nyAt(date: string, hm: string): string {
 /**
  * [CAL-04] The made-up family's calendars around today (WP-23): Family (everyone), School (Maya's)
  * and Work (Alex's); a weekly swim at 5 pm, a three-day visit, a day's test, a late flight past
- * midnight, a moved dentist appointment. `busy` adds 40 more this month, eight on one day, for the
- * month view's "+N more". Only events in [from, to] are returned, as board_calendar() would.
+ * midnight, a moved dentist appointment, places for some (WP-52). `busy` adds 40 more this month,
+ * eight on one day, for the month view's "+N more"; `full` (WP-52) adds three more all-day events
+ * today, for a day's "+N", and an appointment tomorrow beside the meeting. Only events in
+ * [from, to] are returned, as board_calendar() would.
  */
 export function fixtureCalendar(
   today: string,
@@ -682,6 +684,7 @@ export function fixtureCalendar(
   from: string,
   to: string,
   busy = false,
+  full = false,
 ): BoardCalendar {
   const synced = new Date(now.getTime() - 5 * 60_000).toISOString();
   const calendars: BoardCalendar['calendars'] = [
@@ -719,6 +722,7 @@ export function fixtureCalendar(
     end: string,
     changed = false,
     endOffset = offset,
+    location: string | null = null,
   ): BoardEvent => ({
     id,
     calendarId: cal,
@@ -729,6 +733,7 @@ export function fixtureCalendar(
     end: nyAt(day(endOffset, today), end),
     startDate: day(offset, today),
     endDate: day(endOffset, today),
+    location,
   });
   const allDay = (
     id: string,
@@ -749,10 +754,10 @@ export function fixtureCalendar(
   });
   const events: BoardEvent[] = [
     ...[-7, 0, 7, 14, 21, 28].map((w) =>
-      timed(`swim${w}`, 'cal-family', 'Swim', w, '17:00', '18:00'),
+      timed(`swim${w}`, 'cal-family', 'Swim', w, '17:00', '18:00', false, w, 'Community pool'),
     ),
     allDay('spelling', 'cal-school', 'Spelling test', 0),
-    timed('dentist', 'cal-family', 'Dentist', 1, '09:30', '10:15', true),
+    timed('dentist', 'cal-family', 'Dentist', 1, '09:30', '10:15', true, 1, '12 Made-up Street'),
     timed('standup', 'cal-work', 'Team meeting', 1, '14:00', '15:00'),
     allDay('visit', 'cal-family', 'Grandparents visit', 2, 3),
     allDay('picture', 'cal-school', 'Picture day', 3),
@@ -760,6 +765,14 @@ export function fixtureCalendar(
     timed('flight', 'cal-family', 'Late flight', 5, '22:30', '01:00', false, 6),
     timed('soccer', 'cal-school', 'Soccer', -1, '10:00', '11:30'),
   ];
+  if (full) {
+    events.push(
+      allDay('library', 'cal-school', 'Library books due', 0),
+      allDay('columbus', 'cal-family', 'Columbus Day', 0),
+      allDay('grandma', 'cal-family', 'Grandma’s birthday', 0),
+      timed('ortho', 'cal-school', 'Orthodontist', 1, '14:30', '15:15'),
+    );
+  }
   if (busy) {
     const first = `${today.slice(0, 7)}-01`;
     const offset = Math.round(

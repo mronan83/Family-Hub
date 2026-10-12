@@ -22,6 +22,8 @@ export interface Instance {
   /** A moved or edited instance's RECURRENCE-ID (the start it replaced, as `start` is written); else null. */
   recurrenceId: string | null;
   title: string;
+  /** [CAL-10] Where it is (LOCATION, trimmed); null when the event has none. */
+  location: string | null;
   allDay: boolean;
   /** Timed: the instant, ISO in UTC. All-day: the date, YYYY-MM-DD. */
   start: string;
@@ -37,6 +39,7 @@ export interface CalendarEvent {
   /** Set for an instance moved or edited on its own: the start it replaced. */
   recurrenceId: string | null;
   title: string;
+  location: string | null;
   allDay: boolean;
   /** Its own first start and end, written as an Instance's are. */
   start: string;
@@ -153,6 +156,7 @@ export function readIcs(
       uid: event.uid,
       recurrenceId,
       title: event.summary ?? '',
+      location: locationOf(event),
       allDay,
       start: allDay ? dateOf(start) : new Date(s).toISOString(),
       end: allDay ? dateOf(endDate) : new Date(e).toISOString(),
@@ -166,6 +170,7 @@ export function readIcs(
         uid: event.uid,
         recurrenceId,
         title: event.summary ?? '',
+        location: locationOf(event),
         allDay: event.startDate.isDate,
         start: written(event.startDate),
         end: written(endOf(event.startDate, event.endDate)),
@@ -194,6 +199,13 @@ export function readIcs(
       (a, b) => a.start.localeCompare(b.start) || a.uid.localeCompare(b.uid),
     ),
   };
+}
+
+/** [CAL-10] An event's LOCATION as one trimmed line of text, or null; Apple's structured location is not kept. */
+function locationOf(event: ICAL.Event): string | null {
+  const raw = event.location;
+  const text = typeof raw === 'string' ? raw.replace(/\s*\n\s*/g, ', ').trim() : '';
+  return text ? text.slice(0, 300) : null;
 }
 
 /** The instances alone (SPIKE-02's checks). */

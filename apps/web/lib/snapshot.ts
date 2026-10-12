@@ -92,6 +92,8 @@ export interface BoardEvent {
   endDate: string;
   /** Moved or edited on its own in Apple Calendar. */
   changed: boolean;
+  /** [CAL-10] Where it is, as Apple Calendar has it; null or absent when it has none. */
+  location?: string | null;
 }
 
 /** What `board_calendar(from, to)` returns: a range of dates, its calendars and its events. */
@@ -419,6 +421,7 @@ export function readCalendar(x: unknown): BoardCalendar | null {
             startDate: e.start_date,
             endDate: e.end_date,
             changed: e.changed === true,
+            location: typeof e.location === 'string' && e.location ? e.location : null,
           },
         ]
       : [],

@@ -124,8 +124,30 @@ const SHOTS = [
   {
     name: 'board-calendar-week',
     device: 'board',
-    url: '/dev/board',
+    url: '/dev/board?allday=1',
     act: (page) => person(page, 'Calendar').click(),
+  },
+  // The time grid (WP-52): a day with two events at once, and an event in full.
+  {
+    name: 'board-calendar-day',
+    device: 'board',
+    url: '/dev/board?allday=1',
+    act: async (page) => {
+      await person(page, 'Calendar').click();
+      await page.locator('.fw-bcal__view', { hasText: 'Day' }).click();
+      await page.getByRole('button', { name: 'Next day' }).click();
+    },
+  },
+  {
+    name: 'board-event-details',
+    device: 'board',
+    url: '/dev/board?allday=1',
+    act: async (page) => {
+      await person(page, 'Calendar').click();
+      await page.locator('.fw-bcal__view', { hasText: 'Day' }).click();
+      await page.getByRole('button', { name: 'Next day' }).click();
+      await page.locator('.fw-tgrid__event', { hasText: 'Dentist' }).click();
+    },
   },
   {
     name: 'board-calendar-month',

@@ -6,7 +6,8 @@ import { DevBoard } from './dev-board';
 // The board's Today with a made-up family and no database (WP-11), for the UI suite: the screen,
 // its taps and states, in Day or Evening (?theme=evening); old data (?stale=1) or a job behind
 // (?jobs=1) for the board's health lines (WP-13); a goal just reached (?celebrate=1, WP-20); a busy
-// month (?busy=1) or a calendar that can't sync (?calbehind=1) on the calendar (WP-23); the home
+// month (?busy=1), more all-day events today (?allday=1, WP-52) or a calendar that can't sync
+// (?calbehind=1) on the calendar (WP-23); the home
 // screen's layout (WP-35): the calendar's span (?span=3|5|7|month) and the cards shown, in order
 // (?cards=goals,coming; the others hidden); the weather beside the clock (WP-45: ?weather=rain|snow|
 // night|celsius|yesterday|none, or ?weather=off for a layout that turns it off); the board fitted to
@@ -22,6 +23,7 @@ export default async function DevBoardPage({
     jobs?: string;
     celebrate?: string;
     busy?: string;
+    allday?: string;
     calbehind?: string;
     span?: string;
     cards?: string;
@@ -62,6 +64,7 @@ export default async function DevBoardPage({
         jobs={params.jobs === '1'}
         celebrate={params.celebrate === '1'}
         busy={params.busy === '1'}
+        full={params.allday === '1'}
         calBehind={params.calbehind === '1'}
         layout={layout}
         weather={params.weather}

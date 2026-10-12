@@ -1,10 +1,13 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { floors } from '../support/floors';
 
-// [CAL-04][CAL-05][CAL-06][US-503] The board's calendar (WP-23) on /dev/board: the made-up family's
-// Family, School (Maya's) and Work (Alex's) calendars around today, read from a stand-in for
-// board_calendar(), at the board's 1920×1080. ?busy=1 adds 40 events this month; ?calbehind=1 makes
-// School's sync fail. Unticking a calendar on a real board runs in e2e/tests/board-calendar.spec.ts.
+// [CAL-04][CAL-05][CAL-06][CAL-10][US-503][US-509] The board's calendar (WP-23; the time grid, WP-52,
+// D-82) on /dev/board: the made-up family's Family, School (Maya's) and Work (Alex's) calendars around
+// today, read from a stand-in for board_calendar(), at the board's 1920×1080. ?busy=1 adds 40 events
+// this month; ?allday=1 three more all-day events today and an appointment beside tomorrow's meeting;
+// ?calbehind=1 makes School's sync fail. Unticking a calendar on a real board runs in
+// e2e/tests/board-calendar.spec.ts.
 test.use({ viewport: { width: 1920, height: 1080 } });
 
 const people = (page: Page) => page.getByRole('list', { name: 'Family', exact: true });
@@ -24,33 +27,31 @@ async function contrastOk(page: Page) {
 }
 
 for (const theme of ['day', 'evening'] as const) {
-  test(`[CAL-04][BRD-03][NFR-11] day, week and month fit the board in ${theme}: 56 px targets, 28 px text`, async ({
+  test(`[CAL-04][BRD-03][NFR-11][D-82] day, week and month fit the board in ${theme}: 56 px targets and 28 px text, the grid's own 30 px and 20 px`, async ({
     page,
   }) => {
-    await openCalendar(page, `?theme=${theme}&busy=1`);
+    await openCalendar(page, `?theme=${theme}&busy=1&allday=1`);
     for (const view of ['Day', 'Week', 'Month']) {
       await views(page).getByRole('button', { name: view }).click();
       await expect(views(page).getByRole('button', { name: view })).toHaveAttribute(
         'aria-pressed',
         'true',
       );
-      const report = await page.evaluate(() => {
-        const small = [...document.querySelectorAll('.fw-bcal button')]
-          .filter((b) => b.getBoundingClientRect().height < 56)
-          .map((b) => b.getAttribute('aria-label') ?? b.textContent);
-        const tiny = [...document.querySelectorAll('.fw-bcal *')]
-          .filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim()))
-          .filter((el) => parseFloat(getComputedStyle(el).fontSize) < 28)
-          .map((el) => el.textContent?.trim());
-        return { wide: document.documentElement.scrollWidth, small, tiny };
-      });
+      const report = await page.evaluate(floors, { buttons: '.fw-bcal', text: '.fw-bcal' });
       expect(report, view).toEqual({ wide: 1920, small: [], tiny: [] });
       await contrastOk(page);
     }
+    // [CAL-10] An event's details keep the board's floors.
+    await views(page).getByRole('button', { name: 'Week' }).click();
+    await page.locator('.fw-tgrid__event', { hasText: 'Swim' }).first().click();
+    expect(
+      await page.evaluate(floors, { buttons: '[role="dialog"]', text: '[role="dialog"]' }),
+    ).toEqual({ wide: 1920, small: [], tiny: [] });
+    await contrastOk(page);
   });
 }
 
-test('[CAL-04][CAL-05] the week: today’s events in their calendars’ colors, with whose they are', async ({
+test('[CAL-04][CAL-05][D-82] the week: all-day events across the top, the rest by the hour, in their calendars’ colors, with whose they are', async ({
   page,
 }) => {
   await openCalendar(page);
@@ -58,21 +59,91 @@ test('[CAL-04][CAL-05] the week: today’s events in their calendars’ colors, 
     'aria-pressed',
     'true',
   );
-  const today = page.locator('.fw-bcal__col[data-today]');
-  await expect(today.locator('.fw-bcal__event')).toHaveText([
-    /^All day\s*Spelling test/,
-    /^5:00 pm\s*Swim/,
-  ]);
-  const spelling = today.locator('.fw-bcal__event', { hasText: 'Spelling test' });
+  // Today's test is all day: across the top, not among the hours; its swim at 5 pm.
+  const spelling = page.locator('.fw-tgrid__bar', { hasText: 'Spelling test' });
   await expect(spelling).toHaveAttribute('data-calendar', 'School');
-  // School is Maya's calendar: her avatar beside its events.
-  await expect(spelling.getByRole('img', { name: 'Maya' })).toBeVisible();
-  const colors = await today
-    .locator('.fw-bcal__event')
-    .evaluateAll((els) => els.map((el) => getComputedStyle(el).borderLeftColor));
+  // School is Maya's calendar: she is in its name, and in its details.
+  await expect(spelling).toHaveAccessibleName(/^Spelling test, .*, all day, Maya$/);
+  const today = page.locator('.fw-bcal__col[data-today]');
+  await expect(today.locator('.fw-bcal__event')).toHaveText([/Swim/]);
+  await expect(today.locator('.fw-bcal__event')).toHaveAccessibleName(
+    /^Swim, .*, 5:00 – 6:00 pm, Family$/,
+  );
+  // The three-day visit is one bar over its days.
+  const visit = page.locator('.fw-tgrid__bar', { hasText: 'Grandparents visit' });
+  await expect(visit).toHaveCount(1);
+  const [bar, day] = await Promise.all([
+    visit.boundingBox(),
+    page.locator('.fw-bcal__col').first().boundingBox(),
+  ]);
+  expect(bar!.width).toBeGreaterThan(day!.width * 2);
+  const colors = await Promise.all(
+    [spelling, today.locator('.fw-bcal__event')].map((l) =>
+      l.evaluate((el) => getComputedStyle(el).borderLeftColor),
+    ),
+  );
   expect(new Set(colors).size).toBe(2);
+  // The hours: each one's line, 8 am at the top; now a line across today.
+  await expect(page.locator('.fw-tgrid__hour').first()).toHaveText('8 am');
+  await expect(today.locator('.fw-tgrid__now')).toHaveCount(1);
   // [CAL-03] Events are only read: nothing offers to add or change one.
   await expect(page.getByRole('button', { name: /add|edit|new event/i })).toHaveCount(0);
+});
+
+test('[D-82] a day with more all-day events than lanes says how many more; overlapping events sit side by side', async ({
+  page,
+}) => {
+  await openCalendar(page, '?allday=1');
+  // Today has four all-day events: three lanes, and "+1" on its head.
+  const head = page.locator('.fw-tgrid__head[data-today]');
+  await expect(head).toContainText('+1');
+  await expect(head).toHaveAccessibleName(/, 1 more all-day$/);
+  await head.click();
+  // As a day, all four show.
+  await expect(views(page).getByRole('button', { name: 'Day' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.locator('.fw-tgrid__bar')).toHaveCount(4);
+  // Tomorrow: the meeting and the orthodontist overlap, side by side.
+  await page.getByRole('button', { name: 'Next day' }).click();
+  const [meeting, ortho] = await Promise.all(
+    ['Team meeting', 'Orthodontist'].map((t) =>
+      page.locator('.fw-tgrid__event', { hasText: t }).boundingBox(),
+    ),
+  );
+  expect(ortho!.x).toBeGreaterThanOrEqual(meeting!.x + meeting!.width - 1);
+  expect(ortho!.y).toBeGreaterThan(meeting!.y);
+  expect(ortho!.y).toBeLessThan(meeting!.y + meeting!.height);
+});
+
+test('[CAL-10][US-509] a tap on an event shows it in full: when, where, its calendar and whose it is', async ({
+  page,
+}) => {
+  await openCalendar(page);
+  await views(page).getByRole('button', { name: 'Day' }).click();
+  await page.getByRole('button', { name: 'Next day' }).click();
+  await page.locator('.fw-tgrid__event', { hasText: 'Dentist' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Dentist' });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.locator('dt')).toHaveText(['When', 'Where', 'Calendar', 'Whose', 'Note']);
+  await expect(sheet.locator('dd')).toHaveText([
+    /, 9:30 – 10:15 am$/,
+    '12 Made-up Street',
+    'Family',
+    'Everyone',
+    'Moved or changed on its own in Apple Calendar.',
+  ]);
+  await expect(sheet.getByRole('button', { name: 'Close' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(sheet).toBeHidden();
+  // An event without a place has no Where; a person's calendar says whose.
+  await page.locator('.fw-tgrid__event', { hasText: 'Team meeting' }).click();
+  const meeting = page.getByRole('dialog', { name: 'Team meeting' });
+  await expect(meeting.locator('dt')).toHaveText(['When', 'Calendar', 'Whose']);
+  await expect(meeting.locator('dd').last()).toHaveText('Alex');
+  await meeting.getByRole('button', { name: 'Close' }).click();
+  await expect(meeting).toBeHidden();
 });
 
 test('[CAL-04][US-503] arrows, a swipe and Today move through days, weeks and months', async ({
@@ -85,10 +156,10 @@ test('[CAL-04][US-503] arrows, a swipe and Today move through days, weeks and mo
   await expect(page.getByRole('button', { name: 'Today' })).toBeDisabled();
   await page.getByRole('button', { name: 'Next day' }).click();
   await expect(title).not.toHaveText(first!);
-  // Tomorrow: the dentist (moved in Apple Calendar) and Alex's meeting.
+  // Tomorrow: the dentist (moved in Apple Calendar) and Alex's meeting, each with its time.
   await expect(page.locator('.fw-bcal__event')).toHaveText([
-    /^9:30 am\s*Dentist/,
-    /^2:00 pm\s*Team meeting/,
+    /^Dentist\s*9:30 – 10:15$/,
+    /^Team meeting\s*2:00 – 3:00$/,
   ]);
   await page.getByRole('button', { name: 'Today' }).click();
   await expect(title).toHaveText(first!);
@@ -133,14 +204,14 @@ test('[US-503] 40 events in a month show at once, three a day and "+N more"; a d
     'aria-pressed',
     'true',
   );
-  await expect(page.locator('.fw-bcal__event')).toHaveCount(3 + more);
+  await expect(page.locator('.fw-bcal__event, .fw-tgrid__bar')).toHaveCount(3 + more);
 });
 
 test('[CAL-06] a calendar that can’t sync says so; its last good events stay', async ({ page }) => {
   await openCalendar(page, '?calbehind=1');
   await expect(page.getByText('School hasn’t updated since', { exact: false })).toBeVisible();
   await expect(page.getByText('Showing its last good events.', { exact: false })).toBeVisible();
-  await expect(page.locator('.fw-bcal__col[data-today]')).toContainText('Spelling test');
+  await expect(page.locator('.fw-tgrid__bar', { hasText: 'Spelling test' })).toBeVisible();
 });
 
 test('[CAL-04] offline, a range the board hasn’t read shows what it has, and says so', async ({

@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.92: WP-52 added at the owner's request and in review: the board's calendar as a time grid (D-82).
 > v0.8.91: WP-51 done (PR #60): one admin menu, with Settings.
 > v0.8.90: WP-51 in review (PR #60): one admin menu, with Settings (D-81).
 > v0.8.89: WP-49, WP-50 and WP-51 added at the owner's request; WP-29 waits until the owner says to start it.
@@ -188,6 +189,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-49 | Next week's lunches picked on the board | P2 | M | WP-26, WP-27, WP-28 | Ready (mockups first) |
 | WP-50 | A calendar for one or more people | P2 | S | WP-22, WP-23 | Ready |
 | WP-51 | One admin menu, with Settings and Tags | P3 | M | WP-03, WP-08 | Done (PR #60) |
+| WP-52 | The board's calendar as a time grid | P3 | M | WP-23, WP-48 | In review |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -308,6 +310,8 @@ flowchart LR
     WP47 --> WP48
     WP03 --> WP51[WP-51 One admin menu, Settings, Tags]
     WP08 --> WP51
+    WP23 --> WP52[WP-52 Calendar as a time grid]
+    WP48 --> WP52
     WP22 --> WP36[WP-36 Closure import, grocery-ready]
     WP25 --> WP36
     WP03 --> WP38[WP-38 Apple sign-in and passkeys]
@@ -888,6 +892,19 @@ flowchart LR
   - **Reach:** on a laptop every page is two clicks or fewer from any other; on a phone, three taps (Menu, Settings, the page) for the six Settings holds, two for the rest.
   - **Tests:** unit `settings-status.test.ts`; the UI suite's `admin-menu.spec.ts` (the groups and the page marked, Today's count, Settings' tiles and lines, the way back, Menu, Close and Escape on a phone, 44 px, AA contrast and no sideways scroll in both themes); the preview's `admin-menu.spec.ts` (Today's count as the database has it, Settings' six tiles, Tags through Settings and back).
 
+### WP-52 — The board's calendar as a time grid
+**Phase:** P3 · **Size:** M · **Depends on:** WP-23, WP-48 · **Reqs:** CAL-10
+- The owner found the board's calendar crowded: all-day events stacked into each day with the timed ones, a card per event with its time on a line of its own, text large for the columns, and no hours. Lay it out as Apple Calendar does: all-day events apart, across the top; the hours down the side; an event's details at a tap, with where it is (the sync keeps an event's place for this, and nothing else more).
+- **Done when:** the UI suite: a day with more all-day events than lanes shows "+N" and opens as a day with them all; the home screen's hours line up across the days; Week and Day show the hours to scale with overlaps side by side and a line at now; a tap on an event shows when, where, its calendar and whose it is; pgTAP: a sync stores an event's place and a board reads it; on the preview, an event's place from a calendar file shows in its details on a paired board.
+- As built (D-82; the owner chose the mockup's rows of hours for the home screen over every hour to scale, the calendar's own text sizes, and the details with the place):
+  - **All day:** lanes across the top of the days, two on the home screen and three on the Calendar (in Day, all of them two to a row); an event over several days, or a timed one of a day or more, is one bar across them; the rest count as "+N" on the day's head, which opens the day.
+  - **Home (3, 5, 7 days):** a row for each hour something starts in, its hour beside it, lined up across the days; a day's events starting in that hour one under the other, reaching down to the row they end in; a skipped stretch a thin band. The heads and lanes stay; the hours scroll under them, opened where now is. Each event's start leads its title ("9:30 Dentist"), except in seven days.
+  - **Calendar (Week, Day):** the hours to scale, 8 am to 8 pm at least and as far as the events go; a block's title, then its time when there's room; events at once side by side; a late event's part after midnight says "Until 1:00".
+  - **Now:** a line across today, its time beside the hours in place of the nearest hour.
+  - **Details:** **When**, **Where** (when it has a place), **Calendar**, **Whose** (the person, or **Everyone**), and a note when it was moved or changed on its own; **Close**, Escape or the board going home closes it.
+  - **Sizes:** titles 24 px (22 px in seven days), times, hours and "+N" 20 px; blocks at least 30 px tall; the board's 28 px and 56 px everywhere else, the details included (BRD-03, D-82).
+  - **Tests:** unit `board-calendar.test.ts`, `ics.test.ts`, `sync.test.ts`; pgTAP `380_calendar_location`; the UI suite's `board-calendar.spec.ts` and `dashboard.spec.ts`, with the board's floors in `e2e/support/floors.ts`; the preview's `board-calendar.spec.ts` and `calendar.spec.ts`.
+
 ---
 
 ## 6. Size summary
@@ -900,6 +917,6 @@ flowchart LR
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50 | Menu adapters is the L |
-| P3 | WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 | — |
+| P3 | WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51, WP-52 | — |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

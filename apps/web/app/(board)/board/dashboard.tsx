@@ -2,7 +2,7 @@
 
 import { Avatar, Icon, PointsChip } from '@familywise/ui';
 import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { addDays, dayName, eventsOn, heading } from '@/lib/board-calendar';
+import { addDays, dayName, eventsOn, heading, spanRange } from '@/lib/board-calendar';
 import {
   type BoardLayout,
   type CalendarSpan,
@@ -23,7 +23,7 @@ import {
 } from '@/lib/dashboard';
 import type { BoardMember, BoardSnapshot } from '@/lib/snapshot';
 import { progress, type TodayItem } from '@/lib/today';
-import { EventLine, type LoadCalendar, useCalendar } from './calendar-ui';
+import { hoursOf, HourRowsGrid, type LoadCalendar, useCalendar, useInk } from './calendar-ui';
 import { GoalItem } from './goals-ui';
 import { TodayMeals } from './meals-ui';
 import { iconOf, type PhotoUrl } from './picture';
@@ -175,64 +175,34 @@ function Row({
   );
 }
 
-/** [CAL-04][D-66] The calendar panel: 3, 5 or 7 days as columns, each day opens as a day. */
+/**
+ * [CAL-04][D-66][D-82] The calendar panel: 3, 5 or 7 days, all-day events across the top and the
+ * hours with something on lined up below (WP-52); a day's head opens it as a day.
+ */
 function DayColumns({
   snapshot,
   dates,
   load,
+  nowTime,
   onOpenDay,
 }: {
   snapshot: BoardSnapshot;
   dates: string[];
   load?: LoadCalendar;
+  nowTime: string;
   onOpenDay: (date: string) => void;
 }) {
   const { cal } = useCalendar(snapshot, dates[0]!, dates.at(-1)!, load);
-  const calendars = useMemo(() => new Map((cal?.calendars ?? []).map((c) => [c.id, c])), [cal]);
-  const people = useMemo(() => new Map(snapshot.members.map((m) => [m.id, m])), [snapshot.members]);
-  const events = (cal?.events ?? []).filter((e) => calendars.has(e.calendarId));
+  const { ink, events } = useInk(cal, snapshot.members, snapshot.household.timezone);
   return (
-    <div className="fw-dash__days" style={{ ['--days' as string]: dates.length }}>
-      {dates.map((d) => {
-        const list = eventsOn(events, d);
-        return (
-          <section
-            key={d}
-            className="fw-dash__day"
-            aria-label={dayName(d)}
-            data-today={d === snapshot.today ? '' : undefined}
-          >
-            <button
-              type="button"
-              className="fw-dash__day-head"
-              aria-label={`Open ${dayName(d)}`}
-              onClick={() => onOpenDay(d)}
-            >
-              <span>{dayName(d).split(',')[0]}</span>
-              <span>{Number(d.slice(8))}</span>
-              {d === snapshot.today ? <span className="fw-dash__today">Today</span> : null}
-            </button>
-            {list.length ? (
-              <ol className="fw-bcal__list">
-                {list.map((e) => {
-                  const c = calendars.get(e.calendarId);
-                  return (
-                    <EventLine
-                      key={`${d}:${e.id}`}
-                      event={e}
-                      date={d}
-                      calendar={c}
-                      member={c?.memberId ? people.get(c.memberId) : undefined}
-                      timeZone={snapshot.household.timezone}
-                    />
-                  );
-                })}
-              </ol>
-            ) : null}
-          </section>
-        );
-      })}
-    </div>
+    <HourRowsGrid
+      days={dates}
+      events={events}
+      ink={ink}
+      today={snapshot.today}
+      now={hoursOf(nowTime)}
+      onOpenDay={onOpenDay}
+    />
   );
 }
 
@@ -508,7 +478,7 @@ export function Dashboard({
           <span className="fw-dash__sub">
             {span === 'month'
               ? 'Tap a day to see it'
-              : `${dayName(today)} to ${dayName(addDays(today, Number(span) - 1))}`}
+              : spanRange(today, addDays(today, Number(span) - 1))}
           </span>
         </h2>
         {/* [D-74] The view, chosen on the board; it goes back to the board's own when idle. */}
@@ -528,7 +498,13 @@ export function Dashboard({
         {span === 'month' ? (
           <MonthDots snapshot={snapshot} dates={dates} load={load} onOpenDay={onOpenDay} />
         ) : (
-          <DayColumns snapshot={snapshot} dates={dates} load={load} onOpenDay={onOpenDay} />
+          <DayColumns
+            snapshot={snapshot}
+            dates={dates}
+            load={load}
+            nowTime={nowTime}
+            onOpenDay={onOpenDay}
+          />
         )}
       </section>
       <div className="fw-dash__list">

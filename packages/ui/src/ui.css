@@ -1620,11 +1620,20 @@ html:has(.board) {
 }
 
 /* The board's calendar (WP-23): Day, Week and Month, each event in its calendar's color. -------- */
+.fw-board .fw-today__screen[data-screen='calendar'] {
+  grid-template-rows: minmax(0, 1fr);
+  align-content: stretch;
+}
 .fw-bcal {
-  display: grid;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
   gap: var(--s-6);
   min-width: 0;
+  min-height: 0;
+}
+.fw-bcal > .fw-bcal__body {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 .fw-bcal__head {
   display: flex;
@@ -1727,44 +1736,6 @@ html:has(.board) {
   min-width: 0;
   overflow-wrap: anywhere;
 }
-.fw-bcal__body--day .fw-bcal__event {
-  min-height: var(--touch-primary);
-  padding: var(--s-3) var(--s-6);
-  border: var(--border-w) solid var(--line);
-  border-left: 14px solid var(--cal);
-}
-.fw-bcal__week {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: var(--s-3);
-}
-.fw-bcal__col {
-  display: grid;
-  align-content: start;
-  gap: var(--s-2);
-  min-width: 0;
-  padding: var(--s-3);
-  border: var(--border-w) solid var(--line);
-  border-radius: var(--r-lg);
-}
-.fw-bcal__col[data-today] {
-  border-color: var(--primary);
-  background: var(--primary-tint);
-}
-.fw-bcal__col .fw-bcal__event {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
-}
-.fw-bcal__col-head {
-  margin: 0;
-  color: var(--text-soft);
-  font-size: var(--t-small);
-}
-.fw-bcal__col-head span {
-  color: var(--text);
-  font-size: var(--t-heading);
-}
 .fw-bcal__month {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -1811,6 +1782,363 @@ html:has(.board) {
 .fw-bcal__more {
   color: var(--text-soft);
   font-size: var(--t-small);
+}
+
+/* [CAL-04][CAL-10][D-82] The time grid (WP-52), as Apple Calendar lays a calendar out: all-day
+   events in lanes across the days, then the hours. The home screen's card lines up the hours with
+   something on (.fw-hgrid); the Calendar's Week and Day draw them to scale (.fw-tgrid). Inside them
+   an event's title is 24 px (22 px in seven days) and its time and the hours 20 px: the calendar is
+   read up close, and the board's 28 px floor (BRD-03) holds everywhere else (D-82). */
+.fw-hgrid,
+.fw-tgrid {
+  --gutter: 92px;
+  --t-cal: 24px;
+  --t-cal-meta: 20px;
+  --now: var(--member-7-line);
+  min-width: 0;
+  min-height: 0;
+}
+.fw-hgrid {
+  --hrow: 42px;
+  --cols-gap: var(--s-2);
+  display: flex;
+  flex-direction: column;
+}
+.fw-hgrid[data-days='7'] {
+  --t-cal: 22px;
+  --gutter: 84px;
+  --cols-gap: var(--s-1);
+}
+/* The days' heads and all-day lanes stay; the hours scroll under them, in the same columns. */
+.fw-hgrid__top,
+.fw-hgrid__body {
+  display: grid;
+  column-gap: var(--cols-gap);
+  scrollbar-gutter: stable;
+}
+.fw-hgrid__top {
+  flex: none;
+  row-gap: var(--s-1);
+  padding-bottom: var(--s-2);
+  border-bottom: 2px solid var(--line);
+  overflow: hidden;
+}
+.fw-hgrid__body {
+  position: relative;
+  flex: 1 1 auto;
+  align-content: start;
+  row-gap: 3px;
+  min-height: 0;
+  padding-top: var(--s-1);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.fw-tgrid {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.fw-tgrid__top {
+  position: relative;
+  display: grid;
+  column-gap: var(--s-2);
+  row-gap: var(--s-1);
+  padding-bottom: var(--s-2);
+  border-bottom: 2px solid var(--line);
+}
+.fw-tgrid__tint {
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--primary-tint) 55%, transparent);
+}
+.fw-tgrid__head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-width: 0;
+  min-height: var(--touch-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+div.fw-tgrid__head {
+  cursor: default;
+}
+.fw-tgrid__wd {
+  color: var(--text-soft);
+  font-size: var(--t-cal-meta);
+  font-weight: 600;
+}
+.fw-tgrid__date {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 48px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-display);
+  font-size: var(--t-body);
+  font-weight: 800;
+}
+.fw-tgrid__head[data-today] .fw-tgrid__date {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.fw-tgrid__more {
+  padding: 0 var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--bg);
+  color: var(--text);
+  font-size: var(--t-cal-meta);
+  font-weight: 600;
+}
+.fw-tgrid__label,
+.fw-hgrid__hour {
+  justify-self: end;
+  padding-right: var(--s-2);
+  color: var(--text-soft);
+  font-size: var(--t-cal-meta);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.fw-tgrid__label {
+  align-self: center;
+}
+.fw-tgrid__bar,
+.fw-bcal__event.fw-tgrid__event {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 var(--s-2);
+  border: 0;
+  border-left: 6px solid var(--cal);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--cal) 16%, var(--surface));
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fw-tgrid__bar {
+  min-height: 40px;
+}
+.fw-tgrid__title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--t-cal);
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fw-tgrid__time {
+  flex: none;
+  color: var(--text-soft);
+  font-size: var(--t-cal-meta);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.fw-bcal__event.fw-tgrid__event[data-past] {
+  border-left-color: color-mix(in srgb, var(--cal) 50%, var(--surface));
+  background: var(--bg);
+}
+.fw-bcal__event.fw-tgrid__event[data-past] .fw-tgrid__title {
+  color: var(--text-soft);
+}
+/* Home: a row an hour, a day's events in it together. */
+.fw-hgrid__rule {
+  align-self: start;
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-hgrid__gap {
+  border-radius: var(--r-sm);
+  background: var(--bg);
+}
+.fw-hgrid__hour {
+  align-self: start;
+  padding-top: var(--s-1);
+}
+.fw-hgrid__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding-top: 3px;
+}
+.fw-hgrid .fw-bcal__event.fw-tgrid__event {
+  flex: 1 1 auto;
+  align-items: flex-start;
+  min-height: calc(var(--hrow) - 6px);
+  padding-top: var(--s-1);
+}
+.fw-hgrid[data-days='7'] .fw-tgrid__time {
+  display: none;
+}
+.fw-hgrid__empty {
+  margin: 0;
+  color: var(--text-soft);
+}
+/* Now: a line across today, its time beside the hours. */
+.fw-tgrid__now {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+}
+.fw-hgrid .fw-tgrid__now::before,
+.fw-hgrid .fw-tgrid__now-tag {
+  top: calc(var(--at) * 100%);
+}
+.fw-hgrid .fw-tgrid__now::before {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 3px;
+  margin-top: -1px;
+  border-radius: 2px;
+  background: var(--now);
+  content: '';
+}
+.fw-tgrid__now-tag {
+  position: relative;
+  z-index: 2;
+  justify-self: stretch;
+  align-self: start;
+  height: 30px;
+  margin: -15px var(--s-1) 0 0;
+  border-radius: var(--r-pill);
+  background: var(--now);
+  color: var(--surface);
+  font-size: var(--t-cal-meta);
+  font-weight: 600;
+  line-height: 30px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+/* Week and Day: the hours to scale, filling the screen (and scrolling inside it at larger text). */
+.fw-tgrid__body {
+  position: relative;
+  display: grid;
+  flex: 1 1 auto;
+  column-gap: var(--s-2);
+  min-height: 520px;
+  margin: var(--s-4) 0 var(--s-3);
+}
+.fw-tgrid__hours {
+  position: relative;
+  grid-column: 1;
+}
+.fw-tgrid__hour {
+  position: absolute;
+  right: var(--s-2);
+  transform: translateY(-50%);
+  color: var(--text-soft);
+  font-size: var(--t-cal-meta);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.fw-bcal__col.fw-tgrid__col {
+  position: relative;
+  min-width: 0;
+  border-left: var(--border-w) solid var(--line);
+}
+.fw-bcal__col.fw-tgrid__col[data-today] {
+  background: color-mix(in srgb, var(--primary-tint) 55%, transparent);
+}
+.fw-tgrid__rule {
+  position: absolute;
+  right: 0;
+  left: 0;
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-tgrid__col > .fw-tgrid__event {
+  position: absolute;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: baseline;
+  justify-content: flex-start;
+  column-gap: var(--s-2);
+  row-gap: 0;
+  min-height: 30px;
+  padding: 0 var(--s-2);
+  border: 2px solid var(--surface);
+  border-left: 6px solid var(--cal);
+}
+/* A tall block: its title, then its time under it if there's room (never over the title). */
+.fw-tgrid__col > .fw-tgrid__event[data-tall] {
+  align-content: flex-start;
+  padding-top: var(--s-1);
+}
+.fw-tgrid__col > .fw-tgrid__event .fw-tgrid__title {
+  max-width: 100%;
+}
+.fw-tgrid__col > .fw-tgrid__event[data-tall] .fw-tgrid__title {
+  flex: 0 1 100%;
+}
+.fw-tgrid__col > .fw-tgrid__now {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 3px;
+  margin-top: -1px;
+  border-radius: 2px;
+  background: var(--now);
+}
+.fw-tgrid__col > .fw-tgrid__now::before {
+  position: absolute;
+  top: -6px;
+  left: -8px;
+  width: 15px;
+  height: 15px;
+  border-radius: var(--r-pill);
+  background: var(--now);
+  content: '';
+}
+.fw-tgrid__body > .fw-tgrid__now-tag {
+  position: absolute;
+  left: 0;
+  width: calc(var(--gutter) - var(--s-2));
+  margin: -15px 0 0;
+}
+/* Day: its all-day events two to a row; its events wider, with their times. */
+.fw-tgrid__chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-1) var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-tgrid__chips .fw-tgrid__bar {
+  width: 100%;
+}
+.fw-tgrid[data-days='1'] .fw-tgrid__col > .fw-tgrid__event .fw-tgrid__title {
+  flex: 0 1 auto;
+}
+/* [CAL-10] An event in full, its calendar's color beside its title. */
+.fw-evdetails__swatch {
+  flex: none;
+  width: 20px;
+  height: 56px;
+  border-radius: var(--r-sm);
+  background: var(--cal);
+}
+.fw-evdetails .fw-details__facts dt {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.fw-evdetails__who {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
 }
 
 /* System Health (WP-42) --------------------------------------------------------------------- */
@@ -2805,7 +3133,7 @@ span.fw-heat__cell {
     overflow: visible;
   }
   .fw-dash .fw-dash__list-body,
-  .fw-dash .fw-dash__day,
+  .fw-dash .fw-hgrid__body,
   .fw-dash .fw-dash__card {
     height: auto;
     max-height: none;
@@ -2854,6 +3182,9 @@ span.fw-heat__cell {
   overflow: hidden;
 }
 .fw-dash__cal .fw-dash__sub {
+  margin-left: var(--s-2);
+}
+.fw-dash[data-span='month'] .fw-dash__cal .fw-dash__sub {
   flex-basis: 100%;
   margin-left: 0;
 }
@@ -3113,94 +3444,6 @@ span.fw-heat__cell {
   font-size: var(--t-small);
 }
 
-/* [CAL-04] Three, five or seven days as columns; each day's head opens it as a day. */
-.fw-dash__days {
-  display: grid;
-  grid-template-columns: repeat(var(--days), minmax(0, 1fr));
-  gap: var(--s-3);
-}
-.fw-dash__day {
-  display: grid;
-  align-content: start;
-  gap: var(--s-2);
-  min-width: 0;
-  min-height: 0;
-  overflow-y: auto;
-  padding: var(--s-2);
-  border: var(--border-w) solid var(--line);
-  border-radius: var(--r-md);
-}
-.fw-dash__day[data-today] {
-  border-color: var(--primary);
-  background: var(--primary-tint);
-}
-.fw-dash__day-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--s-2);
-  min-height: var(--touch);
-  padding: var(--s-1) var(--s-2);
-  border: 0;
-  border-radius: var(--r-sm);
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-family: var(--font-display);
-  font-size: var(--t-body);
-  font-weight: 800;
-  text-align: left;
-  cursor: pointer;
-}
-.fw-dash[data-span='5'] .fw-dash__today,
-.fw-dash[data-span='7'] .fw-dash__today {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-.fw-dash__today {
-  color: var(--primary-text);
-  font-family: var(--font-body);
-  font-size: var(--t-small);
-  font-weight: 600;
-}
-.fw-dash__day .fw-bcal__event {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
-  border: var(--border-w) solid var(--line);
-  border-left: 10px solid var(--cal);
-}
-/* A word wider than its day ("Grandparents" in seven days) is hyphenated where the language
-   allows, and only broken when it can't be (D-74). */
-.fw-dash__day .fw-bcal__title {
-  max-width: 100%;
-  font-size: var(--t-small);
-  overflow-wrap: break-word;
-  hyphens: auto;
-}
-/* Seven days beside today's list leave each day about 140 px: the board's smallest text and less
-   padding, so most words still fit whole. */
-.fw-dash:is([data-span='5'], [data-span='7']) .fw-dash__days {
-  gap: var(--s-2);
-}
-.fw-dash:is([data-span='5'], [data-span='7']) .fw-dash__day {
-  padding: var(--s-1);
-}
-.fw-dash:is([data-span='5'], [data-span='7']) .fw-dash__day-head {
-  padding: var(--s-1);
-}
-.fw-dash:is([data-span='5'], [data-span='7']) .fw-dash__day .fw-bcal__event {
-  padding: var(--s-1) var(--s-2);
-  border-left-width: 6px;
-}
-.fw-dash[data-span='7'] .fw-dash__day .fw-bcal__title {
-  font-size: var(--t-small);
-  font-weight: 600;
-}
 /* [CAL-04] The month: a dot per calendar with something on a day; a tap opens the day. */
 .fw-dash__month {
   display: grid;

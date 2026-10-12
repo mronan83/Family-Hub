@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
   addDays,
+  allDayLanes,
   behind,
+  eventSpan,
+  gridHours,
+  hourIn,
+  hourLabel,
+  hourRows,
+  nowInRows,
+  shortClock,
+  spanRange,
+  sideBySide,
+  splitDays,
   covers,
   dayName,
   eventsOn,
@@ -172,6 +183,7 @@ describe('reading the board’s calendar', () => {
             start_date: '2026-10-22',
             end_date: '2026-10-22',
             changed: false,
+            location: 'School gym',
           },
           { id: 'broken' },
         ],
@@ -200,6 +212,7 @@ describe('reading the board’s calendar', () => {
           startDate: '2026-10-22',
           endDate: '2026-10-22',
           changed: false,
+          location: 'School gym',
         },
       ],
     });
@@ -209,5 +222,158 @@ describe('reading the board’s calendar', () => {
     expect(readCalendar(undefined)).toBeNull();
     expect(readCalendar(null)).toBeNull();
     expect(readCalendar({ calendars: [] })).toBeNull();
+  });
+});
+
+// [CAL-04][CAL-10] The time grid (WP-52, D-82).
+describe('the time grid', () => {
+  const days = ['2026-10-19', '2026-10-20', '2026-10-21', '2026-10-22', '2026-10-23'];
+  // 9:30 am New York on a day = 13:30 UTC (EDT).
+  const at = (d: string, hm: string) => new Date(`${d}T${hm}:00-04:00`).toISOString();
+  const timed = (id: string, d: string, from: string, to: string, endDate = d) =>
+    event({ id, title: id, start: at(d, from), end: at(endDate, to), startDate: d, endDate });
+  const allDay = (id: string, from: string, to = from) =>
+    event({ id, title: id, allDay: true, startDate: from, endDate: to });
+
+  it('[CAL-04] reads the wall-clock hour in the household’s zone', () => {
+    expect(hourIn(at('2026-10-20', '09:30'), NY)).toBe(9.5);
+    expect(hourIn(at('2026-10-20', '00:00'), NY)).toBe(0);
+    expect(hourIn('2026-11-02T01:00:00Z', NY)).toBe(20); // after the clocks go back: EST
+  });
+
+  it('[D-82] splits all-day events from timed ones; a late one is two pieces; a day-long one is a bar', () => {
+    const { allDay: lanes, pieces } = splitDays(
+      [
+        allDay('Visit', '2026-10-20', '2026-10-22'),
+        timed('Flight', '2026-10-21', '22:30', '01:00', '2026-10-22'),
+        timed('Retreat', '2026-10-19', '09:00', '10:00', '2026-10-20'),
+        timed('Swim', '2026-10-19', '17:00', '18:00'),
+        timed('Midnight', '2026-10-23', '23:00', '00:00', '2026-10-23'),
+        allDay('Long ago', '2026-10-01'),
+      ],
+      days,
+      NY,
+    );
+    expect(lanes.map((e) => e.title)).toEqual(['Visit', 'Retreat']);
+    expect(pieces.map((p) => [p.event.title, p.day, p.start, p.end])).toEqual([
+      ['Swim', 0, 17, 18],
+      ['Flight', 2, 22.5, 24],
+      ['Flight', 3, 0, 1],
+      ['Midnight', 4, 23, 24],
+    ]);
+  });
+
+  it('[D-82] all-day lanes: one bar over its days, longer first, the rest counted on their days', () => {
+    const { bars, more } = allDayLanes(
+      [
+        allDay('Columbus Day', '2026-10-19'),
+        allDay('Spirit week', '2026-10-19', '2026-10-23'),
+        allDay('Library', '2026-10-19'),
+        allDay('Visit', '2026-10-20', '2026-10-22'),
+        allDay('Picture day', '2026-10-21'),
+        allDay('Trip', '2026-10-17', '2026-10-19'),
+      ],
+      days,
+      2,
+    );
+    expect(bars.map((b) => [b.event.title, b.lane, b.from, b.to])).toEqual([
+      ['Spirit week', 0, 0, 4],
+      ['Trip', 1, 0, 0],
+      ['Visit', 1, 1, 3],
+    ]);
+    expect(more).toEqual([2, 0, 1, 0, 0]);
+  });
+
+  it('[D-82] the home screen’s rows: an hour for each start, a day’s events together, reaching down', () => {
+    const { pieces } = splitDays(
+      [
+        timed('Dentist', '2026-10-19', '09:30', '10:15'),
+        timed('Bus', '2026-10-19', '16:00', '16:15'),
+        timed('Tap', '2026-10-19', '16:30', '17:00'),
+        timed('Soccer', '2026-10-22', '15:30', '17:00'),
+        timed('Pizza', '2026-10-23', '18:00', '20:00'),
+        timed('Retro', '2026-10-19', '19:00', '20:00'),
+        timed('Swim', '2026-10-22', '17:00', '18:00'),
+      ],
+      days,
+      NY,
+    );
+    const { hours, groups } = hourRows(pieces);
+    expect(hours).toEqual([9, 15, 16, 17, 18, 19]);
+    expect(
+      groups.map((g) => [
+        g.day,
+        hours[g.row],
+        g.span,
+        g.pieces.map((p) => p.event.title).join('+'),
+      ]),
+    ).toEqual([
+      [0, 9, 1, 'Dentist'],
+      [0, 16, 1, 'Bus+Tap'],
+      [0, 19, 1, 'Retro'],
+      // Soccer runs to 5 pm: down through the 4 pm row, short of Swim's.
+      [3, 15, 2, 'Soccer'],
+      [3, 17, 1, 'Swim'],
+      [4, 18, 2, 'Pizza'],
+    ]);
+    expect(nowInRows(hours, 16 + 40 / 60)).toEqual({ row: 2, at: expect.closeTo(0.667, 2) });
+    expect(nowInRows(hours, 12)).toEqual({ row: 1, at: 0 });
+    expect(nowInRows(hours, 21)).toEqual({ row: 5, at: 1 });
+    expect(nowInRows([], 12)).toBeNull();
+  });
+
+  it('[D-82] Week and Day draw 8 am to 8 pm at least, stretched to the events; overlaps side by side', () => {
+    const { pieces } = splitDays(
+      [
+        timed('Meeting', '2026-10-20', '14:00', '15:00'),
+        timed('Orthodontist', '2026-10-20', '14:30', '15:15'),
+        timed('Bus', '2026-10-20', '16:00', '16:15'),
+        timed('Tap', '2026-10-20', '16:15', '17:00'),
+        timed('Book club', '2026-10-21', '19:30', '21:00'),
+      ],
+      days,
+      NY,
+    );
+    expect(gridHours(pieces)).toEqual({ from: 8, to: 21 });
+    expect(gridHours([])).toEqual({ from: 8, to: 20 });
+    expect(
+      gridHours(splitDays([timed('Early', '2026-10-20', '06:45', '07:30')], days, NY).pieces),
+    ).toEqual({ from: 6, to: 20 });
+    // A late flight: to midnight on its day; its part after midnight doesn't start the grid at 12 am.
+    expect(
+      gridHours(
+        splitDays([timed('Flight', '2026-10-21', '22:30', '01:00', '2026-10-22')], days, NY).pieces,
+      ),
+    ).toEqual({ from: 8, to: 24 });
+    expect(sideBySide(pieces).map((p) => [p.event.title, p.col, p.cols])).toEqual([
+      ['Meeting', 0, 2],
+      ['Orthodontist', 1, 2],
+      // The bus is drawn half an hour tall, so the tap class beside it.
+      ['Bus', 0, 2],
+      ['Tap', 1, 2],
+      ['Book club', 0, 1],
+    ]);
+  });
+
+  it('[CAL-10] what times and details say', () => {
+    expect(shortClock(9.5)).toBe('9:30');
+    expect(shortClock(16)).toBe('4:00');
+    expect(hourLabel(0)).toBe('12 am');
+    expect(hourLabel(12)).toBe('12 pm');
+    expect(hourLabel(21)).toBe('9 pm');
+    expect(spanRange('2026-10-11', '2026-10-15')).toBe('Oct 11 – 15');
+    expect(spanRange('2026-10-30', '2026-11-03')).toBe('Oct 30 – Nov 3');
+    expect(eventSpan(timed('Dentist', '2026-10-20', '09:30', '10:15'), NY)).toBe(
+      'Tue, Oct 20, 9:30 – 10:15 am',
+    );
+    expect(eventSpan(timed('Lunch', '2026-10-20', '11:30', '13:00'), NY)).toBe(
+      'Tue, Oct 20, 11:30 am – 1:00 pm',
+    );
+    expect(eventSpan(allDay('Visit', '2026-10-20', '2026-10-22'), NY)).toBe(
+      'Tue, Oct 20 – Thu, Oct 22, all day',
+    );
+    expect(eventSpan(timed('Flight', '2026-10-21', '22:30', '01:00', '2026-10-22'), NY)).toBe(
+      'Wed, Oct 21, 10:30 pm – Thu, Oct 22, 1:00 am',
+    );
   });
 });

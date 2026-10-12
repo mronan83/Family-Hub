@@ -139,6 +139,7 @@ describe('a sync', () => {
       uid: 'swim@familywise.test',
       recurrence_id: '2026-10-27T21:00:00.000Z',
       title: 'Swim (Wednesday this week)',
+      location: null,
       start: '2026-10-28T22:00:00.000Z',
       end: '2026-10-28T23:00:00.000Z',
       all_day: false,
@@ -146,18 +147,36 @@ describe('a sync', () => {
     });
   });
 
-  it('[NFR-05] keeps no place, note, person, link or alarm', async () => {
+  it('[CAL-10][NFR-05] keeps where an event is, and no note, person, link or alarm', async () => {
     const { db, results } = fakeDb();
     await syncSource(db, source(), { fetch: serve(ics), now: NOW });
-    const sent = JSON.stringify(results()[0]);
-    for (const personal of [
-      'Made-up Street',
-      'made-up form',
-      'parent@example.com',
-      'appointment',
-    ]) {
-      expect(sent).not.toContain(personal);
+    const sent = results()[0]!;
+    const dentist = (sent.instances as { title: string; location: string | null }[]).find(
+      (i) => i.title === 'Dentist',
+    );
+    expect(dentist?.location).toBe('12 Made-up Street');
+    expect(
+      (sent.instances as { title: string; location: string | null }[]).find(
+        (i) => i.title === 'Book club',
+      )?.location,
+    ).toBeNull();
+    const text = JSON.stringify(sent);
+    for (const personal of ['made-up form', 'parent@example.com', 'appointment', 'Reminder']) {
+      expect(text).not.toContain(personal);
     }
+  });
+
+  it('[CAL-10] a new version of what is kept reads every calendar in full once', async () => {
+    const first = fakeDb();
+    await syncSource(first.db, source(), { fetch: serve(ics), now: NOW });
+    const hash = first.results()[0]!.content_hash as string;
+    // The hash an earlier version stored for the same file and day: not this one, so it syncs.
+    const { createHash } = await import('node:crypto');
+    const before = createHash('sha256').update(`2026-10-13\n${NY}\n`).update(ics).digest('hex');
+    expect(hash).not.toBe(before);
+    const again = fakeDb();
+    await syncSource(again.db, source({ contentHash: before }), { fetch: serve(ics), now: NOW });
+    expect(again.results()[0]).toHaveProperty('instances');
   });
 
   it('[CAL-02] the same file on the same day is skipped; a new day or zone expands again', async () => {

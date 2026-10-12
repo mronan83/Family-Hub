@@ -83,6 +83,7 @@ function familyCalendar(): string {
     `DTEND;VALUE=DATE:${ics(3)}`,
     'SUMMARY:Field trip e2e',
     'LOCATION:12 Made-up Street',
+    'DESCRIPTION:Bring the made-up form',
     'END:VEVENT',
     'END:VCALENDAR',
     '',
@@ -176,10 +177,14 @@ test('[CAL-02][CAL-07] the sync job stores its events: the series at 5 pm, the t
                            || case when changed then ' moved' else '' end, ', ' order by instance_start)
            from public.calendar_event_instance where source_id = '${calendarId}' and title = 'Swim e2e'`),
   ).toBe('17:00, 17:00, 18:00 moved, 17:00, 17:00, 17:00');
-  // [NFR-05] Only what the board shows is kept.
+  // [CAL-10][NFR-05] Only what the board shows is kept: where an event is, and none of its notes.
+  expect(
+    sql(`select string_agg(distinct location, ', ') from public.calendar_event_instance
+          where source_id = '${calendarId}' and title = 'Field trip e2e'`),
+  ).toBe('12 Made-up Street');
   expect(
     sql(
-      `select count(*) from public.calendar_event where source_id = '${calendarId}' and to_jsonb(calendar_event)::text like '%Made-up Street%'`,
+      `select count(*) from public.calendar_event where source_id = '${calendarId}' and to_jsonb(calendar_event)::text like '%made-up form%'`,
     ),
   ).toBe('0');
 

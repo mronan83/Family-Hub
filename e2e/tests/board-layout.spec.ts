@@ -75,7 +75,7 @@ test.afterAll(async () => {
 test('[BRD-01][BRD-05][D-66] a new board opens on the dashboard: five days, today’s list, then the cards', async () => {
   await home();
   await expect(board.locator('.fw-dash')).toHaveAttribute('data-span', '5');
-  await expect(board.locator('.fw-dash__day')).toHaveCount(5);
+  await expect(board.locator('.fw-dash .fw-tgrid__head')).toHaveCount(5);
   await expect(board.getByRole('heading', { name: 'Today’s list', level: 2 })).toBeVisible();
   // [D-80] Today's meals sit above Today's list (WP-28), not among the cards.
   await expect(cards()).toHaveText(['Goals', 'Waiting for a parent', 'Coming up']);
