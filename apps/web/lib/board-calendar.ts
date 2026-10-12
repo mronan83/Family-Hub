@@ -307,13 +307,20 @@ export function nowInRows(hours: number[], now: number): { row: number; at: numb
 }
 
 /**
- * [D-82] The hours the Week and Day grids draw: 8 am to 8 pm at least, stretched to the events shown.
- * The part of an event carried over from the day before (a late flight after midnight) doesn't
- * stretch it: it is drawn from the top.
+ * [D-82] The hours the Week and Day grids draw: 8 am to 8 pm at least, stretched to the events shown
+ * and, when today is shown, to now, so its line is always there (6 am: from 6 am). The part of an
+ * event carried over from the day before (a late flight after midnight) doesn't stretch it: it is
+ * drawn from the top.
  */
-export function gridHours(pieces: Piece[]): { from: number; to: number } {
-  const from = Math.min(8, ...pieces.filter((p) => !p.continued).map((p) => Math.floor(p.start)));
-  const to = Math.min(24, Math.max(20, ...pieces.map((p) => Math.ceil(p.end))));
+export function gridHours(pieces: Piece[], now?: number): { from: number; to: number } {
+  const starts = pieces.filter((p) => !p.continued).map((p) => Math.floor(p.start));
+  const ends = pieces.map((p) => Math.ceil(p.end));
+  if (now !== undefined) {
+    starts.push(Math.floor(now));
+    ends.push(Math.ceil(now));
+  }
+  const from = Math.min(8, ...starts);
+  const to = Math.min(24, Math.max(20, ...ends));
   return { from, to };
 }
 

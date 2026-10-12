@@ -345,6 +345,9 @@ describe('the time grid', () => {
         splitDays([timed('Flight', '2026-10-21', '22:30', '01:00', '2026-10-22')], days, NY).pieces,
       ),
     ).toEqual({ from: 8, to: 24 });
+    // Today shown at 5:50 am or 10:40 pm: the grid reaches now, so its line is there.
+    expect(gridHours(pieces, 5 + 50 / 60)).toEqual({ from: 5, to: 21 });
+    expect(gridHours([], 22 + 40 / 60)).toEqual({ from: 8, to: 23 });
     expect(sideBySide(pieces).map((p) => [p.event.title, p.col, p.cols])).toEqual([
       ['Meeting', 0, 2],
       ['Orthodontist', 1, 2],

@@ -54,6 +54,8 @@ for (const theme of ['day', 'evening'] as const) {
 test('[CAL-04][CAL-05][D-82] the week: all-day events across the top, the rest by the hour, in their calendars’ colors, with whose they are', async ({
   page,
 }) => {
+  // A Monday at 3:10 pm, New York: the hours from 8 am, now among them.
+  await page.clock.install({ time: new Date('2026-10-12T15:10:00-04:00') });
   await openCalendar(page);
   await expect(views(page).getByRole('button', { name: 'Week' })).toHaveAttribute(
     'aria-pressed',
@@ -86,8 +88,19 @@ test('[CAL-04][CAL-05][D-82] the week: all-day events across the top, the rest b
   // The hours: each one's line, 8 am at the top; now a line across today.
   await expect(page.locator('.fw-tgrid__hour').first()).toHaveText('8 am');
   await expect(today.locator('.fw-tgrid__now')).toHaveCount(1);
+  await expect(page.locator('.fw-tgrid__now-tag')).toHaveText('3:10');
   // [CAL-03] Events are only read: nothing offers to add or change one.
   await expect(page.getByRole('button', { name: /add|edit|new event/i })).toHaveCount(0);
+});
+
+test('[D-82] early in the morning the hours reach back to now, so its line is there', async ({
+  page,
+}) => {
+  await page.clock.install({ time: new Date('2026-10-12T05:50:00-04:00') });
+  await openCalendar(page);
+  await expect(page.locator('.fw-tgrid__hour').first()).toHaveText('5 am');
+  await expect(page.locator('.fw-bcal__col[data-today] .fw-tgrid__now')).toHaveCount(1);
+  await expect(page.locator('.fw-tgrid__now-tag')).toHaveText('5:50');
 });
 
 test('[D-82] a day with more all-day events than lanes says how many more; overlapping events sit side by side', async ({

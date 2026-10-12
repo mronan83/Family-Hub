@@ -634,7 +634,7 @@ On the board, **Calendar** opens the **Week**; **Day** and **Month** are a tap a
 It reads like the calendar on your phone:
 
 - **All-day events** run across the top, each in its calendar's color. One that lasts several days is one bar across them. When a day has more than fit, its heading says how many more ("+1"); tap the heading to see the day, with all of them.
-- **The hours** run down the side, from 8 am to 8 pm, or earlier and later when something is on then. Each event sits at its time, as tall as it lasts. Two at once sit side by side.
+- **The hours** run down the side, from 8 am to 8 pm, or earlier and later when something is on then (or when it's that early or late now). Each event sits at its time, as tall as it lasts. Two at once sit side by side.
 - **Now** is a red line across today, with the time beside it.
 - **Tap an event** to see it in full: **When**, **Where** (when it has a place in Apple Calendar), its **Calendar**, and **Whose** it is. Tap **Close** to go back. Its notes stay in Apple Calendar.
 

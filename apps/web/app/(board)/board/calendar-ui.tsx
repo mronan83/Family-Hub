@@ -763,11 +763,11 @@ export function TimeGrid({
     [allDay, days],
   );
   const placed = useMemo(() => sideBySide(pieces), [pieces]);
-  const { from, to } = gridHours(pieces);
+  const ti = days.indexOf(today);
+  const { from, to } = gridHours(pieces, ti >= 0 ? now : undefined);
   const pct = (h: number) => `${((h - from) / (to - from)) * 100}%`;
   const lanes = bars.length ? Math.max(...bars.map((b) => b.lane)) + 1 : 0;
   const single = days.length === 1;
-  const ti = days.indexOf(today);
   const col = (d: number) => d + 2;
   const hourMarks = Array.from({ length: to - from + 1 }, (_, i) => from + i);
   return (
