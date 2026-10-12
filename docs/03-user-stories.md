@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.37: US-108, US-604, US-605 and US-912 added (WP-53 to WP-56): the household's own AI provider; short school days; the school calendar from a document; a polished, tidy layout everywhere.
 > v0.8.36: US-509 added and built (WP-52, D-82): the board's calendar as a time grid, and an event in full on a tap.
 > v0.8.35: US-107 as built (WP-51, D-81): one admin menu, Settings with each part's status, Tags in Settings.
 > v0.8.34: US-107, US-508 and US-707 added (WP-49 to WP-51): one admin menu with Settings and Tags; a calendar for one or more people; next week's lunches picked on the board.
@@ -113,6 +114,16 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given any admin page on a phone or a laptop, when I open the menu, then I see the pages in groups (the day, the family's set-up, Settings), the page I am on marked.
 - Given Settings, when I open it, then School, Calendars, Boards, Tags, Reminders and Health are each one tap away.
 - As built (WP-51, D-81): the menu's groups are **Your day**, **The family** and **Set-up** (Settings); on a laptop it stays down the left, on a phone **Menu** opens it. **Settings** shows a tile for each of its six pages with how it stands; **Today** in the menu says how many check-offs wait for you.
+
+
+### US-108 — Use our own AI account
+**As an** admin **I want** to connect FamilyWise to our own Anthropic or OpenAI account, and choose the model and how hard it thinks **so that** features that read documents for me use an account and a cost I control.
+**Priority:** Should · **Phase:** P3 · **Reqs:** ACC-07
+- Given Settings, when I open **AI**, then I can pick Anthropic or OpenAI, paste an API key, and see it saved without the key ever being shown again.
+- Given a saved key, when I choose a model, then the list comes from the provider's own list of models, and I can choose an effort level (the provider's own, such as low, medium or high).
+- Given a saved key, when I tap **Test connection**, then I see that it works, or the provider's reason in plain words.
+- Given a board or a preview, when it loads, then the key is not anywhere it can read.
+- Given I remove the key, when I save, then AI features say they need an account set up.
 
 ---
 
@@ -499,6 +510,25 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a calendar source tagged "school", when I run import, then I can preview and accept events as closures.
 - Given a closure already exists on that date, when I import, then it is not duplicated.
 
+
+### US-604 — Early dismissal and late start
+**As a** parent **I want** to mark a school day as an early dismissal or a late start, and delay today in one tap **so that** everyone sees the change on the board and nobody is packed a lunch the school won't serve.
+**Priority:** Should · **Phase:** P2 · **Reqs:** SCH-05
+- Given a school year, when I set it up, then I can set its usual start and dismissal times once for the year.
+- Given a school day, when I mark it **Early dismissal** with a time (or **Late start** with a time), then it is saved for that day, and the day is still a school day.
+- Given an early dismissal tomorrow, when the board shows the evening before and on the day, then a banner says "Out at 12:30 tomorrow" or "Out at 12:30 today".
+- Given an early-dismissal day, when lunch is shown on the board or on Meals, then there is no school lunch that day, buy or bring.
+- Given a school morning, when I tap **Delay today** on the admin Home and pick the new start, then the board shows the late start within seconds.
+- Given a short day, when chores are generated, then they keep their usual times.
+
+### US-605 — Set up the school year from the school's calendar
+**As a** parent **I want** to upload the school's calendar (a PDF, a photo or a Word file) and have it read for me **so that** I don't type in every break, day off, half day and late start by hand.
+**Priority:** Could · **Phase:** P3 · **Reqs:** SCH-06
+- Given the household has an AI account (US-108), when I upload the school's calendar on **School**, then I see a list of proposed changes: the year's first and last days, breaks, days off, early dismissals and late starts, each with where in the document it was found.
+- Given the proposed changes, when I tick the ones I want and tap **Save**, then only those are saved, and nothing is saved before I do.
+- Given a change that clashes with one I already have, when it is proposed, then it is shown as a change to what I have, not a second copy.
+- Given no AI account is set up, when I open the upload, then it says one is needed and links to Settings.
+
 ---
 
 ## E7 — Meal planning
@@ -662,6 +692,13 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given the board is offline or unpaired, when it loads, then it shows the FamilyWise splash, and the installed app, favicon, and touch icon use the FamilyWise icons.
 - Given a member with an `avatar_key`, when their profile renders, then the matching avatar appears; given none, then initials on their member color appear.
 - Given the board in Evening theme, when contrast is audited, then every text and icon pair meets WCAG AA.
+
+
+### US-912 — Every screen looks finished
+**As a** parent **I want** every page laid out cleanly on my phone, a tablet and a laptop **so that** no menu, button or field sits on top of another, is cut off, or is out of line.
+**Priority:** Should · **Phase:** P3 · **Reqs:** NFR-16
+- Given any admin page or board screen, when it is shown on a phone, a tablet or a laptop in either theme, then no control overlaps another or is clipped, and fields and buttons in a row line up.
+- Given a change to any screen, when CI runs, then the layout sweep fails the build if it finds an overlap, a clip, or a row out of line.
 
 ---
 

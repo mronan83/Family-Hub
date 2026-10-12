@@ -20,6 +20,7 @@
 | ACC-04 | Admins shall manage member profiles (child/adult) with name, avatar, and color; children shall not require logins; multiple children shall be supported. | M | P0 | User |
 | ACC-05 | The system shall record an audit log of admin and device changes. | S | P3 | Design |
 | ACC-06 | Admins may also sign in with Sign in with Apple or a passkey, enabled once the production domain is fixed. | S | P3 | User |
+| ACC-07 | Admins may connect an AI provider (Anthropic or OpenAI) with the household's own API key, choose a model from the provider's own list and a reasoning effort, and test the connection; the key is kept in Vault, shown once, used only on the server, and never reaches a board or a preview. | S | P3 | User |
 | DEV-01 | A board shall be paired via a single-use, short-lived code issued in the admin portal. | M | P0 | User |
 | DEV-02 | A paired board shall have a scoped, revocable device identity limited to reading board data and submitting completions. | M | P0 | Design |
 | DEV-03 | Admins shall list, rename, and revoke devices and see last-seen time. | M | P0 | Derived |
@@ -73,6 +74,8 @@
 | SCH-02 | The system shall resolve a day type (`school_day`, `no_school`, `break`, `weekend`, `summer`) per member and date. | M | P1 | User |
 | SCH-03 | Day types shall drive chore generation and lunch eligibility. | M | P1 | User |
 | SCH-04 | Admins may import no-school days from a tagged calendar source after previewing them. | C | P3 | Derived |
+| SCH-05 | Admins shall set a school year's usual start and dismissal times and mark a school day as an early dismissal or a late start with its own time (a late start for today in one tap); the board shall show it that day and the evening before; an early-dismissal day shall have no school lunch; chores keep their times and the day stays a school day. | S | P2 | User |
+| SCH-06 | Admins may upload the school's calendar as a document (PDF, image or Word); AI shall propose the year's dates, breaks, closures, early dismissals and late starts, each with where in the document it was found, and nothing shall be saved until an admin has reviewed and accepted each change. | C | P3 | User |
 | MEAL-01 | The system shall support a weekly plan with breakfast, snack, lunch, and dinner slots for every day. | M | P2 | User |
 | MEAL-02 | The system shall provide a reusable meal library and allow free-text entries. | M | P2 | Derived |
 | MEAL-03 | Admins shall copy a previous week with a skip-or-overwrite choice. | S | P2 | Derived |
@@ -117,6 +120,7 @@
 | NFR-12 | The rules engine shall have at least 90% unit coverage, RLS shall be pgTAP-tested, and CI shall gate on e2e including offline. | M | P0 | Design |
 | NFR-13 | The product shall be branded FamilyWise and implement the brand and style guide: design tokens (light and Evening themes), self-hosted fonts, logo and app icons, the icon set (our own and Lucide's, D-70), member avatars, and a status-to-visual mapping with icon, label and color for every occurrence status. | M | P0 | User |
 | NFR-15 | The admin app's pages shall be grouped in one menu (the day, the family's set-up, and settings), tidy on a phone and a laptop, with every settings page (school, calendars, boards, tags, reminders, health) reachable from it. | S | P3 | User |
+| NFR-16 | Every screen of the admin app and the board shall lay out cleanly on a phone, a tablet and a laptop in both themes: no control overlaps another, is clipped, or sits out of line with its neighbours; an automated layout sweep in CI keeps it so. | S | P3 | User |
 | NFR-14 | Every change shall reach production only through a pull request that passes CI gates (lint, typecheck, unit, pgTAP, traceability, build) and e2e on its preview deployment, which runs as the demo family in the one database with the PR's additive migrations applied, and that the owner has approved after viewing its preview; merging applies migrations before deploying the app. No Docker and no staging environment. | M | P0 | User |
 
 ---
@@ -133,6 +137,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | ACC-04 | US-104 | WP-04, WP-46 | ADM, DB | member | E2E, DB, U |
 | ACC-05 | US-105 | WP-03, WP-32 | DB, ADM | audit_log | DB, E2E |
 | ACC-06 | US-106 | WP-38 | ADM, SAUTH | household_user | E2E |
+| ACC-07 | US-108 | WP-55 | ADM, API, VAULT | household_settings | U, DB, E2E |
 | DEV-01 | US-201 | WP-05 | ADM, API, AUTH, BRD, SAUTH | device_pairing, device | E2E, DB |
 | DEV-02 | US-201, US-202 | WP-05 | AUTH, DB, SAUTH | device | DB |
 | DEV-03 | US-202 | WP-05 | ADM, AUTH | device | E2E |
@@ -186,6 +191,8 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | SCH-02 | US-602 | WP-21 | DB | resolve_day_type | DB, E2E |
 | SCH-03 | US-302, US-602 | WP-09, WP-21 | OCCGEN, DB | chore, chore_occurrence | DB, E2E |
 | SCH-04 | US-603 | WP-36 | ADM, CALSYNC | school_closure, calendar_event_instance | INT |
+| SCH-05 | US-604 | WP-54 | ADM, BRD, DB | school_year, school_day_change | U, DB, E2E |
+| SCH-06 | US-605 | WP-56 | ADM, API | school_year, school_closure, school_day_change | U, INT, E2E |
 | MEAL-01 | US-701 | WP-25 | ADM, BRD | meal_plan_entry | U, DB, E2E |
 | MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | U, DB, E2E |
 | MEAL-03 | US-702 | WP-25 | ADM, API | meal_plan_entry | DB, E2E, INT |
@@ -231,6 +238,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-13 | US-910 | WP-37, WP-46 | BRD, ADM, UI | — | E2E, REV |
 | NFR-14 | US-911 | WP-01, WP-41 | CICD | — | CI, REV |
 | NFR-15 | US-107 | WP-51 | ADM, UI | chore_occurrence, tag, calendar_source, device, reminder_preference | U, E2E |
+| NFR-16 | US-912 | WP-53 | ADM, BRD, UI | — | E2E, CI |
 
 ---
 
@@ -240,12 +248,12 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 |---|---|---|---|---|
 | P0 | 13 | 1 | 0 | 14 |
 | P1 | 52 | 5 | 0 | 57 |
-| P2 | 12 | 8 | 1 | 21 |
-| P3 | 0 | 9 | 3 | 12 |
-| **Total** | **77** | **23** | **4** | **104** |
+| P2 | 12 | 9 | 1 | 22 |
+| P3 | 0 | 11 | 4 | 15 |
+| **Total** | **77** | **26** | **5** | **108** |
 
-- Requirements: **104** · with at least one story: **104** · stories: **93** (P0: 12 · P1: 52 · P2: 17 · P3: 12).
-- With at least one work package: **104** · work packages: **52**.
+- Requirements: **108** · with at least one story: **108** · stories: **97** (P0: 12 · P1: 52 · P2: 18 · P3: 15).
+- With at least one work package: **108** · work packages: **56**.
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -254,9 +262,9 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 
 | Component | Requirements |
 |---|---|
-| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, BRD-08, BRD-09, CAL-03, CAL-04, CAL-05, CAL-09, CAL-10, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, MEAL-09, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08 |
-| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, BRD-05, BRD-08, CAL-01, CAL-03, CAL-05, CAL-06, CAL-09, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MEAL-09, MENU-01, MENU-03, MENU-04, NFR-05, NFR-11, NFR-13, NFR-15, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04 |
-| `API` | ACC-03, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, DEV-01, DEV-06, MEAL-03, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, PTS-06, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13 |
+| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, BRD-08, BRD-09, CAL-03, CAL-04, CAL-05, CAL-09, CAL-10, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, MEAL-09, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, NFR-16, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08, SCH-05 |
+| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, ACC-07, BRD-05, BRD-08, CAL-01, CAL-03, CAL-05, CAL-06, CAL-09, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MEAL-09, MENU-01, MENU-03, MENU-04, NFR-05, NFR-11, NFR-13, NFR-15, NFR-16, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04, SCH-05, SCH-06 |
+| `API` | ACC-03, ACC-07, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, DEV-01, DEV-06, MEAL-03, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, PTS-06, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13, SCH-06 |
 | `AUTH` | DEV-01, DEV-02, DEV-03 |
 | `RULES` | CHR-10, PTS-05, PTS-07, RWD-02, RWD-03, RWD-04, RWD-05, RWD-06, RWD-10, RWD-11, RWD-12, RWD-13 |
 | `OCCGEN` | CHR-02, CHR-03, CHR-09, CHR-11, CHR-12, CHR-18, SCH-03 |
@@ -265,13 +273,13 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | `NOTIFY` | CHR-15, CHR-16, CHR-17 |
 | `OUTBOX` | CHR-04, DEV-06, NFR-01, PTS-04 |
 | `SCHED` | CAL-02, CHR-03, CHR-07, CHR-12, CHR-16, MENU-05, NFR-07, PTS-05, RWD-04, RWD-06, RWD-11 |
-| `DB` | ACC-01, ACC-04, ACC-05, CAL-05, CAL-09, CAL-10, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, DEV-02, DEV-05, MEAL-04, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03 |
+| `DB` | ACC-01, ACC-04, ACC-05, CAL-05, CAL-09, CAL-10, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, DEV-02, DEV-05, MEAL-04, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03, SCH-05 |
 | `RT` | DEV-05 |
-| `VAULT` | CAL-01, CAL-08, NFR-04 |
+| `VAULT` | ACC-07, CAL-01, CAL-08, NFR-04 |
 | `SAUTH` | ACC-02, ACC-03, ACC-06, DEV-01, DEV-02, NFR-04 |
 | `PI` | DEV-04, DEV-07, NFR-02 |
 | `OBS` | CAL-06, DEV-08, MENU-04, NFR-07, NFR-08 |
-| `UI` | NFR-11, NFR-13, NFR-15 |
+| `UI` | NFR-11, NFR-13, NFR-15, NFR-16 |
 | `CICD` | NFR-08, NFR-14 |
 
 `all` (NFR-12) applies to every component. Generated by `check_traceability.py --fix`.
@@ -373,6 +381,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 | SPIKE-03 | On the real 4K 32" panel and Pi 5: touch latency, calibration, Chromium kiosk flags, screen power control, and **4K animation frame rate** (celebrations, scrolling) at 1920×1080 logical / DPR 2 versus a 1080p fallback | DEV-04, DEV-07, NFR-02, NFR-03 |
 | SPIKE-04 | Which platform does the school's menu use, and is there a stable machine-readable feed? **Answered:** Nutrislice, public JSON API (`01` §5.5). | MENU-02 |
 | SPIKE-05 | Do `pg_cron`/`pg_net` → Vercel job calls fit within function time limits for the sync workload? | CAL-02, CHR-03 |
+| SPIKE-06 | Can the household's AI provider read a school calendar document within Vercel Hobby's limits (a request body of about 4.5 MB, a function's time limit), or must the file go to storage first and be read in the background? Which document types does each provider read directly? | SCH-06 |
 
 ### Assumptions
 
@@ -407,6 +416,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.95 | Five items added to the backlog at the owner's request: WP-53 a polish pass with a layout sweep kept in CI (NFR-16, US-912); WP-54 short school days, early dismissal and late start, with one-tap **Delay today** (SCH-05, US-604; the board shows it that day and the evening before, no school lunch on an early-dismissal day, chores keep their times); WP-55 the household's own AI provider in Settings, Anthropic or OpenAI, with model and effort (ACC-07, US-108); SPIKE-06 reading a document with AI on the free plan; WP-56 the school calendar read from a document, every change reviewed before it is saved (SCH-06, US-605). |
 | 0.8.94 | WP-52 done (PR #61): approved by the owner and merged once CI and e2e were green on the preview (131 passed, no retries, on `3b396dc`; `board-calendar.spec`: an event's place from a made-up calendar file in its details on a paired board, School off the board 1,341 ms after Save; DEV-05 p95 1,202 ms). After approval the UI suite failed at 6 am New York: the Week and Day grids started at 8 am, so before then today had no line at now. The grids now reach to now whenever today shows, the Week spec pins its clock, and a spec covers the early morning. The user guide says how (version 0.14). |
 | 0.8.93 | WP-52 the board's calendar as a time grid (CAL-10, US-509, D-82), in review: all-day events in lanes across the top (two on the home screen, three on the Calendar, "+N" on a day's head); the home screen's 3, 5 and 7 days with a row for each hour something starts in, lined up; the Calendar's Week and Day with the hours to scale, overlaps side by side; now a line across today; a tap on an event shows when, where, its calendar and whose it is. The sync keeps an event's place (`location`, migration `20261012100000_calendar_location`) and reads every calendar in full once (`SYNC_VERSION` 2). BRD-03 notes the calendar's 20–24 px text and 30 px blocks. Tests: unit `board-calendar.test.ts` (lanes, rows, the grid's hours, side by side, times), `ics.test.ts` and `sync.test.ts` (the place kept, nothing else personal; the new version reads in full); pgTAP `380_calendar_location`; the UI suite's `board-calendar.spec.ts` and `dashboard.spec.ts` (the grid, "+N", side by side, the details, floors in `e2e/support/floors.ts`); the preview's `board-calendar.spec.ts` (an event's place from the sync on the board) and `calendar.spec.ts` (the place kept, notes not). The user guide says how (version 0.14). |
 | 0.8.92 | WP-51 done (PR #60): approved by the owner and merged once CI and e2e were green on the preview (131 passed, no retries, on `237f59f`; `admin-menu.spec`: Today's count as the database has it, Settings' six tiles, Tags through Settings and back; DEV-05 p95 1,342 ms, BRD-05 p90 706 ms). The first run on `85130ba` failed the chores done-when, which enters the family list at phone width: the menu now waits behind **Menu** there, and the specs open it as a parent does (`e2e/support/settings.ts`). The user guide says how (version 0.13). |
