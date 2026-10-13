@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.38: US-203 and US-905 for boards on a Raspberry Pi 4 or 5 (WP-14, D-83): a closed browser opens again on its own; the admin app is blocked on a board; the first board is a Pi 4 at 1080p.
 > v0.8.37: US-108, US-604, US-605 and US-912 added (WP-53 to WP-56): the household's own AI provider; short school days; the school calendar from a document; a polished, tidy layout everywhere.
 > v0.8.36: US-509 added and built (WP-52, D-82): the board's calendar as a time grid, and an event in full on a tap.
 > v0.8.35: US-107 as built (WP-51, D-81): one admin menu, Settings with each part's status, Tags in Settings.
@@ -148,6 +149,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** DEV-04
 - Given the Pi boots, when it finishes starting, then Chromium opens full-screen at `/board` with no address bar or browser chrome.
 - Given the board is showing, when the child long-presses, swipes from edges, or uses pinch, then no browser UI, context menu, or navigation outside `/board` appears.
+- Given the board's browser is closed (a crash, or a keyboard's Alt+F4), when a few seconds pass, then it opens again on the board, still paired.
+- Given the admin app's address is opened on a board, when it loads, then the browser blocks it.
 
 ### US-204 — See changes live
 **As a** parent **I want** changes I make on my phone to appear on the board within seconds **so that** the board is trustworthy.
@@ -642,7 +645,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-905 — Fast and finger-friendly
 **As a** kid **I want** big buttons that respond instantly **so that** using the board is easy.
 **Priority:** Must · **Phase:** P1 · **Reqs:** NFR-02, NFR-03, BRD-03
-- Given a Pi 5 on the reference panel, when the board loads from cache, then it is interactive in under 2 seconds.
+- Given a Pi 5 on the reference panel, or a Pi 4 on a 1080p screen (D-83), when the board loads from cache, then it is interactive in under 2 seconds.
 - Given any child-facing control, when measured, then its touch target is at least 56 logical px (about 21 mm on the 4K reference panel) and text is legible at 2 m.
 - Given the 3840×2160 panel with the UI laid out at 1920×1080 logical px and device scale factor 2, when I use the board, then celebrations and scrolling stay smooth (SPIKE-03 sets the frame-rate budget; the 1080p fallback is documented).
 

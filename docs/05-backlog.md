@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.95: Y-7 done: the first board is a Raspberry Pi 4 with a 1080p monitor and a mouse (D-83); the kitchen's Pi 5 and touch panel are Y-11. WP-14 in review (PR #63): the board kit for a Raspberry Pi; SPIKE-03 split into its Pi 4 part (now) and its panel part (Y-11).
 > v0.8.94: WP-53 to WP-56 and SPIKE-06 added at the owner's request: polish with a layout sweep, short school days, the household's AI provider, the school calendar from a document.
 > v0.8.93: WP-52 done (PR #61): the board's calendar as a time grid.
 > v0.8.92: WP-52 added at the owner's request and in review: the board's calendar as a time grid (D-82).
@@ -113,7 +114,7 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 
 | Item | Action | Where | Unblocks |
 |---|---|---|---|
-| Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
+| Y-11 | A Raspberry Pi 5 (4 GB) and the kitchen's touch panel, with the panel's model (OQ-05b). Set it up with the kit (`07` A16). | Hardware | SPIKE-03's panel part, WP-34's wake on touch; launch checks L-05 and L-08 |
 | Y-10 | The repository is public now (D-48), and three things from before are visible on it. (1) Rotate the deployment-protection bypass secret: Vercel → Settings → Deployment Protection → Protection Bypass for Automation, then put the new value in GitHub → Settings → Secrets → `VERCEL_AUTOMATION_BYPASS_SECRET`. The demo sign-ins' passwords follow it on the next e2e run. (2) Delete the four `playwright-report` artifacts (Actions → the failed e2e runs of Oct 9 whose reports were saved at 10:56, 15:03, 20:20 and 20:28 UTC), which hold the old value. (3) Delete the two `setup-code` runs of Oct 9 (10:54 and 11:03 UTC), whose pages show household codes; they expire 24 hours after issue | GitHub; Vercel | R-35 |
 | Y-8 | Not before P3 (nothing earlier waits on it): choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
 
@@ -127,6 +128,7 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 | Y-4 | Vercel keys are in place: publishable key for Production and Preview, secret key and job signing secret for Production only. |
 | Y-5 | Dropped as a blocker: the second admin joins by invite link and signs in with a password, so nobody needs to join the Supabase team. Adding them later is optional, for magic links before custom email (Y-8). |
 | Y-6 | A real family calendar is published from iCloud, and its link is the repository secret `ICS_SPIKE_URL`. Because it is real, the `spike-02` workflow reports counts and checks only, and test fixtures are made up. |
+| Y-7 | The first board: a Raspberry Pi 4 (2 GB, an SD card, Wi-Fi) with a 24" 1920×1080 120 Hz Dell monitor and a mouse, for now (D-83). It stays a board elsewhere in the house once the kitchen has its Pi 5 and touch panel (Y-11). |
 | Y-9 | Supabase Auth points at production (Site URL `https://family-wise-topaz.vercel.app`, redirects `https://family-wise-topaz.vercel.app/**`), and "Allow new users to sign up" is off, so nobody can sign up through Supabase directly. Launch check L-12 confirms it end to end. |
 
 ---
@@ -141,7 +143,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | SPIKE-05 | `pg_cron`/`pg_net` → Vercel job limits | P0 | S | WP-01 | Done (PR #6) |
 | SPIKE-02 | iCloud ICS fidelity; CalDAV with a secondary Apple ID | P1d | S | — | ICS part done (`01` §5.4); CalDAV part before WP-29 |
 | SPIKE-04 | School menu platform and feed | P2 | S | — | Done: Nutrislice public JSON API (`01` §5.5) |
-| SPIKE-03 | Pi 5 + 32" 4K panel: touch, kiosk flags, power, animation budget | P1a | S | — | Blocked: hardware being sourced (OQ-05b) |
+| SPIKE-03 | Kiosk on the Pi: flags, power, boot, frame and tap budgets; touch on the panel | P1a | S | — | Pi 4 part in progress (WP-14, PR #63); panel part waits on Y-11 |
 | SPIKE-06 | Reading a document with AI on the free plan | P3 | S | WP-55 | Queued |
 | WP-01 | Repo, CI/CD pipeline, environments | P0 | M | — | Done (PR #1) |
 | WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | Done (PR #4, #5) |
@@ -162,7 +164,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-11 | Board Today screen and check-off | P1a | L | WP-06, WP-10, WP-16, WP-37, WP-43 | Done (PR #28) |
 | WP-12 | Admin chore operations and My tasks | P1a | L | WP-10, WP-16 | Done (PR #30) |
 | WP-13 | Offline outbox and stale indicator | P1a | M | WP-11 | Done (PR #32) |
-| WP-14 | Kiosk host and 4K display | P1a | M | WP-06 | Blocked: SPIKE-03 (hardware) |
+| WP-14 | Kiosk host: the board kit for a Raspberry Pi | P1a | M | WP-06 | In progress (PR #63) |
 | WP-15 | Rules engine package | P1b | L | WP-01 | Done (PR #29) |
 | WP-17 | Streak history and insights | P1b | M | WP-10, WP-15 | Done (PR #33) |
 | WP-18 | Reward catalog and redemptions | P1b | M | WP-16 | Done (PR #31) |
@@ -183,7 +185,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-44 | Offline goal projection (board fallback) | P2 | M | WP-13, WP-15, WP-20 | Ready |
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
-| WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
+| WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Queued (WP-14); wake on touch waits on Y-11 |
 | WP-35 | Family dashboard and board layout | P3 | L | WP-23 | Done (PR #44) |
 | WP-45 | Weather on the board | P3 | S | WP-35 | Done (PR #45) |
 | WP-46 | More icons, one icon picker, sixteen colors | P3 | M | WP-08, WP-22, WP-37 | Done (PR #47) |
@@ -254,7 +256,7 @@ flowchart LR
     WP10 --> WP12[WP-12 Admin chore ops]
     WP16 --> WP12
     WP11 --> WP13[WP-13 Offline outbox]
-    WP06 --> WP14[WP-14 Kiosk host 4K]
+    WP06 --> WP14[WP-14 Kiosk host, the Pi kit]
   end
   subgraph P1b[P1b Rules, shop, history]
     WP01 --> WP15[WP-15 Rules engine]
@@ -364,11 +366,11 @@ flowchart LR
 - Identify the school's menu platform and whether it has a stable machine-readable feed.
 - **Done when:** the adapter choice is recorded in `01` §5.5.
 
-### SPIKE-03 — Pi 5 and 4K panel
+### SPIKE-03 — Kiosk on the Pi, then the touch panel
 **Milestone:** P1a · **Size:** S · **Gates:** WP-14, WP-34 · **Reqs:** DEV-04, DEV-07, NFR-02, NFR-03
-- Touch latency and calibration, Chromium kiosk flags, screen power control, and animation frame rate at 1920×1080 logical / DPR 2 versus a 1080p fallback.
-- **Done when:** the frame budget and kiosk configuration are recorded in `01` §8.
-
+- **Pi 4 part (now, with WP-14):** Chromium kiosk flags and policy, screen power control, boot to board, and the frame and tap budgets measured by `fw-check` on the first board, a Raspberry Pi 4 (2 GB) at 1920×1080 (D-83).
+- **Panel part (Y-11):** on the Raspberry Pi 5 (4 GB) and the touch panel: touch latency and calibration, the pointer hidden, and the frame rate at the panel's own size versus a 1080p fallback.
+- **Done when:** both parts' results are recorded in `01` §8.2.
 ---
 
 ## 5. Work packages
@@ -601,14 +603,17 @@ flowchart LR
   - **Tests:** unit tests for the outbox with a store, the store on fake-indexeddb, and the health rules; pgTAP `180_board_job_health` (4); the UI suite on `/dev/board` (three check-offs offline, a reload with no network served by the worker, sent once each on reconnect; a day offline with every timer run by Playwright's clock; the lines in both themes); `offline.spec.ts` on the preview covers the Done-when, with a parent's later uncheck winning and the board opened after a day offline. The real 24-hour soak is on WP-24's checklist.
 - Later change (D-64): nothing is sent while the browser says it is offline (`navigator.onLine`); the outbox waits and sends at once on `online`, or at the next retry if that event is missed.
 
-### WP-14 — Kiosk host and 4K display
+### WP-14 — Kiosk host: the board kit for a Raspberry Pi
 **Phase:** P1a · **Size:** M · **Depends on:** WP-06 · **Reqs:** DEV-04, BRD-06, NFR-02
-- SPIKE-03 first (hardware).
-- Pi 5 image/provisioning notes: Chromium kiosk flags, route lockdown to `/board`, watchdog restart, SSD boot, screen power control.
-- Logical 1920×1080 layout for the 3840×2160 panel (the board zooms itself to it since WP-47, at device scale factor 1 or 2); idle-return to the home screen after 90 seconds (D-71; a celebration playing is not cut short).
-- Hardware acceptance checklist from `04` §F.
-- **Done when:** the Pi boots to the board unattended, survives a power pull, and the animation budget from SPIKE-03 is met or the 1080p fallback is adopted and documented.
-
+- The owner's first board is a Raspberry Pi 4 (2 GB, SD card, Wi-Fi) with a 24" 1920×1080 120 Hz monitor and a mouse; the kitchen board will be a Pi 5 (4 GB) with a touch panel (Y-11), and the Pi 4 stays a board elsewhere (D-83). So the kit sets up any Pi 4 or 5, with one command.
+- **Done when:** on the owner's Pi 4, the kit installs from this branch on a fresh Raspberry Pi OS Lite, the Pi boots to the board unattended and pairs from the admin app, comes back on its own after five power pulls, and `fw-check` reports the board within NFR-02's budgets (or the shortfall and its fix are recorded in `01` §8.2). The touch panel's checks move to Y-11 and SPIKE-03's panel part.
+- As built (`01` §8, D-83):
+  - **`pi/install.sh`** fetches the kit from GitHub and runs **`setup.sh`**: Chromium, labwc, console autologin with labwc on the screen only, `fw-kiosk` from labwc's autostart, the Chromium policy, Wi-Fi awake, the hardware watchdog, a small journal, a nightly restart at 03:30 (optional). Safe to run again; the pairing stays.
+  - **`fw-kiosk`:** the screen at 60 Hz at most, a minute's wait for the network after a power cut, no "restore pages" bubble, Chromium full screen on the board and started again if it closes (2 s, backing off to 30 s).
+  - **Lockdown (DEV-04):** kiosk mode, and by policy the admin app, `chrome://`, `file://` and `view-source:` blocked, with no developer tools, downloads, sign-in or saved passwords.
+  - **`fw-screen`** (on, off, status) for quiet hours (WP-34); **`fw-check`** measures the board in its own Chromium against NFR-02 and checks the Pi's power, temperature, storage, screen and Wi-Fi.
+  - **Tests:** `pi/test.sh` in `ci / database` (shellcheck, the files setup writes, idempotence, the policy, the 120 Hz → 60 Hz choice); `check.py` was run against the dev board in Chromium. The board itself is unchanged, so the e2e suite covers it as before.
+  - **Guide:** `07` A16, setting up a board on a Raspberry Pi.
 ### Phase P1b — Rules engine, shop, streak history
 
 ### WP-15 — Rules engine package

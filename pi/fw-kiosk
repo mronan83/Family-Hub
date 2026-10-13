@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# [DEV-04][WP-14] The board, full screen, for as long as the Pi is on (started by labwc at sign-in,
+# setup.sh). Chromium is started again if it ever closes, sooner if it ran a while. fw-check asks
+# for one run with the local debugging port by leaving a file in the state folder.
+set -u
+# shellcheck source=/dev/null
+. /etc/familywise/kiosk.conf
+
+STATE="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/familywise"
+PROFILE="$HOME/.config/familywise-chromium"
+mkdir -p "$STATE" "$PROFILE"
+CHROMIUM="$(command -v chromium || command -v chromium-browser)"
+log() { logger -t familywise-kiosk "$*"; }
+
+# The highest mode at the screen's own size that is no faster than FW_MAX_HZ (wlr-randr lists
+# "1920x1080 px, 119.982002 Hz (preferred, current)" under each output).
+set_refresh() {
+  [ -n "${FW_MAX_HZ:-}" ] && command -v wlr-randr >/dev/null || return 0
+  wlr-randr 2>/dev/null | awk -v max="$FW_MAX_HZ" '
+    /^[^ ]/ { out = $1 }
+    /current/ { size[out] = $1; rate[out] = $3 }
+    /^    [0-9]+x[0-9]+ px/ { modes[out] = modes[out] " " $1 "@" $3 }
+    END {
+      for (o in size) {
+        if (rate[o] + 0 <= max + 1) continue
+        best = 0
+        n = split(modes[o], m, " ")
+        for (i = 1; i <= n; i++) {
+          split(m[i], p, "@")
+          if (p[1] == size[o] && p[2] + 0 <= max + 1 && p[2] + 0 > best) { best = p[2] + 0; exact = p[2] }
+        }
+        if (best) printf "%s %s@%s\n", o, size[o], exact
+      }
+    }' | while read -r out mode; do
+    wlr-randr --output "$out" --mode "${mode}Hz" && log "screen $out set to $mode Hz"
+  done
+}
+
+# After a power cut Chromium would offer to restore the last session; tell it the last one ended well.
+tidy_profile() {
+  python3 - "$PROFILE/Default/Preferences" <<'PY' 2>/dev/null || true
+import json, sys
+path = sys.argv[1]
+try:
+    with open(path) as f:
+        prefs = json.load(f)
+except OSError:
+    sys.exit(0)
+prefs.setdefault("profile", {})["exit_type"] = "Normal"
+prefs["profile"]["exited_cleanly"] = True
+with open(path, "w") as f:
+    json.dump(prefs, f)
+PY
+}
+
+set_refresh
+# Wait up to a minute for the network after a power cut, so the board doesn't open on an error page
+# before the router is back; it works from its last copy if the network stays down.
+command -v nm-online >/dev/null && nm-online -q -t 60 || true
+
+delay=2
+while true; do
+  tidy_profile
+  # shellcheck disable=SC2054 # the commas belong to --disable-features
+  flags=(
+    --kiosk --noerrdialogs --disable-infobars --no-first-run --disable-session-crashed-bubble
+    --disable-features=Translate,TranslateUI,MediaRouter --overscroll-history-navigation=0
+    --disable-pinch --check-for-update-interval=31536000 --password-store=basic
+    --ozone-platform=wayland --user-data-dir="$PROFILE"
+    # The web cache lives in memory, sparing the SD card; the board keeps its own offline copy.
+    --disk-cache-dir="$STATE/cache" --disk-cache-size=67108864
+  )
+  if [ -e "$STATE/check" ]; then
+    flags+=(--remote-debugging-address=127.0.0.1 --remote-debugging-port=9222)
+  fi
+  date +%s%3N >"$STATE/started_ms"
+  echo "$(date -Is) $(cut -d' ' -f1 /proc/uptime)" >>"$STATE/starts"
+  started=$SECONDS
+  "$CHROMIUM" "${flags[@]}" "$FW_URL" >/dev/null 2>&1
+  code=$?
+  if [ -e "$STATE/check" ]; then
+    log "Chromium closed ($code) for fw-check"
+    delay=1
+  else
+    log "Chromium closed ($code); starting it again"
+    if [ $((SECONDS - started)) -gt 60 ]; then delay=2; else delay=$((delay * 2 > 30 ? 30 : delay * 2)); fi
+  fi
+  sleep "$delay"
+done
