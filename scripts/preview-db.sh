@@ -4,9 +4,10 @@
 #
 # 1. Refuses any database but the test project's (TEST_PROJECT_REF, the pooler user
 #    postgres.<ref>) or a throwaway local one (this script's own tests). Production is never reset.
-# 2. Empties the test database (scripts/test-db-reset.sql) and applies every migration in this
-#    commit (scripts/db-migrate.sh), so the run sees exactly this pull request's schema and nothing a
-#    run before it left behind.
+# 2. Empties the test database (scripts/test-db-reset.sql), applies every migration in this commit
+#    (scripts/db-migrate.sh) and lists the jobs (scripts/job-schedules.mjs --table-only: System
+#    Health reads them; none runs here), so the run sees exactly this pull request's schema and
+#    nothing a run before it left behind.
 # 3. Loads the demo family (supabase/seed.sql), the made-up household previews and e2e run as.
 # 4. In the same transaction, gives each demo sign-in its password (WP-03, D-39): the HMAC-SHA256 of
 #    "familywise demo sign-in <email>" keyed with the deployment-protection bypass secret, in hex.
@@ -49,9 +50,13 @@ case "$host" in
 esac
 
 if [ "${1:-}" != --demo-family-only ]; then
-  psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -q -X --single-transaction -f "$root/scripts/test-db-reset.sql"
+  # The pooler's host names the project's region (aws-0-<region>.pooler.supabase.com); no secret.
+echo "test database: ${host:-local} (user ${user:-local})"
+psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -q -X --single-transaction -f "$root/scripts/test-db-reset.sql"
   echo "test database emptied"
   bash "$root/scripts/db-migrate.sh" | tail -n 1
+  # The jobs System Health lists (job_health reads private.job_schedule); none is scheduled here.
+  node "$root/scripts/job-schedules.mjs" --table-only | psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -q -X --single-transaction
 fi
 
 # {"<email>": "<password>", ...} for the four demo sign-ins in supabase/seed.sql.

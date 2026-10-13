@@ -45,6 +45,8 @@ check "[D-85] refuses a remote database when the test project is not named" \
 run; rc=$?
 check "[NFR-14] applies the migrations and resets the demo family" \
   "$(is "$rc:$(q "select count(*) from public.member where household_id = '0de00000-0000-4000-8000-000000000001'")" "0:4")"
+check "[NFR-07][D-85] lists the jobs System Health reads, and schedules none" \
+  "$(is "$(q "select (select count(*) > 0 from private.job_schedule where job_type = 'heartbeat')::text")" "true")"
 
 # The same vector is asserted for the app's derivation (apps/web/lib/auth/demo.test.ts).
 vector=045626f96e2913b275eee7347abe26d196002e0fec0d237641b91979c093c14d

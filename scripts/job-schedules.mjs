@@ -2,7 +2,8 @@
 // Job schedules as code (01 §5.6, D-38). Reads apps/web/lib/jobs/schedule.json and prints the SQL the
 // deploy runs after the smoke check: pg_cron jobs named familywise-<name> (created, updated, and
 // removed when no longer listed) and the private.job_schedule rows job_health reads. Only jobs with
-// the familywise- prefix are touched. `--check` validates without printing.
+// the familywise- prefix are touched. `--check` validates without printing. `--table-only` prints
+// only the job_schedule rows: the test database (D-85) lists the jobs but never runs them.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -76,8 +77,8 @@ export function validate(jobs) {
 
 const literal = (s) => `'${String(s).replaceAll("'", "''")}'`;
 
-/** The SQL that makes pg_cron and private.job_schedule match the schedule. */
-export function schedulesSql(jobs) {
+/** The SQL that makes pg_cron and private.job_schedule match the schedule (without pg_cron: tableOnly). */
+export function schedulesSql(jobs, { tableOnly = false } = {}) {
   const errors = validate(jobs);
   if (errors.length) throw new Error(`invalid job schedule:\n- ${errors.join('\n- ')}`);
   const names = jobs.map((j) => literal(j.name)).join(', ');
@@ -95,6 +96,7 @@ export function schedulesSql(jobs) {
     '  every_minutes = excluded.every_minutes, updated_at = excluded.updated_at;',
     `delete from private.job_schedule where job_type not in (${names});`,
   ];
+  if (tableOnly) return lines.join('\n') + '\n';
   for (const j of jobs) {
     const command = j.kind === 'http' ? `select private.call_job(${literal(j.name)})` : j.sql;
     lines.push(
@@ -117,6 +119,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     }
     console.log(`${jobs.length} job schedule(s) valid`);
   } else {
-    process.stdout.write(schedulesSql(jobs));
+    process.stdout.write(schedulesSql(jobs, { tableOnly: process.argv.includes('--table-only') }));
   }
 }
