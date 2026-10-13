@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '../support/test';
 import { retireBoard } from '../support/board';
 
 // [BRD-01][BRD-03][BRD-07][CHR-04][NFR-03][US-305] The board's Today on the preview (WP-11, D-50): a

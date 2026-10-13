@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 import { retireBoard } from '../support/board';
 
 // [PTS-02][PTS-04][RWD-07][RWD-08] The board's shop, requests and goals on the preview (WP-20, D-59),

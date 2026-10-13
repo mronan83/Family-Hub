@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../support/test';
 import { sql as query } from '../support/db';
 import { openSetting } from '../support/settings';
 

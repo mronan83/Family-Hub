@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 
 // [CHR-15][CHR-16][CHR-17] A parent's own reminders on the preview (WP-40, D-58), as Alex of the demo

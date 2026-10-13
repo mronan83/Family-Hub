@@ -1,8 +1,8 @@
-# e2e on each Vercel preview (01 §9.3, §9.5, D-37). Previews use the one Supabase database and run
-# as the demo family, a separate household that RLS keeps apart from every real one. Each run applies
-# the pull request's new migrations (unless one removes or renames something; those wait for the
-# deploy), resets the demo family, then runs Playwright against the preview URL through Vercel
-# deployment protection. Runs are serialized so two previews never reset the demo family at once.
+# e2e on each Vercel preview (01 §9.3, §9.5, D-85). Previews and e2e use the test database, a second
+# Supabase project that holds only made-up families; production's database never sees a test. Each
+# run empties the test database, applies every migration in the pull request, loads the demo family,
+# then runs Playwright against the preview URL through Vercel deployment protection. Runs are
+# serialized so two never share the test database at once.
 name: e2e
 
 on:
@@ -24,13 +24,15 @@ jobs:
     env:
       E2E_BASE_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      # The test project (D-85); scripts/preview-db.sh refuses any other database.
+      SUPABASE_DB_URL: ${{ secrets.TEST_SUPABASE_DB_URL }}
+      TEST_PROJECT_REF: puoctwssryisuzakhzxj
     steps:
       - name: Check configuration
         run: |
           missing=()
           [ -n "$VERCEL_AUTOMATION_BYPASS_SECRET" ] || missing+=(VERCEL_AUTOMATION_BYPASS_SECRET)
-          [ -n "$SUPABASE_DB_URL" ] || missing+=(SUPABASE_DB_URL)
+          [ -n "$SUPABASE_DB_URL" ] || missing+=(TEST_SUPABASE_DB_URL)
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::error::e2e is not configured yet; missing: ${missing[*]} (docs/01-technical-architecture.md §9.8)"
             exit 1
@@ -64,7 +66,7 @@ jobs:
             echo "The demo family's midnight ($tz) is ${left} s away: waiting for it to pass."
             sleep $(( left + 30 ))
           fi
-      - name: Apply new migrations and reset the demo family
+      - name: Empty the test database, apply this PR's migrations, load the demo family
         run: bash scripts/preview-db.sh
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7

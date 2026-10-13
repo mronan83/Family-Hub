@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 
 // [NFR-17][US-109][ACC-08][US-110] Home at a glance and Family options on the preview (WP-57, D-84),

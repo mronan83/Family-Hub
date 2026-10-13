@@ -1,5 +1,5 @@
 import { appendFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 import { retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 

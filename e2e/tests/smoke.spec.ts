@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../support/test';
 
 test('[NFR-14] health endpoint answers on the deployment', async ({ request }) => {
   const res = await request.get('/api/health');

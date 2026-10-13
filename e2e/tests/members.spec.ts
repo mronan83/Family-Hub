@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 
 // [ACC-04][PTS-07] Members on the preview, as Alex of the demo family (D-37, D-39): add a child and
 // an adult, check the earns-rewards default, change it, link an adult to an admin, archive and
