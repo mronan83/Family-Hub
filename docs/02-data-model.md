@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.40: planned, not built (D-87 to D-89): `meal_plan_entry_member` (WP-62), `reminder_preference.approval_alerts` and `reminder_delivery` kind `approval` (WP-63), `school_menu_day.items[].option` (WP-64) and `lunch_choice` (WP-49) (§3.6, §3.7).
 > v0.8.39: chores on lunch days (WP-61, D-86): `chore.lunch_days` (`bring` or `buy`, an `each` item's only); `private.occurrence_due()` follows each child's `lunch_mode()`; `trg_lunch_override_replan` and `trg_member_lunch_replan` re-plan a child's lunch-day items when their lunch changes (§3.2, §3.6).
 > v0.8.38: Family options and Home at a glance (WP-57, D-84): `household_settings.week_start_next` and `week_start_next_on`, `set_week_start()` and `apply_week_start()`; `no_school_today()` and `undo_no_school_today()` re-plan today (§3.1, functions).
 > v0.8.37: an event's place (WP-52, D-82): `calendar_event.location` and `calendar_event_instance.location`; `save_calendar_sync()` stores them and `board_calendar()` returns them (§3.4).
@@ -560,6 +561,11 @@ else coalesce(lunch_override(m, d).mode,
 
 A chore can follow a child's lunch (WP-61, D-86): `chore.lunch_days` makes an `each` item due only on that person's bring days or buy days, and a change to their lunch re-plans it at once (§3.2).
 
+**Planned (D-87, D-89; not built):**
+- WP-62: `meal_plan_entry_member` (`household_id`, `entry_id`, `member_id`; key `(entry_id, member_id)`), an entry's people; no rows is everyone. `meal_plan_entry.member_id` is carried over into it and then dropped. `add_meal_entry()` takes `member_ids`; `copy_meal_week()` copies each entry's rows; `board_snapshot()`'s `meals.entries[]` gives `member_ids`.
+- WP-64: each `school_menu_day.items[]` element gains `option` (its option's number within the section): "or" between items ends an option, and "with" joins the next item to the option before it; the words themselves are not stored as items. `private.menu_items` accepts the new key.
+- WP-49: `lunch_choice` (`household_id`, `member_id`, `lunch_date`, `section`, `options int[]`, `chosen_by_type`, `chosen_by`, `chosen_at`; key `(member_id, lunch_date, section)`): a child's picks on a buy day, checked against that day's menu (one option, or one or more for fruits and vegetables); removed when the day becomes bring.
+
 If the effective mode is `buy`, the board shows `school_menu_day` for `(menu_source, d, 'lunch')`; if `bring`, it shows the planned `meal_plan_entry` for the lunch slot.
 
 **As built (WP-27, D-79).**
@@ -578,6 +584,8 @@ If the effective mode is `buy`, the board shows `school_menu_day` for `(menu_sou
 | `reminder_preference` | PK `member_id`, `enabled` (default false), `default_on` (bell on for new items), `default_lead_minutes` (0, 15, 60 or 1440), `morning_time` (default 08:00), `digest_time?` (null = off), `quiet_start?`, `quiet_end?`, `hide_private_titles` (default true) | One row per adult with a login (D-35). Readable and editable only by that person. |
 | `push_subscription` | `member_id`, `user_id → auth.users`, `endpoint` (unique), `p256dh`, `auth_secret`, `device_label`, `last_success_at`, `failure_count` | One per device and browser. Readable only by its owner; the reminders job reads it as service role. Deleted when the push service answers 404 or 410. |
 | `reminder_delivery` | `occurrence_id?`, `member_id`, `kind` (`due`/`digest`), `scheduled_for`, `sent_at?`, `status` (`held`/`sent`/`skipped`/`failed`), `dedupe_key` (unique) | One row per reminder per person (`due:{occurrence}:{member}` or `digest:{member}:{date}`), inserted before sending so a retry never sends twice. Readable only by that person. Pruned after 90 days. |
+
+**Planned (D-88, WP-63; not built):** `reminder_preference.approval_alerts` (boolean, default true) and `reminder_delivery.kind` `approval` (no `occurrence_id`; dedupe key `approval:{member}:{run}`), so a parent gets at most one alert per run for check-offs (`pending_approval`) and reward requests (`requested`) that became waiting since their last; held in quiet hours and dropped if nothing waits by then.
 
 Whether and when each assignee is reminded: `chore_assignee.remind` (null follows the person's `default_on`; true or false overrides it) and `chore.remind_lead_minutes` (null uses the person's `default_lead_minutes`). An item without a due time reminds at the person's `morning_time` on its due date. Nothing is sent when the person, the item or every device is switched off, or when the occurrence is already done.
 
