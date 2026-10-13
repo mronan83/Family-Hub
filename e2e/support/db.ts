@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 
-// The shared database as the e2e runner reaches it (SUPABASE_DB_URL): plain SQL, and an `rpc` like
+// The test database as the e2e runner reaches it (SUPABASE_DB_URL, D-85): plain SQL, and an `rpc` like
 // supabase-js's that calls a public function as the service role would (WP-40's job runs this way on
 // the runner, against a mocked push service, since previews hold no job secret).
 

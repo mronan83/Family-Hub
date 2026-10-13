@@ -6,8 +6,8 @@ const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 
 export default defineConfig({
   testDir: './tests',
-  // Every spec works on the one demo family (D-37) and resets only what it changes, so two files at
-  // once race: the board's live-update test renames Maya while the list tests pick her by name.
+  // Every spec works on the one demo family (on the test database, D-85) and resets only what it
+  // changes, so two files at once race: the board's live-update test renames Maya while the list tests pick her by name.
   // Files run one after another.
   fullyParallel: false,
   workers: 1,
