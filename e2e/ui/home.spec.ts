@@ -97,7 +97,6 @@ test.describe('what Home says', () => {
     await expect(needs.getByRole('listitem')).toHaveText([
       /2 check-offs wait for you/,
       /1 reward request waits for you/,
-      /Den hasn’t been seen for 3 hours/,
       /School can’t sync/,
     ]);
     await expect(needs.getByRole('link', { name: 'Review' })).toHaveAttribute(
@@ -109,6 +108,7 @@ test.describe('what Home says', () => {
       '/admin/rewards',
     );
     const heads = page.getByRole('list', { name: 'Heads-up' });
+    await expect(heads).toContainText('Den hasn’t been seen for 3 days');
     await expect(heads).toContainText('No school menu for next week yet');
     await expect(heads.getByRole('link', { name: 'School menus' })).toHaveAttribute(
       'href',

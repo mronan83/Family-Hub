@@ -36,7 +36,7 @@ export default async function DevHomePage({
     requests: quiet ? 0 : 1,
     boards: [
       { name: 'Kitchen', lastSeenAt: ago(2), revoked: false },
-      { name: 'Den', lastSeenAt: quiet ? ago(3) : ago(190), revoked: false },
+      { name: 'Den', lastSeenAt: quiet ? ago(3) : ago(3 * 24 * 60), revoked: false },
     ],
     calendars: [
       { name: 'Family', status: 'ok' },

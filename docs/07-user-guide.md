@@ -171,10 +171,10 @@ The board shows the family's day at once. From then on it keeps itself signed in
 
 **Home** is the first page you see. It shows what needs you, then the things you do most, a tap away.
 
-![Home on a laptop: Needs you lists 2 check-offs wait for you (Review), 1 reward request waits for you (Decide), Den hasn't been seen for 3 hours (Boards) and School can't sync (Calendars); Heads-up says No school menu for next week yet (School menus). Below, Quick actions: Add a chore, Add a task, Add a reward and Add a goal, then Add a meal (Plan a meal, New in the library), School today (No school today, Add a day off…) and School menu (Refresh school menu).](guide/img/admin-home-laptop.jpg "Home, on a laptop")
+![Home on a laptop: Needs you lists 2 check-offs wait for you (Review), 1 reward request waits for you (Decide), and School can't sync (Calendars); Heads-up says Den hasn't been seen for 3 days (Boards) and No school menu for next week yet (School menus). Below, Quick actions: Add a chore, Add a task, Add a reward and Add a goal, then Add a meal (Plan a meal, New in the library), School today (No school today, Add a day off…) and School menu (Refresh school menu).](guide/img/admin-home-laptop.jpg "Home, on a laptop")
 
-- **Needs you** lists what needs you now, each with a button to where you deal with it: check-offs and reward requests waiting for you, a board that hasn't been seen for 15 minutes (switched off, or off the Wi-Fi), a calendar that can't sync, a school menu that can't be read, and a background job that needs a look.
-- **Heads-up** lists what to know soon: no school menu for next week yet, no school year set up (or this one ending within two weeks), weather that hasn't updated, and an invite about to run out.
+- **Needs you** lists what needs you now, each with a button to where you deal with it: check-offs and reward requests waiting for you, a calendar that can't sync, a school menu that can't be read, and a background job that needs a look.
+- **Heads-up** lists what to know soon: no school menu for next week yet, no school year set up (or this one ending within two weeks), weather that hasn't updated, an invite about to run out, and a board that hasn't been seen for a day (switched off, or off the Wi-Fi; a board asleep overnight doesn't count).
 - An alert stays while its cause lasts and goes once you've dealt with it. There's nothing to dismiss. With nothing to look at, Home says "Nothing needs you right now."
 
 **Quick actions:**
@@ -906,7 +906,7 @@ The admin app is for parents, on a phone or a laptop. On a laptop its menu is do
 | Part | What it shows or does |
 |---|---|
 | The household | Its name and today's date. |
-| **Needs you** | Check-offs and reward requests waiting for you, boards not seen for 15 minutes, calendars that can't sync, school menus that can't be read and background jobs that need a look, each with a button to where you deal with it (**Review**, **Decide**, **Boards**, **Calendars**, **School menus**, **Health**). "Nothing needs you right now." when there's none. |
+| **Needs you** | Check-offs and reward requests waiting for you, calendars that can't sync, school menus that can't be read and background jobs that need a look, each with a button to where you deal with it (**Review**, **Decide**, **Calendars**, **School menus**, **Health**). "Nothing needs you right now." when there's none. |
 | **Heads-up** | No school menu for next week, no school year (or one ending within two weeks), weather that hasn't updated, an invite about to run out. Shown only when there is one. |
 | **Quick actions** | **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**. **Add a meal**: **Plan a meal**, **New in the library**. **School today**: **No school today** (then "No school today: Snow day" and **Undo**), or "No school today: the weekend" or the day off's name; **Add a day off…** opens **Name**, **Kind**, **From**, **To (optional)** and **Add day off**. **School menu**: **Refresh school menu**, or **Set up school menus** when there's no feed. |
 
