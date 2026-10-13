@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# [NFR-02][WP-14] The board's health and speed report (SPIKE-03): the Pi, its screen and Wi-Fi, then
+# the board itself, measured in Chromium. Run as the board's user, over SSH is fine:  fw-check
+# It starts the board once with Chromium's debugging port open to this Pi only, and once more
+# without it at the end. It taps only Calendar and Home, so nothing in the family's data changes.
+# The report holds no secrets; it is also saved in ~/familywise-check-<time>.txt.
+set -uo pipefail
+# shellcheck source=/dev/null
+. /etc/familywise/kiosk.conf
+
+STATE="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/familywise"
+OUT="$HOME/familywise-check-$(date +%Y%m%d-%H%M).txt"
+CHROMIUM="$(command -v chromium || command -v chromium-browser)"
+
+restart_board() { pkill -u "$(id -u)" -f -- "--user-data-dir=$HOME/.config/familywise-chromium" || true; }
+
+report() {
+  echo "FamilyWise board check, $(date -Is)"
+  echo
+  echo "## The Pi"
+  echo "Model:        $(tr -d '\0' </proc/device-tree/model 2>/dev/null)"
+  echo "Memory:       $(free -m | awk '/^Mem:/ { printf "%d MB, %d MB free", $2, $7 } /^Swap:/ { printf "; swap %d MB, %d MB used", $2, $3 }')"
+  echo "System:       $(. /etc/os-release && echo "$PRETTY_NAME"), kernel $(uname -r), $(uname -m)"
+  echo "Chromium:     $("$CHROMIUM" --version 2>/dev/null)"
+  echo "Up:           $(uptime -p)"
+  echo "Boot:         $(systemd-analyze 2>/dev/null | head -1)"
+  echo "Board starts: $(wc -l <"$STATE/starts" 2>/dev/null || echo 0) since boot; first at $(head -1 "$STATE/starts" 2>/dev/null | cut -d' ' -f2) s after boot"
+  if command -v vcgencmd >/dev/null; then
+    t="$(vcgencmd get_throttled 2>/dev/null | cut -d= -f2)"
+    echo "Temperature:  $(vcgencmd measure_temp 2>/dev/null | cut -d= -f2)"
+    if [ -n "$t" ] && [ $((t & 0x50005)) -ne 0 ]; then
+      echo "Power:        PROBLEM ($t): under-voltage or throttling seen; use the official power supply"
+    else
+      echo "Power:        fine ($t)"
+    fi
+  fi
+  echo "Storage:      $(df -h / | awk 'NR==2 { print $3 " used of " $2 }'), $(findmnt -no SOURCE /)"
+  echo "Disk errors:  $(journalctl -k -b -p err --no-pager 2>/dev/null | grep -ciE 'mmc|ext4|i/o error') this boot"
+  echo
+  echo "## Screen and network"
+  wlr-randr 2>/dev/null | awk '/^[^ ]/ { o = $1 } /current/ { print "Screen:       " o " " $1 " at " $3 " Hz" }'
+  echo "Wi-Fi:        $(iw dev wlan0 link 2>/dev/null | awk '/SSID/ { s = $2 } /signal/ { g = $2 " dBm" } END { if (s) print "connected, signal " g; else print "not connected (Ethernet?)" }'), power save $(iw dev wlan0 get power_save 2>/dev/null | awk '{ print $NF }')"
+  echo "Board URL:    $FW_URL"
+  echo
+  echo "## The board"
+  mkdir -p "$STATE"
+  touch "$STATE/check"
+  after="$(date +%s%3N)"
+  restart_board
+  python3 /usr/local/lib/familywise/check.py --port 9222 --started "$STATE/started_ms" --after "$after"
+  rm -f "$STATE/check"
+  restart_board
+}
+
+report 2>&1 | tee "$OUT"
+echo
+echo "Saved to $OUT. The board starts again in a few seconds."

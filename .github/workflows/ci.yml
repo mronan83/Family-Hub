@@ -63,6 +63,8 @@ jobs:
         run: bash scripts/setup-code.test.sh
       - name: Usage readings
         run: bash scripts/usage-sample.test.sh
+      - name: Board kit for the Raspberry Pi
+        run: bash pi/test.sh
 
   docs:
     runs-on: ubuntu-24.04

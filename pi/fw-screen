@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# [DEV-07][WP-14] Turn the board's screen off or on: fw-screen off | on | status. Run as the board's
+# user (over SSH is fine). Quiet hours (WP-34) will call this on a schedule.
+set -euo pipefail
+
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+if [ -z "${WAYLAND_DISPLAY:-}" ]; then
+  sock="$(find "$XDG_RUNTIME_DIR" -maxdepth 1 -name 'wayland-*' ! -name '*.lock' -printf '%f\n' 2>/dev/null | head -1)"
+  [ -n "$sock" ] || { echo "The board isn't running (no screen session for $(id -un))." >&2; exit 1; }
+  export WAYLAND_DISPLAY="$sock"
+fi
+
+case "${1:-status}" in
+  on | off)
+    if command -v wlopm >/dev/null; then
+      wlopm "--$1" '*'
+    else
+      wlr-randr | awk '/^[^ ]/ { print $1 }' | while read -r out; do
+        if [ "$1" = on ]; then wlr-randr --output "$out" --on; else wlr-randr --output "$out" --off; fi
+      done
+    fi
+    logger -t familywise-screen "screen $1"
+    ;;
+  status)
+    if command -v wlopm >/dev/null; then wlopm; else wlr-randr | grep -E '^[^ ]|Enabled|current'; fi
+    ;;
+  *) echo "Usage: fw-screen on | off | status" >&2; exit 2 ;;
+esac

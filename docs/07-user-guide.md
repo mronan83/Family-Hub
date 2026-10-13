@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.15: setting up a board on a Raspberry Pi (WP-14, D-83): A16, with the screen off and on, the board's report, and what to do when it misbehaves (B4).
 > v0.14: the board's calendar as a time grid (WP-52, D-82): all-day events across the top, the hours down the side, now, and an event's details at a tap (A5, A9).
 > v0.13: one admin menu (WP-51, D-81): the menu in three groups, **Settings** with each part's state, Tags in Settings, and Today's count (A4, B1).
 > v0.12: meals on the board (WP-28, D-80): **Today's meals** above Today's list, the **Meals** screen, and a person's own meals (A5, A11, A15, B1.12, B2, B7).
@@ -54,6 +55,7 @@ Button and label names are in **bold**, exactly as the app shows them. The pictu
   - [A13 Weather on the board](#a13-weather-on-the-board)
   - [A14 Screens and text size](#a14-screens-and-text-size)
   - [A15 Planning meals](#a15-planning-meals)
+  - [A16 Setting up a board on a Raspberry Pi](#a16-setting-up-a-board-on-a-raspberry-pi)
 - [Part B — User Manual](#part-b--user-manual)
   - [B1 The admin app, page by page](#b1-the-admin-app-page-by-page)
   - [B2 The board, screen by screen](#b2-the-board-screen-by-screen)
@@ -828,6 +830,46 @@ What you plan shows on the boards within seconds; nothing about meals can be cha
 
 ![The board's Meals screen: Meals this week, Sunday to Saturday with today marked; breakfast, snacks and lunch where planned, a dinner every day; School lunch with Leo buying and Maya bringing, No school tomorrow and the weekend.](guide/img/board-meals-week.jpg "Meals on the board: the week")
 
+### A16 Setting up a board on a Raspberry Pi
+<!-- covers: US-203 -->
+
+A board is a screen with a small computer behind it showing FamilyWise full screen. Any Raspberry Pi 4 or 5 will do: the kitchen board will be a Pi 5 with a touch panel, and other rooms can have a Pi 4 with any screen. Until a board has a touch panel, a mouse works: a click is a tap, and the wheel scrolls.
+
+**You need:** a Raspberry Pi 4 or 5 with 2 GB of memory or more; its official power supply (a phone charger can't give it enough power, and the board slows down); an SD card of 16 GB or more, a "high endurance" one if you can, or a USB SSD; a screen and its HDMI cable; a mouse for now; your Wi-Fi's name and password; and a laptop.
+
+```mermaid
+flowchart LR
+  A[Raspberry Pi Imager<br/>on your laptop] --> B[Start the Pi]
+  B --> C[SSH in and run<br/>the one command]
+  C --> D[Restart: the board<br/>asks for a code]
+  D --> E[Settings, Boards:<br/>get a code, type it]
+  E --> F[fw-check:<br/>the board's report]
+```
+
+1. **Prepare the card.** On your laptop, open Raspberry Pi Imager, choose your Pi, then **Raspberry Pi OS Lite (64-bit)** (under Raspberry Pi OS (other)), and your card. In its settings, set a name for the Pi (for example `board-kitchen`), a user name and password, your Wi-Fi and its country, your time zone, and turn on **SSH** with a password. Write the card.
+2. **Start the Pi.** Put the card in, plug in the screen and the mouse, then the power. Give it two minutes.
+3. **Install the board.** On your laptop, open a terminal and sign in to the Pi with its name and your user name, for example `ssh alex@board-kitchen.local`. Then run the install command (below). It takes about ten minutes on a Pi 4, and ends with "Done" and what to do next.
+4. **Restart it** with `sudo reboot`. The screen shows **Pair this board** with a keypad.
+5. **Pair it.** In the admin app, go to **Settings**, then **Boards**, and under **Add a board** give it a name and choose **Get a pairing code**. Click the 8 digits on the board's keypad and **Pair this board** ([Pair a board](#pair-a-board)).
+6. **Check it.** Back in the terminal, run `fw-check`. It restarts the board once, taps **Calendar** and **Home** (nothing in your family's data changes), and prints a report: how fast the board starts and answers a tap, how smoothly it scrolls, and whether the Pi has enough power, is too hot or is short of memory. Anything marked **OVER BUDGET** or **PROBLEM** is worth a look ([Troubleshooting](#b4-troubleshooting)). The report is saved on the Pi too, and holds nothing private.
+
+**The install command**, to run on the Pi (copy it whole):
+
+```
+curl -fsSL https://raw.githubusercontent.com/mronan83/Family-Hub/main/pi/install.sh | sudo bash
+```
+
+#### Living with a board
+
+- **It looks after itself.** The board starts on its own after a power cut, waiting up to a minute for the Wi-Fi; if the internet is still down, it shows its last copy ([When the internet drops](#when-the-internet-drops)). If the browser ever closes, it opens again within seconds. It restarts every night at 03:30.
+- **Keep the keyboard away.** Without one, nobody can leave the board or reach the admin app from it. Do upkeep from your laptop over SSH.
+- **The screen off and on:** `fw-screen off` and `fw-screen on`, over SSH. Turning it off on a schedule overnight is coming ([Coming soon](#b7-coming-soon)).
+- **Update it** every month or so: `sudo apt update && sudo apt full-upgrade`, then `sudo reboot`. Run the install command again to get a newer board kit; the board stays paired.
+- **No nightly restart:** run the install command with `sudo bash -s -- --no-nightly-reboot` in place of `sudo bash` at its end.
+- **Move it or give it away:** to move a board, unplug it and plug it in where it goes. To start again, **Disconnect** it on **Boards**; it goes back to **Pair this board**.
+
+> **Note:** The install command changes only what the board needs: it installs the browser and a small window manager, signs your user in on the screen at start-up (not over SSH), keeps Wi-Fi from dozing, turns on the Pi's watchdog (which restarts it if it ever freezes), keeps its log small and blocks the admin app and browser settings on the screen. It holds no password or key: the board gets its own sign-in when you pair it.
+
 ## Part B — User Manual
 
 ### B1 The admin app, page by page
@@ -1340,6 +1382,10 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Board: today's list is under the calendar | It has **Larger** or **Largest** text, which leaves no room beside the calendar. | Scroll down; or choose **Standard text** on **Boards**. |
 | Board in a laptop's browser: the browser's zoom does nothing | The board fits the window, whatever its zoom. | Use the board's **Text size** on **Boards** instead. |
 | Board: **Today's list may be out of date** | Planning or day closing is late or failing. | Open **Health** in the admin app. |
+| Raspberry Pi board: a black screen, or a text console, after start-up | The board didn't start; often the install hasn't finished, or Wi-Fi isn't set. | Sign in over SSH and run the install command again; it's safe to repeat. |
+| Raspberry Pi board: slow, or `fw-check` says **PROBLEM** under Power | The Pi isn't getting enough power, so it slows itself down. | Use the Pi's official power supply, not a phone charger. |
+| Raspberry Pi board: `fw-check` says **OVER BUDGET** | It answers a tap, scrolls or starts slower than FamilyWise aims for. | Share the report with whoever looks after FamilyWise; a Pi 5 is faster than a Pi 4. |
+| Raspberry Pi board: the browser's own error page | It started before the Wi-Fi, and has never had a copy of the board. | It tries again on its own; or restart it with `sudo reboot`. |
 | Board: **Can't reach FamilyWise** | The page couldn't load. | It tries again every 30 seconds. Check the wifi. |
 | Board: **Pair this board** with "This board was disconnected" | Someone disconnected it on **Boards**. | Get a new code on **Boards**, **Add a board**, and pair it again. |
 | Board: a chore isn't there | It isn't due today for that person, it's private, its person is archived, or it doesn't happen on today's day type. | Check the item on **Chores** (**Coming up**, **How often**, **On these days**) and **School**. |
@@ -1449,7 +1495,8 @@ These are planned but not built yet. This guide will cover each as it arrives.
 - **Export and delete** your household's data.
 - **Sign in with Apple** and passkeys.
 - **Private calendars** through a separate read-only Apple account (CalDAV), and importing days off from a school calendar.
-- **The kiosk:** the board locked full-screen on its own device, quiet hours overnight and burn-in protection.
+- **Quiet hours** for the board's screen overnight, and burn-in protection. Until then, `fw-screen off` turns a Raspberry Pi board's screen off (see [A16](#a16-setting-up-a-board-on-a-raspberry-pi)).
+- **The touch panel** for the kitchen board, with touch in place of the mouse.
 - **Goal meters offline** that move with check-offs not yet saved.
 
 ### B8 Stories this guide covers

@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 // [D-72] Help: the user guide (docs/07) in the app at /help, open signed in or not. Its pictures
-// load, its four diagrams are drawn and readable on a phone and a laptop, its contents links land on
+// load, its five diagrams are drawn and readable on a phone and a laptop, its contents links land on
 // their sections, and the admin menu, sign-in and setup lead to it.
 
 async function contrastOk(page: Page) {
@@ -20,7 +20,7 @@ async function drawn(page: Page) {
   await expect(page.locator('.fw-help')).toHaveAttribute('data-diagrams', 'drawn', {
     timeout: 15_000,
   });
-  await expect(page.locator('.fw-help__diagram svg')).toHaveCount(4);
+  await expect(page.locator('.fw-help__diagram svg')).toHaveCount(5);
 }
 
 for (const [width, height, device] of [

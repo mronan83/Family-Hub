@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.53: boards on a Raspberry Pi 4 or 5, set up by the kit in `pi/` (WP-14, D-83): §8 rewritten; the first board is a Pi 4 with a 1080p monitor.
 > v0.8.52: the board's calendar as a time grid (WP-52, D-82): all-day lanes, the home screen's hours lined up, Week and Day to scale, an event's details; the sync keeps an event's place (§5.4, §7).
 > v0.8.51: one admin menu (WP-51, D-81): the admin app's menu in three groups, Settings with each part's status, Today's count (§4).
 > v0.8.50: meals on the board (WP-28, D-80): the snapshot's `meals`, five meal tables in Realtime, today's meals above Today's list and the Meals screen (§7).
@@ -673,12 +674,42 @@ sequenceDiagram
 
 ## 8. Kiosk host (PI)
 
-- Raspberry Pi 5 (8 GB), **NVMe or SSD boot** (SD cards corrupt under power loss), official 27 W PSU, active cooler.
-- Raspberry Pi OS (64-bit), autologin, systemd unit launching Chromium in kiosk mode with the board URL and flags to disable error dialogs, pinch zoom, overscroll navigation, and update prompts (verify flags against the current Chromium and Pi OS release).
-- Watchdog: systemd `Restart=always`, hardware watchdog, optional nightly reboot at low-traffic hour.
-- Display: touch calibration verified, screen blanking/dim schedule controlled by quiet hours (DEV-07) and burn-in mitigation (slow pixel drift / dim idle layout).
-- **4K target (32" 3840×2160):** the Pi 5 can drive 4Kp60 over HDMI. The UI is laid out at 1920×1080 logical pixels and zooms itself to the screen (D-73): at device scale factor 1 the panel's 3840×2160 CSS px give a zoom of 2, at factor 2 its 1920×1080 give 1, the same picture either way, crisp, with touch targets at a predictable physical size (about 0.37 mm per logical pixel on a 32" panel). Any other screen gets the same layout at its own size; each board's **Text size** zooms it further. Animation performance at 4K on the Pi GPU is the main risk: budget it in SPIKE-03 and keep a 1080p output fallback.
-- No local secrets beyond the paired device session. Remote support: optional Tailscale/SSH on the Pi for maintenance only; not required by the app.
+A board is a Raspberry Pi showing `/board` full screen in Chromium (D-83).
+
+| Board | Hardware |
+|---|---|
+| Kitchen (Y-11) | Raspberry Pi 5 (4 GB), the touch panel (model open, OQ-05b), NVMe or SSD boot, official 27 W supply, active cooler |
+| Elsewhere, and the first board now | Raspberry Pi 4 (2 GB or more) with any HDMI screen; the first is a Pi 4 (2 GB) on an SD card and Wi-Fi, with a 24" 1920×1080 120 Hz monitor and a mouse |
+
+### 8.1 The board kit (`pi/`, WP-14)
+
+On Raspberry Pi OS Lite (64-bit), over SSH: `curl -fsSL https://raw.githubusercontent.com/mronan83/Family-Hub/main/pi/install.sh | sudo bash`. It holds no secret; the board gets its own sign-in when it is paired (§5.1).
+
+| Piece | What it does |
+|---|---|
+| `install.sh` | Downloads `pi/` from the branch (`FW_REF`, default `main`) and runs `setup.sh` with its arguments. |
+| `setup.sh` | Installs Chromium, labwc, `wlr-randr`, `wlopm` and `python3-websocket`; writes `/etc/familywise/kiosk.conf` (board URL, user, highest refresh rate); console autologin on the screen (`raspi-config` B2) with labwc started from `~/.bash_profile` on tty1 only (an SSH sign-in starts nothing); labwc's autostart runs `fw-kiosk`; the Chromium policy; Wi-Fi power saving off (NetworkManager); the hardware watchdog (`RuntimeWatchdogSec=14s`); the journal kept to 64 MB; a nightly restart at 03:30 (`--no-nightly-reboot` turns it off). Safe to run again: it rewrites its own files only, and the pairing stays. `--url` points a board at another address, `--user` names the user. |
+| `fw-kiosk` | Sets the screen to its highest mode at 60 Hz or less (`FW_MAX_HZ`), waits up to a minute for the network after a power cut, marks the last session as ended well (no "restore pages" bubble), then runs Chromium on the board, starting it again after 2 s, backing off to 30 s if it keeps closing. |
+| `fw-screen` | `on`, `off`, `status`: the screen's power through `wlopm` (or `wlr-randr`). WP-34 runs it on the quiet-hours schedule. |
+| `fw-check`, `check.py` | The board's report (SPIKE-03): the Pi (model, memory, power and throttling, temperature, storage and disk errors), the screen mode and Wi-Fi signal, then the board measured in its own Chromium (below). Saved to `~/familywise-check-<time>.txt`. |
+| `test.sh` | In CI (`ci / database`): shellcheck, the files `setup.sh` writes (twice, to the same result), the policy, and the 120 Hz → 60 Hz choice. |
+
+**Chromium.** Flags: `--kiosk --noerrdialogs --disable-infobars --no-first-run --disable-session-crashed-bubble --disable-features=Translate,TranslateUI,MediaRouter --overscroll-history-navigation=0 --disable-pinch --check-for-update-interval=31536000 --password-store=basic --ozone-platform=wayland`, its own profile in `~/.config/familywise-chromium`, and the web cache in memory (`$XDG_RUNTIME_DIR`, 64 MB). Policy (`/etc/chromium/policies/managed/familywise.json`): `URLBlocklist` `chrome://*`, `file://*`, `view-source:*` and the board host's `/admin`; developer tools, sign-in, sync, saved passwords, autofill, translation, downloads and printing off.
+
+**Lockdown (DEV-04).** No address bar or tabs in kiosk mode; the policy blocks the admin app and browser pages. No keyboard stays attached: one could close Chromium (it opens again within seconds). Maintenance is over SSH; Tailscale is optional, for help from outside the house, and the app never needs it.
+
+**Storage.** An SD card is the weak point on a power cut. The Pi checks its file system at boot (Raspberry Pi OS's default), the web cache is in memory and the journal is small; use a high-endurance card, and an SSD for the kitchen board. The profile stays on disk: the board's pairing is an httpOnly cookie in it, and its offline copy (WP-13) is in IndexedDB. A read-only overlay file system is not used, as it would unpair the board at each restart.
+
+**Display.** The UI is laid out at 1920×1080 logical px and zooms itself to the screen (D-73): zoom 1 on a 1080p screen; on a 3840×2160 panel, 2 at device scale factor 1 or 1 at factor 2, the same picture either way. The refresh rate is capped at 60 Hz: a 120 Hz monitor would double the compositor's work for nothing the board shows. The mouse pointer stays visible while a mouse stands in for touch; hiding it comes with the panel (Y-11).
+
+### 8.2 Measured (SPIKE-03, `fw-check`)
+
+`check.py` starts Chromium once with its debugging port open to the Pi only (`127.0.0.1:9222`, never otherwise), and reads: Chromium start to page start; first paint and `domInteractive` from the warm cache (budget 2 s, NFR-02); frames for 3 s idle and while the home screen's longest list scrolls (budget median ≤ 20 ms, p95 ≤ 50 ms); a tap on **Calendar** and on **Home**, the browser's own input-to-next-frame time (Event Timing; budget 100 ms, NFR-02) and when the button shows as chosen; long tasks; memory. It taps nothing that changes the family's data. Celebrations are watched by eye.
+
+| Board | Result |
+|---|---|
+| Pi 4 (2 GB), SD, Wi-Fi, 1920×1080 at 60 Hz | Waiting on the owner's first run (WP-14) |
+| Pi 5 (4 GB), touch panel | With the panel (Y-11): touch latency and calibration, and the panel's own frame rate |
 
 ---
 
