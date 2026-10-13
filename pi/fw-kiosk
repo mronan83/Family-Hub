@@ -15,7 +15,7 @@ log() { logger -t familywise-kiosk "$*"; }
 # The highest mode at the screen's own size that is no faster than FW_MAX_HZ (wlr-randr lists
 # "1920x1080 px, 119.982002 Hz (preferred, current)" under each output).
 set_refresh() {
-  [ -n "${FW_MAX_HZ:-}" ] && command -v wlr-randr >/dev/null || return 0
+  if [ -z "${FW_MAX_HZ:-}" ] || ! command -v wlr-randr >/dev/null; then return 0; fi
   wlr-randr 2>/dev/null | awk -v max="$FW_MAX_HZ" '
     /^[^ ]/ { out = $1 }
     /current/ { size[out] = $1; rate[out] = $3 }
@@ -56,7 +56,9 @@ PY
 set_refresh
 # Wait up to a minute for the network after a power cut, so the board doesn't open on an error page
 # before the router is back; it works from its last copy if the network stays down.
-command -v nm-online >/dev/null && nm-online -q -t 60 || true
+if command -v nm-online >/dev/null; then
+  nm-online -q -t 60 || true
+fi
 
 delay=2
 while true; do
