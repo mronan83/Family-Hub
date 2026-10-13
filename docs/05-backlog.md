@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.97: WP-57 done (PR #64): Home at a glance, and Family options in Settings.
 > v0.8.96: WP-57 added at the owner's request and in review (PR #64): Home at a glance, and Family options in Settings (D-84).
 > v0.8.94: WP-53 to WP-56 and SPIKE-06 added at the owner's request: polish with a layout sweep, short school days, the household's AI provider, the school calendar from a document.
 > v0.8.93: WP-52 done (PR #61): the board's calendar as a time grid.
@@ -198,7 +199,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-54 | Short school days: early dismissal and late start | P2 | M | WP-21, WP-26, WP-28 | Ready |
 | WP-55 | The household's AI provider in Settings | P3 | M | WP-51 | Ready |
 | WP-56 | The school calendar from a document | P3 | L | WP-54, WP-55, SPIKE-06 | Queued |
-| WP-57 | Home at a glance; Family options in Settings | P3 | M | WP-51, WP-21, WP-27 | In progress (PR #64) |
+| WP-57 | Home at a glance; Family options in Settings | P3 | M | WP-51, WP-21, WP-27 | Done (PR #64) |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
