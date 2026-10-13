@@ -12,10 +12,17 @@ begin
   if to_regclass('cron.job') is not null then
     perform cron.unschedule(jobid) from cron.job;
   end if;
+exception when insufficient_privilege then
+  raise notice 'scheduled jobs left as they are: %', sqlerrm;
+end $$;
+do $$
+begin
   if to_regclass('vault.secrets') is not null then
     delete from vault.secrets
      where name like 'familywise_%' or name in ('job_signing_secret', 'job_base_url');
   end if;
+exception when insufficient_privilege then
+  raise notice 'Vault entries left as they are: %', sqlerrm;
 end $$;
 
 -- The policies the migrations put on storage.objects (the rewards bucket itself stays).

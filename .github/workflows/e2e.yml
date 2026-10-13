@@ -60,7 +60,9 @@ jobs:
       # a run that would end past that midnight waits for it to pass, then resets and runs.
       - name: Not across the demo family's midnight
         run: |
-          tz=$(psql "$SUPABASE_DB_URL" -AtX -c "select timezone from public.household where id = '0de00000-0000-4000-8000-000000000001'")
+          # Before the first run the test database is empty: the demo family's own time zone then.
+          tz=$(psql "$SUPABASE_DB_URL" -AtX -c "select timezone from public.household where id = '0de00000-0000-4000-8000-000000000001'" 2>/dev/null || true)
+          tz=${tz:-America/New_York}
           left=$(( $(TZ="$tz" date -d 'tomorrow 00:00' +%s) - $(date +%s) ))
           if [ "$left" -lt 1500 ]; then
             echo "The demo family's midnight ($tz) is ${left} s away: waiting for it to pass."
