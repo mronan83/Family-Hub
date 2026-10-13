@@ -9,7 +9,9 @@ Budgets come from NFR-02: usable within 2 s from cache, a tap answered within 10
 
 import argparse
 import json
+import os
 import statistics
+import subprocess
 import sys
 import time
 import urllib.request
@@ -58,6 +60,22 @@ class Page:
                     raise RuntimeError(f"{method}: {got['error'].get('message')}")
                 return got.get("result", {})
 
+    def notify(self, method, session=None, **params):
+        """Sends without waiting for the answer (one a busy tab may never give)."""
+        self.next_id += 1
+        msg = {"id": self.next_id, "method": method, "params": params}
+        if session:
+            msg["sessionId"] = session
+        self.ws.send(json.dumps(msg))
+
+    def answers(self, session, timeout=10):
+        """Whether the tab behind this session runs a line of script within `timeout` seconds."""
+        try:
+            self.call("Runtime.evaluate", session=session, timeout=timeout, expression="1")
+            return True
+        except (websocket.WebSocketTimeoutException, RuntimeError):
+            return False
+
     def board_tabs(self):
         return [
             t
@@ -66,18 +84,19 @@ class Page:
         ]
 
     def attach(self):
-        """Attaches to the board's tab and checks it answers; False if it doesn't yet."""
+        """Attaches to the board's tab (once), brings it to the front and checks it answers; False if
+        it doesn't yet."""
         tabs = self.board_tabs()
         if not tabs:
             return False
-        self.session = self.call(
-            "Target.attachToTarget", targetId=tabs[0]["targetId"], flatten=True
-        )["sessionId"]
-        try:
-            self.call("Runtime.evaluate", session=self.session, timeout=10, expression="1")
-            return True
-        except (websocket.WebSocketTimeoutException, RuntimeError):
-            return False
+        if self.session is None:
+            target = tabs[0]["targetId"]
+            self.call("Target.activateTarget", targetId=target)
+            self.session = self.call("Target.attachToTarget", targetId=target, flatten=True)[
+                "sessionId"
+            ]
+            self.notify("Runtime.runIfWaitingForDebugger", session=self.session)
+        return self.answers(self.session)
 
     def send(self, method, **params):
         return self.call(method, session=self.session, **params)
@@ -201,6 +220,34 @@ def tap(page, label):
     return shown_ms, paint_ms
 
 
+def diagnose(page):
+    """Why the board's tab didn't answer: what Chromium says of it, whether a new blank tab answers
+    (if it does, the board's own page is busy or held; if not, Chromium's debugging is), and how
+    busy each Chromium process is."""
+    try:
+        for t in page.board_tabs():
+            print(f"              Tab: {t.get('url', '?')[:80]}, attached {t.get('attached')}, title {t.get('title', '')[:40]!r}")
+        blank = page.call("Target.createTarget", url="about:blank")["targetId"]
+        session = page.call("Target.attachToTarget", targetId=blank, flatten=True)["sessionId"]
+        print(f"              A new blank tab answers: {'yes' if page.answers(session) else 'no'}")
+        page.call("Target.closeTarget", targetId=blank)
+    except (websocket.WebSocketException, RuntimeError, OSError, KeyError) as e:
+        print(f"              Chromium stopped answering too: {e}")
+    try:
+        ps = subprocess.run(
+            ["ps", "-u", str(os.getuid()), "-o", "pid=,stat=,pcpu=,rss=,args="],
+            capture_output=True, text=True, timeout=5,
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return
+    for line in ps.splitlines():
+        pid, stat, cpu, rss, args = (line.split(None, 4) + [""] * 5)[:5]
+        if "familywise-chromium" not in args:
+            continue
+        kind = next((a[7:] for a in args.split() if a.startswith("--type=")), "browser")
+        print(f"              Process {pid}: {kind}, state {stat}, {cpu}% CPU, {int(rss) // 1024} MB")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=9222)
@@ -228,10 +275,18 @@ def main():
             page = Page(args.port)
         time.sleep(8)
     if not answered:
-        tabs = page.board_tabs() if page else []
-        print("Board:        Chromium didn't answer on its debugging port within 90 s; the rest stands.")
-        print("              Tabs: " + (", ".join(t.get("url", "?")[:80] for t in tabs) or "none"))
+        print("Board:        the board's tab didn't answer on the debugging port within 90 s; the rest stands.")
+        diagnose(page)
         return 1
+    try:
+        return measure(page, started_ms)
+    except websocket.WebSocketTimeoutException:
+        print("Board:        the board's tab stopped answering part-way; the rest stands.")
+        diagnose(page)
+        return 1
+
+
+def measure(page, started_ms):
     page.send("Performance.enable")
 
     state = wait_for(

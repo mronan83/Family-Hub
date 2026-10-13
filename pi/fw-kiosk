@@ -69,6 +69,9 @@ while true; do
     --disable-features=Translate,TranslateUI,MediaRouter --overscroll-history-navigation=0
     --disable-pinch --check-for-update-interval=31536000 --password-store=basic
     --ozone-platform=wayland --user-data-dir="$PROFILE"
+    # A board is always in view: never slow or freeze it as if it were a hidden tab.
+    --disable-renderer-backgrounding --disable-backgrounding-occluded-windows
+    --disable-background-timer-throttling
     # The web cache lives in memory, sparing the SD card; the board keeps its own offline copy.
     --disk-cache-dir="$STATE/cache" --disk-cache-size=67108864
   )
