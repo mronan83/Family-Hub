@@ -7,6 +7,7 @@ import type {
   DayType,
   Kind,
   ListItem,
+  LunchDays,
   OccurrenceDate,
   Schedule,
 } from '@/lib/chores';
@@ -16,6 +17,8 @@ export interface ChoreRow extends ListItem {
   points: number;
   approval: Approval;
   assignment: Assignment;
+  /** [CHR-19] Only on each person's bring or buy days (WP-61); null is any day. */
+  lunchDays: LunchDays | null;
   schedule: Schedule;
   dayTypes: DayType[];
   visibility: 'family' | 'private';
@@ -40,6 +43,7 @@ interface RawChore {
   points: number;
   approval: Approval;
   assignment: Assignment;
+  lunch_days: LunchDays | null;
   schedule: Schedule;
   due_time: string | null;
   day_types: DayType[];
@@ -52,7 +56,7 @@ interface RawChore {
 }
 
 const CHORE_COLUMNS =
-  'id, title, icon, kind, points, approval, assignment, schedule, due_time, day_types, visibility, created_by, remind_lead_minutes, archived_at, chore_assignee (member_id), chore_tag (tag_id)';
+  'id, title, icon, kind, points, approval, assignment, lunch_days, schedule, due_time, day_types, visibility, created_by, remind_lead_minutes, archived_at, chore_assignee (member_id), chore_tag (tag_id)';
 
 /**
  * [CHR-01][CHR-13] The household's items through RLS: family items, and private ones only for
@@ -72,6 +76,7 @@ export async function loadChores(db: SupabaseClient, householdId: string): Promi
     points: r.points,
     approval: r.approval,
     assignment: r.assignment,
+    lunchDays: r.lunch_days,
     schedule: r.schedule,
     dueTime: r.due_time ? r.due_time.slice(0, 5) : null,
     dayTypes: r.day_types,

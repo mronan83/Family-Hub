@@ -96,6 +96,7 @@ export default async function DevFormsPage({
                         icon: params.icon === 'image' ? 'image' : 'washing-machine',
                         assignees: [MEMBERS[0]!.id],
                         assignment: 'each',
+                        lunchDays: null,
                         schedule: { freq: 'weekly', by_weekday: [6] },
                         dueTime: null,
                         points: 10,

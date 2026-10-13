@@ -501,3 +501,65 @@ test('[CHR-18] several people: everyone does their own by default for a chore; s
     page.getByRole('form', { name: 'Edit item' }).getByRole('radio', { name: 'Any one of them' }),
   ).toHaveCount(0);
 });
+
+test('[CHR-19][US-321] a lunch-day item follows each child’s school lunch, and re-plans when a lunch changes', async ({
+  page,
+}) => {
+  const title = 'Pack lunch e2e';
+  await signIn(page, 'Alex');
+  await page.getByRole('link', { name: 'Add a chore' }).click();
+  const form = page.getByRole('form', { name: 'Add an item' });
+  await enter(form, { title, people: ['Maya', 'Leo'], icon: 'backpack', time: '07:00' });
+  // Private, so it stays off the board other specs read.
+  await form.getByRole('switch', { name: 'Private' }).check();
+  await form.getByRole('radio', { name: 'Any one of them' }).check();
+  await form.getByText('More options').click();
+  await form.getByRole('combobox', { name: 'School lunch' }).selectOption('bring');
+  // Each child has their own lunch: choosing lunch days makes it everyone's own.
+  await expect(form.getByRole('radio', { name: 'Everyone does their own' })).toBeChecked();
+  await expect(form.getByRole('radio', { name: 'Any one of them' })).toBeDisabled();
+  await form.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText(`Saved ${title}.`);
+  await expect(list(page).getByRole('listitem').filter({ hasText: title })).toContainText(
+    'on days they bring lunch',
+  );
+
+  const chore = sql(
+    `select id from public.chore where household_id = '${DEMO}' and title = '${title}'`,
+  );
+  expect(
+    sql(`select assignment || ':' || lunch_days from public.chore where id = '${chore}'`),
+  ).toBe('each:bring');
+  // Over the next two weeks (to the 13th day, which a run just after midnight already has), for each
+  // child and day: planned exactly when they bring lunch. In one statement, so it holds whatever
+  // another spec does to the demo family's lunches meanwhile.
+  const mismatches = () =>
+    sql(`select count(*) from public.member m
+           cross join generate_series(${TODAY}, ${TODAY} + 13, interval '1 day') d
+          where m.household_id = '${DEMO}' and m.display_name in ('Maya', 'Leo')
+            and (public.lunch_mode(m.id, d::date) is not distinct from 'bring')
+                <> exists (select from public.chore_occurrence o
+                            where o.chore_id = '${chore}' and o.member_id = m.id and o.due_date = d::date)`);
+  expect(mismatches()).toBe('0');
+  expect(
+    Number(sql(`select count(*) from public.chore_occurrence where chore_id = '${chore}'`)),
+  ).toBeGreaterThan(0);
+
+  // Leo's next school day changed to the other lunch: his plan follows at once.
+  const leo = sql(
+    `select id from public.member where household_id = '${DEMO}' and display_name = 'Leo'`,
+  );
+  const day =
+    sql(`select d::date from generate_series(${TODAY} + 1, ${TODAY} + 13, interval '1 day') d
+                    where public.lunch_mode('${leo}', d::date) is not null order by d limit 1`);
+  expect(day).not.toBe('');
+  const was = sql(`select public.lunch_mode('${leo}', '${day}')`);
+  sql(`insert into public.lunch_override (household_id, member_id, lunch_date, mode)
+       values ('${DEMO}', '${leo}', '${day}', '${was === 'bring' ? 'buy' : 'bring'}')
+       on conflict (member_id, lunch_date) do update set mode = excluded.mode`);
+  expect(mismatches()).toBe('0');
+  sql(`delete from public.lunch_override where member_id = '${leo}' and lunch_date = '${day}'`);
+  expect(mismatches()).toBe('0');
+
+  sql(`update public.chore set archived_at = now() where id = '${chore}'`);
+});

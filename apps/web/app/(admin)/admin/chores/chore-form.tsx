@@ -19,12 +19,15 @@ import {
   DAY_TYPE_LABELS,
   DAY_TYPES,
   defaultAssignment,
+  LUNCH_DAYS,
+  LUNCH_DAYS_LABELS,
   WEEKDAY_LABELS,
   WEEKDAYS,
   type Assignment,
   type ChoreInput,
   type Freq,
   type Kind,
+  type LunchDays,
 } from '@/lib/chores';
 import { useFormAction } from '@/lib/forms';
 import { LEAD_CHOICES } from '@/lib/reminder-settings';
@@ -88,6 +91,7 @@ export function ChoreForm({
     initial?.assignment ?? defaultAssignment(initial?.kind ?? defaultKind),
   );
   const [people, setPeople] = useState(initial?.assignees.length ?? 0);
+  const [lunchDays, setLunchDays] = useState<LunchDays | null>(initial?.lunchDays ?? null);
   const [touched, setTouched] = useState({
     points: Boolean(initial),
     freq: Boolean(initial),
@@ -184,6 +188,7 @@ export function ChoreForm({
                   name="assignment"
                   value={a}
                   checked={assignment === a}
+                  disabled={a === 'shared' && lunchDays !== null}
                   onChange={() => {
                     setAssignment(a);
                     setTouched((t) => ({ ...t, assignment: true }));
@@ -194,9 +199,11 @@ export function ChoreForm({
             ))}
           </div>
           <span className="fw-field__help">
-            {assignment === 'each'
-              ? 'Each person has their own to check off, like making their own bed.'
-              : 'Done once, by whoever gets to it, like feeding the dog.'}
+            {lunchDays
+              ? 'Everyone does their own, because each child has their own lunch.'
+              : assignment === 'each'
+                ? 'Each person has their own to check off, like making their own bed.'
+                : 'Done once, by whoever gets to it, like feeding the dog.'}
           </span>
         </fieldset>
       ) : (
@@ -396,6 +403,32 @@ export function ChoreForm({
               up.
             </span>
           </fieldset>
+          {/* [CHR-19] Follows each child's school lunch (WP-61, D-86). */}
+          <label className="fw-field">
+            <span className="fw-field__label">School lunch</span>
+            <select
+              className="fw-input"
+              name="lunchDays"
+              value={lunchDays ?? ''}
+              onChange={(e) => {
+                const next = (e.target.value || null) as LunchDays | null;
+                setLunchDays(next);
+                if (next) setAssignment('each');
+              }}
+            >
+              <option value="">Any day</option>
+              {LUNCH_DAYS.map((l) => (
+                <option key={l} value={l}>
+                  {LUNCH_DAYS_LABELS[l]}
+                </option>
+              ))}
+            </select>
+            <span className="fw-field__help">
+              For example, packing a lunch or emptying the lunch box only on days a child brings
+              lunch. It follows each child’s lunch on the Meals page, so it never comes up for an
+              adult, or on a day without school.
+            </span>
+          </label>
         </div>
       </details>
 

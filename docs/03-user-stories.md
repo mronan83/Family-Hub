@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.40: US-321 added and built (WP-61, D-86): a chore that comes up only on the days a child brings lunch, or only on the days they buy it.
 > v0.8.39: US-109 and US-110 added and built (WP-57, D-84): Home at a glance; the household's options in Settings, Family options. US-103, US-310 and US-1003 now say where their settings are.
 > v0.8.37: US-108, US-604, US-605 and US-912 added (WP-53 to WP-56): the household's own AI provider; short school days; the school calendar from a document; a polished, tidy layout everywhere.
 > v0.8.36: US-509 added and built (WP-52, D-82): the board's calendar as a time grid, and an event in full on a tap.
@@ -300,6 +301,15 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given Leo's school is on break and Maya's is not, when a school-days-only chore is planned for both, then only Maya has it on those days.
 - Given "Feed the dog" for Maya and Alex, when I choose "Any one of them", then there is one each day, done by whoever gets to it (US-311).
 - Given I switch an item between the two, when I save, then today follows unless someone already checked off today's, and past days keep what they were.
+
+### US-321 — A chore on the days a child brings lunch
+**As an** admin **I want** "Empty lunch box" and "Pack lunch" to come up only on the days my child brings lunch **so that** the board never asks for a lunch box that didn't go to school.
+**Priority:** Must · **Phase:** P2 · **Reqs:** CHR-19
+- Given "Empty lunch box" for Maya and Leo with **School lunch: Days they bring lunch**, when Maya brings and Leo buys on a school day, then only Maya has it that day.
+- Given the same item, when it is a weekend, a break or a day off, or the person is an adult, then nobody has it.
+- Given Maya was to bring lunch today, when I change today to **Buy** on Meals, then today's "Pack lunch" goes from her list at once, and "Lunch money" (on **Days they buy lunch**) comes; if she had already checked one off, it stays.
+- Given I change Leo's usual week, when I save, then his lunch-day items follow from today.
+- Given "Lunch boxes" for two people as **Any one of them**, when I choose lunch days, then it becomes **Everyone does their own**, since each child has their own lunch.
 
 ### US-312 — Define household tags
 **As an** admin **I want** to define our own tags with a name, color, and icon **so that** we can filter the list and set measurable goals by category.

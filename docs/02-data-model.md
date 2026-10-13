@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.39: chores on lunch days (WP-61, D-86): `chore.lunch_days` (`bring` or `buy`, an `each` item's only); `private.occurrence_due()` follows each child's `lunch_mode()`; `trg_lunch_override_replan` and `trg_member_lunch_replan` re-plan a child's lunch-day items when their lunch changes (§3.2, §3.6).
 > v0.8.38: Family options and Home at a glance (WP-57, D-84): `household_settings.week_start_next` and `week_start_next_on`, `set_week_start()` and `apply_week_start()`; `no_school_today()` and `undo_no_school_today()` re-plan today (§3.1, functions).
 > v0.8.37: an event's place (WP-52, D-82): `calendar_event.location` and `calendar_event_instance.location`; `save_calendar_sync()` stores them and `board_calendar()` returns them (§3.4).
 > v0.8.36: meals on the board (WP-28, D-80): `board_snapshot()` gains `meals` (§4.6); `meal`, `meal_plan_entry`, `member_lunch`, `lunch_override` and `school_menu_day` in the `supabase_realtime` publication.
@@ -380,7 +381,7 @@ erDiagram
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `chore` | `title`, `description`, `icon`, `kind` (`chore` routine / `task` to-do), `points`, `approval` (`inherit`/`required`/`none`), `schedule jsonb`, `due_time?` (household-local), `day_types text[]`, `visibility` (`family`/`private`), `created_by → auth.users`, `remind_lead_minutes?`, `start_date`, `end_date`, `archived_at` | One model for the whole family's list (D-30). A routine not done on its day becomes `missed`; a task, one-off or repeating, stays open and shows as overdue until done or cancelled (D-31). `due_time` orders and groups the day; it never changes scoring. |
+| `chore` | `title`, `description`, `icon`, `kind` (`chore` routine / `task` to-do), `points`, `approval` (`inherit`/`required`/`none`), `schedule jsonb`, `due_time?` (household-local), `day_types text[]`, `visibility` (`family`/`private`), `created_by → auth.users`, `remind_lead_minutes?`, `lunch_days?` (`bring`/`buy`, WP-61), `start_date`, `end_date`, `archived_at` | One model for the whole family's list (D-30). A routine not done on its day becomes `missed`; a task, one-off or repeating, stays open and shows as overdue until done or cancelled (D-31). `due_time` orders and groups the day; it never changes scoring. |
 | `chore_assignee` | `chore_id`, `member_id`, `remind?` | Any member, child or adult; several per item. All assignees share one occurrence per due date. |
 | `tag` | `name` (unique per household, case-insensitive), `color` (brand token key), `icon` (brand icon key), `sort_order`, `archived_at` | Household-defined (D-33). Rules, filters and insights reference the id, so renaming or archiving never breaks a goal. |
 | `chore_tag` | PK `(chore_id, tag_id)` | Tags on an item. |
@@ -437,6 +438,11 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 - An `each` item is due for a person on a date when its schedule and dates fall on it and that person's own day type is in its `day_types`, while they are an active assignee (`private.occurrence_due()`); a shared item is due as before (`chore_due_on`, any active assignee's day type). An `each` occurrence's snapshot is its own person.
 - Re-planning (D-45) treats an occurrence of the other mode like one no longer due: after a mode change, today's untouched ones are replaced; one someone acted on stays, and the other mode is not added for that day, so it is never counted twice.
 - Events, the fold, day close and `v_member_occurrence` are unchanged: an `each` occurrence is simply its person's. When someone else does it (an older sister makes her brother's bed), she is credited and it is `covered` for him.
+
+**As built (WP-61, D-86):**
+- `chore.lunch_days` is null (any day), `bring` or `buy`. Only an `each` item may have it (`chore_lunch_days_each`), since each child has their own lunch. `save_chore()` takes `lunch_days`; an edit that leaves it out keeps it.
+- An `each` item with lunch days is due for a person on a date only when, besides the rules above, `lunch_mode(person, date)` equals it (`private.occurrence_due()`). `lunch_mode()` is null for an adult and on a day that isn't a school day for the child, so such an item never comes up for an adult, at a weekend, in a break or on a day off.
+- A child's lunch changing re-plans their lunch-day items at once (`private.replan_lunch_days()`): a day's change (`trg_lunch_override_replan`, on insert, update and delete of `lunch_override`) from today when it is today's, else from tomorrow; a new usual week (`trg_member_lunch_replan`) from today. As everywhere, one already checked off stays. `trg_chore_replan` also fires on `lunch_days`.
 
 ### 3.3 Rewards
 
@@ -551,6 +557,8 @@ else coalesce(lunch_override(m, d).mode,
 ```
 
 **As built (WP-26, D-78).** The usual lunches live on the child, not the school profile: `member_lunch` (`member_id`, `defaults` `{mon … fri: 'buy' | 'bring'}`; none set is bring). `lunch_override` is as above (`lunch_date`, `mode`, `created_by`), and holds only differences from the usual. `public.lunch_mode(member, date)`: null for an adult or a day that isn't a school day for the child, else the change or the usual. `set_lunch(member, date, mode)` (a school day only; the usual removes the change) and `set_lunch_defaults(member, defaults)` (also removes later changes that now match) are a parent's; `lunch_week(household, from)` gives each child's seven days (day type, mode, changed) to a parent or a board.
+
+A chore can follow a child's lunch (WP-61, D-86): `chore.lunch_days` makes an `each` item due only on that person's bring days or buy days, and a change to their lunch re-plans it at once (§3.2).
 
 If the effective mode is `buy`, the board shows `school_menu_day` for `(menu_source, d, 'lunch')`; if `bring`, it shows the planned `meal_plan_entry` for the lunch slot.
 
@@ -1090,7 +1098,7 @@ create policy chore_completion_event_device_insert on public.chore_completion_ev
 | `private.call_job(job, payload)` | the owner only (pg_cron runs as it) | Reads `job_signing_secret` and `job_base_url` from Vault; if either is missing returns null (jobs are off), else queues `net.http_post` to `<base>/api/jobs/<job in kebab-case>` with the bearer secret, `{scheduled_at, …payload}` and a 30 s timeout. Refuses names that are not snake_case. |
 | `public.job_health(household_id)` | admins, devices, service role (security invoker, so `job_run`'s RLS applies) | One row per HTTP job in `private.job_schedule`: `state` is `never` (no run), `failing` (last run errored, or ran 5 minutes without a result), `running`, `stale` (no `ok`/`skipped` run within twice its cadence) or `ok`; with `last_ok_at`, `last_run_at` and the error `message`. |
 | `public.generate_household_occurrences(household_id)` | service role only (the `occurrence_gen` job) | Adds a household's missing occurrences from tomorrow to 14 days ahead, and late one-off tasks; returns `{added, from, through}`. Idempotent (WP-09, D-45). |
-| `private.generate_occurrences()`, `private.replan()` | the job and triggers only | Make occurrences with their snapshots for a range; replace those nothing has happened to after a change (§3.2). Triggers: `trg_chore_replan`, `trg_chore_assignee_added`/`_removed`, `trg_member_replan` (from today), `trg_school_year_replan`, `trg_school_closure_replan`, `trg_member_school_profile_replan` (from tomorrow), `trg_household_settings_approval` (D-22). |
+| `private.generate_occurrences()`, `private.replan()` | the job and triggers only | Make occurrences with their snapshots for a range; replace those nothing has happened to after a change (§3.2). Triggers: `trg_chore_replan`, `trg_chore_assignee_added`/`_removed`, `trg_member_replan` (from today), `trg_school_year_replan`, `trg_school_closure_replan`, `trg_member_school_profile_replan` (from tomorrow), `trg_household_settings_approval` (D-22); `trg_lunch_override_replan`, `trg_member_lunch_replan` (a child's lunch-day items, `private.replan_lunch_days()`, WP-61). |
 | `set_week_start()`, `apply_week_start()` | admins; `apply_week_start` also the day-close job | Ask for a new start day for the week, held for the next week; apply it once its day has come (WP-57, D-84). |
 | `no_school_today()`, `undo_no_school_today()` | admins | Today becomes a snow day in the school year it falls in and today is re-planned at once (only untouched items no longer due go); Undo removes today's own snow day and re-plans today (WP-57, D-84). Refused on a weekend, a day already off, or outside every school year. |
 | `public.record_completions(events)` | admins and boards (security invoker, under RLS) | Records up to 100 completion events as the caller, each on its own: `recorded`, `duplicate`, `gone`, `refused` or `invalid`, with a reason and the occurrence as the caller sees it (WP-10, D-46). |

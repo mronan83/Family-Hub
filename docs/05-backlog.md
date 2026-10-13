@@ -1,6 +1,8 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.100: WP-61 chores on lunch days added at the owner's request, ahead of WP-58, and in review (D-86).
+> v0.8.99: WP-60 merged (PR #65): previews and e2e on the test database.
 > v0.8.98: WP-58 (the board on an iPhone, mockup approved) and WP-59 (a child's own phone, later) added at the owner's request; WP-60 testing made reliable, in review (D-85).
 > v0.8.97: WP-57 done (PR #64): Home at a glance, and Family options in Settings.
 > v0.8.96: WP-57 added at the owner's request and in review (PR #64): Home at a glance, and Family options in Settings (D-84).
@@ -203,7 +205,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-57 | Home at a glance; Family options in Settings | P3 | M | WP-51, WP-21, WP-27 | Done (PR #64) |
 | WP-58 | The board on an iPhone, from the admin app | P3 | L | WP-48, WP-20, WP-57 | Ready (mockup approved) |
 | WP-59 | A child's own phone, paired as their board | P3 | M | WP-58, WP-05 | Queued (when a child has a phone) |
-| WP-60 | Testing made reliable: a test database | P3 | M | WP-41 | In progress |
+| WP-60 | Testing made reliable: a test database | P3 | M | WP-41 | Merged (PR #65); a week's tally to record |
+| WP-61 | Chores on lunch days | P2 | S | WP-26, WP-43 | In review |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -340,6 +343,8 @@ flowchart LR
     WP58 --> WP59[WP-59 A child's own phone]
     WP05 --> WP59
     WP41 --> WP60[WP-60 Testing made reliable]
+    WP26 --> WP61[WP-61 Chores on lunch days]
+    WP43 --> WP61
     WP55 --> SP06[SPIKE-06 AI reads a document]
     WP54 --> WP56[WP-56 School calendar from a document]
     WP55 --> WP56
@@ -996,6 +1001,15 @@ flowchart LR
 - Previews and e2e move to the plan's second free Supabase project (`puoctwssryisuzakhzxj`, D-85). Each run empties it and rebuilds it from the pull request's migrations, then loads the demo family; production's database changes only on deploy. A retried test starts from a freshly loaded demo family. A pull request's results are recorded at the start of the next one, so each needs one e2e run.
 - Why: of the last 40 e2e attempts on the shared database, 23 passed cleanly, 10 needed a retry and 7 failed, across 17 specs; production's jobs slowed from about 0.5 s to as much as 30 s during runs.
 - **Done when:** `scripts/preview-db.test.sh` shows the reset refusing production's database and any unnamed remote one before connecting, and a second run leaving nothing of the first; a pull request's preview runs on the test database and its e2e passes; a week of e2e runs on the test database is recorded here (clean, retried, failed) against the 23/10/7 above.
+- As built (PR #65): the first two runs failed in set-up (the job list, which only the deploy wrote, and `pg_cron`'s grants outliving the reset), both fixed in the PR; the third passed, 134 of 134 with no retries, in 14.7 min. The week's tally is still to be recorded.
+
+### WP-61 — Chores on lunch days
+**Phase:** P2 · **Size:** S · **Depends on:** WP-26, WP-43 · **Reqs:** CHR-19
+- The owner's daughter empties her lunch box after school only on the days she brings lunch, and lunches are packed in the morning on those days. An item everyone does on their own can follow each child's school lunch (D-86): **More options → School lunch**: **Any day**, **Days they bring lunch**, **Days they buy lunch**. Two items, **Pack lunch** and **Empty lunch box**, both on bring days; no night-before option, and no hint on the Meals page (the owner's choices).
+- It comes up for a person only when their lunch that day (`lunch_mode()`: the day's change, else their usual) is the one chosen, so never for an adult or on a day without school. A change to a child's lunch re-plans at once, today's included; one already checked off stays.
+- Only an item everyone does on their own can follow lunch days; choosing them makes it so.
+- **Done when:** pgTAP shows the plan following each child's lunch, an adult and weekends with none, a day's change and a new usual week re-planning at once (today too, one checked off kept) and a shared item refused; on the preview, an item made on the form with **Days they bring lunch** is planned exactly on each child's bring days for two weeks, and still after a child's day is changed.
+- As built: `chore.lunch_days` (migration `20261014100000_lunch_days`), `private.occurrence_due()`, `private.replan_lunch_days()` with triggers on `lunch_override` and `member_lunch`; the form's **School lunch** choice and the list's "on days they bring lunch". Tests: pgTAP `400_lunch_days`; unit `lib/chores.test.ts`; the UI suite's `lunch-days.spec.ts`; e2e `chores.spec.ts`.
 
 ---
 
@@ -1008,7 +1022,7 @@ flowchart LR
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
-| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54 | Menu adapters is the L |
+| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 | Menu adapters is the L |
 | P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60 | WP-56 and WP-58 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.
