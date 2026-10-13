@@ -768,7 +768,7 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 4. **smoke**: `GET /api/health` on production returns 200.
 5. **schedule**: `scripts/job-schedules.mjs` syncs the pg_cron jobs and `private.job_schedule` with `schedule.json` (§5.6), after the smoke check so no schedule calls an app that cannot answer it.
 
-Vercel's automatic production deploy from Git is turned off (`vercel.json`), so the app never ships ahead of its schema. Migrations are forward-only and compatible with the previously deployed app; a breaking change is split into expand and contract PRs.
+Vercel's automatic production deploy from Git is turned off (`vercel.json`), so the app never ships ahead of its schema. Every deployment's functions run in `iad1` (`vercel.json` `regions`), beside the database in AWS us-east-1: previews otherwise land in any US region, and one in `sfo1` or `cle1` puts each of an admin save's database calls a cross-country round trip away, enough to push the e2e latency budgets (DEV-05, CAL-05) over (WP-57). Migrations are forward-only and compatible with the previously deployed app; a breaking change is split into expand and contract PRs.
 
 ### 9.7 Launch
 
