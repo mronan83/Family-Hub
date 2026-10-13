@@ -27,20 +27,60 @@ BUDGET_SMOOTH_P95_MS = 50
 
 
 class Page:
-    def __init__(self, ws_url):
-        self.ws = websocket.create_connection(ws_url, suppress_origin=True, timeout=30)
-        self.next_id = 0
+    """The board's tab, reached through the browser's own debugging connection (answered by the
+    browser process even while a page is busy loading), attached to the tab by session."""
 
-    def send(self, method, **params):
+    def __init__(self, port):
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/json/version", timeout=5) as r:
+            url = json.load(r)["webSocketDebuggerUrl"]
+        self.ws = websocket.create_connection(url, suppress_origin=True, timeout=20)
+        self.next_id = 0
+        self.session = None
+
+    def close(self):
+        try:
+            self.ws.close()
+        except Exception:  # noqa: BLE001 - closing a dead connection
+            pass
+
+    def call(self, method, session=None, timeout=20, **params):
         self.next_id += 1
         msg_id = self.next_id
-        self.ws.send(json.dumps({"id": msg_id, "method": method, "params": params}))
+        msg = {"id": msg_id, "method": method, "params": params}
+        if session:
+            msg["sessionId"] = session
+        self.ws.settimeout(timeout)
+        self.ws.send(json.dumps(msg))
         while True:
-            msg = json.loads(self.ws.recv())
-            if msg.get("id") == msg_id:
-                if "error" in msg:
-                    raise RuntimeError(f"{method}: {msg['error'].get('message')}")
-                return msg.get("result", {})
+            got = json.loads(self.ws.recv())
+            if got.get("id") == msg_id:
+                if "error" in got:
+                    raise RuntimeError(f"{method}: {got['error'].get('message')}")
+                return got.get("result", {})
+
+    def board_tabs(self):
+        return [
+            t
+            for t in self.call("Target.getTargets")["targetInfos"]
+            if t.get("type") == "page" and "/board" in t.get("url", "")
+        ]
+
+    def attach(self):
+        """Attaches to the board's tab and checks it answers; False if it doesn't yet."""
+        tabs = self.board_tabs()
+        if not tabs:
+            return False
+        self.session = self.call(
+            "Target.attachToTarget", targetId=tabs[0]["targetId"], flatten=True
+        )["sessionId"]
+        try:
+            self.call("Runtime.evaluate", session=self.session, timeout=10, expression="1")
+            return True
+        except (websocket.WebSocketTimeoutException, RuntimeError):
+            return False
+
+    def send(self, method, **params):
+        return self.call(method, session=self.session, **params)
 
     def js(self, expression, wait=True):
         res = self.send(
@@ -173,7 +213,25 @@ def main():
     if not started_ms or not target:
         print("The board did not start with the debugging port within a minute. Is fw-kiosk running?")
         return 1
-    page = Page(target["webSocketDebuggerUrl"])
+    # The tab may still be loading (or signing the board in again) on a slow Pi: attach, and
+    # again, until it answers, for up to a minute and a half.
+    page = Page(args.port)
+    answered = False
+    for _ in range(9):
+        try:
+            if page.attach():
+                answered = True
+                break
+        except (websocket.WebSocketException, RuntimeError, OSError):
+            page.close()
+            time.sleep(2)
+            page = Page(args.port)
+        time.sleep(8)
+    if not answered:
+        tabs = page.board_tabs() if page else []
+        print("Board:        Chromium didn't answer on its debugging port within 90 s; the rest stands.")
+        print("              Tabs: " + (", ".join(t.get("url", "?")[:80] for t in tabs) or "none"))
+        return 1
     page.send("Performance.enable")
 
     state = wait_for(
@@ -183,7 +241,6 @@ def main():
         ),
         30,
     )
-    ready_ms = time.time() * 1000 - started_ms
     nav = page.js(
         "(() => { const n = performance.getEntriesByType('navigation')[0] || {};"
         " const p = performance.getEntriesByName('first-contentful-paint')[0];"
@@ -192,6 +249,8 @@ def main():
         " zoom: getComputedStyle(document.documentElement).zoom }; })()"
     )
     launch_ms = nav["origin"] - started_ms
+    # Loaded, by the browser's own clock (not when this check got round to looking).
+    ready_ms = launch_ms + (nav.get("load") or 0)
 
     print(f"Page size:    {nav['w']}x{nav['h']} CSS px, device pixel ratio {nav['dpr']}, zoom {nav['zoom']}")
     print(f"Chromium to page start: {launch_ms:.0f} ms")
