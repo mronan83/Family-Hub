@@ -25,6 +25,16 @@ exception when insufficient_privilege then
   raise notice 'Vault entries left as they are: %', sqlerrm;
 end $$;
 
+-- The scheduler extension too: its migration grants on it, and on hosted Supabase granting again
+-- over the grants a run before left fails ("dependent privileges exist"). Nothing is scheduled on
+-- the test database, so each run installs it as on a new project.
+do $$
+begin
+  if exists (select from pg_extension where extname = 'pg_cron') then
+    drop extension pg_cron cascade;
+  end if;
+end $$;
+
 -- The policies the migrations put on storage.objects (the rewards bucket itself stays).
 do $$
 declare
