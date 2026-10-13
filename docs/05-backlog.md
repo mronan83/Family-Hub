@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.102: WP-61 done (PR #66): chores on lunch days.
 > v0.8.101: WP-62 (a meal for any mix of people), WP-63 (an alert when something waits for a parent) and WP-64 (the school menu by section) added at the owner's request, and WP-49 grows to picking a buy day's lunch choices (D-87 to D-89). The order is under the status board.
 > v0.8.100: WP-61 chores on lunch days added at the owner's request, ahead of WP-58, and in review (D-86).
 > v0.8.99: WP-60 merged (PR #65): previews and e2e on the test database.
@@ -207,7 +208,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-58 | The board on an iPhone, from the admin app | P3 | L | WP-48, WP-20, WP-57 | Ready (mockup approved) |
 | WP-59 | A child's own phone, paired as their board | P3 | M | WP-58, WP-05 | Queued (when a child has a phone) |
 | WP-60 | Testing made reliable: a test database | P3 | M | WP-41 | Merged (PR #65); a week's tally to record |
-| WP-61 | Chores on lunch days | P2 | S | WP-26, WP-43 | In review |
+| WP-61 | Chores on lunch days | P2 | S | WP-26, WP-43 | Done (PR #66) |
 | WP-62 | A meal for any mix of people | P2 | S | WP-25, WP-28 | Ready (next) |
 | WP-63 | An alert when something waits for a parent | P2 | S | WP-40, WP-12, WP-18 | Ready |
 | WP-64 | The school menu by section, as options | P2 | M | WP-27, WP-28 | Ready (mockups first) |
@@ -215,7 +216,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 13 October): WP-61 (in review), then WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold.
+**Next, in order** (the owner's, 13 October): WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold.
 
 ---
 
@@ -1017,7 +1018,8 @@ flowchart LR
 - Previews and e2e move to the plan's second free Supabase project (`puoctwssryisuzakhzxj`, D-85). Each run empties it and rebuilds it from the pull request's migrations, then loads the demo family; production's database changes only on deploy. A retried test starts from a freshly loaded demo family. A pull request's results are recorded at the start of the next one, so each needs one e2e run.
 - Why: of the last 40 e2e attempts on the shared database, 23 passed cleanly, 10 needed a retry and 7 failed, across 17 specs; production's jobs slowed from about 0.5 s to as much as 30 s during runs.
 - **Done when:** `scripts/preview-db.test.sh` shows the reset refusing production's database and any unnamed remote one before connecting, and a second run leaving nothing of the first; a pull request's preview runs on the test database and its e2e passes; a week of e2e runs on the test database is recorded here (clean, retried, failed) against the 23/10/7 above.
-- As built (PR #65): the first two runs failed in set-up (the job list, which only the deploy wrote, and `pg_cron`'s grants outliving the reset), both fixed in the PR; the third passed, 134 of 134 with no retries, in 14.7 min. The week's tally is still to be recorded.
+- As built (PR #65): the first two runs failed in set-up (the job list, which only the deploy wrote, and `pg_cron`'s grants outliving the reset), both fixed in the PR; the third passed, 134 of 134 with no retries, in 14.7 min. The next (PR #66's first) stopped in the reset before any test, a board paired in the run before still pointing to its sign-in; fixed in PR #66.
+- The week's tally (from 13 October): clean 2 (PR #65, PR #66), retried 0, failed 0; set-up failures fixed along the way 3.
 
 ### WP-61 — Chores on lunch days
 **Phase:** P2 · **Size:** S · **Depends on:** WP-26, WP-43 · **Reqs:** CHR-19
