@@ -34,7 +34,7 @@ check "[NFR-14] a second run applies nothing" "$(is "$rc:$(grep -c '^applied' "$
 
 q "insert into supabase_migrations.schema_migrations (version, name) values ('20260103000000', 'from_an_open_pr')" >/dev/null
 run; rc=$?
-check "[NFR-14] a migration only in the database (an open PR's preview) is reported, not fatal" \
+check "[NFR-14] a migration only in the database (newer, or another PR's) is reported, not fatal" \
   "$(is "$rc:$(grep -c 'not in this commit.*20260103000000' "$work/out")" "0:1")"
 
 migration 20260101500000_older "create table older (id int);"
@@ -46,49 +46,6 @@ run; rc=$?
 check "[NFR-14] a failing migration stops the run and leaves neither its changes nor its history row" \
   "$(is "$([ $rc -ne 0 ] && echo failed):$(q "select to_regclass('half') is null")$(q "select count(*) from supabase_migrations.schema_migrations where version = '20260104000000'")" "failed:t0")"
 rm "$work/m/20260104000000_broken.sql"
-
-migration 20260105000000_drop_two "-- a comment that says drop table is ignored
-drop table two;"
-migration 20260105000001_three "create table three (id int);"
-run --additive-only; rc=$?
-check "[NFR-14] --additive-only applies none when any pending migration removes something" \
-  "$(is "$rc:$(q "select to_regclass('two') is not null and to_regclass('three') is null")" "0:t")"
-rm "$work/m/20260105000000_drop_two.sql"
-migration 20260105000002_note "-- rename to is only mentioned in a comment
-create table four (id int);"
-run --additive-only; rc=$?
-check "[NFR-14] --additive-only applies additive migrations (comments are ignored)" \
-  "$(is "$rc:$(q "select to_regclass('three') is not null and to_regclass('four') is not null")" "0:t")"
-
-migration 20260105000003_fn_deletes "create function clear_three() returns void language sql as \$fn\$
-  delete from three;
-\$fn\$;
-create table five (id int);"
-run --additive-only; rc=$?
-check "[NFR-14] --additive-only applies a function whose body deletes (it runs when called, not now)" \
-  "$(is "$rc:$(q "select to_regclass('five') is not null")" "0:t")"
-migration 20260105000004_do_deletes "do \$\$ begin delete from three; end \$\$;
-create table six (id int);"
-run --additive-only; rc=$?
-check "[NFR-14] --additive-only still holds back a DO block that deletes (it runs when applied)" \
-  "$(is "$rc:$(q "select to_regclass('six') is null")" "0:t")"
-migration 20260105000005_fn_then_delete "create function noop() returns int language sql as \$\$ select 1 \$\$;
-delete from three;"
-run --additive-only; rc=$?
-check "[NFR-14] --additive-only holds back a delete that follows a function body" \
-  "$(is "$rc:$(grep -c '20260105000005_fn_then_delete' "$work/out")" "0:1")"
-
-fresh
-migration 20260106000000_revoke "create table seven (id int);
-revoke update, delete, truncate on seven from public;
-grant select on seven to public;"
-run --additive-only; rc=$?
-check "[NFR-14] --additive-only applies a migration that revokes truncate (a privilege, not a truncate)" \
-  "$(is "$rc:$(q "select to_regclass('seven') is not null")" "0:t")"
-migration 20260106000001_truncate "truncate seven;
-create table eight (id int);"
-run --additive-only; rc=$?
-check "[NFR-14] --additive-only still holds back a truncate" "$(is "$rc:$(q "select to_regclass('eight') is null")" "0:t")"
 
 fresh
 migration 20260101000000_own_tx "begin;

@@ -1,5 +1,5 @@
 # Supabase Free pauses a project after a week of low database activity (01 §9.10). This writes a
-# heartbeat to the project four times a day. A failure here usually means the project was paused:
+# heartbeat to each project, production's and the test database (D-85), four times a day. A failure here usually means the project was paused:
 # GitHub emails the failure, and the runbook restores it from the Supabase dashboard.
 name: keepalive
 
@@ -14,13 +14,17 @@ permissions:
 jobs:
   heartbeat:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [SUPABASE_DB_URL, TEST_SUPABASE_DB_URL]
     env:
-      DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      DB_URL: ${{ secrets[matrix.database] }}
     steps:
       - name: Write heartbeat
         run: |
           if [ -z "$DB_URL" ]; then
-            echo "::warning::SUPABASE_DB_URL is not configured yet; skipping"
+            echo "::warning::${{ matrix.database }} is not configured yet; skipping"
             exit 0
           fi
           # Before the first migration lands, the heartbeat table does not exist yet; a plain query

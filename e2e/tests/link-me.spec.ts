@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 
 // [CHR-14][CHR-15][ACC-04] "Which one is you?" on the preview (D-61), as Alex of the demo family: a

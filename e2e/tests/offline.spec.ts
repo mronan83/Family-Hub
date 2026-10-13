@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { type BrowserContext, expect, test, type Page } from '@playwright/test';
+import { type BrowserContext, expect, test, type Page } from '../support/test';
 import { retireBoard } from '../support/board';
 import { networkSwitch, type NetworkSwitch } from '../support/network';
 

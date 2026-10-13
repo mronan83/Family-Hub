@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 import { openSetting } from '../support/settings';
 
 // [SCH-01][SCH-02][SCH-03] School years on the preview, as the demo family (D-37): the seeded year and

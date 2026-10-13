@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 import { runCalendarSync, type Fetcher } from '../../apps/web/lib/calendar/sync';
 import { retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';

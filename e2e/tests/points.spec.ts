@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 
 // [PTS-01][PTS-02][PTS-07] Points on the preview, as Alex of the demo family (WP-16): each child's
 // balance on Members, their history on their page, and a parent adding and taking away points with a

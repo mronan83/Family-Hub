@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../support/test';
 
 // [NFR-07] Previews hold no job secret (D-37), so every job call is refused there; jobs run in
 // production only, where pg_cron calls them (01 §5.6).

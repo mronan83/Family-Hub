@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../support/test';
 import { runReminders, webPushSender } from '../../apps/web/lib/reminders';
 import { serviceRpc, sql as query } from '../support/db';
 import { browserKeys, decryptPush, mockPushService, vapidKeys } from '../support/push';

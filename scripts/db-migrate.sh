@@ -1,18 +1,13 @@
 #!/usr/bin/env bash
-# Applies this commit's pending migrations to the database (01 §9.5, §9.6, D-37). Used by the deploy
-# (every pending migration) and by e2e on a pull request's preview (--additive-only).
+# Applies this commit's pending migrations to a database (01 §9.5, §9.6, D-85): by the deploy to
+# production, and by e2e to the test database after scripts/test-db-reset.sql has emptied it.
 #
-# One database serves production and every preview, so the database can hold migrations this commit
-# does not have: an open pull request's preview applied them before it merged. `supabase db push`
-# refuses to run then; this runner reports them and carries on. Each migration runs in its own
-# transaction together with its history row in supabase_migrations.schema_migrations, so a failed
-# migration leaves neither behind. Pending migrations run in filename order, including any older
-# than the newest one already applied (migrations are forward-only and independent; §9.6).
-#
-# --additive-only: if any pending migration drops, renames, retypes, truncates or deletes, apply
-# none; they wait for approval and ship with the deploy. Only what runs when the migration is applied
-# counts: comments and function bodies (`create function ... as $$ ... $$`, which run when called)
-# are ignored; DO blocks run at once, so they are checked.
+# The database can hold migrations this commit does not have (a newer one, or a pull request's on
+# the test database); `supabase db push` refuses to run then, and this runner reports them and carries
+# on. Each migration runs in its own transaction together with its history row in
+# supabase_migrations.schema_migrations, so a failed migration leaves neither behind. Pending
+# migrations run in filename order, including any older than the newest one already applied
+# (migrations are forward-only and independent; §9.6).
 #
 # Needs SUPABASE_DB_URL (session pooler URI) and psql. MIGRATIONS_DIR overrides the directory (tests).
 set -euo pipefail
@@ -21,15 +16,6 @@ shopt -s nullglob
 : "${SUPABASE_DB_URL:?SUPABASE_DB_URL is required}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 dir="${MIGRATIONS_DIR:-$root/supabase/migrations}"
-additive_only=false
-[ "${1:-}" = --additive-only ] && additive_only=true
-
-# Statements that remove or change what the running app may use.
-CHANGES='drop[[:space:]]+(table|column|schema|type|view|materialized)|truncate[[:space:]]|rename[[:space:]]+(to|column|constraint)|alter[[:space:]]+column[^;]*[[:space:]]type[[:space:]]|delete[[:space:]]+from'
-# A migration as it runs when applied: without comments, without function bodies, and without grants
-# and revokes (they change privileges, not data or shape, so `revoke truncate` is not a truncate).
-applied_text() { perl -0777 -pe 's/--[^\n]*//g; s/\bas(\s+)\$(\w*)\$.*?\$\2\$/as$1\x27\x27/gsi; s/\b(grant|revoke)\b[^;]*;//gsi' "$1"; }
-
 psql_q=(psql "$SUPABASE_DB_URL" -X -A -t -q -v ON_ERROR_STOP=1)
 
 # The history table the Supabase CLI keeps; created here only on a database that has never had one.
@@ -60,23 +46,12 @@ while read -r v; do
   printf '%s\n' "${local_versions[@]}" | grep -qx "$v" || others+=("$v")
 done <<<"$applied"
 if [ ${#others[@]} -gt 0 ]; then
-  echo "::notice::${#others[@]} migration(s) in the database are not in this commit (applied by an open pull request's preview): ${others[*]}"
+  echo "::notice::${#others[@]} migration(s) in the database are not in this commit (newer than this commit, or another pull request's): ${others[*]}"
 fi
 
 if [ ${#pending[@]} -eq 0 ]; then
   echo "no pending migrations"
   exit 0
-fi
-
-if $additive_only; then
-  changing=()
-  for f in "${pending[@]}"; do
-    if applied_text "$f" | grep -qiE "$CHANGES"; then changing+=("$(basename "$f")"); fi
-  done
-  if [ ${#changing[@]} -gt 0 ]; then
-    echo "::notice::not applying ${#pending[@]} pending migration(s) before approval; they ship with the deploy: ${changing[*]}"
-    exit 0
-  fi
 fi
 
 for f in "${pending[@]}"; do

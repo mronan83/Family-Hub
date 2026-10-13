@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { createHmac, randomBytes } from 'node:crypto';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 
 // [ACC-01][ACC-02][ACC-03][ACC-05] Admin sign-in, invites and setup on the preview, as the demo
 // sign-ins (D-39). scripts/preview-db.sh has just reset the demo family and set their passwords.

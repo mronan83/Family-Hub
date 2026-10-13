@@ -95,3 +95,11 @@ test('[NFR-07] quotes in names or cron cannot break out of the SQL', () => {
   // Names are snake_case by validation, so the only free text is a SQL job's own command.
   assert.throws(() => schedulesSql([http("x'; drop table t; --", '1 * * * *')]), /snake_case/);
 });
+
+test('[NFR-07][D-85] --table-only lists the jobs for job_health and schedules nothing', () => {
+  const jobs = [http('a', '*/5 * * * *'), http('b', '2/5 * * * *')];
+  const sql = schedulesSql(jobs, { tableOnly: true });
+  assert.match(sql, /insert into private\.job_schedule/);
+  assert.match(sql, /\('a', '\*\/5 \* \* \* \*', 'http', 60, now\(\)\)/);
+  assert.doesNotMatch(sql, /cron\./);
+});

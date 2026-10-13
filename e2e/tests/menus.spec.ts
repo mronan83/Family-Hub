@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 import { runMenuImport, type Fetcher } from '../../apps/web/lib/menu/import';
 import { serviceRpc, sql as query } from '../support/db';
 

@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../support/test';
 import { openSetting } from '../support/settings';
 
 // [NFR-07][NFR-08] System Health on the preview (WP-42, D-42), as Alex of the demo family: a failing
