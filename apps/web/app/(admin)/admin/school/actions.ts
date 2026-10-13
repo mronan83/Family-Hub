@@ -101,6 +101,11 @@ export async function saveClosure(_prev: FormState, form: FormData): Promise<For
     log('warn', 'closure not saved', { code: error.code, hint: error.hint });
     return { message: schoolSaveMessage(error) };
   }
+  if (form.get('back') === 'home') {
+    revalidatePath('/admin/school');
+    revalidatePath('/admin');
+    redirect(`/admin?done=dayoff&name=${encodeURIComponent(parsed.value.name)}`);
+  }
   done(yearId, parsed.value.name);
 }
 

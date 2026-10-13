@@ -24,6 +24,8 @@ async function oneTap(page: Page, name: string) {
 }
 
 async function newInviteLink(page: Page, to: string): Promise<string> {
+  // Invites are in Settings, Family options (WP-57, D-84).
+  await page.goto('/admin/settings/family');
   await page.getByLabel('Their email').fill(to);
   await page.getByRole('button', { name: 'Create invite link' }).click();
   const link = (await page.getByTestId('invite-link').textContent())?.trim() ?? '';
@@ -56,6 +58,8 @@ test('[ACC-02] signed out, the admin app asks you to sign in', async ({ page }) 
 test('[ACC-02] one tap signs a preview in as Alex, who sees the demo family', async ({ page }) => {
   await oneTap(page, 'Alex');
   await expect(page.getByRole('heading', { name: 'Demo family', level: 1 })).toBeVisible();
+  // [ACC-08] The admins are in Settings, Family options (WP-57, D-84).
+  await page.goto('/admin/settings/family');
   const admins = page.getByRole('region', { name: 'Admins' });
   await expect(admins).toContainText(email('alex'));
   await expect(admins).toContainText(email('sam'));
@@ -96,6 +100,7 @@ test('[ACC-03] Alex invites Jordan, Jordan joins, and the link works only once',
   await expect(jordan.getByRole('heading', { name: 'Join Demo family' })).toBeVisible();
   await jordan.getByRole('button', { name: 'Join household' }).click();
   await expect(jordan.getByRole('heading', { name: 'Demo family', level: 1 })).toBeVisible();
+  await jordan.goto('/admin/settings/family');
   await expect(jordan.getByRole('region', { name: 'Admins' })).toContainText(email('jordan'));
 
   await jordan.goto(link);
@@ -144,7 +149,9 @@ test('[ACC-01] Riley starts a household with a setup code and becomes its owner'
   await page.getByRole('button', { name: 'Create household' }).click();
 
   await expect(page.getByRole('heading', { name: 'Riley e2e household', level: 1 })).toBeVisible();
-  await expect(page.getByText('America/Chicago · Week starts on Monday')).toBeVisible();
+  await page.goto('/admin/settings/family');
+  await expect(page.getByText('America/Chicago', { exact: false }).first()).toBeVisible();
+  await expect(page.getByText('The week starts on Monday.')).toBeVisible();
   await expect(page.getByRole('region', { name: 'Admins' })).toContainText('Owner');
   expect(
     sql(`select a.actor_type || ':' || u.email from public.audit_log a

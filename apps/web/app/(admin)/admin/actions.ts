@@ -12,6 +12,9 @@ import { log } from '@/lib/log';
 import { serverClient } from '@/lib/supabase/server';
 import { runWeather } from '@/lib/weather';
 
+/** [ACC-08] Family options in Settings (WP-57, D-84): check-offs, the week, weather and admins. */
+const FAMILY = '/admin/settings/family';
+
 export interface InviteState {
   message?: string;
   link?: string;
@@ -39,7 +42,7 @@ export async function createInvite(_prev: InviteState, form: FormData): Promise<
     log('warn', 'invite not created', { code: error?.code, hint: error?.hint });
     return { message: error ? hintMessage(error) : GENERIC };
   }
-  revalidatePath('/admin');
+  revalidatePath(FAMILY);
   return { link: `${requestOrigin(await headers())}/invite#${data}`, email };
 }
 
@@ -54,7 +57,7 @@ export async function revokeInvite(form: FormData): Promise<void> {
     .eq('id', id)
     .is('accepted_at', null);
   if (error) log('warn', 'invite not revoked', { code: error.code });
-  revalidatePath('/admin');
+  revalidatePath(FAMILY);
 }
 
 /** Signs out this browser and goes to sign in, coming back to `next` if given. */
@@ -81,10 +84,10 @@ export async function setApprovalMode(form: FormData): Promise<void> {
     .eq('household_id', household.id);
   if (error) {
     log('warn', 'approval mode not saved', { code: error.code });
-    redirect('/admin?approval=failed');
+    redirect(`${FAMILY}?done=failed#check-offs`);
   }
-  revalidatePath('/admin');
-  redirect(`/admin?approval=${mode}`);
+  revalidatePath(FAMILY);
+  redirect(`${FAMILY}?done=approval-${mode}#check-offs`);
 }
 
 /**
@@ -106,11 +109,11 @@ export async function setWeatherPlace(form: FormData): Promise<void> {
   });
   if (error) {
     log('warn', 'weather place not saved', { code: error.code, hint: error.hint });
-    redirect('/admin?weather=failed#weather');
+    redirect(`${FAMILY}?weather=failed#weather`);
   }
   if (!clear) await readWeatherNow(db, household.id);
-  revalidatePath('/admin');
-  redirect(`/admin?weather=${clear ? 'cleared' : 'saved'}#weather`);
+  revalidatePath(FAMILY);
+  redirect(`${FAMILY}?weather=${clear ? 'cleared' : 'saved'}#weather`);
 }
 
 /** [BRD-04] °F or °C for the boards' weather; the weather is read again at once in the new unit. */
@@ -125,18 +128,43 @@ export async function setTemperatureUnit(form: FormData): Promise<void> {
   });
   if (error) {
     log('warn', 'temperature unit not saved', { code: error.code, hint: error.hint });
-    redirect('/admin?weather=failed#weather');
+    redirect(`${FAMILY}?weather=failed#weather`);
   }
   await readWeatherNow(db, household.id);
-  revalidatePath('/admin');
-  redirect('/admin?weather=unit#weather');
+  revalidatePath(FAMILY);
+  redirect(`${FAMILY}?weather=unit#weather`);
 }
 
-/** Reads the weather right after a change. A failure here is the reading's own (Home says why). */
+/** Reads the weather right after a change. A failure here is the reading's own (Family options says why). */
 async function readWeatherNow(db: SupabaseClient, householdId: string) {
   try {
     await runWeather(db, householdId);
   } catch (e) {
     log('warn', 'weather not read after a change', { error: String(e) });
   }
+}
+
+/**
+ * [ACC-08][US-110] The day the week starts on (WP-57, D-84). The database holds it for the next week;
+ * the current day again cancels a waiting change.
+ */
+export async function setWeekStart(form: FormData): Promise<void> {
+  const db = await serverClient();
+  const user = await requireSignedIn(db, FAMILY);
+  const household = db ? await adminHousehold(db, user.userId) : null;
+  if (!db || !household) redirect('/setup');
+  // Keep: the start day it has now, which cancels a change waiting for the next week.
+  const day = Number(form.get('keep') ?? form.get('day'));
+  const { data, error } = await db.rpc('set_week_start', {
+    p_household: household.id,
+    p_day: day,
+  });
+  if (error) {
+    log('warn', 'week start not saved', { code: error.code, hint: error.hint });
+    redirect(`${FAMILY}?done=failed#week`);
+  }
+  revalidatePath(FAMILY);
+  redirect(
+    `${FAMILY}?done=${(data as { next: number | null }).next === null ? 'week-kept' : 'week-saved'}#week`,
+  );
 }

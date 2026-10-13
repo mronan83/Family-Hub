@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.16: Home at a glance and Family options (WP-57, D-84): **Needs you**, **Heads-up** and **Quick actions** on Home, **No school today**, and the household's options (the week's start day, check-offs, weather, admins and invites) in Settings, Family options (A1, A2, A10, A13, B1).
 > v0.14: the board's calendar as a time grid (WP-52, D-82): all-day events across the top, the hours down the side, now, and an event's details at a tap (A5, A9).
 > v0.13: one admin menu (WP-51, D-81): the menu in three groups, **Settings** with each part's state, Tags in Settings, and Today's count (A4, B1).
 > v0.12: meals on the board (WP-28, D-80): **Today's meals** above Today's list, the **Meals** screen, and a person's own meals (A5, A11, A15, B1.12, B2, B7).
@@ -13,7 +14,7 @@
 > v0.5: Help in the admin app (D-72): this guide is **Help** in the menu, open before you sign in too.
 > v0.4: more icons and colors (WP-46, D-70): one icon picker everywhere, with **Find an icon** and groups; sixteen named colors; the weather's own sky icons; how the board stays easy to read for everyone (A12).
 > v0.3: fixes found while writing this guide (PR #48): a board's own layout is kept when you save again; Disconnect asks first; the return home also closes an unanswered "Who did …?"; the board waits 90 seconds before going home (D-71).
-> v0.2: weather on the board (WP-45): A13, and the weather on Home, Boards, the board's top bar, the rules, troubleshooting and questions; no longer "coming soon".
+> v0.2: weather on the board (WP-45): A13, and the weather on Home (in Family options since v0.16), Boards, the board's top bar, the rules, troubleshooting and questions; no longer "coming soon".
 > v0.1: first version (D-68): Part A, the User Guide by task, and Part B, the User Manual, for everything built up to WP-35; screenshots from the made-up demo family; a check that every built story is covered.
 > Companions: `03-user-stories.md` (the stories each section covers) · `05-backlog.md` (what is built) · `06-brand-and-style-guide.md` (the words the app uses)
 
@@ -89,10 +90,10 @@ You need a **setup code** from whoever installed FamilyWise for you. It works on
 3. If you are not signed in yet, enter **Your email** and **Choose a password** (at least 8 characters). If you already have an account, choose **Sign in first** instead.
 4. Enter a **Household name**, for example "The Rivera family".
 5. Check the **Timezone**. It starts as your device's. The board's day starts and ends in this timezone.
-6. Choose when the **Week starts on**: Sunday, Monday or Saturday. Weekly limits in the shop and the Insights calendar follow it.
+6. Choose when the **Week starts on**: Sunday, Monday or Saturday. Weekly limits in the shop and the Insights calendar follow it. You can change it later in **Settings**, **Family options**; a change starts with the next week.
 7. Choose **Create household**.
 
-You land on the admin app's **Home** page as the household's owner, with "Your household is ready. Invite another admin below when you like."
+You land on the admin app's **Home** page as the household's owner, with "Your household is ready. Invite another admin from Settings, Family options, when you like."
 
 #### Sign in
 
@@ -111,7 +112,7 @@ On the **Sign in** page, either:
 
 Both parents can run FamilyWise. Each has their own sign-in.
 
-1. On **Home**, under **Invite an admin**, enter **Their email**.
+1. In **Settings**, open **Family options**. Under **Invite an admin**, enter **Their email**.
 2. Choose **Create invite link**.
 3. Choose **Copy link** (or **Share** on a phone) and send it to them yourself. No email is sent for you.
 
@@ -159,11 +160,30 @@ The board shows the family's day at once. From then on it keeps itself signed in
 > **Note:** If the board is a browser where a parent is signed in to the admin app, pairing signs that browser out of the admin app.
 
 ### A2 A parent's day
-<!-- covers: US-306 US-307 US-309 US-310 US-316 -->
+<!-- covers: US-109 US-306 US-307 US-309 US-310 US-316 -->
 
 **What this is.** The admin app's **Today** and **My tasks** pages. **When.** Whenever you want to see how the day is going, settle what's waiting for you, or put something right. **How.** Open **Today** from the menu.
 
 ![The admin Today page on a laptop: "Waiting for you" lists Homework and Practice piano with Approve and Send back; below, today's items by part of the day with Mark done, Skip, Uncheck and Put back, and the Not actually done button at the end.](guide/img/admin-today-laptop.jpg "Today in the admin app, on a laptop")
+
+#### Home: what needs you, and quick actions
+
+**Home** is the first page you see. It shows what needs you, then the things you do most, a tap away.
+
+![Home on a laptop: Needs you lists 2 check-offs wait for you (Review), 1 reward request waits for you (Decide), Den hasn't been seen for 3 hours (Boards) and School can't sync (Calendars); Heads-up says No school menu for next week yet (School menus). Below, Quick actions: Add a chore, Add a task, Add a reward and Add a goal, then Add a meal (Plan a meal, New in the library), School today (No school today, Add a day off…) and School menu (Refresh school menu).](guide/img/admin-home-laptop.jpg "Home, on a laptop")
+
+- **Needs you** lists what needs you now, each with a button to where you deal with it: check-offs and reward requests waiting for you, a board that hasn't been seen for 15 minutes (switched off, or off the Wi-Fi), a calendar that can't sync, a school menu that can't be read, and a background job that needs a look.
+- **Heads-up** lists what to know soon: no school menu for next week yet, no school year set up (or this one ending within two weeks), weather that hasn't updated, and an invite about to run out.
+- An alert stays while its cause lasts and goes once you've dealt with it. There's nothing to dismiss. With nothing to look at, Home says "Nothing needs you right now."
+
+**Quick actions:**
+
+- **Add a chore**, **Add a task**, **Add a reward** and **Add a goal** open the page that adds one.
+- **Add a meal**: **Plan a meal** puts a meal on a day of the week; **New in the library** adds a meal you make again.
+- **School today**: **No school today** makes today a snow day in one tap. Today's school-day items (like homework) go at once; anything already checked off stays; the board shows a day off school. **Undo** makes it a school day again. **Add a day off…** adds a day off or a break on another date, without leaving Home.
+- **Refresh school menu** reads your school menu feeds now, rather than waiting for the morning.
+
+![Home on a phone in Evening, on a quiet day: Nothing needs you right now; the four add tiles two by two; School today says No school today: Snow day with Undo.](guide/img/admin-home-phone.jpg "Home on a phone, on a snow day")
 
 #### Check the day on Today
 
@@ -182,7 +202,7 @@ A check-off marked "after its day: check it was really done" was made after the 
 
 #### Approval: on or off
 
-On **Home**, under **Check-offs**, choose what happens **When a child checks something off**:
+In **Settings**, open **Family options**. Under **Check-offs**, choose what happens **When a child checks something off**:
 
 - **It counts straight away; a parent can uncheck it later** (the default). Points arrive at once. You check in real life and use **Uncheck** or **Not actually done** if needed.
 - **It waits for a parent to approve it.** The board shows **Waiting for a parent** and no points arrive until you approve.
@@ -681,7 +701,7 @@ The top of **School** shows what kind of day today is for each person. A year's 
 
 **A child at another school.** Add that school's year without **Default**, open it, tick the child under **Who follows it** and choose **Save who follows it**. Everyone else follows the default.
 
-Changes to the school year start tomorrow: today stays as it was planned. Days already past never change.
+Changes to the school year start tomorrow: today stays as it was planned. Days already past never change. The exception is **No school today** on **Home**, for a snow day called in the morning: it changes today at once (see [A2](#a2-a-parents-day)).
 
 ### A11 The board's home screen layout
 <!-- covers: US-1004 -->
@@ -722,25 +742,25 @@ Both looks use the same colors for the same things, never color alone: every sta
 ### A13 Weather on the board
 <!-- covers: US-1003 -->
 
-**What this is.** The sky, the temperature now and today's high, beside the clock on the board. **When.** Once, to set your place; after that it looks after itself. **How.** On **Home**, under **Weather on the boards**.
+**What this is.** The sky, the temperature now and today's high, beside the clock on the board. **When.** Once, to set your place; after that it looks after itself. **How.** In **Settings**, open **Family options**; it's under **Weather on the boards**.
 
 1. Under **Town or ZIP code**, type your town's name or a US ZIP code, and choose **Find**.
 2. Under the places it found, choose **Use this** beside yours. Each is named with its state and country, so two towns with the same name are easy to tell apart.
 3. Under **Show temperatures in**, choose **Fahrenheit (°F)** (the default) or **Celsius (°C)**, and choose **Save**.
 
-Home says "Saved. The boards show the weather in a moment." and, once the weather is read, the last reading, like "Last read at 4:09 pm: 64°F, partly cloudy, high 68°F."
+Family options says "Saved. The boards show the weather in a moment." and, once the weather is read, the last reading, like "Last read at 4:09 pm: 64°F, partly cloudy, high 68°F."
 
 ![The board's bar with the weather beside the clock: a rain cloud, 50°, and Rain · High 52° on one line.](guide/img/board-weather.jpg "The weather beside the clock")
 
 **On the board** the weather sits beside the clock: an icon and a word for the sky (**Sunny**, **Partly cloudy**, **Rain**, **Snow** and so on), the temperature now in large numbers, and **High** with today's high. Temperatures are whole degrees. The sky and today's high share one line, like "Partly cloudy · High 61°".
 
-Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credit is here and on Home, beside where you set your place, rather than on the board.
+Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credit is here and in Family options, beside where you set your place, rather than on the board.
 
 - **How fresh it is.** FamilyWise reads the weather every 30 minutes. The board never asks the weather service itself, so it costs the board nothing.
-- **When it can't be read.** If the weather can't be read, or the last reading is more than 75 minutes old, the board simply shows no weather; nothing else on it moves. Home says what went wrong ("Couldn't read the weather at …") and tries again on its own.
+- **When it can't be read.** If the weather can't be read, or the last reading is more than 75 minutes old, the board simply shows no weather; nothing else on it moves. Family options says what went wrong ("Couldn't read the weather at …"), Home lists it under **Heads-up**, and tries again on its own.
 - **Offline.** A board without the internet keeps showing its last reading for the rest of that day.
 - **One board without it.** Untick **Show the weather beside the clock** in that board's layout on **Boards** (see [A11](#a11-the-boards-home-screen-layout)).
-- **Stop it everywhere.** **Stop showing the weather** on Home forgets your place.
+- **Stop it everywhere.** **Stop showing the weather** in Family options forgets your place.
 
 > **Note:** FamilyWise keeps your place to about a kilometre (two decimal places), and only that goes to the weather service. Town names are found through Open-Meteo, and US ZIP codes through Zippopotam.us.
 
@@ -837,7 +857,7 @@ The admin app is for parents, on a phone or a laptop. On a laptop its menu is do
 
 | Menu | Page | For |
 |---|---|---|
-| **Your day** · **Home** | The household | Approval switch, admins, invites, weather |
+| **Your day** · **Home** | At a glance | What needs you, heads-ups, quick actions |
 | **Your day** · **Today** | A parent's day | Approve, mark done, skip, uncheck, Not actually done |
 | **Your day** · **My tasks** | Your own list | Your items, quick add, reminder bells |
 | **The family** · **Chores** | The family list | Chores and tasks |
@@ -853,6 +873,7 @@ The admin app is for parents, on a phone or a laptop. On a laptop its menu is do
 
 | Settings | Page | For |
 |---|---|---|
+| **Family options** | The household | The week's start day, check-offs, weather, admins and invites |
 | **School** | School years | Day types, breaks, who follows which year |
 | **Calendars** | Calendars | Connecting Apple calendars |
 | **Boards** | Boards | Pairing, themes, calendars and layout per board |
@@ -860,20 +881,21 @@ The admin app is for parents, on a phone or a laptop. On a laptop its menu is do
 | **Reminders** | Your reminders | Devices and when to remind you |
 | **Health** | System health | Background jobs, errors, usage |
 
-![Settings on a laptop: the menu down the left in three groups with Today showing 2 and Settings marked, Help and Alex with Sign out at its foot; tiles for School, Calendars (School can't sync), Boards, Tags, Reminders and Health (1 thing to look at).](guide/img/admin-settings-laptop.jpg "Settings, with the menu, on a laptop")
+![Settings on a laptop: the menu down the left in three groups with Today showing 2 and Settings marked, Help and Alex with Sign out at its foot; tiles for Family options (Week starts Sunday), School, Calendars (School can't sync), Boards, Tags, Reminders and Health (1 thing to look at).](guide/img/admin-settings-laptop.jpg "Settings, with the menu, on a laptop")
 
 ![The menu open on a phone: Your day, The family two to a row, Set-up with Settings, then Help and Sign out.](guide/img/admin-menu-phone.jpg "The menu, on a phone")
 
 #### B1.1 Home
-<!-- covers: US-310 US-103 US-1003 -->
+<!-- covers: US-109 -->
 
 | Part | What it shows or does |
 |---|---|
-| Household | Its name, timezone, the day the week starts, and who you are signed in as. |
-| **Check-offs** | **When a child checks something off**: **It counts straight away; a parent can uncheck it later** or **It waits for a parent to approve it**. **Save** applies it to what's still to do. |
-| **Admins** | Everyone who can manage the household, as **Owner** or **Admin**. |
-| **Invite an admin** | **Their email**, **Create invite link**, then **Copy link** or **Share**. **Waiting to join** lists open invites with when they expire, and **Cancel invite**. |
-| **Weather on the boards** | The place the boards show the weather for, and the last reading (or why it failed). **Town or ZIP code** (or **Change the place**) and **Find**; **Use this** on a place found; **Show temperatures in**: **Fahrenheit (°F)** or **Celsius (°C)**, **Save**; **Stop showing the weather**. See [A13](#a13-weather-on-the-board). |
+| The household | Its name and today's date. |
+| **Needs you** | Check-offs and reward requests waiting for you, boards not seen for 15 minutes, calendars that can't sync, school menus that can't be read and background jobs that need a look, each with a button to where you deal with it (**Review**, **Decide**, **Boards**, **Calendars**, **School menus**, **Health**). "Nothing needs you right now." when there's none. |
+| **Heads-up** | No school menu for next week, no school year (or one ending within two weeks), weather that hasn't updated, an invite about to run out. Shown only when there is one. |
+| **Quick actions** | **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**. **Add a meal**: **Plan a meal**, **New in the library**. **School today**: **No school today** (then "No school today: Snow day" and **Undo**), or "No school today: the weekend" or the day off's name; **Add a day off…** opens **Name**, **Kind**, **From**, **To (optional)** and **Add day off**. **School menu**: **Refresh school menu**, or **Set up school menus** when there's no feed. |
+
+Messages: "No school today. Today's chores follow a day off school.", "Today is a school day again.", "Day off saved.", "School menus fetched.", "A school menu couldn't be fetched. School menus says why."
 
 #### B1.2 Today
 <!-- covers: US-306 US-307 US-309 -->
@@ -1069,6 +1091,23 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 **The meal library:** **Add a meal** (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe link (optional)**, **Icon**, **Add meal**); **Our meals**, each with what it's good for and its recipe, **Edit** and **Archive**; **Archived**, with **Restore**.
 
 **School menus:** each menu with where it comes from (**From Nutrislice**, **From a file**, **Typed in**), whose lunch it is, and for Nutrislice **Fetched**, **Not fetched yet** or **Can't fetch** (why, and when it last worked); its next four weeks, each day with **Change** (**What's for lunch**, **No lunch that day**, **Note (optional)**, **Save the day**; a day you wrote is **Yours**, with **Use Nutrislice's menu again**, or **Remove** for a file's); **Load a file into** (name) (**Menu file (CSV)**, **Look at the file**, **Load** N **days**); **Add a day to** (name); **Fetch** (name) **now**; **Rename** and **Remove**. **Add a school menu:** **Name**, **Where the menu comes from**, and for Nutrislice **Your district on Nutrislice**, **Find the schools**, **School and menu**; **Add the menu**.
+
+
+#### B1.16 Family options
+<!-- covers: US-110 US-310 US-103 US-1003 -->
+
+In **Settings**, the first tile. It says the day the week starts on and how check-offs count.
+
+![Family options on a phone: The week (starts on Sunday; from Monday, Oct 19, it starts on Monday), with Start the week on, Save and Keep Sunday; Check-offs with its two choices one to a line; then Weather on the boards.](guide/img/admin-family-phone.jpg "Family options, on a phone")
+
+| Part | What it shows or does |
+|---|---|
+| The household | Its name, timezone, and who you are signed in as. |
+| **The week** | The day the week starts on. **Start the week on** and **Save**: a change starts with the next week (the page says from which day), so this week's weekly limits, goals and streaks aren't cut short. **Keep** (the day it is now) cancels a change. |
+| **Check-offs** | **When a child checks something off**: **It counts straight away; a parent can uncheck it later** or **It waits for a parent to approve it**. **Save** applies it to what's still to do. |
+| **Weather on the boards** | The place the boards show the weather for, and the last reading (or why it failed). **Town or ZIP code** (or **Change the place**) and **Find**; **Use this** on a place found; **Show temperatures in**: **Fahrenheit (°F)** or **Celsius (°C)**, **Save**; **Stop showing the weather**. |
+| **Admins** | Everyone who can manage the household, as **Owner** or **Admin**. |
+| **Invite an admin** | **Their email**, **Create invite link**, then **Copy link** or **Share**. **Waiting to join** lists open invites with when they expire, and **Cancel invite**. |
 
 ### B2 The board, screen by screen
 
@@ -1358,7 +1397,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Sign in: a link by email never arrives | FamilyWise has no email service of its own yet. | Use your password. |
 | Points didn't arrive | The person doesn't earn rewards, the check-off waits for a parent, or it was undone. | Check **Members** (**Earns rewards**) and **Today**. |
 | Health: a job **Late** or **Failing** | A background job is behind. | It usually recovers by itself; if it stays, tell whoever runs FamilyWise. |
-| Board: no weather beside the clock | No place is set, the board's layout turns it off, or the weather couldn't be read for over 75 minutes. | On **Home**, check **Weather on the boards** (it says why a read failed); on **Boards**, check **Show the weather beside the clock**. |
+| Board: no weather beside the clock | No place is set, the board's layout turns it off, or the weather couldn't be read for over 75 minutes. | In **Settings**, **Family options**, check **Weather on the boards** (it says why a read failed); on **Boards**, check **Show the weather beside the clock**. |
 | Home: "No places found" | The name or code didn't match a place. | Try the town's name, or another code. |
 
 ### B5 Questions and answers
@@ -1371,7 +1410,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 
 **Why do weekdays count as summer?** No school year covers them. Add one on **School**.
 
-**Can both parents manage everything?** Yes. Invite the other parent on **Home**. Only an item's creator can make it private, or family-visible again.
+**Can both parents manage everything?** Yes. Invite the other parent in **Settings**, **Family options**. Only an item's creator can make it private, or family-visible again.
 
 **Does the board show private items?** Never.
 
@@ -1393,7 +1432,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 
 **How do I replace or move a board?** Pair the new screen on **Boards**, then **Disconnect** the old one and choose **Yes, disconnect**.
 
-**Where does the weather come from?** From Open-Meteo, read every 30 minutes for the place you set on Home. Only your place, to about a kilometre, is sent.
+**Where does the weather come from?** From Open-Meteo, read every 30 minutes for the place you set in Family options. Only your place, to about a kilometre, is sent.
 
 **What if the internet is down all day?** The board keeps working with what it has and sends the day's check-offs when it's back.
 

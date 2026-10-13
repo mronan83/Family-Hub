@@ -22,6 +22,7 @@ export default async function DevSettingsPage({
         waiting={quiet ? 0 : 2}
         who={{ name: 'Alex', avatarKey: 'owl', color: 'member-1' }}
         status={{
+          '/admin/settings/family': ok('Week starts Sunday · check-offs count at once'),
           '/admin/school': ok('2026–27 · ends Jun 18'),
           '/admin/calendars': quiet ? ok('3 calendars') : { text: 'School can’t sync', warn: true },
           '/admin/devices': ok('Kitchen'),

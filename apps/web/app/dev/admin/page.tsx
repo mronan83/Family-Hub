@@ -9,7 +9,7 @@ import { WeatherSection } from '../../(admin)/admin/weather-section';
 // A parent's day and My tasks (WP-12) with a made-up family and no database, for the UI suite: the
 // pages' layout on a phone and a laptop, in Day and Evening (?theme=evening), and every state of a
 // row. ?view=my for My tasks (with each item's reminder bell, WP-40), ?view=unlinked for a sign-in
-// not linked to a member. [BRD-04] ?view=weather for Weather on the boards on Home (WP-45), with
+// not linked to a member. [BRD-04] ?view=weather for Weather on the boards (WP-45; in Family options since WP-57), with
 // &state=none (no place yet), found (places to choose from), failing (the last read failed).
 export const metadata: Metadata = { title: 'Admin day', robots: { index: false } };
 

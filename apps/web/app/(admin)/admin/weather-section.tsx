@@ -4,7 +4,7 @@ import { skyFor } from '@/lib/sky';
 import type { FoundPlace, TemperatureUnit } from '@/lib/weather';
 import { setTemperatureUnit, setWeatherPlace } from './actions';
 
-/** The household's last read, as Home shows how it went. */
+/** The household's last read, as Family options shows how it went. */
 export interface LastRead {
   temperature: number;
   high: number;
@@ -29,7 +29,7 @@ const deg = (t: number, unit: TemperatureUnit) =>
   `${Math.round(t)}°${unit === 'celsius' ? 'C' : 'F'}`;
 
 /**
- * [BRD-04][US-1003] Weather on the boards, on Home (WP-45, D-69): the household's place (found by a
+ * [BRD-04][US-1003] Weather on the boards, in Family options (WP-45, D-69; WP-57, D-84): the household's place (found by a
  * town's name or a postal code, then chosen from what matches), °F or °C, and how the last read
  * went. Boards show it beside the clock; a board's layout can turn it off (Boards).
  */
@@ -82,7 +82,12 @@ export function WeatherSection({
         )
       ) : null}
 
-      <form method="get" action="/admin#weather" className="fw-form" aria-label="Find your place">
+      <form
+        method="get"
+        action="/admin/settings/family#weather"
+        className="fw-form"
+        aria-label="Find your place"
+      >
         <label className="fw-field">
           <span className="fw-field__label">{place ? 'Change the place' : 'Town or ZIP code'}</span>
           <input

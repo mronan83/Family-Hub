@@ -74,3 +74,17 @@ export function healthStatus(jobsNeedingLook: number, brokenCalendars: number): 
   const n = jobsNeedingLook + brokenCalendars;
   return n ? warn(`${plural(n, 'thing')} to look at`) : ok('Everything is running');
 }
+
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+/** [ACC-08][CHR-05] Family options: the week's start day (and a change waiting), and check-offs. */
+export function familyStatus(
+  weekStart: number,
+  next: { day: number; on: string } | null,
+  approval: 'on' | 'off',
+): StatusLine {
+  const week = next
+    ? `Week starts ${DAYS[next.day]} from ${shortDate(next.on)}`
+    : `Week starts ${DAYS[weekStart]}`;
+  return ok(`${week} · check-offs ${approval === 'on' ? 'wait for a parent' : 'count at once'}`);
+}

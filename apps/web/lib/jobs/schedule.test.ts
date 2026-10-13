@@ -70,6 +70,8 @@ describe('[NFR-07] schedule and job registry', () => {
       scheduledAt: new Date(),
       since: null,
     });
+    // [ACC-08] First, a change to the week's start day whose day has come (WP-57).
+    expect(rpc.mock.calls[0]).toEqual(['apply_week_start', { p_household: 'h1' }]);
     expect(rpc).toHaveBeenCalledWith('close_household_day', { p_household_id: 'h1' });
     expect(rpc).toHaveBeenLastCalledWith('apply_points_rules', { p_household: 'h1' });
     expect(result).toEqual({
@@ -81,6 +83,19 @@ describe('[NFR-07] schedule and job registry', () => {
         bonuses: { posted: 1 },
       },
     });
+  });
+
+  it('[ACC-08] day_close fails the run when the week’s start day can’t be applied', async () => {
+    const rpc = vi.fn(async (name: string) =>
+      name === 'apply_week_start'
+        ? { data: null, error: { message: 'permission denied' } }
+        : { data: { closed: 0 }, error: null },
+    );
+    const db = { rpc } as unknown as SupabaseClient;
+    await expect(
+      JOBS.day_close!({ db, householdId: 'h1', scheduledAt: new Date(), since: null }),
+    ).rejects.toThrow('apply the week’s start day: permission denied');
+    expect(rpc).toHaveBeenCalledTimes(1);
   });
 
   it('[PTS-05] day_close fails the run when the bonus rules can’t be applied', async () => {

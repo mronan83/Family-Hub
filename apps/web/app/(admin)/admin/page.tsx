@@ -1,200 +1,184 @@
-import { Banner, Button } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
-import { day } from '@/lib/format';
+import { isoDay } from '@/lib/format';
+import { homeAlerts } from '@/lib/home-alerts';
 import { serverClient } from '@/lib/supabase/server';
-import { searchPlaces } from '@/lib/weather';
-import { revokeInvite, setApprovalMode } from './actions';
-import { loadApprovalMode } from './chores/data';
-import { AdminHeader } from './header';
-import { InviteForm } from './invite-form';
-import { WeatherSection } from './weather-section';
+import { HomeView, type SchoolToday } from './home-view';
 
 export const metadata: Metadata = { title: 'Home' };
 
-const WEEK_START = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const LONG = new Intl.DateTimeFormat('en-US', {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+const addDays = (d: string, n: number) =>
+  new Date(Date.parse(`${d}T12:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
+const dow = (d: string) => new Date(`${d}T12:00:00Z`).getUTCDay();
 
-const NOTICES: Record<string, string> = {
-  welcome: 'Your household is ready. Invite another admin below when you like.',
-  joined: 'You’ve joined the household.',
-  password: 'Your password is changed.',
-};
+interface YearRow {
+  id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  is_default: boolean;
+}
 
-const APPROVAL_NOTICES: Record<string, string> = {
-  on: 'Check-offs now wait for a parent. Ones already done stay done.',
-  off: 'Check-offs now count straight away. Any already waiting stay in Today for you to decide.',
-  failed: 'That didn’t save. Try again in a moment.',
-};
-
-// [ACC-01][ACC-02][ACC-03] Admin home: the household, its admins, and invites. Verified on the
-// server; every query runs as this admin through RLS. [BRD-04] Weather on the boards (WP-45): the
-// place, found by ?place=, and °F or °C.
+// [NFR-17][US-109] Home at a glance (WP-57, D-84): the alerts and the quick actions, read as this
+// admin through RLS. A waiting change to the week's start day applies here too once its day has come
+// [ACC-08]. The household's options are in Settings, Family options.
 export default async function AdminHome({
   searchParams,
 }: {
-  searchParams: Promise<{
-    welcome?: string;
-    joined?: string;
-    password?: string;
-    approval?: string;
-    place?: string;
-    weather?: string;
-  }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const db = await serverClient();
   const user = await requireSignedIn(db, '/admin');
-  const household = await adminHousehold(db!, user.userId);
+  let household = await adminHousehold(db!, user.userId);
   if (!household) redirect('/setup');
-
+  if ((await db!.rpc('apply_week_start', { p_household: household.id })).data === true) {
+    household = (await adminHousehold(db!, user.userId)) ?? household;
+  }
+  const h = household;
   const params = await searchParams;
-  const [admins, invites, approvalMode, weatherSettings, lastRead, found] = await Promise.all([
-    db!.rpc('household_admins', { p_household_id: household.id }),
+  const today = isoDay(h.timezone);
+  const nextWeekStart = addDays(today, 7 - ((dow(today) - h.weekStart + 7) % 7));
+  const nextWeekEnd = addDays(nextWeekStart, 6);
+
+  const [
+    approvals,
+    requests,
+    boards,
+    calendars,
+    menus,
+    jobs,
+    weather,
+    years,
+    closures,
+    invites,
+    nextMenus,
+  ] = await Promise.all([
+    db!
+      .from('chore_occurrence')
+      .select('id', { count: 'exact', head: true })
+      .eq('household_id', h.id)
+      .eq('status', 'pending_approval'),
+    db!
+      .from('redemption')
+      .select('id', { count: 'exact', head: true })
+      .eq('household_id', h.id)
+      .eq('status', 'requested'),
+    db!.from('device').select('name, last_seen_at, revoked_at').eq('household_id', h.id),
+    db!.from('calendar_source').select('name, status').eq('household_id', h.id),
+    db!.from('menu_source').select('name, adapter, status').eq('household_id', h.id),
+    db!.rpc('job_health', { p_household_id: h.id }),
+    Promise.all([
+      db!.from('household_settings').select('weather_place').eq('household_id', h.id).maybeSingle(),
+      db!.from('weather_reading').select('failed_at').eq('household_id', h.id).maybeSingle(),
+    ]),
+    db!
+      .from('school_year')
+      .select('id, name, start_date, end_date, is_default')
+      .eq('household_id', h.id)
+      .is('archived_at', null),
+    db!
+      .from('school_closure')
+      .select('id, name, closure_type, start_date, end_date, school_year_id')
+      .eq('household_id', h.id)
+      .lte('start_date', today)
+      .gte('end_date', today),
     db!
       .from('invite')
-      .select('id, email, expires_at')
-      .eq('household_id', household.id)
+      .select('email, expires_at')
+      .eq('household_id', h.id)
       .is('accepted_at', null)
       .is('revoked_at', null)
-      .gt('expires_at', new Date().toISOString())
-      .order('created_at'),
-    loadApprovalMode(db!, household.id),
+      .gt('expires_at', new Date().toISOString()),
     db!
-      .from('household_settings')
-      .select('weather_place, temperature_unit')
-      .eq('household_id', household.id)
-      .maybeSingle(),
-    db!
-      .from('weather_reading')
-      .select('temperature, high, weather_code, is_day, unit, read_at, failed_at, error')
-      .eq('household_id', household.id)
-      .maybeSingle(),
-    params.place ? searchPlaces(params.place) : Promise.resolve(null),
+      .from('school_menu_day')
+      .select('id', { count: 'exact', head: true })
+      .eq('household_id', h.id)
+      .gte('menu_date', nextWeekStart)
+      .lte('menu_date', nextWeekEnd),
   ]);
-  const w = lastRead.data;
-  const weatherNotice = (['saved', 'cleared', 'unit', 'failed'] as const).find(
-    (n) => n === params.weather,
-  );
-  const notice = Object.keys(NOTICES).find((k) => params[k as keyof typeof params]);
-  const approvalNotice = params.approval ? APPROVAL_NOTICES[params.approval] : undefined;
+  for (const r of [approvals, requests, boards, calendars, menus, jobs, years, closures]) {
+    if (r.error) throw new Error(`home: ${r.error.message}`);
+  }
+
+  const live = (years.data ?? []) as YearRow[];
+  const byDefault = (a: YearRow, b: YearRow) => Number(b.is_default) - Number(a.is_default);
+  const current = live
+    .filter((y) => y.start_date <= today && today <= y.end_date)
+    .sort(byDefault)[0];
+  const upcoming = live
+    .filter((y) => y.start_date > today)
+    .sort((a, b) => (a.start_date < b.start_date ? -1 : 1))[0];
+  const year = current ?? upcoming ?? null;
+  const off = (closures.data ?? []).find((c) => !current || c.school_year_id === current.id);
+  const school: SchoolToday = !current
+    ? { state: 'none', yearId: upcoming?.id ?? null }
+    : off
+      ? {
+          state: 'off',
+          yearId: current.id,
+          name: off.name,
+          snowDayId:
+            off.closure_type === 'snow_day' && off.start_date === today && off.end_date === today
+              ? off.id
+              : null,
+        }
+      : dow(today) === 0 || dow(today) === 6
+        ? { state: 'weekend', yearId: current.id }
+        : { state: 'school', yearId: current.id };
+
+  const menuRows = (menus.data ?? []) as { name: string; adapter: string; status: string }[];
+  const feeds = menuRows.filter((m) => m.adapter === 'nutrislice');
+  const alerts = homeAlerts({
+    now: new Date().toISOString(),
+    today,
+    approvals: approvals.count ?? 0,
+    requests: requests.count ?? 0,
+    boards: (
+      (boards.data ?? []) as {
+        name: string;
+        last_seen_at: string | null;
+        revoked_at: string | null;
+      }[]
+    ).map((b) => ({ name: b.name, lastSeenAt: b.last_seen_at, revoked: !!b.revoked_at })),
+    calendars: (calendars.data ?? []) as { name: string; status: string }[],
+    menuFeeds: feeds,
+    jobsNeedingLook: ((jobs.data ?? []) as { state: string }[]).filter(
+      (j) => j.state === 'failing' || j.state === 'stale',
+    ).length,
+    weather: {
+      place: weather[0].data?.weather_place ?? null,
+      failedAt: weather[1].data?.failed_at ?? null,
+    },
+    schoolYear: year
+      ? { name: year.name, startDate: year.start_date, endDate: year.end_date }
+      : null,
+    nextWeek: {
+      school: live.some((y) => y.start_date <= nextWeekEnd && nextWeekStart <= y.end_date),
+      menuDays: nextMenus.count ?? 0,
+    },
+    hasMenus: menuRows.length > 0,
+    invites: (invites.data ?? []).map((i) => ({ email: i.email, expiresAt: i.expires_at })),
+  });
 
   return (
-    <main className="fw-page fw-page--wide">
-      <AdminHeader current="/admin" />
-      {notice ? (
-        <Banner kind="info">{NOTICES[notice]}</Banner>
-      ) : approvalNotice ? (
-        <Banner kind={params.approval === 'failed' ? 'notice' : 'info'}>{approvalNotice}</Banner>
-      ) : null}
-
-      <section className="fw-card" aria-labelledby="household-heading">
-        <h1 id="household-heading">{household.name}</h1>
-        <p className="fw-muted">
-          {household.timezone.replaceAll('_', ' ')} · Week starts on{' '}
-          {WEEK_START[household.weekStart]}
-          {' · '}Signed in as {user.email}
-        </p>
-      </section>
-
-      <section className="fw-card" aria-labelledby="approval-heading">
-        <h2 id="approval-heading">Check-offs</h2>
-        <form action={setApprovalMode} className="fw-form" aria-label="Check-offs">
-          <fieldset className="fw-fieldset">
-            <legend className="fw-field__label">When a child checks something off</legend>
-            <label className="fw-choice">
-              <input
-                type="radio"
-                name="approval"
-                value="off"
-                defaultChecked={approvalMode === 'off'}
-              />
-              It counts straight away; a parent can uncheck it later
-            </label>
-            <label className="fw-choice">
-              <input
-                type="radio"
-                name="approval"
-                value="on"
-                defaultChecked={approvalMode === 'on'}
-              />
-              It waits for a parent to approve it
-            </label>
-          </fieldset>
-          <p className="fw-muted">
-            Each item can also always or never need a parent, on its own page. Switching changes
-            only what’s still to do.
-          </p>
-          <div className="fw-actions">
-            <Button type="submit" icon="check">
-              Save
-            </Button>
-          </div>
-        </form>
-      </section>
-
-      <WeatherSection
-        place={weatherSettings.data?.weather_place ?? null}
-        unit={weatherSettings.data?.temperature_unit === 'celsius' ? 'celsius' : 'fahrenheit'}
-        last={
-          w
-            ? {
-                temperature: Number(w.temperature),
-                high: Number(w.high),
-                code: w.weather_code,
-                isDay: w.is_day,
-                unit: w.unit === 'celsius' ? 'celsius' : 'fahrenheit',
-                readAt: w.read_at,
-                failedAt: w.failed_at,
-                error: w.error,
-              }
-            : null
-        }
-        timezone={household.timezone}
-        query={params.place ?? null}
-        found={found ? (found.ok ? { places: found.places } : { error: found.error }) : null}
-        notice={weatherNotice ?? null}
-      />
-
-      <section className="fw-card" aria-labelledby="admins-heading">
-        <h2 id="admins-heading">Admins</h2>
-        <ul className="fw-list">
-          {(admins.data ?? []).map((a: { user_id: string; email: string; role: string }) => (
-            <li key={a.user_id} className="fw-list__row">
-              <span>{a.email}</span>
-              <span className="fw-muted">{a.role === 'owner' ? 'Owner' : 'Admin'}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="fw-card" aria-labelledby="invite-heading">
-        <h2 id="invite-heading">Invite an admin</h2>
-        <InviteForm />
-        {invites.data && invites.data.length > 0 ? (
-          <>
-            <h3>Waiting to join</h3>
-            <ul className="fw-list" aria-label="Open invites">
-              {invites.data.map((i) => (
-                <li key={i.id} className="fw-list__row">
-                  <span>
-                    {i.email}
-                    <span className="fw-muted">
-                      {' '}
-                      · Expires {day(i.expires_at, household.timezone)}
-                    </span>
-                  </span>
-                  <form action={revokeInvite}>
-                    <input type="hidden" name="id" value={i.id} />
-                    <Button type="submit" variant="ghost" icon="close">
-                      Cancel invite
-                    </Button>
-                  </form>
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : null}
-      </section>
-    </main>
+    <HomeView
+      name={h.name}
+      dateLine={LONG.format(new Date(`${today}T12:00:00Z`))}
+      alerts={alerts}
+      school={school}
+      menuFeeds={feeds.length}
+      notice={
+        Object.keys(params).find((k) => k === 'welcome' || k === 'joined' || k === 'password') ??
+        params.done ??
+        null
+      }
+    />
   );
 }

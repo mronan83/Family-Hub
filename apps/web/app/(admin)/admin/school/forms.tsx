@@ -88,11 +88,19 @@ export function SchoolYearForm({ id, initial }: { id?: string; initial?: SchoolY
 }
 
 /** [SCH-01] Add a break or a day off: one day, or a range. */
-export function ClosureForm({ schoolYearId }: { schoolYearId: string }) {
+export function ClosureForm({
+  schoolYearId,
+  fromHome = false,
+}: {
+  schoolYearId: string;
+  /** [NFR-17] On Home (WP-57): a day off to start with, and back to Home once saved. */
+  fromHome?: boolean;
+}) {
   const [state, onSubmit, pending] = useFormAction(saveClosure, {} as FormState);
   return (
     <form onSubmit={onSubmit} className="fw-form" aria-label="Add a day off">
       <input type="hidden" name="schoolYearId" value={schoolYearId} />
+      {fromHome ? <input type="hidden" name="back" value="home" /> : null}
       <label className="fw-field">
         <span className="fw-field__label">Name</span>
         <input
@@ -106,7 +114,7 @@ export function ClosureForm({ schoolYearId }: { schoolYearId: string }) {
       </label>
       <label className="fw-field">
         <span className="fw-field__label">Kind</span>
-        <select className="fw-input" name="closureType" defaultValue="break">
+        <select className="fw-input" name="closureType" defaultValue={fromHome ? 'other' : 'break'}>
           {CLOSURE_TYPES.map((t) => (
             <option key={t} value={t}>
               {CLOSURE_LABELS[t]}

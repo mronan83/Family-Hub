@@ -585,6 +585,167 @@ body {
   color: var(--reward-text);
 }
 
+/* [NFR-17] Home at a glance (WP-57): alerts, each with where to deal with it, then quick actions. */
+.fw-alerts {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-alert {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-left: 4px solid var(--reward);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+}
+.fw-alert[data-level='note'] {
+  border-left-color: var(--primary);
+}
+.fw-alert__icon {
+  color: var(--reward-text);
+}
+.fw-alert[data-level='note'] .fw-alert__icon {
+  color: var(--primary-text);
+}
+.fw-alert__text {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.admin a.fw-alert__go {
+  white-space: nowrap;
+}
+.fw-alerts__clear {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  color: var(--primary-text);
+  font-weight: 600;
+}
+@media (max-width: 479px) {
+  .fw-alert {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .admin a.fw-alert__go {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+.fw-quick-wrap {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-quick-wrap h2 {
+  margin: 0;
+}
+.fw-card h3#heads-up-heading {
+  margin: var(--s-2) 0 0;
+}
+/* Four "add" tiles: a row on a laptop, two by two on a phone. */
+.fw-quick {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Then the meal, school and menu cards, each with its own buttons. */
+.fw-quick--cards {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+}
+@media (max-width: 599px) {
+  .fw-quick {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .fw-quick--cards {
+    grid-template-columns: 1fr;
+  }
+}
+.fw-quick__tile {
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: var(--s-2);
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 96px;
+  padding: var(--s-3) var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  color: var(--text);
+  text-decoration: none;
+}
+.admin a.fw-quick__tile {
+  color: var(--text);
+}
+.fw-quick__tile:hover {
+  border-color: var(--primary);
+}
+.fw-quick__card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  align-content: start;
+  gap: var(--s-2) var(--s-3);
+  box-sizing: border-box;
+  height: 100%;
+  padding: var(--s-3) var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+.fw-quick__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-sm);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-quick__name {
+  font-family: var(--font-display);
+  font-size: var(--t-heading);
+  font-weight: 800;
+}
+.fw-quick__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+.fw-quick__actions form {
+  display: contents;
+}
+.fw-quick__status {
+  font-weight: 600;
+  color: var(--text-soft);
+}
+.fw-quick__more,
+.fw-quick__link {
+  grid-column: 1 / -1;
+}
+.fw-quick__more summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--primary-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
 /* Admin forms and cards (WP-03) ------------------------------------------------------------- */
 .fw-page {
   display: grid;

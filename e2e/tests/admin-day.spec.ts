@@ -216,7 +216,8 @@ test('[CHR-05][D-22] with approval on, a child’s check-off waits for a parent:
   // Open again before switching: switching changes only what's still to do (D-22).
   systemEvent(table, 'admin_uncomplete');
 
-  await admin.goto('/admin');
+  // [D-84] The switch is in Settings, Family options (WP-57).
+  await admin.goto('/admin/settings/family');
   const form = admin.getByRole('form', { name: 'Check-offs', exact: true });
   await form.getByLabel('It waits for a parent to approve it').check();
   await form.getByRole('button', { name: 'Save', exact: true }).click();
@@ -251,7 +252,7 @@ test('[CHR-05][D-22] with approval on, a child’s check-off waits for a parent:
     column('Leo').getByRole('button', { name: 'Check off Set the table', exact: true }),
   ).toBeVisible();
 
-  await admin.goto('/admin');
+  await admin.goto('/admin/settings/family');
   await form.getByLabel('It counts straight away; a parent can uncheck it later').check();
   await form.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(admin.getByRole('status')).toContainText('Check-offs now count straight away.');

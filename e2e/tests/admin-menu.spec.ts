@@ -4,7 +4,7 @@ import { openSetting } from '../support/settings';
 
 // [NFR-15][US-107] The admin menu and Settings on the preview (WP-51, D-81), as Alex of the demo
 // family: Today carries how many check-offs wait for a parent, as the database counts them; Settings
-// has its six pages, each saying how it stands; Tags is one of them, and a page Settings holds has
+// has its seven pages (Family options first since WP-57), each saying how it stands; Tags is one of them, and a page Settings holds has
 // the way back.
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
@@ -32,6 +32,7 @@ test('[NFR-15][US-107] the menu, Today’s count, and Settings with Tags among i
   await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
   const tiles = page.getByRole('list', { name: 'Settings', exact: true }).getByRole('link');
   await expect(tiles.locator('.fw-settings__name')).toHaveText([
+    'Family options',
     'School',
     'Calendars',
     'Boards',
@@ -42,7 +43,7 @@ test('[NFR-15][US-107] the menu, Today’s count, and Settings with Tags among i
   const tags = Number(
     sql(`select count(*) from public.tag where household_id = '${DEMO}' and archived_at is null`),
   );
-  await expect(tiles.nth(3).locator('.fw-settings__status')).toHaveText(
+  await expect(tiles.nth(4).locator('.fw-settings__status')).toHaveText(
     tags ? `${tags} tag${tags === 1 ? '' : 's'}` : 'No tags yet',
   );
 

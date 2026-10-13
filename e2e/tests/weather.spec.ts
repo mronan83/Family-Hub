@@ -8,7 +8,7 @@ import { serviceRpc, sql as query } from '../support/db';
 // no job secret, and the e2e never calls the real weather service) and stores it. The done-when: with
 // a place set, the board shows the temperature now and today's high; with the source failing, the
 // weather hides and nothing else on the board changes. Then Alex switches to °C and stops showing the
-// weather on Home. The place is cleared at the end.
+// weather in Settings, Family options (WP-57). The place is cleared at the end.
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const BOARD = 'Weather e2e';
@@ -121,7 +121,7 @@ test('[BRD-04][US-1003] the done-when: with a place set, the board shows the tem
   await expect(weather()).toHaveAccessibleName('Weather: 63 degrees Fahrenheit, rain, high 68');
   await expect(weather()).toContainText('63°');
   await expect(weather()).toContainText('High 68°');
-  // [D-74] The credit is in Help and on Home, not on the board.
+  // [D-74] The credit is in Help and in Family options, not on the board.
   await expect(weather()).not.toContainText('Open-Meteo');
 });
 
@@ -139,8 +139,8 @@ test('[BRD-04][US-1003] the done-when: with the source failing, the weather hide
   await expect(weather()).toHaveAccessibleName('Weather: 64 degrees Fahrenheit, cloudy, high 68');
 });
 
-test('[BRD-04] on Home: Alex sees the place and the last read, switches to °C, then stops showing the weather', async () => {
-  await admin.goto('/admin');
+test('[BRD-04] in Family options: Alex sees the place and the last read, switches to °C, then stops showing the weather', async () => {
+  await admin.goto('/admin/settings/family');
   const section = admin.getByRole('region', { name: 'Weather on the boards' });
   await expect(section).toContainText(
     `The boards show the weather for ${PLACE_NAME} beside the clock.`,
