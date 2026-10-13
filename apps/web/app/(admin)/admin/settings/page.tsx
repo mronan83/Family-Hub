@@ -5,13 +5,14 @@ import { isoDay } from '@/lib/format';
 import {
   boardsStatus,
   calendarsStatus,
+  familyStatus,
   healthStatus,
   remindersStatus,
   schoolStatus,
   tagsStatus,
 } from '@/lib/settings-status';
 import { serverClient } from '@/lib/supabase/server';
-import { loadTags } from '../chores/data';
+import { loadApprovalMode, loadTags } from '../chores/data';
 import { loadMembers } from '../members/data';
 import { loadDevices, loadSettings } from '../reminders/data';
 import { loadYears } from '../school/data';
@@ -25,7 +26,7 @@ export default async function SettingsPage() {
   const user = await requireSignedIn(db, '/admin/settings');
   const household = await adminHousehold(db!, user.userId);
   if (!household) redirect('/setup');
-  const [years, calendars, boards, tags, members, jobs] = await Promise.all([
+  const [years, calendars, boards, tags, members, jobs, approval, week] = await Promise.all([
     loadYears(db!, household.id),
     db!.from('calendar_source').select('name, status').eq('household_id', household.id),
     db!
@@ -36,6 +37,12 @@ export default async function SettingsPage() {
     loadTags(db!, household.id),
     loadMembers(db!, household.id),
     db!.rpc('job_health', { p_household_id: household.id }),
+    loadApprovalMode(db!, household.id),
+    db!
+      .from('household_settings')
+      .select('week_start_next, week_start_next_on')
+      .eq('household_id', household.id)
+      .maybeSingle(),
   ]);
   for (const r of [calendars, boards, jobs]) {
     if (r.error) throw new Error(`settings: ${r.error.message}`);
@@ -52,6 +59,13 @@ export default async function SettingsPage() {
   return (
     <SettingsView
       status={{
+        '/admin/settings/family': familyStatus(
+          household.weekStart,
+          week.data?.week_start_next != null && week.data.week_start_next_on
+            ? { day: week.data.week_start_next, on: week.data.week_start_next_on }
+            : null,
+          approval,
+        ),
         '/admin/school': schoolStatus(
           years.map((y) => ({
             name: y.name,

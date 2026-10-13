@@ -8,7 +8,7 @@ import { expect, test, type Page } from '@playwright/test';
 // how it stands; a page it holds marks Settings and has the way back.
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Admin' });
-const SETTINGS = ['School', 'Calendars', 'Boards', 'Tags', 'Reminders', 'Health'];
+const SETTINGS = ['Family options', 'School', 'Calendars', 'Boards', 'Tags', 'Reminders', 'Health'];
 
 async function contrastOk(page: Page) {
   const { violations } = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze();
@@ -75,9 +75,12 @@ test.describe('on a laptop', () => {
     await page.goto('/dev/settings');
     const tiles = page.getByRole('list', { name: 'Settings', exact: true }).getByRole('link');
     await expect(tiles.locator('.fw-settings__name')).toHaveText(SETTINGS);
-    await expect(tiles.nth(3)).toHaveAttribute('href', '/admin/tags');
-    await expect(tiles.nth(2)).toHaveAttribute('href', '/admin/devices');
-    await expect(tiles.nth(3)).toContainText('6 tags');
+    // [ACC-08] Family options first (WP-57, D-84): the week's start day and how check-offs count.
+    await expect(tiles.nth(0)).toHaveAttribute('href', '/admin/settings/family');
+    await expect(tiles.nth(0)).toContainText('Week starts Sunday · check-offs count at once');
+    await expect(tiles.nth(4)).toHaveAttribute('href', '/admin/tags');
+    await expect(tiles.nth(3)).toHaveAttribute('href', '/admin/devices');
+    await expect(tiles.nth(4)).toContainText('6 tags');
     // A line that asks for a look says so in words and with an icon, never color alone.
     const warn = page.locator('.fw-settings__status[data-warn]');
     await expect(warn).toHaveText(['School can’t sync', '1 thing to look at']);

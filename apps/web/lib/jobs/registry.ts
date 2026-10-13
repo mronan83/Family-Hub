@@ -59,6 +59,9 @@ export const JOBS: Record<string, Job> = {
   // their history rebuilt through yesterday by the rules engine (D-55). [PTS-05] Last (WP-30), the
   // household's bonus rules are applied to that history; each bonus is posted once (D-57).
   async day_close({ db, householdId }) {
+    // [ACC-08] A change to the week's start day (WP-57, D-84) takes effect once its day has come.
+    const { error: wError } = await db.rpc('apply_week_start', { p_household: householdId });
+    if (wError) throw new Error(`apply the week’s start day: ${wError.message}`);
     const { data, error } = await db.rpc('close_household_day', { p_household_id: householdId });
     if (error) throw new Error(`close the day: ${error.message}`);
     const history = await rebuildHistories(db, householdId);

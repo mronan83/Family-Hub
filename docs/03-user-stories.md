@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.39: US-109 and US-110 added and built (WP-57, D-84): Home at a glance; the household's options in Settings, Family options. US-103, US-310 and US-1003 now say where their settings are.
 > v0.8.37: US-108, US-604, US-605 and US-912 added (WP-53 to WP-56): the household's own AI provider; short school days; the school calendar from a document; a polished, tidy layout everywhere.
 > v0.8.36: US-509 added and built (WP-52, D-82): the board's calendar as a time grid, and an event in full on a tap.
 > v0.8.35: US-107 as built (WP-51, D-81): one admin menu, Settings with each part's status, Tags in Settings.
@@ -124,6 +125,22 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a saved key, when I tap **Test connection**, then I see that it works, or the provider's reason in plain words.
 - Given a board or a preview, when it loads, then the key is not anywhere it can read.
 - Given I remove the key, when I save, then AI features say they need an account set up.
+
+### US-109 — See what needs me, and act in one tap
+**As a** parent **I want** Home to show what needs me and the things I do most, a tap away **so that** I can deal with the family in a minute on my phone.
+**Priority:** Should · **Phase:** P3 · **Reqs:** NFR-17
+- Given check-offs or reward requests wait, a board hasn't been seen for 15 minutes, a calendar or school menu fails, or a background job needs a look, when I open Home, then **Needs you** lists each with a button to where I deal with it.
+- Given there is no school menu for next week, no school year (or it ends within two weeks), the weather isn't updating, or an invite is about to run out, when I open Home, then **Heads-up** says so.
+- Given I deal with it, when I come back, then its alert is gone; none can be dismissed while its cause lasts.
+- Given Home, when I tap **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**, or **Plan a meal** or **New in the library**, then the page that adds it opens.
+- Given a school day, when I tap **No school today**, then today is a snow day, today's school-only items go at once and items already done stay; **Undo** makes it a school day again.
+- Given menu feeds, when I tap **Refresh school menu**, then they are fetched now.
+
+### US-110 — Set the family's options in one place
+**As an** admin **I want** the household's options together in Settings **so that** Home stays about today, and I know where to change how the family runs.
+**Priority:** Should · **Phase:** P3 · **Reqs:** ACC-08
+- Given **Settings → Family options**, when I open it, then I find the day the week starts on, check-offs, the weather on the boards, the admins and invites.
+- Given I choose a new start day, when I save, then the week now running keeps its days and the new day starts from the next week, as the page says; **Keep** cancels it.
 
 ---
 
@@ -722,7 +739,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Could · **Phase:** P3 · **Reqs:** BRD-04
 - Given a household location is set, when Today loads, then current and daily-high temperature display.
 - Given the weather source fails, when Today loads, then the widget hides without affecting other content.
-- As built (WP-45, D-69): an admin sets the place once on Home (**Weather on the boards**): a town's name or a US ZIP code, then **Use this** on the right match; °F or °C. The board shows the sky (an icon and a word), the temperature now and **High** today beside the clock, with "Weather by Open-Meteo.com"; it reads the weather every 30 minutes and at once after a change. When a read fails, the weather hides, nothing else on the board moves, and Home says why; offline, the board keeps its last reading until the day is over. **Show the weather beside the clock** on Boards turns it off for every board or one.
+- As built (WP-45, D-69): an admin sets the place once in **Family options** (**Weather on the boards**; on Home until WP-57): a town's name or a US ZIP code, then **Use this** on the right match; °F or °C. The board shows the sky (an icon and a word), the temperature now and **High** today beside the clock, with "Weather by Open-Meteo.com"; it reads the weather every 30 minutes and at once after a change. When a read fails, the weather hides, nothing else on the board moves, and Home says why; offline, the board keeps its last reading until the day is over. **Show the weather beside the clock** on Boards turns it off for every board or one.
 
 ### US-1004 — Configure the board layout
 **As an** admin **I want** to choose which panels appear and in what order **so that** the board fits our routine.

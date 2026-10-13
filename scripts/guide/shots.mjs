@@ -202,6 +202,21 @@ const SHOTS = [
   // The admin app -------------------------------------------------------------------------------
   // The menu and Settings (WP-51): Settings on a laptop with the menu beside it, the menu on a phone.
   { name: 'admin-settings-laptop', device: 'laptop', url: '/dev/settings' },
+  // Home at a glance and Family options (WP-57): what needs you and the quick actions; a quiet day
+  // with today's snow day on a phone; the week's start day with a change waiting.
+  { name: 'admin-home-laptop', device: 'laptop', url: '/dev/home', full: true },
+  {
+    name: 'admin-home-phone',
+    device: 'phone',
+    url: '/dev/home?state=quiet&school=off',
+    full: true,
+  },
+  {
+    name: 'admin-family-phone',
+    device: 'phone',
+    url: '/dev/family?state=pending',
+    maxHeight: 1400,
+  },
   {
     name: 'admin-menu-phone',
     device: 'phone',

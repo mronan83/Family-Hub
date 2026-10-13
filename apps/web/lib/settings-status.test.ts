@@ -3,6 +3,7 @@ import { NAV_GROUPS, navCurrent, SETTINGS_HREF, SETTINGS_PAGES, settingsPage } f
 import {
   boardsStatus,
   calendarsStatus,
+  familyStatus,
   healthStatus,
   remindersStatus,
   schoolStatus,
@@ -25,6 +26,7 @@ describe('the admin menu', () => {
       'Settings',
     ]);
     expect(SETTINGS_PAGES.map((p) => p.label)).toEqual([
+      'Family options',
       'School',
       'Calendars',
       'Boards',
@@ -40,6 +42,9 @@ describe('the admin menu', () => {
     expect(navCurrent('/admin/meals')).toBe('/admin/meals');
     expect(settingsPage('/admin/meals')).toBeNull();
     expect(settingsPage(SETTINGS_HREF)).toBeNull();
+    // [ACC-08] Family options (WP-57) is one of Settings' pages.
+    expect(navCurrent('/admin/settings/family')).toBe(SETTINGS_HREF);
+    expect(settingsPage('/admin/settings/family')?.label).toBe('Family options');
   });
 });
 
@@ -124,5 +129,17 @@ describe('Settings, how each part stands', () => {
     expect(remindersStatus(false, false, []).text).toBe('Off');
     expect(healthStatus(0, 0)).toEqual({ text: 'Everything is running', warn: false });
     expect(healthStatus(1, 1)).toEqual({ text: '2 things to look at', warn: true });
+  });
+});
+
+describe('[ACC-08] Family options, how it stands', () => {
+  it('says the start day (and a change waiting) and how check-offs count', () => {
+    expect(familyStatus(0, null, 'off')).toEqual({
+      text: 'Week starts Sunday · check-offs count at once',
+      warn: false,
+    });
+    expect(familyStatus(0, { day: 1, on: '2026-10-19' }, 'on').text).toBe(
+      'Week starts Monday from Oct 19 · check-offs wait for a parent',
+    );
   });
 });

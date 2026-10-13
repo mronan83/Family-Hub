@@ -24,6 +24,12 @@ export const SETTINGS_HREF = '/admin/settings';
 /** [NFR-15] The pages Settings holds, in its order. */
 export const SETTINGS_PAGES: readonly SettingsPage[] = [
   {
+    href: '/admin/settings/family',
+    label: 'Family options',
+    icon: 'family',
+    what: 'The day the week starts on, how check-offs count, the weather on the boards, and the admins.',
+  },
+  {
     href: '/admin/school',
     label: 'School',
     icon: 'backpack',
