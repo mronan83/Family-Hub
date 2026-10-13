@@ -38,23 +38,30 @@ describe('[NFR-17][US-109] Home alerts', () => {
     });
   });
 
-  it('misses a board once it is quiet for 15 minutes, never a disconnected one', () => {
-    expect(
-      keys({
-        boards: [{ name: 'Kitchen', lastSeenAt: '2026-10-13T13:46:00.000Z', revoked: false }],
-      }),
-    ).toEqual([]);
-    const [b] = homeAlerts({
-      ...quiet,
-      boards: [
-        { name: 'Kitchen', lastSeenAt: '2026-10-13T11:00:00.000Z', revoked: false },
-        { name: 'Old', lastSeenAt: null, revoked: true },
-      ],
+  it('gives a heads-up (not a "Needs you") for boards dark for a day, never a disconnected or new one', () => {
+    const board = (name: string, lastSeenAt: string | null, revoked = false) => ({
+      name,
+      lastSeenAt,
+      revoked,
     });
-    expect(b).toMatchObject({ key: 'board:Kitchen', text: 'Kitchen hasn’t been seen for 3 hours' });
-    expect(keys({ boards: [{ name: 'Den', lastSeenAt: null, revoked: false }] })).toEqual([
-      'board:Den',
-    ]);
+    // Asleep for hours, or never reported yet: nothing to say.
+    expect(keys({ boards: [board('Kitchen', '2026-10-13T02:00:00.000Z')] })).toEqual([]);
+    expect(keys({ boards: [board('Den', null)] })).toEqual([]);
+    const [one] = homeAlerts({
+      ...quiet,
+      boards: [board('Kitchen', '2026-10-11T14:00:00.000Z'), board('Old', null, true)],
+    });
+    expect(one).toMatchObject({
+      key: 'boards',
+      level: 'note',
+      text: 'Kitchen hasn’t been seen for 2 days',
+    });
+    // Several boards share one line.
+    const [many] = homeAlerts({
+      ...quiet,
+      boards: [board('Kitchen', '2026-10-11T14:00:00.000Z'), board('Den', '2026-10-10T14:00:00.000Z')],
+    });
+    expect(many).toMatchObject({ key: 'boards', text: '2 boards haven’t been seen for a day' });
   });
 
   it('names a calendar or menu that fails, and counts background jobs', () => {

@@ -36,8 +36,11 @@ export interface AlertFacts {
   invites: { email: string; expiresAt: string }[];
 }
 
-/** A board is missed once it hasn't reported in for this long (it does every 5 minutes). */
-export const BOARD_QUIET_MINUTES = 15;
+/**
+ * A board is missed once it hasn't reported in for this long (it does every 5 minutes while it is
+ * awake). A day, not minutes: an asleep or switched-off tablet is normal, and a parent can't act on it.
+ */
+export const BOARD_QUIET_MINUTES = 24 * 60;
 const SCHOOL_ENDS_SOON_DAYS = 14;
 const INVITE_SOON_HOURS = 48;
 
@@ -79,20 +82,6 @@ export function homeAlerts(f: AlertFacts): HomeAlert[] {
       cta: 'Decide',
     });
   }
-  for (const b of f.boards) {
-    if (b.revoked) continue;
-    const quiet = b.lastSeenAt ? minutesBetween(b.lastSeenAt, f.now) : Infinity;
-    if (quiet < BOARD_QUIET_MINUTES) continue;
-    act({
-      key: `board:${b.name}`,
-      icon: 'board',
-      text: b.lastSeenAt
-        ? `${b.name} hasn’t been seen for ${howLong(quiet)}`
-        : `${b.name} hasn’t been seen since it was paired`,
-      href: '/admin/devices',
-      cta: 'Boards',
-    });
-  }
   const broken = f.calendars.filter((c) => c.status === 'error');
   if (broken.length) {
     act({
@@ -126,6 +115,24 @@ export function homeAlerts(f: AlertFacts): HomeAlert[] {
       text: `${plural(f.jobsNeedingLook, 'background job')} ${f.jobsNeedingLook === 1 ? 'needs' : 'need'} a look`,
       href: '/admin/health',
       cta: 'Health',
+    });
+  }
+
+  // A dark board is usually just switched off or asleep, and nothing here can wake it, so it is a
+  // single heads-up after a long silence, never a "Needs you" row per board.
+  const dark = f.boards.filter(
+    (b) => !b.revoked && b.lastSeenAt && minutesBetween(b.lastSeenAt, f.now) >= BOARD_QUIET_MINUTES,
+  );
+  if (dark.length) {
+    note({
+      key: 'boards',
+      icon: 'board',
+      text:
+        dark.length === 1
+          ? `${dark[0]!.name} hasn’t been seen for ${howLong(minutesBetween(dark[0]!.lastSeenAt!, f.now))}`
+          : `${plural(dark.length, 'board')} haven’t been seen for a day`,
+      href: '/admin/devices',
+      cta: 'Boards',
     });
   }
 

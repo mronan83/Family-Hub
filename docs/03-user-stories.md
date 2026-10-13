@@ -130,7 +130,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-109 — See what needs me, and act in one tap
 **As a** parent **I want** Home to show what needs me and the things I do most, a tap away **so that** I can deal with the family in a minute on my phone.
 **Priority:** Should · **Phase:** P3 · **Reqs:** NFR-17
-- Given check-offs or reward requests wait, a board hasn't been seen for 15 minutes, a calendar or school menu fails, or a background job needs a look, when I open Home, then **Needs you** lists each with a button to where I deal with it.
+- Given check-offs or reward requests wait, a calendar or school menu fails, or a background job needs a look, when I open Home, then **Needs you** lists each with a button to where I deal with it.
 - Given there is no school menu for next week, no school year (or it ends within two weeks), the weather isn't updating, or an invite is about to run out, when I open Home, then **Heads-up** says so.
 - Given I deal with it, when I come back, then its alert is gone; none can be dismissed while its cause lasts.
 - Given Home, when I tap **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**, or **Plan a meal** or **New in the library**, then the page that adds it opens.
