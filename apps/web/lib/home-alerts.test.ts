@@ -59,7 +59,10 @@ describe('[NFR-17][US-109] Home alerts', () => {
     // Several boards share one line.
     const [many] = homeAlerts({
       ...quiet,
-      boards: [board('Kitchen', '2026-10-11T14:00:00.000Z'), board('Den', '2026-10-10T14:00:00.000Z')],
+      boards: [
+        board('Kitchen', '2026-10-11T14:00:00.000Z'),
+        board('Den', '2026-10-10T14:00:00.000Z'),
+      ],
     });
     expect(many).toMatchObject({ key: 'boards', text: '2 boards haven’t been seen for a day' });
   });
