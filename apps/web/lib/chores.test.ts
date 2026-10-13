@@ -11,6 +11,7 @@ import {
   parseFilters,
   defaultAssignment,
   historyLine,
+  lunchDaysNote,
   relativeDay,
   scheduleSchema,
   type ListItem,
@@ -92,6 +93,7 @@ describe('parseChore', () => {
         points: 5,
         approval: 'inherit',
         assignment: 'each',
+        lunchDays: null,
         tags: [KITCHEN],
         remindLeadMinutes: null,
         visibility: 'family',
@@ -121,6 +123,30 @@ describe('parseChore', () => {
     expect(read({ assignment: 'each' })).toBe('each');
     expect(read({ assignment: 'nonsense' })).toBe('each');
     expect(read({ kind: 'task', freq: 'once', onDate: '2026-11-20' })).toBe('shared');
+  });
+
+  it('[CHR-19] reads lunch days, and keeps them to items everyone does on their own', () => {
+    const read = (fields: Record<string, string | string[]>) => {
+      const parsed = parseChore(form({ ...base, ...fields }), { canSetVisibility: true });
+      return parsed.ok
+        ? { lunchDays: parsed.value.lunchDays, assignment: parsed.value.assignment }
+        : parsed.message;
+    };
+    expect(read({})).toEqual({ lunchDays: null, assignment: 'each' });
+    expect(read({ lunchDays: '' })).toEqual({ lunchDays: null, assignment: 'each' });
+    expect(read({ lunchDays: 'bring' })).toEqual({ lunchDays: 'bring', assignment: 'each' });
+    expect(read({ lunchDays: 'buy' })).toEqual({ lunchDays: 'buy', assignment: 'each' });
+    expect(read({ lunchDays: 'sometimes' })).toEqual({ lunchDays: null, assignment: 'each' });
+    // With one person a shared item becomes their own; with several it is a choice to make.
+    expect(read({ lunchDays: 'bring', assignment: 'shared', assignees: [MAYA] })).toEqual({
+      lunchDays: 'bring',
+      assignment: 'each',
+    });
+    expect(read({ lunchDays: 'bring', assignment: 'shared' })).toBe(
+      'Lunch days work when everyone does their own.',
+    );
+    const parsed = parseChore(form({ ...base, lunchDays: 'bring' }), { canSetVisibility: true });
+    expect(parsed.ok && chorePayload(parsed.value).lunch_days).toBe('bring');
   });
 
   it('[CHR-01][CHR-13] reads a private one-off task with no time and no points', () => {
@@ -210,6 +236,7 @@ describe('parseChore', () => {
       points: 5,
       approval: 'inherit',
       assignment: 'each',
+      lunch_days: null,
       schedule: { freq: 'daily' },
       due_time: '07:30',
       day_types: ALL_DAYS,
@@ -227,11 +254,22 @@ describe('choreSaveMessage', () => {
     );
     expect(choreSaveMessage({ code: 'P0002' })).toMatch(/isn’t there any more/);
     expect(choreSaveMessage({ code: '23514' })).toMatch(/Check the schedule/);
+    expect(
+      choreSaveMessage({
+        code: '23514',
+        message: 'new row for relation "chore" violates check constraint "chore_lunch_days_each"',
+      }),
+    ).toBe('Lunch days work when everyone does their own.');
     expect(choreSaveMessage({ code: '08006' })).toBe('That didn’t save. Try again in a moment.');
   });
 });
 
 describe('words for the list', () => {
+  it('[CHR-19] says which lunch days an item follows', () => {
+    expect(lunchDaysNote('bring')).toBe('on days they bring lunch');
+    expect(lunchDaysNote('buy')).toBe('on days they buy lunch');
+  });
+
   it('[CHR-11] groups due times into morning, after school, evening and anytime', () => {
     expect(
       ['07:30', '11:59', '12:00', '16:00', '16:59', '17:00', '19:00', null].map(dayPart),

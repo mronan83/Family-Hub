@@ -45,9 +45,8 @@ begin
   end loop;
 end $$;
 
--- Every sign-in, and the schema the app lives in. Dropping private's functions with cascade also
--- removes anything else that used them.
-delete from auth.users;
+-- The schema the app lives in. Dropping private's functions with cascade also removes anything
+-- else that used them.
 drop schema if exists private cascade;
 
 -- What the migrations made in public: tables (with their views, policies, triggers and sequences),
@@ -98,6 +97,10 @@ begin
     execute format('drop type if exists %s cascade', r.oid::regtype);
   end loop;
 end $$;
+
+-- Every sign-in, now that no table of the app's refers to one (a paired board's device does, and
+-- its key does not cascade).
+delete from auth.users;
 
 -- The migration history, so every migration in the checkout applies again.
 do $$

@@ -12,6 +12,7 @@ import {
   dueSummary,
   filterItems,
   KIND_LABELS,
+  lunchDaysNote,
   parseFilters,
   relativeDay,
 } from '@/lib/chores';
@@ -168,6 +169,7 @@ export default async function ChoresPage({
                         {KIND_LABELS[c.kind]}
                         {' · '}
                         {describeSchedule(c.schedule, c.kind)}
+                        {c.lunchDays ? ` · ${lunchDaysNote(c.lunchDays)}` : ''}
                         {c.dueTime ? ` · ${clock(c.dueTime)}` : ''}
                         {c.points > 0 ? ` · ${c.points} points` : ''}
                         {due.get(c.id)?.next

@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.17: chores on lunch days (WP-61, D-86): **School lunch** in an item's **More options**, so "Pack lunch" or "Empty lunch box" comes up only on the days a child brings lunch (A4, A15, B1, B4).
 > v0.16: Home at a glance and Family options (WP-57, D-84): **Needs you**, **Heads-up** and **Quick actions** on Home, **No school today**, and the household's options (the week's start day, check-offs, weather, admins and invites) in Settings, Family options (A1, A2, A10, A13, B1).
 > v0.14: the board's calendar as a time grid (WP-52, D-82): all-day events across the top, the hours down the side, now, and an event's details at a tap (A5, A9).
 > v0.13: one admin menu (WP-51, D-81): the menu in three groups, **Settings** with each part's state, Tags in Settings, and Today's count (A4, B1).
@@ -285,7 +286,7 @@ Reminders come only for items you are on, at most once each, and never after the
 ![The Reminders page on a phone: reminders on, two devices with Send a test, Switch off and Remove, and the When to remind me settings.](guide/img/admin-reminders-phone.jpg "Reminders, on a phone")
 
 ### A4 Setting up chores and tasks
-<!-- covers: US-301 US-302 US-308 US-311 US-312 US-313 US-314 US-315 US-320 -->
+<!-- covers: US-301 US-302 US-308 US-311 US-312 US-313 US-314 US-315 US-320 US-321 -->
 
 **What this is.** The family list: everything anyone in the family does, adults included, on **Chores**. **When.** At the start, then whenever something changes. **How.** Go to **Chores** and choose **Add a chore** or **Add a task**.
 
@@ -308,7 +309,7 @@ Reminders come only for items you are on, at most once each, and never after the
 8. Set **Points**: 5 for a new chore and 0 for a new task, until you change it. Only members who earn rewards collect points.
 9. Optionally, tick **Tags** (see below).
 10. Optionally, switch on **Private** (see below).
-11. Under **More options**, optionally set **Approval** and **On these days** (for example, homework on **School days** only).
+11. Under **More options**, optionally set **Approval**, **On these days** (for example, homework on **School days** only) and **School lunch** (see [Chores on lunch days](#chores-on-lunch-days)).
 12. Choose **Save**, or **Save and add another** to enter the next one straight away.
 
 > **Tip:** **Save and add another** keeps the same kind (chore or task), so you can enter the whole family list in a few minutes.
@@ -325,6 +326,18 @@ Choose **Edit** beside it. Its page shows the form, then **Coming up** (the next
 #### Shared items and who did it
 
 An item for several people with **Any one of them** is one item a day, shared. Whoever checks it off is recorded as doing it, and it is done for everyone. For the others it counts as **Covered**: neither done nor missed. If several people did it together, pick them all: each one who earns rewards gets the points. If nobody does a shared chore, it is missed for everyone on it.
+
+#### Chores on lunch days
+
+Some chores only make sense on the days a child brings lunch: packing it in the morning, emptying the lunch box after school. Under **More options**, **School lunch** chooses:
+
+- **Any day**: as usual. New items start like this.
+- **Days they bring lunch**: each child has it only on the days they bring lunch.
+- **Days they buy lunch**: each child has it only on the days they buy (say, "Take lunch money").
+
+It follows each child's lunch as **Meals** has it (see [School lunch: buy or bring](#school-lunch-buy-or-bring)): the usual week, and any day you changed. An adult never has it, and nobody has it at a weekend, in a break or on a day off. Change a child's lunch and their list follows at once, today included: if Maya buys today after all, today's "Pack lunch" leaves her list straight away. One she already checked off stays.
+
+Each child has their own lunch, so a lunch-day item is always **Everyone does their own**: choosing lunch days sets it, and **Any one of them** waits until you choose **Any day** again. The list shows it after how often it happens, like "Every day · on days they bring lunch".
 
 #### Tags
 
@@ -819,6 +832,8 @@ Under **Copy last week**, choose what happens where this week already has someth
 - **Change one day:** tap it. **Buy** becomes **Bring** and the other way round, and the day says **Changed**. Tap it again to put it back to the usual.
 - **The usual week:** under **Usual week**, choose **Buy** or **Bring** for each weekday for a child, then **Save** (their name)**'s usual lunches**. A day you had changed to what is now the usual stops being a change.
 
+A chore can follow these days, like "Pack lunch" only when a child brings: see [Chores on lunch days](#chores-on-lunch-days).
+
 ![School lunch on a laptop: Leo and Maya across the week, Buy or Bring on school days, Leo's Tuesday changed, Thursday no school; then each child's usual week.](guide/img/admin-lunch-laptop.jpg "School lunch, on a laptop")
 
 #### School menus: what the school serves
@@ -959,6 +974,7 @@ If a device can no longer get notifications, it is removed and the page says so:
 | **Private** | Only for the item's creator. Off the board; seen only by its creator and the people it's for who sign in. |
 | **More options**: **Approval** | **Family setting** (shows whether approval is on or off), **Always needs a parent's OK**, **Never needs a parent's OK**. |
 | **More options**: **On these days** | **School days**, **Days off school**, **School breaks**, **Weekends**, **Summer**. At least one; all to start. |
+| **More options**: **School lunch** | **Any day** (to start), **Days they bring lunch**, **Days they buy lunch**. Lunch days make the item **Everyone does their own**. |
 | Buttons | **Save**, **Save and add another**, **Cancel**; **Save changes** when editing. |
 
 **An item's page** also shows **Coming up** (the next two weeks, with who), **Last 7 days** (each day's result and who did it), and **Archive** / **Restore**.
@@ -1381,7 +1397,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Board: **Today's list may be out of date** | Planning or day closing is late or failing. | Open **Health** in the admin app. |
 | Board: **Can't reach FamilyWise** | The page couldn't load. | It tries again every 30 seconds. Check the wifi. |
 | Board: **Pair this board** with "This board was disconnected" | Someone disconnected it on **Boards**. | Get a new code on **Boards**, **Add a board**, and pair it again. |
-| Board: a chore isn't there | It isn't due today for that person, it's private, its person is archived, or it doesn't happen on today's day type. | Check the item on **Chores** (**Coming up**, **How often**, **On these days**) and **School**. |
+| Board: a chore isn't there | It isn't due today for that person, it's private, its person is archived, it doesn't happen on today's day type, or it follows lunch days and that child's lunch today is the other one. | Check the item on **Chores** (**Coming up**, **How often**, **On these days**, **School lunch**), **School**, and the child's lunch on **Meals**. |
 | Board: a child's tap shows **Waiting for a parent** | Approval is on, or the item always needs a parent. | Approve it on **Today**. |
 | Board: "Too late to undo here. Ask a parent." | The 2-minute undo window has passed. | Uncheck it on **Today**. |
 | Board: a calendar note "hasn't updated since" | That calendar can't sync. | Open **Calendars**: its line says why and what to do. |

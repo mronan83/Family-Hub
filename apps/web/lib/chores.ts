@@ -22,6 +22,19 @@ export const ASSIGNMENT_LABELS: Record<Assignment, string> = {
 };
 export const defaultAssignment = (kind: Kind): Assignment => (kind === 'chore' ? 'each' : 'shared');
 
+/**
+ * [CHR-19] An item everyone does on their own can follow each child's school lunch (WP-61, D-86):
+ * only on days they bring it (pack it, empty the lunch box) or only on days they buy it.
+ */
+export const LUNCH_DAYS = ['bring', 'buy'] as const;
+export type LunchDays = (typeof LUNCH_DAYS)[number];
+export const LUNCH_DAYS_LABELS: Record<LunchDays, string> = {
+  bring: 'Days they bring lunch',
+  buy: 'Days they buy lunch',
+};
+/** In the list: "Every day · on days they bring lunch". */
+export const lunchDaysNote = (l: LunchDays) => `on ${LUNCH_DAYS_LABELS[l].toLowerCase()}`;
+
 export const APPROVALS = ['inherit', 'required', 'none'] as const;
 export type Approval = (typeof APPROVALS)[number];
 
@@ -86,6 +99,8 @@ export interface ChoreInput {
   points: number;
   approval: Approval;
   assignment: Assignment;
+  /** [CHR-19] Only on the person's bring or buy days; null is any day. */
+  lunchDays: LunchDays | null;
   tags: string[];
   /** Left out when the form does not offer it (only an item's creator changes who sees it). */
   visibility?: 'family' | 'private';
@@ -148,9 +163,21 @@ export function parseChore(
     return { ok: false, message: 'Choose when it reminds.' };
   }
   const assignmentText = String(form.get('assignment') ?? '');
-  const assignment = (ASSIGNMENTS as readonly string[]).includes(assignmentText)
+  let assignment = (ASSIGNMENTS as readonly string[]).includes(assignmentText)
     ? (assignmentText as Assignment)
     : defaultAssignment(kind);
+  const lunchText = String(form.get('lunchDays') ?? '');
+  const lunchDays = (LUNCH_DAYS as readonly string[]).includes(lunchText)
+    ? (lunchText as LunchDays)
+    : null;
+  // Each person has their own lunch, so a lunch-day item is always everyone's own; with one
+  // person that changes nothing they see.
+  if (lunchDays && assignment === 'shared') {
+    if (assignees.length > 1) {
+      return { ok: false, message: 'Lunch days work when everyone does their own.' };
+    }
+    assignment = 'each';
+  }
 
   return {
     ok: true,
@@ -165,6 +192,7 @@ export function parseChore(
       points,
       approval,
       assignment,
+      lunchDays,
       tags: ids(form, 'tags'),
       remindLeadMinutes,
       ...(canSetVisibility
@@ -207,6 +235,7 @@ export function chorePayload(input: ChoreInput): Record<string, unknown> {
     points: input.points,
     approval: input.approval,
     assignment: input.assignment,
+    lunch_days: input.lunchDays,
     schedule: input.schedule,
     due_time: input.dueTime,
     day_types: input.dayTypes,
@@ -215,8 +244,15 @@ export function chorePayload(input: ChoreInput): Record<string, unknown> {
 }
 
 /** Database errors on a save, as lines for the admin (hints from the chores migration). */
-export function choreSaveMessage(error: { code?: string | null; hint?: string | null }): string {
+export function choreSaveMessage(error: {
+  code?: string | null;
+  hint?: string | null;
+  message?: string | null;
+}): string {
   if (error.hint === 'chore_needs_assignee') return 'Choose who it’s for.';
+  if (error.message?.includes('chore_lunch_days_each')) {
+    return 'Lunch days work when everyone does their own.';
+  }
   if (error.hint === 'visibility_creator_only') {
     return 'Only the person who created this item can change who sees it.';
   }
