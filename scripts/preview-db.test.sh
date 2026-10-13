@@ -59,9 +59,12 @@ check "[ACC-02] the derivation matches the app's test vector" \
 check "[ACC-02] passwords are stored as bcrypt hashes, never in clear" \
   "$(is "$(q "select count(*) from auth.users where email like '%@demo.familywise.invalid' and encrypted_password like '\$2a\$10\$%'")" "4")"
 
-# Leftovers from a run before: an extra household, a sign-in and a migration only that run had.
+# Leftovers from a run before: an extra household, a sign-in, a board paired to it (a device's
+# sign-in is referenced from public.device) and a migration only that run had.
 q "insert into public.household (id, name, timezone) values ('99999999-0000-4000-8000-000000000001', 'Leftover', 'UTC');
    insert into auth.users (id, email) values ('99999999-0000-4000-8000-000000000002', 'left@example.com');
+   insert into public.device (household_id, name, auth_user_id) values
+     ('99999999-0000-4000-8000-000000000001', 'Leftover board', '99999999-0000-4000-8000-000000000002');
    insert into supabase_migrations.schema_migrations (version, name) values ('29990101000000', 'another_branch');" >/dev/null
 run; rc=$?
 check "[D-85] a second run starts from an empty database: nothing a run before left behind stays" \
