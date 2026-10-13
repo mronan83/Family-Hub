@@ -49,6 +49,7 @@
 | CHR-17 | A person may turn on a daily digest at a chosen time listing their overdue and today's items, and set quiet hours that hold reminders until they end; notifications for private items hide the title on the lock screen. | M | P2 | User |
 | CHR-18 | An item with several assignees shall be either shared (one occurrence per due date, done by whoever gets to it) or each person's own (one occurrence per assignee per due date, each with its own status and credit, due by that person's own day type). New chores default to each person's own, new tasks to shared. | M | P1 | User |
 | CHR-19 | An item each person does on their own may follow each child's school lunch: due for a person only on their bring days, or only on their buy days (MEAL-04), so never for an adult or on a day without school. A change to a child's lunch, for one day or their usual week, shall re-plan their items at once, today included, keeping any already acted on. | M | P2 | User |
+| CHR-20 | A parent with notifications on shall be alerted when a check-off waits for a parent's OK or a child asks for a reward: at most one alert per reminders run, grouping what became waiting since the last, held in quiet hours, opening where it is cleared, and switchable per parent (on by default). | S | P2 | User |
 | RWD-01 | Admins shall create, edit, and archive reward goals with title, image, assignee, start date, and end date. | M | P1 | User |
 | RWD-02 | Goals shall support rule types COUNT, STREAK, DAILY_ALL_DONE, and POINTS, scoped to all items, household tags (by id), or specific items. | M | P1 | User |
 | RWD-03 | A goal shall combine its rules with ALL or ANY logic. | M | P1 | Derived |
@@ -86,12 +87,15 @@
 | MEAL-06 | The board shall show today's meals and a weekly view, read-only. | M | P2 | Derived |
 | MEAL-07 | Meals shall store structured ingredients so a grocery list can be added later. | C | P3 | Design |
 | MEAL-09 | A child shall choose buy or bring for each school day of the coming week on the board, seeing what the school serves each day; a weekly item on the family list can open it, and parents see the choices and who made them in the admin app. Meals themselves stay read-only on the board (MEAL-06). | S | P2 | User |
-| MEAL-08 | A slot shall allow multiple ordered entries (for example snacks), scoped to the household or a member. | S | P2 | Derived |
+| MEAL-08 | A slot shall allow multiple ordered entries (for example snacks), scoped to the household or a member (any set of members since MEAL-10). | S | P2 | Derived |
+| MEAL-10 | A planned meal shall be for everyone or for any set of members; the board shows each one's face, a person's own screen shows the entries that include them, and copying a week keeps each entry's people. | M | P2 | User |
+| MEAL-11 | On a buy day of the coming week, a child shall pick from the day's menu on the board: one entree, one or more fruits and vegetables, and one milk (each section's options as MENU-06 reads them); the board then shows the picks, and a parent sees and can change them on Meals. | S | P2 | User |
 | MENU-01 | Admins shall configure a menu source and link it to a child's school profile. | M | P2 | User |
 | MENU-02 | Menu import shall use a pluggable adapter interface (Nutrislice, SchoolCafe, Linq Connect, CSV, manual). | M | P2 | Design |
 | MENU-03 | Admins shall import menus from CSV or edit a day manually; edits are overrides that adapters never overwrite. | M | P2 | Design |
 | MENU-04 | Menus shall be cached, failures surfaced, and meal planning never blocked by a failed import. | M | P2 | Design |
 | MENU-05 | Menus shall refresh daily over a 28-day window. | S | P2 | Design |
+| MENU-06 | A day's menu shall be read as sections of options: "or" separates options, "with" joins an item to the option before it. The board's home screen shows a buy day's entree options only, and the Meals screen each section's options, so a menu never shows as one long paragraph. | S | P2 | User |
 | BRD-01 | The board shall have a Today screen with chores, events, meals, and goal progress. | M | P1 | User |
 | BRD-02 | The board shall let a family member select their profile and filter to their items, and, for a member who earns rewards, their points and goals. | M | P1 | Derived |
 | BRD-03 | Child-facing UI shall be icon-first with touch targets of at least 56 logical px (about 21 mm on the 4K reference panel; target 96 or more for primary actions) and text legible at 2 m. The calendar's time grid is read up close: its events' text may be 20–24 px and their blocks 30 px tall (D-82). | M | P1 | User |
@@ -169,6 +173,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CHR-17 | US-319 | WP-40 | NOTIFY, ADM, DB | reminder_preference, reminder_delivery | DB, INT, E2E, U |
 | CHR-18 | US-320 | WP-43 | ADM, OCCGEN, DB | chore, chore_occurrence | DB, U, E2E |
 | CHR-19 | US-321 | WP-61 | ADM, OCCGEN, DB | chore, chore_occurrence, lunch_override, member_lunch | DB, U, E2E |
+| CHR-20 | US-322 | WP-63 | NOTIFY, SCHED, ADM, DB | reminder_preference, reminder_delivery, chore_occurrence, redemption | DB, U, E2E |
 | RWD-01 | US-401 | WP-19 | ADM, API | reward_goal | E2E |
 | RWD-02 | US-312, US-401 | WP-15 | RULES, DB | reward_rule, tag | U |
 | RWD-03 | US-401 | WP-15 | RULES | reward_goal | U |
@@ -207,11 +212,14 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | MEAL-07 | US-706 | WP-36 | ADM | meal | U |
 | MEAL-08 | US-701 | WP-25 | ADM | meal_plan_entry | U, DB, E2E |
 | MEAL-09 | US-707 | WP-49 | BRD, API, DB, ADM | lunch_override, member_lunch, school_menu_day, chore | U, DB, E2E |
+| MEAL-10 | US-708 | WP-62 | ADM, BRD, DB | meal_plan_entry, meal_plan_entry_member | U, DB, E2E |
+| MEAL-11 | US-707 | WP-49 | BRD, ADM, DB | school_menu_day, lunch_choice | U, DB, E2E |
 | MENU-01 | US-801 | WP-27 | ADM, MENUIMP | menu_source, member_lunch | U, DB, E2E |
 | MENU-02 | US-801 | WP-27 | MENUIMP | menu_source | U, DB, E2E |
 | MENU-03 | US-802 | WP-27 | ADM, MENUIMP | school_menu_day | U, DB, E2E |
 | MENU-04 | US-803 | WP-27 | MENUIMP, ADM, OBS | school_menu_day, menu_source | U, DB, E2E |
 | MENU-05 | US-803 | WP-27 | MENUIMP, SCHED | school_menu_day | U, DB, E2E |
+| MENU-06 | US-804 | WP-64 | MENUIMP, BRD, ADM | school_menu_day | U, E2E |
 | BRD-01 | US-303, US-1001 | WP-11, WP-35 | BRD | board_snapshot | E2E |
 | BRD-02 | US-1002 | WP-11 | BRD | member | E2E |
 | BRD-03 | US-905 | WP-11 | BRD | — | E2E, HW, REV |
@@ -254,12 +262,12 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 |---|---|---|---|---|
 | P0 | 13 | 1 | 0 | 14 |
 | P1 | 52 | 5 | 0 | 57 |
-| P2 | 13 | 9 | 1 | 23 |
+| P2 | 14 | 12 | 1 | 27 |
 | P3 | 0 | 13 | 4 | 17 |
-| **Total** | **78** | **28** | **5** | **111** |
+| **Total** | **79** | **31** | **5** | **115** |
 
-- Requirements: **111** · with at least one story: **111** · stories: **100** (P0: 12 · P1: 52 · P2: 19 · P3: 17).
-- With at least one work package: **111** · work packages: **61**.
+- Requirements: **115** · with at least one story: **115** · stories: **103** (P0: 12 · P1: 52 · P2: 22 · P3: 17).
+- With at least one work package: **115** · work packages: **64**.
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -268,18 +276,18 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 
 | Component | Requirements |
 |---|---|
-| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, BRD-08, BRD-09, CAL-03, CAL-04, CAL-05, CAL-09, CAL-10, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, MEAL-09, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, NFR-16, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08, SCH-05 |
-| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, ACC-07, ACC-08, BRD-05, BRD-08, CAL-01, CAL-03, CAL-05, CAL-06, CAL-09, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MEAL-09, MENU-01, MENU-03, MENU-04, NFR-05, NFR-11, NFR-13, NFR-15, NFR-16, NFR-17, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04, SCH-05, SCH-06 |
+| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, BRD-08, BRD-09, CAL-03, CAL-04, CAL-05, CAL-09, CAL-10, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, MEAL-09, MEAL-10, MEAL-11, MENU-06, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, NFR-16, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08, SCH-05 |
+| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, ACC-07, ACC-08, BRD-05, BRD-08, CAL-01, CAL-03, CAL-05, CAL-06, CAL-09, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MEAL-09, MEAL-10, MEAL-11, MENU-01, MENU-03, MENU-04, MENU-06, NFR-05, NFR-11, NFR-13, NFR-15, NFR-16, NFR-17, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04, SCH-05, SCH-06 |
 | `API` | ACC-03, ACC-07, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, DEV-01, DEV-06, MEAL-03, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, PTS-06, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13, SCH-06 |
 | `AUTH` | DEV-01, DEV-02, DEV-03 |
 | `RULES` | CHR-10, PTS-05, PTS-07, RWD-02, RWD-03, RWD-04, RWD-05, RWD-06, RWD-10, RWD-11, RWD-12, RWD-13 |
 | `OCCGEN` | CHR-02, CHR-03, CHR-09, CHR-11, CHR-12, CHR-18, CHR-19, SCH-03 |
 | `CALSYNC` | CAL-01, CAL-02, CAL-03, CAL-06, CAL-07, CAL-08, CAL-10, SCH-04 |
-| `MENUIMP` | MEAL-05, MENU-01, MENU-02, MENU-03, MENU-04, MENU-05 |
-| `NOTIFY` | CHR-15, CHR-16, CHR-17 |
+| `MENUIMP` | MEAL-05, MENU-01, MENU-02, MENU-03, MENU-04, MENU-05, MENU-06 |
+| `NOTIFY` | CHR-15, CHR-16, CHR-17, CHR-20 |
 | `OUTBOX` | CHR-04, DEV-06, NFR-01, PTS-04 |
-| `SCHED` | ACC-08, CAL-02, CHR-03, CHR-07, CHR-12, CHR-16, MENU-05, NFR-07, PTS-05, RWD-04, RWD-06, RWD-11 |
-| `DB` | ACC-01, ACC-04, ACC-05, ACC-08, CAL-05, CAL-09, CAL-10, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, DEV-02, DEV-05, MEAL-04, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, NFR-17, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03, SCH-05 |
+| `SCHED` | ACC-08, CAL-02, CHR-03, CHR-07, CHR-12, CHR-16, CHR-20, MENU-05, NFR-07, PTS-05, RWD-04, RWD-06, RWD-11 |
+| `DB` | ACC-01, ACC-04, ACC-05, ACC-08, CAL-05, CAL-09, CAL-10, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-02, DEV-05, MEAL-04, MEAL-09, MEAL-10, MEAL-11, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, NFR-17, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03, SCH-05 |
 | `RT` | DEV-05 |
 | `VAULT` | ACC-07, CAL-01, CAL-08, NFR-04 |
 | `SAUTH` | ACC-02, ACC-03, ACC-06, DEV-01, DEV-02, NFR-04 |
@@ -422,6 +430,8 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.103 | WP-61 done (PR #66): approved by the owner and merged once CI and e2e were green on the preview, on the test database (135 passed, no retries, in 14.8 min; `chores.spec`: an item made on the form with **Days they bring lunch** planned exactly on each child's bring days for two weeks, and still after a day's change; DEV-05 p95 1,459 ms, BRD-05 p90 1,513 ms). The second e2e run on the test database, so clean: 2 of 2 so far (WP-60's tally). |
+| 0.8.102 | Three asks from the owner recorded, not yet built (D-87, D-88, D-89): WP-62 a meal for any mix of people (MEAL-10, US-708; a gap in WP-25 fixed as a bug); WP-63 a phone alert when a check-off or a reward request waits for a parent (CHR-20, US-322); WP-64 the school menu read as sections of options (MENU-06, US-804); and WP-49 grows to picking a buy day's entree, fruits and vegetables and milk on the board (MEAL-11, US-707). Order, the owner's: WP-62, WP-63, WP-58, WP-64, WP-49. |
 | 0.8.101 | WP-61 chores on lunch days (CHR-19, US-321, D-86), in review: an item everyone does on their own can follow each child's school lunch (**More options → School lunch**: any day, days they bring lunch, days they buy lunch). `chore.lunch_days` (an `each` item's only, `chore_lunch_days_each`); `private.occurrence_due()` checks `lunch_mode()`; a change to a child's lunch re-plans their lunch-day items at once (`trg_lunch_override_replan`, `trg_member_lunch_replan`, `private.replan_lunch_days()`), today included when it is today's. Migration `20261014100000_lunch_days`. Tests: pgTAP `400_lunch_days` (the plan by child, adult and weekend; a day's change and back; a new usual week; today's change keeping one checked off; a shared item refused; an edit without lunch days keeps them); unit `lib/chores.test.ts`; the UI suite's `lunch-days.spec.ts`; e2e `chores.spec.ts` (made on the form, the plan matching each child's lunch for two weeks, and after a day's change). The user guide says how (version 0.17). |
 | 0.8.100 | WP-60 merged (PR #65): approved by the owner and merged once CI and e2e were green on the preview, the first run on the test database (134 passed, no retries, in 14.7 min; DEV-05 p95 1.45 s). Two earlier runs on the test database failed in set-up, not in a test: the job list is written only by the deploy (now `job-schedules.mjs --table-only` writes it for the run), and `pg_cron`'s grants outlived an emptied database (the reset now drops the extension). Production deployed and healthy. The week's tally of e2e runs on the test database (WP-60's done-when) is kept from here. The next run (PR #66's first) stopped in the reset, before any test: a board paired in the run before still pointed to its sign-in, and sign-ins were deleted before the app's tables. The reset now deletes them last, and `scripts/preview-db.test.sh` leaves a paired board behind to prove it. |
 | 0.8.99 | WP-60 testing made reliable (NFR-14, D-85), in review: previews and e2e move to a test database, the plan's second free Supabase project (`puoctwssryisuzakhzxj`). Each e2e run empties it (`scripts/test-db-reset.sql`), applies every migration in the pull request and loads the demo family (`scripts/preview-db.sh`, which refuses production's database by name and any other remote one); a retried test starts from a freshly loaded demo family (`e2e/support/test.ts`, which every spec now imports `test` from); `scripts/db-migrate.sh` drops its additive-only mode, which only the shared database needed; the keepalive covers both projects. Why, from the last 40 e2e attempts on the shared database (Oct 11–13): 23 clean, 10 needed a retry, 7 failed, spread over 17 specs, with production's jobs slowed from about 0.5 s to as much as 30 s during runs. A pull request's results are now recorded at the start of the next one, so each needs one e2e run. Tests: `scripts/preview-db.test.sh` (both refusals before connecting; a second run leaves nothing of the first), `scripts/db-migrate.test.sh`. R-27 closed, R-16 and NFR-14 updated. |

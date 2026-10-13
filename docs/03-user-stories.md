@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.41: US-322, US-708 and US-804 added at the owner's request (WP-62 to WP-64, D-87 to D-89): an alert when something waits for a parent; a meal for any mix of people; the school menu by section. US-707 now includes picking a buy day's lunch choices.
 > v0.8.40: US-321 added and built (WP-61, D-86): a chore that comes up only on the days a child brings lunch, or only on the days they buy it.
 > v0.8.39: US-109 and US-110 added and built (WP-57, D-84): Home at a glance; the household's options in Settings, Family options. US-103, US-310 and US-1003 now say where their settings are.
 > v0.8.37: US-108, US-604, US-605 and US-912 added (WP-53 to WP-56): the household's own AI provider; short school days; the school calendar from a document; a polished, tidy layout everywhere.
@@ -311,6 +312,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given I change Leo's usual week, when I save, then his lunch-day items follow from today.
 - Given "Lunch boxes" for two people as **Any one of them**, when I choose lunch days, then it becomes **Everyone does their own**, since each child has their own lunch.
 
+### US-322 — Told when something waits for me
+**As a** parent with notifications on **I want** an alert on my phone when a check-off or a reward request waits for me **so that** the kids aren't kept waiting until I next open the app.
+**Priority:** Should · **Phase:** P2 · **Reqs:** CHR-20
+- Given approval is on and Maya checks off "Make bed" on the board, when the reminders job next runs, then I get one alert, "Maya: 1 check-off waiting", and tapping it opens **Today** with it there.
+- Given Maya checks off three things and asks for a reward within a few minutes, when the alert comes, then it is one alert for all four, and it replaces any earlier one still on my lock screen.
+- Given it is within my quiet hours, when something becomes waiting, then the alert waits until they end, and is not sent if another parent has cleared everything by then.
+- Given I switch **Approvals** off in Reminders, when something becomes waiting, then I get no alert, and the other parent still does if theirs is on.
+
 ### US-312 — Define household tags
 **As an** admin **I want** to define our own tags with a name, color, and icon **so that** we can filter the list and set measurable goals by category.
 **Priority:** Must · **Phase:** P1 · **Reqs:** CHR-10, RWD-02
@@ -603,13 +612,23 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a week is planned, when I request a consolidated ingredient export, then I receive de-duplicated quantities.
 
 
+### US-708 — A meal for some of us
+**As an** admin **I want** a planned meal to be for everyone or for any mix of people **so that** "Pasta for Maya and Leo" or "Salad for the adults" reads right on the board.
+**Priority:** Must · **Phase:** P2 · **Reqs:** MEAL-10
+- Given **Add to the plan**, when I tick Maya and Leo, then the entry is for the two of them, and the board shows both their faces on it.
+- Given that entry, when Maya's own screen shows today's meals, then it is there; on Sam's, it is not.
+- Given a packed lunch for Maya and Leo on a day both bring, when the board shows school lunch, then it shows for each of them.
+- Given **Everyone** is ticked, when I save, then it is the whole family's, as before; and **Copy last week** copies each entry with its people.
+
 ### US-707 — Kid picks next week's lunches at the board
 **As a** kid **I want** to look at next week's school lunch menu on the board and choose to buy or bring each day **so that** our Sunday lunch planning happens together at the board, not on a parent's phone.
-**Priority:** Should · **Phase:** P2 · **Reqs:** MEAL-09
+**Priority:** Should · **Phase:** P2 · **Reqs:** MEAL-09, MEAL-11
 - Given the weekly item "Pick next week's lunches" on the family list, when I tap it, then the board opens my coming week: each school day with what the school serves and **Buy** or **Bring**, my usual choice already set.
 - Given a day I want to change, when I tap **Buy** or **Bring**, then it changes at once and **Meals** in the admin app shows it as changed, by the board.
 - Given I have looked at every day, when I tap **Done**, then the weekly item is checked off for me.
 - Given a day with no school, or today and earlier days, when I look, then I can't change it.
+- Given a day I buy, when I look at it, then I pick one entree, one or more fruits and vegetables, and one milk from that day's menu, and the board then shows what I picked instead of every option (D-89).
+- Given I picked Thursday's lunch, when a parent opens **Meals**, then they see my picks and can change them.
 
 ---
 
@@ -635,6 +654,13 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given the feed errors, when the daily import runs, then I see the error and last success time while the cached menu remains.
 - Given a daily schedule, when it runs, then it fetches the next 28 days and leaves override rows untouched.
 - As built (WP-27, D-79): a feed shows **Fetched** (when, and that it fetches every morning), **Not fetched yet**, or **Can't fetch** with why and when it last worked (its menus stay); **Fetch now** tries at once.
+
+### US-804 — The school menu as choices, not a paragraph
+**As a** kid **I want** a buy day's menu shown as the choices I have **so that** I can read it at a glance and it doesn't fill the board.
+**Priority:** Should · **Phase:** P2 · **Reqs:** MENU-06
+- Given a day's menu with "Pizza or Chicken wrap with roll" under **Choice of Entree**, when the board shows it, then it reads as two options, "Pizza" and "Chicken wrap with roll", not one line.
+- Given the home screen, when Maya buys today, then her lunch shows only the entree options; **Meals** shows each section (entree, fruits and vegetables, milk) with its options.
+- Given a menu typed in or loaded from a file, when it has sections and "or", then it reads the same way; without them, it shows as it does now.
 
 ---
 
