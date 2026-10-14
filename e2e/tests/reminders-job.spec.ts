@@ -1,14 +1,15 @@
-import { expect, test } from '../support/test';
+import { expect, test, type Page } from '../support/test';
 import { runReminders, webPushSender } from '../../apps/web/lib/reminders';
 import { serviceRpc, sql as query } from '../support/db';
 import { browserKeys, decryptPush, mockPushService, vapidKeys } from '../support/push';
 
-// [CHR-15][CHR-16][CHR-17] The reminders job against a mocked push service (WP-40, D-58): the job's
-// own code (lib/reminders.ts) runs here on the e2e runner against the shared database and real web
-// push encryption, with its clock passed in, since previews hold no job secret and no VAPID private
-// key. Alex of the demo family turns reminders on with one phone (and an old laptop the push service
-// says is gone). The clock is two days ahead, so production's own reminders job (every 5 minutes)
-// never reaches these. What is made here is archived or removed at the end.
+// [CHR-15][CHR-16][CHR-17][CHR-20] The reminders job against a mocked push service (WP-40, D-58;
+// WP-63, D-88): the job's own code (lib/reminders.ts) runs here on the e2e runner against the shared
+// database and real web push encryption, with its clock passed in, since previews hold no job secret
+// and no VAPID private key. Alex of the demo family turns reminders on with one phone (and an old
+// laptop the push service says is gone). The approval alert runs on today's clock, first, before
+// quiet hours are set; the rest run two days ahead, so production's own reminders job (every 5
+// minutes) never reaches these. What is made here is approved, archived or removed at the end.
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const TAG = 'rmd-e2e';
@@ -70,6 +71,42 @@ function task(title: string, due: string, opts: { private?: boolean } = {}) {
 const occurrence = (chore: string) =>
   sql(`select id from public.chore_occurrence where chore_id = '${chore}'`);
 
+/**
+ * [CHR-20] Maya checks off an item today that needs a parent's OK (no points, so approving it at the
+ * end changes no balance), as the board records it.
+ */
+function checkOff(title: string) {
+  const maya = sql(
+    `select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`,
+  );
+  const id = sql(`select public.save_chore('${DEMO}', null,
+    jsonb_build_object('title', '${title} ${TAG}', 'kind', 'chore', 'points', 0, 'approval', 'required',
+                       'schedule', jsonb_build_object('freq', 'once', 'on_date', private.household_today('${DEMO}')),
+                       'start_date', private.household_today('${DEMO}')),
+    array['${maya}'::uuid])`);
+  sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)
+       values (gen_random_uuid(), '${occurrence(id)}', 'complete', array['${maya}'::uuid], now())`);
+  expect(sql(`select status from public.chore_occurrence where chore_id = '${id}'`)).toBe(
+    'pending_approval',
+  );
+  return id;
+}
+/** What reached the phone, decrypted. */
+const phonePayloads = () =>
+  push.received
+    .filter((m) => m.endpoint === PHONE)
+    .map((m) => JSON.parse(decryptPush(m.body!, phone.ecdh, phone.authBytes)));
+const runNow = () => {
+  push = mockPushService((endpoint) => (endpoint === LAPTOP ? 410 : 201));
+  return runReminders(
+    serviceRpc(db!) as unknown as Parameters<typeof runReminders>[0],
+    DEMO,
+    // The database's clock, which stamped the check-offs.
+    new Date(Number(sql(`select (extract(epoch from now()) * 1000)::bigint`))),
+    webPushSender(vapid, push.transport),
+  );
+};
+
 // Items with completion events can't be deleted (events are append-only): they are archived, which
 // takes them off every list and stops their reminders.
 function cleanUp() {
@@ -95,6 +132,50 @@ test.beforeAll(() => {
 });
 
 test.afterAll(() => cleanUp());
+
+test('[CHR-20][US-322] a check-off waiting for a parent: exactly one push, and its link opens Today', async ({
+  page,
+}: {
+  page: Page;
+}) => {
+  const homework = checkOff('Read for 20 minutes');
+  // Alex turned reminders on (and with them Approvals) before it: one alert, for it alone.
+  expect(await runNow()).toMatchObject({ approvals: 1, sent: 1, delivered: 1 });
+  const [alert] = phonePayloads();
+  expect(phonePayloads()).toHaveLength(1);
+  expect(alert).toEqual({
+    title: 'Maya: 1 check-off waiting',
+    body: 'Open Today to approve',
+    url: '/admin/today',
+    tag: 'approval',
+    renotify: true,
+  });
+
+  // A second check-off: one more alert, for only what is new, replacing the first on the lock screen.
+  const piano = checkOff('Practice piano');
+  expect(await runNow()).toMatchObject({ approvals: 1, sent: 1 });
+  expect(phonePayloads().map((p) => `${p.title} | ${p.body} | ${p.tag}`)).toEqual([
+    'Maya: 1 check-off waiting | Open Today to approve | approval',
+  ]);
+  // A replay sends nothing.
+  expect(await runNow()).toMatchObject({ approvals: 0, sent: 0 });
+  expect(push.received).toEqual([]);
+
+  // Tapping it opens Today, with both waiting there.
+  await page.goto('/sign-in');
+  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
+  await page.waitForURL(/\/admin/);
+  await page.goto(alert.url);
+  const waiting = page.getByRole('list', { name: 'Waiting for you' });
+  await expect(waiting.getByText(`Read for 20 minutes ${TAG}`)).toBeVisible();
+  await expect(waiting.getByText(`Practice piano ${TAG}`)).toBeVisible();
+
+  // Put back: approved (no points), so nothing is left waiting for other tests.
+  for (const id of [homework, piano]) {
+    sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
+         values (gen_random_uuid(), '${occurrence(id)}', 'approve', now())`);
+  }
+});
 
 test('[CHR-16][US-318] a task due in 15 minutes: exactly one push, encrypted, opening it in My tasks', async () => {
   const plumber = task('Call the plumber', '15:00');

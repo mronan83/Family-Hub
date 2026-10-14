@@ -19,6 +19,7 @@ const OK = {
   defaultLeadMinutes: '15',
   morningTime: '08:00',
   hidePrivateTitles: 'on',
+  approvalAlerts: 'on',
 };
 
 describe('reminder settings', () => {
@@ -44,6 +45,7 @@ describe('reminder settings', () => {
         quietStart: '21:00',
         quietEnd: '07:00',
         hidePrivateTitles: true,
+        approvalAlerts: true,
       },
     });
     // A switched-off digest or quiet hours ignore their times; unticked boxes are off.
@@ -59,6 +61,7 @@ describe('reminder settings', () => {
         quietStart: null,
         quietEnd: null,
         hidePrivateTitles: false,
+        approvalAlerts: false,
       },
     });
   });
@@ -94,6 +97,7 @@ describe('reminder settings', () => {
         quiet_start: '22:00:00',
         quiet_end: '06:00:00',
         hide_private_titles: false,
+        approval_alerts: false,
       }),
     ).toEqual({
       enabled: true,
@@ -104,10 +108,14 @@ describe('reminder settings', () => {
       quietStart: '22:00',
       quietEnd: '06:00',
       hidePrivateTitles: false,
+      approvalAlerts: false,
     });
+    // [CHR-20] Approvals is on until a person turns it off (a row saved before it existed included).
+    expect(DEFAULT_SETTINGS.approvalAlerts).toBe(true);
+    expect(readSettings({ enabled: true }).approvalAlerts).toBe(true);
   });
 
-  it('[CHR-16] in a line, as the page shows it', () => {
+  it('[CHR-16][CHR-20] in a line, as the page shows it', () => {
     expect(clockWords('15:00')).toBe('3:00 pm');
     expect(clockWords('00:30')).toBe('12:30 am');
     expect(
@@ -118,11 +126,11 @@ describe('reminder settings', () => {
         quietEnd: '07:00',
       }),
     ).toBe(
-      '15 minutes before the due time · items with no time at 8:00 am · a digest at 7:00 am · quiet 9:00 pm to 7:00 am',
+      '15 minutes before the due time · items with no time at 8:00 am · a digest at 7:00 am · quiet 9:00 pm to 7:00 am · approvals',
     );
-    expect(settingsSummary({ ...DEFAULT_SETTINGS, defaultLeadMinutes: 0 })).toBe(
-      'at the due time · items with no time at 8:00 am',
-    );
+    expect(
+      settingsSummary({ ...DEFAULT_SETTINGS, defaultLeadMinutes: 0, approvalAlerts: false }),
+    ).toBe('at the due time · items with no time at 8:00 am');
   });
 });
 

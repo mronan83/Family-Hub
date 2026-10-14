@@ -63,8 +63,9 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// [CHR-15][CHR-16] A reminder from the reminders job: {title, body, url, tag}. One per tag: a
-// reminder sent again (it never should be) replaces the first rather than stacking.
+// [CHR-15][CHR-16][CHR-20] A reminder from the reminders job: {title, body, url, tag, renotify}. One
+// per tag: a reminder sent again (it never should be) replaces the first rather than stacking, and a
+// newer approval alert replaces the older one and alerts again (renotify).
 self.addEventListener('push', (event) => {
   let data = {};
   try {
@@ -76,6 +77,7 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(data.title || 'FamilyWise', {
       body: data.body || '',
       tag: data.tag || undefined,
+      renotify: Boolean(data.tag && data.renotify),
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-maskable-192.png',
       data: {

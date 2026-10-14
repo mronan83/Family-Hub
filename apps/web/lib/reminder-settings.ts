@@ -26,9 +26,11 @@ export interface ReminderSettings {
   quietStart: string | null;
   quietEnd: string | null;
   hidePrivateTitles: boolean;
+  /** [CHR-20] An alert when a check-off or a reward request waits for a parent. */
+  approvalAlerts: boolean;
 }
 
-/** What a person has before they change anything: off, the bell on, 15 minutes, 8:00 am. */
+/** What a person has before they change anything: off, the bell on, 15 minutes, 8:00 am, approvals. */
 export const DEFAULT_SETTINGS: ReminderSettings = {
   enabled: false,
   defaultOn: true,
@@ -38,6 +40,7 @@ export const DEFAULT_SETTINGS: ReminderSettings = {
   quietStart: null,
   quietEnd: null,
   hidePrivateTitles: true,
+  approvalAlerts: true,
 };
 
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -52,7 +55,7 @@ export type ParsedSettings =
   { ok: true; value: Omit<ReminderSettings, 'enabled'> } | { ok: false; message: string };
 
 /**
- * [CHR-16][CHR-17] The settings form, or a line saying what to fix. The digest and quiet hours are
+ * [CHR-16][CHR-17][CHR-20] The settings form, or a line saying what to fix. The digest and quiet hours are
  * each switched on by their checkbox; quiet hours need both ends, and may run past midnight.
  */
 export function parseSettings(form: FormData): ParsedSettings {
@@ -92,6 +95,7 @@ export function parseSettings(form: FormData): ParsedSettings {
       quietStart,
       quietEnd,
       hidePrivateTitles: form.get('hidePrivateTitles') === 'on',
+      approvalAlerts: form.get('approvalAlerts') === 'on',
     },
   };
 }
@@ -110,6 +114,7 @@ export function readSettings(row: Record<string, unknown> | null): ReminderSetti
     quietStart: hhmm(row.quiet_start),
     quietEnd: hhmm(row.quiet_end),
     hidePrivateTitles: row.hide_private_titles !== false,
+    approvalAlerts: row.approval_alerts !== false,
   };
 }
 
@@ -162,7 +167,10 @@ export function clockWords(hhmm: string): string {
   return `${h12}:${String(m).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'}`;
 }
 
-/** The settings in a line: "15 minutes before the due time · items with no time at 8:00 am · …". */
+/**
+ * The settings in a line: "15 minutes before the due time · items with no time at 8:00 am · … ·
+ * approvals".
+ */
 export function settingsSummary(s: ReminderSettings): string {
   return [
     s.defaultLeadMinutes === 0
@@ -173,6 +181,7 @@ export function settingsSummary(s: ReminderSettings): string {
     s.quietStart && s.quietEnd
       ? `quiet ${clockWords(s.quietStart)} to ${clockWords(s.quietEnd)}`
       : null,
+    s.approvalAlerts ? 'approvals' : null,
   ]
     .filter(Boolean)
     .join(' · ');

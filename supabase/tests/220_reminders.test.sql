@@ -158,9 +158,9 @@ update public.reminder_preference set quiet_start = '21:00', quiet_end = '07:00'
 
 -- [CHR-16][CHR-17] 2:45 pm: due in 15 minutes -----------------------------------------------------
 select pg_temp.as_job();
-select is(pg_temp.plan(pg_temp.at('14:44')), '{"pruned": 0, "digests": 1, "planned": 1}'::jsonb,
+select is(pg_temp.plan(pg_temp.at('14:44')), '{"pruned": 0, "digests": 1, "approvals": 0, "planned": 1}'::jsonb,
           '2:44 pm: only the morning-time item (1:00 pm) and the 2:00 pm digest have come');
-select is(pg_temp.plan(pg_temp.at('14:45')), '{"pruned": 0, "digests": 0, "planned": 3}'::jsonb,
+select is(pg_temp.plan(pg_temp.at('14:45')), '{"pruned": 0, "digests": 0, "approvals": 0, "planned": 3}'::jsonb,
           '[CHR-16] 2:45 pm: the plumber, the secret gift and Quinn''s item (15 minutes before 3:00 pm); not the dentist (bell off)');
 select is(pg_temp.delivery('Book the dentist', '22110000-0000-0000-0000-00000000000a'), 'none', '... the dentist not at all');
 select is(pg_temp.claim(pg_temp.at('14:45')),
@@ -169,7 +169,7 @@ select is(pg_temp.claim(pg_temp.at('14:45')),
           || 'Pat digest: Your day: 7 to do | Book the dentist, Call the plumber, a private item and 4 more -> 1',
           '[CHR-16][CHR-17] each claimed once, to each device; a private title hidden; the digest lists what is open');
 select is((select count(*)::int from public.reminder_delivery where status = 'sent'), 5, '... marked sent before they go');
-select is(pg_temp.plan(pg_temp.at('14:50')), '{"pruned": 0, "digests": 0, "planned": 0}'::jsonb,
+select is(pg_temp.plan(pg_temp.at('14:50')), '{"pruned": 0, "digests": 0, "approvals": 0, "planned": 0}'::jsonb,
           '[CHR-16] a replay plans nothing');
 select is(pg_temp.claim(pg_temp.at('14:50')), '', '... and claims nothing');
 
