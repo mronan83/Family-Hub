@@ -277,7 +277,7 @@ export function backlog(m, ctx) {
     section(
       's-2',
       'How the work is chunked',
-      `<div class="prose">${md(m.chunkingMd, ctx)}<h3 id="prompt">Prompt pattern for a Claude Code session</h3>${md(m.promptMd, ctx)}</div>`,
+      `<div class="prose">${md(m.chunkingMd, ctx)}<h3 id="prompt">Starting an item</h3>${md(m.promptMd, ctx)}</div>`,
     ),
     section(
       's-6',

@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.55: work as a planner and one worker session per item (D-90): approval typed in the worker's session, one approval merges and deploys, each pull request records its own item as done, a worker waits for another pull request's waiting e2e run before it pushes (§9.2, §9.5).
 > v0.8.54: a test database for previews and e2e (WP-60, D-85): previews and e2e use the second free Supabase project; each run empties it and rebuilds it from the pull request's migrations; production's database changes only on deploy (§9.1, §9.3–9.5, §9.8, §9.10).
 > v0.8.53: Home at a glance and Family options (WP-57, D-84): the admin app's Home as alerts and quick actions; the household's options in Settings; the day-close job applies a waiting change to the week's start day (§4, §5.6).
 > v0.8.52: the board's calendar as a time grid (WP-52, D-82): all-day lanes, the home screen's hours lined up, Week and Day to scale, an event's details; the sync keeps an event's place (§5.4, §7).
@@ -718,7 +719,7 @@ flowchart LR
   sched --> dark["Production (dark until launch)"]
 ```
 
-Claude Code opens the pull request as soon as a work package is built and its checks pass, and sends you the preview link. Approval is your word to Claude Code, here or as a comment on the pull request: GitHub does not let you formally approve a pull request opened under your own account. Claude Code merges only after it, and only with every check green.
+Each item runs in its own worker session, started from the planner session (D-90; `.claude/skills/planner`, `.claude/skills/deliver`). The worker opens the pull request as soon as the item is built and its checks pass, and sends you the preview link and its results in its session. Approval is `approve #nn` typed in that worker's session: GitHub does not let you formally approve a pull request opened under your own account, and comments by you and by Claude Code both post as your account. Claude Code merges only after it, and only with every check green. One approval merges and deploys; if a later merge from `main` changes code in the pull request, the worker asks again.
 
 ### 9.3 Pull request gates
 
@@ -754,7 +755,8 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 - A retried test starts where its first attempt did: every spec imports `test` from `e2e/support/test.ts`, whose worker fixture loads the demo family again (`scripts/preview-db.sh --demo-family-only`) whenever Playwright starts a new worker, which it does only after a failure.
 - Each spec that pairs a board retires it when it ends (`e2e/support/board.ts`): the board's browser closes and its device is removed. Files run one after another in one browser, so a board left open stays live for the rest of the run, and any board of the household may take a goal's celebration (D-59) or replay a queued check-off. A test that checks money (the bonus ledger) reads the ledger before what the page says, and a flaky test says on failure what it saw rather than only that it failed.
 - Production's database still holds the demo family from before D-85, unused: its jobs skip it (`household.is_demo`, D-62), and it can be removed with your approval.
-- A pull request's results are recorded in `04` and `05` at the start of the next pull request, so a pull request needs one e2e run, not a second for a docs-only commit.
+- Each pull request writes its item's docs as they read once merged: the status board says Done, `04` §I gets one row, and the item gets an As-built note. Its e2e results go in the pull request, not the docs, so a pull request needs one e2e run, not a second for a docs-only commit, and no later pull request writes another's results (D-90).
+- e2e runs one at a time, and GitHub keeps only one waiting run: a push that deploys a preview replaces another pull request's waiting run, which then cannot deploy. A worker checks the queue before every push and waits while another branch's run is waiting (D-90).
 - The reset seeds the demo family's history from its own today, so a run never spans its midnight: one that would (it is under 25 minutes away) waits for it to pass before resetting.
 - Nothing in the pipeline wipes production's database. The test database is emptied at the start of every run, by design.
 - The demo family's four sign-ins (`supabase/seed.sql`) get their passwords from `scripts/preview-db.sh`, in the same transaction as the demo family's load: each is derived from the bypass secret, which never leaves the runner, and stored as a bcrypt hash. The preview's sign-in page offers them as one-tap buttons (§5.10, D-39). Households that e2e sets up with a demo sign-in are removed at the next reset.

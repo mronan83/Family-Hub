@@ -266,7 +266,7 @@ export function loadModel(root) {
   need(B, '4.').children.forEach(detail);
   need(B, '5.').children.forEach(detail);
   m.chunkingMd = need(B, '2.').md;
-  m.promptMd = need(B, 'Prompt pattern').md;
+  m.promptMd = need(B, 'Starting an item').md;
   const dep = need(B, '3.');
   m.depNotes = dep.md.replace(/```mermaid[\s\S]*?```/, '').trim();
   m.sizeSummary = records(table(need(B, '6.').md));
