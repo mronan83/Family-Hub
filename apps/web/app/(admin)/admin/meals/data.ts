@@ -33,7 +33,7 @@ export async function loadMeals(db: SupabaseClient, householdId: string): Promis
   }));
 }
 
-/** [MEAL-01] The plan from `from` to `to` (dates, inclusive). */
+/** [MEAL-01][MEAL-10] The plan from `from` to `to` (dates, inclusive), each entry with its people. */
 export async function loadPlan(
   db: SupabaseClient,
   householdId: string,
@@ -42,7 +42,9 @@ export async function loadPlan(
 ): Promise<PlanEntry[]> {
   const { data, error } = await db
     .from('meal_plan_entry')
-    .select('id, plan_date, slot, sort_order, member_id, meal_id, free_text, notes')
+    .select(
+      'id, plan_date, slot, sort_order, meal_id, free_text, notes, meal_plan_entry_member(member_id)',
+    )
     .eq('household_id', householdId)
     .gte('plan_date', from)
     .lte('plan_date', to)
@@ -55,7 +57,7 @@ export async function loadPlan(
       plan_date: string;
       slot: Slot;
       sort_order: number;
-      member_id: string | null;
+      meal_plan_entry_member: { member_id: string }[] | null;
       meal_id: string | null;
       free_text: string | null;
       notes: string | null;
@@ -65,7 +67,7 @@ export async function loadPlan(
     planDate: e.plan_date,
     slot: e.slot,
     sortOrder: e.sort_order,
-    memberId: e.member_id,
+    memberIds: (e.meal_plan_entry_member ?? []).map((p) => p.member_id),
     mealId: e.meal_id,
     freeText: e.free_text,
     notes: e.notes,

@@ -119,6 +119,34 @@ test('[MEAL-06][DEV-05] a dinner changed reaches the board at once', async () =>
   await expect(meals().locator('[data-slot="dinner"]')).not.toContainText('Stew e2e');
 });
 
+test('[MEAL-10][US-708] done-when: a dinner for Maya and Leo shows both faces, and is on Maya’s screen but not Sam’s', async () => {
+  // Planned as add_meal_entry() plans it: the entry, then its people.
+  sql(`with e as (
+         insert into public.meal_plan_entry (id, household_id, plan_date, slot, sort_order, free_text)
+         values (gen_random_uuid(), '${DEMO}', ${TODAY}, 'dinner', 10, 'Fish fingers e2e') returning id)
+       insert into public.meal_plan_entry_member (household_id, entry_id, member_id)
+       select '${DEMO}', e.id, m.id from e, public.member m
+        where m.household_id = '${DEMO}' and m.display_name in ('Maya', 'Leo')`);
+  const fish = (scope: Locator) =>
+    scope.getByRole('listitem', { name: 'Fish fingers e2e, for Leo and Maya', exact: true });
+  await expect(fish(meals())).toBeVisible({ timeout: 15_000 });
+  await expect(fish(meals()).locator('.fw-avatar')).toHaveCount(2);
+  // The board's Meals screen: both faces on today's dinner.
+  await rail().getByRole('button', { name: 'Meals', exact: true }).click();
+  const today = board.getByRole('table').locator('tr[data-slot="dinner"] td[aria-current="date"]');
+  await expect(fish(today).locator('.fw-avatar')).toHaveCount(2);
+  // On Maya's own screen, not on Sam's.
+  const card = board.getByRole('region', { name: 'Today’s meals', exact: true });
+  await rail().getByRole('button', { name: /^Maya/ }).click();
+  await expect(fish(card)).toBeVisible();
+  await rail().getByRole('button', { name: /^Sam/ }).click();
+  await expect(card.locator('[data-slot="dinner"]')).toContainText('Fish pie e2e');
+  await expect(fish(card)).toHaveCount(0);
+  report('MEAL-10 a dinner for Maya and Leo: both faces on the board, on Maya’s screen, not Sam’s');
+  await rail().getByRole('button', { name: 'Home', exact: true }).click();
+  await expect(meals()).toBeVisible();
+});
+
 test('[MEAL-06][US-705] the Meals screen: the week, today marked, each child’s lunch each day, read-only', async () => {
   await rail().getByRole('button', { name: 'Meals', exact: true }).click();
   const week = board.getByRole('table');

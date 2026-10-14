@@ -41,7 +41,7 @@ export interface MealsViewProps {
 /**
  * [MEAL-01][MEAL-02][MEAL-03][MEAL-08] The week's meals for a parent: each day's breakfast, snack,
  * lunch and dinner, each slot's entries in order (a meal from the library or something written in,
- * for everyone or one person, with a note) with Change (earlier, later, remove) and Add; the week
+ * for everyone or any set of people, with a note) with Change (earlier, later, remove) and Add; the week
  * before and after; "Add to the plan"; and copying last week here.
  */
 export function MealsView({
@@ -60,8 +60,9 @@ export function MealsView({
 }: MealsViewProps) {
   const plan = planByDay(entries, days);
   const mealsById = new Map(meals.map((m) => [m.id, m]));
-  const who = (id: string | null) =>
-    id === null ? null : (members.find((m) => m.id === id)?.displayName ?? 'Someone');
+  // [MEAL-10] An entry's people, in the family's order.
+  const whose = (ids: string[]) =>
+    members.filter((m) => ids.includes(m.id)).map((m) => ({ id: m.id, name: m.displayName }));
   const thisWeek = days.includes(today);
 
   return (
@@ -83,7 +84,7 @@ export function MealsView({
         </div>
         <p className="fw-muted">
           Plan breakfast, snack, lunch and dinner for the week: a meal from the library or anything
-          you write in, for everyone or one person.
+          you write in, for everyone or any mix of people.
         </p>
         <nav className="fw-actions" aria-label="Weeks">
           <Link className="fw-btn fw-btn--ghost" href={`/admin/meals?week=${addDays(week, -7)}`}>
@@ -140,13 +141,17 @@ export function MealsView({
                           {list.map((e, i) => {
                             const name = entryName(e, mealsById);
                             const meal = e.mealId ? mealsById.get(e.mealId) : undefined;
-                            const person = who(e.memberId);
+                            const people = whose(e.memberIds);
                             return (
                               <li key={e.id} className="fw-meal-entry">
                                 <span className="fw-meal-entry__name">
                                   {meal ? <Icon name={meal.icon as IconName} size={20} /> : null}
                                   {name}
-                                  {person ? <span className="fw-pill">{person}</span> : null}
+                                  {people.map((p) => (
+                                    <span key={p.id} className="fw-pill">
+                                      {p.name}
+                                    </span>
+                                  ))}
                                 </span>
                                 {e.notes ? <span className="fw-muted">{e.notes}</span> : null}
                                 <details className="fw-meal-entry__change">

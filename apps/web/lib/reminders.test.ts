@@ -82,7 +82,7 @@ describe('a reminders run', () => {
   function db(claims: Claimed[], held = 0) {
     const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
       if (name === 'plan_reminders')
-        return { data: { planned: 2, digests: 0, pruned: 0 }, error: null };
+        return { data: { planned: 2, digests: 0, approvals: 1, pruned: 0 }, error: null };
       if (name === 'claim_reminders') return { data: claims, error: null };
       const results = args.p_results as { status: number }[];
       return {
@@ -123,6 +123,7 @@ describe('a reminders run', () => {
     expect(stats).toEqual({
       planned: 2,
       digests: 0,
+      approvals: 1,
       pruned: 0,
       sent: 2,
       delivered: 2,

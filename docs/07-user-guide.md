@@ -1,6 +1,8 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.19: a meal for any mix of people (WP-62, D-87): **For** on **Add to the plan** is **Everyone** or a tick per person, and the boards show each person's face (A15, B1.15, B2.9).
+> v0.18: an alert when something waits for you (WP-63, D-88): **Approvals** in Reminders (A3).
 > v0.17: chores on lunch days (WP-61, D-86): **School lunch** in an item's **More options**, so "Pack lunch" or "Empty lunch box" comes up only on the days a child brings lunch (A4, A15, B1, B4).
 > v0.16: Home at a glance and Family options (WP-57, D-84): **Needs you**, **Heads-up** and **Quick actions** on Home, **No school today**, and the household's options (the week's start day, check-offs, weather, admins and invites) in Settings, Family options (A1, A2, A10, A13, B1).
 > v0.14: the board's calendar as a time grid (WP-52, D-82): all-day events across the top, the hours down the side, now, and an event's details at a tap (A5, A9).
@@ -257,7 +259,7 @@ They go back to open (or to missed, if their day is over), and their points are 
 ![My tasks on a phone: quick add at the top, then Overdue, Today and Coming up, each item with Bell on or Bell off and Mark done.](guide/img/admin-my-tasks-phone.jpg "My tasks, on a phone")
 
 ### A3 Reminders on your phone
-<!-- covers: US-317 US-318 US-319 -->
+<!-- covers: US-317 US-318 US-319 US-322 -->
 
 **What this is.** Notifications on your phone or computer when one of your items comes due. **When.** If you want a nudge for your own tasks. Reminders are off until you turn them on, and they are yours alone: nobody else sees your settings. **How.** Open **Reminders**.
 
@@ -275,11 +277,14 @@ Then set **When to remind me** and choose **Save**:
 | **Items with no due time remind me at** | The time of day for items without a due time (8:00 am by default). |
 | **Daily digest** | **Send me a summary of my day** at a time you choose: what's overdue and due today. Nothing is sent on a day with nothing to do. |
 | **Quiet hours** | **Hold reminders during quiet hours**, **From** and **To** (they may run past midnight). A reminder that falls inside them comes when they end. |
+| **Approvals** | **Tell me when a check-off or a reward request waits for me**. On by default. See below. |
 | **Hide the names of private items on my lock screen** | On by default: a private item reads "Private task" or "Private chore" instead of its name. |
 
 A reminder shows the item's name and when it is due ("Due at 3:00 pm", "Due today", "Due tomorrow at 9:00 am"). Tapping it opens the item in **My tasks**. A digest reads "Your day: 3 to do, 1 overdue" and names up to three items.
 
 **Choosing which items remind you.** In **My tasks**, each open item has a bell: **Bell on** or **Bell off**. Tap it to switch that item for you only. On an item's page, **Reminders** sets how early that item reminds everyone ("As each person chose", or a fixed time).
+
+**Told when something waits for you.** With **Approvals** on, you get an alert when a child checks off something that needs your OK, or asks for a reward. It comes within 5 minutes and counts everything new since your last one, by child: "Maya: 3 check-offs and 1 reward request waiting". A newer alert replaces the older one on your lock screen. Tapping it opens **Today**, where they wait under **Waiting for you**, or **Rewards** when only reward requests wait. Quiet hours hold it, and if the other parent has dealt with everything by then, nothing comes. You aren't told about a reward you asked for yourself, or a private item you can't see, and the alert never shows an item's name. When you turn it on, it counts what becomes waiting from then.
 
 Reminders come only for items you are on, at most once each, and never after the item is done. **Turn off reminders** stops them all; your devices stay listed for when you **Turn reminders back on**.
 
@@ -357,7 +362,7 @@ Switch on **Private** for a surprise or a personal item. A private item never sh
 At the top of **Chores**, filter by **Person**, **Tag**, **Kind**, **Time of day**, and **Show** (**Active** or **Archived**), then choose **Filter**. **Clear** shows everything again. Each line shows how often it happens, its due time, its points, when it is next due ("Next: Today"), and "Overdue since" for an open task.
 
 ### A5 The family at the board
-<!-- covers: US-303 US-304 US-305 US-1001 US-1002 US-1005 US-1006 US-1008 US-905 US-705 -->
+<!-- covers: US-303 US-304 US-305 US-1001 US-1002 US-1005 US-1006 US-1008 US-905 US-705 US-708 -->
 
 **What this is.** The wall board: the family's day, for everyone. **When.** All day. **How.** Just tap. Every button on the board is big enough for a child's finger and answers at once.
 
@@ -368,7 +373,7 @@ At the top of **Chores**, filter by **Person**, **Tag**, **Kind**, **Time of day
 The home screen fits the screen: nothing hides under the bar, and the page never scrolls. It has three parts:
 
 - **The calendar** on the left: the next few days (5 by default). All-day events run across the top; when a day has more than fit, its heading says how many more ("+2"). Under them, each hour with something on has a row, lined up across the days, with the time it starts and a red line at now. Tap an event to see it in full. Tap a day's heading to open it in **Calendar**. To look further ahead, tap **Month**, **7 days**, **5 days** or **3 days** at the top of the calendar. That changes only this board, and only for now: when the board goes home after 90 seconds untouched, it is back to the view set on **Boards**.
-- **Today's meals** at the top on the right, on a day with meals planned: **Breakfast**, **Snack**, **Lunch** and **Dinner**, each with its picture, and a face when it is one person's. On **Lunch**, each child says **Buys** with what the school serves, or **Brings** with what is planned for their lunch. A parent can hide it (see [A11](#a11-the-boards-home-screen-layout)).
+- **Today's meals** at the top on the right, on a day with meals planned: **Breakfast**, **Snack**, **Lunch** and **Dinner**, each with its picture, and a face for each person it's for (none when it's for everyone). On **Lunch**, each child says **Buys** with what the school serves, or **Brings** with what is planned for their lunch. A parent can hide it (see [A11](#a11-the-boards-home-screen-layout)).
 - **Today's list** on the right, under today's meals: one list for the whole family, grouped into **Overdue**, **Morning**, **After school**, **Evening** and **Anytime**, with "2 of 9 done" at the top. Each row shows the item, its points, and a face for each person it is for.
 - **Cards** in a row under the calendar: **Goals**, **Waiting for a parent** and **Coming up** (all-day events in the next three weeks). A parent chooses which cards show, and in what order (see [A11](#a11-the-boards-home-screen-layout)). Tap a goal to open that child's screen (a family goal opens **Chores**), a request to open the child who asked, or an event to open **Calendar** on its day. When a list is longer than its card, it scrolls inside the card.
 
@@ -791,7 +796,7 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credi
 > **Tip:** Stand where the family usually reads the board. If the words for each item are hard to make out, try **Larger text**. On a 32-inch 4K panel read from about two metres, **Larger** suits most families; a smaller screen, or one read from further away, may want **Largest**.
 
 ### A15 Planning meals
-<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-705 -->
+<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-705 US-708 -->
 
 **What this is.** The week's breakfasts, snacks, lunches and dinners, planned ahead, and a library of the meals your family makes again. **When.** Once a week, say on Sunday, so nobody decides at 5 pm. **How.** On **Meals** in the menu.
 
@@ -812,16 +817,16 @@ Choose **Edit** (the meal's name) to change one. **Archive** takes a meal out of
 
 1. Choose **Add** beside a meal of a day (or go to **Add to the plan**): the **Day** and **Meal** are filled in.
 2. Under **What**, choose **From the library** and pick a meal (those good for that meal of the day come first), or **Something else** and write it in ("Leftovers", "Out for Grandma's birthday").
-3. Under **For**, choose **Everyone**, or one person (a packed lunch, a snack after school).
+3. Under **For**, leave **Everyone** ticked, or tick each person it's for: one (a snack after school) or any mix (fish fingers for the children, sandwiches for Maya and Sam). Ticking a person unticks **Everyone**; ticking everyone, or nobody, is **Everyone**.
 4. Add a **Note** if you like ("Make extra for lunch"), then choose **Add to the plan**.
 
-A meal of the day can hold several things, like two snacks. They show in the order you added them; **Change** on one offers **Earlier** and **Later** to reorder it, and **Remove**.
+Each thing planned names who it's for, unless it's for everyone. A meal of the day can hold several things, like two snacks. They show in the order you added them; **Change** on one offers **Earlier** and **Later** to reorder it, and **Remove**.
 
 ![The week's meals on a laptop: each day across, with its breakfast, snack, lunch and dinner; Wednesday marked today with two snacks.](guide/img/admin-meals-laptop.jpg "The week's meals, on a laptop")
 
 #### Copy last week
 
-Under **Copy last week**, choose what happens where this week already has something planned for a meal of a day: **Keep it**, or **Replace it with last week's**. Then choose **Copy last week here**. Everything planned last week is copied to the same days this week; meals last week left empty stay as they are this week. Each copy is its own, so changing one doesn't change last week.
+Under **Copy last week**, choose what happens where this week already has something planned for a meal of a day: **Keep it**, or **Replace it with last week's**. Then choose **Copy last week here**. Everything planned last week is copied to the same days this week; meals last week left empty stay as they are this week. Each copy is for the same people, and is its own, so changing one doesn't change last week.
 
 > **Tip:** Plan a good week once, then copy it forward and change only what's different.
 
@@ -857,9 +862,9 @@ Then, under **Usual week** on **Meals**, choose each child's **School menu**. A 
 
 What you plan shows on the boards within seconds; nothing about meals can be changed on a board.
 
-- **Home:** **Today's meals** above **Today's list**: today's breakfast, snacks, lunch and dinner, with each child's school lunch (**Buys** and what the school serves, or **Brings** and what you planned for their lunch, like "Leftover spaghetti" for that child). A day with nothing planned and no school lunch shows nothing.
+- **Home:** **Today's meals** above **Today's list**: today's breakfast, snacks, lunch and dinner, each with the face of each person it's for (none when it's for everyone), with each child's school lunch (**Buys** and what the school serves, or **Brings** and what you planned for their lunch, like "Leftover spaghetti" for that child). A lunch planned for a child who brings theirs goes with them; if it's for others too, it stays under **Lunch** with their faces. A day with nothing planned and no school lunch shows nothing.
 - **Meals** in the rail: the whole week, a column a day (today marked) and a row for each meal of the day, then **School lunch**: who buys, with the menu, and who brings, each day; **Weekend** or **No school** when there is none.
-- **A person's screen:** their part of today's meals.
+- **A person's screen:** their part of today's meals: what's for everyone, and each thing they are one of the people for.
 
 ![The board's Meals screen: Meals this week, Sunday to Saturday with today marked; breakfast, snacks and lunch where planned, a dinner every day; School lunch with Leo buying and Maya bringing, No school tomorrow and the weekend.](guide/img/board-meals-week.jpg "Meals on the board: the week")
 
@@ -1093,14 +1098,14 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | Invite | **Join** (household): **Join household**, or **Create account and join**, or **Sign out** to switch account. |
 
 #### B1.15 Meals
-<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 -->
+<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-708 -->
 
 | Part | What it shows or does |
 |---|---|
 | **Meal library** | Opens the library. |
 | **Last week** · **This week** · **Next week** | Move between weeks. |
-| The week | Each day (today marked) with **Breakfast**, **Snack**, **Lunch** and **Dinner**: what is planned in order, with who it's for and its note; **Change** (**Earlier**, **Later**, **Remove**); **Add**. |
-| **Add to the plan** | **Day**, **Meal**, **What** (**From the library** or **Something else**), **For** (**Everyone** or one person), **Note (optional)**, **Add to the plan**. |
+| The week | Each day (today marked) with **Breakfast**, **Snack**, **Lunch** and **Dinner**: what is planned in order, with each person it's for and its note; **Change** (**Earlier**, **Later**, **Remove**); **Add**. |
+| **Add to the plan** | **Day**, **Meal**, **What** (**From the library** or **Something else**), **For** (**Everyone**, or a tick per person; "For Maya and Leo." under it), **Note (optional)**, **Add to the plan**. |
 | **Copy last week** | **Keep it** or **Replace it with last week's**, **Copy last week here**. |
 | **School lunch** | **School menus**. Each child's week: **Buy** or **Bring** on school days (a tap changes it; **Changed** marks a change; a buy day shows what the school serves, or **No menu yet**), **Weekend**, **Break** or **No school** otherwise; **Usual week**, Monday to Friday, and **School menu**, **Save** (name)**'s usual lunches**. |
 
@@ -1259,13 +1264,13 @@ Every state is an icon, a word and a color together, in both themes. The board u
 ![Tiles in every state: To do, Done!, Waiting for a parent, Approved, Try again, Skipped today, Missed, Overdue, Past its time, Done! by Maya, Covered by Maya, and a private item as the admin app shows it.](guide/img/tile-states.jpg "Every state, as a tile")
 
 #### B2.9 Meals
-<!-- covers: US-705 -->
+<!-- covers: US-705 US-708 -->
 
 | Part | What it shows or does |
 |---|---|
 | **Meals this week** | The household week, first day to last ("Sun, Oct 11 to Sat, Oct 17"). |
 | Days | A column each; today's heading says **Today** and its column stands out. |
-| **Breakfast**, **Snack**, **Lunch**, **Dinner** | A row each: what's planned, with its picture and, when it's one person's, their face; "–" for nothing. **Dinner** always shows; the others when planned on some day that week. |
+| **Breakfast**, **Snack**, **Lunch**, **Dinner** | A row each: what's planned, with its picture and the face of each person it's for (none when it's for everyone); "–" for nothing. **Dinner** always shows; the others when planned on some day that week. |
 | **School lunch** | Each child who has school that day: **Buys** and the school's menu (or **No menu yet**), or **Brings** and what is planned for their lunch. **Weekend**, **Break** or **No school** on a day none of them has school. |
 | Read-only | Nothing here is a button: meals are planned on **Meals** in the admin app. |
 

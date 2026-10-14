@@ -1,7 +1,9 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.106: a board in portrait or landscape added at the owner's request to WP-58's scope (D-93), recorded only: more than one L together, so WP-58 stays the iPhone and its portrait boards are WP-68 (L, its own mockup first), which follows it. WP-58's place in the order is unchanged. WP-68's orientation has **Automatic** (the default, following the screen's shape), added at the owner's request.
+> v0.8.108: a board in portrait or landscape added at the owner's request to WP-58's scope (D-93), recorded only: more than one L together, so WP-58 stays the iPhone and its portrait boards are WP-68 (L, its own mockup first), which follows it. WP-58's place in the order is unchanged. WP-68's orientation has **Automatic** (the default, following the screen's shape), added at the owner's request.
+> v0.8.107: WP-62 done: a meal for any mix of people (D-87). Deferred: dropping `meal_plan_entry.member_id`, held empty until then.
+> v0.8.106: WP-63 done: an alert when something waits for a parent (D-88).
 > v0.8.105: WP-65 built (NFR-14, D-92): CAL-05's cause in the board's week (a range read again after the snapshot, so a change waited on two reads), fixed in the app; DEV-06's in the test's own time limit, fixed in the test; both now say what they saw. Merged, with the five-run tally to record.
 > v0.8.104: WP-65 (first-attempt e2e passes for CAL-05 and DEV-06), WP-66 (the docs pages republished by a sub-agent, D-91) and WP-67 (stale lines in `00-README`) added at the owner's request; WP-66 and WP-67 done in the same change. WP-65 is next, ahead of everything else.
 > v0.8.103: work as a planner and one worker per item (D-90): items start from the planner session; §2's prompt pattern becomes `/deliver WP-nn`; each item's PR records it as done.
@@ -213,8 +215,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-59 | A child's own phone, paired as their board | P3 | M | WP-58, WP-05 | Queued (when a child has a phone) |
 | WP-60 | Testing made reliable: a test database | P3 | M | WP-41 | Merged (PR #65); a week's tally to record |
 | WP-61 | Chores on lunch days | P2 | S | WP-26, WP-43 | Done (PR #66) |
-| WP-62 | A meal for any mix of people | P2 | S | WP-25, WP-28 | Ready (next) |
-| WP-63 | An alert when something waits for a parent | P2 | S | WP-40, WP-12, WP-18 | Ready |
+| WP-62 | A meal for any mix of people | P2 | S | WP-25, WP-28 | Done |
+| WP-63 | An alert when something waits for a parent | P2 | S | WP-40, WP-12, WP-18 | Done |
 | WP-64 | The school menu by section, as options | P2 | M | WP-27, WP-28 | Ready (mockups first) |
 | WP-65 | First-attempt e2e passes: CAL-05 and DEV-06 | P3 | S | WP-60 | Merged; the next five runs' tally to record |
 | WP-66 | The docs pages republished by a sub-agent | P3 | S | WP-01 | Done |
@@ -1053,6 +1055,8 @@ flowchart LR
 - **Add to the plan:** **Everyone**, or a tick per person (ticking everyone is **Everyone**). Each entry on **Meals** names its people.
 - **Board:** each person's face on the entry; a person's own screen shows the entries that include them; a lunch entry shows as packed in the school lunch of each child on it who brings that day.
 - **Done when:** pgTAP: an entry for two of four people, everyone's carried over, copy keeps people, another household's member refused; on the preview, a dinner for Maya and Leo shows both faces on the board's Meals screen and is on Maya's own screen but not Sam's.
+- As built: `meal_plan_entry_member` (migration `20261014110543_meal_people`), each entry's one person carried over by `private.carry_meal_people()` and `meal_plan_entry.member_id` held empty (`meal_plan_entry_member_id_moved`); `add_meal_entry()` takes `member_ids`; `copy_meal_week()` copies them; `board_snapshot()`'s entries give `member_ids`. **Add to the plan**'s **For** is **Everyone** or a tick per person (every person ticked, or none, is Everyone); **Meals** names each person; the board shows a face for each, a person's screen the entries that include them, and a lunch for children who bring goes with each of them, staying under Lunch for anyone else on it (mockup approved). Tests: pgTAP `410_meal_people` (and `340_meals`, `370_board_meals` on the new table); unit `lib/meals.test.ts`, `lib/board-meals.test.ts`; the UI suite's `meals.spec.ts` and `board-meals.spec.ts`; e2e `meals.spec.ts` (a lunch for Maya and Leo on the form, copied with its people) and `board-meals.spec.ts` (the done-when).
+- Deferred: dropping `meal_plan_entry.member_id`. The app deployed before WP-62 still reads it, so it stays, empty, and a later migration drops it once WP-62's app is live.
 
 ### WP-63 — An alert when something waits for a parent
 **Phase:** P2 · **Size:** S · **Depends on:** WP-40, WP-12, WP-18 · **Reqs:** CHR-20
@@ -1060,6 +1064,7 @@ flowchart LR
 - The reminders job (every 5 minutes) plans, for each parent with notifications on and **Approvals** on (`reminder_preference.approval_alerts`, default on), one alert for what became waiting since their last alert, grouped by child ("Maya: 3 check-offs and 1 reward request waiting"; several children in one line). `reminder_delivery` gains kind `approval`, deduplicated per parent per run; quiet hours hold it, and a held alert is dropped if nothing is waiting by then. The same notification tag, so a newer alert replaces an older one. It opens **Today** (or **Rewards** when only requests wait).
 - **Reminders** page: an **Approvals** switch under the person's other choices.
 - **Done when:** pgTAP for the plan (one alert for several check-offs, none when switched off, held in quiet hours and dropped once cleared, never twice for the same thing); against a mocked push service, a check-off needing approval on the preview produces exactly one push to a parent with it on, and its link opens Today.
+- As built (D-88; mockup approved by the owner): migration `20261014110526_approval_alerts.sql`: `reminder_preference.approval_alerts` (default true) and `approvals_on_at`; `reminder_delivery` kind `approval` with its window (`waiting_from`, `waiting_to`] (kept by a trigger); `plan_reminders()` plans one per parent per run when something they may see became waiting since their last alert or since they turned Approvals on (at most two hours back), never while one is held; `claim_reminders()` closes the window at the claim, words what still waits (`private.approvals_waiting()`, `private.approvals_line()`), opens `/admin/today` or `/admin/rewards`, and skips it with nothing still waiting. Every approval alert has the tag `approval` and `renotify` (the service worker alerts again as it replaces the older). **Approvals** in Reminders' **When to remind me**, and "approvals" in the summary line (`lib/reminder-settings.ts`). Tests: pgTAP `410_approval_alerts.test.sql` (26) and `220_reminders.test.sql` (the plan's new count); Vitest `reminder-settings.test.ts`, `reminders.test.ts`; e2e `reminders-job.spec.ts` (**[CHR-20][US-322]** exactly one push, then one for only what is new, and the link opens Today with both waiting) and `reminders.spec.ts` (Approvals saved off and read back); UI suite `ui/reminders.spec.ts`. A parent who turns it on hears only of what becomes waiting from then (as the mockup says).
 
 ### WP-64 — The school menu by section, as options
 **Phase:** P2 · **Size:** M · **Depends on:** WP-27, WP-28 · **Reqs:** MENU-06

@@ -35,13 +35,15 @@ export interface Payload {
   body: string;
   url: string;
   tag: string;
+  /** [CHR-20] Alert again when it replaces an earlier one with its tag (approval alerts). */
+  renotify?: boolean;
 }
 
 /** A reminder the database claimed: marked sent, to go to each device. */
 export interface Claimed {
   delivery_id: string;
   member_id: string;
-  kind: 'due' | 'digest';
+  kind: 'due' | 'digest' | 'approval';
   payload: Payload;
   devices: Device[];
 }
@@ -98,6 +100,8 @@ export function webPushSender(vapid: Vapid, transport: Transport = fetchTranspor
 export interface ReminderStats {
   planned: number;
   digests: number;
+  /** [CHR-20] Approval alerts planned. */
+  approvals: number;
   pruned: number;
   /** Reminders claimed and sent. */
   sent: number;
@@ -108,7 +112,8 @@ export interface ReminderStats {
 }
 
 /**
- * [CHR-16][CHR-17] One run for a household at `now`: plan, claim, send, record. Without keys (no
+ * [CHR-16][CHR-17][CHR-20] One run for a household at `now`: plan (reminders, digests and approval
+ * alerts), claim, send, record. Without keys (no
  * `send`) nothing is claimed, and reminders waiting to go fail the run, so System Health says so.
  */
 export async function runReminders(
@@ -124,7 +129,7 @@ export async function runReminders(
   });
   if (error) throw new Error(`plan reminders: ${error.message}`);
   const stats: ReminderStats = {
-    ...(plan as { planned: number; digests: number; pruned: number }),
+    ...(plan as { planned: number; digests: number; approvals: number; pruned: number }),
     sent: 0,
     delivered: 0,
     gone: 0,

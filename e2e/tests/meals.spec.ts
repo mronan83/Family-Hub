@@ -25,14 +25,19 @@ const weekStart = (weeks: number) =>
                - extract(dow from (now() at time zone 'America/New_York')::date)::integer + ${7 * weeks})::text`);
 const addDays = (d: string, n: number) =>
   new Date(Date.parse(`${d}T12:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
-/** A week's plan as it reads: "2026-10-25 dinner Lasagne e2e; …", by day, slot and order. */
+/**
+ * A week's plan as it reads: "2026-10-25 dinner Lasagne e2e; 2026-10-29 lunch Wraps (Leo, Maya); …",
+ * by day, slot and order, each entry's people by name (MEAL-10).
+ */
 const plan = (from: string) =>
   sql(`select coalesce(string_agg(e.plan_date || ' ' || e.slot || ' ' || coalesce(m.name, e.free_text)
-                                  || coalesce(' (' || p.display_name || ')', ''), '; '
+                                  || coalesce(' (' || (select string_agg(p.display_name, ', ' order by p.display_name)
+                                                         from public.meal_plan_entry_member x
+                                                         join public.member p on p.id = x.member_id
+                                                        where x.entry_id = e.id) || ')', ''), '; '
                                   order by e.plan_date, e.slot, e.sort_order), '')
          from public.meal_plan_entry e
          left join public.meal m on m.id = e.meal_id
-         left join public.member p on p.id = e.member_id
         where e.household_id = '${DEMO}' and e.plan_date between '${from}' and '${addDays(from, 6)}'`);
 const maya = () =>
   sql(`select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`);
@@ -70,24 +75,32 @@ async function add(
   day: string,
   slot: string,
   what: { meal?: string; text?: string },
-  who = 'Everyone',
+  /** [MEAL-10] The people ticked; none is Everyone. */
+  who: string[] = [],
 ) {
-  await admin.goto(`/admin/meals?week=${week}`);
-  const form = admin.getByRole('form', { name: 'Add to the plan' });
-  await form.getByRole('combobox', { name: 'Day' }).selectOption(day);
-  await form.getByRole('combobox', { name: 'Meal' }).selectOption(slot);
-  if (what.meal) {
-    await form.getByRole('radio', { name: 'From the library' }).check();
-    await form
-      .getByRole('combobox', { name: 'From the library' })
-      .selectOption({ label: what.meal });
-  } else {
-    await form.getByRole('radio', { name: 'Something else' }).check();
-    await form.getByRole('textbox', { name: 'Something else' }).fill(what.text!);
-  }
-  await form.getByRole('radio', { name: who, exact: true }).check();
-  await form.getByRole('button', { name: 'Add to the plan' }).click();
-  await expect(admin.getByRole('status')).toHaveText('Added to the plan.');
+  // A named step, so a timeout says which add it was in (D-92).
+  await test.step(`add ${what.meal ?? what.text} to ${day} ${slot}`, async () => {
+    await admin.goto(`/admin/meals?week=${week}`);
+    const form = admin.getByRole('form', { name: 'Add to the plan' });
+    await form.getByRole('combobox', { name: 'Day' }).selectOption(day);
+    await form.getByRole('combobox', { name: 'Meal' }).selectOption(slot);
+    if (what.meal) {
+      await form.getByRole('radio', { name: 'From the library' }).check();
+      await form
+        .getByRole('combobox', { name: 'From the library' })
+        .selectOption({ label: what.meal });
+    } else {
+      await form.getByRole('radio', { name: 'Something else' }).check();
+      await form.getByRole('textbox', { name: 'Something else' }).fill(what.text!);
+    }
+    const people = form.getByRole('group', { name: 'For' });
+    for (const name of who) await people.getByRole('checkbox', { name, exact: true }).check();
+    await expect(people.getByRole('checkbox', { name: 'Everyone', exact: true })).toBeChecked({
+      checked: who.length === 0,
+    });
+    await form.getByRole('button', { name: 'Add to the plan' }).click();
+    await expect(admin.getByRole('status')).toHaveText('Added to the plan.');
+  });
 }
 
 test('[MEAL-02] a parent adds a meal to the library', async () => {
@@ -106,12 +119,20 @@ test('[MEAL-02] a parent adds a meal to the library', async () => {
 });
 
 test('[MEAL-01][MEAL-08][US-701] done-when: a full week planned, two snacks put in order', async () => {
+  // [D-92] Ten things added through the form, each a page load and a saved form (3 to 4 s each on
+  // a preview): more than the default 30 s, which the first run with WP-62's lunch ran out of.
+  test.setTimeout(90_000);
+  const started = Date.now();
   await add(first, first, 'dinner', { meal: MEAL });
   for (let i = 1; i < 7; i++)
     await add(first, addDays(first, i), 'dinner', { text: `Dinner ${i}` });
   const wed = addDays(first, 3);
   await add(first, wed, 'snack', { text: 'Crackers' });
-  await add(first, wed, 'snack', { text: 'Apple' }, 'Maya');
+  await add(first, wed, 'snack', { text: 'Apple' }, ['Maya']);
+  // [MEAL-10][US-708] A lunch for two of the four.
+  const thu = addDays(first, 4);
+  await add(first, thu, 'lunch', { text: 'Wraps' }, ['Maya', 'Leo']);
+  report(`WP-62: ten things planned through the form in ${Date.now() - started} ms`);
   // Maya's apple first.
   await admin.goto(`/admin/meals?week=${first}`);
   const snack = admin.locator(`[id="${wed}-snack"]`);
@@ -121,6 +142,9 @@ test('[MEAL-01][MEAL-08][US-701] done-when: a full week planned, two snacks put 
   await expect(admin.locator(`[id="${wed}-snack"]`).getByRole('listitem').first()).toContainText(
     'AppleMaya',
   );
+  await expect(admin.locator(`[id="${thu}-lunch"]`).getByRole('listitem')).toContainText(
+    'WrapsLeoMaya',
+  );
   expect(plan(first)).toBe(
     [
       `${first} dinner ${MEAL}`,
@@ -128,7 +152,9 @@ test('[MEAL-01][MEAL-08][US-701] done-when: a full week planned, two snacks put 
       `${wed} dinner Dinner 3`,
       `${wed} snack Apple (Maya)`,
       `${wed} snack Crackers`,
-      ...[4, 5, 6].map((i) => `${addDays(first, i)} dinner Dinner ${i}`),
+      `${thu} dinner Dinner 4`,
+      `${thu} lunch Wraps (Leo, Maya)`,
+      ...[5, 6].map((i) => `${addDays(first, i)} dinner Dinner ${i}`),
     ].join('; '),
   );
 });
@@ -142,7 +168,7 @@ test('[MEAL-03][US-702] done-when: copied to the next week with skip, then with 
   const started = Date.now();
   await copy.getByRole('button', { name: 'Copy last week here' }).click();
   await expect(admin.getByRole('status')).toHaveText(
-    'Copied 8 things from last week. 1 meal was already planned and kept.',
+    'Copied 9 things from last week. 1 meal was already planned and kept.',
   );
   report(`WP-25: a week copied (skip) and shown ${Date.now() - started} ms after the tap`);
   const after = plan(second);
@@ -151,13 +177,15 @@ test('[MEAL-03][US-702] done-when: copied to the next week with skip, then with 
   expect(after).toContain(
     `${addDays(second, 3)} snack Apple (Maya); ${addDays(second, 3)} snack Crackers`,
   );
-  expect(after.split('; ')).toHaveLength(9);
+  // [MEAL-10] Each copy is for the same people.
+  expect(after).toContain(`${addDays(second, 4)} lunch Wraps (Leo, Maya)`);
+  expect(after.split('; ')).toHaveLength(10);
 
   await admin.goto(`/admin/meals?week=${second}`);
   await copy.getByRole('radio', { name: 'Replace it with last week’s' }).check();
   await copy.getByRole('button', { name: 'Copy last week here' }).click();
   await expect(admin.getByRole('status')).toHaveText(
-    'Copied 9 things from last week. 8 meals were replaced.',
+    'Copied 10 things from last week. 9 meals were replaced.',
   );
   // Now the same as the week it came from, a week on, and each copy its own.
   expect(plan(second)).toBe(

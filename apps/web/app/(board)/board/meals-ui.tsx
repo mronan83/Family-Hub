@@ -16,6 +16,7 @@ import {
   SLOT_WORDS,
   weekDates,
 } from '@/lib/board-meals';
+import { peopleWords } from '@/lib/meals';
 import type { BoardMember } from '@/lib/snapshot';
 import { iconOf } from './picture';
 
@@ -28,17 +29,29 @@ function Face({ id, people, size }: { id: string; people: People; size: number }
   ) : null;
 }
 
+/** [MEAL-10] An entry's people in the family's order (children first, then by name). */
+function inOrder(ids: string[], people: People): BoardMember[] {
+  return [...people.values()].filter((m) => ids.includes(m.id));
+}
+
 /**
- * [US-705] One planned meal: its picture (the library meal's icon, else the meal of the day's), what
- * it is, and whose (a face, when it is one person's).
+ * [US-705][MEAL-10] One planned meal: its picture (the library meal's icon, else the meal of the
+ * day's), what it is, and whose (each person's face, in the family's order; none for everyone).
  */
 function Entry({ e, people, size }: { e: BoardMealEntry; people: People; size: number }) {
-  const who = e.memberId ? people.get(e.memberId)?.displayName : null;
+  const whose = inOrder(e.memberIds, people);
+  const who = peopleWords(whose.map((m) => m.displayName));
   return (
     <li className="fw-meals__entry" aria-label={who ? `${e.name}, for ${who}` : undefined}>
       <Icon name={iconOf(e.icon, e.slot)} size={size} className="fw-meals__icon" />
       <span className="fw-meals__name">{e.name}</span>
-      {e.memberId ? <Face id={e.memberId} people={people} size={size} /> : null}
+      {whose.length ? (
+        <span className="fw-meals__faces">
+          {whose.map((m) => (
+            <Face key={m.id} id={m.id} people={people} size={size} />
+          ))}
+        </span>
+      ) : null}
     </li>
   );
 }
@@ -73,10 +86,13 @@ function Lunch({ l, people, size }: { l: BoardLunch; people: People; size: numbe
   );
 }
 
-/** A day's meals for one person: what's for everyone and what's theirs; with none, the whole day. */
+/**
+ * [MEAL-10] A day's meals for one person: what's for everyone and the entries that include them;
+ * with none, the whole day.
+ */
 function forMember(day: BoardMealDay, memberId?: string): BoardMealDay {
   if (!memberId) return day;
-  const mine = (e: BoardMealEntry) => e.memberId === null || e.memberId === memberId;
+  const mine = (e: BoardMealEntry) => !e.memberIds.length || e.memberIds.includes(memberId);
   return {
     ...day,
     slots: {

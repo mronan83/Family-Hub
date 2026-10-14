@@ -8,9 +8,10 @@ import { LEAD_CHOICES, type ReminderSettings } from '@/lib/reminder-settings';
 import { saveSettings } from './actions';
 
 /**
- * [CHR-16][CHR-17][US-318][US-319] When to remind me: the bell for new items, how early, the time
- * for items with no due time, an optional morning digest, optional quiet hours, and whether private
- * items show their title on the lock screen.
+ * [CHR-16][CHR-17][CHR-20][US-318][US-319][US-322] When to remind me: the bell for new items, how
+ * early, the time for items with no due time, an optional morning digest, optional quiet hours, an
+ * alert when something waits for a parent, and whether private items show their title on the lock
+ * screen.
  */
 export function SettingsForm({ initial }: { initial: ReminderSettings }) {
   const [state, onSubmit, pending] = useFormAction(saveSettings, {} as FormState);
@@ -111,6 +112,17 @@ export function SettingsForm({ initial }: { initial: ReminderSettings }) {
         ) : null}
         <span className="fw-field__help">
           A reminder that falls inside them comes when they end.
+        </span>
+      </fieldset>
+      <fieldset className="fw-field fw-fieldset">
+        <legend className="fw-field__label">Approvals</legend>
+        <label className="fw-choice">
+          <input type="checkbox" name="approvalAlerts" defaultChecked={initial.approvalAlerts} />
+          Tell me when a check-off or a reward request waits for me
+        </label>
+        <span className="fw-field__help">
+          One alert for what is new since the last, at most every 5 minutes. A newer one replaces
+          the older.
         </span>
       </fieldset>
       <label className="fw-choice">

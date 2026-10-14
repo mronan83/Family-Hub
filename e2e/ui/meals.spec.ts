@@ -89,6 +89,10 @@ test('[MEAL-01][MEAL-08][US-701] the week: seven days of four meals, each in ord
   await expect(page.getByRole('group', { name: 'Tue, Oct 13 lunch' })).toContainText(
     'Leftover tacosLeo',
   );
+  // [MEAL-10] A meal for two of the family names both.
+  await expect(
+    page.getByRole('group', { name: 'Wed, Oct 14 dinner' }).getByRole('listitem').last(),
+  ).toContainText('Fish fingersMayaLeo');
   // Each meal of each day can be added to.
   await expect(page.getByRole('link', { name: /^Add to / })).toHaveCount(28);
   await expect(page.getByRole('link', { name: 'Add to Thu, Oct 15 breakfast' })).toHaveAttribute(
@@ -147,8 +151,39 @@ test('[MEAL-01][MEAL-02] Add to the plan: the library’s meals for the meal cho
   await form.getByRole('radio', { name: 'Something else' }).check();
   await expect(form.getByRole('textbox', { name: 'Something else' })).toBeVisible();
   await expect(form.getByRole('combobox', { name: 'From the library' })).toHaveCount(0);
-  await expect(form.getByRole('group', { name: 'For' }).getByRole('radio')).toHaveCount(4);
-  await expect(form.getByRole('radio', { name: 'Everyone' })).toBeChecked();
+  await expect(form.getByRole('group', { name: 'For' }).getByRole('checkbox')).toHaveCount(4);
+  await expect(form.getByRole('checkbox', { name: 'Everyone' })).toBeChecked();
+});
+
+test('[MEAL-10][US-708] Add to the plan: Everyone, or a tick per person; every one ticked is Everyone', async ({
+  page,
+}) => {
+  await page.goto('/dev/meals?add=1');
+  const who = page
+    .getByRole('form', { name: 'Add to the plan' })
+    .getByRole('group', { name: 'For' });
+  const everyone = who.getByRole('checkbox', { name: 'Everyone' });
+  const names = await who.locator('label').allInnerTexts();
+  expect(names[0]).toBe('Everyone');
+  const [first, second] = names.slice(1);
+  await expect(who).toContainText('For everyone.');
+  await who.getByRole('checkbox', { name: first! }).check();
+  await expect(everyone).not.toBeChecked();
+  await who.getByRole('checkbox', { name: second! }).check();
+  await expect(who).toContainText(`For ${first} and ${second}.`);
+  // Ticking Everyone clears the people.
+  await everyone.check();
+  await expect(who.getByRole('checkbox', { checked: true })).toHaveCount(1);
+  await expect(everyone).toBeChecked();
+  // Ticking every person is Everyone.
+  // (The last tick turns the people back into Everyone, so it is a click, not a check.)
+  for (const name of names.slice(1)) await who.getByRole('checkbox', { name }).click();
+  await expect(everyone).toBeChecked();
+  await expect(who.getByRole('checkbox', { checked: true })).toHaveCount(1);
+  // Unticking the last person ticked is Everyone again.
+  await who.getByRole('checkbox', { name: first! }).check();
+  await who.getByRole('checkbox', { name: first! }).click();
+  await expect(everyone).toBeChecked();
 });
 
 test('[MEAL-03][US-702] copy last week: keep or replace what this week already has', async ({

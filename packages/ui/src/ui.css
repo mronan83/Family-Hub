@@ -3464,6 +3464,13 @@ span.fw-heat__cell {
 .fw-meals__icon {
   flex: none;
 }
+/* [MEAL-10] An entry's people (WP-62): a face each, side by side. */
+.fw-meals__faces {
+  display: inline-flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
 .fw-meals__icon {
   color: var(--primary-text);
 }

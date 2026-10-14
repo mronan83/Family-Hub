@@ -7,6 +7,7 @@ import {
   mealsFor,
   parseEntryForm,
   parseMealForm,
+  peopleWords,
   type PlanEntry,
   planByDay,
   weekDays,
@@ -17,6 +18,8 @@ import {
 const ID = 'f2e10000-0000-4000-8000-000000000001';
 const TACOS = 'f2d00000-0000-4000-8000-000000000001';
 const MAYA = 'f2000000-0000-4000-8000-000000000001';
+const LEO = 'f2000000-0000-4000-8000-000000000002';
+const SAM = 'f2000000-0000-4000-8000-000000000003';
 
 function form(entries: [string, string][]): FormData {
   const f = new FormData();
@@ -70,7 +73,7 @@ describe('the week', () => {
       planDate,
       slot,
       sortOrder,
-      memberId: null,
+      memberIds: [],
       mealId: null,
       freeText: id,
       notes: null,
@@ -97,7 +100,7 @@ describe('the week', () => {
       planDate: '2026-10-12',
       slot: 'dinner',
       sortOrder: 1,
-      memberId: null,
+      memberIds: [],
       mealId: TACOS,
       freeText: null,
       notes: null,
@@ -139,7 +142,7 @@ describe('the week', () => {
 
 describe('the forms', () => {
   const days = weekDays('2026-10-11');
-  const ctx = { days, memberIds: [MAYA] };
+  const ctx = { days, memberIds: [MAYA, LEO, SAM] };
   const entry = (extra: [string, string][]) =>
     parseEntryForm(
       form([['id', ID], ['planDate', '2026-10-14'], ['slot', 'snack'], ...extra]),
@@ -159,7 +162,7 @@ describe('the forms', () => {
         id: ID,
         planDate: '2026-10-14',
         slot: 'snack',
-        memberId: null,
+        memberIds: [],
         mealId: TACOS,
         freeText: null,
         notes: null,
@@ -174,8 +177,33 @@ describe('the forms', () => {
       ]),
     ).toMatchObject({
       ok: true,
-      value: { mealId: null, freeText: 'Crackers', memberId: MAYA, notes: 'After school' },
+      value: { mealId: null, freeText: 'Crackers', memberIds: [MAYA], notes: 'After school' },
     });
+  });
+
+  it('[MEAL-10][US-708] reads any mix of people; every one ticked, or none, is everyone', () => {
+    const who = (ticked: string[]) => {
+      const r = entry([
+        ['what', 'text'],
+        ['freeText', 'Fish fingers'],
+        ...ticked.map((m): [string, string] => ['member', m]),
+      ]);
+      return r.ok ? r.value.memberIds : r.message;
+    };
+    // In the family's order, once each, whatever order they came in.
+    expect(who([SAM, MAYA, SAM])).toEqual([MAYA, SAM]);
+    expect(who([MAYA, LEO])).toEqual([MAYA, LEO]);
+    expect(who([MAYA, LEO, SAM])).toEqual([]);
+    expect(who([])).toEqual([]);
+    expect(who(['everyone'])).toEqual([]);
+    expect(who([MAYA, 'someone-else'])).toBe('Choose who it’s for.');
+  });
+
+  it('[MEAL-10] says who an entry is for in a line', () => {
+    expect(peopleWords([])).toBeNull();
+    expect(peopleWords(['Maya'])).toBe('Maya');
+    expect(peopleWords(['Maya', 'Leo'])).toBe('Maya and Leo');
+    expect(peopleWords(['Alex', 'Maya', 'Leo'])).toBe('Alex, Maya and Leo');
   });
 
   it('says what to fix', () => {
