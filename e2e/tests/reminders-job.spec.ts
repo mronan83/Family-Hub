@@ -96,8 +96,9 @@ const phonePayloads = () =>
   push.received
     .filter((m) => m.endpoint === PHONE)
     .map((m) => JSON.parse(decryptPush(m.body!, phone.ecdh, phone.authBytes)));
+// Both devices accept, so the old laptop is still there for the 410 in the next test.
 const runNow = () => {
-  push = mockPushService((endpoint) => (endpoint === LAPTOP ? 410 : 201));
+  push = mockPushService(() => 201);
   return runReminders(
     serviceRpc(db!) as unknown as Parameters<typeof runReminders>[0],
     DEMO,
@@ -140,7 +141,7 @@ test('[CHR-20][US-322] a check-off waiting for a parent: exactly one push, and i
 }) => {
   const homework = checkOff('Read for 20 minutes');
   // Alex turned reminders on (and with them Approvals) before it: one alert, for it alone.
-  expect(await runNow()).toMatchObject({ approvals: 1, sent: 1, delivered: 1 });
+  expect(await runNow()).toMatchObject({ approvals: 1, sent: 1, delivered: 2, gone: 0 });
   const [alert] = phonePayloads();
   expect(phonePayloads()).toHaveLength(1);
   expect(alert).toEqual({
