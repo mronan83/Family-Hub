@@ -1,4 +1,5 @@
 import { MAX_ITEMS, type MenuDay } from './nutrislice';
+import { withOptions } from './sections';
 
 // [MENU-03][US-802] A menu from a file (D-79): a spreadsheet saved as CSV, one item per row.
 //
@@ -9,7 +10,8 @@ import { MAX_ITEMS, type MenuDay } from './nutrislice';
 //
 // Columns are found by their header (any order, any capitals): `date` and `item` are needed,
 // `section` is optional; others are ignored. Dates are 2027-02-01 or 2/1/2027 (month first). Rows for
-// the same date gather in order.
+// the same date gather in order. [MENU-06] An item may hold "or" and "with" ("Beef tacos or Chicken
+// wrap with chips"): each row's items are options of its section, as a feed's are (WP-64).
 
 /** The most days one file loads (save_menu_days takes 120). */
 export const MAX_DAYS = 120;
@@ -109,7 +111,11 @@ export function parseMenuCsv(text: string): CsvResult {
   });
   // A date with items and an empty row too has its lunch: the items win.
   const days = [...byDate.values()]
-    .map((d) => (d.items.length > 0 ? { date: d.date, items: d.items, noService: false } : d))
+    .map((d) =>
+      d.items.length > 0
+        ? { date: d.date, items: withOptions(d.items, { split: true }), noService: false }
+        : d,
+    )
     .sort((a, b) => a.date.localeCompare(b.date));
   if (days.length === 0 && problems.length === 0) problems.push('The file has no menu rows.');
   if (days.length > MAX_DAYS)

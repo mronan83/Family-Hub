@@ -3,7 +3,7 @@
 import { Banner, Button } from '@familywise/ui';
 import { dayName } from '@/lib/board-calendar';
 import { useFormAction } from '@/lib/forms';
-import { menuWords } from '@/lib/menus';
+import { MenuText } from '../menu-text';
 import { type CsvState, loadMenuFile } from './actions';
 
 /**
@@ -54,7 +54,7 @@ export function MenuFileForm({
           <ul className="fw-menu-days">
             {state.preview.sample.map((d) => (
               <li key={d.date}>
-                <span className="fw-menu-days__date">{dayName(d.date)}</span> {menuWords(d)}
+                <span className="fw-menu-days__date">{dayName(d.date)}</span> <MenuText day={d} />
               </li>
             ))}
           </ul>

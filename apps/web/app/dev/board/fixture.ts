@@ -4,6 +4,7 @@ import type { AskFor, CancelAsk } from '@/lib/shop';
 import { type BoardLayout, DEFAULT_LAYOUT } from '@/lib/board-layout';
 import type { BoardMealEntry, BoardMeals, MealSlot } from '@/lib/board-meals';
 import type { LunchChild, LunchDay } from '@/lib/lunch';
+import type { MenuItem } from '@/lib/menu/nutrislice';
 import type { BoardMember, BoardSnapshot, BoardWeather } from '@/lib/snapshot';
 import type { BoardCalendar, BoardEvent } from '@/lib/snapshot';
 import type { TodayItem } from '@/lib/today';
@@ -108,11 +109,33 @@ export function fixtureMeals(kind: string | undefined, today: string): BoardMeal
         : [0, 6].includes(new Date(`${d}T12:00:00Z`).getUTCDay())
           ? 'weekend'
           : 'school_day';
-  const menus: Record<number, string[]> = {
-    0: ['Cheese Pizza', 'Green Beans', 'Milk'],
-    2: ['Chicken Nuggets', 'Carrot Sticks'],
-    [-2]: ['Beef Tacos', 'Corn'],
+  // [MENU-06] The school's menu by section, as options (WP-64): two entrees, one with a side.
+  const E = 'Choice of Entree';
+  const F = 'Fruits & Vegetables offered';
+  const M = 'Choice of Milk';
+  const menus: Record<number, MenuItem[]> = {
+    0: [
+      { name: 'Cheese Pizza', section: E, option: 1 },
+      { name: 'Turkey sandwich', section: E, option: 2 },
+      { name: 'Pretzels', section: E, option: 2 },
+      { name: 'Green Beans', section: F, option: 1 },
+      { name: 'Orange', section: F, option: 2 },
+      { name: '1% milk', section: M, option: 1 },
+      { name: 'Chocolate milk', section: M, option: 2 },
+    ],
+    2: [
+      { name: 'Chicken Nuggets', section: E, option: 1 },
+      { name: 'Cheese quesadilla', section: E, option: 2 },
+      { name: 'Carrot Sticks', section: F, option: 1 },
+      { name: '1% milk', section: M, option: 1 },
+    ],
+    [-2]: [
+      { name: 'Beef Tacos', section: E, option: 1 },
+      { name: 'Corn', section: F, option: 1 },
+      { name: '1% milk', section: M, option: 1 },
+    ],
   };
+  // lunch_week() gives the menu on every day with a school lunch, buy or bring (WP-64).
   const lunchDay = (d: string, buys: (k: number) => boolean, menu: boolean): LunchDay => {
     const school = type(d) === 'school_day';
     const mode = school ? (buys(diff(d)) ? 'buy' : 'bring') : null;
@@ -122,10 +145,7 @@ export function fixtureMeals(kind: string | undefined, today: string): BoardMeal
       dayType: type(d),
       mode,
       changed: false,
-      menu:
-        mode === 'buy' && menu && items
-          ? { items: items.map((name) => ({ name })), noService: false, note: null }
-          : null,
+      menu: mode && menu && items ? { items, noService: false, note: null } : null,
     };
   };
   const lunch: LunchChild[] = [
@@ -133,6 +153,7 @@ export function fixtureMeals(kind: string | undefined, today: string): BoardMeal
       memberId: LEO,
       usual: {},
       menuSourceId: 'menu-maple',
+      menuName: 'Maple Elementary',
       days: dates.map((d) => lunchDay(d, (k) => k % 2 === 0, true)),
     },
     {

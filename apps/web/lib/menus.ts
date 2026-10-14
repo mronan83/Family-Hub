@@ -7,6 +7,14 @@ import {
   type NutrisliceConfig,
   SLUG,
 } from './menu/nutrislice';
+import {
+  entreeSection,
+  menuSections,
+  optionWords,
+  sectionLabel,
+  sectionWords,
+  withOptions,
+} from './menu/sections';
 
 // [MENU-01..05][MEAL-05] School menus in the admin portal (WP-27, D-79): the sources, how each one's
 // fetch went, a day's menu in words, and the forms.
@@ -90,34 +98,68 @@ export function fetchStatus(
   return { kind: 'pending', label: 'Not fetched yet', detail: 'It fetches within a day.' };
 }
 
-/** "Cheese Pizza, Hawaiian Pizza, 1% Milk", or "No lunch: Presidents' Day". */
+/** A day with no lunch served in words, or null when lunch is served. */
+function noLunch(day: { noService: boolean; note?: string | null }): string | null {
+  if (!day.noService) return null;
+  return day.note ? `No lunch: ${day.note}` : 'No lunch that day';
+}
+
+/**
+ * [MENU-06] A day's menu in a line, each section's options in turn: "Entree: Beef tacos or Chicken
+ * wrap with Tortilla chips · Fruits & Vegetables: Corn, Orange · Milk: 1% milk or Chocolate milk",
+ * or "No lunch: Presidents' Day". A menu with no sections lists its options with commas.
+ */
 export function menuWords(day: {
   items: MenuItem[];
   noService: boolean;
   note?: string | null;
 }): string {
-  if (day.noService) return day.note ? `No lunch: ${day.note}` : 'No lunch that day';
-  return day.items.map((i) => i.name).join(', ');
+  return (
+    noLunch(day) ??
+    dayMenu(day.items)
+      .map((s) => (s.label ? `${s.label}: ${s.words}` : s.words))
+      .join(' · ')
+  );
 }
 
-/** A day's items as the Change form shows them: one a line, "Section: item" when it has one. */
+/** [MENU-06][US-804] A day's menu by section, each as its label and its options in words. */
+export function dayMenu(items: MenuItem[]): { label: string | null; words: string }[] {
+  const sections = menuSections(items);
+  const entree = entreeSection(sections);
+  return sections.map((s) => ({
+    label: s.title ? sectionLabel(s.title) : null,
+    words: sectionWords(s, s === entree),
+  }));
+}
+
+/**
+ * [MENU-06] A day's items as the Change form shows them: a line a section, "Section: A or B with
+ * C", read back the same by itemsFrom(). Without a section, an option a line.
+ */
 export function itemsText(items: MenuItem[]): string {
-  return items.map((i) => (i.section ? `${i.section}: ${i.name}` : i.name)).join('\n');
+  return menuSections(items)
+    .flatMap((s) => {
+      const options = s.options.map(optionWords);
+      return s.title ? [`${s.title}: ${options.join(' or ')}`] : options;
+    })
+    .join('\n');
 }
 
-/** The Change form's lines back into items: "Section: item" or just the item. */
+/**
+ * [MENU-03][MENU-06] The Change form's lines back into items: "Section: item" or just the item,
+ * "or" and "with" inside a line read as options and sides (WP-64).
+ */
 export function itemsFrom(text: string): MenuItem[] {
-  return text
+  const lines = text
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter(Boolean)
     .slice(0, MAX_ITEMS)
-    .map((l) => {
+    .map((l): MenuItem => {
       const m = /^([^:]{1,60}):\s*(.+)$/.exec(l);
-      return m
-        ? { section: m[1]!.trim(), name: m[2]!.trim().slice(0, 120) }
-        : { name: l.slice(0, 120) };
+      return m ? { section: m[1]!.trim(), name: m[2]!.trim() } : { name: l };
     });
+  return withOptions(lines, { split: true });
 }
 
 type Parsed<T> = { ok: true; value: T } | { ok: false; message: string };

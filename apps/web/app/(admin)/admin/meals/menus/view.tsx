@@ -2,11 +2,12 @@ import { Banner, Button, Icon, type IconName } from '@familywise/ui';
 import Link from 'next/link';
 import { dayName } from '@/lib/board-calendar';
 import type { School } from '@/lib/menu/nutrislice';
-import { fetchStatus, menuWords, type MenuSourceRow, sourceWords } from '@/lib/menus';
+import { fetchStatus, type MenuSourceRow, sourceWords } from '@/lib/menus';
 import { AdminHeader } from '../../header';
 import { clearMenuDay, type CsvState, fetchMenuNow, removeMenu, renameMenu } from './actions';
 import { AddMenuForm } from './add-form';
 import { MenuDayForm } from './day-form';
+import { MenuText } from '../menu-text';
 import { MenuFileForm } from './file-form';
 
 export interface MenusViewProps {
@@ -101,7 +102,7 @@ export function MenusView({
                       {m.days.map((d) => (
                         <li key={d.date} data-today={d.date === today ? '' : undefined}>
                           <span className="fw-menu-days__date">{dayWords(d.date)}</span>{' '}
-                          <span>{menuWords(d)}</span>
+                          <MenuText day={d} />
                           {feed && d.own ? (
                             <span className="fw-pill fw-pill--tag">Yours</span>
                           ) : null}

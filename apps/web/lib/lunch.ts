@@ -24,7 +24,10 @@ export interface LunchDay {
   mode: LunchMode | null;
   /** True when the day was changed from the usual. */
   changed: boolean;
-  /** [MEAL-05] On a buy day, that day's school menu; null when there is none (or no menu chosen). */
+  /**
+   * [MEAL-05] That day's school menu, on any day with a school lunch (WP-64; the app shows it to the
+   * child only on a buy day); null when there is none (or no menu chosen).
+   */
   menu?: LunchMenu | null;
 }
 
@@ -33,6 +36,8 @@ export interface LunchChild {
   usual: Partial<Record<Weekday, LunchMode>>;
   /** [MENU-01] The school menu their lunch comes from, if any. */
   menuSourceId?: string | null;
+  /** [MENU-06] Its name ("Maple Elementary"), for the board's Meals screen (WP-64). */
+  menuName?: string | null;
   days: LunchDay[];
 }
 
@@ -42,6 +47,7 @@ export function lunchFromDb(
     member_id: string;
     usual: Record<string, string>;
     menu_source_id?: string | null;
+    menu_name?: string | null;
     days: {
       date: string;
       day_type: string;
@@ -59,6 +65,7 @@ export function lunchFromDb(
       ),
     ) as LunchChild['usual'],
     menuSourceId: c.menu_source_id ?? null,
+    menuName: c.menu_name ?? null,
     days: c.days.map((d) => ({
       date: d.date,
       dayType: d.day_type,

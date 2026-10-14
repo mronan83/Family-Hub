@@ -149,9 +149,11 @@ select public.set_child_menu('36110000-0000-0000-0000-00000000000a', (select id 
 select is((select d -> 'menu' -> 'items' -> 0 ->> 'name'
              from jsonb_array_elements(public.lunch_week('36000000-0000-0000-0000-000000000001', '2027-02-01') -> 0 -> 'days') d
             where d ->> 'date' = '2027-02-01'), 'Hawaiian Pizza', '[MEAL-05][US-704] her Monday, a buy day, shows the menu');
+-- From WP-64 (D-94) a bring day carries the day's menu too, for the board's Meals screen
+-- (420_menu_options); the feed dropped Wednesday's, so it has none.
 select is((select d -> 'menu'
              from jsonb_array_elements(public.lunch_week('36000000-0000-0000-0000-000000000001', '2027-02-01') -> 0 -> 'days') d
-            where d ->> 'date' = '2027-02-03'), 'null'::jsonb, '... a bring day doesn''t');
+            where d ->> 'date' = '2027-02-03'), 'null'::jsonb, '... a day the menu has nothing for has none');
 select throws_ok($$ select public.set_child_menu('36110000-0000-0000-0000-00000000000c', null) $$,
                  '22023', 'school lunch is a child''s', '[MENU-01] a menu is for a child''s school lunch');
 

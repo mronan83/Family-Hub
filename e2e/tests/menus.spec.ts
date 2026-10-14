@@ -133,9 +133,15 @@ test('[MENU-01][MENU-03][US-802] done-when: four weeks load from a file, looked 
           where s.household_id = '${DEMO}' and s.name = '${FILE}'`),
   ).toBe('20 true');
   const first = [0, 1, 2, 3].map(day).find((d) => weekday(d) > 0 && weekday(d) < 6)!;
-  await expect(page.getByRole('list', { name: `Lunch at ${FILE}` })).toContainText(
-    `Oak lunch ${first}, Milk, 1%`,
-  );
+  // [MENU-06] A line a section: Main Line's item, then Beverages' (WP-64).
+  const firstDay = page
+    .getByRole('list', { name: `Lunch at ${FILE}` })
+    .getByRole('listitem')
+    .filter({ hasText: `Oak lunch ${first}` });
+  await expect(firstDay.locator('.fw-menu-text__row')).toHaveText([
+    `Main Line: Oak lunch ${first}`,
+    'Beverages: Milk, 1%',
+  ]);
 });
 
 test('[MENU-02][MENU-04][MENU-05][US-803] done-when: a feed that fails keeps its menus and says why', async ({
@@ -207,7 +213,11 @@ test('[MEAL-05][US-704] Maya’s buy day shows the menu her lunch comes from', a
   await usual.getByRole('button', { name: 'Save Maya’s usual lunches' }).click();
   await expect(page.getByRole('status')).toHaveText('Usual lunches saved.');
   const lunch = page.getByRole('region', { name: 'School lunch' });
-  await expect(lunch.getByRole('row', { name: /^Maya/ })).toContainText(
-    `Oak lunch ${school}, Milk, 1%`,
-  );
+  await expect(
+    lunch
+      .getByRole('row', { name: /^Maya/ })
+      .getByRole('cell')
+      .filter({ hasText: `Oak lunch ${school}` })
+      .locator('.fw-menu-text__row'),
+  ).toHaveText([`Main Line: Oak lunch ${school}`, 'Beverages: Milk, 1%']);
 });

@@ -32,11 +32,14 @@ export function MenuDayForm({ id, label, day }: { id: string; label: string; day
           name="items"
           rows={4}
           defaultValue={day ? itemsText(day.items) : ''}
-          placeholder={'Cheese Pizza\nGreen Beans\nBeverages: 1% Milk'}
+          placeholder={
+            'Choice of Entree: Beef tacos or Chicken wrap with tortilla chips\nFruits & Vegetables: Corn or Orange\nChoice of Milk: 1% milk or Chocolate milk'
+          }
         />
         <span className="fw-field__help">
-          One item a line. Start a line with a section and a colon to group it, like Beverages:
-          Milk.
+          A section a line, its name and a colon first, like Choice of Milk: 1% milk or Chocolate
+          milk. Write “or” between options and “with” before a side. A line with no section is an
+          item of its own.
         </span>
       </label>
       <label className="fw-choice">

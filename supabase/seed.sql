@@ -332,9 +332,10 @@ select m.id, m.household_id, case m.display_name when 'Leo' then '{"wed": "buy"}
   from public.member m
  where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name in ('Leo', 'Maya');
 
--- [MENU-01][MENU-03][MEAL-05] School menus (WP-27): a made-up school's lunch menu from a file, the next
--- four weeks of weekdays, five lunches in turn; Leo's and Maya's lunch comes from it. No real school's
--- menu or identifiers (NFR-05).
+-- [MENU-01][MENU-03][MEAL-05][MENU-06] School menus (WP-27, WP-64): a made-up school's lunch menu from a
+-- file, the next four weeks of weekdays, five lunches in turn, each by section with its options (two
+-- entrees, one with a side; fruits and vegetables; two milks); Leo's and Maya's lunch comes from it.
+-- No real school's menu or identifiers (NFR-05).
 do $$
 declare
   v_demo  uuid := '0de00000-0000-4000-8000-000000000001';
@@ -345,13 +346,23 @@ begin
   values (v_src, v_demo, 'Maple Elementary', 'csv', 'ok');
   insert into public.school_menu_day (household_id, source_id, menu_date, items, origin, is_override)
   select v_demo, v_src, d::date,
-         (array['[{"name": "Chicken Nuggets"}, {"name": "Carrot Sticks"}, {"name": "Apple"}]',
-                '[{"name": "Cheese Pizza"}, {"name": "Green Beans"}, {"name": "Milk"}]',
-                '[{"name": "Beef Tacos"}, {"name": "Corn"}, {"name": "Orange"}]',
-                '[{"name": "Spaghetti"}, {"name": "Garlic Bread"}, {"name": "Pear"}]',
-                '[{"name": "Fish Tacos"}, {"name": "Rice"}, {"name": "Banana"}]'])[extract(isodow from d)::int]::jsonb,
+         (select jsonb_agg(i order by n) from (
+            select 1 as n, jsonb_build_object('name', m.e1, 'section', 'Choice of Entree', 'option', 1) as i
+            union all select 2, jsonb_build_object('name', m.e2, 'section', 'Choice of Entree', 'option', 2)
+            union all select 3, jsonb_build_object('name', m.side, 'section', 'Choice of Entree', 'option', 2)
+            union all select 4, jsonb_build_object('name', m.f1, 'section', 'Fruits & Vegetables offered', 'option', 1)
+            union all select 5, jsonb_build_object('name', m.f2, 'section', 'Fruits & Vegetables offered', 'option', 2)
+            union all select 6, jsonb_build_object('name', m.f3, 'section', 'Fruits & Vegetables offered', 'option', 3)
+            union all select 7, jsonb_build_object('name', '1% milk', 'section', 'Choice of Milk', 'option', 1)
+            union all select 8, jsonb_build_object('name', 'Chocolate milk', 'section', 'Choice of Milk', 'option', 2)) x),
          'csv', true
     from generate_series(v_today, v_today + 27, interval '1 day') d
+    join (values (1, 'Chicken Nuggets', 'Cheese quesadilla', 'Salsa', 'Carrot Sticks', 'Apple', 'Corn'),
+                 (2, 'Cheese Pizza', 'Turkey sandwich', 'Pretzels', 'Green Beans', 'Orange', 'Grapes'),
+                 (3, 'Beef Tacos', 'Chicken wrap', 'Tortilla chips', 'Corn', 'Orange', 'Cucumber slices'),
+                 (4, 'Spaghetti', 'Veggie burger', 'Garlic Bread', 'Peas', 'Pear', 'Celery sticks'),
+                 (5, 'Fish Tacos', 'Mac and cheese', 'Roll', 'Rice', 'Banana', 'Apple'))
+         m (dow, e1, e2, side, f1, f2, f3) on m.dow = extract(isodow from d)
    where extract(isodow from d) < 6;
   update public.member_lunch l set menu_source_id = v_src
     from public.member m

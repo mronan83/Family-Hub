@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.43: US-804 as built (WP-64, D-94): the home screen's entree options with their sides, on one line, a tap opening the whole menu; the Meals screen's menu a row a section. US-707 gains the owner's answers at WP-64's mockup (D-94): pick one where a section says "Choice of"; Monday to Friday after a Sunday; today until a morning cut-off; a parent approves a change.
 > v0.8.42: US-1009 added at the owner's request (WP-58's scope, built as WP-68, D-93): a board set to portrait for a screen hung taller than it is wide.
 > v0.8.41: US-322, US-708 and US-804 added at the owner's request (WP-62 to WP-64, D-87 to D-89): an alert when something waits for a parent; a meal for any mix of people; the school menu by section. US-707 now includes picking a buy day's lunch choices.
 > v0.8.40: US-321 added and built (WP-61, D-86): a chore that comes up only on the days a child brings lunch, or only on the days they buy it.
@@ -627,8 +628,10 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given the weekly item "Pick next week's lunches" on the family list, when I tap it, then the board opens my coming week: each school day with what the school serves and **Buy** or **Bring**, my usual choice already set.
 - Given a day I want to change, when I tap **Buy** or **Bring**, then it changes at once and **Meals** in the admin app shows it as changed, by the board.
 - Given I have looked at every day, when I tap **Done**, then the weekly item is checked off for me.
-- Given a day with no school, or today and earlier days, when I look, then I can't change it.
-- Given a day I buy, when I look at it, then I pick one entree, one or more fruits and vegetables, and one milk from that day's menu, and the board then shows what I picked instead of every option (D-89).
+- Given it is Sunday, when I open my coming week, then it is Monday to Friday after it (D-94).
+- Given a day with no school, or an earlier day, when I look, then I can't change it; today I can change until the morning's cut-off (D-94).
+- Given I change a day, when a parent looks, then the change waits for a parent to approve it (D-94).
+- Given a day I buy, when I look at it, then I pick one option in each section that says "Choice of" (the entree, the milk) and any number in the others (fruits and vegetables) from that day's menu, and the board then shows what I picked instead of every option (D-89, D-94).
 - Given I picked Thursday's lunch, when a parent opens **Meals**, then they see my picks and can change them.
 
 ---
@@ -660,8 +663,9 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As a** kid **I want** a buy day's menu shown as the choices I have **so that** I can read it at a glance and it doesn't fill the board.
 **Priority:** Should · **Phase:** P2 · **Reqs:** MENU-06
 - Given a day's menu with "Pizza or Chicken wrap with roll" under **Choice of Entree**, when the board shows it, then it reads as two options, "Pizza" and "Chicken wrap with roll", not one line.
-- Given the home screen, when Maya buys today, then her lunch shows only the entree options; **Meals** shows each section (entree, fruits and vegetables, milk) with its options.
+- Given the home screen, when Maya buys today, then her lunch shows only the entree options, with their sides, on one line, cut short with "…" when it doesn't fit; a tap shows the day's whole menu by section (D-94). **Meals** shows each section (entree, fruits and vegetables, milk) with its options.
 - Given a menu typed in or loaded from a file, when it has sections and "or", then it reads the same way; without them, it shows as it does now.
+- As built (WP-64, D-94): the board's **Meals** screen has **School menu** and the menu's name under **School lunch**, then a row a section on every school day; the admin app's **Meals** and **School menus** show a line a section; a day typed in is a section a line ("Choice of Milk: 1% milk or Chocolate milk").
 
 ---
 

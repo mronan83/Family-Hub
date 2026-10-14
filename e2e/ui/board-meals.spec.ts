@@ -61,7 +61,7 @@ test('[MEAL-06][US-705] the home screen: today’s four meals, and each child bu
   // sandwiches are Sam's too, so they stay under Lunch for Sam (MEAL-10).
   await lunchIs(meals(page).locator('[data-slot="lunch"]'), [
     'Ham wraps, for Sam',
-    'Leo buys lunch: Cheese Pizza, Green Beans, Milk',
+    'Leo buys lunch: Cheese Pizza or Turkey sandwich with Pretzels',
     'Maya brings lunch: Leftover spaghetti · Ham wraps',
   ]);
   await expect(meals(page).locator('[data-slot="lunch"] li').nth(1)).toContainText('Buys');
@@ -118,6 +118,10 @@ test('[MEAL-06][US-705] the Meals screen: the week a day a column, today marked,
     'Lunch',
     'Dinner',
     'School lunch',
+    'School menu · Maple Elementary',
+    'Entree',
+    'Fruits & Vegetables',
+    'Milk',
   ]);
   // A dinner every day, and today's column the one that stands out.
   const dinners = week(page).locator('tr[data-slot="dinner"] td');
@@ -129,8 +133,9 @@ test('[MEAL-06][US-705] the Meals screen: the week a day a column, today marked,
   ]);
   // School lunch: today's buying and bringing; the weekend says so.
   const school = week(page).locator('tr[data-slot="school"]');
+  // The menu has rows of its own, so a buy day says only that (WP-64).
   await lunchIs(school.locator('td[aria-current="date"]'), [
-    'Leo buys lunch: Cheese Pizza, Green Beans, Milk',
+    'Leo buys lunch',
     'Maya brings lunch: Leftover spaghetti · Ham wraps',
   ]);
   await expect(school).toContainText('Weekend');
@@ -155,7 +160,7 @@ test('[MEAL-06] on Maya’s own screen: what’s for everyone and what’s hers,
   await people(page).getByRole('button', { name: /^Leo/ }).click();
   await expect(card.locator('[data-slot="snack"] li')).toHaveText(['Apple slices']);
   await lunchIs(card.locator('[data-slot="lunch"]'), [
-    'Leo buys lunch: Cheese Pizza, Green Beans, Milk',
+    'Leo buys lunch: Cheese Pizza or Turkey sandwich with Pretzels',
   ]);
 });
 
@@ -191,6 +196,60 @@ test('[MEAL-10][US-708] a meal for some of the family: each one’s face, and on
   await people(page).getByRole('button', { name: /^Sam/ }).click();
   await expect(card.locator('[data-slot="dinner"] li')).toHaveText(['Spaghetti']);
   await expect(card.getByRole('listitem', { name: 'Ham wraps, for Sam' })).toBeVisible();
+});
+
+test('[MENU-06][US-804] the school menu by section: the entree on one line, a tap shows it all, a row a section on Meals', async ({
+  page,
+}) => {
+  await page.goto('/dev/board');
+  // The home screen: the entree's options on one line, cut short with "…" when they don't fit.
+  const leo = meals(page).locator('[data-slot="lunch"] li').nth(1);
+  const line = leo.getByRole('button', { name: 'Show Leo’s whole lunch menu' });
+  await expect(line).toHaveText('Cheese Pizza or Turkey sandwich with Pretzels');
+  expect(
+    await line
+      .locator('.fw-meals__menu-text')
+      .evaluate((el) => [getComputedStyle(el).whiteSpace, getComputedStyle(el).textOverflow]),
+  ).toEqual(['nowrap', 'ellipsis']);
+  expect((await line.boundingBox())!.height).toBeGreaterThanOrEqual(56);
+  // A tap shows the day's whole menu, a section a heading; Close or Escape shuts it.
+  await line.click();
+  const box = page.getByRole('dialog', { name: 'Leo buys lunch today' });
+  await expect(box.locator('dt')).toHaveText(['Entree', 'Fruits & Vegetables', 'Milk']);
+  await expect(box.locator('dd').first().locator('li')).toHaveText([
+    'Cheese Pizza',
+    'Turkey sandwich with Pretzels',
+  ]);
+  await expect(box.locator('dd').nth(2).locator('li')).toHaveText(['1% milk', 'Chocolate milk']);
+  await expect(box.getByRole('button', { name: 'Close' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(box).toHaveCount(0);
+  await line.click();
+  await box.getByRole('button', { name: 'Close' }).click();
+  await expect(box).toHaveCount(0);
+  // Maya brings hers: nothing to open.
+  await expect(
+    meals(page).locator('[data-slot="lunch"] li').last().getByRole('button'),
+  ).toHaveCount(0);
+
+  // The Meals screen: the menu by name, then a row a section, each option on a line of its own, on
+  // every day with a school lunch, buy or bring; a day with nothing says "–".
+  await people(page).getByRole('button', { name: 'Meals', exact: true }).click();
+  await expect(week(page).locator('.fw-mweek__menu-head')).toHaveText(
+    'School menu · Maple Elementary',
+  );
+  const rows = week(page).locator('tr[data-slot="menu"]:not(.fw-mweek__menu-head)');
+  await expect(rows).toHaveCount(3);
+  await expect(rows.nth(0).locator('td[aria-current="date"] li')).toHaveText([
+    'Cheese Pizza',
+    'Turkey sandwich with Pretzels',
+  ]);
+  await expect(rows.nth(1).locator('td[aria-current="date"] li')).toHaveText([
+    'Green Beans',
+    'Orange',
+  ]);
+  await expect(rows.nth(2).locator('td').first()).toHaveText('–');
+  expect(await spills(page)).toEqual([]);
 });
 
 for (const theme of ['day', 'evening'] as const) {

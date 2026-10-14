@@ -1,7 +1,7 @@
 'use client';
 
-import { Avatar, Icon } from '@familywise/ui';
-import { useMemo } from 'react';
+import { Avatar, Button, Icon } from '@familywise/ui';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   type BoardLunch,
   type BoardMealDay,
@@ -15,7 +15,9 @@ import {
   noLunchReason,
   SLOT_WORDS,
   weekDates,
+  weekMenus,
 } from '@/lib/board-meals';
+import { type MenuOption, type MenuSection, sectionLabel } from '@/lib/menu/sections';
 import { peopleWords } from '@/lib/meals';
 import type { BoardMember } from '@/lib/snapshot';
 import { iconOf } from './picture';
@@ -62,27 +64,129 @@ function lunchText(l: BoardLunch): string | null {
   return l.packed.length ? l.packed.join(' · ') : null;
 }
 
-/** [MEAL-04][MEAL-05] A child's school lunch: their face, Buys or Brings, and what it is. */
-function Lunch({ l, people, size }: { l: BoardLunch; people: People; size: number }) {
+/**
+ * [MEAL-04][MEAL-05][MENU-06] A child's school lunch: their face, Buys or Brings, and what it is.
+ * On the home screen a buy day's entree options sit on one line, cut short with "…" when they don't
+ * fit, and a tap opens the day's whole menu (WP-64, D-94). On the week, `brief` leaves the menu to
+ * the menu's own rows.
+ */
+function Lunch({
+  l,
+  people,
+  size,
+  brief,
+  onOpen,
+}: {
+  l: BoardLunch;
+  people: People;
+  size: number;
+  brief?: boolean;
+  onOpen?: (l: BoardLunch) => void;
+}) {
   const who = people.get(l.memberId)?.displayName ?? 'Someone';
   const mode = l.mode === 'buy' ? 'Buys' : 'Brings';
-  const text = lunchText(l);
+  const text = brief && l.mode === 'buy' && !l.noMenu ? null : lunchText(l);
+  const said = `${who} ${mode.toLowerCase()} lunch${text ? `: ${text}` : ''}`;
+  const opens = !!(onOpen && l.sections?.length);
   return (
-    <li
-      className="fw-meals__lunch"
-      data-mode={l.mode}
-      aria-label={`${who} ${mode.toLowerCase()} lunch${text ? `: ${text}` : ''}`}
-    >
+    <li className="fw-meals__lunch" data-mode={l.mode} aria-label={said}>
       <Face id={l.memberId} people={people} size={size} />
       <span className="fw-meals__mode" aria-hidden>
         {mode}
       </span>
-      {text ? (
+      {opens ? (
+        <button
+          type="button"
+          className="fw-meals__menu"
+          aria-label={`Show ${who}’s whole lunch menu`}
+          onClick={() => onOpen!(l)}
+        >
+          <span className="fw-meals__menu-text">{text}</span>
+          <Icon name="chevron-right" size={size} />
+        </button>
+      ) : text ? (
         <span className="fw-meals__name" data-none={l.noMenu || undefined} aria-hidden>
           {text}
         </span>
       ) : null}
     </li>
+  );
+}
+
+/** [MENU-06] An option on its own line, its sides after "with" in the softer colour. */
+function Option({ o }: { o: MenuOption }) {
+  return (
+    <li>
+      {o.name}
+      {o.sides.length ? (
+        <span className="fw-menu__with"> with {o.sides.join(' with ')}</span>
+      ) : null}
+    </li>
+  );
+}
+
+/**
+ * [MENU-06][US-804] A buy day's whole menu, from a tap on a child's lunch on the home screen
+ * (WP-64, D-94): each section and its options. Read only; it closes with Close or Escape.
+ */
+function LunchDetails({
+  l,
+  people,
+  onClose,
+}: {
+  l: BoardLunch;
+  people: People;
+  onClose: () => void;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    box.current?.querySelector<HTMLButtonElement>('.fw-details__close')?.focus();
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, [onClose]);
+  const who = people.get(l.memberId)?.displayName ?? 'Someone';
+  return (
+    <div className="fw-today__scrim">
+      <div
+        ref={box}
+        className="fw-today__picker fw-details fw-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lunch-title"
+      >
+        <header className="fw-details__head">
+          <Face id={l.memberId} people={people} size={56} />
+          <h2 id="lunch-title">{`${who} buys lunch today`}</h2>
+        </header>
+        <MenuList sections={l.sections ?? []} />
+        <div className="fw-today__picker-actions">
+          <Button variant="secondary" icon="close" className="fw-details__close" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** [MENU-06] A day's menu, a section a heading with its options under it. */
+function MenuList({ sections }: { sections: MenuSection[] }) {
+  return (
+    <dl className="fw-details__facts fw-menu__sections">
+      {sections.map((s, i) => (
+        <div key={s.title ?? i} className="fw-menu__section">
+          <dt>{s.title ? sectionLabel(s.title) : 'Menu'}</dt>
+          <dd>
+            <ul className="fw-menu__options">
+              {s.options.map((o, j) => (
+                <Option key={j} o={o} />
+              ))}
+            </ul>
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -123,6 +227,7 @@ export function TodayMeals({
   memberId?: string;
 }) {
   const people = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
+  const [open, setOpen] = useState<BoardLunch | null>(null);
   const day = forMember(mealDay(meals, today), memberId);
   if (!hasMeals(day)) return null;
   const id = memberId ? 'me-meals' : 'dash-meals';
@@ -150,7 +255,7 @@ export function TodayMeals({
                     <Entry key={e.id} e={e} people={people} size={40} />
                   ))}
                   {lunch.map((l) => (
-                    <Lunch key={l.memberId} l={l} people={people} size={40} />
+                    <Lunch key={l.memberId} l={l} people={people} size={40} onOpen={setOpen} />
                   ))}
                 </ul>
               </dd>
@@ -158,6 +263,7 @@ export function TodayMeals({
           );
         })}
       </dl>
+      {open ? <LunchDetails l={open} people={people} onClose={() => setOpen(null)} /> : null}
     </section>
   );
 }
@@ -186,6 +292,7 @@ export function MealsWeek({
   const days = dates.map((d) => mealDay(meals, d));
   const slots = weekSlots(days);
   const school = (meals?.lunch.length ?? 0) > 0;
+  const menus = weekMenus(meals);
   const planned = days.some(hasMeals);
   return (
     <section className="fw-mweek" aria-labelledby="mweek-title">
@@ -248,7 +355,7 @@ export function MealsWeek({
                       {day.lunch.length ? (
                         <ul className="fw-meals__list">
                           {day.lunch.map((l) => (
-                            <Lunch key={l.memberId} l={l} people={people} size={36} />
+                            <Lunch key={l.memberId} l={l} people={people} size={36} brief />
                           ))}
                         </ul>
                       ) : (
@@ -259,9 +366,58 @@ export function MealsWeek({
                 })}
               </tr>
             ) : null}
+            {menus.map((m) => (
+              <MenuRows key={m.sourceId} menu={m} dates={dates} today={today} />
+            ))}
           </tbody>
         </table>
       </div>
     </section>
+  );
+}
+
+/**
+ * [MENU-06][US-804] A school menu's rows on the Meals screen (WP-64, D-94): its name, then a row a
+ * section, each day's options on lines of their own; a day with nothing from it shows "–".
+ */
+function MenuRows({
+  menu,
+  dates,
+  today,
+}: {
+  menu: ReturnType<typeof weekMenus>[number];
+  dates: string[];
+  today: string;
+}) {
+  return (
+    <>
+      <tr className="fw-mweek__menu-head" data-slot="menu">
+        <th scope="rowgroup" colSpan={8}>
+          {`School menu · ${menu.name}`}
+        </th>
+      </tr>
+      {menu.rows.map((r) => (
+        <tr key={r.title ?? ''} data-slot="menu">
+          <th scope="row">{r.label ?? 'Menu'}</th>
+          {dates.map((d) => {
+            const day = menu.days.get(d);
+            const s = day?.sections.find((x) => x.title === r.title);
+            return (
+              <td key={d} aria-current={d === today ? 'date' : undefined}>
+                {s ? (
+                  <ul className="fw-menu__options">
+                    {s.options.map((o, j) => (
+                      <Option key={j} o={o} />
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="fw-mweek__empty">{day?.noService ?? '–'}</span>
+                )}
+              </td>
+            );
+          })}
+        </tr>
+      ))}
+    </>
   );
 }
