@@ -79,9 +79,10 @@ export const JOBS: Record<string, Job> = {
     };
   },
 
-  // [CHR-15][CHR-16][CHR-17] Reminders (WP-40, D-58), every 5 minutes: the database plans what has
-  // come due and claims what is due now, each at most once; each goes to the person's devices by web
-  // push. Without the VAPID keys nothing is sent, and a reminder waiting fails the run.
+  // [CHR-15][CHR-16][CHR-17][CHR-20] Reminders (WP-40, D-58), every 5 minutes: the database plans what
+  // has come due, and an alert for each parent when something waits for them (WP-63, D-88), and
+  // claims what is due now, each at most once; each goes to the person's devices by web push.
+  // Without the VAPID keys nothing is sent, and a reminder waiting fails the run.
   async reminders({ db, householdId }) {
     const vapid = vapidFromEnv();
     const stats = await runReminders(

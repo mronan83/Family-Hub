@@ -20,7 +20,7 @@ export async function loadSettings(
   const { data, error } = await db
     .from('reminder_preference')
     .select(
-      'enabled, default_on, default_lead_minutes, morning_time, digest_time, quiet_start, quiet_end, hide_private_titles',
+      'enabled, default_on, default_lead_minutes, morning_time, digest_time, quiet_start, quiet_end, hide_private_titles, approval_alerts',
     )
     .eq('member_id', memberId)
     .maybeSingle();
