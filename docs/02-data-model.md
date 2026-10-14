@@ -379,7 +379,7 @@ erDiagram
 | `private.app_error` | `occurred_at`, `request_id`, `method`, `route`, `kind` (`render`/`route`/`action`/`proxy`/`job`), `message` (scrubbed, at most 1000 characters), `digest`, `household_id?` | Infrastructure: server errors from Next.js `onRequestError` and failed jobs, kept longer than Vercel Hobby's one hour of logs, for System Health (WP-42). `household_id` is the household the error happened for (the job's, or the request's board or admin; D-42); errors on signed-out pages have none and appear on no household's page. No request body, no PII (NFR-05). Written only through `record_app_error()` by the service role; read only through `household_errors()`. |
 | `private.usage_sample` | `taken_at`, `source` (`vercel`), `period_start`, `service`, `unit`, `account_quantity`, `project_quantity` | Infrastructure: the Vercel account's usage over the last 30 days for the services with Hobby limits, written daily by the usage workflow (`scripts/usage-sample.sh`), the account's total and this project's share. Read only through `system_usage()`; kept 90 days. |
 
-**Planned (D-93, WP-68; not built):** `device.board_config.orientation`, `landscape` or `portrait` (none is Landscape), checked like `text_size`, and set by an admin like it; the snapshot's `device.orientation`, which the board applies before its first paint, as it does its text size.
+**Planned (D-93, WP-68; not built):** `device.board_config.orientation`, `auto`, `landscape` or `portrait` (none is Automatic: the board follows its screen's shape), checked like `text_size`, and set by an admin like it; the snapshot's `device.orientation`, which the board applies before its first paint, as it does its text size.
 
 ### 3.2 Chores
 

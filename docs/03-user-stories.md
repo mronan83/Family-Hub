@@ -822,7 +822,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a board on Boards, when I set its orientation to **Portrait**, then the board changes to its portrait layout without a reload, and after a reload it is still portrait.
 - Given a board in portrait on a 1080×1920 screen at Standard, when the home screen shows, then the people, the bar, the calendar, today's list and every card are in sight and the page doesn't scroll, with words and buttons at the board's sizes.
 - Given a portrait board, when I open Chores, the Calendar, a child's screen, the shop or Meals, then each is laid out for the tall screen, with nothing overlapping and no sideways scroll.
-- Given a board I never set, when it opens, then it is landscape as before.
+- Given a board I never set (**Automatic**), when its screen is taller than it is wide, then it shows its portrait layout, and on a wider screen its landscape layout, as before; when the window changes shape, it follows.
+- Given a board set to **Landscape**, when its screen is taller than it is wide, then it stays landscape.
 - Given a portrait board set to Larger, when its words no longer fit side by side, then the parts stack, as they do in landscape.
 
 ---
