@@ -184,9 +184,28 @@ test('[CAL-05][US-507] unticking School for this board takes its events off it w
   await form.getByRole('checkbox', { name: 'School e2e' }).uncheck();
   await boardCalendar();
   await expect(week()).toContainText('Picture day e2e');
+  const live = board.getByRole('status');
+  const heard = await live.getAttribute('data-events');
+  const read = await board.locator('main.fw-board').getAttribute('data-fetched-at');
   const saved = Date.now();
   await form.getByRole('button', { name: 'Save calendars' }).click();
-  await expect(week()).not.toContainText('Picture day e2e', { timeout: 3_000 });
+  try {
+    await expect(week()).not.toContainText('Picture day e2e', { timeout: 3_000 });
+  } catch (error) {
+    // Say what the board saw (WP-65): the changes it heard, its last read, and when the database
+    // had the choice, so a slow Realtime, a slow save and a slow read can be told apart.
+    const stored = sql(`select coalesce(string_agg(dc.visible::text || ' at ' ||
+             to_char(dc.updated_at, 'HH24:MI:SS.MS'), ', '), 'nothing')
+        from public.device_calendar dc join public.calendar_source s on s.id = dc.calendar_source_id
+       where s.name = 'School e2e'`);
+    throw new Error(
+      `[CAL-05] School still on the board ${Date.now() - saved} ms after Save (pressed at ${new Date(saved).toISOString().slice(11, 23)} UTC): ` +
+        `changes heard ${heard} → ${await live.getAttribute('data-events')}, ` +
+        `board read at ${read} → ${await board.locator('main.fw-board').getAttribute('data-fetched-at')}, ` +
+        `School on this board in the database: ${stored}`,
+      { cause: error },
+    );
+  }
   console.log(`[CAL-05] School left the board ${Date.now() - saved} ms after Save`);
   await expect(week()).toContainText('Swim e2e');
   await expect(admin.getByText(`Saved the calendars on ${BOARD}.`, { exact: false })).toBeVisible();

@@ -78,6 +78,42 @@ export function covers(cal: BoardCalendar | null, from: string, to: string): boo
   return cal !== null && cal.from <= from && to <= cal.to;
 }
 
+/**
+ * [CAL-05][WP-65] A range read earlier, brought up to the snapshot read since. The snapshot is the
+ * board's newest read: its calendars are the ones this board shows now, and its events are the
+ * current ones on every date it covers. So an earlier read keeps only its events on the snapshot's
+ * calendars that lie wholly outside the snapshot's dates, and the snapshot gives the rest. A week
+ * that starts before yesterday (the snapshot's first date) shows a calendar unticked, or an event
+ * moved, as soon as the snapshot has it, without waiting for the range to be read again.
+ */
+export function withSnapshot(
+  fetched: BoardCalendar,
+  snapshot: BoardCalendar | null,
+): BoardCalendar {
+  if (!snapshot) return fetched;
+  const shown = new Set(snapshot.calendars.map((c) => c.id));
+  const outside = (e: BoardEvent) => e.endDate < snapshot.from || e.startDate > snapshot.to;
+  const inRange = (e: BoardEvent) => e.startDate <= fetched.to && e.endDate >= fetched.from;
+  const fresh = snapshot.events.filter(inRange);
+  const ids = new Set(fresh.map((e) => e.id));
+  const kept = fetched.events.filter(
+    (e) => shown.has(e.calendarId) && outside(e) && !ids.has(e.id),
+  );
+  return {
+    from: fetched.from,
+    to: fetched.to,
+    calendars: snapshot.calendars,
+    events: [...fresh, ...kept].sort(
+      (a, b) =>
+        a.startDate.localeCompare(b.startDate) ||
+        Number(b.allDay) - Number(a.allDay) ||
+        a.start.localeCompare(b.start) ||
+        a.title.localeCompare(b.title) ||
+        a.id.localeCompare(b.id),
+    ),
+  };
+}
+
 /** The events on a date: all-day ones first, then by start, then title. */
 export function eventsOn(events: BoardEvent[], date: string): BoardEvent[] {
   return events
