@@ -69,10 +69,12 @@ function Face({
   const name = member?.displayName ?? 'Anyone';
   const open = chip.state === 'open' || chip.state === 'late' || chip.state === 'overdue';
   const undoable = canUndo && (chip.state === 'done' || chip.state === 'waiting');
+  // [MEAL-09] An item that opens Lunches opens them (WP-49) rather than checking off.
+  const verb = chip.item.opens ? 'Open' : 'Check off';
   const label = open
     ? chip.memberId
-      ? `Check off ${title} for ${name}`
-      : `Check off ${title}`
+      ? `${verb} ${title} for ${name}`
+      : `${verb} ${title}`
     : undoable
       ? armed
         ? `Tap again to undo ${title} for ${name}`

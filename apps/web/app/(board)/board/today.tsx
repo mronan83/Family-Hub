@@ -52,6 +52,8 @@ import { type Chip, CHIP_WORDS, familyList, type ListRow } from '@/lib/dashboard
 import { CalendarScreen, type LoadCalendar } from './calendar-ui';
 import { Dashboard } from './dashboard';
 import { MealsWeek, TodayMeals } from './meals-ui';
+import { type LoadLunches, LunchesScreen } from './lunches-ui';
+import { type AskLunch, type SeenLunch } from '@/lib/lunch-picks';
 import { Celebration, FamilyGoals, GoalsCard, useCelebrations } from './goals-ui';
 import { iconOf, type PhotoUrl } from './picture';
 import { RequestsCard, ShopDialog, useShop } from './shop-ui';
@@ -496,7 +498,7 @@ function Tile({
         <button
           type="button"
           className="fw-today__hit"
-          aria-label={`Check off ${item.title}`}
+          aria-label={item.opens ? `Open ${item.title}` : `Check off ${item.title}`}
           onClick={onTap}
         />
       ) : null}
@@ -911,6 +913,8 @@ const noPin: PinWish = async () => 'offline';
 const noAsk: AskFor = async () => ({ ok: false, offline: true });
 const noCancel: CancelAsk = async () => ({ ok: false, offline: true });
 const noMark: MarkCelebrated = async () => false;
+const noLunch: AskLunch = async () => ({ ok: false, offline: true });
+const noSeen: SeenLunch = async () => false;
 
 /**
  * [BRD-01][BRD-02][BRD-05][BRD-07][PTS-02][PTS-04][RWD-07][RWD-08] The board: its home is the family
@@ -932,6 +936,9 @@ export function Today({
   markCelebrated = noMark,
   photoUrl,
   loadCalendar,
+  loadLunches,
+  askLunch = noLunch,
+  seenLunch = noSeen,
 }: {
   snapshot: BoardSnapshot;
   /** The current minute. */
@@ -948,6 +955,11 @@ export function Today({
   photoUrl?: PhotoUrl;
   /** [CAL-04] Reads a range of the calendar the snapshot doesn't hold (WP-23). */
   loadCalendar?: LoadCalendar;
+  /** [MEAL-09] Reads a week's lunches (lunch_week), for Lunches (WP-49). */
+  loadLunches?: LoadLunches;
+  /** [MEAL-09][MEAL-11] Asks for a child's day (POST /api/lunches), and says they saw their week. */
+  askLunch?: AskLunch;
+  seenLunch?: SeenLunch;
   /** [DEV-06] Where the outbox and what the board shows ahead of the snapshot outlast a reload. */
   store?: BoardStore | null;
   onQueue?: (q: QueueState) => void;
@@ -958,8 +970,14 @@ export function Today({
   const party = useCelebrations(snapshot.goals, markCelebrated);
   const online = useOnline();
   const { members, household, today } = snapshot;
-  // 'home' (the dashboard), 'chores', 'calendar', 'meals', or a member's id.
+  // 'home' (the dashboard), 'chores', 'calendar', 'meals', 'lunches', or a member's id.
   const [view, setView] = useState<string>('home');
+  // [MEAL-09] Whose lunches show, the item that opened them (Done checks it off) and where Done goes.
+  const [lunchFor, setLunchFor] = useState<{
+    memberId: string;
+    item: TodayItem | null;
+    back: string;
+  } | null>(null);
   // [D-66] A day tapped on the dashboard opens the calendar on that day.
   const [calDay, setCalDay] = useState<string | null>(null);
   const [details, setDetails] = useState<ListRow | null>(null);
@@ -1002,6 +1020,7 @@ export function Today({
     idle.current = setTimeout(() => {
       setView('home');
       setCalDay(null);
+      setLunchFor(null);
       setDetails(null);
       setWishing(null);
       setShopping(null);
@@ -1031,6 +1050,10 @@ export function Today({
       celebrate={t.celebrating === i.id}
       undoable={(undoUntil(i, windowSeconds) ?? 0) > second}
       onTap={() => {
+        if (i.opens === 'lunches' && lunchKids.length) {
+          openLunches(lunchChild(i, viewer), i);
+          return;
+        }
         const doers = defaultDoers(i, mode, viewer);
         if (doers) t.checkOff(i, doers);
         else setPicker({ item: i, initial: i.assignees.includes(viewer) ? [viewer] : [] });
@@ -1048,6 +1071,21 @@ export function Today({
     setCalDay(null);
     toTop();
   };
+  // [MEAL-09] The children with a school lunch, in the family's order.
+  const lunchKids = members
+    .filter((m) => snapshot.meals?.lunch.some((c) => c.memberId === m.id))
+    .map((m) => m.id);
+  const openLunches = (memberId: string | null, item: TodayItem | null = null) => {
+    const who = memberId && lunchKids.includes(memberId) ? memberId : lunchKids[0];
+    if (!who) return;
+    setLunchFor({ memberId: who, item, back: view });
+    open('lunches');
+  };
+  // [MEAL-09] An item that opens Lunches (WP-49): a tap opens the child's week instead of checking off.
+  const lunchChild = (i: TodayItem, viewer: string | null) =>
+    viewer && lunchKids.includes(viewer)
+      ? viewer
+      : (i.assignees.find((a) => lunchKids.includes(a)) ?? null);
 
   const shopFor = member && shopping?.member === member.id ? member : null;
 
@@ -1327,11 +1365,53 @@ export function Today({
                   members={members}
                   memberId={member.id}
                 />
+                {/* [MEAL-09][US-707] Their coming week's lunches (WP-49). */}
+                {lunchKids.includes(member.id) ? (
+                  <section className="fw-today__card" aria-labelledby="me-lunches">
+                    <div className="fw-today__card-head">
+                      <h3 id="me-lunches">Lunches</h3>
+                      <Button
+                        variant="secondary"
+                        icon="lunch"
+                        onClick={() => openLunches(member.id)}
+                      >
+                        Pick lunches
+                      </Button>
+                    </div>
+                  </section>
+                ) : null}
               </aside>
             </div>
           </section>
+        ) : view === 'lunches' && lunchFor ? (
+          <LunchesScreen
+            members={members}
+            childIds={lunchKids}
+            memberId={lunchFor.memberId}
+            today={today}
+            fetchedAt={snapshot.fetchedAt}
+            online={online}
+            load={loadLunches}
+            ask={askLunch}
+            seen={seenLunch}
+            say={t.say}
+            onChild={(id) => setLunchFor({ ...lunchFor, memberId: id, item: null })}
+            onDone={() => {
+              // [US-707] Done checks off the item that opened it, for this child.
+              const item = lunchFor.item ? t.items.find((x) => x.id === lunchFor.item!.id) : null;
+              if (item && isOpen(item)) t.checkOff(item, [lunchFor.memberId]);
+              const back = lunchFor.back;
+              setLunchFor(null);
+              open(back === 'lunches' ? 'home' : back);
+            }}
+          />
         ) : view === 'meals' ? (
-          <MealsWeek meals={snapshot.meals} today={today} members={members} />
+          <MealsWeek
+            meals={snapshot.meals}
+            today={today}
+            members={members}
+            onLunches={lunchKids.length ? () => openLunches(null) : undefined}
+          />
         ) : view === 'calendar' ? (
           <CalendarScreen
             key={calDay ?? 'week'}
@@ -1354,6 +1434,10 @@ export function Today({
             canUndo={canUndo}
             celebrating={t.celebrating}
             onCheck={(c: Chip) => {
+              if (c.item.opens === 'lunches' && lunchKids.length) {
+                openLunches(lunchChild(c.item, c.memberId), c.item);
+                return;
+              }
               if (c.memberId) t.checkOff(c.item, [c.memberId]);
               else setPicker({ item: c.item, initial: [] });
             }}

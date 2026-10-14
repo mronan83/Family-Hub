@@ -149,3 +149,32 @@ export async function quickAdd(form: FormData): Promise<void> {
   revalidatePath('/admin/my');
   redirect(`/admin/my?added=${encodeURIComponent(title)}`);
 }
+
+/**
+ * [MEAL-09][MEAL-11][US-707] A parent answers the children's lunch changes from the board (WP-49):
+ * approves them (the days become as asked, picks and all) or keeps the days as they were. The
+ * button says which and for which changes: `approve:<id>,<id>` or `keep:<id>`. A change past its
+ * cut-off is left as it is, and the notice says so.
+ */
+export async function decideLunches(form: FormData): Promise<void> {
+  const { db } = await context('/admin/today');
+  const [verb, list] = String(form.get('lunch') ?? '').split(':');
+  const ids = [...new Set((list ?? '').split(','))].filter((id) => GUID.test(id));
+  if ((verb !== 'approve' && verb !== 'keep') || ids.length === 0) back(form, { error: 'failed' });
+  const { data, error } = await db.rpc('decide_lunch_requests', {
+    p_ids: ids,
+    p_approve: verb === 'approve',
+  });
+  if (error) {
+    log('warn', 'lunch changes not decided', { code: error.code, hint: error.hint });
+    back(form, { error: 'failed' });
+  }
+  const { decided, expired } = data as { decided: number; expired: number };
+  revalidatePath('/admin/today');
+  revalidatePath('/admin/meals');
+  back(form, {
+    did: verb === 'approve' ? 'lunch-approved' : 'lunch-kept',
+    n: decided,
+    late: expired,
+  });
+}

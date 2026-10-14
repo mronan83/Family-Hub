@@ -8,6 +8,8 @@ import { AdminHeader } from '../header';
 import { dayAction, undoBatch } from './actions';
 import type { WaitingItem } from './data';
 import { ItemRow, type Person } from './item-row';
+import { LunchChanges } from './lunch-changes';
+import type { WaitingLunch } from '@/lib/lunch';
 
 const shift = (date: string, days: number) =>
   new Date(Date.parse(`${date}T12:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
@@ -18,6 +20,8 @@ export interface TodayViewProps {
   timezone: string;
   items: DayItem[];
   waiting: WaitingItem[];
+  /** [MEAL-09] The children's lunch changes waiting for a parent (WP-49). */
+  lunches?: WaitingLunch[];
   people: Person[];
   notice: string | null;
   error: string | null;
@@ -37,6 +41,7 @@ export function TodayView({
   timezone,
   items,
   waiting,
+  lunches = [],
   people,
   notice,
   error,
@@ -64,35 +69,42 @@ export function TodayView({
         </Banner>
       ) : null}
 
-      {waiting.length > 0 ? (
+      {waiting.length > 0 || lunches.length > 0 ? (
         <section className="fw-card" aria-labelledby="waiting-heading">
           <h2 id="waiting-heading">Waiting for you</h2>
           <p className="fw-muted">
-            Check-offs that need a parent. Approving counts them; sending one back shows it as open
-            to try again.
+            {lunches.length > 0
+              ? 'Lunch changes and check-offs that need a parent. Approving a lunch change sets it; keeping the day as it was drops the change and its picks.'
+              : 'Check-offs that need a parent. Approving counts them; sending one back shows it as open to try again.'}
           </p>
-          <form action={dayAction}>
-            <input type="hidden" name="request" value={request} />
-            <input type="hidden" name="date" value={date} />
-            <ul className="fw-list" aria-label="Waiting for you">
-              {waiting.map((w) => (
-                <ItemRow
-                  key={w.id}
-                  item={w}
-                  today={today}
-                  people={people}
-                  only={['approve', 'reject']}
-                  extra={
-                    <span className="fw-muted">
-                      {relativeDay(w.dueDate, today)}
-                      {w.checkedAt ? ` · checked off ${dayAndTime(w.checkedAt, timezone)}` : ''}
-                      {w.flagged ? ' · after its day: check it was really done' : ''}
-                    </span>
-                  }
-                />
-              ))}
-            </ul>
-          </form>
+          <LunchChanges lunches={lunches} people={people} date={date} timezone={timezone} />
+          {waiting.length > 0 && lunches.length > 0 ? (
+            <h3 className="fw-subhead">Check-offs</h3>
+          ) : null}
+          {waiting.length > 0 ? (
+            <form action={dayAction}>
+              <input type="hidden" name="request" value={request} />
+              <input type="hidden" name="date" value={date} />
+              <ul className="fw-list" aria-label="Waiting for you">
+                {waiting.map((w) => (
+                  <ItemRow
+                    key={w.id}
+                    item={w}
+                    today={today}
+                    people={people}
+                    only={['approve', 'reject']}
+                    extra={
+                      <span className="fw-muted">
+                        {relativeDay(w.dueDate, today)}
+                        {w.checkedAt ? ` · checked off ${dayAndTime(w.checkedAt, timezone)}` : ''}
+                        {w.flagged ? ' · after its day: check it was really done' : ''}
+                      </span>
+                    }
+                  />
+                ))}
+              </ul>
+            </form>
+          ) : null}
         </section>
       ) : null}
 

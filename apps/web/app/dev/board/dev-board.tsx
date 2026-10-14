@@ -17,6 +17,8 @@ import {
   fixtureAsk,
   fixtureCalendar,
   fixtureCancel,
+  fixtureLunches,
+  withLunchItem,
   fixtureMark,
   fixturePin,
   fixturePost,
@@ -49,6 +51,7 @@ export function DevBoard({
   weather,
   meals,
   textSize = 'standard',
+  lunchItem = false,
 }: {
   theme: Theme;
   stale: boolean;
@@ -66,6 +69,8 @@ export function DevBoard({
   meals?: string;
   /** [BRD-08] The board's text size (WP-47). */
   textSize?: TextSize;
+  /** [MEAL-09] Leo's "Pick next week's lunches", which opens Lunches (WP-49). */
+  lunchItem?: boolean;
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
@@ -106,6 +111,7 @@ export function DevBoard({
         ),
       };
     }
+    if (lunchItem) s = withLunchItem(s);
     if (stale) s = { ...s, fetchedAt: new Date(opened.getTime() - 12 * 60_000).toISOString() };
     return celebrate ? reachedBike(s, opened) : s;
   });
@@ -120,6 +126,7 @@ export function DevBoard({
     [snapshot.today, opened, busy, full, withSchool],
   );
   const pinWish = useMemo(() => fixturePin(snapshot), [snapshot]);
+  const [lunches] = useState(() => fixtureLunches(snapshot.today));
   const ask = useMemo(() => fixtureAsk(snapshot, setSnapshot), [snapshot]);
   const [cancelAsk] = useState(() => fixtureCancel(setSnapshot));
   const [markCelebrated] = useState(() => fixtureMark(setSnapshot));
@@ -171,6 +178,9 @@ export function DevBoard({
         cancelAsk={cancelAsk}
         markCelebrated={markCelebrated}
         loadCalendar={loadCalendar}
+        loadLunches={lunches.load}
+        askLunch={lunches.ask}
+        seenLunch={lunches.seen}
       />
     </main>
   );

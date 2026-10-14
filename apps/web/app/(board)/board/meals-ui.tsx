@@ -85,7 +85,8 @@ function Lunch({
 }) {
   const who = people.get(l.memberId)?.displayName ?? 'Someone';
   const mode = l.mode === 'buy' ? 'Buys' : 'Brings';
-  const text = brief && l.mode === 'buy' && !l.noMenu ? null : lunchText(l);
+  // [MEAL-11] On the week, a buy day with picks shows them all in place of the options (WP-49).
+  const text = brief && l.mode === 'buy' && !l.noMenu ? (l.picked ?? null) : lunchText(l);
   const said = `${who} ${mode.toLowerCase()} lunch${text ? `: ${text}` : ''}`;
   const opens = !!(onOpen && l.sections?.length);
   return (
@@ -109,6 +110,7 @@ function Lunch({
           {text}
         </span>
       ) : null}
+      {l.menuChanged ? <span className="fw-lunches__changed">Menu changed</span> : null}
     </li>
   );
 }
@@ -159,6 +161,13 @@ function LunchDetails({
           <Face id={l.memberId} people={people} size={56} />
           <h2 id="lunch-title">{`${who} buys lunch today`}</h2>
         </header>
+        {l.picked ? (
+          <p className="fw-lunches__picked">
+            <strong>Picked: </strong>
+            {l.picked}
+            {l.menuChanged ? <span className="fw-lunches__changed">Menu changed</span> : null}
+          </p>
+        ) : null}
         <MenuList sections={l.sections ?? []} />
         <div className="fw-today__picker-actions">
           <Button variant="secondary" icon="close" className="fw-details__close" onClick={onClose}>
@@ -171,7 +180,7 @@ function LunchDetails({
 }
 
 /** [MENU-06] A day's menu, a section a heading with its options under it. */
-function MenuList({ sections }: { sections: MenuSection[] }) {
+export function MenuList({ sections }: { sections: MenuSection[] }) {
   return (
     <dl className="fw-details__facts fw-menu__sections">
       {sections.map((s, i) => (
@@ -282,10 +291,13 @@ export function MealsWeek({
   meals,
   today,
   members,
+  onLunches,
 }: {
   meals: BoardMeals | null;
   today: string;
   members: BoardMember[];
+  /** [MEAL-09] Opens Lunches, where a child picks their coming week (WP-49). */
+  onLunches?: () => void;
 }) {
   const people = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
   const dates = weekDates(meals?.weekFrom ?? today);
@@ -302,6 +314,11 @@ export function MealsWeek({
         <span className="fw-mweek__sub">
           {dayHead(dates[0]!, true)} to {dayHead(dates[6]!, true)}
         </span>
+        {school && onLunches ? (
+          <Button variant="secondary" icon="lunch" onClick={onLunches}>
+            Lunches
+          </Button>
+        ) : null}
       </h2>
       {planned ? null : (
         <p className="fw-today__muted">Nothing planned this week yet: plan meals on Meals.</p>

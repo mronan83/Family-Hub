@@ -11,6 +11,9 @@ import { AdminHeader } from '../header';
 import { loadMembers } from '../members/data';
 import { loadDayTypes, loadYears } from './data';
 import { SchoolYearForm } from './forms';
+import { saveLunchCutoff } from './actions';
+import { Button } from '@familywise/ui';
+import { cutoffWords } from '@/lib/lunch-picks';
 
 export const metadata: Metadata = { title: 'School year' };
 
@@ -27,11 +30,18 @@ export default async function SchoolPage({
   const household = await adminHousehold(db!, user.userId);
   if (!household) redirect('/setup');
   const today = isoDay(household.timezone);
-  const [years, members, todayTypes] = await Promise.all([
+  const [years, members, todayTypes, settings] = await Promise.all([
     loadYears(db!, household.id),
     loadMembers(db!, household.id),
     loadDayTypes(db!, household.id, today),
+    db!
+      .from('household_settings')
+      .select('lunch_cutoff')
+      .eq('household_id', household.id)
+      .maybeSingle(),
   ]);
+  // [MEAL-09] The morning cut-off for lunch changes on the board (WP-49): 8:00 am by default.
+  const cutoff = String(settings.data?.lunch_cutoff ?? '08:00').slice(0, 5);
   const yearName = new Map(years.map((y) => [y.id, y.name]));
   const typeOf = new Map(todayTypes.map((t) => [t.memberId, t]));
   const active = years.filter((y) => !y.archivedAt);
@@ -102,6 +112,31 @@ export default async function SchoolPage({
             ))}
           </ul>
         )}
+      </section>
+
+      {/* [MEAL-09][US-707] Lunch changes on the board close at a time each morning (D-95). */}
+      <section className="fw-card" aria-labelledby="cutoff-heading">
+        <h2 id="cutoff-heading">Lunch changes</h2>
+        <form action={saveLunchCutoff} className="fw-form">
+          <label className="fw-field">
+            <span className="fw-field__label">Today’s lunch can change until</span>
+            <input
+              className="fw-input fw-input--time"
+              type="time"
+              name="cutoff"
+              defaultValue={cutoff}
+              required
+            />
+            <span className="fw-field__help">
+              {`Household time, on school days; now ${cutoffWords(cutoff)}. After it, a day is locked on the board, and a change still waiting for a parent is dropped: the day stays as it was. A parent can change any day on Meals.`}
+            </span>
+          </label>
+          <div className="fw-actions">
+            <Button type="submit" variant="secondary" icon="check">
+              Save the cut-off
+            </Button>
+          </div>
+        </form>
       </section>
 
       <section className="fw-card" aria-labelledby="add-year-heading">

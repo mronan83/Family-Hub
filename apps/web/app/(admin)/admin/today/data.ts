@@ -1,6 +1,7 @@
 import type { OccurrenceStatus } from '@familywise/rules-engine';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { DayItem } from '@/lib/admin-day';
+import { type WaitingLunch, waitingFromDb } from '@/lib/lunch';
 
 // A parent's day (WP-12), read through RLS as the admin: private items only for those who may see
 // them (D-34). Plain queries joined here: PostgREST cannot embed over the composite foreign keys.
@@ -199,4 +200,14 @@ export async function loadMine(
   const { data, error } = await db.from('chore_occurrence').select(OCC_COLUMNS).in('id', ids);
   if (error) throw new Error(`my items: ${error.message}`);
   return complete(db, data as RawOcc[], { dropIfArchived: (o) => o.due_date < today });
+}
+
+/** [MEAL-09][US-707] The children's lunch changes waiting for a parent, before their cut-off. */
+export async function loadWaitingLunches(
+  db: SupabaseClient,
+  householdId: string,
+): Promise<WaitingLunch[]> {
+  const { data, error } = await db.rpc('lunch_requests_waiting', { p_household: householdId });
+  if (error) throw new Error(`waiting lunches: ${error.message}`);
+  return waitingFromDb(data);
 }

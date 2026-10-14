@@ -12,6 +12,9 @@ import { browserClient } from '@/lib/supabase/browser';
 import { postCelebrated } from '@/lib/board-goals';
 import { postAsk, postCancelAsk } from '@/lib/shop';
 import { postWish } from '@/lib/wishes';
+import { lunchFromDb } from '@/lib/lunch';
+import { postLunch, postLunchSeen } from '@/lib/lunch-picks';
+import type { LoadLunches } from './lunches-ui';
 import { effectiveLayout } from '@/lib/board-layout';
 import { HealthLines } from './health-lines';
 import type { PhotoUrl } from './picture';
@@ -219,6 +222,24 @@ async function loadCalendar(from: string, to: string): Promise<BoardCalendar | n
   return error ? null : readCalendar(data);
 }
 
+/**
+ * [MEAL-09] Each child's lunches for the seven days from a date (lunch_week, WP-49), as this board
+ * may see them; null offline or on an error.
+ */
+function lunchLoader(householdId: string): LoadLunches {
+  return async (from) => {
+    const db = browserClient();
+    if (!db) return null;
+    const { data, error } = await db.rpc('lunch_week', { p_household: householdId, p_from: from });
+    if (error || !Array.isArray(data)) return null;
+    try {
+      return lunchFromDb(data as Parameters<typeof lunchFromDb>[0]);
+    } catch {
+      return null;
+    }
+  };
+}
+
 function LiveStatus({ link, events }: { link: Link; events: number }) {
   return (
     <span className="fw-live" role="status" data-link={link} data-events={events}>
@@ -236,6 +257,7 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
   );
   const { snapshot, link, jobs, events, refresh } = useLiveSnapshot(initial, appVersion, store);
   const photoUrl = usePhotos(snapshot);
+  const loadLunches = useMemo(() => lunchLoader(initial.household.id), [initial.household.id]);
   const [queue, setQueue] = useState<QueueState>({ pending: 0, waiting: false });
   const online = useOnline();
   const hydrated = useHydrated();
@@ -295,6 +317,9 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
         markCelebrated={postCelebrated}
         photoUrl={photoUrl}
         loadCalendar={loadCalendar}
+        loadLunches={loadLunches}
+        askLunch={postLunch}
+        seenLunch={postLunchSeen}
       />
     </main>
   );

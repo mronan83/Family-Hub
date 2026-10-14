@@ -5,7 +5,7 @@ import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { loadMembers } from '../members/data';
-import { loadDay, loadWaiting } from './data';
+import { loadDay, loadWaiting, loadWaitingLunches } from './data';
 import { itemLabel } from './item-row';
 import { TodayView } from './view';
 
@@ -28,8 +28,22 @@ type Params = {
   n?: string;
   kept?: string;
   batch?: string;
+  late?: string;
   error?: string;
 };
+
+/** [MEAL-09] What a parent's answer to lunch changes did, in words. */
+function lunchNotice(did: string, n: number, late: number): string {
+  const days = (k: number) => `${k} ${k === 1 ? 'lunch change' : 'lunch changes'}`;
+  const done =
+    did === 'lunch-approved'
+      ? `Approved ${days(n)}.`
+      : `Kept ${n === 1 ? 'the day' : `${n} days`} as ${n === 1 ? 'it was' : 'they were'}.`;
+  const past = late
+    ? ` ${days(late)} ${late === 1 ? 'was' : 'were'} past the morning cut-off, so ${late === 1 ? 'that day stays' : 'those days stay'} as ${late === 1 ? 'it was' : 'they were'}.`
+    : '';
+  return n === 0 && late ? past.trim() : done + past;
+}
 
 /**
  * [CHR-05][CHR-06][CHR-08] A parent's day: any past day for late credit, the days ahead to skip.
@@ -44,15 +58,18 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
   const today = isoDay(household.timezone);
   const date = params.date && ISO_DAY.test(params.date) ? params.date : today;
 
-  const [members, items, waiting] = await Promise.all([
+  const [members, items, waiting, lunches] = await Promise.all([
     loadMembers(db!, household.id),
     loadDay(db!, household.id, date, today),
     loadWaiting(db!, household.id),
+    loadWaitingLunches(db!, household.id),
   ]);
   const name = (id: string) => members.find((m) => m.id === id)?.displayName ?? 'Someone';
 
   let notice: string | null = null;
-  if (params.did === 'batch') {
+  if (params.did === 'lunch-approved' || params.did === 'lunch-kept') {
+    notice = lunchNotice(params.did, Number(params.n) || 0, Number(params.late) || 0);
+  } else if (params.did === 'batch') {
     notice = noticeFor('batch', '', Number(params.n) || 0);
   } else if (params.did === 'restored') {
     const n = Number(params.n) || 0;
@@ -77,6 +94,7 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
       timezone={household.timezone}
       items={items}
       waiting={waiting}
+      lunches={lunches}
       people={members.filter((m) => !m.archivedAt)}
       notice={notice}
       error={params.error ? (ERRORS[params.error] ?? ERRORS.failed!) : null}

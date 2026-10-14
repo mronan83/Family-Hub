@@ -41,6 +41,9 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     { table: 'member_lunch', filter: `household_id=eq.${householdId}` },
     { table: 'lunch_override', filter: `household_id=eq.${householdId}` },
     { table: 'school_menu_day', filter: `household_id=eq.${householdId}` },
+    // Lunches picked on the board (WP-49): a child's changes and a day's picks.
+    { table: 'lunch_request', filter: `household_id=eq.${householdId}` },
+    { table: 'lunch_choice', filter: `household_id=eq.${householdId}` },
   ];
 }
 

@@ -106,6 +106,8 @@ export interface ChoreInput {
   visibility?: 'family' | 'private';
   /** [CHR-16] How long before its due time it reminds; null follows each person's own (WP-40). */
   remindLeadMinutes?: number | null;
+  /** [MEAL-09] A tap on the board opens Lunches instead of checking it off (WP-49). */
+  opens?: 'lunches' | null;
 }
 
 export type Parsed = { ok: true; value: ChoreInput } | { ok: false; message: string };
@@ -195,6 +197,7 @@ export function parseChore(
       lunchDays,
       tags: ids(form, 'tags'),
       remindLeadMinutes,
+      opens: form.get('opens') === 'lunches' ? ('lunches' as const) : null,
       ...(canSetVisibility
         ? { visibility: form.get('private') === 'on' ? ('private' as const) : ('family' as const) }
         : {}),

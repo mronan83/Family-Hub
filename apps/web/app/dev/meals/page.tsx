@@ -132,10 +132,44 @@ const LUNCH: LunchChild[] = [
   },
 ];
 
+/**
+ * [MEAL-09][MEAL-11] ?lunches=1 (WP-49): Leo picked Wednesday's lunch on the board (a parent
+ * approved it), and Maya's change of Tuesday to Buy, with her picks, waits for a parent.
+ */
+const LUNCH_PICKED: LunchChild[] = LUNCH.map((c) => ({
+  ...c,
+  days: c.days.map((d, i) =>
+    c.memberId === LEO && i === 3
+      ? {
+          ...d,
+          changed: true,
+          byBoard: true,
+          choices: [
+            { section: 'Choice of Entree', options: [2], names: ['Turkey sandwich'] },
+            { section: 'Choice of Milk', options: [1], names: ['1% milk'] },
+            { section: 'Fruits & Vegetables offered', options: [2], names: ['Orange'] },
+          ],
+        }
+      : c.memberId === MAYA && i === 2
+        ? {
+            ...d,
+            request: {
+              id: 'f2a00000-0000-4000-8000-000000000001',
+              mode: 'buy' as const,
+              choices: [{ section: 'Choice of Entree', options: [1], names: ['Cheese Pizza'] }],
+              status: 'waiting' as const,
+              requestedAt: `${TODAY}T23:04:00Z`,
+              decidedBy: null,
+            },
+          }
+        : d,
+  ),
+}));
+
 export default async function DevMealsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; page?: string; add?: string }>;
+  searchParams: Promise<{ theme?: string; page?: string; add?: string; lunches?: string }>;
 }) {
   const p = await searchParams;
   const theme = p.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -157,7 +191,7 @@ export default async function DevMealsPage({
           ]}
           addAt={p.add ? { day: TODAY, slot: 'snack' } : null}
           newId="f2e10000-0000-4000-8000-0000000000ff"
-          lunch={LUNCH}
+          lunch={p.lunches === '1' ? LUNCH_PICKED : LUNCH}
           menus={[{ id: MAPLE, name: 'Maple Elementary' }]}
           notice={null}
           error={null}

@@ -5,12 +5,14 @@ import { MyTasksView } from '../../(admin)/admin/my/view';
 import type { WaitingItem } from '../../(admin)/admin/today/data';
 import { TodayView } from '../../(admin)/admin/today/view';
 import { WeatherSection } from '../../(admin)/admin/weather-section';
+import type { LunchPick, WaitingLunch } from '@/lib/lunch';
 
 // A parent's day and My tasks (WP-12) with a made-up family and no database, for the UI suite: the
 // pages' layout on a phone and a laptop, in Day and Evening (?theme=evening), and every state of a
 // row. ?view=my for My tasks (with each item's reminder bell, WP-40), ?view=unlinked for a sign-in
 // not linked to a member. [BRD-04] ?view=weather for Weather on the boards (WP-45; in Family options since WP-57), with
 // &state=none (no place yet), found (places to choose from), failing (the last read failed).
+// [MEAL-09] ?lunches=1: the children's lunch changes from the board waiting on Today (WP-49).
 export const metadata: Metadata = { title: 'Admin day', robots: { index: false } };
 
 const TZ = 'America/New_York';
@@ -19,11 +21,66 @@ const LEO = 'f1000000-0000-4000-8000-000000000002';
 const ALEX = 'f1000000-0000-4000-8000-000000000003';
 const SAM = 'f1000000-0000-4000-8000-000000000004';
 const PEOPLE = [
-  { id: MAYA, displayName: 'Maya' },
-  { id: LEO, displayName: 'Leo' },
+  { id: MAYA, displayName: 'Maya', avatarKey: 'fox' as const, color: 'member-3' as const },
+  { id: LEO, displayName: 'Leo', avatarKey: 'frog' as const, color: 'member-4' as const },
   { id: ALEX, displayName: 'Alex' },
   { id: SAM, displayName: 'Sam' },
 ];
+
+/**
+ * [MEAL-09] Next week's lunch changes, made on the board on Sunday evening: Maya asks for Tuesday as
+ * Buy with her picks and Thursday as Bring; Leo asks for Wednesday as Bring. Made-up menus.
+ */
+function lunchFixture(today: string): WaitingLunch[] {
+  const dow = new Date(`${today}T12:00:00Z`).getUTCDay();
+  const monday = shift(today, (8 - dow) % 7 || 7);
+  const picks: LunchPick[] = [
+    { section: 'Choice of Entree', options: [1], names: ['Cheese pizza'] },
+    {
+      section: 'Fruits & Vegetables offered',
+      options: [1, 2],
+      names: ['Apple slices', 'Baby carrots'],
+    },
+    { section: 'Choice of Milk', options: [1], names: ['1% milk'] },
+  ];
+  const at = (h: number, m: number) =>
+    `${shift(monday, -1)}T${String(h + 4).padStart(2, '0')}:${String(m).padStart(2, '0')}:00Z`;
+  return [
+    {
+      id: 'a2000000-0000-4000-8000-000000000003',
+      memberId: LEO,
+      date: shift(monday, 2),
+      mode: 'bring',
+      choices: [],
+      current: 'buy',
+      currentChoices: [],
+      usual: 'buy',
+      requestedAt: at(19, 9),
+    },
+    {
+      id: 'a2000000-0000-4000-8000-000000000001',
+      memberId: MAYA,
+      date: shift(monday, 1),
+      mode: 'buy',
+      choices: picks,
+      current: 'bring',
+      currentChoices: [],
+      usual: 'bring',
+      requestedAt: at(19, 2),
+    },
+    {
+      id: 'a2000000-0000-4000-8000-000000000002',
+      memberId: MAYA,
+      date: shift(monday, 3),
+      mode: 'bring',
+      choices: [],
+      current: 'buy',
+      currentChoices: picks.slice(0, 1),
+      usual: 'buy',
+      requestedAt: at(19, 4),
+    },
+  ];
+}
 
 const shift = (date: string, days: number) =>
   new Date(Date.parse(`${date}T12:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
@@ -164,7 +221,13 @@ function fixture(today: string) {
 export default async function DevAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; view?: string; notice?: string; state?: string }>;
+  searchParams: Promise<{
+    theme?: string;
+    view?: string;
+    notice?: string;
+    state?: string;
+    lunches?: string;
+  }>;
 }) {
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -249,6 +312,7 @@ export default async function DevAdminPage({
           timezone={TZ}
           items={items}
           waiting={waiting}
+          lunches={params.lunches === '1' ? lunchFixture(today) : []}
           people={PEOPLE}
           notice={params.notice ? 'Unchecked 2 items. Their points are taken back.' : null}
           error={null}

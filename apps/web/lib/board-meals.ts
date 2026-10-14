@@ -1,4 +1,5 @@
 import { type LunchChild, lunchFromDb, type LunchMode, noLunchWords } from './lunch';
+import { entreePickWords, menuChanged, picksWords } from './lunch-picks';
 import { entreeWords, menuSections, type MenuSection, sectionLabel } from './menu/sections';
 import { type LunchMenu, menuWords } from './menus';
 
@@ -83,6 +84,13 @@ export interface BoardLunch {
   sections: MenuSection[] | null;
   /** True when the child has a school menu but it has nothing for the day. */
   noMenu: boolean;
+  /**
+   * [MEAL-11] On a buy day with picks (WP-49), all of them in words ("Chicken wrap · Grapes · 1%
+   * milk"); `menu` is then the entree picked, in place of the options.
+   */
+  picked?: string | null;
+  /** [MEAL-11] A pick the day's menu no longer has: "Menu changed". */
+  menuChanged?: boolean;
   /** On a bring day, what's planned for their lunch on Meals ("Leftover spaghetti"). */
   packed: string[];
 }
@@ -117,13 +125,19 @@ export function mealDay(meals: BoardMeals | null, date: string): BoardMealDay {
     const packed =
       d.mode === 'bring' ? slots.lunch.filter((e) => e.memberIds.includes(c.memberId)) : [];
     if (packed.length) bringing.add(c.memberId);
+    const sections = hasMenu && !d.menu!.noService ? menuSections(d.menu!.items) : null;
+    // [MEAL-11] The picks in place of the options (WP-49).
+    const picks = d.mode === 'buy' ? (d.choices ?? []) : [];
     lunch.push({
       memberId: c.memberId,
       mode: d.mode,
-      menu: hasMenu ? buyWords(d.menu!) : null,
-      sections: hasMenu && !d.menu!.noService ? menuSections(d.menu!.items) : null,
-      noMenu: d.mode === 'buy' && !!c.menuSourceId && !d.menu,
+      menu: picks.length ? entreePickWords(picks, sections) : hasMenu ? buyWords(d.menu!) : null,
+      sections,
+      noMenu: d.mode === 'buy' && !!c.menuSourceId && !d.menu && !picks.length,
       packed: packed.map((e) => e.name),
+      ...(picks.length
+        ? { picked: picksWords(picks, sections), menuChanged: menuChanged(picks, sections) }
+        : {}),
     });
   }
   // What's left of a lunch packed for some of its people: the others, or nothing.

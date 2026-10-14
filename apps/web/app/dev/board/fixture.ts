@@ -831,3 +831,161 @@ export function fixtureCalendar(
       ),
   };
 }
+
+/**
+ * [MEAL-09][MEAL-11] The made-up family's lunches for Lunches (WP-49), as lunch_week() and POST
+ * /api/lunches would answer, kept in memory. Leo's school days each have Maple Elementary's menu:
+ * his Monday is Buy with his picks, Tuesday Bring with a change to Buy waiting for a parent,
+ * Wednesday Buy with nothing picked yet, Thursday Buy, which Sam kept when Leo asked for Bring, and
+ * Friday Bring. Maya brings every day and has no menu. Days before today are locked.
+ */
+export function fixtureLunches(today: string) {
+  const E = 'Choice of Entree';
+  const F = 'Fruits & Vegetables offered';
+  const M = 'Choice of Milk';
+  const items: MenuItem[] = [
+    { name: 'Cheese pizza', section: E, option: 1 },
+    { name: 'Chicken wrap', section: E, option: 2 },
+    { name: 'Tortilla chips', section: E, option: 2 },
+    { name: 'Apple slices', section: F, option: 1 },
+    { name: 'Baby carrots', section: F, option: 2 },
+    { name: 'Grapes', section: F, option: 3 },
+    { name: '1% milk', section: M, option: 1 },
+    { name: 'Chocolate milk', section: M, option: 2 },
+  ];
+  const picks = (entree: number, fruit: number[], milk: number) => [
+    { section: E, options: [entree], names: [entree === 1 ? 'Cheese pizza' : 'Chicken wrap'] },
+    {
+      section: F,
+      options: fruit,
+      names: fruit.map((f) => ['Apple slices', 'Baby carrots', 'Grapes'][f - 1]!),
+    },
+    { section: M, options: [milk], names: [milk === 1 ? '1% milk' : 'Chocolate milk'] },
+  ];
+  // What the database holds, by child and date: the day, and a request.
+  const held = new Map<string, LunchDay>();
+  const key = (m: string, d: string) => `${m}:${d}`;
+  const dow = (d: string) => new Date(`${d}T12:00:00Z`).getUTCDay();
+  const base = (member: string, d: string): LunchDay => {
+    const school = dow(d) >= 1 && dow(d) <= 5;
+    const leo = member === LEO;
+    const k = dow(d);
+    const mode = !school ? null : leo && [1, 3, 4].includes(k) ? 'buy' : 'bring';
+    const open = school && d > today;
+    const day: LunchDay = {
+      date: d,
+      dayType: school ? 'school_day' : 'weekend',
+      mode,
+      changed: false,
+      menu: leo && mode ? { items, noService: false, note: null } : null,
+      open,
+      openUntil: null,
+      choices: mode === 'buy' ? (leo && k === 1 ? picks(2, [1, 3], 1) : []) : null,
+      request: null,
+      byBoard: false,
+    };
+    if (leo && k === 2 && open)
+      day.request = {
+        id: `req-${d}`,
+        mode: 'buy',
+        choices: picks(1, [1, 2], 1),
+        status: 'waiting',
+        requestedAt: `${today}T23:04:00Z`,
+        decidedBy: null,
+      };
+    if (leo && k === 4 && open)
+      day.request = {
+        id: `req-${d}`,
+        mode: 'bring',
+        choices: [],
+        status: 'kept',
+        requestedAt: `${today}T23:09:00Z`,
+        decidedBy: 'Sam',
+      };
+    return day;
+  };
+  const get = (member: string, d: string) => held.get(key(member, d)) ?? base(member, d);
+  const load = async (from: string): Promise<LunchChild[] | null> => {
+    if (!navigator.onLine) return null;
+    await new Promise((r) => setTimeout(r, 30));
+    const dates = Array.from({ length: 7 }, (_, i) => day(i, from));
+    return [
+      {
+        memberId: LEO,
+        usual: { mon: 'buy', wed: 'buy', thu: 'buy' },
+        menuSourceId: 'menu-maple',
+        menuName: 'Maple Elementary',
+        days: dates.map((d) => get(LEO, d)),
+      },
+      { memberId: MAYA, usual: {}, menuSourceId: null, days: dates.map((d) => get(MAYA, d)) },
+    ];
+  };
+  const ask = async (
+    member: string,
+    date: string,
+    mode: 'buy' | 'bring',
+    choices: LunchDay['choices'] & object,
+  ) => {
+    if (!navigator.onLine) return { ok: false as const, offline: true as const };
+    const d = get(member, date);
+    if (!d.open) return { ok: false as const, reason: 'locked' };
+    const same =
+      mode === d.mode &&
+      (mode === 'bring' ||
+        JSON.stringify(choices.map((c) => [c.section, c.options])) ===
+          JSON.stringify((d.choices ?? []).map((c) => [c.section, c.options])));
+    held.set(key(member, date), {
+      ...d,
+      request: same
+        ? null
+        : {
+            id: `req-${date}`,
+            mode,
+            choices: mode === 'buy' ? choices : [],
+            status: 'waiting',
+            requestedAt: new Date().toISOString(),
+            decidedBy: null,
+          },
+    });
+    return { ok: true as const, waiting: !same };
+  };
+  const seen = async (member: string) => {
+    for (const [k, d] of held)
+      if (k.startsWith(member) && d.request?.status === 'kept')
+        held.set(k, { ...d, request: null });
+    for (let i = 0; i < 14; i++) {
+      const d = get(member, day(i, today));
+      if (d.request?.status === 'kept') held.set(key(member, d.date), { ...d, request: null });
+    }
+    return true;
+  };
+  return { load, ask, seen };
+}
+
+/** [MEAL-09] Leo's "Pick next week's lunches", an item that opens Lunches (WP-49). */
+export function withLunchItem(s: BoardSnapshot): BoardSnapshot {
+  return {
+    ...s,
+    occurrences: [
+      ...s.occurrences,
+      {
+        id: 'lunches-leo',
+        choreId: 'c-lunches',
+        title: 'Pick next week’s lunches',
+        icon: 'lunch',
+        kind: 'task',
+        dueDate: s.today,
+        dueTime: null,
+        memberId: LEO,
+        assignees: [LEO],
+        status: 'scheduled',
+        doneBy: [],
+        rewarded: [],
+        points: 0,
+        requiresApproval: false,
+        checkedAt: null,
+        opens: 'lunches',
+      },
+    ],
+  };
+}

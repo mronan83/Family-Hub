@@ -9,6 +9,7 @@ import { addDays } from '@/lib/board-calendar';
 import { isoDay } from '@/lib/format';
 import { log } from '@/lib/log';
 import { parseUsualLunch } from '@/lib/lunch';
+import { parsePicksForm } from '@/lib/lunch-picks';
 import { mealRefusal, parseEntryForm, parseMealForm, weekDays, weekFrom } from '@/lib/meals';
 import { serverClient } from '@/lib/supabase/server';
 
@@ -182,6 +183,7 @@ export async function setLunchDay(form: FormData): Promise<void> {
     redirect(`/admin/meals?week=${week}&lunch=${encodeURIComponent(error.hint || 'failed')}#lunch`);
   }
   revalidatePath('/admin/meals');
+  revalidatePath('/admin/today');
   redirect(`/admin/meals?week=${week}&did=lunch#lunch`);
 }
 
@@ -208,4 +210,28 @@ export async function setUsualLunch(form: FormData): Promise<void> {
   }
   revalidatePath('/admin/meals');
   redirect(`/admin/meals?week=${week}&did=usual#lunch`);
+}
+
+/**
+ * [MEAL-11][US-707] A parent sets a child's picks for a buy day (WP-49), at once; a child's change
+ * waiting for that day is replaced. Back to the week, at the lunch table.
+ */
+export async function setLunchPicks(form: FormData): Promise<void> {
+  const { db, household } = await context('/admin/meals');
+  const week = weekOf(form, household);
+  const member = String(form.get('member') ?? '');
+  const date = String(form.get('day') ?? '');
+  if (!GUID.test(member) || !weekDays(week).includes(date)) redirect(`/admin/meals?week=${week}`);
+  const { error } = await db.rpc('set_lunch_choices', {
+    p_member: member,
+    p_date: date,
+    p_choices: parsePicksForm(form),
+  });
+  if (error) {
+    log('warn', 'lunch picks not set', { code: error.code, hint: error.hint });
+    redirect(`/admin/meals?week=${week}&lunch=${encodeURIComponent(error.hint || 'failed')}#lunch`);
+  }
+  revalidatePath('/admin/meals');
+  revalidatePath('/admin/today');
+  redirect(`/admin/meals?week=${week}&did=picks#lunch`);
 }

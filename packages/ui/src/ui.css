@@ -2774,6 +2774,148 @@ span.fw-heat__cell {
   gap: var(--s-3);
 }
 
+/* [MEAL-09][MEAL-11] A child's picks and changes in the lunch table (WP-49): the picks under the
+   day, a change waiting for a parent as a link to Today, and the parent's picks form. */
+.fw-lunch__picks {
+  display: block;
+  max-width: 14rem;
+  margin-top: var(--s-1);
+  font-size: var(--t-small);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.fw-lunch__flag {
+  display: inline-block;
+  margin-left: var(--s-1);
+  padding: 0 var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+  font-weight: 600;
+}
+.fw-lunch__waiting {
+  padding: 0 var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.fw-lunch__edit {
+  margin-top: var(--s-1);
+  max-width: 16rem;
+  white-space: normal;
+  font-size: var(--t-small);
+}
+.fw-lunch__edit summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--primary-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+.fw-lunch__section {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.fw-lunch__section legend {
+  font-weight: 600;
+}
+
+/* [MEAL-09][US-707][D-95] Today's lunch changes (WP-49): a group a child, a row a day: the day and its
+   usual, the change and the picks, then Approve and Keep; stacked on a phone. */
+.fw-lunchq {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-lunchq__child {
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.fw-lunchq__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  padding: var(--s-3);
+  background: var(--bg);
+}
+.fw-lunchq__who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+.fw-lunchq__days {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-lunchq__day {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
+  padding: var(--s-3);
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-lunchq__date {
+  display: grid;
+}
+.fw-lunchq__change {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+  min-width: 0;
+}
+.fw-lunchq__was {
+  color: var(--text-soft);
+  text-decoration: line-through;
+}
+.fw-lunchq__mode {
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+  font-weight: 600;
+}
+.fw-lunchq__mode[data-mode='buy'] {
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-lunchq__picks {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  overflow-wrap: anywhere;
+}
+.fw-lunchq__picks strong {
+  color: var(--text);
+  font-weight: 500;
+}
+@media (max-width: 640px) {
+  .fw-lunchq__day {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fw-lunchq__date {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+  .fw-lunchq__buttons > *,
+  .fw-lunchq__head > .fw-btn {
+    flex: 1;
+  }
+}
+
 /* School menus (WP-27): a menu's days, a line each (the date, then what's served), the parent's own
    marked; a buy day's menu under it in the lunch table, wrapping in its cell. --------------------- */
 .fw-lunch__menu {
@@ -3689,6 +3831,225 @@ span.fw-heat__cell {
   font-size: var(--t-small);
   font-weight: 600;
   line-height: 1.22;
+}
+
+/* [MEAL-09][MEAL-11][D-95] Lunches (WP-49): a child's coming week, a card a school day with Buy or
+   Bring and a buy day's picks; a change waiting for a parent says so. */
+.fw-lunches {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: var(--s-4);
+  min-height: 0;
+}
+.fw-board .fw-today__screen[data-screen='lunches'] {
+  grid-template-rows: minmax(0, 1fr);
+  align-content: stretch;
+}
+.fw-lunches__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-6);
+}
+.fw-lunches__head .fw-mweek__title {
+  flex: 1 1 20em;
+}
+.fw-lunches__children,
+.fw-lunches__weeks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-lunches__child {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch-min);
+  padding: var(--s-1) var(--s-4) var(--s-1) var(--s-1);
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: var(--t-small);
+  font-weight: 800;
+  cursor: pointer;
+}
+.fw-lunches__child[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-lunches__days {
+  display: grid;
+  /* Five across on the board's canvas; fewer, wrapping, at a larger text size (D-73). */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  align-content: start;
+  gap: var(--s-3);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.fw-lunches__day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  font-size: var(--t-small);
+  min-width: 0;
+}
+.fw-lunches__day[aria-current='date'] {
+  border: 2px solid var(--primary);
+}
+.fw-lunches__day h3 {
+  margin: 0;
+  font-size: var(--t-body);
+}
+.fw-lunches__modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 2px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.fw-lunches__mode {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-1);
+  min-height: var(--touch-min);
+  padding: 0 var(--s-2);
+  border: 0;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-family: var(--font-display);
+  font-weight: 800;
+  cursor: pointer;
+}
+.fw-lunches__mode[aria-pressed='true'] {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.fw-lunches__mode:disabled {
+  cursor: default;
+}
+.fw-lunches__mode:disabled[aria-pressed='false'] {
+  color: var(--text-soft);
+}
+.fw-lunches__line {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-weight: 700;
+}
+.fw-lunches__line[data-kind='kept'] {
+  background: var(--missed-tint);
+  color: var(--missed-text);
+}
+.fw-lunches__picks {
+  min-height: var(--touch-min);
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  cursor: pointer;
+}
+.fw-lunches__none {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin: 0;
+  color: var(--text-soft);
+}
+.fw-lunches__changed {
+  align-self: flex-start;
+  padding: 2px var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+  font-size: var(--t-small);
+  font-weight: 700;
+}
+.fw-lunches__picked {
+  margin: 0;
+}
+.fw-lunches__done {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-4);
+}
+/* A day's choices: each section with its options as buttons, one or any. */
+.fw-lunches__choices {
+  width: min(1400px, calc(92vw / var(--fw-zoom, 1)));
+  max-height: calc(90vh / var(--fw-zoom, 1));
+  overflow: auto;
+}
+.fw-lunches__section h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-3);
+  margin: 0 0 var(--s-2);
+}
+.fw-lunches__hint {
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 500;
+}
+.fw-lunches__options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14em, 1fr));
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-lunches__option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--s-2) var(--s-3);
+  border: 2px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--t-small);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.fw-lunches__option[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
 }
 
 /* [CAL-04] The month: a dot per calendar with something on a day; a tap opens the day. */
