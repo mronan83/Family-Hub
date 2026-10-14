@@ -227,9 +227,10 @@ test('[MEAL-04][US-703] school lunch: each child’s school days, buy or bring, 
   await expect(leo.getByRole('cell')).toHaveText([
     'Weekend',
     'Bring',
-    'BuyChangedChicken Nuggets, Carrot Sticks, Apple',
+    // [MEAL-11] Then, closed, the form a parent picks the day's lunch with (WP-49).
+    /^BuyChangedChicken Nuggets, Carrot Sticks, ApplePick/,
     // [MENU-06] A line a section, the section's name first (WP-64).
-    'BuyEntree: Cheese Pizza or Turkey sandwich with PretzelsFruits & Vegetables: Green Beans, OrangeMilk: 1% milk or Chocolate milk',
+    /^BuyEntree: Cheese Pizza or Turkey sandwich with PretzelsFruits & Vegetables: Green Beans, OrangeMilk: 1% milk or Chocolate milkPick/,
     'No school',
     'Bring',
     'Weekend',
@@ -246,7 +247,7 @@ test('[MEAL-04][US-703] school lunch: each child’s school days, buy or bring, 
     'f2f00000-0000-4000-8000-000000000001',
   );
   await expect(lunch.getByRole('row', { name: /^Maya/ }).getByRole('cell').nth(5)).toHaveText(
-    'BuyFish Tacos, Corn, Orange',
+    /^BuyFish Tacos, Corn, OrangePick/,
   );
   await expect(lunch.getByRole('link', { name: 'School menus' })).toHaveAttribute(
     'href',

@@ -197,7 +197,7 @@ export function parseChore(
       lunchDays,
       tags: ids(form, 'tags'),
       remindLeadMinutes,
-      opens: form.get('opens') === 'lunches' ? ('lunches' as const) : null,
+      ...(form.get('opens') === 'lunches' ? { opens: 'lunches' as const } : {}),
       ...(canSetVisibility
         ? { visibility: form.get('private') === 'on' ? ('private' as const) : ('family' as const) }
         : {}),

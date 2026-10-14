@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.21: next week's lunches picked at the board (WP-49, D-95): **Lunches** on the board, a child's changes waiting on **Today**, picks on **Meals**, the cut-off on **School**, an item that opens Lunches (A2, A15, B1.2, B1.5, B1.10, B1.15, B2.9, B2.10).
 > v0.20: the school menu by section (WP-64, D-94): a buy day's entree options on the board's home screen, the whole menu at a tap, the menu a row a section on the **Meals** screen, and a line a section on **Meals** and **School menus**; a day typed in with "or" and "with" (A5, A15, B1.15, B2, B7).
 > v0.19: a meal for any mix of people (WP-62, D-87): **For** on **Add to the plan** is **Everyone** or a tick per person, and the boards show each person's face (A15, B1.15, B2.9).
 > v0.18: an alert when something waits for you (WP-63, D-88): **Approvals** in Reminders (A3).
@@ -203,6 +204,15 @@ If check-offs wait for a parent (see [Approval: on or off](#approval-on-or-off))
 - **Send back** shows it as open again on the board ("Try again"), so your child can do it and check it off again.
 
 A check-off marked "after its day: check it was really done" was made after the item's day had ended (for example, a board that was offline at midnight). It always waits for you, whatever the approval setting.
+
+#### Lunch changes from the board
+<!-- covers: US-707 -->
+
+When a child changes a day's lunch on the board, Buy or Bring or what they picked from the menu, it waits for you under **Lunch changes** at the top of **Today**, a group for each child: each day with what it usually is, the change, and what they picked. **Approve** sets the day as they asked; **Keep Bring** (or **Keep Buy**, or **Keep as it was** for new picks) leaves it as it was and drops the change. A child with two or more changes has **Approve both** (or **Approve all**). Changes count in the number beside **Today** in the menu, show on **Home**, and are in your approvals alert if you have **Approvals** on in Reminders. A change still waiting at the morning cut-off is dropped: see [Lunches picked at the board](#lunches-picked-at-the-board).
+
+![Lunch changes waiting on Today, on a laptop: Leo's Wednesday from Buy to Bring; Maya's Tuesday from Bring to Buy with her picks, and her Thursday to Bring, with Approve both.](guide/img/admin-lunch-changes-laptop.jpg "Lunch changes on Today, on a laptop")
+
+![The same on a phone: each day stacked, its buttons full width.](guide/img/admin-lunch-changes-phone.jpg "Lunch changes on Today, on a phone")
 
 #### Approval: on or off
 
@@ -840,7 +850,7 @@ Under **Copy last week**, choose what happens where this week already has someth
 
 A chore can follow these days, like "Pack lunch" only when a child brings: see [Chores on lunch days](#chores-on-lunch-days).
 
-![School lunch on a laptop: Leo and Maya across the week, Buy or Bring on school days, Leo's Tuesday changed, Thursday no school; then each child's usual week.](guide/img/admin-lunch-laptop.jpg "School lunch, on a laptop")
+![School lunch on a laptop: Leo and Maya across the week, Buy or Bring on school days, Leo's Tuesday changed, Thursday no school, a buy day's menu or picks; then each child's usual week.](guide/img/admin-lunch-laptop.jpg "School lunch, on a laptop")
 
 #### School menus: what the school serves
 
@@ -874,6 +884,25 @@ What you plan shows on the boards within seconds; nothing about meals can be cha
 ![The board's Meals screen scrolled down: School lunch, then School menu · Maple Elementary with a row for Entree, Fruits & Vegetables and Milk, each day's options a line each; today's entrees are Cheese Pizza and Turkey sandwich with Pretzels.](guide/img/board-meals-menu.jpg "Meals on the board: the school menu by section")
 
 ![Leo's lunch menu open over the home screen: Leo buys lunch today, the Entree, Fruits & Vegetables and Milk sections each with their options, and Close.](guide/img/board-lunch-menu.jpg "A buy day's whole menu, from a tap on the home screen")
+
+#### Lunches picked at the board
+<!-- covers: US-707 -->
+
+The family can pick the coming week's school lunches at the board, on a Sunday say, instead of on a parent's phone.
+
+- **Open Lunches:** **Lunches** on the board's **Meals** screen, **Pick lunches** on a child's own screen, or an item you set to open it: add a weekly task like "Pick next week's lunches" for each child, and under **On the board, a tap** choose **Opens Lunches**. A tap on it then opens that child's week, and **Done** there checks it off for them.
+- **The week:** Monday to Friday. On a Saturday or Sunday it's the coming week; on a weekday it's this week, with **Next week** a tap away. Each school day has **Buy** and **Bring**, the child's usual already set; days without school say why.
+- **Picking a buy day's lunch:** **Buy** opens the day's menu, a section at a time: one where it says **Pick one** (the entree, the milk), any number where it says **Pick any** (fruits and vegetables). **Save**. The day then shows what they picked, and **Pick your lunch** on a buy day with nothing picked yet.
+- **A parent says yes:** every change, Buy or Bring and the picks, says **Waiting for a parent** until you approve it on **Today** (see [Lunch changes from the board](#lunch-changes-from-the-board)). If you keep the day as it was, the board says so ("Sam kept Buy") until the child taps **Done**. The board can't tell who is tapping, so a change made there waits even when it's yours; on **Meals** in the admin app your change is made at once.
+- **The cut-off:** a day can change until 8:00 am that morning (set another time on **School**, under **Lunch changes**). After it, the day is **Locked**, and a change still waiting is dropped: the day stays as it was.
+- **On the boards:** once approved, a buy day shows what the child picked instead of every option: their entree on the home screen, all of it on the **Meals** screen. If the school changes the menu afterwards, the pick stays and says **Menu changed**. A day changed to **Bring** drops its picks.
+- **On Meals in the admin app:** each buy day shows the picks (**Changed on the board** when a child's change was approved there), a change waiting links to **Today**, and **Pick** or **Change picks** lets you set them yourself.
+
+![Leo's lunches on the board: Monday Buy with his picks, Tuesday waiting for a parent, Wednesday Buy with Pick your lunch, Thursday "Sam kept Buy", Friday Bring, and Done.](guide/img/board-lunches-week.jpg "Lunches on the board: a child's week")
+
+![Leo's lunch on a Wednesday: Entree (pick one) with the chicken wrap picked, Fruits & Vegetables (pick any) with apple slices and grapes, Milk (pick one), Save and Cancel.](guide/img/board-lunches-choices.jpg "Lunches on the board: a day's choices")
+
+![School lunch on Meals with picks: Leo's Wednesday changed on the board with his picks and Change picks; Maya's Tuesday with Buy? waiting.](guide/img/admin-lunch-laptop.jpg "School lunch on Meals, with picks and a change waiting")
 
 ## Part B — User Manual
 
@@ -929,12 +958,12 @@ Messages: "No school today. Today's chores follow a day off school.", "Today is 
 
 | Part | What it shows or does |
 |---|---|
-| **Waiting for you** | Check-offs that need a parent, from any day: **Approve** or **Send back**. Shown only when something waits. |
+| **Waiting for you** | **Lunch changes** from the board, a group a child (each day: what it usually is, the change, the picks; **Approve**, **Keep Bring** / **Keep Buy** / **Keep as it was**; **Approve both** or **Approve all**), until the morning cut-off. Then **Check-offs** that need a parent, from any day: **Approve** or **Send back**. Shown only when something waits. |
 | The day | The day's name and date, **Day before**, **Today**, **Day after**. Items by **Overdue**, **Morning**, **After school**, **Evening**, **Anytime**, each with who it is for, its status, and its buttons. |
 | Buttons per item | **Mark done** (or **Mark done…** with **Who did** it), **Skip**, **Put back**, **Uncheck**, **Approve**, **Send back**. See [Mark done, skip, uncheck](#mark-done-skip-uncheck). |
 | **Not actually done** | Unchecks every ticked done item together, then offers **Undo** in the banner. |
 
-Messages: "Marked Make bed done.", "Unchecked … Its points are taken back.", "Skipped … It won't count for or against anyone.", "… is back on the list.", "Approved …", "Sent … back. It shows as open to try again." If something changed meanwhile: "That item changed: it was taken off the list."
+Messages: "Approved 2 lunch changes.", "Kept the day as it was.", "… was past the morning cut-off, so that day stays as it was.", "Marked Make bed done.", "Unchecked … Its points are taken back.", "Skipped … It won't count for or against anyone.", "… is back on the list.", "Approved …", "Sent … back. It shows as open to try again." If something changed meanwhile: "That item changed: it was taken off the list."
 
 #### B1.3 My tasks
 <!-- covers: US-316 US-318 -->
@@ -980,6 +1009,7 @@ If a device can no longer get notifications, it is removed and the page says so:
 | **How often** | **Every day**, **Some days** (weekdays ticked to start), **Monthly** (**Day of the month** 1 to 31), **Once** (**Date**, or **Due date** for a task; today to start). |
 | **Due time (optional)** | Sets the part of the day. Never changes points. |
 | **Reminders** | **As each person chose**, or **At the due time**, **15 minutes before**, **1 hour before**, **1 day before**. |
+| **On the board, a tap** | **Checks it off** (to start), or **Opens Lunches**: a tap on the board opens the child's coming week of lunches, and **Done** there checks it off. |
 | **Icon** | The icon picker, as in every form with an icon: **Chosen:** names the one picked; **Find an icon** searches by everyday words ("No icon matches" when nothing does); **Icon groups**: **All**, **Home**, **Kitchen and food**, **School and learning**, **Pets and garden**, **Health and care**, **Play and sport**, **Music and making**, **Errands and money**, **Out and about**, **Treats and rewards**, **Weather and time**, **People and labels**. The groups most likely to fit come first: **Home** for a chore. |
 | **Points** | 0 to 1,000. 5 for a new chore, 0 for a new task. |
 | **Tags** | Any active tags. |
@@ -1050,6 +1080,7 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 |---|---|
 | Today | Each person's day type today, and which school year they follow. |
 | **School years** | Each year: name, **Default** badge, dates, school; **Open**. |
+| **Lunch changes** | **Today's lunch can change until** (8:00 am to start, household time), **Save the cut-off**. After it a day is locked on the board, and a child's change still waiting is dropped. |
 | **Add a school year** | **Name**, **School (optional)**, **First day**, **Last day**, **Default**, **Add school year**. |
 | **Archived** | Archived years, with **Open**. |
 
@@ -1115,6 +1146,7 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | **Add to the plan** | **Day**, **Meal**, **What** (**From the library** or **Something else**), **For** (**Everyone**, or a tick per person; "For Maya and Leo." under it), **Note (optional)**, **Add to the plan**. |
 | **Copy last week** | **Keep it** or **Replace it with last week's**, **Copy last week here**. |
 | **School lunch** | **School menus**. Each child's week: **Buy** or **Bring** on school days (a tap changes it; **Changed** marks a change; a buy day shows what the school serves, a line a section, or **No menu yet**), **Weekend**, **Break** or **No school** otherwise; **Usual week**, Monday to Friday, and **School menu**, **Save** (name)**'s usual lunches**. |
+| Picks | On a buy day: **Picked:** and what the child picked (**Menu changed** if the menu no longer has it), **Changed on the board** for a change you approved, **Buy? waiting** (or **New picks waiting**) linking to **Today**, and **Pick** / **Change picks**: a section each, one where it says pick one, **Save** (name)**'s picks**. |
 
 **The meal library:** **Add a meal** (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe link (optional)**, **Icon**, **Add meal**); **Our meals**, each with what it's good for and its recipe, **Edit** and **Archive**; **Archived**, with **Restore**.
 
@@ -1278,9 +1310,23 @@ Every state is an icon, a word and a color together, in both themes. The board u
 | **Meals this week** | The household week, first day to last ("Sun, Oct 11 to Sat, Oct 17"). |
 | Days | A column each; today's heading says **Today** and its column stands out. |
 | **Breakfast**, **Snack**, **Lunch**, **Dinner** | A row each: what's planned, with its picture and the face of each person it's for (none when it's for everyone); "–" for nothing. **Dinner** always shows; the others when planned on some day that week. |
-| **School lunch** | Each child who has school that day: **Buys** (or **No menu yet**), or **Brings** and what is planned for their lunch. **Weekend**, **Break** or **No school** on a day none of them has school. |
+| **School lunch** | Each child who has school that day: **Buys** (or **No menu yet**), or **Brings** and what is planned for their lunch. **Weekend**, **Break** or **No school** on a day none of them has school. On a buy day with picks, what the child picked instead (**Menu changed** if the menu no longer has one). |
 | **School menu** · (name) | The children's school menu, a row a section (**Entree**, **Fruits & Vegetables**, **Milk**): each day's options a line each, a side after "with"; "–" on a day it has nothing. A menu for each when the children's lunches come from different ones. |
-| Read-only | Nothing here is a button: meals are planned on **Meals** in the admin app. |
+| **Lunches** | Opens [Lunches](#b210-lunches), where a child picks their week's school lunches. |
+| Read-only | Otherwise nothing here is a button: meals are planned on **Meals** in the admin app. |
+
+#### B2.10 Lunches
+<!-- covers: US-707 -->
+
+| Part | What it shows or does |
+|---|---|
+| (name)**'s lunches** | The child's school week, Monday to Friday, and its dates. **Leo**, **Maya**: whose lunches, when more than one child has school lunch. |
+| **This week** · **Next week** | Move between weeks (on a weekend, **This week** is the coming one). |
+| A day | **Buy** and **Bring** (the day's lunch pressed); on a buy day what they picked, **Pick your lunch**, **Nothing picked** or **No menu yet**; **Waiting for a parent**, or (name) **kept Buy**; **Menu changed**; **Locked** after the cut-off. A day without school says why. |
+| The day's choices | Each section with **Pick one** or **Pick any** and its options as buttons; "Still to pick: Entree and Milk"; **Save**, **Cancel**. |
+| **Done** | Checks off the item that opened it, for that child, and goes back. "Changes wait for a parent to say yes." beside it. |
+
+Messages: "Sent. A parent will look at it.", "Back as it was.", "That day can't change now.", "The menu changed. Pick again.", "Lunches need the internet." (a change needs the internet; nothing is queued).
 
 ### B3 Rules and limits
 <!-- covers: US-907 US-1101 US-320 US-311 US-315 US-1109 -->

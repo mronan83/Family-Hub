@@ -24,6 +24,20 @@ describe('[NFR-17][US-109] Home alerts', () => {
     expect(homeAlerts(quiet)).toEqual([]);
   });
 
+  it('[MEAL-09] asks for a child’s lunch changes from the board, on Today (WP-49)', () => {
+    expect(homeAlerts({ ...quiet, lunches: 1 })[0]).toMatchObject({
+      key: 'lunches',
+      level: 'act',
+      text: '1 lunch change waits for you',
+      href: '/admin/today',
+    });
+    expect(keys({ approvals: 1, lunches: 2, requests: 1 })).toEqual([
+      'approvals',
+      'lunches',
+      'requests',
+    ]);
+  });
+
   it('asks for waiting check-offs and reward requests, with where to deal with them', () => {
     const [a, r] = homeAlerts({ ...quiet, approvals: 2, requests: 1 });
     expect(a).toMatchObject({

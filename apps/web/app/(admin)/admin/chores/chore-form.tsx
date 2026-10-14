@@ -309,8 +309,8 @@ export function ChoreForm({
           <option value="lunches">Opens Lunches</option>
         </select>
         <span className="fw-field__help">
-          For example, “Pick next week’s lunches”: a tap opens the child’s coming week of school
-          lunches, and Done there checks it off.
+          For example, “Pick next week’s lunches”: a tap opens the child’s coming week on Lunches,
+          and Done there checks it off.
         </span>
       </label>
 
