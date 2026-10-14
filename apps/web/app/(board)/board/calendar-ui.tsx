@@ -25,7 +25,7 @@ import {
   MONTH_SHOWN,
   rangeFor,
   step,
-  withSnapshot,
+  shownCalendar,
 } from '@/lib/board-calendar';
 import { dayAndTime } from '@/lib/format';
 import type {
@@ -52,6 +52,8 @@ const SWIPE_PX = 120;
  * [CAL-04] The calendar a range shows: the snapshot's while it covers the range (and offline), else
  * what `load` reads, read again whenever the snapshot is (a change heard through Realtime). While a
  * read is out, or when it fails, the snapshot's events for those dates show, with `partial` set.
+ * [US-503][WP-70] `loading` says the range's first read is still out: what shows is the snapshot's
+ * part of it, and the rest is drawn when the read lands (the calendar is `aria-busy` till then).
  */
 export function useCalendar(
   snapshot: BoardSnapshot,
@@ -73,12 +75,7 @@ export function useCalendar(
     };
     // Read again when the snapshot is: its fetchedAt changes with every read.
   }, [inSnapshot, load, from, to, range, snapshot.fetchedAt]);
-  if (inSnapshot) return { cal: snapshot.calendar, partial: false };
-  // [CAL-05][WP-65] What was read for the range, brought up to the snapshot read since: a change
-  // heard through Realtime shows with the snapshot's read, not after the range is read again.
-  if (fetched?.range === range && fetched.cal)
-    return { cal: withSnapshot(fetched.cal, snapshot.calendar), partial: false };
-  return { cal: snapshot.calendar, partial: true };
+  return shownCalendar(snapshot.calendar, from, to, !!load, fetched);
 }
 
 export function EventLine({
@@ -142,7 +139,7 @@ export function CalendarScreen({
     () => rangeFor(view, anchor, household.weekStart),
     [view, anchor, household.weekStart],
   );
-  const { cal, partial } = useCalendar(snapshot, from, to, load);
+  const { cal, partial, loading } = useCalendar(snapshot, from, to, load);
   const { ink, events } = useInk(cal, members, tz);
   const calendars = ink.calendars;
   const late = behind(cal?.calendars ?? [], now);
@@ -169,7 +166,7 @@ export function CalendarScreen({
   };
 
   return (
-    <section className="fw-bcal" aria-labelledby="cal-title">
+    <section className="fw-bcal" aria-labelledby="cal-title" aria-busy={loading}>
       <header className="fw-bcal__head">
         <div className="fw-bcal__views" role="group" aria-label="Calendar view">
           {VIEWS.map((v) => (

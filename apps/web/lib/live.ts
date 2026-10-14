@@ -74,6 +74,41 @@ export function coalesce(load: () => Promise<void>): () => Promise<void> {
   };
 }
 
+/**
+ * [CAL-05][WP-70] How long one snapshot read may be out. One still out then is given up (its request
+ * aborted) and made again, so a read that never comes back can't hold back the changes heard after it.
+ */
+export const READ_DEADLINE_MS = 4_000;
+/** [CAL-05][WP-70] Reads made for one change, at most, before the board waits for the next. */
+export const READ_TRIES = 3;
+
+/**
+ * [CAL-05][WP-70] A board's read after a change, made again when it doesn't come back. `read` gets a
+ * signal that aborts at the deadline, and says whether it read (false for an error). One that fails,
+ * throws or is still out at the deadline is made again at once, up to `tries` reads in all; resolves
+ * whether one read. Before WP-70 a failed read was dropped and a hung one blocked every later read,
+ * so the board kept a change it had heard off the screen until DEV-08's four-minute read.
+ */
+export async function readSoon(
+  read: (signal: AbortSignal) => Promise<boolean>,
+  { deadlineMs = READ_DEADLINE_MS, tries = READ_TRIES } = {},
+): Promise<boolean> {
+  for (let i = 0; i < tries; i++) {
+    const abort = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const late = new Promise<false>((resolve) => {
+      timer = setTimeout(() => {
+        abort.abort();
+        resolve(false);
+      }, deadlineMs);
+    });
+    const ok = await Promise.race([read(abort.signal).catch(() => false), late]);
+    clearTimeout(timer);
+    if (ok) return true;
+  }
+  return false;
+}
+
 /** Milliseconds until the next minute starts, so a clock ticks on the minute. */
 export function untilNextMinute(now: Date): number {
   return 60_000 - (now.getSeconds() * 1000 + now.getMilliseconds());
