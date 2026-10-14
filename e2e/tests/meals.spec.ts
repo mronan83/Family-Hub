@@ -116,6 +116,9 @@ test('[MEAL-02] a parent adds a meal to the library', async () => {
 });
 
 test('[MEAL-01][MEAL-08][US-701] done-when: a full week planned, two snacks put in order', async () => {
+  // Ten things added through the form, each a page load and a saved form (about 3 s each on a
+  // preview): more than the default 30 s, which the first run with WP-62's lunch ran out of.
+  test.setTimeout(90_000);
   await add(first, first, 'dinner', { meal: MEAL });
   for (let i = 1; i < 7; i++)
     await add(first, addDays(first, i), 'dinner', { text: `Dinner ${i}` });
