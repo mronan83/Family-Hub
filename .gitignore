@@ -16,3 +16,8 @@ supabase/.branches/
 __pycache__/
 .DS_Store
 apps/web/public/
+
+# Written by the Next.js build; never committed (CLAUDE.md)
+apps/web/AGENTS.md
+apps/web/CLAUDE.md
+.claude/worktrees/

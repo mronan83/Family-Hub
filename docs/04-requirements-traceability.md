@@ -420,7 +420,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 0. Claude Code maintains `01`–`05`. Every PR that changes behavior, schema, scope or sequence updates the affected artifact and adds a row to **I**.
 1. New requirement → add to **A**, add a matrix row in **B**, write at least one story (`03`) and at least one work package (`05`) with `Reqs:`; run `--fix` to fill the Stories and Work packages columns.
-2. Run `python check_traceability.py --docs . --tests .` locally and in CI.
+2. Run `python3 docs/check_traceability.py --docs docs --tests .` locally and in CI.
 3. Never rename an ID; deprecate with a note and add a new one.
 4. In code review, link PRs to requirement IDs; in commit messages, prefix with `[ID]`.
 
@@ -430,6 +430,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.104 | Work as a planner and one worker per item (NFR-14, D-90): `CLAUDE.md` and three skills, `planner`, `deliver` (with the definition of done) and `steward`. Approval is `approve #nn` typed in the worker's session; one approval merges and deploys; at most two items in flight. Each pull request records its own item as done, with e2e results in the pull request (`01` §9.2, §9.5). `04` §H step 2 names the real command. The pull request template lists `ci / docs`. |
 | 0.8.103 | WP-61 done (PR #66): approved by the owner and merged once CI and e2e were green on the preview, on the test database (135 passed, no retries, in 14.8 min; `chores.spec`: an item made on the form with **Days they bring lunch** planned exactly on each child's bring days for two weeks, and still after a day's change; DEV-05 p95 1,459 ms, BRD-05 p90 1,513 ms). The second e2e run on the test database, so clean: 2 of 2 so far (WP-60's tally). |
 | 0.8.102 | Three asks from the owner recorded, not yet built (D-87, D-88, D-89): WP-62 a meal for any mix of people (MEAL-10, US-708; a gap in WP-25 fixed as a bug); WP-63 a phone alert when a check-off or a reward request waits for a parent (CHR-20, US-322); WP-64 the school menu read as sections of options (MENU-06, US-804); and WP-49 grows to picking a buy day's entree, fruits and vegetables and milk on the board (MEAL-11, US-707). Order, the owner's: WP-62, WP-63, WP-58, WP-64, WP-49. |
 | 0.8.101 | WP-61 chores on lunch days (CHR-19, US-321, D-86), in review: an item everyone does on their own can follow each child's school lunch (**More options → School lunch**: any day, days they bring lunch, days they buy lunch). `chore.lunch_days` (an `each` item's only, `chore_lunch_days_each`); `private.occurrence_due()` checks `lunch_mode()`; a change to a child's lunch re-plans their lunch-day items at once (`trg_lunch_override_replan`, `trg_member_lunch_replan`, `private.replan_lunch_days()`), today included when it is today's. Migration `20261014100000_lunch_days`. Tests: pgTAP `400_lunch_days` (the plan by child, adult and weekend; a day's change and back; a new usual week; today's change keeping one checked off; a shared item refused; an edit without lunch days keeps them); unit `lib/chores.test.ts`; the UI suite's `lunch-days.spec.ts`; e2e `chores.spec.ts` (made on the form, the plan matching each child's lunch for two weeks, and after a day's change). The user guide says how (version 0.17). |
