@@ -25,6 +25,7 @@ import {
   MONTH_SHOWN,
   rangeFor,
   step,
+  withSnapshot,
 } from '@/lib/board-calendar';
 import { dayAndTime } from '@/lib/format';
 import type {
@@ -73,7 +74,10 @@ export function useCalendar(
     // Read again when the snapshot is: its fetchedAt changes with every read.
   }, [inSnapshot, load, from, to, range, snapshot.fetchedAt]);
   if (inSnapshot) return { cal: snapshot.calendar, partial: false };
-  if (fetched?.range === range && fetched.cal) return { cal: fetched.cal, partial: false };
+  // [CAL-05][WP-65] What was read for the range, brought up to the snapshot read since: a change
+  // heard through Realtime shows with the snapshot's read, not after the range is read again.
+  if (fetched?.range === range && fetched.cal)
+    return { cal: withSnapshot(fetched.cal, snapshot.calendar), partial: false };
   return { cal: snapshot.calendar, partial: true };
 }
 

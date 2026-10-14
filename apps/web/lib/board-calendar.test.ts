@@ -21,6 +21,7 @@ import {
   rangeFor,
   step,
   weekStartOf,
+  withSnapshot,
 } from './board-calendar';
 import { readCalendar, type BoardCalendarSource, type BoardEvent } from './snapshot';
 
@@ -96,6 +97,89 @@ describe('moving through the calendar', () => {
     expect(covers(cal, '2026-10-20', '2026-10-26')).toBe(true);
     expect(covers(cal, '2026-10-25', '2026-11-07')).toBe(false);
     expect(covers(null, '2026-10-20', '2026-10-20')).toBe(false);
+  });
+});
+
+describe('[CAL-05][WP-65] a week read earlier, brought up to the snapshot', () => {
+  // Tuesday 13 October: the snapshot covers yesterday onward; the week from Sunday 11 is read on its own.
+  const source = (id: string): BoardCalendarSource => ({
+    id,
+    name: id,
+    color: 'member-3',
+    memberId: null,
+    status: 'ok',
+    lastSuccessAt: null,
+  });
+  const day = (id: string, calendarId: string, date: string, title = id) =>
+    event({ id, calendarId, title, allDay: true, startDate: date, endDate: date });
+  const week = {
+    from: '2026-10-11',
+    to: '2026-10-17',
+    calendars: [source('school'), source('family')],
+    events: [
+      day('sun-school', 'school', '2026-10-11'),
+      day('tue-school', 'school', '2026-10-13', 'Picture day'),
+      day('sun-family', 'family', '2026-10-11'),
+      day('wed-family', 'family', '2026-10-14', 'Swim'),
+    ],
+  };
+
+  it('a calendar unticked leaves the whole week at once, Sunday too', () => {
+    const snapshot = {
+      from: '2026-10-12',
+      to: '2026-11-03',
+      calendars: [source('family')],
+      events: [day('wed-family', 'family', '2026-10-14', 'Swim')],
+    };
+    const cal = withSnapshot(week, snapshot);
+    expect(cal.from).toBe('2026-10-11');
+    expect(cal.to).toBe('2026-10-17');
+    expect(cal.calendars.map((c) => c.id)).toEqual(['family']);
+    expect(cal.events.map((e) => e.id)).toEqual(['sun-family', 'wed-family']);
+  });
+
+  it('the snapshot’s dates are the snapshot’s: an event moved or gone there is as it says', () => {
+    const snapshot = {
+      from: '2026-10-12',
+      to: '2026-11-03',
+      calendars: [source('school'), source('family')],
+      events: [
+        day('tue-school', 'school', '2026-10-13', 'Picture day, moved'),
+        day('next-week', 'family', '2026-10-20'),
+      ],
+    };
+    const cal = withSnapshot(week, snapshot);
+    // Swim is gone from the snapshot's dates, so from the week; Sunday's are outside them and stay.
+    expect(cal.events.map((e) => `${e.id}:${e.title}`)).toEqual([
+      'sun-family:sun-family',
+      'sun-school:sun-school',
+      'tue-school:Picture day, moved',
+    ]);
+  });
+
+  it('an event across the snapshot’s first date comes from the snapshot only', () => {
+    const across = (title: string) =>
+      event({
+        id: 'trip',
+        calendarId: 'family',
+        title,
+        allDay: true,
+        startDate: '2026-10-10',
+        endDate: '2026-10-13',
+      });
+    const fetched = { ...week, events: [across('Trip')] };
+    const snapshot = {
+      from: '2026-10-12',
+      to: '2026-11-03',
+      calendars: [source('family')],
+      events: [across('Trip, longer')],
+    };
+    expect(withSnapshot(fetched, snapshot).events.map((e) => e.title)).toEqual(['Trip, longer']);
+    expect(withSnapshot(fetched, { ...snapshot, events: [] }).events).toEqual([]);
+  });
+
+  it('with no snapshot calendar, what was read stands', () => {
+    expect(withSnapshot(week, null)).toBe(week);
   });
 });
 
