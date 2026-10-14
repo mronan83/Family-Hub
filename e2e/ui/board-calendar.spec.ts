@@ -205,8 +205,10 @@ test('[US-503] 40 events in a month show at once, three a day and "+N more"; a d
   await openCalendar(page, '?busy=1');
   const started = Date.now();
   await views(page).getByRole('button', { name: 'Month' }).click();
-  const busiest = page.locator('.fw-bcal__cell', { hasText: /\+\d+ more/ }).first();
-  await expect(busiest).toBeVisible();
+  // The 10th, where the fixture puts eight. The month draws first from the board's own days, then
+  // from the whole month a moment later, so the first "+N more" can move: wait for the 10th's.
+  const busiest = page.locator('li:not([data-outside]) > .fw-bcal__cell').nth(9);
+  await expect(busiest.locator('.fw-bcal__more')).toBeVisible();
   const ms = Date.now() - started;
   console.log(`[US-503] month view with 40 events drawn in ${ms} ms`);
   expect(ms).toBeLessThan(2000);
