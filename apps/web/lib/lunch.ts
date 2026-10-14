@@ -217,6 +217,8 @@ export interface WaitingLunch {
   /** Their usual lunch on that weekday. */
   usual: LunchMode;
   requestedAt: string;
+  /** [MEAL-11] The day's menu items, to say the picks in the menu's order; none when unknown. */
+  menu?: MenuItem[];
 }
 
 /** lunch_requests_waiting()'s answer, in the app's shape; anything malformed is left out. */

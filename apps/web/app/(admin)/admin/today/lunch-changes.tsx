@@ -3,6 +3,7 @@ import { calendarDay } from '@/lib/chores';
 import { time } from '@/lib/format';
 import { byChild, MODE_WORDS, type WaitingLunch } from '@/lib/lunch';
 import { picksWords, samePicks } from '@/lib/lunch-picks';
+import { menuSections } from '@/lib/menu/sections';
 import { decideLunches } from './actions';
 import type { Person } from './item-row';
 
@@ -104,7 +105,10 @@ export function LunchChanges({
                       {picksOnly ? <span className="fw-muted">new picks</span> : null}
                       {w.mode === 'buy' && w.choices.length ? (
                         <p className="fw-lunchq__picks">
-                          Picked: <strong>{picksWords(w.choices)}</strong>
+                          Picked:{' '}
+                          <strong>
+                            {picksWords(w.choices, w.menu ? menuSections(w.menu) : null)}
+                          </strong>
                         </p>
                       ) : w.mode === 'buy' ? (
                         <p className="fw-lunchq__picks">Nothing picked yet.</p>

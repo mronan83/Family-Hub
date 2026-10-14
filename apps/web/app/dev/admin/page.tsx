@@ -6,6 +6,7 @@ import type { WaitingItem } from '../../(admin)/admin/today/data';
 import { TodayView } from '../../(admin)/admin/today/view';
 import { WeatherSection } from '../../(admin)/admin/weather-section';
 import type { LunchPick, WaitingLunch } from '@/lib/lunch';
+import type { MenuItem } from '@/lib/menu/nutrislice';
 
 // A parent's day and My tasks (WP-12) with a made-up family and no database, for the UI suite: the
 // pages' layout on a phone and a laptop, in Day and Evening (?theme=evening), and every state of a
@@ -34,14 +35,23 @@ const PEOPLE = [
 function lunchFixture(today: string): WaitingLunch[] {
   const dow = new Date(`${today}T12:00:00Z`).getUTCDay();
   const monday = shift(today, (8 - dow) % 7 || 7);
+  // As the database gives them: by section title, so the milk before the fruit; Today says them in
+  // the menu's order (MEAL-11).
   const picks: LunchPick[] = [
     { section: 'Choice of Entree', options: [1], names: ['Cheese pizza'] },
+    { section: 'Choice of Milk', options: [1], names: ['1% milk'] },
     {
       section: 'Fruits & Vegetables offered',
       options: [1, 2],
       names: ['Apple slices', 'Baby carrots'],
     },
-    { section: 'Choice of Milk', options: [1], names: ['1% milk'] },
+  ];
+  const menu: MenuItem[] = [
+    { name: 'Cheese pizza', section: 'Choice of Entree', option: 1 },
+    { name: 'Chicken wrap', section: 'Choice of Entree', option: 2 },
+    { name: 'Apple slices', section: 'Fruits & Vegetables offered', option: 1 },
+    { name: 'Baby carrots', section: 'Fruits & Vegetables offered', option: 2 },
+    { name: '1% milk', section: 'Choice of Milk', option: 1 },
   ];
   const at = (h: number, m: number) =>
     `${shift(monday, -1)}T${String(h + 4).padStart(2, '0')}:${String(m).padStart(2, '0')}:00Z`;
@@ -63,6 +73,7 @@ function lunchFixture(today: string): WaitingLunch[] {
       date: shift(monday, 1),
       mode: 'buy',
       choices: picks,
+      menu,
       current: 'bring',
       currentChoices: [],
       usual: 'bring',
