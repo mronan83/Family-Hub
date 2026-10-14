@@ -29,7 +29,7 @@ function weekOf(form: FormData, household: { timezone: string; weekStart: number
 
 /**
  * [MEAL-01][MEAL-02][MEAL-08] Adds one thing to the plan: a meal from the library or something
- * written in, to a day and slot of the week shown, for everyone or one person, with a note. The form
+ * written in, to a day and slot of the week shown, for everyone or any set of people, with a note. The form
  * carries the entry's id, so sending it twice adds it once. Back to the week, at the slot.
  */
 export async function addMealEntry(_prev: FormState, form: FormData): Promise<FormState> {
@@ -52,7 +52,7 @@ export async function addMealEntry(_prev: FormState, form: FormData): Promise<Fo
       household_id: household.id,
       plan_date: v.planDate,
       slot: v.slot,
-      member_id: v.memberId,
+      member_ids: v.memberIds,
       meal_id: v.mealId,
       free_text: v.freeText,
       notes: v.notes,

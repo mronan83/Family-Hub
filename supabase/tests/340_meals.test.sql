@@ -51,11 +51,14 @@ language sql as $$
 $$;
 -- A slot as it reads: "Tacos, Apple (Maya)".
 create function pg_temp.slot(p_day int, p_slot text) returns text language sql as $$
-  select coalesce(string_agg(coalesce(m.name, e.free_text) || coalesce(' (' || p.display_name || ')', ''), ', '
+  select coalesce(string_agg(coalesce(m.name, e.free_text)
+                             || coalesce(' (' || (select string_agg(p.display_name, ', ' order by p.display_name)
+                                                    from public.meal_plan_entry_member x
+                                                    join public.member p on p.id = x.member_id
+                                                   where x.entry_id = e.id) || ')', ''), ', '
                              order by e.sort_order, e.created_at, e.id), '')
     from public.meal_plan_entry e
     left join public.meal m on m.id = e.meal_id
-    left join public.member p on p.id = e.member_id
    where e.household_id = '34000000-0000-0000-0000-000000000001' and e.plan_date = pg_temp.d(p_day) and e.slot = p_slot
 $$;
 

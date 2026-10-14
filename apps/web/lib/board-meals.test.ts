@@ -106,7 +106,7 @@ describe('meals on the board', () => {
       id: 'e3',
       date: '2026-10-12',
       slot: 'dinner',
-      memberId: null,
+      memberIds: [],
       name: 'Tacos',
       icon: 'utensils',
       notes: 'Make extra',
@@ -129,6 +129,52 @@ describe('meals on the board', () => {
       { memberId: 'ben', mode: 'bring', menu: null, noMenu: false, packed: ['Leftover tacos'] },
     ]);
     expect(hasMeals(day)).toBe(true);
+  });
+
+  it('[MEAL-10][US-708] an entry for any mix of people; one from before WP-62 names one person', () => {
+    const old = readMeals(raw)!;
+    expect(old.entries.find((e) => e.name === 'Leftover tacos')!.memberIds).toEqual(['ben']);
+    const lunch = (id: string, name: string, ids: unknown) => ({
+      id,
+      date: '2026-10-12',
+      slot: 'lunch',
+      member_id: null,
+      member_ids: ids,
+      name,
+      icon: null,
+      notes: null,
+    });
+    const meals = readMeals({
+      ...raw,
+      entries: [
+        lunch('m1', 'Ham sandwiches', ['ben', 'dad']),
+        lunch('m2', 'Soup', ['ava', 'ben']),
+        lunch('m3', 'Wraps', ['ben']),
+        lunch('m4', 'Salad', []),
+        lunch('m5', 'Odd', ['dad', 7]),
+      ],
+    })!;
+    expect(meals.entries.map((e) => e.memberIds)).toEqual([
+      ['ben', 'dad'],
+      ['ava', 'ben'],
+      ['ben'],
+      [],
+      ['dad'],
+    ]);
+    // Ben brings his lunch: each one with him on it is what he brings. It stays under Lunch for the
+    // others on it (Dad's sandwiches; Ava buys, but the soup names her), and goes when only he is.
+    const day = mealDay(meals, '2026-10-12');
+    expect(day.lunch.find((l) => l.memberId === 'ben')!.packed).toEqual([
+      'Ham sandwiches',
+      'Soup',
+      'Wraps',
+    ]);
+    expect(day.slots.lunch.map((e) => [e.name, e.memberIds])).toEqual([
+      ['Ham sandwiches', ['dad']],
+      ['Soup', ['ava']],
+      ['Salad', []],
+      ['Odd', ['dad']],
+    ]);
   });
 
   it('[MEAL-05] a buy day her school’s menu has nothing for says so; a bring day has no menu', () => {

@@ -308,18 +308,22 @@ begin
     ('0de00000-0000-4000-8000-000000071005', v_demo, 'Chicken soup', null, 'soup', '{lunch,dinner}', null, null),
     ('0de00000-0000-4000-8000-000000071006', v_demo, 'Apple slices', null, 'apple', '{snack}', null, null),
     ('0de00000-0000-4000-8000-000000071007', v_demo, 'Old casserole', null, 'dinner', '{}', null, now() - interval '30 days');
-  insert into public.meal_plan_entry (id, household_id, plan_date, slot, sort_order, member_id, meal_id, free_text,
-                                      notes, created_by)
+  insert into public.meal_plan_entry (id, household_id, plan_date, slot, sort_order, meal_id, free_text, notes,
+                                      created_by)
   values
-    ('0de00000-0000-4000-8000-000000072001', v_demo, v_week, 'dinner', 1, null, '0de00000-0000-4000-8000-000000071005', null, null, v_alex),
-    ('0de00000-0000-4000-8000-000000072002', v_demo, v_week + 1, 'breakfast', 1, null, '0de00000-0000-4000-8000-000000071003', null, null, v_alex),
-    ('0de00000-0000-4000-8000-000000072003', v_demo, v_week + 1, 'dinner', 1, null, '0de00000-0000-4000-8000-000000071001', null, 'Make extra for lunch', v_alex),
-    ('0de00000-0000-4000-8000-000000072004', v_demo, v_week + 2, 'lunch', 1, v_leo, null, 'Leftover tacos', null, v_alex),
-    ('0de00000-0000-4000-8000-000000072005', v_demo, v_week + 2, 'dinner', 1, null, '0de00000-0000-4000-8000-000000071002', null, null, v_alex),
-    ('0de00000-0000-4000-8000-000000072006', v_demo, v_today, 'snack', 1, v_maya, '0de00000-0000-4000-8000-000000071006', null, 'After school', v_alex),
-    ('0de00000-0000-4000-8000-000000072007', v_demo, v_today, 'snack', 2, null, null, 'Crackers', null, v_alex),
-    ('0de00000-0000-4000-8000-000000072008', v_demo, v_week + 5, 'dinner', 1, null, null, 'Pizza and a movie', null, v_alex),
-    ('0de00000-0000-4000-8000-000000072009', v_demo, v_week + 6, 'breakfast', 1, null, '0de00000-0000-4000-8000-000000071004', null, null, v_alex);
+    ('0de00000-0000-4000-8000-000000072001', v_demo, v_week, 'dinner', 1, '0de00000-0000-4000-8000-000000071005', null, null, v_alex),
+    ('0de00000-0000-4000-8000-000000072002', v_demo, v_week + 1, 'breakfast', 1, '0de00000-0000-4000-8000-000000071003', null, null, v_alex),
+    ('0de00000-0000-4000-8000-000000072003', v_demo, v_week + 1, 'dinner', 1, '0de00000-0000-4000-8000-000000071001', null, 'Make extra for lunch', v_alex),
+    ('0de00000-0000-4000-8000-000000072004', v_demo, v_week + 2, 'lunch', 1, null, 'Leftover tacos', null, v_alex),
+    ('0de00000-0000-4000-8000-000000072005', v_demo, v_week + 2, 'dinner', 1, '0de00000-0000-4000-8000-000000071002', null, null, v_alex),
+    ('0de00000-0000-4000-8000-000000072006', v_demo, v_today, 'snack', 1, '0de00000-0000-4000-8000-000000071006', null, 'After school', v_alex),
+    ('0de00000-0000-4000-8000-000000072007', v_demo, v_today, 'snack', 2, null, 'Crackers', null, v_alex),
+    ('0de00000-0000-4000-8000-000000072008', v_demo, v_week + 5, 'dinner', 1, null, 'Pizza and a movie', null, v_alex),
+    ('0de00000-0000-4000-8000-000000072009', v_demo, v_week + 6, 'breakfast', 1, '0de00000-0000-4000-8000-000000071004', null, null, v_alex);
+  -- [MEAL-10] Each entry's people (WP-62); none is everyone. Leo's lunch, Maya's snack.
+  insert into public.meal_plan_entry_member (household_id, entry_id, member_id) values
+    (v_demo, '0de00000-0000-4000-8000-000000072004', v_leo),
+    (v_demo, '0de00000-0000-4000-8000-000000072006', v_maya);
 end $$;
 
 -- [MEAL-04] School lunch (WP-26): Leo buys on Wednesdays, Maya on Fridays; they bring the rest.
