@@ -70,7 +70,7 @@ export function fixtureMeals(kind: string | undefined, today: string): BoardMeal
     id: `meal-${++n}`,
     date,
     slot,
-    memberId: null,
+    memberIds: [],
     name,
     icon: null,
     notes: null,
@@ -88,12 +88,15 @@ export function fixtureMeals(kind: string | undefined, today: string): BoardMeal
   const entries: BoardMealEntry[] = [
     entry(today, 'breakfast', 'Porridge', { icon: 'breakfast' }),
     entry(today, 'snack', 'Apple slices', { icon: 'apple' }),
-    entry(today, 'snack', 'Crackers', { memberId: MAYA }),
-    entry(today, 'lunch', 'Leftover spaghetti', { memberId: MAYA }),
+    entry(today, 'snack', 'Crackers', { memberIds: [MAYA] }),
+    entry(today, 'lunch', 'Leftover spaghetti', { memberIds: [MAYA] }),
+    // [MEAL-10] For some of the family (WP-62): Maya brings hers today, so Sam's stays under Lunch.
+    entry(today, 'lunch', 'Ham wraps', { icon: 'sandwich', memberIds: [MAYA, SAM] }),
     ...dates
       .filter((d) => d !== today)
       .map((d, i) => entry(d, 'dinner', dinners[i]!, { icon: i === 2 ? 'pizza' : null })),
     entry(today, 'dinner', 'Spaghetti', { icon: 'cooking-pot', notes: 'Make extra' }),
+    entry(today, 'dinner', 'Fish fingers', { memberIds: [LEO, MAYA] }),
     entry(dates[6]!, 'lunch', 'Grilled cheese', { icon: 'sandwich' }),
   ].sort((a, b) => a.date.localeCompare(b.date));
   const diff = (d: string) => (Date.parse(d) - Date.parse(today)) / 86_400_000;

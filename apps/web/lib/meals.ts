@@ -42,7 +42,8 @@ export interface PlanEntry {
   planDate: string;
   slot: Slot;
   sortOrder: number;
-  memberId: string | null;
+  /** [MEAL-10] Who it's for (WP-62); none: everyone. */
+  memberIds: string[];
   mealId: string | null;
   freeText: string | null;
   notes: string | null;
@@ -158,15 +159,17 @@ export interface EntryFormValue {
   id: string;
   planDate: string;
   slot: Slot;
-  memberId: string | null;
+  /** [MEAL-10] Who it's for; none: everyone. */
+  memberIds: string[];
   mealId: string | null;
   freeText: string | null;
   notes: string | null;
 }
 
 /**
- * [MEAL-01][MEAL-02][MEAL-08] "Add to the plan": a day of the week shown, a slot, a meal from the
- * library or something written in, for everyone or one person, and a note.
+ * [MEAL-01][MEAL-02][MEAL-08][MEAL-10] "Add to the plan": a day of the week shown, a slot, a meal
+ * from the library or something written in, for everyone or any set of people, and a note. Every
+ * person ticked, or none, is everyone (so a person added to the family later is in it too).
  */
 export function parseEntryForm(
   form: FormData,
@@ -179,10 +182,13 @@ export function parseEntryForm(
   const slot = String(form.get('slot') ?? '') as Slot;
   if (!SLOTS.includes(slot))
     return { ok: false, message: 'Choose breakfast, snack, lunch or dinner.' };
-  const who = String(form.get('member') ?? 'everyone');
-  if (who !== 'everyone' && !ctx.memberIds.includes(who)) {
+  const ticked = [...new Set(form.getAll('member').map(String))].filter((m) => m !== 'everyone');
+  if (ticked.some((m) => !ctx.memberIds.includes(m))) {
     return { ok: false, message: 'Choose who it’s for.' };
   }
+  const memberIds = ctx.memberIds.every((m) => ticked.includes(m))
+    ? []
+    : ctx.memberIds.filter((m) => ticked.includes(m));
   let mealId: string | null = null;
   let freeText: string | null = null;
   if (form.get('what') === 'text') {
@@ -202,12 +208,20 @@ export function parseEntryForm(
       id,
       planDate,
       slot,
-      memberId: who === 'everyone' ? null : who,
+      memberIds,
       mealId,
       freeText,
       notes: notes || null,
     },
   };
+}
+
+/** [MEAL-10] Who an entry is for, in a line: "Maya and Leo", "Alex, Maya and Leo"; null: everyone. */
+export function peopleWords(names: readonly string[]): string | null {
+  if (!names.length) return null;
+  return names.length === 1
+    ? names[0]!
+    : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
 /** A database refusal of a meal change in the parent's words. */

@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.42: a meal for any mix of people (WP-62, D-87): `meal_plan_entry_member` as built, each entry's one person carried over by `private.carry_meal_people()`; `meal_plan_entry.member_id` held empty until a later migration drops it; `add_meal_entry()` takes `member_ids`, `copy_meal_week()` copies them, and `board_snapshot()` gives them (§3.6).
 > v0.8.41: approval alerts as built (WP-63, D-88): `reminder_preference.approval_alerts` and `approvals_on_at`; `reminder_delivery` kind `approval` with `waiting_from` and `waiting_to`; `plan_reminders()` and `claim_reminders()` plan and send them; `private.approvals_waiting()` and `private.approvals_line()` (§3.7).
 > v0.8.40: planned, not built (D-87 to D-89): `meal_plan_entry_member` (WP-62), `reminder_preference.approval_alerts` and `reminder_delivery` kind `approval` (WP-63), `school_menu_day.items[].option` (WP-64) and `lunch_choice` (WP-49) (§3.6, §3.7).
 > v0.8.39: chores on lunch days (WP-61, D-86): `chore.lunch_days` (`bring` or `buy`, an `each` item's only); `private.occurrence_due()` follows each child's `lunch_mode()`; `trg_lunch_override_replan` and `trg_member_lunch_replan` re-plan a child's lunch-day items when their lunch changes (§3.2, §3.6).
@@ -538,7 +539,8 @@ When a closure or school year changes, the generator re-resolves and regenerates
 | Table | Key columns | Notes |
 |---|---|---|
 | `meal` | `name`, `description`, `meal_types text[]`, `tags text[]`, `recipe_url`, `ingredients jsonb default '[]'`, `image_path`, `archived_at` | `ingredients` is carried now so a grocery list (MEAL-07) is additive later. |
-| `meal_plan_entry` | `plan_date`, `slot` (`breakfast`/`snack`/`lunch`/`dinner`), `sort_order`, `member_id?` (null = whole household), `meal_id?`, `free_text?`, `notes` | Check: `meal_id IS NOT NULL OR free_text IS NOT NULL`. Multiple rows per slot allowed (snacks). |
+| `meal_plan_entry` | `plan_date`, `slot` (`breakfast`/`snack`/`lunch`/`dinner`), `sort_order`, `meal_id?`, `free_text?`, `notes` | Check: `meal_id IS NOT NULL OR free_text IS NOT NULL`. Multiple rows per slot allowed (snacks). Its people are in `meal_plan_entry_member` (WP-62). |
+| `meal_plan_entry_member` | `entry_id`, `member_id` | An entry's people (WP-62, D-87); none is the whole household. Key `(entry_id, member_id)`. |
 | `lunch_override` | `member_id`, `date`, `mode` (`buy`/`bring`), `menu_item_ref?` | `UNIQUE (member_id, date)`. |
 | `member_lunch` | `member_id` (one per child), `defaults jsonb` (`{"mon":"buy",…}`, Monday to Friday; none set is bring) | A child's usual lunches (WP-26, D-78), whatever school year they follow. |
 | `menu_source` | `name`, `adapter` (`nutrislice`/`schoolcafe`/`linq`/`csv`/`manual`), `config jsonb`, `status`, `last_fetch_at`, `last_success_at`, `last_error`, `fetch_window_days` (28) | Adapter is selected by `adapter`; config is adapter-specific. |
@@ -547,7 +549,7 @@ When a closure or school year changes, the generator re-resolves and regenerates
 **As built (WP-25, D-77).**
 
 - `meal`: `name` (1 to 80, one of a name at a time among those not archived, whatever its capitals), `description` (up to 300), `icon` (default `utensils`), `meal_types` (any of `breakfast`, `snack`, `lunch`, `dinner`; none means any), `recipe_url` (a web link, up to 500), `ingredients` (an array, empty until MEAL-07), `archived_at`, `created_at`, `updated_at`. No `tags` or `image_path` yet. A parent adds and changes meals through RLS; none is deleted.
-- `meal_plan_entry`: `id` made by the form (adding twice adds once), `plan_date`, `slot`, `sort_order`, `member_id` (null: everyone), exactly one of `meal_id` and `free_text` (1 to 80), `notes` (up to 200), `created_by`, `created_at`. Indexed on `(household_id, plan_date, slot, sort_order)`.
+- `meal_plan_entry`: `id` made by the form (adding twice adds once), `plan_date`, `slot`, `sort_order`, `member_id` (null: everyone; empty since WP-62, below), exactly one of `meal_id` and `free_text` (1 to 80), `notes` (up to 200), `created_by`, `created_at`. Indexed on `(household_id, plan_date, slot, sort_order)`.
 - `add_meal_entry(entry jsonb)` adds last in its slot (a meal and a person of the household, neither archived); `move_meal_entry(id, ±1)` writes the slot's order afresh with the entry one place earlier or later; `copy_meal_week(household, from, to, 'skip' | 'overwrite')` copies each day and slot the source week has to the same day of the destination week, keeping or replacing a destination slot that already has something, one copy at a time per household, and returns `{copied, skipped, replaced}`. A parent removes an entry through RLS. Only a parent of the household may; its boards read both tables.
 
 **Effective lunch mode** for member *m* on date *d*:
@@ -562,8 +564,12 @@ else coalesce(lunch_override(m, d).mode,
 
 A chore can follow a child's lunch (WP-61, D-86): `chore.lunch_days` makes an `each` item due only on that person's bring days or buy days, and a change to their lunch re-plans it at once (§3.2).
 
-**Planned (D-87, D-89; not built):**
-- WP-62: `meal_plan_entry_member` (`household_id`, `entry_id`, `member_id`; key `(entry_id, member_id)`), an entry's people; no rows is everyone. `meal_plan_entry.member_id` is carried over into it and then dropped. `add_meal_entry()` takes `member_ids`; `copy_meal_week()` copies each entry's rows; `board_snapshot()`'s `meals.entries[]` gives `member_ids`.
+**As built (WP-62, D-87): a meal for any mix of people.**
+- `meal_plan_entry_member` (`household_id`, `entry_id`, `member_id`; key `(entry_id, member_id)`; both foreign keys within the household; it goes with its entry): an entry's people; no rows is everyone. RLS: the household's parents and boards read it; nobody writes it but the functions. Audited. Not in Realtime: it is written with its entry, in one transaction, so the entry's change tells the boards.
+- `private.carry_meal_people()` carried each entry's one person over from `meal_plan_entry.member_id` and emptied it; the check `meal_plan_entry_member_id_moved` holds it empty. The column stays for the app deployed before WP-62, and a later migration drops it.
+- `add_meal_entry()` takes `member_ids` (a list; a single `member_id` is still read as a list of one), each the household's and not archived; the admin form sends everyone ticked as none. `copy_meal_week()` copies each entry's people with it. `board_snapshot()`'s `meals.entries[]` gives `member_ids` (and `member_id`, the one person when there is exactly one, for a board still on the app before WP-62).
+
+**Planned (D-89; not built):**
 - WP-64: each `school_menu_day.items[]` element gains `option` (its option's number within the section): "or" between items ends an option, and "with" joins the next item to the option before it; the words themselves are not stored as items. `private.menu_items` accepts the new key.
 - WP-49: `lunch_choice` (`household_id`, `member_id`, `lunch_date`, `section`, `options int[]`, `chosen_by_type`, `chosen_by`, `chosen_at`; key `(member_id, lunch_date, section)`): a child's picks on a buy day, checked against that day's menu (one option, or one or more for fruits and vegetables); removed when the day becomes bring.
 

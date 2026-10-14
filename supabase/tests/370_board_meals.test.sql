@@ -31,8 +31,8 @@ insert into public.meal (id, household_id, name, icon) values
   ('37a00000-0000-0000-0000-000000000001', '37000000-0000-0000-0000-000000000001', 'Tacos', 'utensils'),
   ('37a00000-0000-0000-0000-000000000002', '37000000-0000-0000-0000-000000000001', 'Apple slices', 'apple'),
   ('37a00000-0000-0000-0000-000000000003', '37000000-0000-0000-0000-000000000002', 'Neighbour stew', 'soup');
-insert into public.meal_plan_entry (id, household_id, plan_date, slot, sort_order, member_id, meal_id, free_text, notes)
-select x.* from d, lateral (values
+insert into public.meal_plan_entry (id, household_id, plan_date, slot, sort_order, meal_id, free_text, notes)
+select x.id, x.household_id, x.plan_date, x.slot, x.sort_order, x.meal_id, x.free_text, x.notes from d, lateral (values
   ('37e00000-0000-0000-0000-000000000001'::uuid, '37000000-0000-0000-0000-000000000001'::uuid, d.today, 'dinner', 1,
    null::uuid, '37a00000-0000-0000-0000-000000000001'::uuid, null, 'Make extra'),
   ('37e00000-0000-0000-0000-000000000002', '37000000-0000-0000-0000-000000000001', d.today, 'snack', 2,
@@ -43,7 +43,12 @@ select x.* from d, lateral (values
   ('37e00000-0000-0000-0000-000000000004', '37000000-0000-0000-0000-000000000001', d.week + 7, 'dinner', 1,
    null, null, 'Next week', null),
   ('37e00000-0000-0000-0000-000000000005', '37000000-0000-0000-0000-000000000002', d.today, 'dinner', 1,
-   null, '37a00000-0000-0000-0000-000000000003', null, null)) x;
+   null, '37a00000-0000-0000-0000-000000000003', null, null))
+  x (id, household_id, plan_date, slot, sort_order, member_id, meal_id, free_text, notes);
+-- The crackers are Maya's (WP-62: an entry's people).
+insert into public.meal_plan_entry_member (household_id, entry_id, member_id) values
+  ('37000000-0000-0000-0000-000000000001', '37e00000-0000-0000-0000-000000000002',
+   '37110000-0000-0000-0000-00000000000a');
 
 -- Maya buys every school day; her school's menu has Monday's lunch.
 insert into public.menu_source (id, household_id, name, adapter, status) values

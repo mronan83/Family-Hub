@@ -18,8 +18,8 @@ export interface BoardMealEntry {
   id: string;
   date: string;
   slot: MealSlot;
-  /** Who it's for; null: everyone. */
-  memberId: string | null;
+  /** [MEAL-10] Who it's for (WP-62); none: everyone. */
+  memberIds: string[];
   name: string;
   /** The library meal's icon; none for something written in. */
   icon: string | null;
@@ -49,7 +49,12 @@ export function readMeals(x: unknown): BoardMeals | null {
       id: e.id,
       date: e.date,
       slot,
-      memberId: typeof e.member_id === 'string' ? e.member_id : null,
+      // A snapshot from before WP-62 (kept offline) names one person as member_id.
+      memberIds: Array.isArray(e.member_ids)
+        ? e.member_ids.filter((m): m is string => typeof m === 'string')
+        : typeof e.member_id === 'string'
+          ? [e.member_id]
+          : [],
       name: e.name,
       icon: typeof e.icon === 'string' ? e.icon : null,
       notes: typeof e.notes === 'string' ? e.notes : null,
@@ -84,8 +89,10 @@ export interface BoardMealDay {
 }
 
 /**
- * [MEAL-06] The meals of one day: each meal's entries in order, and each child's school lunch. A
- * lunch planned for a child who brings theirs that day is what they bring, so it goes with them.
+ * [MEAL-06][MEAL-10] The meals of one day: each meal's entries in order, and each child's school
+ * lunch. A lunch planned for children who bring theirs that day is what each of them brings, so it
+ * goes with each of them (WP-62); the entry stays under Lunch for anyone else on it, with only their
+ * faces, and goes from there when no one else is.
  */
 export function mealDay(meals: BoardMeals | null, date: string): BoardMealDay {
   const slots: Record<MealSlot, BoardMealEntry[]> = {
@@ -96,12 +103,14 @@ export function mealDay(meals: BoardMeals | null, date: string): BoardMealDay {
   };
   for (const e of meals?.entries ?? []) if (e.date === date) slots[e.slot].push(e);
   const lunch: BoardLunch[] = [];
+  const bringing = new Set<string>();
   for (const c of meals?.lunch ?? []) {
     const d = c.days.find((x) => x.date === date);
     if (!d?.mode) continue;
     const hasMenu = d.mode === 'buy' && !!d.menu;
-    const packed = d.mode === 'bring' ? slots.lunch.filter((e) => e.memberId === c.memberId) : [];
-    if (packed.length) slots.lunch = slots.lunch.filter((e) => !packed.includes(e));
+    const packed =
+      d.mode === 'bring' ? slots.lunch.filter((e) => e.memberIds.includes(c.memberId)) : [];
+    if (packed.length) bringing.add(c.memberId);
     lunch.push({
       memberId: c.memberId,
       mode: d.mode,
@@ -110,6 +119,12 @@ export function mealDay(meals: BoardMeals | null, date: string): BoardMealDay {
       packed: packed.map((e) => e.name),
     });
   }
+  // What's left of a lunch packed for some of its people: the others, or nothing.
+  slots.lunch = slots.lunch.flatMap((e) => {
+    if (!e.memberIds.some((m) => bringing.has(m))) return [e];
+    const rest = e.memberIds.filter((m) => !bringing.has(m));
+    return rest.length ? [{ ...e, memberIds: rest }] : [];
+  });
   return { date, slots, lunch };
 }
 

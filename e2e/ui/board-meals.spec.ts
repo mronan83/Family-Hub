@@ -57,16 +57,21 @@ test('[MEAL-06][US-705] the home screen: today’s four meals, and each child bu
     'Crackers',
   ]);
   await expect(meals(page).getByRole('listitem', { name: 'Crackers, for Maya' })).toBeVisible();
-  // Maya brings hers: the leftovers planned for her lunch go with her, not on a line of their own.
+  // Maya brings hers: the lunches planned for her go with her, not on a line of their own; the ham
+  // sandwiches are Sam's too, so they stay under Lunch for Sam (MEAL-10).
   await lunchIs(meals(page).locator('[data-slot="lunch"]'), [
+    'Ham wraps, for Sam',
     'Leo buys lunch: Cheese Pizza, Green Beans, Milk',
-    'Maya brings lunch: Leftover spaghetti',
+    'Maya brings lunch: Leftover spaghetti · Ham wraps',
   ]);
-  await expect(meals(page).locator('[data-slot="lunch"] li').first()).toContainText('Buys');
+  await expect(meals(page).locator('[data-slot="lunch"] li').nth(1)).toContainText('Buys');
   await expect(meals(page).locator('[data-slot="lunch"] li').last()).toContainText('Brings');
-  await expect(meals(page).locator('[data-slot="dinner"] dd')).toHaveText('Spaghetti');
+  await expect(meals(page).locator('[data-slot="dinner"] li')).toHaveText([
+    'Spaghetti',
+    'Fish fingers',
+  ]);
   // [US-705] A picture with each meal: the library meal's icon, else the meal of the day's.
-  await expect(meals(page).locator('.fw-meals__entry svg.fw-meals__icon')).toHaveCount(4);
+  await expect(meals(page).locator('.fw-meals__entry svg.fw-meals__icon')).toHaveCount(6);
   // Above Today's list, which keeps its heading and its rows.
   const [m, l] = await Promise.all([
     meals(page).boundingBox(),
@@ -117,15 +122,16 @@ test('[MEAL-06][US-705] the Meals screen: the week a day a column, today marked,
   // A dinner every day, and today's column the one that stands out.
   const dinners = week(page).locator('tr[data-slot="dinner"] td');
   await expect(dinners).toHaveCount(7);
-  await expect(dinners.locator('.fw-meals__entry')).toHaveCount(7);
-  await expect(week(page).locator('tr[data-slot="dinner"] td[aria-current="date"]')).toHaveText(
+  await expect(dinners.locator('.fw-meals__entry')).toHaveCount(8);
+  await expect(week(page).locator('tr[data-slot="dinner"] td[aria-current="date"] li')).toHaveText([
     'Spaghetti',
-  );
+    'Fish fingers',
+  ]);
   // School lunch: today's buying and bringing; the weekend says so.
   const school = week(page).locator('tr[data-slot="school"]');
   await lunchIs(school.locator('td[aria-current="date"]'), [
     'Leo buys lunch: Cheese Pizza, Green Beans, Milk',
-    'Maya brings lunch: Leftover spaghetti',
+    'Maya brings lunch: Leftover spaghetti · Ham wraps',
   ]);
   await expect(school).toContainText('Weekend');
   // [US-705] Read-only: nothing in the week to tap.
@@ -142,13 +148,49 @@ test('[MEAL-06] on Maya’s own screen: what’s for everyone and what’s hers,
   const card = page.getByRole('region', { name: 'Today’s meals', exact: true });
   await expect(card.locator('dt')).toHaveText(['Breakfast', 'Snack', 'Lunch', 'Dinner']);
   await expect(card.locator('[data-slot="snack"] li')).toHaveText(['Apple slices', 'Crackers']);
-  await lunchIs(card.locator('[data-slot="lunch"]'), ['Maya brings lunch: Leftover spaghetti']);
+  await lunchIs(card.locator('[data-slot="lunch"]'), [
+    'Maya brings lunch: Leftover spaghetti · Ham wraps',
+  ]);
   // Leo has his lunch, and not Maya's crackers.
   await people(page).getByRole('button', { name: /^Leo/ }).click();
   await expect(card.locator('[data-slot="snack"] li')).toHaveText(['Apple slices']);
   await lunchIs(card.locator('[data-slot="lunch"]'), [
     'Leo buys lunch: Cheese Pizza, Green Beans, Milk',
   ]);
+});
+
+test('[MEAL-10][US-708] a meal for some of the family: each one’s face, and on their own screens only', async ({
+  page,
+}) => {
+  await page.goto('/dev/board');
+  // Fish fingers are Maya's and Leo's: both faces, in the family's order (children first, by name).
+  const fish = meals(page).getByRole('listitem', { name: 'Fish fingers, for Leo and Maya' });
+  await expect(fish).toBeVisible();
+  await expect(fish.locator('.fw-avatar')).toHaveCount(2);
+  await expect(meals(page).getByRole('listitem', { name: 'Spaghetti' })).toBeVisible();
+  await expect(
+    meals(page).locator('[data-slot="dinner"] li').first().locator('.fw-avatar'),
+  ).toHaveCount(0);
+  // The same on the Meals screen.
+  await people(page).getByRole('button', { name: 'Meals', exact: true }).click();
+  const cell = week(page).locator('tr[data-slot="dinner"] td[aria-current="date"]');
+  await expect(
+    cell.getByRole('listitem', { name: 'Fish fingers, for Leo and Maya' }),
+  ).toBeVisible();
+  await expect(
+    cell.getByRole('listitem', { name: 'Fish fingers, for Leo and Maya' }).locator('.fw-avatar'),
+  ).toHaveCount(2);
+  // On Maya's and Leo's own screens, not Sam's; Sam's has the sandwiches Maya packs, with Sam's face.
+  const card = page.getByRole('region', { name: 'Today’s meals', exact: true });
+  for (const child of ['Maya', 'Leo']) {
+    await people(page)
+      .getByRole('button', { name: new RegExp(`^${child}`) })
+      .click();
+    await expect(card.locator('[data-slot="dinner"] li')).toHaveText(['Spaghetti', 'Fish fingers']);
+  }
+  await people(page).getByRole('button', { name: /^Sam/ }).click();
+  await expect(card.locator('[data-slot="dinner"] li')).toHaveText(['Spaghetti']);
+  await expect(card.getByRole('listitem', { name: 'Ham wraps, for Sam' })).toBeVisible();
 });
 
 for (const theme of ['day', 'evening'] as const) {

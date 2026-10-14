@@ -5,13 +5,14 @@ import { useState } from 'react';
 import type { FormState } from '@/lib/auth/messages';
 import { dayName } from '@/lib/board-calendar';
 import { useFormAction } from '@/lib/forms';
-import { type MealRow, mealsFor, type Slot, SLOT_WORDS, SLOTS } from '@/lib/meals';
+import { type MealRow, mealsFor, peopleWords, type Slot, SLOT_WORDS, SLOTS } from '@/lib/meals';
 import { addMealEntry } from './actions';
 
 /**
- * [MEAL-01][MEAL-02][MEAL-08] Add one thing to the week: the day and the meal of the day, a meal
- * from the library (those good for that meal first) or something written in, who it's for, and a
- * note. The form carries the entry's id, so sending it twice adds it once.
+ * [MEAL-01][MEAL-02][MEAL-08][MEAL-10] Add one thing to the week: the day and the meal of the day,
+ * a meal from the library (those good for that meal first) or something written in, who it's for
+ * (Everyone, or a tick per person), and a note. The form carries the entry's id, so sending it
+ * twice adds it once.
  */
 export function EntryForm({
   id,
@@ -36,6 +37,12 @@ export function EntryForm({
   const [slot, setSlot] = useState<Slot>(initialSlot);
   const offered = mealsFor(slot, meals);
   const [what, setWhat] = useState<'meal' | 'text'>(offered.length ? 'meal' : 'text');
+  // [MEAL-10] Who it's for: none ticked is everyone, and so is every person ticked.
+  const [who, setWho] = useState<string[]>([]);
+  const tick = (now: string[], id: string, on: boolean) => {
+    const next = on ? [...now, id] : now.filter((x) => x !== id);
+    return members.every((m) => next.includes(m.id)) ? [] : next;
+  };
 
   return (
     <form onSubmit={onSubmit} className="fw-form" aria-label="Add to the plan">
@@ -126,20 +133,38 @@ export function EntryForm({
         ) : null}
       </fieldset>
 
-      <fieldset className="fw-field fw-fieldset">
+      <fieldset className="fw-field fw-fieldset" aria-describedby="entry-for-help">
         <legend className="fw-field__label">For</legend>
         <div className="fw-picker">
           <label className="fw-picker__item">
-            <input type="radio" name="member" value="everyone" defaultChecked />
+            <input
+              type="checkbox"
+              name="member"
+              value="everyone"
+              checked={who.length === 0}
+              onChange={() => setWho([])}
+            />
             Everyone
           </label>
           {members.map((m) => (
             <label key={m.id} className="fw-picker__item">
-              <input type="radio" name="member" value={m.id} />
+              <input
+                type="checkbox"
+                name="member"
+                value={m.id}
+                checked={who.includes(m.id)}
+                onChange={(e) => setWho(tick(who, m.id, e.target.checked))}
+              />
               {m.displayName}
             </label>
           ))}
         </div>
+        <span className="fw-field__help" id="entry-for-help">
+          For{' '}
+          {peopleWords(members.filter((m) => who.includes(m.id)).map((m) => m.displayName)) ??
+            'everyone'}
+          .
+        </span>
       </fieldset>
 
       <label className="fw-field">
