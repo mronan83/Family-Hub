@@ -28,8 +28,8 @@ async function context() {
 }
 
 /**
- * [CHR-16][CHR-17] Saves the person's settings: the bell for new items, the lead time, the morning
- * time, the digest, quiet hours and private titles. Whether reminders are on is its own switch.
+ * [CHR-16][CHR-17][CHR-20] Saves the person's settings: the bell for new items, the lead time, the
+ * morning time, the digest, quiet hours, approvals and private titles. Whether reminders are on is its own switch.
  */
 export async function saveSettings(_prev: FormState, form: FormData): Promise<FormState> {
   const { db, household, me } = await context();
@@ -48,6 +48,7 @@ export async function saveSettings(_prev: FormState, form: FormData): Promise<Fo
       quiet_start: v.quietStart,
       quiet_end: v.quietEnd,
       hide_private_titles: v.hidePrivateTitles,
+      approval_alerts: v.approvalAlerts,
     },
     { onConflict: 'member_id' },
   );

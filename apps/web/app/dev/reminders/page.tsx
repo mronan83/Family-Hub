@@ -22,6 +22,7 @@ const ON: ReminderSettings = {
   quietStart: '21:00',
   quietEnd: '07:00',
   hidePrivateTitles: true,
+  approvalAlerts: true,
 };
 const DEVICES: DeviceRow[] = [
   {

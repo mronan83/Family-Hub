@@ -57,18 +57,23 @@ test('[CHR-15][CHR-16][CHR-17][US-319] Alex’s own settings: off until he turns
   await form.getByLabel('From', { exact: true }).fill('22:00');
   await form.getByLabel('To', { exact: true }).fill('06:30');
   await form.getByRole('checkbox', { name: /Hide the names of private items/ }).uncheck();
+  // [CHR-20] Approvals, on by default, switched off.
+  await form.getByRole('checkbox', { name: /a check-off or a reward request waits/ }).uncheck();
   await form.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('status')).toHaveText('Saved.');
   expect(
     sql(`select concat_ws('|', enabled, default_lead_minutes, morning_time, digest_time, quiet_start, quiet_end,
-                          hide_private_titles)
+                          hide_private_titles, approval_alerts)
            from public.reminder_preference where member_id = '${alex()}'`),
-  ).toBe('f|60|07:30:00|06:45:00|22:00:00|06:30:00|f');
+  ).toBe('f|60|07:30:00|06:45:00|22:00:00|06:30:00|f|f');
 
   await page.reload();
   await expect(form.getByRole('combobox', { name: /^Remind me/ })).toHaveValue('60');
   await expect(form.getByLabel('From', { exact: true })).toHaveValue('22:00');
   await expect(form.getByRole('checkbox', { name: /Hide the names/ })).not.toBeChecked();
+  await expect(
+    form.getByRole('checkbox', { name: /a check-off or a reward request waits/ }),
+  ).not.toBeChecked();
 });
 
 test('[CHR-15][US-317] a device: switched off and on, a test (live app only), removed', async () => {

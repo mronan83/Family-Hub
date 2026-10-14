@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.18: an alert when something waits for you (WP-63, D-88): **Approvals** in Reminders (A3).
 > v0.17: chores on lunch days (WP-61, D-86): **School lunch** in an item's **More options**, so "Pack lunch" or "Empty lunch box" comes up only on the days a child brings lunch (A4, A15, B1, B4).
 > v0.16: Home at a glance and Family options (WP-57, D-84): **Needs you**, **Heads-up** and **Quick actions** on Home, **No school today**, and the household's options (the week's start day, check-offs, weather, admins and invites) in Settings, Family options (A1, A2, A10, A13, B1).
 > v0.14: the board's calendar as a time grid (WP-52, D-82): all-day events across the top, the hours down the side, now, and an event's details at a tap (A5, A9).
@@ -257,7 +258,7 @@ They go back to open (or to missed, if their day is over), and their points are 
 ![My tasks on a phone: quick add at the top, then Overdue, Today and Coming up, each item with Bell on or Bell off and Mark done.](guide/img/admin-my-tasks-phone.jpg "My tasks, on a phone")
 
 ### A3 Reminders on your phone
-<!-- covers: US-317 US-318 US-319 -->
+<!-- covers: US-317 US-318 US-319 US-322 -->
 
 **What this is.** Notifications on your phone or computer when one of your items comes due. **When.** If you want a nudge for your own tasks. Reminders are off until you turn them on, and they are yours alone: nobody else sees your settings. **How.** Open **Reminders**.
 
@@ -275,11 +276,14 @@ Then set **When to remind me** and choose **Save**:
 | **Items with no due time remind me at** | The time of day for items without a due time (8:00 am by default). |
 | **Daily digest** | **Send me a summary of my day** at a time you choose: what's overdue and due today. Nothing is sent on a day with nothing to do. |
 | **Quiet hours** | **Hold reminders during quiet hours**, **From** and **To** (they may run past midnight). A reminder that falls inside them comes when they end. |
+| **Approvals** | **Tell me when a check-off or a reward request waits for me**. On by default. See below. |
 | **Hide the names of private items on my lock screen** | On by default: a private item reads "Private task" or "Private chore" instead of its name. |
 
 A reminder shows the item's name and when it is due ("Due at 3:00 pm", "Due today", "Due tomorrow at 9:00 am"). Tapping it opens the item in **My tasks**. A digest reads "Your day: 3 to do, 1 overdue" and names up to three items.
 
 **Choosing which items remind you.** In **My tasks**, each open item has a bell: **Bell on** or **Bell off**. Tap it to switch that item for you only. On an item's page, **Reminders** sets how early that item reminds everyone ("As each person chose", or a fixed time).
+
+**Told when something waits for you.** With **Approvals** on, you get an alert when a child checks off something that needs your OK, or asks for a reward. It comes within 5 minutes and counts everything new since your last one, by child: "Maya: 3 check-offs and 1 reward request waiting". A newer alert replaces the older one on your lock screen. Tapping it opens **Today**, where they wait under **Waiting for you**, or **Rewards** when only reward requests wait. Quiet hours hold it, and if the other parent has dealt with everything by then, nothing comes. You aren't told about a reward you asked for yourself, or a private item you can't see, and the alert never shows an item's name. When you turn it on, it counts what becomes waiting from then.
 
 Reminders come only for items you are on, at most once each, and never after the item is done. **Turn off reminders** stops them all; your devices stay listed for when you **Turn reminders back on**.
 

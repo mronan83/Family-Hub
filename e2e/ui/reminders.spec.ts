@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
-// [CHR-15][CHR-16][CHR-17] A person's reminders (WP-40) on /dev/reminders: made-up devices, no
+// [CHR-15][CHR-16][CHR-17][CHR-20] A person's reminders (WP-40, WP-63) on /dev/reminders: made-up devices, no
 // database. The page's words, buttons and layout on a phone and a laptop, in Day and Evening, and the
 // bell on My tasks (/dev/admin?view=my). The same page runs signed in on the preview in
 // e2e/tests/reminders.spec.ts.
@@ -47,7 +47,7 @@ test('[CHR-15][US-317] on: the devices, each to test, switch off or remove; one 
   await expect(page.getByText('On. Reminders come to the devices below.')).toBeVisible();
   await expect(
     page.getByText(
-      '15 minutes before the due time · items with no time at 8:00 am · a digest at 7:00 am · quiet 9:00 pm to 7:00 am.',
+      '15 minutes before the due time · items with no time at 8:00 am · a digest at 7:00 am · quiet 9:00 pm to 7:00 am · approvals.',
     ),
   ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Add this device' })).toBeVisible();
@@ -85,6 +85,20 @@ test('[CHR-16][CHR-17][US-319] when to remind me: the digest and quiet hours sho
   await expect(
     form.getByRole('checkbox', { name: /Hide the names of private items/ }),
   ).toBeChecked();
+});
+
+test("[CHR-20][US-322] Approvals: on by default, under the person's other choices", async ({
+  page,
+}) => {
+  await page.goto('/dev/reminders?state=off');
+  const form = page.getByRole('form', { name: 'When to remind me' });
+  const approvals = form.getByRole('group', { name: 'Approvals' });
+  await expect(
+    approvals.getByRole('checkbox', {
+      name: 'Tell me when a check-off or a reward request waits for me',
+    }),
+  ).toBeChecked();
+  await expect(approvals).toContainText('A newer one replaces the older.');
 });
 
 test('[CHR-15] without web push keys, or without a linked sign-in, the page says so', async ({
