@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { appendFileSync } from 'node:fs';
 import { type BrowserContext, expect, test, type Page } from '../support/test';
 import { retireBoard } from '../support/board';
 import { networkSwitch, type NetworkSwitch } from '../support/network';
@@ -43,6 +44,28 @@ function putBack() {
 
 test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
+
+function report(line: string) {
+  console.log(line);
+  if (process.env.E2E_REPORT) appendFileSync(process.env.E2E_REPORT, `${line}\n`);
+}
+
+/**
+ * [WP-65] Each part of a test as a named step, timed into the run's measurements, so a test that
+ * runs out of time says which part it was in and how long the parts before it took.
+ */
+function timed(label: string) {
+  const took: string[] = [];
+  return async <T>(name: string, body: () => Promise<T>): Promise<T> => {
+    const start = Date.now();
+    try {
+      return await test.step(name, body);
+    } finally {
+      took.push(`${name} ${Date.now() - start} ms`);
+      report(`[${label}] ${took.join(', ')}`);
+    }
+  };
+}
 
 let code = '';
 let board: Page;
@@ -115,6 +138,11 @@ test.afterAll(async () => {
 });
 
 test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no network, exactly three events; a parent’s later uncheck wins', async () => {
+  // [WP-65] Its own time: the default 30 s is less than the waits below allow (a 30 s wait for the
+  // three events, and a reload online that waits up to 30 s for Live), and a first attempt ran out
+  // of it with no step to say where. Each step is timed into the run's measurements.
+  test.setTimeout(120_000);
+  const step = timed('DEV-06');
   const maya = memberId('Maya');
   const items = {
     bed: todayOf(MAKE_BED, maya),
@@ -123,67 +151,78 @@ test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no netwo
   };
   const started = sql('select now()');
   const context = board.context();
-  await asMaya(board);
-  await goOffline(context);
-  await expect(health(board).first()).toHaveText('Offline: your check-offs are saved');
-  for (const title of ['Make bed', 'Brush teeth', 'Feed the dog']) {
-    await checkOff(board, title).click();
-    await expect(checkOff(board, title)).toHaveCount(0);
-  }
-  await expect(board.locator('[data-provisional]')).toContainText('Not saved yet');
-
-  // Reloaded with no network: the page is the worker's copy, the check-offs still showing.
-  await board.reload();
-  await asMaya(board);
-  for (const title of ['Make bed', 'Brush teeth', 'Feed the dog']) {
-    await expect(checkOff(board, title)).toHaveCount(0);
-  }
-  // Nothing has reached the database: the board sends nothing while its browser says it is offline
-  // (D-64), and goOffline() holds even while Playwright's offline mode is still attaching to the
-  // reloaded page. If something has, say what, who sent it and when, and how the board saw its
-  // network, so the failure says what happened.
-  const early = sql(`select coalesce(string_agg(e.event_type || ' by ' || e.actor_type || ' ' ||
-          coalesce((select d.name from public.device d where d.id = e.actor_id), e.actor_id::text, '?') ||
-          ' at ' || to_char(e.recorded_at, 'HH24:MI:SS.MS'), '; ' order by e.recorded_at), '')
-     from public.chore_completion_event e
-    where e.occurrence_id in ('${items.bed}', '${items.teeth}', '${items.dog}')
-      and e.recorded_at >= '${started}'`);
-  if (early) {
-    const seen = await board.evaluate(() => ({
-      online: navigator.onLine,
-      worker: Boolean(navigator.serviceWorker?.controller),
-    }));
-    throw new Error(
-      `reached the database while the board was offline: ${early} (the board saw itself ${seen.online ? 'online' : 'offline'}; its service worker ${seen.worker ? 'in control' : 'not in control'})`,
-    );
-  }
-
-  // Meanwhile a parent unchecks Brush teeth (later than the board's tap).
-  sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
-       values (gen_random_uuid(), '${items.teeth}', 'admin_uncomplete', now())`);
-
-  await goOnline(context);
   const boardEvents = () =>
     sql(`select count(*) from public.chore_completion_event e
           where e.occurrence_id in ('${items.bed}', '${items.teeth}', '${items.dog}')
             and e.recorded_at >= '${started}' and e.actor_type = 'device'
             and e.actor_id = (select id from public.device where household_id = '${DEMO}' and name = '${BOARD}')`);
-  await expect.poll(boardEvents, { timeout: 30_000 }).toBe('3');
-  // The later event by time wins: Brush teeth stays open; the others are done.
-  expect([status(items.bed), status(items.teeth), status(items.dog)]).toEqual([
-    'completed',
-    'scheduled',
-    'completed',
-  ]);
-  await expect(checkOff(board, 'Brush teeth')).toBeVisible();
-  await expect(checkOff(board, 'Make bed')).toHaveCount(0);
-  await expect(health(board)).toHaveCount(0);
-  await expect(board.locator('[data-provisional]')).toHaveCount(0);
 
-  // Sent once: a reload online sends nothing more.
-  await board.reload();
-  await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
-  expect(boardEvents()).toBe('3');
+  await step('offline, three check-offs', async () => {
+    await asMaya(board);
+    await goOffline(context);
+    await expect(health(board).first()).toHaveText('Offline: your check-offs are saved');
+    for (const title of ['Make bed', 'Brush teeth', 'Feed the dog']) {
+      await checkOff(board, title).click();
+      await expect(checkOff(board, title)).toHaveCount(0);
+    }
+    await expect(board.locator('[data-provisional]')).toContainText('Not saved yet');
+  });
+
+  await step('reload with no network', async () => {
+    // Reloaded with no network: the page is the worker's copy, the check-offs still showing.
+    await board.reload();
+    await asMaya(board);
+    for (const title of ['Make bed', 'Brush teeth', 'Feed the dog']) {
+      await expect(checkOff(board, title)).toHaveCount(0);
+    }
+  });
+
+  await step('nothing sent while offline', async () => {
+    // Nothing has reached the database: the board sends nothing while its browser says it is offline
+    // (D-64), and goOffline() holds even while Playwright's offline mode is still attaching to the
+    // reloaded page. If something has, say what, who sent it and when, and how the board saw its
+    // network, so the failure says what happened.
+    const early = sql(`select coalesce(string_agg(e.event_type || ' by ' || e.actor_type || ' ' ||
+            coalesce((select d.name from public.device d where d.id = e.actor_id), e.actor_id::text, '?') ||
+            ' at ' || to_char(e.recorded_at, 'HH24:MI:SS.MS'), '; ' order by e.recorded_at), '')
+       from public.chore_completion_event e
+      where e.occurrence_id in ('${items.bed}', '${items.teeth}', '${items.dog}')
+        and e.recorded_at >= '${started}'`);
+    if (early) {
+      const seen = await board.evaluate(() => ({
+        online: navigator.onLine,
+        worker: Boolean(navigator.serviceWorker?.controller),
+      }));
+      throw new Error(
+        `reached the database while the board was offline: ${early} (the board saw itself ${seen.online ? 'online' : 'offline'}; its service worker ${seen.worker ? 'in control' : 'not in control'})`,
+      );
+    }
+    // Meanwhile a parent unchecks Brush teeth (later than the board's tap).
+    sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
+         values (gen_random_uuid(), '${items.teeth}', 'admin_uncomplete', now())`);
+  });
+
+  await step('online, exactly three events', async () => {
+    await goOnline(context);
+    await expect.poll(boardEvents, { timeout: 30_000 }).toBe('3');
+    // The later event by time wins: Brush teeth stays open; the others are done.
+    expect([status(items.bed), status(items.teeth), status(items.dog)]).toEqual([
+      'completed',
+      'scheduled',
+      'completed',
+    ]);
+    await expect(checkOff(board, 'Brush teeth')).toBeVisible();
+    await expect(checkOff(board, 'Make bed')).toHaveCount(0);
+    await expect(health(board)).toHaveCount(0);
+    await expect(board.locator('[data-provisional]')).toHaveCount(0);
+  });
+
+  await step('reload online, nothing sent again', async () => {
+    // Sent once: a reload online sends nothing more.
+    await board.reload();
+    await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
+    expect(boardEvents()).toBe('3');
+  });
 });
 
 test('[NFR-01][DEV-08][US-205] opened after a day offline, the board shows its last day and says how old it is', async () => {
