@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.106: WP-69 (first-attempt e2e passes for CHR-10, SCH-01 and DEV-05) added at the owner's request, recorded only: it starts when the owner says, not after the items in the order.
 > v0.8.105: WP-65 built (NFR-14, D-92): CAL-05's cause in the board's week (a range read again after the snapshot, so a change waited on two reads), fixed in the app; DEV-06's in the test's own time limit, fixed in the test; both now say what they saw. Merged, with the five-run tally to record.
 > v0.8.104: WP-65 (first-attempt e2e passes for CAL-05 and DEV-06), WP-66 (the docs pages republished by a sub-agent, D-91) and WP-67 (stale lines in `00-README`) added at the owner's request; WP-66 and WP-67 done in the same change. WP-65 is next, ahead of everything else.
 > v0.8.103: work as a planner and one worker per item (D-90): items start from the planner session; §2's prompt pattern becomes `/deliver WP-nn`; each item's PR records it as done.
@@ -218,6 +219,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-65 | First-attempt e2e passes: CAL-05 and DEV-06 | P3 | S | WP-60 | Merged; the next five runs' tally to record |
 | WP-66 | The docs pages republished by a sub-agent | P3 | S | WP-01 | Done |
 | WP-67 | Stale lines in `00-README` | P3 | S | WP-01 | Done |
+| WP-69 | First-attempt e2e passes: CHR-10, SCH-01 and DEV-05 | P3 | S | WP-60 | Queued (starts when the owner says) |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -370,6 +372,7 @@ flowchart LR
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP01 --> WP66[WP-66 Docs pages by a sub-agent]
     WP01 --> WP67[WP-67 Stale README lines]
+    WP60 --> WP69[WP-69 First-attempt e2e passes, three more]
     WP55 --> SP06[SPIKE-06 AI reads a document]
     WP54 --> WP56[WP-56 School calendar from a document]
     WP55 --> WP56
@@ -1085,6 +1088,19 @@ flowchart LR
 - **Done when:** the Document map links all six pages from `scripts/docs-site/artifacts.json`, the user guide with the others; the Build order line points to `05` §4; the table's counts match `pnpm trace`; `pnpm docs:build --check` passes.
 - As built: `00-README.md`'s Document map links the User guide page with the other five, and its table says 103 stories, 115 requirements, 67 work packages and 6 spikes; Build order points to `05` §4 for spikes.
 
+### WP-69 — First-attempt e2e passes: CHR-10, SCH-01 and DEV-05
+**Phase:** P3 · **Size:** S · **Depends on:** WP-60 · **Reqs:** NFR-14
+- Added at the owner's request, as WP-65's follow-up and on its model (D-92). The owner starts it; it does not follow the order under the status board on its own. Three more e2e tests have needed their retry (`retries: 1` in CI, `e2e/playwright.config.ts`), or failed on their only attempt: the household tag test in `chores.spec.ts` (**[CHR-10]** a household tag: apply, filter, rename and archive, US-312), the snow day test in `school.spec.ts` (**[SCH-01][SCH-02][SCH-03]** a snow day added for a coming school day makes it a day off; removing it undoes that), and two tests in `devices.spec.ts`: **[DEV-05]** a rename in the admin app reaches the board within 3 seconds (p95 of 20), and **[DEV-05]** an admin holds the board on Evening or Day, and it switches at once.
+- What the runs show (e2e runs 197 to 206 on 13–14 October; 199 stopped before any test ran). Of the seven runs that reached the tests, every one retried or failed at least one test.
+  - CHR-10 needed a retry in one run and failed in another. Both first attempts hit Playwright's 30-second test timeout. In one, the tag's "Saved" status never showed and the browser session closed under it. The other printed nothing more.
+  - SCH-01 needed a retry in one run. Its first attempt timed out after the admin's sign-in, when the move to the school year's page was aborted ("frame was detached").
+  - DEV-05's rename test needed a retry in one run: p95 6.6 s against its 3 s budget, with one sample stopped at the 15 s cap. Its retry was 2.7 s. In the clean runs it was 1.3–2.8 s. Its first sample is often the slowest of the twenty.
+  - DEV-05's Evening-or-Day test failed in one run: the board stayed on Day for the 5 s it waited, where the admin had held it on Evening.
+  - Two specs (`chores.spec.ts`, `devices.spec.ts`) run their tests in order and stop at the first failure. When an earlier test in the file fails, the rest get only the retry. So a CHR-10 or DEV-05 failure there was its only attempt.
+  - The same runs retried other tests once each: BRD-05, CAL-05 (twice, both before WP-65), DEV-06 (before WP-65), CHR-04 and CHR-15. The CHR-01 family-list test retried twice.
+- None of them is called a flake. For each test, find the cause from what the first attempt saw, and fix it in the app or in the test. Where a first attempt said too little to name a cause (a bare timeout), the test first gets D-92's named, timed steps, so it says what it saw. DEV-05's 3-second p95 is the requirement's own budget and is not widened. `retries` stays as it is; the fix is that these tests no longer need it.
+- **Done when:** each test's cause is named in its As-built line here, with its fix. Vitest or the UI suite covers the cause where it is in app code. The pull request's e2e run passes all four tests on their first attempt. The next five e2e runs on pull requests after it record no retry and no failure of any of them (tallied in this section).
+
 ---
 
 ## 6. Size summary
@@ -1097,6 +1113,6 @@ flowchart LR
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64 | Menu adapters and WP-49 are the Ls |
-| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-67 | WP-56 and WP-58 are the Ls |
+| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-67, WP-69 | WP-56 and WP-58 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.
