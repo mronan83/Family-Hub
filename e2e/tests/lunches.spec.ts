@@ -46,10 +46,20 @@ const items = JSON.stringify([
   { name: 'Chocolate milk e2e', section: 'Choice of Milk', option: 2 },
 ]);
 
+/**
+ * Takes away what a run of this spec made. The item is deleted only if nothing was recorded on it;
+ * once checked off it keeps its history (completion events are append-only, D-46), so it is archived
+ * and renamed instead, as icons.spec.ts does.
+ */
 const cleanUp = () =>
   sql(`delete from public.lunch_request where member_id = '${maya}' and lunch_date >= ${TODAY} - 1;
        delete from public.lunch_choice where member_id = '${maya}' and lunch_date >= ${TODAY} - 1;
-       delete from public.chore where household_id = '${DEMO}' and title = '${ITEM.replace(/'/g, "''")}';
+       delete from public.chore c where c.household_id = '${DEMO}' and c.title = '${ITEM.replace(/'/g, "''")}'
+          and not exists (select from public.chore_occurrence o
+                            join public.chore_completion_event e on e.occurrence_id = o.id
+                           where o.chore_id = c.id);
+       update public.chore set archived_at = now(), title = title || ' (old)'
+        where household_id = '${DEMO}' and title = '${ITEM.replace(/'/g, "''")}';
        update public.member_lunch set menu_source_id = ${before.menu ? `'${before.menu}'` : 'null'}
         where member_id = '${maya}';
        delete from public.menu_source where household_id = '${DEMO}' and name = '${MENU}';`);
@@ -124,18 +134,22 @@ test.beforeAll(async ({ browser }, testInfo) => {
 
 test.afterAll(async () => {
   if (!db) return;
-  cleanUp();
-  sql(`update public.household_settings set lunch_cutoff = '${before.cutoff || '08:00'}'
-        where household_id = '${DEMO}'`);
-  sql(
-    before.change
-      ? `insert into public.lunch_override (household_id, member_id, lunch_date, mode)
-         values ('${DEMO}', '${maya}', '${day}', '${before.change}')
-         on conflict (member_id, lunch_date) do update set mode = excluded.mode`
-      : `delete from public.lunch_override where member_id = '${maya}' and lunch_date = '${day}'`,
-  );
-  await admin?.close();
-  await retireBoard(board, BOARD);
+  try {
+    cleanUp();
+    sql(`update public.household_settings set lunch_cutoff = '${before.cutoff || '08:00'}'
+          where household_id = '${DEMO}'`);
+    sql(
+      before.change
+        ? `insert into public.lunch_override (household_id, member_id, lunch_date, mode)
+           values ('${DEMO}', '${maya}', '${day}', '${before.change}')
+           on conflict (member_id, lunch_date) do update set mode = excluded.mode`
+        : `delete from public.lunch_override where member_id = '${maya}' and lunch_date = '${day}'`,
+    );
+  } finally {
+    // Whatever happened above, the board and the admin page go: a live board must not outlast the spec.
+    await admin?.close();
+    await retireBoard(board, BOARD);
+  }
 });
 
 const theDay = () => board.locator(`.fw-lunches__day[data-date="${day}"]`);
