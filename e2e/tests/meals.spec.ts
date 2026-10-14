@@ -78,26 +78,29 @@ async function add(
   /** [MEAL-10] The people ticked; none is Everyone. */
   who: string[] = [],
 ) {
-  await admin.goto(`/admin/meals?week=${week}`);
-  const form = admin.getByRole('form', { name: 'Add to the plan' });
-  await form.getByRole('combobox', { name: 'Day' }).selectOption(day);
-  await form.getByRole('combobox', { name: 'Meal' }).selectOption(slot);
-  if (what.meal) {
-    await form.getByRole('radio', { name: 'From the library' }).check();
-    await form
-      .getByRole('combobox', { name: 'From the library' })
-      .selectOption({ label: what.meal });
-  } else {
-    await form.getByRole('radio', { name: 'Something else' }).check();
-    await form.getByRole('textbox', { name: 'Something else' }).fill(what.text!);
-  }
-  const people = form.getByRole('group', { name: 'For' });
-  for (const name of who) await people.getByRole('checkbox', { name, exact: true }).check();
-  await expect(people.getByRole('checkbox', { name: 'Everyone', exact: true })).toBeChecked({
-    checked: who.length === 0,
+  // A named step, so a timeout says which add it was in (D-92).
+  await test.step(`add ${what.meal ?? what.text} to ${day} ${slot}`, async () => {
+    await admin.goto(`/admin/meals?week=${week}`);
+    const form = admin.getByRole('form', { name: 'Add to the plan' });
+    await form.getByRole('combobox', { name: 'Day' }).selectOption(day);
+    await form.getByRole('combobox', { name: 'Meal' }).selectOption(slot);
+    if (what.meal) {
+      await form.getByRole('radio', { name: 'From the library' }).check();
+      await form
+        .getByRole('combobox', { name: 'From the library' })
+        .selectOption({ label: what.meal });
+    } else {
+      await form.getByRole('radio', { name: 'Something else' }).check();
+      await form.getByRole('textbox', { name: 'Something else' }).fill(what.text!);
+    }
+    const people = form.getByRole('group', { name: 'For' });
+    for (const name of who) await people.getByRole('checkbox', { name, exact: true }).check();
+    await expect(people.getByRole('checkbox', { name: 'Everyone', exact: true })).toBeChecked({
+      checked: who.length === 0,
+    });
+    await form.getByRole('button', { name: 'Add to the plan' }).click();
+    await expect(admin.getByRole('status')).toHaveText('Added to the plan.');
   });
-  await form.getByRole('button', { name: 'Add to the plan' }).click();
-  await expect(admin.getByRole('status')).toHaveText('Added to the plan.');
 }
 
 test('[MEAL-02] a parent adds a meal to the library', async () => {
@@ -116,9 +119,10 @@ test('[MEAL-02] a parent adds a meal to the library', async () => {
 });
 
 test('[MEAL-01][MEAL-08][US-701] done-when: a full week planned, two snacks put in order', async () => {
-  // Ten things added through the form, each a page load and a saved form (about 3 s each on a
-  // preview): more than the default 30 s, which the first run with WP-62's lunch ran out of.
+  // [D-92] Ten things added through the form, each a page load and a saved form (3 to 4 s each on
+  // a preview): more than the default 30 s, which the first run with WP-62's lunch ran out of.
   test.setTimeout(90_000);
+  const started = Date.now();
   await add(first, first, 'dinner', { meal: MEAL });
   for (let i = 1; i < 7; i++)
     await add(first, addDays(first, i), 'dinner', { text: `Dinner ${i}` });
@@ -128,6 +132,7 @@ test('[MEAL-01][MEAL-08][US-701] done-when: a full week planned, two snacks put 
   // [MEAL-10][US-708] A lunch for two of the four.
   const thu = addDays(first, 4);
   await add(first, thu, 'lunch', { text: 'Wraps' }, ['Maya', 'Leo']);
+  report(`WP-62: ten things planned through the form in ${Date.now() - started} ms`);
   // Maya's apple first.
   await admin.goto(`/admin/meals?week=${first}`);
   const snack = admin.locator(`[id="${wed}-snack"]`);
