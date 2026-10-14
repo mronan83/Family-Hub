@@ -265,14 +265,13 @@ test('[MENU-06][US-804] done-when: a feed’s day shows its entree options at ho
     }
     await rail().getByRole('button', { name: 'Meals', exact: true }).click();
     const week = board.getByRole('table');
-    await expect(week.locator('.fw-mweek__menu-head')).toHaveText(`School menu · ${FEED}`, {
-      timeout: 15_000,
-    });
-    await expect(week.locator('tr[data-slot="menu"]:not(.fw-mweek__menu-head) th')).toHaveText([
-      'Entree',
-      'Fruits & Vegetables',
-      'Milk',
-    ]);
+    // A menu each: Maya's stays the demo family's own, so the feed's is one of two blocks, its name
+    // then a row a section.
+    const head = week.getByRole('rowheader', { name: `School menu · ${FEED}`, exact: true });
+    await expect(head).toBeVisible({ timeout: 15_000 });
+    const names = await week.locator('tr[data-slot="menu"] th').allTextContents();
+    const at = names.indexOf(`School menu · ${FEED}`);
+    expect(names.slice(at + 1, at + 4)).toEqual(['Entree', 'Fruits & Vegetables', 'Milk']);
     await expect(
       week.locator('tr[data-slot="menu"] li', { hasText: 'Wrap e2e' }).first(),
     ).toContainText('with Chips e2e');
