@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.105: a board in portrait or landscape added at the owner's request to WP-58's scope (D-93), recorded only: more than one L together, so WP-58 stays the iPhone and its portrait boards are WP-68 (L, its own mockup first), which follows it. WP-58's place in the order is unchanged.
 > v0.8.104: WP-65 (first-attempt e2e passes for CAL-05 and DEV-06), WP-66 (the docs pages republished by a sub-agent, D-91) and WP-67 (stale lines in `00-README`) added at the owner's request; WP-66 and WP-67 done in the same change. WP-65 is next, ahead of everything else.
 > v0.8.103: work as a planner and one worker per item (D-90): items start from the planner session; §2's prompt pattern becomes `/deliver WP-nn`; each item's PR records it as done.
 > v0.8.102: WP-61 done (PR #66): chores on lunch days.
@@ -207,7 +208,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-55 | The household's AI provider in Settings | P3 | M | WP-51 | Ready |
 | WP-56 | The school calendar from a document | P3 | L | WP-54, WP-55, SPIKE-06 | Queued |
 | WP-57 | Home at a glance; Family options in Settings | P3 | M | WP-51, WP-21, WP-27 | Done (PR #64) |
-| WP-58 | The board on an iPhone, from the admin app | P3 | L | WP-48, WP-20, WP-57 | Ready (mockup approved) |
+| WP-58 | The board on an iPhone, from the admin app | P3 | L | WP-48, WP-20, WP-57 | Ready (iPhone mockup approved; its portrait boards, WP-68, need their own) |
 | WP-59 | A child's own phone, paired as their board | P3 | M | WP-58, WP-05 | Queued (when a child has a phone) |
 | WP-60 | Testing made reliable: a test database | P3 | M | WP-41 | Merged (PR #65); a week's tally to record |
 | WP-61 | Chores on lunch days | P2 | S | WP-26, WP-43 | Done (PR #66) |
@@ -217,6 +218,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-65 | First-attempt e2e passes: CAL-05 and DEV-06 | P3 | S | WP-60 | Ready (next) |
 | WP-66 | The docs pages republished by a sub-agent | P3 | S | WP-01 | Done |
 | WP-67 | Stale lines in `00-README` | P3 | S | WP-01 | Done |
+| WP-68 | WP-58's second part: a board in portrait | P3 | L | WP-58, WP-53, WP-47, WP-48, WP-52 | Queued (portrait mockup first) |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -369,6 +371,11 @@ flowchart LR
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP01 --> WP66[WP-66 Docs pages by a sub-agent]
     WP01 --> WP67[WP-67 Stale README lines]
+    WP58 --> WP68[WP-68 A board in portrait]
+    WP53 --> WP68
+    WP47 --> WP68
+    WP48 --> WP68
+    WP52 --> WP68
     WP55 --> SP06[SPIKE-06 AI reads a document]
     WP54 --> WP56[WP-56 School calendar from a document]
     WP55 --> WP56
@@ -1014,6 +1021,7 @@ flowchart LR
 - The owner asked for an iPhone-friendly board view they can switch to from the admin app and back. Mockup approved (the "Board on iPhone" canvas): **Board view** at the top of the admin menu; on the phone, the chosen board's Home cards stacked in its own order, the calendar as a list, a tab bar (Home, Chores, Calendar, Meals), the family across the top, and **Admin** to go back.
 - Signed in as the admin, not as a board, so there is no pairing and no second sign-in; the server shows **Admin** only to an admin. Everything a board does works: a parent's check-off counts at once and is recorded as done by that parent for the child, with Undo; a reward is **Given** (the stars taken at once) rather than asked for; requests waiting can be answered there. A board picker mirrors one board's layout and calendars; the phone remembers the choice.
 - Phone sizes follow the admin app (16–17 px text, controls of 44 px or more), not the wall board's BRD-03 sizes, which are for reading across a room.
+- **Orientation** (added at the owner's request, 14 October, D-93): WP-58's scope grows to setting each board to portrait or landscape, for example a 24" Dell monitor turned to portrait, since the phone already needs each board screen stacked for a tall screen. Together that is more than one L, so it is split: this item is the iPhone, as approved, and **WP-68** is the portrait boards (the setting, the fit and every board screen at the wall board's sizes), which follows it. The approved mockup covers the iPhone only; portrait boards need their own mockup, approved before WP-68 is built.
 - **Done when:** on the preview, an admin opens Board view on a 390 px phone, checks off a child's chore that the wall board shows done within 3 s, gives a reward, switches boards, and returns to the admin app; the UI suite shows each screen on a phone in Day and Evening with nothing overlapping.
 
 ### WP-59 — A child's own phone, paired as their board
@@ -1081,6 +1089,17 @@ flowchart LR
 - **Done when:** the Document map links all six pages from `scripts/docs-site/artifacts.json`, the user guide with the others; the Build order line points to `05` §4; the table's counts match `pnpm trace`; `pnpm docs:build --check` passes.
 - As built: `00-README.md`'s Document map links the User guide page with the other five, and its table says 103 stories, 115 requirements, 67 work packages and 6 spikes; Build order points to `05` §4 for spikes.
 
+### WP-68 — WP-58's second part: a board in portrait
+**Phase:** P3 · **Size:** L · **Depends on:** WP-58, WP-53, WP-47, WP-48, WP-52 · **Reqs:** BRD-10
+- Added at the owner's request (D-93), as part of WP-58's scope: "I'd like to be able to set the orientation for a given dashboard in portrait or landscape", for example the 24" Dell monitor turned on its side, taller than it is wide. WP-58 and this together are more than one L, so the portrait boards are split out here and follow WP-58 (see WP-58's section). Today every board is laid out at 1920×1080 (D-16) and zoomed to its screen (WP-47), and the board's app manifest is fixed to landscape (WP-37); on a tall screen the board is a strip across the middle.
+- **The setting:** **Set orientation** on Boards, **Landscape** or **Portrait**, beside the text size; `board_config.orientation` (checked; none is Landscape), carried by the snapshot and kept in `localStorage`, so the first paint, even offline, is in the board's orientation. A change reaches the board without a reload.
+- **The fit:** a portrait board zooms a 1080×1920 logical canvas to its screen (the smaller of width ÷ 1080 and height ÷ 1920, times the text size), with WP-47's limits and text sizes. The board's manifest stops forcing landscape. The picture is turned by the screen's own computer (its display setting), not by the board; on the Pi that is the kiosk's display configuration (WP-14, WP-34, blocked on hardware).
+- **Every board screen in portrait,** starting from WP-58's stacked phone layouts but at the wall board's sizes (BRD-03), not the phone's: the rail and the bar; Home fitting the screen with no page scroll at Standard (BRD-09) and stacking at Larger and Largest, with the household's and a board's own layout (WP-35); the calendar about 1000 px wide (WP-52's time grid: 7 days, the month and the view switch on the board); Chores; the Calendar's Month, Week and Day and an event's details; a person's screen with points, goals and the shop (WP-20); Meals (WP-28); the dialogs ("Who did it?", More info, celebrations); and the pairing, offline and stale screens (WP-05, WP-13). Each covers what is on `main` when this starts; a board screen built after it ships in both orientations itself (D-93).
+- **The layout sweep (WP-53)** gains the portrait canvas, in both themes and at each text size.
+- WP-58's mockup was approved for the iPhone only. Portrait boards need their own mockup, on the demo family, approved before this is built.
+- Why these dependencies: WP-58 builds the stacked layouts this reuses; WP-53's sweep is what proves portrait has no overlaps; WP-47, WP-48 and WP-52 built what this lays out again.
+- **Done when:** pgTAP: `board_config.orientation` accepts only its two values and the snapshot carries it; the UI suite and the layout sweep: every board screen in portrait at 1080×1920 in Day and Evening, at Standard and Largest, with nothing overlapping, no sideways scroll, no page scroll on Home at Standard, and the board's floors (`e2e/support/floors.ts`); a landscape board unchanged; on the preview, Alex sets a paired board to Portrait on Boards and, without a reload, a 1080×1920 window shows the portrait Home, still portrait after a reload; on that board a check-off on Chores shows on the admin app within 3 s, the Calendar's Week shows the hours to scale, and a child asks for a reward in the shop.
+
 ---
 
 ## 6. Size summary
@@ -1093,6 +1112,6 @@ flowchart LR
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64 | Menu adapters and WP-49 are the Ls |
-| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-67 | WP-56 and WP-58 are the Ls |
+| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68 | WP-56, WP-58 and WP-68 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

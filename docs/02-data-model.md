@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.41: planned, not built (D-93): `device.board_config.orientation` and the snapshot's `device.orientation` (WP-68, with WP-58) (§3.1).
 > v0.8.40: planned, not built (D-87 to D-89): `meal_plan_entry_member` (WP-62), `reminder_preference.approval_alerts` and `reminder_delivery` kind `approval` (WP-63), `school_menu_day.items[].option` (WP-64) and `lunch_choice` (WP-49) (§3.6, §3.7).
 > v0.8.39: chores on lunch days (WP-61, D-86): `chore.lunch_days` (`bring` or `buy`, an `each` item's only); `private.occurrence_due()` follows each child's `lunch_mode()`; `trg_lunch_override_replan` and `trg_member_lunch_replan` re-plan a child's lunch-day items when their lunch changes (§3.2, §3.6).
 > v0.8.38: Family options and Home at a glance (WP-57, D-84): `household_settings.week_start_next` and `week_start_next_on`, `set_week_start()` and `apply_week_start()`; `no_school_today()` and `undo_no_school_today()` re-plan today (§3.1, functions).
@@ -377,6 +378,8 @@ erDiagram
 | `private.job_schedule` | `job_type` (PK), `cron`, `kind` (`http`/`sql`), `every_minutes`, `updated_at` | Infrastructure: mirrors `apps/web/lib/jobs/schedule.json`, written by the deploy with the pg_cron jobs (`01` §5.6); gives `job_health()` each job's cadence. Readable by signed-in users (schedules only, no data). |
 | `private.app_error` | `occurred_at`, `request_id`, `method`, `route`, `kind` (`render`/`route`/`action`/`proxy`/`job`), `message` (scrubbed, at most 1000 characters), `digest`, `household_id?` | Infrastructure: server errors from Next.js `onRequestError` and failed jobs, kept longer than Vercel Hobby's one hour of logs, for System Health (WP-42). `household_id` is the household the error happened for (the job's, or the request's board or admin; D-42); errors on signed-out pages have none and appear on no household's page. No request body, no PII (NFR-05). Written only through `record_app_error()` by the service role; read only through `household_errors()`. |
 | `private.usage_sample` | `taken_at`, `source` (`vercel`), `period_start`, `service`, `unit`, `account_quantity`, `project_quantity` | Infrastructure: the Vercel account's usage over the last 30 days for the services with Hobby limits, written daily by the usage workflow (`scripts/usage-sample.sh`), the account's total and this project's share. Read only through `system_usage()`; kept 90 days. |
+
+**Planned (D-93, WP-68; not built):** `device.board_config.orientation`, `landscape` or `portrait` (none is Landscape), checked like `text_size`, and set by an admin like it; the snapshot's `device.orientation`, which the board applies before its first paint, as it does its text size.
 
 ### 3.2 Chores
 

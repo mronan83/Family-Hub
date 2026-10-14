@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.42: US-1009 added at the owner's request (WP-58's scope, built as WP-68, D-93): a board set to portrait for a screen hung taller than it is wide.
 > v0.8.41: US-322, US-708 and US-804 added at the owner's request (WP-62 to WP-64, D-87 to D-89): an alert when something waits for a parent; a meal for any mix of people; the school menu by section. US-707 now includes picking a buy day's lunch choices.
 > v0.8.40: US-321 added and built (WP-61, D-86): a chore that comes up only on the days a child brings lunch, or only on the days they buy it.
 > v0.8.39: US-109 and US-110 added and built (WP-57, D-84): Home at a glance; the household's options in Settings, Family options. US-103, US-310 and US-1003 now say where their settings are.
@@ -814,6 +815,15 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given the board shows five days, when I tap **Month** on the calendar, then it shows the month, and nothing is saved for the board.
 - Given I left the board on the month, when it goes home after 90 seconds untouched, then the calendar is back to the board's own view.
 - Given a goal, a request waiting for a parent, or an event coming up on the cards, when I tap it, then the board opens the child's screen, everyone's day, or the Calendar on that day.
+
+### US-1009 — A board that stands tall
+**As a** parent **I want** to set a board to portrait or landscape **so that** a screen hung taller than it is wide, like a 24" monitor turned on its side, shows a board laid out for it, readable from where we stand.
+**Priority:** Should · **Phase:** P3 · **Reqs:** BRD-10
+- Given a board on Boards, when I set its orientation to **Portrait**, then the board changes to its portrait layout without a reload, and after a reload it is still portrait.
+- Given a board in portrait on a 1080×1920 screen at Standard, when the home screen shows, then the people, the bar, the calendar, today's list and every card are in sight and the page doesn't scroll, with words and buttons at the board's sizes.
+- Given a portrait board, when I open Chores, the Calendar, a child's screen, the shop or Meals, then each is laid out for the tall screen, with nothing overlapping and no sideways scroll.
+- Given a board I never set, when it opens, then it is landscape as before.
+- Given a portrait board set to Larger, when its words no longer fit side by side, then the parts stack, as they do in landscape.
 
 ---
 
