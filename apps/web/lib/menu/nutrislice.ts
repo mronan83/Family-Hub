@@ -9,6 +9,8 @@
 //     food: {name}}]}]}: section titles group the items under them; a holiday item marks a day off.
 // Relative imports only: the e2e runner and unit tests use this without the app's aliases.
 
+import { withOptions } from './sections';
+
 /** A district, school or menu as Nutrislice writes it in its addresses. */
 export const SLUG = /^[a-z0-9][a-z0-9-]{0,79}$/;
 
@@ -23,7 +25,10 @@ export interface NutrisliceConfig {
 
 export interface MenuItem {
   name: string;
+  /** The section title it is listed under, as the menu writes it ("Choice of Entree"). */
   section?: string;
+  /** [MENU-06] Its option in the section, from 1; a side has its option's number (WP-64). */
+  option?: number;
 }
 
 /** One school day's lunch as a feed or a file has it. */
@@ -95,8 +100,9 @@ export function readSchools(json: unknown): School[] {
 }
 
 /**
- * One week's days that have a menu: their items under their sections, in order; a holiday is a day
- * with no lunch served, saying what it is. Days with nothing published are left out.
+ * One week's days that have a menu: their items under their sections, in order, as options
+ * (WP-64); a holiday is a day with no lunch served, saying what it is. Days with nothing published
+ * are left out.
  */
 export function readWeek(json: unknown): MenuDay[] {
   const days = (json as { days?: unknown })?.days;
@@ -124,13 +130,15 @@ export function readWeek(json: unknown): MenuDay[] {
         continue;
       }
       const name = (foodName || text).slice(0, 120);
-      if (!name || items.length >= MAX_ITEMS) continue;
+      if (!name || items.length >= 2 * MAX_ITEMS) continue;
       items.push(section ? { name, section } : { name });
     }
-    if (holiday !== null && items.length === 0) {
+    // [MENU-06] "or" and "with" are items of their own: read into options (WP-64).
+    const options = withOptions(items);
+    if (holiday !== null && options.length === 0) {
       out.push({ date, items: [], noService: true, note: holiday.slice(0, 120) });
-    } else if (items.length > 0) {
-      out.push({ date, items, noService: false });
+    } else if (options.length > 0) {
+      out.push({ date, items: options, noService: false });
     }
   }
   return out;

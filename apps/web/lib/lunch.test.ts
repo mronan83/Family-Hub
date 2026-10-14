@@ -20,6 +20,7 @@ describe('school lunch', () => {
         memberId: 'maya',
         usual: { fri: 'buy' },
         menuSourceId: null,
+        menuName: null,
         days: [
           { date: '2026-10-11', dayType: 'weekend', mode: null, changed: false, menu: null },
           { date: '2026-10-12', dayType: 'school_day', mode: 'buy', changed: true, menu: null },

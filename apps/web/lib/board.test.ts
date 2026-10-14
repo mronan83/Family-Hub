@@ -163,6 +163,7 @@ describe('board snapshot', () => {
             memberId: 'm1',
             usual: { mon: 'buy' },
             menuSourceId: null,
+            menuName: null,
             days: [
               {
                 date: '2026-10-11',

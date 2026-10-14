@@ -95,8 +95,17 @@ const MENU: Record<number, LunchChild['days'][number]['menu']> = {
     noService: false,
     note: null,
   },
+  // [MENU-06] By section, as options (WP-64): two entrees, one with a side.
   3: {
-    items: [{ name: 'Cheese Pizza' }, { name: 'Green Beans' }, { name: 'Milk' }],
+    items: [
+      { name: 'Cheese Pizza', section: 'Choice of Entree', option: 1 },
+      { name: 'Turkey sandwich', section: 'Choice of Entree', option: 2 },
+      { name: 'Pretzels', section: 'Choice of Entree', option: 2 },
+      { name: 'Green Beans', section: 'Fruits & Vegetables offered', option: 1 },
+      { name: 'Orange', section: 'Fruits & Vegetables offered', option: 2 },
+      { name: '1% milk', section: 'Choice of Milk', option: 1 },
+      { name: 'Chocolate milk', section: 'Choice of Milk', option: 2 },
+    ],
     noService: false,
     note: null,
   },

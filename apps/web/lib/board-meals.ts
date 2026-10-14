@@ -1,5 +1,6 @@
 import { type LunchChild, lunchFromDb, type LunchMode, noLunchWords } from './lunch';
-import { menuWords } from './menus';
+import { entreeWords, menuSections, type MenuSection, sectionLabel } from './menu/sections';
+import { type LunchMenu, menuWords } from './menus';
 
 // [MEAL-06][US-705] Meals on the board (WP-28, D-80): the snapshot's household week of meals, read
 // into the app's shape, and what the home screen and the Meals screen show of it.
@@ -73,8 +74,13 @@ export function readMeals(x: unknown): BoardMeals | null {
 export interface BoardLunch {
   memberId: string;
   mode: LunchMode;
-  /** On a buy day, what the school serves ("Cheese Pizza, Milk", "No lunch: Teacher day"); null when the menu has nothing that day or the child has no menu. */
+  /**
+   * [MENU-06] On a buy day, the entree's options ("Beef tacos or Chicken wrap with Tortilla chips"),
+   * or "No lunch: Teacher day"; null when the menu has nothing that day or the child has no menu.
+   */
   menu: string | null;
+  /** [MENU-06] On a buy day, the day's whole menu by section, for its details (WP-64). */
+  sections: MenuSection[] | null;
   /** True when the child has a school menu but it has nothing for the day. */
   noMenu: boolean;
   /** On a bring day, what's planned for their lunch on Meals ("Leftover spaghetti"). */
@@ -114,7 +120,8 @@ export function mealDay(meals: BoardMeals | null, date: string): BoardMealDay {
     lunch.push({
       memberId: c.memberId,
       mode: d.mode,
-      menu: hasMenu ? menuWords(d.menu!) : null,
+      menu: hasMenu ? buyWords(d.menu!) : null,
+      sections: hasMenu && !d.menu!.noService ? menuSections(d.menu!.items) : null,
       noMenu: d.mode === 'buy' && !!c.menuSourceId && !d.menu,
       packed: packed.map((e) => e.name),
     });
@@ -126,6 +133,54 @@ export function mealDay(meals: BoardMeals | null, date: string): BoardMealDay {
     return rest.length ? [{ ...e, memberIds: rest }] : [];
   });
   return { date, slots, lunch };
+}
+
+/** [MENU-06] What a buy day's line says: the entree's options, or why there is no lunch. */
+function buyWords(menu: LunchMenu): string {
+  return menu.noService ? menuWords(menu) : (entreeWords(menu.items) ?? menuWords(menu));
+}
+
+/** [MENU-06] A school menu across the week: its name, and each day's menu where a child has lunch. */
+export interface WeekMenu {
+  sourceId: string;
+  name: string;
+  /** Its sections in the order the week first lists them: the title and the label shown. */
+  rows: { title: string | null; label: string | null }[];
+  /** Each date's menu (absent: nothing that day, or no child with a school lunch). */
+  days: Map<string, { noService: string | null; sections: MenuSection[] }>;
+}
+
+/**
+ * [MENU-06][US-804] The week's school menus for the board's Meals screen (WP-64, D-94): each menu
+ * the children's lunches come from, its sections as rows and each day's options, on every day a
+ * child on it has a school lunch, buy or bring.
+ */
+export function weekMenus(meals: BoardMeals | null): WeekMenu[] {
+  const menus = new Map<string, WeekMenu>();
+  for (const c of meals?.lunch ?? []) {
+    if (!c.menuSourceId) continue;
+    const m = menus.get(c.menuSourceId) ?? {
+      sourceId: c.menuSourceId,
+      name: c.menuName ?? 'School menu',
+      rows: [],
+      days: new Map(),
+    };
+    menus.set(c.menuSourceId, m);
+    for (const d of c.days) {
+      if (!d.mode || !d.menu || m.days.has(d.date)) continue;
+      const sections = d.menu.noService ? [] : menuSections(d.menu.items);
+      m.days.set(d.date, { noService: d.menu.noService ? menuWords(d.menu) : null, sections });
+    }
+  }
+  for (const m of menus.values()) {
+    const titles: (string | null)[] = [];
+    for (const date of [...m.days.keys()].sort()) {
+      for (const s of m.days.get(date)!.sections)
+        if (!titles.includes(s.title)) titles.push(s.title);
+    }
+    m.rows = titles.map((title) => ({ title, label: title ? sectionLabel(title) : null }));
+  }
+  return [...menus.values()].filter((m) => m.days.size > 0);
 }
 
 /** True when a day has anything to show: a meal planned, or a child's school lunch. */

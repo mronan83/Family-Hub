@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.20: the school menu by section (WP-64, D-94): a buy day's entree options on the board's home screen, the whole menu at a tap, the menu a row a section on the **Meals** screen, and a line a section on **Meals** and **School menus**; a day typed in with "or" and "with" (A5, A15, B1.15, B2, B7).
 > v0.19: a meal for any mix of people (WP-62, D-87): **For** on **Add to the plan** is **Everyone** or a tick per person, and the boards show each person's face (A15, B1.15, B2.9).
 > v0.18: an alert when something waits for you (WP-63, D-88): **Approvals** in Reminders (A3).
 > v0.17: chores on lunch days (WP-61, D-86): **School lunch** in an item's **More options**, so "Pack lunch" or "Empty lunch box" comes up only on the days a child brings lunch (A4, A15, B1, B4).
@@ -362,7 +363,7 @@ Switch on **Private** for a surprise or a personal item. A private item never sh
 At the top of **Chores**, filter by **Person**, **Tag**, **Kind**, **Time of day**, and **Show** (**Active** or **Archived**), then choose **Filter**. **Clear** shows everything again. Each line shows how often it happens, its due time, its points, when it is next due ("Next: Today"), and "Overdue since" for an open task.
 
 ### A5 The family at the board
-<!-- covers: US-303 US-304 US-305 US-1001 US-1002 US-1005 US-1006 US-1008 US-905 US-705 US-708 -->
+<!-- covers: US-303 US-304 US-305 US-1001 US-1002 US-1005 US-1006 US-1008 US-905 US-705 US-708 US-804 -->
 
 **What this is.** The wall board: the family's day, for everyone. **When.** All day. **How.** Just tap. Every button on the board is big enough for a child's finger and answers at once.
 
@@ -373,7 +374,7 @@ At the top of **Chores**, filter by **Person**, **Tag**, **Kind**, **Time of day
 The home screen fits the screen: nothing hides under the bar, and the page never scrolls. It has three parts:
 
 - **The calendar** on the left: the next few days (5 by default). All-day events run across the top; when a day has more than fit, its heading says how many more ("+2"). Under them, each hour with something on has a row, lined up across the days, with the time it starts and a red line at now. Tap an event to see it in full. Tap a day's heading to open it in **Calendar**. To look further ahead, tap **Month**, **7 days**, **5 days** or **3 days** at the top of the calendar. That changes only this board, and only for now: when the board goes home after 90 seconds untouched, it is back to the view set on **Boards**.
-- **Today's meals** at the top on the right, on a day with meals planned: **Breakfast**, **Snack**, **Lunch** and **Dinner**, each with its picture, and a face for each person it's for (none when it's for everyone). On **Lunch**, each child says **Buys** with what the school serves, or **Brings** with what is planned for their lunch. A parent can hide it (see [A11](#a11-the-boards-home-screen-layout)).
+- **Today's meals** at the top on the right, on a day with meals planned: **Breakfast**, **Snack**, **Lunch** and **Dinner**, each with its picture, and a face for each person it's for (none when it's for everyone). On **Lunch**, each child says **Buys** with the day's entree choices ("Cheese Pizza or Turkey sandwich with Pretzels", cut short with "…" when it doesn't fit), or **Brings** with what is planned for their lunch. Tap a buy day's choices to see the day's whole menu, a section at a time (Entree, Fruits & Vegetables, Milk); **Close** shuts it. A parent can hide it (see [A11](#a11-the-boards-home-screen-layout)).
 - **Today's list** on the right, under today's meals: one list for the whole family, grouped into **Overdue**, **Morning**, **After school**, **Evening** and **Anytime**, with "2 of 9 done" at the top. Each row shows the item, its points, and a face for each person it is for.
 - **Cards** in a row under the calendar: **Goals**, **Waiting for a parent** and **Coming up** (all-day events in the next three weeks). A parent chooses which cards show, and in what order (see [A11](#a11-the-boards-home-screen-layout)). Tap a goal to open that child's screen (a family goal opens **Chores**), a request to open the child who asked, or an event to open **Calendar** on its day. When a list is longer than its card, it scrolls inside the card.
 
@@ -796,7 +797,7 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credi
 > **Tip:** Stand where the family usually reads the board. If the words for each item are hard to make out, try **Larger text**. On a 32-inch 4K panel read from about two metres, **Larger** suits most families; a smaller screen, or one read from further away, may want **Largest**.
 
 ### A15 Planning meals
-<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-705 US-708 -->
+<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-705 US-708 US-804 -->
 
 **What this is.** The week's breakfasts, snacks, lunches and dinners, planned ahead, and a library of the meals your family makes again. **When.** Once a week, say on Sunday, so nobody decides at 5 pm. **How.** On **Meals** in the menu.
 
@@ -846,12 +847,14 @@ A chore can follow these days, like "Pack lunch" only when a child brings: see [
 A day a child buys can show what the school serves that day. Open **School menus** (the button beside **School lunch** on **Meals**) and add the school's menu once:
 
 - **From the school's Nutrislice menus**, if your school's lunch menu is on Nutrislice (its address ends in nutrislice.com). Type the name at the start of that address (for menus at example.nutrislice.com, type example) or paste the whole address, then **Find the schools**. Choose the school and its lunch menu, then **Add the menu**: FamilyWise fetches the next four weeks straight away, and again every morning.
-- **From a file**, for a school whose menu comes another way: a spreadsheet saved as CSV with a row for each item, and the columns **date** (like 2027-02-01, or 2/1/2027), **item** and, if you like, **section** (Main Line, Beverages). A date with no item means no lunch that day, and its section says why (Presidents' Day). **Look at the file** shows how many days it holds and the first few; **Load** stores them.
+- **From a file**, for a school whose menu comes another way: a spreadsheet saved as CSV with a row for each item, and the columns **date** (like 2027-02-01, or 2/1/2027), **item** and, if you like, **section** (Choice of Entree, Choice of Milk). An item can hold choices: "Beef tacos or Chicken wrap with tortilla chips" is two options, the wrap with its chips. A date with no item means no lunch that day, and its section says why (Presidents' Day). **Look at the file** shows how many days it holds and the first few; **Load** stores them.
 - **Typed in**, a day at a time with **Add a day**.
 
-Then, under **Usual week** on **Meals**, choose each child's **School menu**. A day they buy shows what's served, or **No menu yet**.
+Then, under **Usual week** on **Meals**, choose each child's **School menu**. A day they buy shows what's served, a line a section (**Entree**: Beef tacos or Chicken wrap with tortilla chips; **Fruits & Vegetables**: Corn, Orange; **Milk**: 1% milk or Chocolate milk), or **No menu yet**.
 
-- **Change a day:** each day's **Change** lets you write it yourself: an item a line (start a line with a section and a colon to group it, like Beverages: Milk), or **No lunch that day** with a note. A day you change is **Yours**: the morning's fetch never replaces it. **Use Nutrislice's menu again** hands it back.
+FamilyWise reads a menu as the school writes it: each section's options, "or" between them, and "with" for what comes with one. A section's name is shortened to show it ("Choice of Entree" shows as **Entree**, "Fruits & Vegetables offered" as **Fruits & Vegetables**), and the **Entree** is the section whose name says entree or main (else the first). A menu with no sections lists what's served with commas, as before.
+
+- **Change a day:** each day's **Change** lets you write it yourself: a section a line, its name and a colon first, "or" between options and "with" before a side (Choice of Milk: 1% milk or Chocolate milk), or **No lunch that day** with a note. A day you change is **Yours**: the morning's fetch never replaces it. **Use Nutrislice's menu again** hands it back.
 - **When Nutrislice can't be reached:** the menu says **Can't fetch**, why, and when it last worked. The menus you have stay, and it tries again the next morning; **Fetch now** tries at once.
 
 ![School menus on a laptop: Maple Elementary from Nutrislice, fetched, its days with one marked Yours and a day with no lunch; a menu from a file; a feed that can't fetch keeping its menus.](guide/img/admin-menus-laptop.jpg "School menus, on a laptop")
@@ -862,11 +865,15 @@ Then, under **Usual week** on **Meals**, choose each child's **School menu**. A 
 
 What you plan shows on the boards within seconds; nothing about meals can be changed on a board.
 
-- **Home:** **Today's meals** above **Today's list**: today's breakfast, snacks, lunch and dinner, each with the face of each person it's for (none when it's for everyone), with each child's school lunch (**Buys** and what the school serves, or **Brings** and what you planned for their lunch, like "Leftover spaghetti" for that child). A lunch planned for a child who brings theirs goes with them; if it's for others too, it stays under **Lunch** with their faces. A day with nothing planned and no school lunch shows nothing.
-- **Meals** in the rail: the whole week, a column a day (today marked) and a row for each meal of the day, then **School lunch**: who buys, with the menu, and who brings, each day; **Weekend** or **No school** when there is none.
+- **Home:** **Today's meals** above **Today's list**: today's breakfast, snacks, lunch and dinner, each with the face of each person it's for (none when it's for everyone), with each child's school lunch (**Buys** and the day's entree choices, or **Brings** and what you planned for their lunch, like "Leftover spaghetti" for that child). A tap on a buy day's choices shows the day's whole menu by section. A lunch planned for a child who brings theirs goes with them; if it's for others too, it stays under **Lunch** with their faces. A day with nothing planned and no school lunch shows nothing.
+- **Meals** in the rail: the whole week, a column a day (today marked) and a row for each meal of the day, then **School lunch**: who buys and who brings, each day; **Weekend** or **No school** when there is none. Under it, **School menu** and the menu's name, then a row a section (**Entree**, **Fruits & Vegetables**, **Milk**): each day's options a line each, what comes with one in grey after "with". The menu shows on every school day, whoever buys.
 - **A person's screen:** their part of today's meals: what's for everyone, and each thing they are one of the people for.
 
 ![The board's Meals screen: Meals this week, Sunday to Saturday with today marked; breakfast, snacks and lunch where planned, a dinner every day; School lunch with Leo buying and Maya bringing, No school tomorrow and the weekend.](guide/img/board-meals-week.jpg "Meals on the board: the week")
+
+![The board's Meals screen scrolled down: School lunch, then School menu · Maple Elementary with a row for Entree, Fruits & Vegetables and Milk, each day's options a line each; today's entrees are Cheese Pizza and Turkey sandwich with Pretzels.](guide/img/board-meals-menu.jpg "Meals on the board: the school menu by section")
+
+![Leo's lunch menu open over the home screen: Leo buys lunch today, the Entree, Fruits & Vegetables and Milk sections each with their options, and Close.](guide/img/board-lunch-menu.jpg "A buy day's whole menu, from a tap on the home screen")
 
 ## Part B — User Manual
 
@@ -1098,7 +1105,7 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | Invite | **Join** (household): **Join household**, or **Create account and join**, or **Sign out** to switch account. |
 
 #### B1.15 Meals
-<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-708 -->
+<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-708 US-804 -->
 
 | Part | What it shows or does |
 |---|---|
@@ -1107,11 +1114,11 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | The week | Each day (today marked) with **Breakfast**, **Snack**, **Lunch** and **Dinner**: what is planned in order, with each person it's for and its note; **Change** (**Earlier**, **Later**, **Remove**); **Add**. |
 | **Add to the plan** | **Day**, **Meal**, **What** (**From the library** or **Something else**), **For** (**Everyone**, or a tick per person; "For Maya and Leo." under it), **Note (optional)**, **Add to the plan**. |
 | **Copy last week** | **Keep it** or **Replace it with last week's**, **Copy last week here**. |
-| **School lunch** | **School menus**. Each child's week: **Buy** or **Bring** on school days (a tap changes it; **Changed** marks a change; a buy day shows what the school serves, or **No menu yet**), **Weekend**, **Break** or **No school** otherwise; **Usual week**, Monday to Friday, and **School menu**, **Save** (name)**'s usual lunches**. |
+| **School lunch** | **School menus**. Each child's week: **Buy** or **Bring** on school days (a tap changes it; **Changed** marks a change; a buy day shows what the school serves, a line a section, or **No menu yet**), **Weekend**, **Break** or **No school** otherwise; **Usual week**, Monday to Friday, and **School menu**, **Save** (name)**'s usual lunches**. |
 
 **The meal library:** **Add a meal** (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe link (optional)**, **Icon**, **Add meal**); **Our meals**, each with what it's good for and its recipe, **Edit** and **Archive**; **Archived**, with **Restore**.
 
-**School menus:** each menu with where it comes from (**From Nutrislice**, **From a file**, **Typed in**), whose lunch it is, and for Nutrislice **Fetched**, **Not fetched yet** or **Can't fetch** (why, and when it last worked); its next four weeks, each day with **Change** (**What's for lunch**, **No lunch that day**, **Note (optional)**, **Save the day**; a day you wrote is **Yours**, with **Use Nutrislice's menu again**, or **Remove** for a file's); **Load a file into** (name) (**Menu file (CSV)**, **Look at the file**, **Load** N **days**); **Add a day to** (name); **Fetch** (name) **now**; **Rename** and **Remove**. **Add a school menu:** **Name**, **Where the menu comes from**, and for Nutrislice **Your district on Nutrislice**, **Find the schools**, **School and menu**; **Add the menu**.
+**School menus:** each menu with where it comes from (**From Nutrislice**, **From a file**, **Typed in**), whose lunch it is, and for Nutrislice **Fetched**, **Not fetched yet** or **Can't fetch** (why, and when it last worked); its next four weeks, each day's menu a line a section, each day with **Change** (**What's for lunch**: a section a line, "or" between options, "with" before a side; **No lunch that day**, **Note (optional)**, **Save the day**; a day you wrote is **Yours**, with **Use Nutrislice's menu again**, or **Remove** for a file's); **Load a file into** (name) (**Menu file (CSV)**, **Look at the file**, **Load** N **days**); **Add a day to** (name); **Fetch** (name) **now**; **Rename** and **Remove**. **Add a school menu:** **Name**, **Where the menu comes from**, and for Nutrislice **Your district on Nutrislice**, **Find the schools**, **School and menu**; **Add the menu**.
 
 
 #### B1.16 Family options
@@ -1173,7 +1180,7 @@ flowchart TD
 The board's name is beside the date.
 
 #### B2.2 Home
-<!-- covers: US-1001 US-1006 US-705 -->
+<!-- covers: US-1001 US-1006 US-705 US-804 -->
 
 | Part | What it shows or does |
 |---|---|
@@ -1183,7 +1190,7 @@ The board's name is beside the date.
 | **Goals** card | Every goal in play, whose (an avatar or **Family**), a meter per rule, when it ends; "Reached! A grown-up will sort out the reward." Tap one: that child's screen (a family goal: **Chores**). |
 | **Waiting for a parent** card | "Asked for" rewards with their cost, and check-offs to approve ("Homework: check it's done"). Parents decide them in the admin app. Tap one: the child who asked. |
 | **Coming up** card | Up to five all-day events in the next three weeks, with "Tomorrow" or "In N days". Tap one: **Calendar** on that day. |
-| **Today's meals** | Above **Today's list**, on a day with meals planned, unless the layout hides it: **Breakfast**, **Snack**, **Lunch**, **Dinner**, each thing planned with its picture and, when it's one person's, their face. On **Lunch**, each child: **Buys** and the school's menu (or **No menu yet**), or **Brings** and what is planned for their lunch. Nothing to tap. |
+| **Today's meals** | Above **Today's list**, on a day with meals planned, unless the layout hides it: **Breakfast**, **Snack**, **Lunch**, **Dinner**, each thing planned with its picture and, when it's one person's, their face. On **Lunch**, each child: **Buys** and the day's entree choices on one line (or **No menu yet**), or **Brings** and what is planned for their lunch. Tap a buy day's choices: the day's whole menu, a section at a time, with **Close**. |
 
 #### B2.3 A person's screen
 <!-- covers: US-1002 US-1102 US-1108 US-403 -->
@@ -1264,14 +1271,15 @@ Every state is an icon, a word and a color together, in both themes. The board u
 ![Tiles in every state: To do, Done!, Waiting for a parent, Approved, Try again, Skipped today, Missed, Overdue, Past its time, Done! by Maya, Covered by Maya, and a private item as the admin app shows it.](guide/img/tile-states.jpg "Every state, as a tile")
 
 #### B2.9 Meals
-<!-- covers: US-705 US-708 -->
+<!-- covers: US-705 US-708 US-804 -->
 
 | Part | What it shows or does |
 |---|---|
 | **Meals this week** | The household week, first day to last ("Sun, Oct 11 to Sat, Oct 17"). |
 | Days | A column each; today's heading says **Today** and its column stands out. |
 | **Breakfast**, **Snack**, **Lunch**, **Dinner** | A row each: what's planned, with its picture and the face of each person it's for (none when it's for everyone); "–" for nothing. **Dinner** always shows; the others when planned on some day that week. |
-| **School lunch** | Each child who has school that day: **Buys** and the school's menu (or **No menu yet**), or **Brings** and what is planned for their lunch. **Weekend**, **Break** or **No school** on a day none of them has school. |
+| **School lunch** | Each child who has school that day: **Buys** (or **No menu yet**), or **Brings** and what is planned for their lunch. **Weekend**, **Break** or **No school** on a day none of them has school. |
+| **School menu** · (name) | The children's school menu, a row a section (**Entree**, **Fruits & Vegetables**, **Milk**): each day's options a line each, a side after "with"; "–" on a day it has nothing. A menu for each when the children's lunches come from different ones. |
 | Read-only | Nothing here is a button: meals are planned on **Meals** in the admin app. |
 
 ### B3 Rules and limits
@@ -1513,7 +1521,7 @@ These are planned but not built yet. This guide will cover each as it arrives.
 - **Goal meters offline** that move with check-offs not yet saved.
 - **A meal for some of us:** **Add to the plan** for any mix of people, not just everyone or one.
 - **An alert when something waits for you:** a phone notification when a check-off needs your OK or a child asks for a reward, if you have notifications on.
-- **The school menu as choices:** a buy day's menu shown by section (entree, fruits and vegetables, milk) instead of one long line, and children picking their lunch from it on the board with next week's buy or bring.
+- **Picking lunch on the board:** children choosing next week's buy or bring on the board and, on a day they buy, their entree, fruits and vegetables and milk from the menu.
 - **A board in portrait:** a board on a screen hung taller than it is wide lays every screen out for it by itself (**Automatic**), or you can fix it to **Portrait** or **Landscape** on Boards.
 
 ### B8 Stories this guide covers

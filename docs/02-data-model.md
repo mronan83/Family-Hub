@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.44: the school menu by section, as options (WP-64, D-94): `school_menu_day.items[]` keeps `option` (`private.menu_items()` checks it is 1 to 60); `lunch_week()` gives `menu_name` and the day's menu on every school day, buy or bring; each feed's `content_hash` cleared once so its next fetch writes its days with options (§3.6).
 > v0.8.43: planned, not built (D-93): `device.board_config.orientation` and the snapshot's `device.orientation` (WP-68, with WP-58) (§3.1).
 > v0.8.42: a meal for any mix of people (WP-62, D-87): `meal_plan_entry_member` as built, each entry's one person carried over by `private.carry_meal_people()`; `meal_plan_entry.member_id` held empty until a later migration drops it; `add_meal_entry()` takes `member_ids`, `copy_meal_week()` copies them, and `board_snapshot()` gives them (§3.6).
 > v0.8.41: approval alerts as built (WP-63, D-88): `reminder_preference.approval_alerts` and `approvals_on_at`; `reminder_delivery` kind `approval` with `waiting_from` and `waiting_to`; `plan_reminders()` and `claim_reminders()` plan and send them; `private.approvals_waiting()` and `private.approvals_line()` (§3.7).
@@ -572,9 +573,14 @@ A chore can follow a child's lunch (WP-61, D-86): `chore.lunch_days` makes an `e
 - `private.carry_meal_people()` carried each entry's one person over from `meal_plan_entry.member_id` and emptied it; the check `meal_plan_entry_member_id_moved` holds it empty. The column stays for the app deployed before WP-62, and a later migration drops it.
 - `add_meal_entry()` takes `member_ids` (a list; a single `member_id` is still read as a list of one), each the household's and not archived; the admin form sends everyone ticked as none. `copy_meal_week()` copies each entry's people with it. `board_snapshot()`'s `meals.entries[]` gives `member_ids` (and `member_id`, the one person when there is exactly one, for a board still on the app before WP-62).
 
+**As built (WP-64, D-94): the school menu by section, as options.** Migration `20261014152244_menu_options.sql`:
+- `school_menu_day.items[]` is `{name, section?, option?}`: `section` is the title as the menu writes it ("Choice of Entree", up to 60 characters), `option` the option's number within its section, from 1 to 60; a side ("with") shares its option's number. "or" and "with" are not stored as items. `private.menu_items()` keeps `option` and refuses anything but a whole number from 1 to 60 (`bad_menu`). Items stored before have no `option`; the app reads them by the same rules (`lib/menu/sections.ts`).
+- `lunch_week()` gives each child's `menu_name` and the day's menu on every day with a school lunch, buy or bring (before: buy days only), for the board's Meals screen; the app still shows a child's menu only on the days they buy.
+- Each Nutrislice source's `content_hash` was cleared once, so its next fetch writes its days again with options.
+- Tests: pgTAP `420_menu_options.test.sql` (12); `360_school_menus.test.sql`'s day with no menu.
+
 **Planned (D-89; not built):**
-- WP-64: each `school_menu_day.items[]` element gains `option` (its option's number within the section): "or" between items ends an option, and "with" joins the next item to the option before it; the words themselves are not stored as items. `private.menu_items` accepts the new key.
-- WP-49: `lunch_choice` (`household_id`, `member_id`, `lunch_date`, `section`, `options int[]`, `chosen_by_type`, `chosen_by`, `chosen_at`; key `(member_id, lunch_date, section)`): a child's picks on a buy day, checked against that day's menu (one option, or one or more for fruits and vegetables); removed when the day becomes bring.
+- WP-49: `lunch_choice` (`household_id`, `member_id`, `lunch_date`, `section`, `options int[]`, `chosen_by_type`, `chosen_by`, `chosen_at`; key `(member_id, lunch_date, section)`): a child's picks on a buy day, checked against that day's menu (one option in a section whose title says "Choice of", any number in the others, D-94); removed when the day becomes bring. A child's change waits for a parent's approval (D-94).
 
 If the effective mode is `buy`, the board shows `school_menu_day` for `(menu_source, d, 'lunch')`; if `bring`, it shows the planned `meal_plan_entry` for the lunch slot.
 

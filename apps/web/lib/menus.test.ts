@@ -64,22 +64,62 @@ describe('school menus in the admin portal', () => {
         items: [{ name: 'Pizza' }, { name: 'Milk', section: 'Beverages' }],
         noService: false,
       }),
-    ).toBe('Pizza, Milk');
+    ).toBe('Pizza · Beverages: Milk');
+    // [MENU-06] By section, the sections' names shortened, a choice's options joined with "or".
+    expect(
+      menuWords({
+        items: [
+          { name: 'Beef tacos', section: 'Choice of Entree', option: 1 },
+          { name: 'Chicken wrap', section: 'Choice of Entree', option: 2 },
+          { name: 'Tortilla chips', section: 'Choice of Entree', option: 2 },
+          { name: 'Corn', section: 'Fruits & Vegetables offered', option: 1 },
+          { name: 'Orange', section: 'Fruits & Vegetables offered', option: 2 },
+          { name: '1% milk', section: 'Choice of Milk', option: 1 },
+          { name: 'Chocolate milk', section: 'Choice of Milk', option: 2 },
+        ],
+        noService: false,
+      }),
+    ).toBe(
+      'Entree: Beef tacos or Chicken wrap with Tortilla chips · Fruits & Vegetables: Corn, Orange · Milk: 1% milk or Chocolate milk',
+    );
     expect(menuWords({ items: [], noService: true, note: 'Teacher day' })).toBe(
       'No lunch: Teacher day',
     );
   });
 
   it('[US-802] writes items a line each and reads them back, sections and all', () => {
-    const items = [{ name: 'Pizza', section: 'Main Line' }, { name: 'Apple' }];
+    const items = [
+      { name: 'Pizza', section: 'Main Line', option: 1 },
+      { name: 'Apple', option: 1 },
+    ];
     expect(itemsText(items)).toBe('Main Line: Pizza\nApple');
     expect(itemsFrom('Main Line: Pizza\n\n  Apple  \n')).toEqual(items);
+    // [MENU-06] "or" and "with" in a line: options and sides, written back the same way (WP-64).
+    const typed =
+      'Choice of Entree: Beef tacos or Chicken wrap with tortilla chips\nChoice of Milk: 1% milk or Chocolate milk';
+    expect(itemsFrom(typed)).toEqual([
+      { name: 'Beef tacos', section: 'Choice of Entree', option: 1 },
+      { name: 'Chicken wrap', section: 'Choice of Entree', option: 2 },
+      { name: 'tortilla chips', section: 'Choice of Entree', option: 2 },
+      { name: '1% milk', section: 'Choice of Milk', option: 1 },
+      { name: 'Chocolate milk', section: 'Choice of Milk', option: 2 },
+    ]);
+    expect(itemsText(itemsFrom(typed))).toBe(typed);
+    // A section over several lines keeps counting its options.
+    expect(itemsFrom('Sides: Corn\nSides: Peas').map((i) => i.option)).toEqual([1, 2]);
   });
 
   it('[MENU-03][US-802] reads a day typed in: items, or no lunch with a note', () => {
     expect(parseDayForm(form({ date: '2027-02-01', items: 'Pizza\nMilk' }))).toEqual({
       ok: true,
-      value: { date: '2027-02-01', items: [{ name: 'Pizza' }, { name: 'Milk' }], noService: false },
+      value: {
+        date: '2027-02-01',
+        items: [
+          { name: 'Pizza', option: 1 },
+          { name: 'Milk', option: 2 },
+        ],
+        noService: false,
+      },
     });
     expect(
       parseDayForm(form({ date: '2027-02-15', noService: 'on', note: 'Presidents’ Day' })),

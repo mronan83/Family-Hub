@@ -164,6 +164,23 @@ const SHOTS = [
     url: '/dev/board',
     act: (page) => person(page, 'Meals').click(),
   },
+  // [MENU-06] The school menu by section (WP-64): a buy day's whole menu at a tap, and the week's
+  // menu a row a section under School lunch.
+  {
+    name: 'board-lunch-menu',
+    device: 'board',
+    url: '/dev/board',
+    act: (page) => tap(page, 'Show Leo’s whole lunch menu').click(),
+  },
+  {
+    name: 'board-meals-menu',
+    device: 'board',
+    url: '/dev/board',
+    act: async (page) => {
+      await person(page, 'Meals').click();
+      await page.locator('.fw-mweek__wrap').evaluate((el) => (el.scrollTop = el.scrollHeight));
+    },
+  },
   {
     name: 'board-shop',
     device: 'board',

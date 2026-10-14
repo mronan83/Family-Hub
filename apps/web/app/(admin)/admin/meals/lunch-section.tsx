@@ -2,13 +2,14 @@ import { Button, Icon } from '@familywise/ui';
 import Link from 'next/link';
 import { dayName } from '@/lib/board-calendar';
 import { type LunchChild, MODE_WORDS, noLunchWords, WEEKDAY_WORDS, WEEKDAYS } from '@/lib/lunch';
-import { menuWords } from '@/lib/menus';
 import { setLunchDay, setUsualLunch } from './actions';
+import { MenuText } from './menu-text';
 
 /**
  * [MEAL-04][US-703] School lunch for the week: each child's school days, buy or bring, a tap to
  * change one (a day changed from the usual says so); days with no school lunch say why. [MEAL-05]
- * A buy day shows what the school serves, from the child's school menu (WP-27). Then each child's
+ * A buy day shows what the school serves, from the child's school menu (WP-27), a line a section
+ * (WP-64). Then each child's
  * usual week, Monday to Friday, and the school menu their lunch comes from.
  */
 export function LunchSection({
@@ -74,7 +75,7 @@ export function LunchSection({
                           {d.changed ? <span className="fw-lunch__changed">Changed</span> : null}
                           {d.mode === 'buy' && c.menuSourceId ? (
                             <span className="fw-lunch__menu">
-                              {d.menu ? menuWords(d.menu) : 'No menu yet'}
+                              {d.menu ? <MenuText day={d.menu} /> : 'No menu yet'}
                             </span>
                           ) : null}
                         </form>

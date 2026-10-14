@@ -2785,6 +2785,20 @@ span.fw-heat__cell {
   white-space: normal;
   overflow-wrap: anywhere;
 }
+/* [MENU-06][D-94] A day's menu in the admin app, a line a section, its name small above (WP-64). */
+.fw-menu-text {
+  position: relative; /* keeps the hidden ": " inside a table that scrolls sideways */
+  display: grid;
+  gap: var(--s-1);
+}
+.fw-menu-text__label {
+  display: block;
+  color: var(--text-soft);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 .fw-menu-days {
   display: grid;
   gap: var(--s-2);
@@ -3504,6 +3518,59 @@ span.fw-heat__cell {
   color: var(--primary-text);
 }
 
+/* [MENU-06][D-94] A buy day's entree options on one line, cut short with "…"; a tap shows the whole
+   menu (WP-64). */
+.fw-meals__menu {
+  display: flex;
+  flex: 1 1 12em; /* under the face and Buys, the whole width, when it can't fit beside them */
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+  min-height: var(--touch-min);
+  padding: 0 var(--s-2);
+  border: var(--border-w) solid transparent;
+  border-radius: var(--r-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fw-meals__menu:hover {
+  border-color: var(--line);
+}
+.fw-meals__menu > svg {
+  flex: none;
+  color: var(--primary-text);
+}
+.fw-meals__menu-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fw-menu__options {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-menu__with {
+  color: var(--text-soft);
+  font-weight: 500;
+}
+.fw-menu__sections {
+  grid-template-columns: max-content minmax(0, 1fr);
+}
+.fw-menu__section {
+  display: contents;
+}
+.fw-menu__options li {
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
 /* [MEAL-06][D-80] The Meals screen (WP-28): the week, a column a day; today stands out. */
 .fw-mweek {
   display: grid;
@@ -3610,6 +3677,18 @@ span.fw-heat__cell {
 .fw-mweek__empty {
   color: var(--text-soft);
   font-size: var(--t-small);
+}
+/* [MENU-06][D-94] The week's school menu (WP-64): its name across the grid, then a row a section,
+   each option on a line of its own. */
+.fw-mweek__grid .fw-mweek__menu-head th {
+  padding-top: var(--s-4);
+  color: var(--primary-text);
+  font-size: var(--t-small);
+}
+.fw-mweek__grid tr[data-slot='menu'] td {
+  font-size: var(--t-small);
+  font-weight: 600;
+  line-height: 1.22;
 }
 
 /* [CAL-04] The month: a dot per calendar with something on a day; a tap opens the day. */

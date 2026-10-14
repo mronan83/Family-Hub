@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { dayHead, hasMeals, mealDay, noLunchReason, readMeals, weekDates } from './board-meals';
+import {
+  dayHead,
+  hasMeals,
+  mealDay,
+  noLunchReason,
+  readMeals,
+  weekDates,
+  weekMenus,
+} from './board-meals';
 
 // A made-up week from Sunday, Oct 11: Ava buys Monday (her school's menu has it) and Tuesday (it has
 // nothing yet), and brings Wednesday; Ben brings Monday.
@@ -125,8 +133,31 @@ describe('meals on the board', () => {
     // Ben brings his lunch: what's planned for his lunch is what he brings.
     expect(day.slots.lunch).toEqual([]);
     expect(day.lunch).toEqual([
-      { memberId: 'ava', mode: 'buy', menu: 'Cheese Pizza, Milk', noMenu: false, packed: [] },
-      { memberId: 'ben', mode: 'bring', menu: null, noMenu: false, packed: ['Leftover tacos'] },
+      // A menu with no sections can't say which is the entree: everything, with commas (WP-64).
+      {
+        memberId: 'ava',
+        mode: 'buy',
+        menu: 'Cheese Pizza, Milk',
+        sections: [
+          {
+            title: null,
+            options: [
+              { name: 'Cheese Pizza', sides: [] },
+              { name: 'Milk', sides: [] },
+            ],
+          },
+        ],
+        noMenu: false,
+        packed: [],
+      },
+      {
+        memberId: 'ben',
+        mode: 'bring',
+        menu: null,
+        sections: null,
+        noMenu: false,
+        packed: ['Leftover tacos'],
+      },
     ]);
     expect(hasMeals(day)).toBe(true);
   });
@@ -180,7 +211,7 @@ describe('meals on the board', () => {
   it('[MEAL-05] a buy day her school’s menu has nothing for says so; a bring day has no menu', () => {
     const meals = readMeals(raw);
     expect(mealDay(meals, '2026-10-13').lunch).toEqual([
-      { memberId: 'ava', mode: 'buy', menu: null, noMenu: true, packed: [] },
+      { memberId: 'ava', mode: 'buy', menu: null, sections: null, noMenu: true, packed: [] },
     ]);
     expect(mealDay(meals, '2026-10-14').lunch[0]).toMatchObject({ mode: 'bring', noMenu: false });
   });
@@ -214,5 +245,88 @@ describe('meals on the board', () => {
     expect(weekDates('2026-10-31').at(-1)).toBe('2026-11-06');
     expect(dayHead('2026-10-12')).toBe('Mon 12');
     expect(dayHead('2026-10-12', true)).toBe('Mon, Oct 12');
+  });
+
+  it('[MENU-06][US-804] by section: a buy day’s entree options, and the week’s menu a row a section', () => {
+    const menu = (entree: string, fruit: string) => ({
+      items: [
+        { name: entree, section: 'Choice of Entree', option: 1 },
+        { name: 'Chicken wrap', section: 'Choice of Entree', option: 2 },
+        { name: 'Tortilla chips', section: 'Choice of Entree', option: 2 },
+        { name: fruit, section: 'Fruits & Vegetables offered', option: 1 },
+        { name: '1% milk', section: 'Choice of Milk', option: 1 },
+      ],
+      no_service: false,
+      note: null,
+    });
+    const meals = readMeals({
+      week_from: '2026-10-11',
+      entries: [],
+      lunch: [
+        {
+          member_id: 'leo',
+          usual: {},
+          menu_source_id: 'maple',
+          menu_name: 'Maple Elementary',
+          days: [
+            { date: '2026-10-11', day_type: 'weekend', mode: null, changed: false, menu: null },
+            {
+              date: '2026-10-12',
+              day_type: 'school_day',
+              mode: 'buy',
+              changed: false,
+              menu: menu('Beef tacos', 'Corn'),
+            },
+            {
+              date: '2026-10-13',
+              day_type: 'school_day',
+              mode: 'bring',
+              changed: false,
+              menu: menu('Pizza', 'Pear'),
+            },
+            {
+              date: '2026-10-14',
+              day_type: 'school_day',
+              mode: 'buy',
+              changed: false,
+              menu: { items: [], no_service: true, note: 'Teacher day' },
+            },
+          ],
+        },
+      ],
+    });
+    // The home screen: the entree's options, sides and all, and the whole menu for its details.
+    const [mon] = mealDay(meals, '2026-10-12').lunch;
+    expect(mon!.menu).toBe('Beef tacos or Chicken wrap with Tortilla chips');
+    expect(mon!.sections!.map((s) => s.title)).toEqual([
+      'Choice of Entree',
+      'Fruits & Vegetables offered',
+      'Choice of Milk',
+    ]);
+    // A bring day's line is what they bring, not the school's menu.
+    expect(mealDay(meals, '2026-10-13').lunch[0]).toMatchObject({ menu: null, sections: null });
+    expect(mealDay(meals, '2026-10-14').lunch[0]).toMatchObject({
+      menu: 'No lunch: Teacher day',
+      sections: null,
+    });
+    // The Meals screen: the menu by name, a row a section, on every day with a school lunch.
+    const [maple] = weekMenus(meals);
+    expect(maple!.name).toBe('Maple Elementary');
+    expect(maple!.rows).toEqual([
+      { title: 'Choice of Entree', label: 'Entree' },
+      { title: 'Fruits & Vegetables offered', label: 'Fruits & Vegetables' },
+      { title: 'Choice of Milk', label: 'Milk' },
+    ]);
+    expect([...maple!.days.keys()]).toEqual(['2026-10-12', '2026-10-13', '2026-10-14']);
+    expect(maple!.days.get('2026-10-13')!.sections[0]!.options[0]!.name).toBe('Pizza');
+    expect(maple!.days.get('2026-10-14')).toEqual({
+      noService: 'No lunch: Teacher day',
+      sections: [],
+    });
+    // No child on a menu, or nothing in it this week: no rows.
+    expect(weekMenus(readMeals(raw))).toEqual([
+      expect.objectContaining({ sourceId: 'm1', name: 'School menu' }),
+    ]);
+    expect(weekMenus(null)).toEqual([]);
   });
 });

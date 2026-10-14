@@ -88,7 +88,8 @@ test('[MENU-03][US-802] a day the parent changed is theirs; the feed’s days ca
   await monday.locator('summary').click();
   await expect(monday.getByRole('button', { name: /Nutrislice/ })).toHaveCount(0);
   await expect(monday.getByLabel('What’s for lunch')).toHaveValue(
-    'Main Line: Chicken Nuggets\nMain Line: Carrot Sticks\nMain Line: Apple',
+    // [MENU-06] A section a line, its options joined with "or" (WP-64).
+    'Main Line: Chicken Nuggets or Carrot Sticks or Apple',
   );
 });
 

@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.109: WP-64 done: the school menu by section, as options (D-94; mockup approved with WP-49's choice screens). The owner's answers for WP-49 recorded in its section; WP-49 is ready, its parent's approval screen and the morning cut-off's time to settle first.
 > v0.8.108: a board in portrait or landscape added at the owner's request to WP-58's scope (D-93), recorded only: more than one L together, so WP-58 stays the iPhone and its portrait boards are WP-68 (L, its own mockup first), which follows it. WP-58's place in the order is unchanged. WP-68's orientation has **Automatic** (the default, following the screen's shape), added at the owner's request.
 > v0.8.107: WP-62 done: a meal for any mix of people (D-87). Deferred: dropping `meal_plan_entry.member_id`, held empty until then.
 > v0.8.106: WP-63 done: an alert when something waits for a parent (D-88).
@@ -202,7 +203,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-46 | More icons, one icon picker, sixteen colors | P3 | M | WP-08, WP-22, WP-37 | Done (PR #47) |
 | WP-47 | The board fits its screen; text size per board | P3 | M | WP-06, WP-35 | Done (PR #50) |
 | WP-48 | The home screen on one screen, with a rail | P3 | M | WP-35, WP-47 | Done (PR #52) |
-| WP-49 | Next week's lunches picked on the board, with the day's choices | P2 | L | WP-26, WP-27, WP-28, WP-64 | Queued (mockups first) |
+| WP-49 | Next week's lunches picked on the board, with the day's choices | P2 | L | WP-26, WP-27, WP-28, WP-64 | Ready (choice screens approved with WP-64's mockup; the parent's approval screen first) |
 | WP-50 | A calendar for one or more people | P2 | S | WP-22, WP-23 | Ready |
 | WP-51 | One admin menu, with Settings and Tags | P3 | M | WP-03, WP-08 | Done (PR #60) |
 | WP-52 | The board's calendar as a time grid | P3 | M | WP-23, WP-48 | Done (PR #61) |
@@ -217,7 +218,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-61 | Chores on lunch days | P2 | S | WP-26, WP-43 | Done (PR #66) |
 | WP-62 | A meal for any mix of people | P2 | S | WP-25, WP-28 | Done |
 | WP-63 | An alert when something waits for a parent | P2 | S | WP-40, WP-12, WP-18 | Done |
-| WP-64 | The school menu by section, as options | P2 | M | WP-27, WP-28 | Ready (mockups first) |
+| WP-64 | The school menu by section, as options | P2 | M | WP-27, WP-28 | Done |
 | WP-65 | First-attempt e2e passes: CAL-05 and DEV-06 | P3 | S | WP-60 | Merged; the next five runs' tally to record |
 | WP-66 | The docs pages republished by a sub-agent | P3 | S | WP-01 | Done |
 | WP-67 | Stale lines in `00-README` | P3 | S | WP-01 | Done |
@@ -951,8 +952,8 @@ flowchart LR
 ### WP-49 — Next week's lunches picked on the board, with the day's choices
 **Phase:** P2 · **Size:** L · **Depends on:** WP-26, WP-27, WP-28, WP-64 · **Reqs:** MEAL-09, MEAL-11
 - The owner's family sits down on Sundays to choose buy or bring for the coming school week; they want the child to do it at the board, not a parent in the admin app. A **Lunches** screen on the board (from **Meals**, and from a child's own screen) shows a child's coming school week: each day's school menu and **Buy** or **Bring**, the usual choice already set; a tap changes a day (through `set_lunch()` as the board, with who changed it recorded). A household item, "Pick next week's lunches", can open it: tapping it on the list opens the child's coming week, and **Done** there checks the item off for them.
-- To settle at the mockups: which week is "coming" on each day (recommended: Monday to Friday after today, so Sunday shows the next five school days); whether today and earlier days are locked (recommended: yes); whether a parent approves a change (recommended: no; Meals shows each change and who made it, as a check-off does); and how an item is linked to the screen (recommended: an item's "opens" setting, Lunches, set on the item in Chores).
-- **The day's choices** (D-89, the owner's): on a day the child buys, they also pick from that day's menu, read as WP-64 reads it: one entree, one or more fruits and vegetables (the school offers several), one milk. Picks are kept per child and day (`lunch_choice`: member, date, section, the options picked, who picked them) and checked against that day's menu; a menu changed after a pick keeps the pick and marks it **Menu changed**. The board then shows the picks in place of the options (Today's meals and the Meals screen), and a parent sees and can change them on **Meals**. A day changed to **Bring** drops its picks.
+- Settled at WP-64's mockup (D-94, the owner's answers, 14 October): the coming week is Monday to Friday immediately after a Sunday; earlier days are locked, and today can still be changed in the morning, until a cut-off (recommended: 8:00 am by default, a household setting; its time to confirm at the start); **a parent approves a child's change** (the owner's, over the recommendation of no: the change waits on **Today** in the admin app as a check-off does, and its screen needs a mockup); an item opens Lunches through its "opens" setting, set on the item in Chores. The choice screens (the week, a day's choices, and the picks shown in place of the options) were approved with WP-64's mockup.
+- **The day's choices** (D-89, the owner's): on a day the child buys, they also pick from that day's menu, read as WP-64 reads it: one option in each section whose title says "Choice of" (the entree, the milk), any number in the others (fruits and vegetables: the school offers several) (D-94). Picks are kept per child and day (`lunch_choice`: member, date, section, the options picked, who picked them) and checked against that day's menu; a menu changed after a pick keeps the pick and marks it **Menu changed**. The board then shows the picks in place of the options (Today's meals and the Meals screen), and a parent sees and can change them on **Meals**. A day changed to **Bring** drops its picks.
 - **Done when:** on the preview, a weekly item opens Maya's coming week on a paired board, a day changed there shows as changed on Meals in the admin app within 3 seconds, and **Done** checks the item off for her; on a buy day she picks an entree, two fruits and a milk, and the board's home screen shows her entree that day instead of the options.
 
 ### WP-50 — A calendar for one or more people
@@ -1073,6 +1074,13 @@ flowchart LR
 - **Board:** the home screen shows a buy day's entree options only ("Pizza or Chicken wrap"), within one line where it fits; **Meals** shows each section with its options. **Meals** in the admin app shows the same.
 - Mockups first, with WP-49's choices, so both read the same.
 - **Done when:** unit tests on made-up menus (or, with, sections, none); on the preview, a made-up feed's day shows its entree options on the board's home screen and three sections on Meals, and the long line is gone.
+- As built (D-94; the mockup approved by the owner, with their answers: sides shown, one line cut short and tapped for the whole menu, a row a section on Meals, the entree the section saying entree or main, titles shortened to show):
+  - **Reading:** `lib/menu/sections.ts` (`withOptions()`, `menuSections()`, `sectionLabel()`, `entreeSection()`, `entreeWords()`, `pickOne()` for WP-49), used by `readWeek()` (a feed's "or" and "with" items), `parseMenuCsv()` and `itemsFrom()` ("or" and "with" in an item or a line). A day typed in is a section a line; the form writes a day back the same way.
+  - **Migration** `20261014152244_menu_options.sql`: `private.menu_items()` keeps `option` (1 to 60); `lunch_week()` gives `menu_name` and the menu on every school day, buy or bring; each feed's content hash cleared so its next fetch writes options. Days stored before are read by the same rules meanwhile. The demo family's seed menu is by section.
+  - **Board:** the home screen's buy day is the entree's options with their sides on one line, cut short with "…", a 56 px tap target opening the day's whole menu (`LunchDetails`); a person's own screen the same. **Meals:** under School lunch (Buys or Brings only), **School menu** · the menu's name, then a row a section, each day's options a line each, sides in the softer colour after "with" (`weekMenus()`).
+  - **Admin app:** **Meals**' School lunch and **School menus** show a day a line a section (`MenuText`), and the file preview the same.
+  - **Tests:** Vitest `menu/sections.test.ts` (or, with, sections, none, stored before WP-64, a file), `board-meals.test.ts` (the home line, `weekMenus()`), `menus.test.ts`, `menu/menu.test.ts`; pgTAP `420_menu_options.test.sql` (12) and `360_school_menus.test.sql`; UI suite `board-meals.spec.ts` (**[MENU-06][US-804]** one line, the tap, the rows), `meals.spec.ts`, `menus.spec.ts`; e2e `board-meals.spec.ts` (**[MENU-06][US-804]** the done-when, through the menu_import job's own code and a made-up feed) and `menus.spec.ts`.
+  - A menu with no sections can't say which is the entree: the home screen lists it with commas, as before.
 
 ### WP-65 — First-attempt e2e passes: CAL-05 and DEV-06
 **Phase:** P3 · **Size:** S · **Depends on:** WP-60 · **Reqs:** NFR-14

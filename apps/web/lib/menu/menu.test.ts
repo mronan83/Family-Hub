@@ -105,14 +105,14 @@ describe('the Nutrislice adapter', () => {
       {
         date: '2027-02-01',
         items: [
-          { name: 'Cheese Pizza', section: 'Main Line' },
-          { name: 'Green Beans', section: 'Main Line' },
-          { name: '1% Milk', section: 'Beverages' },
+          { name: 'Cheese Pizza', section: 'Main Line', option: 1 },
+          { name: 'Green Beans', section: 'Main Line', option: 2 },
+          { name: '1% Milk', section: 'Beverages', option: 1 },
         ],
         noService: false,
       },
       { date: '2027-02-02', items: [], noService: true, note: 'No School - Teacher Day' },
-      { date: '2027-02-03', items: [{ name: 'Tacos' }], noService: false },
+      { date: '2027-02-03', items: [{ name: 'Tacos', option: 1 }], noService: false },
     ]);
     expect(() => readWeek({ days: 'no' })).toThrow();
   });
@@ -161,12 +161,12 @@ describe('a menu file', () => {
       {
         date: '2027-02-01',
         items: [
-          { name: 'Cheese Pizza', section: 'Main Line' },
-          { name: '1% Milk', section: 'Beverages' },
+          { name: 'Cheese Pizza', section: 'Main Line', option: 1 },
+          { name: '1% Milk', section: 'Beverages', option: 1 },
         ],
         noService: false,
       },
-      { date: '2027-02-02', items: [{ name: 'Tacos' }], noService: false },
+      { date: '2027-02-02', items: [{ name: 'Tacos', option: 1 }], noService: false },
       { date: '2027-02-15', items: [], noService: true, note: "Presidents' Day" },
     ]);
   });
