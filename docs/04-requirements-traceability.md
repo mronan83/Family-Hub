@@ -90,6 +90,10 @@
 | MEAL-08 | A slot shall allow multiple ordered entries (for example snacks), scoped to the household or a member (any set of members since MEAL-10). | S | P2 | Derived |
 | MEAL-10 | A planned meal shall be for everyone or for any set of members; the board shows each one's face, a person's own screen shows the entries that include them, and copying a week keeps each entry's people. | M | P2 | User |
 | MEAL-11 | On a buy day of the coming week, a child shall pick from the day's menu on the board: one option in each section whose title says "Choice of" (the entree, the milk) and any number in the others (fruits and vegetables), each section's options as MENU-06 reads them; the board then shows the picks, and a parent sees and can change them on Meals. | S | P2 | User |
+| MEAL-12 | The admin app's Home shall have a quick action that opens the school lunch picks in one tap: the current week Monday to Friday, the coming week on Saturday and Sunday, on the child last chosen (D-98). | S | P3 | User |
+| MEAL-13 | The school lunch week in the admin app shall be a stacked list of Monday to Friday, on every screen size with no sideways scroll: each day collapsed to its weekday, date, Buy or Bring and a checkmark when its selection is complete, and expanded to change Buy or Bring and pick from the day's menu sections, picks checked and highlighted; a day without school greyed as "No school"; today outlined (D-98). | M | P2 | User |
+| MEAL-14 | The meal planner's days shall be collapsible sections, all collapsed at first: each shows its weekday, date and "X of Y set" (a checkmark when all are set), and expands to the day's meals with Add and Change as before; today outlined (D-98). | S | P2 | User |
+| MEAL-15 | A planned meal shall be editable: Change offers Edit, which opens the meal's form filled with what was saved, and Remove. | S | P2 | User |
 | MENU-01 | Admins shall configure a menu source and link it to a child's school profile. | M | P2 | User |
 | MENU-02 | Menu import shall use a pluggable adapter interface (Nutrislice, SchoolCafe, Linq Connect, CSV, manual). | M | P2 | Design |
 | MENU-03 | Admins shall import menus from CSV or edit a day manually; edits are overrides that adapters never overwrite. | M | P2 | Design |
@@ -106,6 +110,7 @@
 | BRD-08 | The board shall fit the screen it is on (its 1920×1080 logical layout zoomed to the screen, with no sideways scroll), and admins shall set each board's text size: Smaller, Standard, Larger or Largest (D-73). | S | P3 | User |
 | BRD-09 | The board's home screen shall fit one screen with no page scroll (each part scrolling inside itself, with the people in a rail beside it), and a family member shall be able to change the calendar's view on the board (Month, 7, 5 or 3 days), back to the board's own after the idle return (D-74). | S | P3 | User |
 | BRD-10 | Admins shall set each board's orientation: Automatic (the default, following the screen's shape: portrait when taller than wide), Landscape or Portrait. A portrait board lays out every board screen for a tall screen, on a 1080×1920 logical canvas fitted to the screen as BRD-08, with BRD-03's sizes and BRD-09's one-screen home; the screen's own rotation is its computer's display setting (D-93). | S | P3 | User |
+| BRD-11 | The board's layout shall adapt to its screen's width and shape (a wall panel, a laptop, a tablet in landscape or portrait), each laid out for its shape at the board's sizes rather than one 1920×1080 layout zoomed to fit; a phone (WP-58) and a portrait board (WP-68) use the same layouts (D-97). | M | P3 | User |
 | NFR-01 | The board shall remain functional offline for at least 24 hours from cached data. | M | P1 | Design |
 | NFR-02 | The board shall target a 3840×2160 32" panel, laid out at 1920×1080 logical px with device scale factor 2, be interactive in under 2 s from cache on a Pi 5, and give check-off feedback under 100 ms. | M | P1 | User |
 | NFR-03 | Child-facing interactions shall tolerate imprecise touch (debounce, confirm destructive actions). | M | P1 | Design |
@@ -215,6 +220,10 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | MEAL-09 | US-707 | WP-49 | BRD, API, DB, ADM | lunch_override, member_lunch, school_menu_day, chore, lunch_request, household_settings | U, DB, E2E |
 | MEAL-10 | US-708 | WP-62 | ADM, BRD, DB | meal_plan_entry, meal_plan_entry_member | U, DB, E2E |
 | MEAL-11 | US-707 | WP-49 | BRD, ADM, DB | school_menu_day, lunch_choice, lunch_request | U, DB, E2E |
+| MEAL-12 | US-709 | WP-73 | ADM | lunch_override, member_lunch, lunch_choice | U, E2E |
+| MEAL-13 | US-710 | WP-74 | ADM | lunch_override, member_lunch, lunch_choice, school_menu_day | U, E2E |
+| MEAL-14 | US-711 | WP-75 | ADM | meal_plan_entry | U, E2E |
+| MEAL-15 | US-701 | WP-76 | ADM, DB | meal_plan_entry, meal_plan_entry_member | U, DB, E2E |
 | MENU-01 | US-801 | WP-27 | ADM, MENUIMP | menu_source, member_lunch | U, DB, E2E |
 | MENU-02 | US-801 | WP-27 | MENUIMP | menu_source | U, DB, E2E |
 | MENU-03 | US-802 | WP-27 | ADM, MENUIMP | school_menu_day | U, DB, E2E |
@@ -228,9 +237,10 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | BRD-05 | US-1004 | WP-35 | ADM, BRD | household_settings, device | E2E |
 | BRD-06 | US-1005 | WP-14, WP-35 | BRD | — | E2E |
 | BRD-07 | US-1006 | WP-11, WP-35 | BRD, API | chore_occurrence, chore_occurrence_assignee | E2E |
-| BRD-08 | US-1007 | WP-47, WP-58 | BRD, ADM | device | E2E, U |
-| BRD-09 | US-1008 | WP-48 | BRD | — | E2E |
+| BRD-08 | US-1007 | WP-47, WP-58, WP-71 | BRD, ADM | device | E2E, U |
+| BRD-09 | US-1008 | WP-48, WP-71 | BRD | — | E2E |
 | BRD-10 | US-1009 | WP-68 | BRD, ADM, DB | device | U, DB, E2E |
+| BRD-11 | US-1010 | WP-72 | BRD | — | U, E2E |
 | NFR-01 | US-205 | WP-13, WP-44 | OUTBOX, BRD | — | E2E, U, HW |
 | NFR-02 | US-905 | WP-14 | BRD, PI | — | HW, E2E |
 | NFR-03 | US-905 | WP-11 | BRD | — | HW, E2E |
@@ -253,7 +263,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-13 | US-910 | WP-37, WP-46 | BRD, ADM, UI | — | E2E, REV |
 | NFR-14 | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67 | CICD | — | CI, REV |
 | NFR-15 | US-107 | WP-51 | ADM, UI | chore_occurrence, tag, calendar_source, device, reminder_preference | U, E2E |
-| NFR-16 | US-912 | WP-53 | ADM, BRD, UI | — | E2E, CI |
+| NFR-16 | US-912 | WP-53, WP-71 | ADM, BRD, UI | — | E2E, CI |
 | NFR-17 | US-109 | WP-57 | ADM, DB, UI | chore_occurrence, redemption, device, calendar_source, menu_source, school_closure | U, DB, E2E |
 
 ---
@@ -264,12 +274,12 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 |---|---|---|---|---|
 | P0 | 13 | 1 | 0 | 14 |
 | P1 | 52 | 5 | 0 | 57 |
-| P2 | 14 | 12 | 1 | 27 |
-| P3 | 0 | 14 | 4 | 18 |
-| **Total** | **79** | **32** | **5** | **116** |
+| P2 | 15 | 14 | 1 | 30 |
+| P3 | 1 | 15 | 4 | 20 |
+| **Total** | **81** | **35** | **5** | **121** |
 
-- Requirements: **116** · with at least one story: **116** · stories: **104** (P0: 12 · P1: 52 · P2: 22 · P3: 18).
-- With at least one work package: **116** · work packages: **68**.
+- Requirements: **121** · with at least one story: **121** · stories: **108** (P0: 12 · P1: 52 · P2: 24 · P3: 20).
+- With at least one work package: **121** · work packages: **74**.
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -278,8 +288,8 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 
 | Component | Requirements |
 |---|---|
-| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, BRD-08, BRD-09, BRD-10, CAL-03, CAL-04, CAL-05, CAL-09, CAL-10, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, MEAL-09, MEAL-10, MEAL-11, MENU-06, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, NFR-16, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08, SCH-05 |
-| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, ACC-07, ACC-08, BRD-05, BRD-08, BRD-10, CAL-01, CAL-03, CAL-05, CAL-06, CAL-09, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MEAL-09, MEAL-10, MEAL-11, MENU-01, MENU-03, MENU-04, MENU-06, NFR-05, NFR-11, NFR-13, NFR-15, NFR-16, NFR-17, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04, SCH-05, SCH-06 |
+| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, BRD-08, BRD-09, BRD-10, BRD-11, CAL-03, CAL-04, CAL-05, CAL-09, CAL-10, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, MEAL-09, MEAL-10, MEAL-11, MENU-06, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, NFR-16, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08, SCH-05 |
+| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, ACC-07, ACC-08, BRD-05, BRD-08, BRD-10, CAL-01, CAL-03, CAL-05, CAL-06, CAL-09, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MEAL-09, MEAL-10, MEAL-11, MEAL-12, MEAL-13, MEAL-14, MEAL-15, MENU-01, MENU-03, MENU-04, MENU-06, NFR-05, NFR-11, NFR-13, NFR-15, NFR-16, NFR-17, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04, SCH-05, SCH-06 |
 | `API` | ACC-03, ACC-07, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, DEV-01, DEV-06, MEAL-03, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, PTS-06, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13, SCH-06 |
 | `AUTH` | DEV-01, DEV-02, DEV-03 |
 | `RULES` | CHR-10, PTS-05, PTS-07, RWD-02, RWD-03, RWD-04, RWD-05, RWD-06, RWD-10, RWD-11, RWD-12, RWD-13 |
@@ -289,7 +299,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | `NOTIFY` | CHR-15, CHR-16, CHR-17, CHR-20 |
 | `OUTBOX` | CHR-04, DEV-06, NFR-01, PTS-04 |
 | `SCHED` | ACC-08, CAL-02, CHR-03, CHR-07, CHR-12, CHR-16, CHR-20, MENU-05, NFR-07, PTS-05, RWD-04, RWD-06, RWD-11 |
-| `DB` | ACC-01, ACC-04, ACC-05, ACC-08, BRD-10, CAL-05, CAL-09, CAL-10, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-02, DEV-05, MEAL-04, MEAL-09, MEAL-10, MEAL-11, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, NFR-17, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03, SCH-05 |
+| `DB` | ACC-01, ACC-04, ACC-05, ACC-08, BRD-10, CAL-05, CAL-09, CAL-10, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-02, DEV-05, MEAL-04, MEAL-09, MEAL-10, MEAL-11, MEAL-15, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, NFR-17, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03, SCH-05 |
 | `RT` | DEV-05 |
 | `VAULT` | ACC-07, CAL-01, CAL-08, NFR-04 |
 | `SAUTH` | ACC-02, ACC-03, ACC-06, DEV-01, DEV-02, NFR-04 |
@@ -432,6 +442,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.113 | Six items added at the owner's request, recorded only (D-97, D-98): WP-71 the board home on an iPad, fixed at the cause (BRD-08, BRD-09, NFR-16; points badges over the next chore, the rail's labels and icons clipped), with iPad shapes and the stacked layout in the board's layout checks; WP-72 board layouts that adapt to the screen's width and shape (BRD-11, US-1010, D-97), L, which WP-58 and WP-68 now build on; WP-73 a quick action on the admin Home to the school lunch picks (MEAL-12, US-709); WP-74 the lunch week as a stacked list of days, all collapsed at first (MEAL-13, US-710); WP-75 the meal planner's days as collapsible sections (MEAL-14, US-711); WP-76 Edit on a planned meal (MEAL-15, US-701). WP-73 to WP-76 are the admin app only and wait on one mockup, on the demo family, approved by the owner. `CLAUDE.md` gains three rules for talking to the owner. |
 | 0.8.111 | WP-49 Next week's lunches picked on the board, with the day's choices (MEAL-09, MEAL-11, US-707, D-95; the parent's approval screen's mockup approved by the owner, the choice screens with WP-64's): migration `20261014172043_lunch_picks.sql` (`lunch_request`, `lunch_choice`, `household_settings.lunch_cutoff`, `chore.opens`; `request_lunch()`, `decide_lunch_requests()`, `lunch_requests_waiting()`, `seen_lunch_week()`, `set_lunch_choices()`, `set_lunch_cutoff()`; `lunch_week()` with each day's open, picks and request; the approvals alert counts lunch changes); `POST /api/lunches` and `/api/lunches/seen`; the board's Lunches screen, an item that opens it, the picks in place of the options; Today's lunch changes, Meals' picks, the cut-off on School, Opens on an item in Chores. Tests: pgTAP `430_lunch_picks.test.sql`; Vitest `lunch-picks.test.ts`, `home-alerts.test.ts`, `board.test.ts`; UI suite `lunches.spec.ts`, `meals.spec.ts`; e2e `lunches.spec.ts`. |
 | 0.8.110 | WP-64 The school menu by section, as options (MENU-06, US-804, D-94; mockup approved by the owner with WP-49's choice screens): migration `20261014152244_menu_options.sql` (`private.menu_items()` keeps each item's `option`, 1 to 60; `lunch_week()` gives `menu_name` and the menu on every school day; each feed's content hash cleared so its next fetch writes options); `lib/menu/sections.ts` (`withOptions()`, `menuSections()`, `sectionLabel()`, `entreeSection()`, `pickOne()`) used by the Nutrislice reader, the CSV reader and the typed-in form; the board's home line (entree options with sides, one line, a tap to the whole menu), the Meals screen's menu rows, and a line a section on Meals and School menus in the admin app; the demo family's seed menu by section. Tests: Vitest `menu/sections.test.ts`, `board-meals.test.ts`, `menus.test.ts`, `menu/menu.test.ts`; pgTAP `420_menu_options.test.sql`; UI suite `board-meals.spec.ts`, `meals.spec.ts`, `menus.spec.ts`; e2e `board-meals.spec.ts` and `menus.spec.ts`. MEAL-11 and US-707 gain the owner's answers for WP-49. |
 | 0.8.109 | A board in portrait or landscape added at the owner's request to WP-58's scope (BRD-10, US-1009, D-93), recorded only: together more than one L, so WP-58 stays the iPhone and WP-68 (L) is its portrait boards: the setting, the portrait fit and every board screen at the wall board's sizes, with its own mockup first. The orientation is Automatic (the default, following the screen's shape), Landscape or Portrait. Not built; the order is unchanged. |
