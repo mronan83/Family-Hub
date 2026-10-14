@@ -25,6 +25,8 @@ export interface ChoreRow extends ListItem {
   createdBy: string | null;
   /** [CHR-16] Minutes before its due time it reminds; null follows each person's own (WP-40). */
   remindLeadMinutes: number | null;
+  /** [MEAL-09] What a tap on the board opens (WP-49): Lunches; null checks it off. */
+  opens: 'lunches' | null;
 }
 
 export interface TagRow {
@@ -50,13 +52,14 @@ interface RawChore {
   visibility: 'family' | 'private';
   created_by: string | null;
   remind_lead_minutes: number | null;
+  opens: 'lunches' | null;
   archived_at: string | null;
   chore_assignee: { member_id: string }[];
   chore_tag: { tag_id: string }[];
 }
 
 const CHORE_COLUMNS =
-  'id, title, icon, kind, points, approval, assignment, lunch_days, schedule, due_time, day_types, visibility, created_by, remind_lead_minutes, archived_at, chore_assignee (member_id), chore_tag (tag_id)';
+  'id, title, icon, kind, points, approval, assignment, lunch_days, schedule, due_time, day_types, visibility, created_by, remind_lead_minutes, opens, archived_at, chore_assignee (member_id), chore_tag (tag_id)';
 
 /**
  * [CHR-01][CHR-13] The household's items through RLS: family items, and private ones only for
@@ -83,6 +86,7 @@ export async function loadChores(db: SupabaseClient, householdId: string): Promi
     visibility: r.visibility,
     createdBy: r.created_by,
     remindLeadMinutes: r.remind_lead_minutes,
+    opens: r.opens === 'lunches' ? 'lunches' : null,
     archivedAt: r.archived_at,
     assignees: r.chore_assignee.map((a) => a.member_id),
     tags: r.chore_tag.map((t) => t.tag_id),

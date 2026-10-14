@@ -301,6 +301,19 @@ export function ChoreForm({
         </span>
       </label>
 
+      {/* [MEAL-09] What a tap on the board opens (WP-49, D-95). */}
+      <label className="fw-field">
+        <span className="fw-field__label">On the board, a tap</span>
+        <select className="fw-input" name="opens" defaultValue={initial?.opens ?? ''}>
+          <option value="">Checks it off</option>
+          <option value="lunches">Opens Lunches</option>
+        </select>
+        <span className="fw-field__help">
+          For example, “Pick next week’s lunches”: a tap opens the child’s coming week on Lunches,
+          and Done there checks it off.
+        </span>
+      </label>
+
       <IconPicker legend="Icon" selected={initial?.icon ?? 'chore-bed'} start="home" />
 
       <label className="fw-field">

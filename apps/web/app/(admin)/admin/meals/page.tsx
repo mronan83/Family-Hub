@@ -17,6 +17,7 @@ const DID: Record<string, string> = {
   removed: 'Removed from the plan.',
   lunch: 'Lunch changed.',
   usual: 'Usual lunches saved.',
+  picks: 'Lunch picks saved.',
 };
 
 /** [MEAL-01][MEAL-03] The week's meals (`?week=` any day of it; this week by default). */

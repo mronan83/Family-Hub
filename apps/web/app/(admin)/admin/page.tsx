@@ -59,6 +59,7 @@ export default async function AdminHome({
     closures,
     invites,
     nextMenus,
+    lunchChanges,
   ] = await Promise.all([
     db!
       .from('chore_occurrence')
@@ -102,6 +103,13 @@ export default async function AdminHome({
       .eq('household_id', h.id)
       .gte('menu_date', nextWeekStart)
       .lte('menu_date', nextWeekEnd),
+    // [MEAL-09] A child's lunch changes from the board, until their cut-off (WP-49).
+    db!
+      .from('lunch_request')
+      .select('id', { count: 'exact', head: true })
+      .eq('household_id', h.id)
+      .eq('status', 'waiting')
+      .gt('open_until', new Date().toISOString()),
   ]);
   for (const r of [approvals, requests, boards, calendars, menus, jobs, years, closures]) {
     if (r.error) throw new Error(`home: ${r.error.message}`);
@@ -140,6 +148,7 @@ export default async function AdminHome({
     today,
     approvals: approvals.count ?? 0,
     requests: requests.count ?? 0,
+    lunches: lunchChanges.count ?? 0,
     boards: (
       (boards.data ?? []) as {
         name: string;

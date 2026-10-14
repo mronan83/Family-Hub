@@ -373,6 +373,8 @@ function readOccurrence(o: unknown): TodayItem {
     // [D-66] What "More info" shows; a snapshot from before WP-35 has none.
     description:
       typeof o.description === 'string' && o.description.trim() ? o.description.trim() : null,
+    // [MEAL-09] What a tap opens instead of checking it off (WP-49); none before it.
+    ...(o.opens === 'lunches' ? { opens: 'lunches' as const } : {}),
   };
 }
 

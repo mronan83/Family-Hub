@@ -1,6 +1,7 @@
 import type { OccurrenceStatus } from '@familywise/rules-engine';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { DayItem } from '@/lib/admin-day';
+import { lunchFromDb, type WaitingLunch, waitingFromDb } from '@/lib/lunch';
 
 // A parent's day (WP-12), read through RLS as the admin: private items only for those who may see
 // them (D-34). Plain queries joined here: PostgREST cannot embed over the composite foreign keys.
@@ -199,4 +200,32 @@ export async function loadMine(
   const { data, error } = await db.from('chore_occurrence').select(OCC_COLUMNS).in('id', ids);
   if (error) throw new Error(`my items: ${error.message}`);
   return complete(db, data as RawOcc[], { dropIfArchived: (o) => o.due_date < today });
+}
+
+/** [MEAL-09][US-707] The children's lunch changes waiting for a parent, before their cut-off. */
+export async function loadWaitingLunches(
+  db: SupabaseClient,
+  householdId: string,
+): Promise<WaitingLunch[]> {
+  const { data, error } = await db.rpc('lunch_requests_waiting', { p_household: householdId });
+  if (error) throw new Error(`waiting lunches: ${error.message}`);
+  const waiting = waitingFromDb(data);
+  // [MEAL-11] Each day's menu (lunch_week, a week from the earliest day not yet read), so the picks
+  // read in the menu's order, as the board says them, not in the order the database keeps them.
+  const menus = new Map<string, NonNullable<WaitingLunch['menu']>>();
+  const read = new Set<string>();
+  for (const date of [...new Set(waiting.map((w) => w.date))].sort()) {
+    if (read.has(date)) continue;
+    const week = await db.rpc('lunch_week', { p_household: householdId, p_from: date });
+    if (week.error) throw new Error(`waiting lunches' menus: ${week.error.message}`);
+    for (const c of lunchFromDb(week.data as Parameters<typeof lunchFromDb>[0]))
+      for (const d of c.days) {
+        read.add(d.date);
+        if (d.menu && !d.menu.noService) menus.set(`${c.memberId}:${d.date}`, d.menu.items);
+      }
+  }
+  return waiting.map((w) => {
+    const menu = menus.get(`${w.memberId}:${w.date}`);
+    return menu ? { ...w, menu } : w;
+  });
 }

@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.44: US-707 as built (WP-49, D-95): a child's change waits for a parent on Today, picks included; the cut-off; Done; the picks in place of the options.
 > v0.8.43: US-804 as built (WP-64, D-94): the home screen's entree options with their sides, on one line, a tap opening the whole menu; the Meals screen's menu a row a section. US-707 gains the owner's answers at WP-64's mockup (D-94): pick one where a section says "Choice of"; Monday to Friday after a Sunday; today until a morning cut-off; a parent approves a change.
 > v0.8.42: US-1009 added at the owner's request (WP-58's scope, built as WP-68, D-93): a board set to portrait for a screen hung taller than it is wide.
 > v0.8.41: US-322, US-708 and US-804 added at the owner's request (WP-62 to WP-64, D-87 to D-89): an alert when something waits for a parent; a meal for any mix of people; the school menu by section. US-707 now includes picking a buy day's lunch choices.
@@ -626,11 +627,12 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As a** kid **I want** to look at next week's school lunch menu on the board and choose to buy or bring each day **so that** our Sunday lunch planning happens together at the board, not on a parent's phone.
 **Priority:** Should · **Phase:** P2 · **Reqs:** MEAL-09, MEAL-11
 - Given the weekly item "Pick next week's lunches" on the family list, when I tap it, then the board opens my coming week: each school day with what the school serves and **Buy** or **Bring**, my usual choice already set.
-- Given a day I want to change, when I tap **Buy** or **Bring**, then it changes at once and **Meals** in the admin app shows it as changed, by the board.
+- Given a day I want to change, when I tap **Buy** or **Bring**, then the board shows it as I asked with "Waiting for a parent", and **Meals** in the admin app shows it waiting within seconds (D-95).
 - Given I have looked at every day, when I tap **Done**, then the weekly item is checked off for me.
 - Given it is Sunday, when I open my coming week, then it is Monday to Friday after it (D-94).
 - Given a day with no school, or an earlier day, when I look, then I can't change it; today I can change until the morning's cut-off (D-94).
-- Given I change a day, when a parent looks, then the change waits for a parent to approve it (D-94).
+- Given I change a day or my picks, when a parent opens **Today**, then my changes wait there in a group with **Approve**, **Approve all** and **Keep … as it was**; approved, the day becomes what I asked; kept, the board says who kept it until I tap **Done** (D-94, D-95).
+- Given a change still waiting at the morning cut-off (8:00 am unless a parent sets another on **School**), when the cut-off passes, then it is dropped and the day stays as it was (D-95).
 - Given a day I buy, when I look at it, then I pick one option in each section that says "Choice of" (the entree, the milk) and any number in the others (fruits and vegetables) from that day's menu, and the board then shows what I picked instead of every option (D-89, D-94).
 - Given I picked Thursday's lunch, when a parent opens **Meals**, then they see my picks and can change them.
 

@@ -6,14 +6,14 @@ import { serverClient } from '@/lib/supabase/server';
 import { AdminNav, type NavWho } from './nav';
 
 /**
- * Who is signed in and how many check-offs wait for a parent, through RLS; none without a session
- * (a dev page, or the project settings missing).
+ * Who is signed in and how many check-offs and lunch changes (WP-49) wait for a parent, through RLS;
+ * none without a session (a dev page, or the project settings missing).
  */
 async function headerFacts(): Promise<{ waiting: number; who: NavWho | null }> {
   const db = await serverClient();
   const user = db ? await signedIn(db) : null;
   if (!db || !user) return { waiting: 0, who: null };
-  const [me, waiting] = await Promise.all([
+  const [me, waiting, lunches] = await Promise.all([
     db
       .from('member')
       .select('display_name, avatar_key, color')
@@ -24,6 +24,12 @@ async function headerFacts(): Promise<{ waiting: number; who: NavWho | null }> {
       .from('chore_occurrence')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending_approval'),
+    // [MEAL-09] A child's lunch change from the board, until its cut-off.
+    db
+      .from('lunch_request')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'waiting')
+      .gt('open_until', new Date().toISOString()),
   ]);
   const m = me.data as {
     display_name: string;
@@ -31,7 +37,7 @@ async function headerFacts(): Promise<{ waiting: number; who: NavWho | null }> {
     color: NavWho['color'];
   } | null;
   return {
-    waiting: waiting.count ?? 0,
+    waiting: (waiting.count ?? 0) + (lunches.count ?? 0),
     who: m ? { name: m.display_name, avatarKey: m.avatar_key, color: m.color } : null,
   };
 }

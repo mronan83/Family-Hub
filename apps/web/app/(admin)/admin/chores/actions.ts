@@ -46,6 +46,15 @@ export async function saveChore(_prev: FormState, form: FormData): Promise<FormS
       .eq('household_id', household.id);
     if (lError) log('warn', 'reminder lead time not saved', { code: lError.code });
   }
+  // [MEAL-09] What a tap on the board opens (WP-49): nothing to re-plan, so set apart too.
+  if (id || parsed.value.opens) {
+    const { error: oError } = await db
+      .from('chore')
+      .update({ opens: parsed.value.opens ?? null })
+      .eq('id', savedId as string)
+      .eq('household_id', household.id);
+    if (oError) log('warn', 'opens not saved', { code: oError.code });
+  }
   revalidatePath('/admin/chores');
   const saved = encodeURIComponent(parsed.value.title);
   if (!id && form.get('then') === 'another') {

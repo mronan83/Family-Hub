@@ -185,3 +185,22 @@ export async function saveFollowers(_prev: FormState, form: FormData): Promise<F
   }
   done(yearId, 'who follows this school year');
 }
+
+/**
+ * [MEAL-09][US-707] Sets the morning cut-off for lunch changes on the board (WP-49, D-95): a day can
+ * change until this time that day, household time; changes still waiting then are dropped.
+ */
+export async function saveLunchCutoff(form: FormData): Promise<void> {
+  const { db, household } = await context();
+  const cutoff = String(form.get('cutoff') ?? '');
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(cutoff)) done(null, 'nothing: choose a time');
+  const { error } = await db.rpc('set_lunch_cutoff', {
+    p_household: household.id,
+    p_cutoff: cutoff,
+  });
+  if (error) {
+    log('warn', 'lunch cut-off not saved', { code: error.code, hint: error.hint });
+    done(null, 'nothing: try again in a moment');
+  }
+  done(null, 'the lunch cut-off');
+}

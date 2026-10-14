@@ -31,6 +31,8 @@ export interface TodayItem {
   checkedAt: string | null;
   /** [D-66] The item's description, for "More info" (none from before WP-35). */
   description?: string | null;
+  /** [MEAL-09] A tap opens the child's coming week's lunches (WP-49), and Done there checks it off. */
+  opens?: 'lunches';
 }
 
 /** Statuses a tap can check off: not done yet, or sent back. */

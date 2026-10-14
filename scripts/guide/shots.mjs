@@ -172,6 +172,30 @@ const SHOTS = [
     url: '/dev/board',
     act: (page) => tap(page, 'Show Leo’s whole lunch menu').click(),
   },
+  // [MEAL-09][MEAL-11] Lunches (WP-49): Leo's coming week from his item, and a day's choices.
+  {
+    name: 'board-lunches-week',
+    device: 'board',
+    url: '/dev/board?lunches=1',
+    act: async (page) => {
+      await tap(page, 'Open Pick next week’s lunches for Leo').click();
+      await tap(page, 'Next week').click();
+      await page.locator('.fw-lunches__day').nth(4).waitFor();
+    },
+  },
+  {
+    name: 'board-lunches-choices',
+    device: 'board',
+    url: '/dev/board?lunches=1',
+    act: async (page) => {
+      await tap(page, 'Open Pick next week’s lunches for Leo').click();
+      await tap(page, 'Next week').click();
+      await tap(page, 'Pick your lunch').click();
+      await tap(page, 'Chicken wrap with Tortilla chips').click();
+      await tap(page, 'Apple slices').click();
+      await tap(page, 'Grapes').click();
+    },
+  },
   {
     name: 'board-meals-menu',
     device: 'board',
@@ -271,7 +295,21 @@ const SHOTS = [
   // Meals (WP-25): the week on a laptop, and the library on a phone.
   { name: 'admin-meals-laptop', device: 'laptop', url: '/dev/meals', maxHeight: 1900, quality: 62 },
   // School lunch (WP-26): the section itself.
-  { name: 'admin-lunch-laptop', device: 'laptop', url: '/dev/meals', element: '#lunch' },
+  // [MEAL-11] With a child's picks and a change waiting (WP-49).
+  { name: 'admin-lunch-laptop', device: 'laptop', url: '/dev/meals?lunches=1', element: '#lunch' },
+  // [MEAL-09] The children's lunch changes waiting on Today (WP-49), on a laptop and a phone.
+  {
+    name: 'admin-lunch-changes-laptop',
+    device: 'laptop',
+    url: '/dev/admin?lunches=1',
+    element: '.fw-lunchq',
+  },
+  {
+    name: 'admin-lunch-changes-phone',
+    device: 'phone',
+    url: '/dev/admin?lunches=1',
+    element: '.fw-lunchq',
+  },
   // School menus (WP-27): the page on a laptop, and adding one on a phone with the schools found.
   { name: 'admin-menus-laptop', device: 'laptop', url: '/dev/menus', maxHeight: 1500, quality: 62 },
   {

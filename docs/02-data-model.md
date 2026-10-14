@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.45: next week's lunches picked on the board (WP-49, D-95): `lunch_request` and `lunch_choice` as built, `household_settings.lunch_cutoff`, `chore.opens`; `request_lunch()`, `decide_lunch_requests()`, `lunch_requests_waiting()`, `seen_lunch_week()`, `set_lunch_choices()`, `set_lunch_cutoff()`; `lunch_week()` gives each day's `open`, `open_until`, `choices`, `request` and `by_board`; `set_lunch()` and `set_lunch_defaults()` drop a bring day's picks; the approvals alert counts lunch changes (§3.6, §3.7).
 > v0.8.44: the school menu by section, as options (WP-64, D-94): `school_menu_day.items[]` keeps `option` (`private.menu_items()` checks it is 1 to 60); `lunch_week()` gives `menu_name` and the day's menu on every school day, buy or bring; each feed's `content_hash` cleared once so its next fetch writes its days with options (§3.6).
 > v0.8.43: planned, not built (D-93): `device.board_config.orientation` and the snapshot's `device.orientation` (WP-68, with WP-58) (§3.1).
 > v0.8.42: a meal for any mix of people (WP-62, D-87): `meal_plan_entry_member` as built, each entry's one person carried over by `private.carry_meal_people()`; `meal_plan_entry.member_id` held empty until a later migration drops it; `add_meal_entry()` takes `member_ids`, `copy_meal_week()` copies them, and `board_snapshot()` gives them (§3.6).
@@ -547,6 +548,8 @@ When a closure or school year changes, the generator re-resolves and regenerates
 | `meal_plan_entry_member` | `entry_id`, `member_id` | An entry's people (WP-62, D-87); none is the whole household. Key `(entry_id, member_id)`. |
 | `lunch_override` | `member_id`, `date`, `mode` (`buy`/`bring`), `menu_item_ref?` | `UNIQUE (member_id, date)`. |
 | `member_lunch` | `member_id` (one per child), `defaults jsonb` (`{"mon":"buy",…}`, Monday to Friday; none set is bring) | A child's usual lunches (WP-26, D-78), whatever school year they follow. |
+| `lunch_request` | `member_id`, `lunch_date`, `mode`, `choices jsonb`, `status` (`waiting`/`approved`/`kept`), `requested_by → device`, `open_until`, `decided_by`, `seen_at` | A child's change from the board, waiting for a parent (WP-49, D-95). `UNIQUE (member_id, lunch_date)`. |
+| `lunch_choice` | `member_id`, `lunch_date`, `section`, `options int[]`, `names text[]`, `chosen_by_type`, `chosen_by`, `approved_by` | A buy day's picks, a row a section (WP-49, D-95). PK `(member_id, lunch_date, section)`. |
 | `menu_source` | `name`, `adapter` (`nutrislice`/`schoolcafe`/`linq`/`csv`/`manual`), `config jsonb`, `status`, `last_fetch_at`, `last_success_at`, `last_error`, `fetch_window_days` (28) | Adapter is selected by `adapter`; config is adapter-specific. |
 | `school_menu_day` | `menu_source_id`, `menu_date`, `meal_service` (`breakfast`/`lunch`), `items jsonb`, `no_service bool`, `origin` (`adapter`/`csv`/`manual`), `is_override`, `fetched_at`, `content_hash` | `UNIQUE (menu_source_id, menu_date, meal_service)`. Adapter refresh **never** overwrites `is_override = true`. |
 
@@ -579,8 +582,17 @@ A chore can follow a child's lunch (WP-61, D-86): `chore.lunch_days` makes an `e
 - Each Nutrislice source's `content_hash` was cleared once, so its next fetch writes its days again with options.
 - Tests: pgTAP `420_menu_options.test.sql` (12); `360_school_menus.test.sql`'s day with no menu.
 
-**Planned (D-89; not built):**
-- WP-49: `lunch_choice` (`household_id`, `member_id`, `lunch_date`, `section`, `options int[]`, `chosen_by_type`, `chosen_by`, `chosen_at`; key `(member_id, lunch_date, section)`): a child's picks on a buy day, checked against that day's menu (one option in a section whose title says "Choice of", any number in the others, D-94); removed when the day becomes bring. A child's change waits for a parent's approval (D-94).
+**As built (WP-49, D-95): next week's lunches picked on the board.** Migration `20261014172043_lunch_picks.sql`:
+- `lunch_request` (`household_id`, `member_id`, `lunch_date`, `mode`, `choices jsonb` `[{section, options, names}]`, `status` `waiting`/`approved`/`kept`, `requested_by → device`, `requested_at`, `open_until` (the day's cut-off), `decided_by`, `decided_at`, `seen_at`; one a child and day): a child's change from the board, waiting for a parent. Past its cut-off a waiting request is dropped: not listed, counted or approved, and the day stays as it was.
+- `lunch_choice` (`household_id`, `member_id`, `lunch_date`, `section` ('' for a menu without sections), `options int[]`, `names text[]` (as picked), `chosen_by_type` `admin`/`device`, `chosen_by`, `approved_by`, `chosen_at`; key `(member_id, lunch_date, section)`): a buy day's picks, a row a section. The names are kept so a menu changed after a pick can be seen (the app marks it **Menu changed**).
+- `household_settings.lunch_cutoff` (`time`, default 08:00, household time; `set_lunch_cutoff()` also moves the cut-off of requests still waiting). `chore.opens` (`'lunches'` or null; a parent sets it through RLS).
+- `request_lunch(member, date, mode, choices)`, the board's: a school day before its cut-off and at most three weeks ahead; picks checked against the day's menu by `private.lunch_picks()` (the section on the menu, each option on it when the menu has options, one option where the title says "Choice of", none on a bring day). The day as it already is takes back what waited; anything else waits, replacing what waited.
+- `decide_lunch_requests(ids, approve)`, a parent's: approved, the day becomes the request (`set_lunch()`, then its picks); kept, it stays. A request past its cut-off is counted as expired. `lunch_requests_waiting(household)` lists them for Today; `seen_lunch_week(member)`, the board's, marks a parent's "kept" seen.
+- `set_lunch_choices(member, date, choices)`, a parent's, on a buy day, any day; it and `set_lunch()` replace a request waiting for the day. `set_lunch()` and `set_lunch_defaults()` drop the picks of a day that becomes bring.
+- `lunch_week()` gives each day `open`, `open_until`, `choices` (a buy day), `request` (waiting before its cut-off, or kept and not yet seen, with who kept it) and `by_board`.
+- Both tables: RLS select for the household's parents and boards, writes only through the functions, audited, and in Realtime.
+- [CHR-20] `private.approvals_waiting()` counts `lunches` (a request waiting since the last alert, before its cut-off); `approvals_line()` says "2 lunch changes"; an alert with any opens Today.
+- Tests: pgTAP `430_lunch_picks.test.sql` (48); `070_board_snapshot.test.sql` (the publication) and `150_board_today.test.sql` (`opens`).
 
 If the effective mode is `buy`, the board shows `school_menu_day` for `(menu_source, d, 'lunch')`; if `bring`, it shows the planned `meal_plan_entry` for the lunch slot.
 

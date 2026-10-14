@@ -21,6 +21,8 @@ export interface AlertFacts {
   today: string;
   approvals: number;
   requests: number;
+  /** [MEAL-09] A child's lunch changes from the board, waiting for a parent (WP-49). */
+  lunches?: number;
   boards: { name: string; lastSeenAt: string | null; revoked: boolean }[];
   calendars: { name: string; status: string }[];
   /** Menu feeds only (a file or typed-in menu can't fail). */
@@ -69,6 +71,16 @@ export function homeAlerts(f: AlertFacts): HomeAlert[] {
       key: 'approvals',
       icon: 'check',
       text: `${plural(f.approvals, 'check-off')} ${f.approvals === 1 ? 'waits' : 'wait'} for you`,
+      href: '/admin/today',
+      cta: 'Review',
+    });
+  }
+  if ((f.lunches ?? 0) > 0) {
+    const n = f.lunches!;
+    act({
+      key: 'lunches',
+      icon: 'lunch',
+      text: `${plural(n, 'lunch change')} ${n === 1 ? 'waits' : 'wait'} for you`,
       href: '/admin/today',
       cta: 'Review',
     });
