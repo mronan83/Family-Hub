@@ -1514,6 +1514,7 @@ These are planned but not built yet. This guide will cover each as it arrives.
 - **A meal for some of us:** **Add to the plan** for any mix of people, not just everyone or one.
 - **An alert when something waits for you:** a phone notification when a check-off needs your OK or a child asks for a reward, if you have notifications on.
 - **The school menu as choices:** a buy day's menu shown by section (entree, fruits and vegetables, milk) instead of one long line, and children picking their lunch from it on the board with next week's buy or bring.
+- **A board in portrait:** a board on a screen hung taller than it is wide lays every screen out for it by itself (**Automatic**), or you can fix it to **Portrait** or **Landscape** on Boards.
 
 ### B8 Stories this guide covers
 
