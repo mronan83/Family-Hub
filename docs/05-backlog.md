@@ -1,7 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.104: WP-65 (first-attempt e2e passes for CAL-05 and DEV-06), WP-66 (the docs pages republished by a sub-agent, D-91) and WP-67 (stale lines in `00-README`) added at the owner's request, ahead of everything else. The order is under the status board.
+> v0.8.104: WP-65 (first-attempt e2e passes for CAL-05 and DEV-06), WP-66 (the docs pages republished by a sub-agent, D-91) and WP-67 (stale lines in `00-README`) added at the owner's request; WP-66 and WP-67 done in the same change. WP-65 is next, ahead of everything else.
 > v0.8.103: work as a planner and one worker per item (D-90): items start from the planner session; §2's prompt pattern becomes `/deliver WP-nn`; each item's PR records it as done.
 > v0.8.102: WP-61 done (PR #66): chores on lunch days.
 > v0.8.101: WP-62 (a meal for any mix of people), WP-63 (an alert when something waits for a parent) and WP-64 (the school menu by section) added at the owner's request, and WP-49 grows to picking a buy day's lunch choices (D-87 to D-89). The order is under the status board.
@@ -215,13 +215,13 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-63 | An alert when something waits for a parent | P2 | S | WP-40, WP-12, WP-18 | Ready |
 | WP-64 | The school menu by section, as options | P2 | M | WP-27, WP-28 | Ready (mockups first) |
 | WP-65 | First-attempt e2e passes: CAL-05 and DEV-06 | P3 | S | WP-60 | Ready (next) |
-| WP-66 | The docs pages republished by a sub-agent | P3 | S | WP-01 | Ready |
-| WP-67 | Stale lines in `00-README` | P3 | S | WP-01 | Ready |
+| WP-66 | The docs pages republished by a sub-agent | P3 | S | WP-01 | Done |
+| WP-67 | Stale lines in `00-README` | P3 | S | WP-01 | Done |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 14 October): WP-65, WP-66 and WP-67 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold.
+**Next, in order** (the owner's, 14 October): WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold.
 
 ---
 
@@ -1072,12 +1072,14 @@ flowchart LR
 - Added at the owner's request (D-91). Step 11 of the deliver skill (`.claude/skills/deliver/SKILL.md`) republishes the six docs pages, and each page has to be read before it can be republished, so every read loads a large part of the page into the worker's session for the rest of its work.
 - Step 11 hands the republish to one sub-agent, started by the worker from a clean `origin/main`. The sub-agent runs `pnpm docs:build`, and for each page in `scripts/docs-site/artifacts.json` reads it and publishes the built HTML to that same URL; never a new page, never a deletion; a publish refused because the page changed is rebuilt from the latest `main` and published again. It returns one line per page (URL, published or why not) and nothing of the pages themselves. The worker reports from that list; definition-of-done line 11 is unchanged.
 - **Done when:** the deliver skill's step 11 says the above; `CLAUDE.md` and D-90's description agree with it; and this item's own step 11 runs that way, its six pages republished with only the sub-agent's six lines in the worker's session.
+- As built: the deliver skill's step 11 (`.claude/skills/deliver/SKILL.md`): a clean `origin/main`, one `general-purpose` sub-agent in the foreground that builds, reads and republishes each page and returns one line per page, and the worker's own steps when a session can't start a sub-agent; definition-of-done line 11 names the sub-agent, with its six `published` lines as proof. `CLAUDE.md` and D-90 needed no change: the worker still republishes, through the sub-agent. D-91 in `00`.
 
 ### WP-67 — Stale lines in `00-README`
 **Phase:** P3 · **Size:** S · **Depends on:** WP-01 · **Reqs:** NFR-14
 - Added at the owner's request. In `00-README.md`'s Document map, the line on the published pages links five pages and names the user guide (`user-guide.html`) as a sixth page with no link. Under Build order, the spikes line points to "`05` §3" for spikes; §3 is the dependency map and spikes are §4.
-- Found while recording this item: the Document map's table counts are stale too: 87 stories (now 103), 98 requirements (now 115), 48 work packages and 5 spikes (now 67 and 6). They are fixed here as well, as the counts `pnpm trace` prints when the item is built.
+- Found while recording this item: the Document map's table counts are stale too: 87 stories (now 103), 98 requirements (now 115), 48 work packages and 5 spikes (now 67 and 6). They are fixed here as well, to the counts `pnpm trace` prints.
 - **Done when:** the Document map links all six pages from `scripts/docs-site/artifacts.json`, the user guide with the others; the Build order line points to `05` §4; the table's counts match `pnpm trace`; `pnpm docs:build --check` passes.
+- As built: `00-README.md`'s Document map links the User guide page with the other five, and its table says 103 stories, 115 requirements, 67 work packages and 6 spikes; Build order points to `05` §4 for spikes.
 
 ---
 

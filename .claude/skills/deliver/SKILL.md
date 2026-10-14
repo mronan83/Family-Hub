@@ -30,7 +30,7 @@ An item is done when **every** line holds. Report against this list.
 | 8 | The owner has typed `approve #nn` in this session | The chat |
 | 9 | Squash-merged, with the head SHA pinned | Merge commit on `main` |
 | 10 | Deployed: the deploy run is green through `smoke` and `schedule`, and `/api/health` reports the merge commit | Deploy run and health response |
-| 11 | The six docs pages are republished from `main` | Artifact URLs updated |
+| 11 | The six docs pages are republished from `main`, by a sub-agent (step 11) | Its six `published` lines |
 | 12 | Anything deferred is listed in the PR and recorded in `05` | PR "Deferred" section |
 
 ## Steps
@@ -159,12 +159,18 @@ On `approve #nn` (or "approve" when only one PR is in question; ask if it's ambi
 
 ### 11. Republish the docs pages
 
-From a clean `origin/main`:
-- run `pnpm docs:build`;
-- for each page in `scripts/docs-site/artifacts.json`, read the artifact, then publish the built HTML to that same URL;
-- never create a new page and never delete one.
+A sub-agent does the republish, so the six pages never load into your session (D-91). Each page has to be read before it can be republished, and every read is a large part of the page.
 
-If a publish is refused because the page changed, rebuild from the latest `main` and publish again.
+1. Bring your checkout to a clean `origin/main`: `git fetch origin main && git checkout --detach origin/main`, with `git status` showing nothing to commit.
+2. Start one `general-purpose` sub-agent in the foreground (your next step needs its answer) with this task:
+   - in the repository at that checkout, run `pnpm docs:build`;
+   - for each page in `scripts/docs-site/artifacts.json`: read the artifact at its URL, then publish the built HTML (`dist/docs-site/<page>.html`) to that same URL;
+   - never create a new page and never delete one;
+   - if a publish is refused because the page changed, check out the latest `origin/main`, rebuild, and publish that page again;
+   - return only one line per page: the page, its URL, and `published` or why not. Nothing of the pages themselves.
+3. Check its six lines. A page that is not `published` is not done: start the sub-agent again for that page, or tell the owner why it can't be.
+
+If this session can't start a sub-agent, do the same steps yourself.
 
 ### 12. Close out
 
