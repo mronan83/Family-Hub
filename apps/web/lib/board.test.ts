@@ -585,7 +585,7 @@ describe('notify, then refetch', () => {
     expect(thrown).toBe(2);
   });
 
-  it('[CAL-05][WP-70] a read still out at its deadline is aborted and made again', async () => {
+  it('[CAL-05][WP-70] a read still out at its deadline gets another beside it; the first back wins', async () => {
     vi.useFakeTimers();
     try {
       const signals: AbortSignal[] = [];
@@ -599,31 +599,54 @@ describe('notify, then refetch', () => {
       );
       await vi.advanceTimersByTimeAsync(3_999);
       expect(signals).toHaveLength(1);
-      expect(signals[0]!.aborted).toBe(false);
       await vi.advanceTimersByTimeAsync(1);
-      expect(signals[0]!.aborted).toBe(true);
       expect(signals).toHaveLength(2);
       expect(await done).toBe(true);
+      // The hung one is aborted once the answer is in.
+      expect(signals[0]!.aborted).toBe(true);
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it('[CAL-05][WP-70] a hung read no longer holds back the change heard after it', async () => {
+  it('[CAL-05][WP-70] a slow read is not given up: on a slow database it may still be first back', async () => {
     vi.useFakeTimers();
     try {
       let reads = 0;
-      const run = coalesce(async () => {
-        await readSoon(
-          () => (++reads === 1 ? new Promise<boolean>(() => {}) : Promise.resolve(true)),
-          { deadlineMs: 4_000 },
-        );
-      });
-      void run();
-      void run(); // a change heard while the first read hangs
-      await vi.advanceTimersByTimeAsync(4_000);
-      // The hung read was given up and made again, then the change's own read followed.
+      const done = readSoon(
+        () => {
+          reads += 1;
+          // Each read takes 10 s; the first, started at 0, is back first.
+          return new Promise<boolean>((r) => setTimeout(() => r(true), 10_000));
+        },
+        { deadlineMs: 4_000 },
+      );
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(await done).toBe(true);
       expect(reads).toBe(3);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('[CAL-05][WP-70] reads that never come back give up after the last has had twice as long', async () => {
+    vi.useFakeTimers();
+    try {
+      const signals: AbortSignal[] = [];
+      let result: boolean | undefined;
+      void readSoon(
+        (signal) => {
+          signals.push(signal);
+          return new Promise<boolean>(() => {});
+        },
+        { deadlineMs: 4_000 },
+      ).then((ok) => (result = ok));
+      await vi.advanceTimersByTimeAsync(15_999);
+      expect(result).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(result).toBe(false);
+      expect(signals).toHaveLength(3);
+      expect(signals.every((x) => x.aborted)).toBe(true);
     } finally {
       vi.useRealTimers();
     }
