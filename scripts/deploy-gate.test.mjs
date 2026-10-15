@@ -1,4 +1,4 @@
-// Deploy gate refusals (01 §9.6, D-36). Runs scripts/deploy-gate.sh against a fake `gh` that
+// Deploy gate refusals (01 §9.6, D-36, D-108). Runs scripts/deploy-gate.sh against a fake `gh` that
 // serves JSON fixtures through the real jq filters, and a fake `curl` for the Vercel token check.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -29,10 +29,12 @@ function fixtures(over = {}) {
   return {
     [`repos/${REPO}/commits/main`]: { sha: SHA },
     ...Object.fromEntries(
-      ['checks', 'database', 'docs', 'build'].map((c) => [
-        `repos/${REPO}/commits/${SHA}/check-runs?check_name=${c}`,
-        checkRun('success'),
-      ]),
+      [SHA, PR_HEAD].flatMap((sha) =>
+        ['checks', 'database', 'docs', 'build'].map((c) => [
+          `repos/${REPO}/commits/${sha}/check-runs?check_name=${c}`,
+          checkRun('success'),
+        ]),
+      ),
     ),
     [`repos/${REPO}/commits/${SHA}/pulls`]: [
       {
@@ -42,7 +44,6 @@ function fixtures(over = {}) {
         head: { sha: PR_HEAD },
       },
     ],
-    [`repos/${REPO}/commits/${PR_HEAD}/check-runs?check_name=preview`]: checkRun('success'),
     ...over,
   };
 }
@@ -84,6 +85,7 @@ function run({ env = {}, gh = fixtures(), vercel = '200' } = {}) {
     code: r.status,
     out: r.stdout + r.stderr,
     deploy: /^deploy=(\w+)$/m.exec(readFileSync(output, 'utf8'))?.[1],
+    reason: /^reason=(.*)$/m.exec(readFileSync(output, 'utf8'))?.[1],
     ghCalls: existsSync(log) ? readFileSync(log, 'utf8').trim().split('\n') : [],
   };
 }
@@ -91,10 +93,11 @@ function run({ env = {}, gh = fixtures(), vercel = '200' } = {}) {
 const refused = (r, reason) => {
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, reason);
+  assert.match(r.reason ?? '', reason);
   assert.equal(r.deploy, undefined);
 };
 
-test('[NFR-14] ships the head of main from a merged PR with every check and e2e green', () => {
+test('[NFR-14] ships the head of main from a merged PR with the fast checks green on it and its PR', () => {
   const r = run();
   assert.equal(r.code, 0, r.out);
   assert.equal(r.deploy, 'true');
@@ -161,16 +164,20 @@ test('[NFR-14] refuses a commit pushed to main without a merged pull request', (
   refused(run({ gh: fixtures({ [pulls]: elsewhere }) }), /without a merged pull request/);
 });
 
-test('[NFR-14] refuses when e2e did not pass on the pull request preview', () => {
-  const preview = `repos/${REPO}/commits/${PR_HEAD}/check-runs?check_name=preview`;
+test('[NFR-14] refuses when a fast check failed or never ran on the pull request head', () => {
+  const failed = `repos/${REPO}/commits/${PR_HEAD}/check-runs?check_name=checks`;
   refused(
-    run({ gh: fixtures({ [preview]: checkRun('failure') }) }),
-    /e2e \/ preview on PR #7 is 'failure'/,
+    run({ gh: fixtures({ [failed]: checkRun('failure') }) }),
+    /ci \/ checks on PR #7 is 'failure'/,
   );
-  refused(
-    run({ gh: fixtures({ [preview]: checkRun(null) }) }),
-    /e2e \/ preview on PR #7 is 'missing'/,
-  );
+  const absent = `repos/${REPO}/commits/${PR_HEAD}/check-runs?check_name=docs`;
+  refused(run({ gh: fixtures({ [absent]: checkRun(null) }) }), /ci \/ docs on PR #7 is 'missing'/);
+});
+
+test('[NFR-14] reads no e2e result (D-108)', () => {
+  const r = run();
+  assert.equal(r.deploy, 'true', r.out);
+  assert.ok(!r.ghCalls.some((c) => /preview|e2e/.test(c)), r.ghCalls.join('\n'));
 });
 
 test('[NFR-14] refuses when GitHub cannot be read', () => {

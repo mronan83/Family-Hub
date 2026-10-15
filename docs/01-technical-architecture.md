@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.64: e2e runs nightly only, on a preview of `main`, and never blocks a pull request or a deploy; the deploy gate reads the fast checks on the merge commit and on its pull request's head, and a refused or failed deploy, or a red nightly run, opens an issue (WP-88, D-108) (§9.2, §9.3, §9.5, §9.6).
 > v0.8.63: the board's chore rows and rail entries grow with what is in them, so a browser that draws a chip or a word larger never spills or clips them (WP-71, D-100).
 > v0.8.62: the board reloads itself after a new deploy, once idle with no dialog open (WP-78, D-99); "and" in a school menu joins a side like "with" (WP-78).
 > v0.8.61: the board's reads after a change (WP-70, D-96): one that fails or is still out at 4 s is made again at once, up to three; the board shows when it heard, read and drew a change, for e2e; the calendar is `aria-busy` while a range's first read is out (§7).
@@ -646,7 +647,7 @@ sequenceDiagram
 - **A read that fails or hangs (WP-70, D-96).** A read that fails is made again at once; one still out after 4 s (`READ_DEADLINE_MS`) gets another beside it, and the first back wins, the rest aborted; up to three reads, the last given 8 s (`readSoon()` in `apps/web/lib/live.ts`). A slow read is never given up for a new one, which on a slow database would only start the wait again. Before, a failed read was dropped and a hung one held back every read after it, so a change the board had heard stayed off its screen until the four-minute read. Offline, the three reads fail and the board waits for the network's return or Realtime's reconnect, as before. The board's status shows when it last heard a change, when its last read began and came back, and how many failed (`data-heard-at`, `data-read-from`, `data-read-to`, `data-read-failed`), so e2e says which part of a slow change was slow.
 - **Catch-up.** The board reads again each time its channel is (re)joined and when the browser reports the network is back (US-204). The first join after a quiet spell can take seconds while Realtime starts (SPIKE-01), and this read covers it.
 - **Losing access.** A null snapshot (disconnected) or a sign-out (its refresh refused) sends the board to `/board`, where the server resumes it with its credential or shows the pairing screen (§5.1). RLS applies to both reads and Realtime, so a disconnected board hears nothing and reads nothing from that moment.
-- **Budget.** DEV-05's p95 under 3 s is measured by e2e on every pull request: 20 renames in the admin app, each timed from pressing Save to the name showing on a paired board.
+- **Budget.** DEV-05's p95 under 3 s is measured by the nightly e2e run (D-108): 20 renames in the admin app, each timed from pressing Save to the name showing on a paired board.
 - **A new day.** Nothing in the database changes at midnight, so the board checks each minute whether the household's date has moved past its snapshot's `today`, and reads again when it has (WP-11).
 - **Theme.** The board follows household-local time (Day 06:30–19:00) unless an admin holds it on Day or Evening (`device.board_config.theme`, set in Boards), and switches when the snapshot changes.
 
@@ -715,7 +716,7 @@ No Docker anywhere, no staging, and free plans only (D-29): Supabase Free, Verce
 |---|---|---|---|
 | Workspace | `next dev` | DB tests: native Postgres + Supabase compatibility bootstrap (`scripts/db-test.sh`). App: the production project as the demo family, browser-safe key only | writing code, fast feedback |
 | CI | `next build` | native Postgres 17 on the GitHub runner + pgTAP | gates on every push and PR |
-| Preview (one per PR) | Vercel preview deployment | the **test database**, Supabase project `puoctwssryisuzakhzxj` (Free), as the **demo family**; emptied and rebuilt from the PR's migrations before each e2e run (§9.5, D-85) | your review, Playwright e2e |
+| Preview (one per PR) | Vercel preview deployment | the **test database**, Supabase project `puoctwssryisuzakhzxj` (Free), as the **demo family**; the nightly e2e run empties it and rebuilds it from `main`'s migrations (§9.5, D-85, D-108) | your review; nightly e2e on a preview of `main` |
 | Production | Vercel production (`family-wise-topaz.vercel.app`) | Supabase project `jpzwmibrsvsxcimbxtmb` (Free); changed only by an approved merge's deploy | the family board |
 
 ### 9.2 Workflow
@@ -726,12 +727,12 @@ Your part is the requirements, the preview and the approval; Claude Code does th
 flowchart LR
   req["You: requirements"] --> dev["Claude Code: develop<br/>branch per work package"]
   dev --> ci{"CI gates<br/>checks · database · docs · build"}
-  ci -->|green| prev["Preview + e2e<br/>demo family, test database"]
+  ci -->|green| prev["Preview<br/>demo family, test database"]
   prev -->|green| look["You: preview"]
   look --> ok{"You: approve"}
   ok -->|changes| dev
   ok -->|approved| merge["Claude Code: squash merge"]
-  merge --> gate{"deploy: gate<br/>head of main · merged PR ·<br/>CI and e2e green"}
+  merge --> gate{"deploy: gate<br/>head of main · merged PR ·<br/>fast checks green"}
   gate --> mig["deploy: migrate<br/>scripts/db-migrate.sh"]
   mig --> app["deploy: app<br/>vercel --prod"]
   app --> smoke{"smoke<br/>/api/health"}
@@ -749,12 +750,12 @@ Each item runs in its own worker session, started from the planner session (D-90
 | `ci / database` | `scripts/db-test.sh`: throwaway database on native Postgres, compatibility bootstrap, all migrations through the deploy's runner, pgTAP via `pg_prove`; `scripts/db-migrate.test.sh`: the runner itself | yes |
 | `ci / docs` | `pnpm docs:build --check` (no broken cross-link or unknown ID in the five docs pages), then `pnpm docs:layout`: each page on 13 device profiles from a 320 px phone to a 4K monitor, failing on sideways scroll, content off screen, touch targets under 44 px, or script errors | yes |
 | `ci / build` | `next build` for `apps/web`, then the brand checks against `next start` (`pnpm test:ui`): computed-style snapshots of every tile state in Day and Evening, axe contrast on the board, admin and brand pages, both manifests, self-hosted fonts and the service-worker precache | yes |
-| `e2e / preview` | Once Vercel reports a successful preview: empty the test database, apply every migration in the PR, load the demo family, then Playwright against the preview URL (D-85). Runs are serialized | yes |
+| `e2e / nightly` | Nightly only, never on a pull request or after a deploy (D-108): build a preview of `main`, empty the test database, apply every migration, load the demo family, then Playwright against that preview (D-85). A red run opens or updates one issue per failing spec, "E2E red on main: <spec>", and does nothing else | no |
 
-GitHub Free does not enforce branch protection on a private repository (D-36), so the five checks are required in two places:
+The four CI checks are required in two places (D-36, D-108); e2e is required in neither:
 
 - **Before merge:** a pull request is merged only when every check on its head is green. Claude Code checks this before each merge. The repository allows squash merges only.
-- **Before deploy:** the deploy gate (§9.6) refuses to ship a commit unless it came from a merged pull request, all four CI checks passed on it, and e2e passed on its pull request's preview. A commit pushed to `main` directly, or merged with a red check, never reaches production: its deploy run fails, and GitHub emails the owner.
+- **Before deploy:** the deploy gate (§9.6) refuses to ship a commit unless it came from a merged pull request and all four CI checks passed on it and on its pull request's head. It reads no e2e result. A commit pushed to `main` directly, or merged with a red check, never reaches production: its deploy run fails and opens the issue "Deploy refused: <commit>".
 
 Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 
@@ -764,19 +765,19 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 - `scripts/db-test.sh` creates a throwaway database, applies the bootstrap and then every migration through `scripts/db-migrate.sh` (the deploy's runner), runs `pg_prove` over `supabase/tests/*.test.sql`, and drops the database.
 - Tests act as a principal with `set local role authenticated` plus `set local request.jwt.claims`, exactly as PostgREST does.
 - The bootstrap is never deployed. Migrations must not depend on it beyond what Supabase itself provides.
-- Fidelity: every e2e run applies all of a pull request's migrations, from the first, to the test database, a real Supabase project, so a migration that only works against the bootstrap fails before merge, whatever it does (R-16, D-85).
+- Fidelity: every nightly e2e run applies all of `main`'s migrations, from the first, to the test database, a real Supabase project (R-16, D-85). Since D-108 no run does this for a pull request before merge, so a migration that only works against the bootstrap is first caught by the deploy's `migrate`, which applies each migration in its own transaction and stops the deploy.
 
 ### 9.5 Previews on the test database (D-85)
 
 - Vercel builds every PR branch as a preview. Previews use the **test database**, the plan's second free Supabase project (`puoctwssryisuzakhzxj`), with its browser-safe keys only (URL and publishable key), so every query goes through RLS. They hold no secret key and no job signing secret, and no job runs there. Production's database never serves a preview or a test: it changes only when an approved merge deploys (§9.6).
 - Previews and e2e run as the **demo family**: a made-up household defined in `supabase/seed.sql` under a fixed id. The test database holds nothing else worth keeping.
-- When Vercel reports a successful preview, the e2e workflow runs `scripts/preview-db.sh`: it empties the test database (`scripts/test-db-reset.sql`: everything the migrations made, every sign-in, the Vault entries and scheduled jobs; Supabase's own schemas and the storage bucket stay), applies every migration in the pull request (`scripts/db-migrate.sh`), lists the jobs System Health reads (`scripts/job-schedules.mjs --table-only`; none is scheduled there), loads the demo family, and gives its sign-ins their passwords. Every run starts from the same place, whatever the run before it left or whichever branch it came from. Runs are serialized.
+- Each nightly e2e run (D-108) runs `scripts/preview-db.sh`: it empties the test database (`scripts/test-db-reset.sql`: everything the migrations made, every sign-in, the Vault entries and scheduled jobs; Supabase's own schemas and the storage bucket stay), applies every migration on `main` (`scripts/db-migrate.sh`), lists the jobs System Health reads (`scripts/job-schedules.mjs --table-only`; none is scheduled there), loads the demo family, and gives its sign-ins their passwords. Every run starts from the same place, whatever the run before it left or whichever branch it came from. Runs are serialized.
 - The script resets only the test project: it refuses production's database by name, and any other remote database unless it is the project the workflow names (`TEST_PROJECT_REF`). Its tests (`scripts/preview-db.test.sh`, CI) check both refusals before any connection, and that a second run leaves nothing of the first behind.
 - A retried test starts where its first attempt did: every spec imports `test` from `e2e/support/test.ts`, whose worker fixture loads the demo family again (`scripts/preview-db.sh --demo-family-only`) whenever Playwright starts a new worker, which it does only after a failure.
 - Each spec that pairs a board retires it when it ends (`e2e/support/board.ts`): the board's browser closes and its device is removed. Files run one after another in one browser, so a board left open stays live for the rest of the run, and any board of the household may take a goal's celebration (D-59) or replay a queued check-off. A test that checks money (the bonus ledger) reads the ledger before what the page says, and a flaky test says on failure what it saw rather than only that it failed.
 - Production's database still holds the demo family from before D-85, unused: its jobs skip it (`household.is_demo`, D-62), and it can be removed with your approval.
-- Each pull request writes its item's docs as they read once merged: the status board says Done, `04` §I gets one row, and the item gets an As-built note. Its e2e results go in the pull request, not the docs, so a pull request needs one e2e run, not a second for a docs-only commit, and no later pull request writes another's results (D-90).
-- e2e runs one at a time, and GitHub keeps only one waiting run: a push that deploys a preview replaces another pull request's waiting run, which then cannot deploy. A worker checks the queue before every push and waits while another branch's run is waiting (D-90).
+- Each pull request writes its item's docs as they read once merged: the status board says Done, `04` §I gets one row, and the item gets an As-built note (D-90).
+- e2e runs nightly only (D-108): never on a pull request, never after a deploy, never a required check or a deploy input, and it never cancels, delays or rolls back anything. Its concurrency group (`demo-family`) holds only itself. Each run builds its own preview of `main` with the preview settings, so it needs `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` besides the bypass secret and the test database's URL.
 - The reset seeds the demo family's history from its own today, so a run never spans its midnight: one that would (it is under 25 minutes away) waits for it to pass before resetting.
 - Nothing in the pipeline wipes production's database. The test database is emptied at the start of every run, by design.
 - The demo family's four sign-ins (`supabase/seed.sql`) get their passwords from `scripts/preview-db.sh`, in the same transaction as the demo family's load: each is derived from the bypass secret, which never leaves the runner, and stored as a bcrypt hash. The preview's sign-in page offers them as one-tap buttons (§5.10, D-39). Households that e2e sets up with a demo sign-in are removed at the next reset.
@@ -787,7 +788,7 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 
 `deploy.yml` runs when `ci` finishes on `main`, or by hand from `main`:
 
-1. **gate**: deploys only the current head of `main`, so production never moves backwards (an older commit is skipped). The commit must have passed `ci / checks`, `ci / database`, `ci / docs` and `ci / build`, it must have come from a merged pull request, and that pull request's head must have passed `e2e / preview`. Anything else fails the run. A missing secret from §9.8 fails here too, with its name, and so does a `VERCEL_TOKEN` that cannot open the project, before anything touches the database. The gate is `scripts/deploy-gate.sh`; `scripts/deploy-gate.test.mjs` runs it against recorded GitHub responses for each refusal, in `ci / checks`.
+1. **gate**: deploys only the current head of `main`, so production never moves backwards (an older commit is skipped). The commit must have come from a merged pull request, and `ci / checks`, `ci / database`, `ci / docs` and `ci / build` must have passed on it and on that pull request's head. It reads no e2e result (D-108). Anything else fails the run, and a failed or refused run opens or updates the issue "Deploy refused: <commit>" with the gate's reason (the `report` job, `scripts/open-issue.sh`). A missing secret from §9.8 fails here too, with its name, and so does a `VERCEL_TOKEN` that cannot open the project, before anything touches the database. The gate is `scripts/deploy-gate.sh`; `scripts/deploy-gate.test.mjs` runs it against recorded GitHub responses for each refusal, in `ci / checks`.
 2. **migrate**: `scripts/db-migrate.sh` over the Supabase session pooler (IPv4; the Free plan's direct connection is IPv6-only). It applies the commit's pending migrations in filename order, each in its own transaction together with its row in `supabase_migrations.schema_migrations`, so a failed migration leaves nothing behind, and reports migrations in the database that the commit lacks (an open pull request's preview applied them, §9.5). It refuses a migration file that commits part of itself (`BEGIN`/`COMMIT`). A failure stops the deploy. Tested in `ci / database` (`scripts/db-migrate.test.sh`).
 3. **app**: `vercel pull`, `vercel build --prod`, `vercel deploy --prebuilt --prod`.
 4. **smoke**: `GET /api/health` on production returns 200.
@@ -811,8 +812,8 @@ Every GitHub secret below is a repository secret, which any workflow run in the 
 |---|---|---|---|
 | `SUPABASE_DB_URL` | secret | GitHub repository | production's database: migrate, keepalive, backup, jobs workflows |
 | `TEST_SUPABASE_DB_URL` | secret | GitHub repository (the test project's session pooler URI, user `postgres.puoctwssryisuzakhzxj`) | e2e (empty, migrate, demo family; `scripts/preview-db.sh` refuses any other database), keepalive (D-85) |
-| `VERCEL_TOKEN` | secret | GitHub repository (a Vercel token scoped to the project's team, with an expiry) | app deploy; the usage workflow reads the account's usage with it (D-42) |
-| `VERCEL_ORG_ID` = `team_A8TfHlLyTc2toipq0WsMVKvK`, `VERCEL_PROJECT_ID` = `prj_DnYxdFgs03cQOWsKZklobWGCTYqe` | variables | GitHub repository | app deploy |
+| `VERCEL_TOKEN` | secret | GitHub repository (a Vercel token scoped to the project's team, with an expiry) | app deploy; the nightly e2e run's preview of `main` (D-108); the usage workflow reads the account's usage with it (D-42) |
+| `VERCEL_ORG_ID` = `team_A8TfHlLyTc2toipq0WsMVKvK`, `VERCEL_PROJECT_ID` = `prj_DnYxdFgs03cQOWsKZklobWGCTYqe` | variables | GitHub repository | app deploy; the nightly e2e run's preview of `main` |
 | `VERCEL_AUTOMATION_BYPASS_SECRET` | secret | GitHub repository (value from Vercel → Deployment Protection); Vercel also gives it to every deployment as a system variable | e2e on protected previews; the demo sign-ins' passwords (`scripts/preview-db.sh`, and the preview's one-tap sign-in, D-39) |
 | `PRODUCTION_URL` = `https://family-wise-topaz.vercel.app` | variable | GitHub repository | smoke check |
 | `DEPLOY_ENABLED` = `true` | variable | GitHub repository | turns on production deploys (set last, in WP-41) |

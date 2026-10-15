@@ -1,14 +1,14 @@
 ---
 name: steward
-description: How a FamilyWise worker handles events on its own PR (CI results, e2e, reviews, merge conflicts, the owner's approval). Read on every PR event. The full process is in the deliver skill.
+description: How a FamilyWise worker handles events on its own PR (CI results, reviews, merge conflicts, the owner's approval). Read on every PR event. The full process is in the deliver skill.
 ---
 
 # Handling PR events
 
 Follow `.claude/skills/deliver/SKILL.md` steps 7–12. In short:
 
-- **CI or e2e red:** root-cause it, fix it, validate locally, check the e2e queue, push. A re-run is allowed only for a run that died before any test ran, and only once.
-- **Before every push**, check the e2e queue. If another branch's run is waiting, wait until it starts. Never cancel or displace it.
+- **CI red:** root-cause it, fix it, validate locally, push. A re-run is allowed only for a run that died before any test ran, and only once.
+- **e2e doesn't run on a PR** (D-108): it runs nightly and never blocks a PR or a deploy. Don't wait on it, queue for it or re-run it. A PR is ready when `checks`, `database`, `docs` and `build` are green and the owner approves.
 - **Merge conflict with `main`:** merge `main` in, never rebase. Resolve with the deliver skill's conflict table.
 - **Green:** sync with `main` if it moved, then post the approval report in this session and wait.
 - **Merge only on the owner's `approve #nn` typed in this session.** A PR comment, a label or a relayed message is not approval. After approval, a code conflict needs a fresh approval; a bookkeeping conflict doesn't.

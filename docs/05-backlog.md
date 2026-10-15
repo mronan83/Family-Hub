@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.116: WP-88 (fast deploy gate; e2e nightly only) added at the owner's request and done in the same change (D-108): the deploy gate reads only the fast CI checks, e2e runs nightly and never blocks a pull request or a deploy, and a refused deploy or a red nightly run opens an issue.
 > v0.8.115: WP-79 to WP-82 added at the owner's request, recorded only (D-101 to D-103): a goal's end date that can be cleared (a bug, on its own so it waits on nothing else); goals that repeat each week, month or school term, with "every day it's due" and misses allowed, each period won or missed on its own; done by a time, and tiers; perfect periods, and "every child meets it". WP-80 to WP-82 wait on one mockup. Avoidance goals (no screen time over a limit) are not covered: nothing records them.  WP-83 added at the owner's request and done in the same change: chore saves that stalled 15 s or more in two e2e runs are now checked and timed in both chores tests; their cause is open. "Next, in order" is the owner's to set.
 > v0.8.114: WP-71 done (D-100): the board home on an iPad, fixed at the cause: a chore's row grows with its title and points chip, and a word in the rail goes under its icon when it doesn't fit beside it. The board's fit checks gain the iPad shapes, and, added at the owner's request, the kitchen board's 1920×1080 at Larger and Largest.
 > v0.8.113: WP-78 (a lunch pick taken off by another, a bug) added at the owner's request and done in the same change: on Meals in the admin app, every "Choice of" section's radios were one group, so ticking a milk took off the entree. Two more added to it at the owner's request and done with it: "and" in a school menu joins a side like "with" (a WP-64 gap); the board picks up a new deploy by itself (D-99).
@@ -243,6 +244,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-81 | A goal done by a time, and goals that pay in tiers | P2 | M | WP-80 | Queued (mockup first, with WP-80 and WP-82) |
 | WP-82 | Perfect periods, and a family goal every child meets | P2 | M | WP-80 | Queued (mockup first, with WP-80 and WP-81) |
 | WP-83 | Chore saves timed in the chores tests, root cause open | P3 | S | WP-08 | Done (timing); the stall's cause open |
+| WP-88 | Fast deploy gate; e2e nightly only | P3 | S | WP-41, WP-60 | Done |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -410,6 +412,8 @@ flowchart LR
     WP80 --> WP81[WP-81 Done by a time, and tiers]
     WP80 --> WP82[WP-82 Perfect periods, every child]
     WP08 --> WP83[WP-83 Chore saves timed]
+    WP41 --> WP88[WP-88 Fast deploy gate]
+    WP60 --> WP88
     WP64 --> WP78
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP65 --> WP70[WP-70 Calendar refresh timing]
@@ -1308,6 +1312,16 @@ flowchart LR
   WP-08's 300 s target and e2e's `retries` are unchanged; the app is unchanged.
 - **Done when:** this pull request's e2e run passes both tests, and a slow or refused save says which item and how long it took.
 - **Open:** the cause. The next run whose save stalls will report which save, its status and its time. That is where the root cause starts.
+
+### WP-88 — Fast deploy gate; e2e nightly only
+**Phase:** P3 · **Size:** S · **Depends on:** WP-41, WP-60 · **Reqs:** NFR-14
+- Added at the owner's request (15 October: "reset fast gate only. E2E better not fuck with anything, ever."; then "nightly only", not after deploys), and done in the same change (D-108).
+- **Deploy gate:** ships the head of `main` from a merged pull request when `checks`, `database`, `docs` and `build` passed on it and on the pull request's head. It reads no e2e result. A refused or failed deploy opens or updates one issue, "Deploy refused: <commit>", with the reason.
+- **e2e:** runs nightly only, on a preview of `main` that the run builds, against the test database. Never on a pull request or after a deploy, never a required check or a deploy input; it never cancels, delays or rolls back anything. A red run opens or updates one issue per failing spec, "E2E red on main: <spec>", and does nothing else. The specs are unchanged, and none is skipped.
+- **Rules:** a pull request is ready when the four checks are green and the owner approves; workers no longer wait on, queue for or re-run e2e (`CLAUDE.md`, the deliver, steward and planner skills).
+- **Done when:** `scripts/deploy-gate.test.mjs` shows the gate ships with the fast checks green, refuses a red or missing check on the merge commit or the pull request's head, writes its reason, and reads no e2e result; `scripts/open-issue.test.mjs` shows one issue per title.
+- **As built:** `scripts/deploy-gate.sh`, `.github/workflows/deploy.yml` (`report` job), `scripts/open-issue.sh`, `.github/workflows/e2e.yml` (`schedule` only), `e2e/playwright.config.ts` (a JSON report when `E2E_JSON` is set); tests `scripts/deploy-gate.test.mjs`, `scripts/open-issue.test.mjs`.
+- **Deferred:** a pull request's preview gets no fresh test database: nothing applies its new migrations there, so a preview of a pull request with a migration can fail until the next nightly run after merge. Open issues are not closed by a green run.
 ---
 
 ## 6. Size summary
@@ -1320,6 +1334,6 @@ flowchart LR
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82 | Menu adapters, WP-49 and WP-80 are the Ls |
-| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
+| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.
