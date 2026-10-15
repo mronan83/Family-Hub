@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.23: the board on a tablet such as an iPad, and at **Larger** or **Largest**: each chore's points under its own title, and the whole of every word in the rail (A14).
 > v0.22: a menu's "and" joins a side like "with" ("Fish sticks with Fries and Coleslaw"); a parent's lunch picks on **Meals** keep the entree when a milk is ticked; the board picks up a new version by itself when nobody is using it (WP-78, D-99).
 > v0.21: next week's lunches picked at the board (WP-49, D-95): **Lunches** on the board, a child's changes waiting on **Today**, picks on **Meals**, the cut-off on **School**, an item that opens Lunches (A2, A15, B1.2, B1.5, B1.10, B1.15, B2.9, B2.10).
 > v0.20: the school menu by section (WP-64, D-94): a buy day's entree options on the board's home screen, the whole menu at a tap, the menu a row a section on the **Meals** screen, and a line a section on **Meals** and **School menus**; a day typed in with "or" and "with" (A5, A15, B1.15, B2, B7).
@@ -795,13 +796,14 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credi
 > **Note:** FamilyWise keeps your place to about a kilometre (two decimal places), and only that goes to the weather service. Town names are found through Open-Meteo, and US ZIP codes through Zippopotam.us.
 
 ### A14 Screens and text size
-<!-- covers: US-1007 -->
+<!-- covers: US-1007 US-912 -->
 
 **What this is.** The board fills whatever screen it is on, and you choose how big its words are. **When.** When you set up a board, or when someone finds it hard to read from where they stand. **How.** The fit is automatic; the size is on **Boards**.
 
 - **Any screen.** The board is designed for a 1920 by 1080 screen and grows or shrinks to fit yours. A 4K panel shows exactly the same board twice as large, drawn with all its pixels, so it is sharper, not more crowded. A laptop shows it smaller, and it fits again when you change the window's size. A screen wider or taller than usual gives the board more room.
 - **Text size.** On **Boards**, choose **Smaller text**, **Standard text**, **Larger text** or **Largest text** for a board, and choose **Set text size**. The board changes at once and keeps its size, even after a restart without the internet.
 - **What larger text changes.** Larger words take more room. With **Larger** or **Largest**, today's list moves under the calendar instead of beside it, and the people at the top may take two rows. Scroll down for the rest.
+- **On a tablet.** A board on an iPad or another tablet works the same way, in landscape or portrait: the board fits the screen, and each chore's points stay under its own title at every text size. If a word in the rail is too long to sit beside its icon, it goes under it.
 
 ![The board's home screen at Largest text: the clock, the people over two rows, and the calendar across the whole width; today's list follows further down.](guide/img/board-home-largest.jpg "Largest text, on a 1080p screen")
 
