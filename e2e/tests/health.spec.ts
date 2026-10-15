@@ -1,7 +1,8 @@
-import { execFileSync } from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '../support/test';
+import { sql as query } from '../support/db';
 import { openSetting } from '../support/settings';
+import { signIn } from '../support/session';
 
 // [NFR-07][NFR-08] System Health on the preview (WP-42, D-42), as Alex of the demo family: a failing
 // job shows with its message and clears after a good run, a server error recorded for the household
@@ -13,19 +14,13 @@ const DEMO = '0de00000-0000-4000-8000-000000000001';
 const FAILURE = 'e2e: forced failure (job-run workflow)';
 const ERROR = 'Error: e2e seeded server error';
 
-function sql(query: string): string {
-  return execFileSync('psql', [db!, '-X', '-A', '-t', '-q', '-v', 'ON_ERROR_STOP=1', '-c', query], {
-    encoding: 'utf8',
-  }).trim();
-}
+const sql = (q: string) => query(db!, q);
 
 const CLEAN = `delete from public.job_run where household_id = '${DEMO}' and (error = '${FAILURE}' or stats ? 'e2e');
                delete from private.app_error where household_id = '${DEMO}' and message = '${ERROR}';`;
 
 async function asAlexOnHealth(page: Page) {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await page.waitForURL(/\/admin$/);
+  await signIn(page);
   await openSetting(page, 'Health');
   await expect(page.getByRole('heading', { name: 'System health', level: 1 })).toBeVisible();
 }
@@ -70,8 +65,9 @@ test('[NFR-07] a failing job shows with its message, and the household’s serve
 });
 
 test('[NFR-07] after a good run the job is fine again', async ({ page }) => {
+  // A later transaction than beforeAll's failing run, so now() is already after it (not in the future).
   sql(`insert into public.job_run (household_id, job_type, status, started_at, finished_at, stats)
-       values ('${DEMO}', 'heartbeat', 'ok', now() + interval '1 second', now() + interval '1 second', '{"e2e": true}');`);
+       values ('${DEMO}', 'heartbeat', 'ok', now(), now(), '{"e2e": true}');`);
   await asAlexOnHealth(page);
   const heartbeat = page
     .getByRole('list', { name: 'Background jobs', exact: true })

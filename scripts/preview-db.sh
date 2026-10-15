@@ -49,6 +49,35 @@ case "$host" in
     ;;
 esac
 
+# Sessions stuck in an open transaction hold their locks until they end: one left "idle in transaction
+# (aborted)" by the data API held a demo row, and the reset, the seed and Supabase Auth's sign-ins all
+# waited behind it until their statement timeouts (e2e runs 238 to 242). On the test database only:
+# end any session idle in a transaction for 30 s (IDLE_TX_SECONDS, for this script's tests), and have
+# new sessions end themselves after 60 s.
+psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -q -X -A -t -v idle="${IDLE_TX_SECONDS:-30}" <<'SQL'
+-- Who waits on whom, for the log, before anything is ended: user, app, wait -> holder, its state.
+select 'waiting: ' || coalesce(w.usename, '-') || ', ' || coalesce(nullif(w.application_name, ''), '-')
+       || ', ' || coalesce(w.wait_event_type || '/' || w.wait_event, '-') || ' -> held by '
+       || coalesce(h.usename, '-') || ', ' || coalesce(nullif(h.application_name, ''), '-') || ', '
+       || coalesce(h.state, '-') || ' for ' || coalesce(extract(epoch from now() - h.state_change)::int, 0) || ' s'
+  from pg_stat_activity w
+ cross join lateral unnest(pg_blocking_pids(w.pid)) b(pid)
+  join pg_stat_activity h on h.pid = b.pid
+ where w.datname = current_database();
+select 'ended ' || count(pg_terminate_backend(pid)) || ' session(s) idle in a transaction'
+  from pg_stat_activity
+ where datname = current_database() and pid <> pg_backend_pid()
+   and state in ('idle in transaction', 'idle in transaction (aborted)')
+   and state_change < now() - make_interval(secs => :idle);
+do $$
+begin
+  execute format('alter database %I set idle_in_transaction_session_timeout = %L',
+                 current_database(), '60s');
+exception when insufficient_privilege then
+  raise notice 'idle_in_transaction_session_timeout left as it is: %', sqlerrm;
+end $$;
+SQL
+
 if [ "${1:-}" != --demo-family-only ]; then
   # The pooler's host names the project's region (aws-0-<region>.pooler.supabase.com); no secret.
 echo "test database: ${host:-local} (user ${user:-local})"

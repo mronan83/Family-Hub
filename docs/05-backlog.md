@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.118: WP-90 (nightly e2e reliability) added at the owner's request and done in the same change (D-110), harvested from the closed e2e speed-up work (branches `claude/e2e-speed-up` and `claude/e2e-tooling`): sign in once per persona per worker; a page used only once hydrated; the test database's reset ends sessions stuck in a transaction; an infrastructure failure re-runs once and is labelled, an assertion failure never re-runs; the specs' clock in the household's zone, their own data and measured limits; the test standard in `CLAUDE.md`. WP-89 no longer carries the stuck-transaction fix.
 > v0.8.117: WP-89 (the test database prepared for a pull request's preview) added at the owner's request, recorded only: a job that resets the test database, applies the pull request's migrations and loads the demo family, so a preview of a pull request with a migration works before merge. It runs no tests and never blocks anything (D-108). "Next, in order" is the owner's to set.
 > v0.8.116: WP-88 (fast deploy gate; e2e nightly only) added at the owner's request and done in the same change (D-108): the deploy gate reads only the fast CI checks, e2e runs nightly and never blocks a pull request or a deploy, and a refused deploy or a red nightly run opens an issue.
 > v0.8.115: WP-79 to WP-82 added at the owner's request, recorded only (D-101 to D-103): a goal's end date that can be cleared (a bug, on its own so it waits on nothing else); goals that repeat each week, month or school term, with "every day it's due" and misses allowed, each period won or missed on its own; done by a time, and tiers; perfect periods, and "every child meets it". WP-80 to WP-82 wait on one mockup. Avoidance goals (no screen time over a limit) are not covered: nothing records them.  WP-83 added at the owner's request and done in the same change: chore saves that stalled 15 s or more in two e2e runs are now checked and timed in both chores tests; their cause is open. "Next, in order" is the owner's to set.
@@ -247,6 +248,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-83 | Chore saves timed in the chores tests, root cause open | P3 | S | WP-08 | Done (timing); the stall's cause open |
 | WP-88 | Fast deploy gate; e2e nightly only | P3 | S | WP-41, WP-60 | Done |
 | WP-89 | The test database prepared for a pull request's preview | P3 | S | WP-60, WP-88 | Ready |
+| WP-90 | Nightly e2e reliability | P3 | M | WP-60, WP-88 | Done |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -418,6 +420,8 @@ flowchart LR
     WP60 --> WP88
     WP60 --> WP89[WP-89 Test database for a preview]
     WP88 --> WP89
+    WP60 --> WP90[WP-90 Nightly e2e reliability]
+    WP88 --> WP90
     WP64 --> WP78
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP65 --> WP70[WP-70 Calendar refresh timing]
@@ -1333,13 +1337,26 @@ flowchart LR
 - **Why:** since D-108, nothing applies a pull request's new migrations to the test database. A preview of a pull request that adds a migration can show errors until the nightly run after merge (WP-88's Deferred line).
 - **The item:** a job that only prepares the test database for a pull request's preview: it empties it, applies the pull request's migrations and loads the demo family, all through `scripts/preview-db.sh`, which refuses production.
 - **Never:** it runs no tests, is never a required check or a deploy input, and never blocks, cancels or delays a pull request, a deploy or the nightly run. A failed job says why on its own run and nothing else.
-- **Related work it can take up:** the saved stuck-transaction fix on branch `claude/e2e-tooling` (commit `0344670`): `scripts/preview-db.sh` ends sessions idle in a transaction before a reset and sets a 60 s idle-in-transaction limit for new sessions, with its test in `scripts/preview-db.test.sh`.
+- **Related work:** the stuck-transaction fix (`scripts/preview-db.sh` ends sessions idle in a transaction before a reset) shipped with WP-90; this job gets it by running that script.
 - **Open question for the owner, when it is built:** the test database is shared with the nightly e2e run and every other pull request's preview, so the last one to prepare it wins: a preview can lose its schema when another pull request's job or the nightly run resets it.
 - **Done when:**
   - on a pull request that adds a migration, the job's run shows the reset, the pull request's migrations and the demo family loaded, and its preview signs in as the demo family and shows the new schema's screen without errors;
   - `scripts/preview-db.test.sh` shows the job's path still refuses production's database;
   - the job is in no branch protection rule and no deploy gate input: `scripts/deploy-gate.test.mjs` shows the gate ships with the job red or missing;
   - a failed job leaves the pull request's four checks and its deploy unchanged.
+
+### WP-90 — Nightly e2e reliability
+**Phase:** P3 · **Size:** M · **Depends on:** WP-60, WP-88 · **Reqs:** NFR-14
+- Added at the owner's request (15 October), and done in the same change (D-110). The closed e2e speed-up work (branches `claude/e2e-speed-up` and `claude/e2e-tooling`) was built for e2e on every pull request; this takes from it only what still applies to the nightly run under D-108.
+- **Sign in once:** each Playwright worker signs in once per demo persona and reuses the session (`e2e/support/session.ts`, `pairBoard()` in `e2e/support/board.ts`): about 500 Auth sign-ins a run become a handful. `auth.spec.ts` still signs in itself.
+- **Hydrated first:** after every page load, e2e waits until React has hydrated the page (`<html data-hydrated>`), so no admin form is submitted as a plain browser form (the cause of WP-83's stalled saves).
+- **Stuck transactions:** `scripts/preview-db.sh` logs who waits on whom, ends sessions idle in a transaction for 30 s, and sets a 60 s idle-in-transaction limit on the test database, after its guard, so production is never touched.
+- **Infrastructure faults labelled:** a statement timeout, a connection reset, a Supabase or Auth 5xx, or the preview not being ready re-runs that test once and labels the cause in the run summary and in the "E2E red on main: <spec>" issue. An assertion failure never re-runs. Playwright's own retry is off.
+- **Specs:** browsers in the household's zone and locale, dates from the household's today (`e2e/support/day.ts`), school days a spec owns (`e2e/support/school.ts`), each test's own data, and time limits from measured runs.
+- **Test standard:** in `CLAUDE.md` ("Tests") and the deliver skill's definition of done; no e2e and no burn-in on a pull request (D-108).
+- **Done when:** `scripts/e2e-infra.test.mjs` tells infrastructure from assertion failures; `scripts/e2e-run.selftest.mjs` (CI `build`) shows an injected statement timeout, Supabase 5xx and Auth failure each re-run once, labelled, and pass, a second infrastructure failure red with its cause in the issue's list, and an assertion failure red and never re-run; `scripts/preview-db.test.sh` shows a session idle in a transaction ended, the waiter logged and the 60 s limit set; `e2e/ui/hydrated.spec.ts` shows pages marked hydrated; the sign-in's unit test shows Auth asked once more on 5xx and never after a refusal; the next nightly run is the proof on the real preview.
+- **As built:** `scripts/e2e-run.mjs`, `scripts/e2e-infra.mjs`, `scripts/e2e-ready.sh`, `.github/workflows/e2e.yml` (the run through `e2e-run.mjs`, the preview waited for, one issue per red spec with each test's kind and cause), `e2e/playwright.config.ts` (no retries, a 90 s limit, the household's zone), `e2e/support/session.ts`, `day.ts`, `school.ts`, `board.ts`, `test.ts`, the specs in `e2e/tests/`, `apps/web/app/hydrated.tsx`, the demo sign-in's second ask (`apps/web/app/(admin)/sign-in/actions.ts`), `scripts/preview-db.sh`; tests `scripts/e2e-infra.test.mjs`, `scripts/e2e-run.selftest.mjs`, `scripts/preview-db.test.sh`, `e2e/ui/hydrated.spec.ts`, `apps/web/app/(admin)/sign-in/actions.test.ts`. The UI suite's reminders layout check now waits for hydration and for the "Turn on reminders" button's fade-in before axe reads its contrast (it read 2.13:1 mid-fade, about 1 run in 40).
+- **Deferred:** the nightly run burns in no spec by itself: `scripts/e2e-run.mjs --burn-in` runs one five times, but nothing picks the changed specs for it. The idle-in-transaction limit is set on the test database, not on a role. Left out as moot since D-108: the scope classifier, the PR e2e queue and lock, any deploy-gate change and per-PR burn-in.
 ---
 
 ## 6. Size summary
@@ -1352,6 +1369,6 @@ flowchart LR
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82 | Menu adapters, WP-49 and WP-80 are the Ls |
-| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88, WP-89 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
+| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88 – WP-90 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

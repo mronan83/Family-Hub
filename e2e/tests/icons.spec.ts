@@ -1,7 +1,8 @@
 import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
-import { retireBoard } from '../support/board';
+import { pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
+import { signIn } from '../support/session';
 
 // [CHR-01][CHR-10][ACC-04] The larger icon set and the sixteen colors on the preview (WP-46, D-70).
 // The done-when: on a phone, Alex finds the fish icon by searching, saves a chore for Leo with it, and
@@ -11,11 +12,11 @@ import { sql as query } from '../support/db';
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const BOARD = 'Icons e2e';
-const CHORE = 'Feed the fish';
-const TAG = 'Aquarium';
+const RUN = Math.random().toString(36).slice(2, 6);
+const CHORE = `Feed the fish ${RUN}`;
+const TAG = `Aquarium ${RUN}`;
 const sql = (q: string) => query(db!, q);
 
-test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 let admin: Page;
@@ -40,9 +41,7 @@ function tidy() {
        delete from public.tag where household_id = '${DEMO}' and name = '${TAG}';`);
 }
 
-test.beforeAll(async ({ browser }, testInfo) => {
-  testInfo.setTimeout(90_000);
-  tidy();
+test.beforeAll(async ({ browser }) => {
   const [color, avatar] = sql(
     `select color || '|' || coalesce(avatar_key, '') from public.member
       where household_id = '${DEMO}' and display_name = 'Leo'`,
@@ -51,14 +50,12 @@ test.beforeAll(async ({ browser }, testInfo) => {
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
        delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
   admin = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
   await admin.goto('/admin/devices');
   const form = admin.getByRole('form', { name: 'Add a board', exact: true });
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);
   await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
-  const code = (await admin.getByTestId('pairing-code').textContent())?.replace(/\D/g, '') ?? '';
+  const code = await pairingCode(admin);
   board = await (await browser.newContext()).newPage();
   await board.goto('/board');
   await board.getByLabel('Pairing code from the admin app', { exact: true }).fill(code);
@@ -74,6 +71,7 @@ test.afterAll(async () => {
       where household_id = '${DEMO}' and display_name = 'Leo'`,
   );
   await retireBoard(board, BOARD);
+  await admin?.context().close();
 });
 
 test('[CHR-01][D-70] done-when: a chore saved with an icon found by search shows on the board with it', async () => {
@@ -89,15 +87,18 @@ test('[CHR-01][D-70] done-when: a chore saved with an icon found by search shows
   await expect(form.getByRole('group', { name: 'Icon', exact: true })).toContainText(
     'Chosen: fish',
   );
-  const saved = Date.now();
+  const clicked = Date.now();
   await form.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(admin.getByRole('status')).toHaveText(`Saved ${CHORE}.`);
+  // The board's time is counted from the server's confirmation, so a slow save reads as one.
+  const saved = Date.now();
+  report(`WP-46: the chore's save took ${saved - clicked} ms`);
   expect(
     sql(`select icon from public.chore where household_id = '${DEMO}' and title = '${CHORE}'`),
   ).toBe('fish');
 
   const row = board.locator('.fw-dash__row').filter({ hasText: CHORE });
-  await expect(row).toBeVisible({ timeout: 10_000 });
+  await expect(row).toBeVisible();
   await expect(row.locator('svg[data-icon="fish"]')).toBeVisible();
   report(`WP-46: a chore with a Lucide icon reached the board in ${Date.now() - saved} ms`);
 });
@@ -118,7 +119,7 @@ test('[CHR-10][D-70] a tag takes a new color and a Lucide icon', async () => {
     .locator('label', { has: admin.getByRole('radio', { name: 'turtle', exact: true }) })
     .click();
   await form.getByRole('button', { name: 'Add tag', exact: true }).click();
-  await expect(admin.getByText(TAG, { exact: true }).first()).toBeVisible();
+  await expect(admin.getByRole('status').filter({ hasText: `Saved ${TAG}.` })).toBeVisible();
   expect(
     sql(
       `select color || ':' || icon from public.tag where household_id = '${DEMO}' and name = '${TAG}'`,
@@ -147,7 +148,7 @@ test('[ACC-04][D-70] a member takes one of the new colors, and the board shows i
     .getByRole('list', { name: 'Family', exact: true })
     .getByRole('button', { name: /Leo/ })
     .locator('.fw-avatar--initials');
-  await expect(avatar).toHaveText('L', { timeout: 10_000 });
+  await expect(avatar).toHaveText('L');
   expect(await avatar.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
     'rgb(162, 28, 175)',
   );
