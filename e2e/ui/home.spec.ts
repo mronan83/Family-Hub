@@ -64,6 +64,8 @@ for (const [width, height, device] of [
       }) => {
         await page.goto(`/dev/home?theme=${theme}`);
         await expect(page.getByRole('heading', { name: 'Needs you' })).toBeVisible();
+        // [MEAL-12] The school lunches card, beside Add a meal (WP-73).
+        await expect(page.getByRole('link', { name: 'Pick lunches' })).toBeVisible();
         const f = await fit(page);
         expect(f.wide).toBe(width);
         expect(f.small).toEqual([]);
@@ -144,6 +146,11 @@ test.describe('what Home says', () => {
     );
     await expect(more.getByRole('button', { name: 'No school today' })).toBeVisible();
     await expect(more.getByRole('button', { name: 'Refresh school menu' })).toBeVisible();
+    // [MEAL-12][US-709] The lunch picks, one tap (WP-73): the lunch week the page's Tuesday is in.
+    await expect(more.getByRole('link', { name: 'Pick lunches' })).toHaveAttribute(
+      'href',
+      '/admin/meals?week=2026-10-12#lunch',
+    );
     // A day off ahead: the form opens in place, a day off to start with.
     await more.getByText('Add a day off…').click();
     const dayOff = more.getByRole('form', { name: 'Add a day off' });
@@ -167,6 +174,25 @@ test.describe('what Home says', () => {
       '/admin/school',
     );
     await expect(page.getByRole('link', { name: 'Set up school menus' })).toBeVisible();
+  });
+});
+
+test.describe('the school lunches card', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('[MEAL-12][US-709] beside Add a meal, whose days still need a choice; none without a child', async ({
+    page,
+  }) => {
+    await page.goto('/dev/home');
+    const cards = page.getByRole('list', { name: 'More quick actions' }).getByRole('listitem');
+    await expect(cards.nth(0)).toContainText('Add a meal');
+    const lunch = cards.nth(1);
+    await expect(lunch).toContainText('School lunches');
+    await expect(lunch).toContainText('This week: Maya has 1 day to pick; Leo is all set.');
+    await expect(lunch.getByRole('link', { name: 'Pick lunches' })).toBeVisible();
+    await page.goto('/dev/home?lunch=none');
+    await expect(page.getByRole('heading', { name: 'Needs you' })).toBeVisible();
+    await expect(page.getByText('School lunches')).toHaveCount(0);
   });
 });
 

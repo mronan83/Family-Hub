@@ -3,8 +3,10 @@ import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
 import { homeAlerts } from '@/lib/home-alerts';
+import { daysToPick, lunchQuickWords, lunchWeekToOpen } from '@/lib/lunch-list';
 import { serverClient } from '@/lib/supabase/server';
-import { HomeView, type SchoolToday } from './home-view';
+import { HomeView, type LunchQuick, type SchoolToday } from './home-view';
+import { loadLunch } from './meals/data';
 
 export const metadata: Metadata = { title: 'Home' };
 
@@ -46,6 +48,8 @@ export default async function AdminHome({
   const today = isoDay(h.timezone);
   const nextWeekStart = addDays(today, 7 - ((dow(today) - h.weekStart + 7) % 7));
   const nextWeekEnd = addDays(nextWeekStart, 6);
+  // [MEAL-12] The lunch week the quick action opens: this one Monday to Friday, else the coming one.
+  const lunchMonday = lunchWeekToOpen(today);
 
   const [
     approvals,
@@ -60,6 +64,8 @@ export default async function AdminHome({
     invites,
     nextMenus,
     lunchChanges,
+    lunchWeek,
+    names,
   ] = await Promise.all([
     db!
       .from('chore_occurrence')
@@ -110,8 +116,10 @@ export default async function AdminHome({
       .eq('household_id', h.id)
       .eq('status', 'waiting')
       .gt('open_until', new Date().toISOString()),
+    loadLunch(db!, h.id, lunchMonday),
+    db!.from('member').select('id, display_name').eq('household_id', h.id),
   ]);
-  for (const r of [approvals, requests, boards, calendars, menus, jobs, years, closures]) {
+  for (const r of [approvals, requests, boards, calendars, menus, jobs, years, closures, names]) {
     if (r.error) throw new Error(`home: ${r.error.message}`);
   }
 
@@ -176,6 +184,25 @@ export default async function AdminHome({
     invites: (invites.data ?? []).map((i) => ({ email: i.email, expiresAt: i.expires_at })),
   });
 
+  const nameOf = new Map(
+    ((names.data ?? []) as { id: string; display_name: string }[]).map((m) => [
+      m.id,
+      m.display_name,
+    ]),
+  );
+  const lunch: LunchQuick | null = lunchWeek.length
+    ? {
+        href: `/admin/meals?week=${lunchMonday}#lunch`,
+        words: lunchQuickWords(
+          lunchWeek.map((c) => ({
+            name: nameOf.get(c.memberId) ?? 'A child',
+            toPick: daysToPick(c, today),
+          })),
+          lunchMonday > today,
+        ),
+      }
+    : null;
+
   return (
     <HomeView
       name={h.name}
@@ -183,6 +210,7 @@ export default async function AdminHome({
       alerts={alerts}
       school={school}
       menuFeeds={feeds.length}
+      lunch={lunch}
       notice={
         Object.keys(params).find((k) => k === 'welcome' || k === 'joined' || k === 'password') ??
         params.done ??

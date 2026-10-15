@@ -733,6 +733,11 @@ body {
   font-weight: 600;
   color: var(--text-soft);
 }
+/* The lunch card's line: whose days still need a choice (WP-73). */
+.fw-quick__words {
+  grid-column: 1 / -1;
+  margin: 0;
+}
 .fw-quick__more,
 .fw-quick__link {
   grid-column: 1 / -1;
