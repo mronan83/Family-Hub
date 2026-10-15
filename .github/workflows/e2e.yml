@@ -1,8 +1,15 @@
-# e2e on each Vercel preview (01 §9.3, §9.5, D-85). Previews and e2e use the test database, a second
-# Supabase project that holds only made-up families; production's database never sees a test. Each
-# run empties the test database, applies every migration in the pull request, loads the demo family,
-# then runs Playwright against the preview URL through Vercel deployment protection. Runs are
-# serialized so two never share the test database at once.
+# e2e on each Vercel preview (01 §9.3, §9.5, D-85, D-104). Previews and e2e use the test database, a
+# second Supabase project that holds only made-up families; production's database never sees a test.
+#
+# scope    which specs this pull request needs, from what its diff changes (scripts/e2e-scope.mjs):
+#          none (docs and the like), the specs for the areas it touches, or all of them
+# run      only when some spec is needed: holds the test database (scripts/e2e-lock.sh; runs queue on
+#          the database, none is replaced), empties it, applies the pull request's migrations, loads
+#          the demo family, then runs the specs against the preview (scripts/e2e-run.mjs): changed
+#          specs five times each, and an infrastructure failure re-run once with its cause
+# preview  the verdict the deploy gate reads: green when no spec was needed or every spec passed
+#
+# The full suite runs on main after each deploy and nightly (e2e-main.yml).
 name: e2e
 
 on:
@@ -11,16 +18,47 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: demo-family
-  cancel-in-progress: false
-
 jobs:
-  preview:
+  scope:
+    # Previews of pull requests only: not production, and not main's own previews (e2e-main.yml).
     if: >-
       github.event.deployment_status.state == 'success' &&
-      github.event.deployment.environment != 'Production'
+      github.event.deployment.environment != 'Production' &&
+      github.event.deployment.ref != 'main'
     runs-on: ubuntu-24.04
+    outputs:
+      mode: ${{ steps.scope.outputs.mode }}
+      specs: ${{ steps.scope.outputs.specs }}
+      burn_in: ${{ steps.scope.outputs.burn_in }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          fetch-depth: 0
+      - id: scope
+        name: Which specs this change needs
+        run: |
+          node scripts/e2e-scope.mjs --base origin/main --head HEAD --github-output "$GITHUB_OUTPUT" | tee "$RUNNER_TEMP/scope.json"
+          node -e '
+            const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+            const lines = [`## e2e scope: ${s.mode}`, "",
+              s.mode === "none" ? "No spec covers what changed: e2e is not needed." :
+              s.mode === "all" ? `All ${s.specs.length} specs: ${s.reasons.at(-1)}.` :
+              `${s.specs.length} spec(s): ${s.specs.join(", ")}`,
+              ...(s.burnIn.length ? ["", `Burn-in, 5 runs each: ${s.burnIn.join(", ")}`] : []),
+              "", "<details><summary>Why</summary>", "", ...s.reasons.map((r) => `- ${r}`), "", "</details>"];
+            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
+          ' "$RUNNER_TEMP/scope.json"
+
+  run:
+    needs: scope
+    if: needs.scope.outputs.mode != 'none'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    # A newer push to the same branch replaces this branch's run; another branch's run is never touched.
+    concurrency:
+      group: e2e-${{ github.event.deployment.ref }}
+      cancel-in-progress: true
     env:
       E2E_BASE_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
@@ -54,22 +92,6 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.deployment.sha }}
-      # The reset seeds the demo family's history from its own today, and a run takes about 10
-      # minutes. One that crossed the family's midnight would compare yesterday's seed with today's
-      # dates (it did once, at 04:00 UTC: a calendar window and a streak date each off by a day), so
-      # a run that would end past that midnight waits for it to pass, then resets and runs.
-      - name: Not across the demo family's midnight
-        run: |
-          # Before the first run the test database is empty: the demo family's own time zone then.
-          tz=$(psql "$SUPABASE_DB_URL" -AtX -c "select timezone from public.household where id = '0de00000-0000-4000-8000-000000000001'" 2>/dev/null || true)
-          tz=${tz:-America/New_York}
-          left=$(( $(TZ="$tz" date -d 'tomorrow 00:00' +%s) - $(date +%s) ))
-          if [ "$left" -lt 1500 ]; then
-            echo "The demo family's midnight ($tz) is ${left} s away: waiting for it to pass."
-            sleep $(( left + 30 ))
-          fi
-      - name: Empty the test database, apply this PR's migrations, load the demo family
-        run: bash scripts/preview-db.sh
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -77,14 +99,31 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm e2e
+      - name: Wait for the preview to answer
+        env:
+          E2E_SHA: ${{ github.event.deployment.sha }}
+        run: bash scripts/e2e-ready.sh
+      - name: Hold the test database
+        env:
+          E2E_LOCK_NAME: ${{ github.event.deployment.ref }} ${{ github.run_id }}
+        run: bash scripts/e2e-lock.sh acquire
+      - name: Empty the test database, apply this PR's migrations, load the demo family
+        run: bash scripts/preview-db.sh
+      - name: e2e
         env:
           E2E_REPORT: ${{ runner.temp }}/e2e-report.txt
+        run: >-
+          node scripts/e2e-run.mjs
+          --specs "${{ needs.scope.outputs.mode == 'all' && ' ' || needs.scope.outputs.specs }}"
+          --burn-in "${{ needs.scope.outputs.burn_in }}"
+      - name: Let go of the test database
+        if: always()
+        run: bash scripts/e2e-lock.sh release
       - name: Measurements (DEV-05 latency, WP-08 list entry)
         if: always()
         run: |
           if [ -f "$RUNNER_TEMP/e2e-report.txt" ]; then
-            tee -a "$GITHUB_STEP_SUMMARY" < "$RUNNER_TEMP/e2e-report.txt"
+            { echo '### Measurements'; echo; cat "$RUNNER_TEMP/e2e-report.txt"; } | tee -a "$GITHUB_STEP_SUMMARY"
           fi
       # Traces record request headers, the deployment-protection bypass among them, and a public
       # repository's artifacts are public (D-48): the report is kept only while the repository is private.
@@ -94,3 +133,20 @@ jobs:
           name: playwright-report
           path: e2e/playwright-report
           retention-days: 14
+
+  preview:
+    needs: [scope, run]
+    if: always() && needs.scope.result != 'skipped'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Verdict
+        env:
+          SCOPE: ${{ needs.scope.result }}
+          MODE: ${{ needs.scope.outputs.mode }}
+          RUN: ${{ needs.run.result }}
+        run: |
+          if [ "$SCOPE" != success ]; then echo "::error::the scope job ended '$SCOPE'"; exit 1; fi
+          if [ "$MODE" = none ]; then echo "No spec covers what changed: e2e is not needed (D-104)."; exit 0; fi
+          if [ "$RUN" = cancelled ]; then echo "::error::replaced by a newer push to this branch"; exit 1; fi
+          if [ "$RUN" != success ]; then echo "::error::e2e ended '$RUN'; its summary says why"; exit 1; fi
+          echo "e2e passed ($MODE)."

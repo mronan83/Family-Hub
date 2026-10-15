@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '../support/test';
-import { retireBoard } from '../support/board';
+import { pairBoard, retireBoard } from '../support/board';
+import { householdToday } from '../support/day';
 
 // [PTS-02][PTS-04][RWD-07][RWD-08] The board's shop, requests and goals on the preview (WP-20, D-59),
 // at the reference panel's 3840×2160 (the board-4k project). The done-when: Maya earns points on the
@@ -11,17 +12,19 @@ import { retireBoard } from '../support/board';
 // by the same evaluation, is celebrated in turn: each once.
 //
 // Leo is left alone (goals.spec reads his goal's history). Afterwards the reward is refunded, the bed
-// put back, the test goal cancelled, and every reached goal recorded as celebrated, so the boards of
-// later specs never open on a celebration.
+// and teeth put back, the test goal cancelled, and Maya's reached goals recorded as celebrated, so the
+// boards of later specs never open on a celebration from here.
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const BOARD = 'Shop e2e';
 const MAKE_BED = '0de00000-0000-4000-8000-0000000c0001';
+const BRUSH_TEETH = '0de00000-0000-4000-8000-0000000c0002';
 const STAY_UP = '0de00000-0000-4000-8000-0000000e0003';
 const STAY_UP_TITLE = 'Stay up 30 minutes late';
 const GOAL = '0de00000-0000-4000-8000-0000000620e2';
 const GOAL_TITLE = 'E2E kite';
-const TODAY = `(now() at time zone 'America/New_York')::date`;
+// [D-105] The household's today, read once in beforeAll and used for the goal and the check-offs.
+let TODAY = '';
 
 function sql(query: string): string {
   return execFileSync('psql', [db!, '-X', '-A', '-t', '-q', '-v', 'ON_ERROR_STOP=1', '-c', query], {
@@ -34,20 +37,20 @@ const balance = (member: string) =>
   Number(
     sql(`select coalesce(sum(amount), 0) from public.points_ledger where member_id = '${member}'`),
   );
-const mayaBed = () =>
-  sql(`select id from public.chore_occurrence where chore_id = '${MAKE_BED}' and due_date = ${TODAY}
-         and member_id = '${memberId('Maya')}'`);
-
-/** Maya's bed as the seed left it (still to do today): a parent's uncheck. */
-function putBackBed() {
-  const bed = mayaBed();
-  if (sql(`select status from public.chore_occurrence where id = '${bed}'`) !== 'scheduled') {
-    sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
-         values (gen_random_uuid(), '${bed}', 'admin_uncomplete', now())`);
-  }
+/**
+ * Maya's items today as the seed left them (still to do): a parent's uncheck of each done one. Before
+ * the tests, every item she is credited with today, so the kite starts at 0 of 1; after, the bed and
+ * the teeth the tests checked off.
+ */
+function putBack(chores?: string[]) {
+  const maya = memberId('Maya');
+  sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
+       select gen_random_uuid(), o.id, 'admin_uncomplete', now()
+         from public.chore_occurrence o
+        where o.household_id = '${DEMO}' and o.due_date = ${TODAY} and o.status <> 'scheduled'
+          and (o.member_id = '${maya}' or '${maya}' = any (o.done_by))
+          ${chores ? `and o.chore_id in (${chores.map((c) => `'${c}'`).join(', ')})` : ''}`);
 }
-
-test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 let admin: Page;
@@ -55,13 +58,12 @@ let board: Page;
 const people = () => board.getByRole('list', { name: 'Family', exact: true });
 
 test.beforeAll(async ({ browser }, testInfo) => {
-  // Signing in and pairing a board can take most of 30 s on a cold preview.
-  testInfo.setTimeout(90_000);
-  // A retry starts again: the bed to do, no board of this name, the test goal set afresh.
-  putBackBed();
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';
-       delete from public.reward_goal where id = '${GOAL}';`);
+  // Signing in and pairing a board takes 10 to 40 s on a cold preview (pairBoard).
+  testInfo.setTimeout(120_000);
+  TODAY = `'${householdToday(db!)}'::date`;
+  // A run starts again: Maya's day to do, the test goal set afresh.
+  putBack();
+  sql(`delete from public.reward_goal where id = '${GOAL}';`);
   // One thing done from today reaches it, ending tomorrow (so it is Maya's first goal on the board).
   sql(`insert into public.reward_goal (id, household_id, member_id, title, icon, start_date, end_date,
                                        rule_logic, status, created_at)
@@ -70,26 +72,11 @@ test.beforeAll(async ({ browser }, testInfo) => {
        insert into public.reward_rule (household_id, goal_id, rule_type, target, scope, params, sort_order)
        values ('${DEMO}', '${GOAL}', 'COUNT', 1, '{"all": true}', '{}', 1);
        insert into public.reward_goal_progress (goal_id, household_id) values ('${GOAL}', '${DEMO}');`);
-
-  admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
-  await admin.goto('/admin/devices');
-  const form = admin.getByRole('form', { name: 'Add a board', exact: true });
-  await form.getByLabel('Board name', { exact: true }).fill(BOARD);
-  await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
-  const code = (await admin.getByTestId('pairing-code').textContent())?.replace(/\D/g, '') ?? '';
-  board = await (await browser.newContext({ hasTouch: true })).newPage();
-  await board.goto('/board');
-  await board.getByLabel('Pairing code from the admin app', { exact: true }).fill(code);
-  await board.getByRole('button', { name: 'Pair this board', exact: true }).click();
-  await expect(board).toHaveURL(/\/board$/);
-  await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
+  ({ admin, board } = await pairBoard(browser, BOARD, { board: { hasTouch: true } }));
 });
 
 test.afterAll(async () => {
-  // Refund the reward (a parent cancels it), put the bed back, cancel the test goal.
+  // Refund the reward (a parent cancels it), put the bed and teeth back, cancel the test goal.
   const approved = sql(
     `select coalesce(string_agg(id::text, ','), '') from public.redemption
       where member_id = '${memberId('Maya')}' and catalog_item_id = '${STAY_UP}' and status = 'approved'`,
@@ -106,10 +93,12 @@ test.afterAll(async () => {
       );
     }
   }
-  putBackBed();
+  putBack([MAKE_BED, BRUSH_TEETH]);
+  // Maya's goals reached here (the kite, and her park if the evaluation reached it) are recorded as
+  // celebrated; Leo's are left as they are.
   sql(`update public.reward_goal set status = 'cancelled', archived_at = now() where id = '${GOAL}';
        update public.reward_goal set celebrated_at = coalesce(celebrated_at, now())
-        where household_id = '${DEMO}' and status = 'achieved';`);
+        where household_id = '${DEMO}' and member_id = '${memberId('Maya')}' and status = 'achieved';`);
   await retireBoard(board, BOARD);
 });
 
@@ -135,6 +124,8 @@ test("[PTS-02][RWD-07][US-403] Maya's day: her balance, her goals, and a nudge n
 
 test('[PTS-04][US-1104][US-1105] the done-when: Maya earns, asks for a reward, Alex approves, the board shows it', async () => {
   const maya = memberId('Maya');
+  await people().getByRole('button', { name: 'Maya', exact: true }).click();
+  await expect(board.getByRole('heading', { name: 'Maya', level: 2 })).toBeVisible();
   const before = balance(maya);
   // Earn: her bed, on the board.
   await board.getByRole('button', { name: 'Check off Make bed', exact: true }).click();
@@ -150,10 +141,15 @@ test('[PTS-04][US-1104][US-1105] the done-when: Maya earns, asks for a reward, A
   // Newest first: a retry also lists the first attempt's request, refunded ("Called off").
   const row = asked.getByRole('listitem').filter({ hasText: STAY_UP_TITLE }).first();
   await expect(row).toContainText('Waiting for a grown-up');
-  const id = sql(
-    `select id from public.redemption where member_id = '${maya}' and catalog_item_id = '${STAY_UP}'
-        and status = 'requested'`,
-  );
+  // The row may show before the request is stored: wait for the database to have it.
+  const requested = () =>
+    sql(
+      `select coalesce(string_agg(id::text, ','), '') from public.redemption
+        where member_id = '${maya}' and catalog_item_id = '${STAY_UP}' and status = 'requested'`,
+    );
+  await expect.poll(requested, { message: 'Maya’s request stored as requested' }).not.toBe('');
+  const id = requested();
+  expect(id, 'one request waiting').not.toContain(',');
   expect(
     sql(
       `select requested_by_type || ':' || cost_snapshot from public.redemption where id = '${id}'`,
@@ -173,7 +169,9 @@ test('[PTS-04][US-1104][US-1105] the done-when: Maya earns, asks for a reward, A
           where redemption_id = '${id}'`),
   ).toBe('spend -25');
 
-  // The board hears it: a yes, the balance down by the cost, and the spend in her points.
+  // The board hears it: a yes, the balance down by the cost, and the spend in her points. A tap on
+  // Maya keeps her screen and starts the board's 90 s idle again, so it stays on her screen to show it.
+  await people().getByRole('button', { name: 'Maya', exact: true }).click();
   await expect(row).toContainText('Yes! It’s coming');
   await expect(board.locator('.fw-today__me-head [data-balance]')).toHaveAttribute(
     'data-balance',
@@ -186,14 +184,47 @@ test('[PTS-04][US-1104][US-1105] the done-when: Maya earns, asks for a reward, A
 });
 
 test('[RWD-08][US-404] a goal reached is celebrated once, by the board that shows it, and recorded', async () => {
-  // Previews run no jobs: the Goals page works the goals out (the check-off above reached the kite;
-  // Maya's seeded run reaches the park).
-  await admin.goto('/admin/goals');
-  expect(
-    sql(`select status || ':' || achievement_count from public.reward_goal where id = '${GOAL}'`),
-  ).toBe('achieved:1');
-  // Each reached goal in turn, each once: the kite, and the park if the seeded run reached it.
-  const party = board.getByRole('dialog', { name: /^Maya reached / });
+  // A goal check-off, a Goals page evaluation that may need several loads, a celebration heard over
+  // Realtime or the next refresh, and a reload: 20 to 60 s; 3× the slow end.
+  test.setTimeout(180_000);
+  const maya = memberId('Maya');
+  // The check-off that reaches the kite: her teeth, on the board.
+  await people().getByRole('button', { name: 'Maya', exact: true }).click();
+  await board.getByRole('button', { name: 'Check off Brush teeth', exact: true }).click();
+  const teeth = sql(`select id from public.chore_occurrence where chore_id = '${BRUSH_TEETH}'
+                       and due_date = ${TODAY} and member_id = '${maya}'`);
+  await expect
+    .poll(() => sql(`select status from public.chore_occurrence where id = '${teeth}'`), {
+      message: 'Maya’s Brush teeth stored as done',
+    })
+    .toBe('completed');
+  // Previews run no jobs: the Goals page works the goals out (the check-off reached the kite; Maya's
+  // seeded run may reach the park). It does so while it renders and only logs a failure, so a slow
+  // database leaves the goal as it was: load it again until the goal is reached, and say what it saw.
+  const kite = () =>
+    sql(`select status || ':' || achievement_count from public.reward_goal where id = '${GOAL}'`);
+  const loads: string[] = [];
+  try {
+    await expect
+      .poll(
+        async () => {
+          await admin.goto('/admin/goals');
+          const now = kite();
+          loads.push(now);
+          return now;
+        },
+        { timeout: 60_000, intervals: [2_000] },
+      )
+      .toBe('achieved:1');
+  } catch (e) {
+    throw new Error(
+      `the kite was not reached after ${loads.length} loads of the Goals page; after each it was (status:times reached) ${loads.join(', ') || 'never read'}`,
+      { cause: e },
+    );
+  }
+  // Each reached goal in turn, each once: the kite, and the park if the seeded run reached it, and any
+  // other reached goal not yet celebrated (whoever's: the board shows them all).
+  const party = board.getByRole('dialog', { name: / reached / });
   // The board hears the change through Realtime (normally within seconds); a missed event is read by
   // its next refresh. If it doesn't come, say where it stopped: the goal, and what the board heard.
   try {

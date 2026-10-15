@@ -11,6 +11,7 @@ const DEMO = '0de00000-0000-4000-8000-000000000001';
 const TRIP_FEE = '0de00000-0000-4000-8000-0000000c0007';
 const sql = (q: string) => query(db!, q);
 const ENDPOINT = 'https://push.familywise.invalid/rmd-ui-e2e';
+const ALEX_SIGN_IN = '0de00000-0000-4000-8000-0000000000a1';
 
 test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
@@ -27,6 +28,12 @@ function putBack() {
 }
 
 test.beforeAll(async ({ browser }) => {
+  // Reminders and My tasks are Alex's own, so their sign-in must be on their record (link-me.spec
+  // unlinks it and puts it back); say so plainly if it isn't, rather than fail on "Which one is you?".
+  expect(
+    sql(`select coalesce(user_id::text, 'none') from public.member where id = '${alex()}'`),
+    'Alex’s sign-in is linked to their member record',
+  ).toBe(ALEX_SIGN_IN);
   putBack();
   page = await browser.newPage();
   await page.goto('/sign-in');
@@ -82,8 +89,8 @@ test('[CHR-15][US-317] a device: switched off and on, a test (live app only), re
        values ('${DEMO}', '${alex()}', '${user}', '${ENDPOINT}', '${'B'.repeat(87)}', '${'a'.repeat(22)}', 'E2E phone')`);
   await page.goto('/admin/reminders');
   const devices = page.getByRole('list', { name: 'My devices' });
-  await expect(devices.getByRole('listitem')).toHaveCount(1);
-  await expect(devices).toContainText('E2E phone');
+  // Only the device this test added: Alex may have others (reminders-job.spec adds its own).
+  await expect(devices.getByRole('listitem').filter({ hasText: 'E2E phone' })).toHaveCount(1);
 
   await devices.getByRole('button', { name: 'Switch off E2E phone' }).click();
   await expect(page.getByRole('status')).toHaveText('That device is switched off.');

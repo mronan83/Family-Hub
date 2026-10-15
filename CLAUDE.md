@@ -42,6 +42,16 @@ The planner follows `.claude/skills/planner/SKILL.md`. A worker follows `.claude
 - Board: text at least 28 px, buttons at least 56 px, works by touch and by mouse. Admin: works on a 13" laptop.
 - Validate locally and run the format check before every push. One validated push beats three speculative ones.
 
+**Tests** (the test standard, D-105; build tests with the same care as the code, so they fail only when the app is wrong)
+- No sleeps or fixed waits. Wait on a readiness signal: a role or text, `aria-busy`, a status, a response, or `expect.poll` on the database. To show something did *not* happen, wait for a control that did.
+- No dependence on the real clock. Read the household's today from the database once (`e2e/support/day.ts`) and do date maths on calendar dates. A test passes at any hour UTC, on any weekday, in any month (summer and winter break included: `e2e/support/school.ts`), and across DST. Where dates matter, cover midnight UTC, week boundaries and DST in unit tests.
+- Own data. Each test creates what it needs with unique names, or takes it from its file's `beforeAll`; it never depends on another test or on run order, and puts back what it changes in the demo family in `afterAll` or `finally`. Steps of one story are one test with `test.step`. No new `mode: 'serial'`.
+- Time limits come from measured runs on the free test database, with at least 3× headroom. The run summary lists any test that used more than a third of its limit. Latency budgets that are requirements stay exact, timed from the server's confirmation.
+- Prefer Vitest and the UI suite. e2e only for what needs the real database and a preview.
+- Burn-in: every new or changed e2e spec runs 5 times in a row on its PR (`--repeat-each=5`, that spec only; e2e does this by itself) and passes all 5 before the PR is ready.
+- e2e on a PR runs only the specs for what the diff touches (`e2e/areas.json`); a docs-only PR runs none. A new spec goes in `e2e/areas.json` with the URLs it opens. The full suite runs on `main` after each deploy and nightly; a red run there opens the issue "e2e on main is red" and is the next thing to fix (D-104).
+- A failure is re-run once only on evidence the infrastructure failed (a statement timeout, a refused or reset connection, a 5xx from Supabase or the gateway, the test database slow while it ran). Anything else is an assertion failure: find the cause in the app or the test.
+
 **Secrets and data**
 - Never ask the owner to paste a token or key. Secrets go straight into GitHub, Vercel or Supabase settings, or are made by a workflow that never prints them.
 - Previews never hold the Supabase secret key or `JOB_SIGNING_SECRET`.
@@ -52,7 +62,7 @@ The planner follows `.claude/skills/planner/SKILL.md`. A worker follows `.claude
 
 - Skip, disable or quarantine a test, or call a failure a flake without a cause.
 - Push an empty commit, or close and reopen a PR, to restart CI.
-- Cancel or displace another PR's e2e run (see "The e2e queue" in the deliver skill).
+- Cancel another PR's e2e run, or hold the test database outside `scripts/e2e-lock.sh` (see "The test database" in the deliver skill).
 - Rebase or force-push a branch that is in review. Merge `main` into it instead.
 - Put a model name or ID in a commit, PR, comment or doc.
 - Commit `.claude/worktrees/`, or the `AGENTS.md` and `CLAUDE.md` that the Next.js build writes under `apps/web/`.

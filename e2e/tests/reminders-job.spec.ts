@@ -2,6 +2,7 @@ import { expect, test, type Page } from '../support/test';
 import { runReminders, webPushSender } from '../../apps/web/lib/reminders';
 import { serviceRpc, sql as query } from '../support/db';
 import { browserKeys, decryptPush, mockPushService, vapidKeys } from '../support/push';
+import { addDays, householdToday } from '../support/day';
 
 // [CHR-15][CHR-16][CHR-17][CHR-20] The reminders job against a mocked push service (WP-40, D-58;
 // WP-63, D-88): the job's own code (lib/reminders.ts) runs here on the e2e runner against the shared
@@ -9,13 +10,14 @@ import { browserKeys, decryptPush, mockPushService, vapidKeys } from '../support
 // and no VAPID private key. Alex of the demo family turns reminders on with one phone (and an old
 // laptop the push service says is gone). The approval alert runs on today's clock, first, before
 // quiet hours are set; the rest run two days ahead, so production's own reminders job (every 5
-// minutes) never reaches these. What is made here is approved, archived or removed at the end.
+// minutes) never reaches these. Each test starts from the same set-up (reminders on, both devices, no
+// item of this spec's left), so none depends on another. What is made here is approved, archived or
+// removed before each test and at the end.
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const TAG = 'rmd-e2e';
 const sql = (q: string) => query(db!, q);
 
-test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 const vapid = { ...vapidKeys(), subject: 'https://familywise.invalid' };
@@ -108,23 +110,35 @@ const runNow = () => {
   );
 };
 
-// Items with completion events can't be deleted (events are append-only): they are archived, which
-// takes them off every list and stops their reminders.
+// Items with completion events can't be deleted (events are append-only): a check-off still waiting
+// is approved (no points, so no balance changes) so nothing is left waiting for other tests, then
+// they are archived, which takes them off every list and stops their reminders.
 function cleanUp() {
-  sql(`update public.chore set archived_at = now()
+  sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
+       select gen_random_uuid(), o.id, 'approve', now()
+         from public.chore_occurrence o join public.chore c on c.id = o.chore_id
+        where c.household_id = '${DEMO}' and c.title like '% ${TAG}' and c.archived_at is null
+          and o.status = 'pending_approval';
+       update public.chore set archived_at = now()
         where household_id = '${DEMO}' and title like '% ${TAG}' and archived_at is null;
        delete from public.push_subscription where endpoint like 'https://push.familywise.invalid/${TAG}-%';
        delete from public.reminder_preference where member_id = (select id from public.member
          where household_id = '${DEMO}' and display_name = 'Alex');`);
 }
 
+let user = '';
 test.beforeAll(() => {
-  cleanUp();
   alex = sql(
     `select id from public.member where household_id = '${DEMO}' and display_name = 'Alex'`,
   );
-  day = sql(`select private.household_today('${DEMO}') + 2`);
-  const user = sql(`select user_id from public.member where id = '${alex}'`);
+  user = sql(`select user_id from public.member where id = '${alex}'`);
+  day = addDays(householdToday(db!), 2);
+});
+
+// [D-105] Each test's own start: Alex's reminders on (no quiet hours), his phone and his old laptop
+// subscribed and enabled, and no item of this spec's left from a test before.
+test.beforeEach(() => {
+  cleanUp();
   sql(`insert into public.reminder_preference (member_id, household_id, enabled, default_on, morning_time)
        values ('${alex}', '${DEMO}', true, false, '08:00');
        insert into public.push_subscription (household_id, member_id, user_id, endpoint, p256dh, auth_secret, device_label)
@@ -139,7 +153,7 @@ test('[CHR-20][US-322] a check-off waiting for a parent: exactly one push, and i
 }: {
   page: Page;
 }) => {
-  const homework = checkOff('Read for 20 minutes');
+  checkOff('Read for 20 minutes');
   // Alex turned reminders on (and with them Approvals) before it: one alert, for it alone.
   expect(await runNow()).toMatchObject({ approvals: 1, sent: 1, delivered: 2, gone: 0 });
   const [alert] = phonePayloads();
@@ -153,7 +167,7 @@ test('[CHR-20][US-322] a check-off waiting for a parent: exactly one push, and i
   });
 
   // A second check-off: one more alert, for only what is new, replacing the first on the lock screen.
-  const piano = checkOff('Practice piano');
+  checkOff('Practice piano');
   expect(await runNow()).toMatchObject({ approvals: 1, sent: 1 });
   expect(phonePayloads().map((p) => `${p.title} | ${p.body} | ${p.tag}`)).toEqual([
     'Maya: 1 check-off waiting | Open Today to approve | approval',
@@ -170,12 +184,8 @@ test('[CHR-20][US-322] a check-off waiting for a parent: exactly one push, and i
   const waiting = page.getByRole('list', { name: 'Waiting for you' });
   await expect(waiting.getByText(`Read for 20 minutes ${TAG}`)).toBeVisible();
   await expect(waiting.getByText(`Practice piano ${TAG}`)).toBeVisible();
-
-  // Put back: approved (no points), so nothing is left waiting for other tests.
-  for (const id of [homework, piano]) {
-    sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
-         values (gen_random_uuid(), '${occurrence(id)}', 'approve', now())`);
-  }
+  // Both are put back by cleanUp(), after this test and on its failure too: approved (no points), so
+  // nothing is left waiting for other tests.
 });
 
 test('[CHR-16][US-318] a task due in 15 minutes: exactly one push, encrypted, opening it in My tasks', async () => {
@@ -233,8 +243,8 @@ test('[CHR-15][CHR-16] switched off for the item, the device or the person: noth
 test('[CHR-17][US-319] quiet hours hold a reminder and release it once; a private title stays off the lock screen', async () => {
   sql(`update public.reminder_preference set enabled = true, quiet_start = '21:00', quiet_end = '07:00'
         where member_id = '${alex}'`);
-  task('Wrap the present', '22:30', { private: true });
-  sql(`update public.chore set remind_lead_minutes = 0 where title = 'Wrap the present ${TAG}'`);
+  const present = task('Wrap the present', '22:30', { private: true });
+  sql(`update public.chore set remind_lead_minutes = 0 where id = '${present}'`);
   expect(await run('22:30')).toMatchObject({ planned: 1, sent: 0 });
   expect(await run('23:30')).toMatchObject({ sent: 0 });
   expect(await run('06:55', true)).toMatchObject({ sent: 0 });

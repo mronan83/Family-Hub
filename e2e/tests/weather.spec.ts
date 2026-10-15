@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '../support/test';
 import { type Fetcher, storeWeather, type WeatherPlace } from '../../apps/web/lib/weather';
-import { retireBoard } from '../support/board';
+import { pairingCode, retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
 
 // [BRD-04][US-1003] Weather on a board, on the preview (WP-45, D-69). Alex sets the demo family's
@@ -8,14 +8,14 @@ import { serviceRpc, sql as query } from '../support/db';
 // no job secret, and the e2e never calls the real weather service) and stores it. The done-when: with
 // a place set, the board shows the temperature now and today's high; with the source failing, the
 // weather hides and nothing else on the board changes. Then Alex switches to °C and stops showing the
-// weather in Settings, Family options (WP-57). The place is cleared at the end.
+// weather in Settings, Family options (WP-57). Each test sets the place and the reading it starts
+// from; the place is cleared at the end.
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const BOARD = 'Weather e2e';
 const PLACE_NAME = 'Springfield, Illinois, United States';
 const sql = (q: string) => query(db!, q);
 
-test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 let admin: Page;
@@ -67,7 +67,7 @@ const read = (fetch: Fetcher) =>
   });
 
 const weather = () => board.getByRole('group', { name: /^Weather:/ });
-/** Where the clock, the people and the dashboard sit, and what the dashboard lists. */
+/** Where the clock, the people and the dashboard sit, what the dashboard lists, and the clock's time. */
 const boardAsIs = () =>
   board.evaluate(() => ({
     at: ['.fw-board__clock', '.fw-today__people', '.fw-dash'].map((s) => {
@@ -75,7 +75,16 @@ const boardAsIs = () =>
       return [s, Math.round(r.right), Math.round(r.top)];
     }),
     rows: [...document.querySelectorAll('.fw-dash__list li[data-row]')].length,
+    clock: document.querySelector('.fw-board__clock')!.textContent,
   }));
+
+/** The place set, in °F, and a good read of it on the board: where tests 2 and 3 start from. */
+async function showWeather(temperature: number, high: number, code: number, name: string) {
+  asAlex(`public.set_weather_place('${DEMO}', '${PLACE_NAME}', 39.80172, -89.64371)`);
+  asAlex(`public.set_temperature_unit('${DEMO}', 'fahrenheit')`);
+  expect(await read(answer(temperature, high, code))).toBe('ok');
+  await expect(weather()).toHaveAccessibleName(name);
+}
 
 function cleanUp() {
   sql(`update public.household_settings
@@ -85,9 +94,7 @@ function cleanUp() {
        delete from public.weather_reading where household_id = '${DEMO}';`);
 }
 
-test.beforeAll(async ({ browser }, testInfo) => {
-  // Signing in and pairing a board can take most of 30 s on a cold preview.
-  testInfo.setTimeout(90_000);
+test.beforeAll(async ({ browser }) => {
   cleanUp();
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
        delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
@@ -99,7 +106,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
   const form = admin.getByRole('form', { name: 'Add a board', exact: true });
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);
   await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
-  const code = (await admin.getByTestId('pairing-code').textContent())?.replace(/\D/g, '') ?? '';
+  const code = await pairingCode(admin);
   board = await (await browser.newContext()).newPage();
   await board.goto('/board');
   await board.getByLabel('Pairing code from the admin app', { exact: true }).fill(code);
@@ -111,6 +118,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
 test.afterAll(async () => {
   cleanUp();
   await retireBoard(board, BOARD);
+  await admin?.context().close();
 });
 
 test('[BRD-04][US-1003] the done-when: with a place set, the board shows the temperature now and today’s high', async () => {
@@ -126,11 +134,23 @@ test('[BRD-04][US-1003] the done-when: with a place set, the board shows the tem
 });
 
 test('[BRD-04][US-1003] the done-when: with the source failing, the weather hides and nothing else on the board changes', async () => {
-  await expect(weather()).toBeVisible();
-  const before = await boardAsIs();
-  expect(await read(failing)).toBe('error');
-  await expect(weather()).toHaveCount(0);
-  expect(await boardAsIs()).toEqual(before);
+  // The clock's minute can turn between the two looks, and its new text can move what sits beside it:
+  // then the comparison is made again, within one minute.
+  let before: Awaited<ReturnType<typeof boardAsIs>> | undefined;
+  let after: typeof before;
+  for (let look = 1; look <= 2; look++) {
+    await showWeather(63.4, 68.2, 61, 'Weather: 63 degrees Fahrenheit, rain, high 68');
+    before = await boardAsIs();
+    expect(await read(failing)).toBe('error');
+    await expect(weather()).toHaveCount(0);
+    after = await boardAsIs();
+    if (before.clock === after.clock) break;
+    test.info().annotations.push({
+      type: 'retried',
+      description: `the clock turned from ${before.clock} to ${after.clock} between the two looks`,
+    });
+  }
+  expect(after, 'the board after the weather hid, against before').toEqual(before);
   expect(sql(`select error from public.weather_reading where household_id = '${DEMO}'`)).toBe(
     'The weather service answered 503 (Service Unavailable). FamilyWise tries again in 30 minutes.',
   );
@@ -140,6 +160,7 @@ test('[BRD-04][US-1003] the done-when: with the source failing, the weather hide
 });
 
 test('[BRD-04] in Family options: Alex sees the place and the last read, switches to °C, then stops showing the weather', async () => {
+  await showWeather(64.1, 68.2, 3, 'Weather: 64 degrees Fahrenheit, cloudy, high 68');
   await admin.goto('/admin/settings/family');
   const section = admin.getByRole('region', { name: 'Weather on the boards' });
   await expect(section).toContainText(

@@ -12,7 +12,7 @@ You keep no memory that matters. Everything you report comes from three places, 
 | Source | What it tells you |
 |---|---|
 | `docs/05-backlog.md` on `origin/main` | What is done, ready, queued or blocked (§1 status board); the owner's order ("Next, in order", under the board); dependencies (§3); what waits on the owner (§0, Y-items); spikes (§4) |
-| GitHub, `mronan83/Family-Hub` | Open PRs and their CI and e2e state; the e2e queue; the latest deploy run on `main` |
+| GitHub, `mronan83/Family-Hub` | Open PRs and their CI and e2e state; the latest deploy run on `main`; the latest `e2e-main` run and any open issue "e2e on main is red" |
 | Claude sessions | Worker sessions, titled `WP-nn · <title>` (also `SPIKE-nn · …` and `Backlog · …`), and whether each is working, waiting or failed |
 
 The status board on `main` shows only merged work. What's in flight shows up only as open PRs and running workers.
@@ -20,7 +20,7 @@ The status board on `main` shows only merged work. What's in flight shows up onl
 ## When you start
 
 1. `git fetch origin main` and read `05` from `origin/main`, not from your working tree.
-2. List open PRs with their checks, the e2e workflow's running and waiting runs, and the latest `deploy` run.
+2. List open PRs with their checks, the latest `deploy` run, the latest `e2e-main` run, and any open issue "e2e on main is red" (D-104): a red full suite on `main` blocks nothing, but it goes under "Waiting on you" as the next item to start, with the issue link.
 3. List sessions and pick out the workers. For each, note its item, PR, status, and session link (`https://claude.ai/code/<session_id>`).
 4. Send each running worker one line: `Planner is now <your session id>; send status lines here.`
 5. Show the owner the status report below.

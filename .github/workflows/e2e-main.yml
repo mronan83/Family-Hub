@@ -1,0 +1,148 @@
+# The full e2e suite on main (01 §9.5, D-104): after each deploy, and nightly. A pull request runs only
+# the specs for what it changes (e2e.yml), so every test still runs here, against a preview of main's
+# head on the test database. A red run opens an issue (or adds to the open one) and blocks nothing:
+# the next pull request still runs, merges and deploys. A green run closes the open issue.
+name: e2e-main
+
+on:
+  workflow_run:
+    workflows: [deploy]
+    types: [completed]
+    branches: [main]
+  schedule:
+    # 03:13 in New York (EDT; 02:13 in winter): no one uses the demo family then.
+    - cron: '13 7 * * *'
+  workflow_dispatch:
+
+# One at a time; a newer one waiting replaces an older one waiting, since it tests a newer main.
+concurrency:
+  group: e2e-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  full:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      SUPABASE_DB_URL: ${{ secrets.TEST_SUPABASE_DB_URL }}
+      TEST_PROJECT_REF: puoctwssryisuzakhzxj
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.SHA }}
+          fetch-depth: 2
+      # After a deploy, a merge that changed no spec's area (docs, say) ran the same code last time.
+      - id: needed
+        name: Is a run needed
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = workflow_run ]; then
+            mode=$(git diff --name-only --no-renames HEAD~1 HEAD | node scripts/e2e-scope.mjs --files - | node -e 'console.log(JSON.parse(require("fs").readFileSync(0,"utf8")).mode)')
+          else
+            mode=all
+          fi
+          echo "run=$([ "$mode" = none ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+          [ "$mode" != none ] || echo "The merge changed nothing a spec covers; the nightly run tests it." | tee -a "$GITHUB_STEP_SUMMARY"
+      - if: steps.needed.outputs.run == 'true'
+        uses: pnpm/action-setup@v6
+      - if: steps.needed.outputs.run == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - if: steps.needed.outputs.run == 'true'
+        name: Check configuration
+        run: |
+          missing=()
+          for v in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID VERCEL_AUTOMATION_BYPASS_SECRET SUPABASE_DB_URL; do
+            [ -n "${!v}" ] || missing+=("$v")
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::missing configuration: ${missing[*]} (docs/01-technical-architecture.md §9.8)"
+            exit 1
+          fi
+      - if: steps.needed.outputs.run == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.needed.outputs.run == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+      # A preview of main's head: Vercel's preview settings point it at the test database, as every
+      # pull request's preview is (D-85). Production's database is never touched.
+      - if: steps.needed.outputs.run == 'true'
+        id: deploy
+        name: A preview of main on the test database
+        run: |
+          npm install --global vercel@59.23.2
+          vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+          vercel build --token="$VERCEL_TOKEN"
+          url=$(vercel deploy --prebuilt --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "preview of ${SHA:0:7}: $url"
+      - if: steps.needed.outputs.run == 'true'
+        name: Wait for the preview to answer
+        env:
+          E2E_BASE_URL: ${{ steps.deploy.outputs.url }}
+        run: bash scripts/e2e-ready.sh
+      - if: steps.needed.outputs.run == 'true'
+        name: Hold the test database
+        env:
+          E2E_LOCK_NAME: main ${{ github.run_id }}
+        run: bash scripts/e2e-lock.sh acquire
+      - if: steps.needed.outputs.run == 'true'
+        name: Empty the test database, apply main's migrations, load the demo family
+        run: bash scripts/preview-db.sh
+      - if: steps.needed.outputs.run == 'true'
+        id: e2e
+        name: The full suite
+        env:
+          E2E_BASE_URL: ${{ steps.deploy.outputs.url }}
+          E2E_REPORT: ${{ runner.temp }}/e2e-report.txt
+        run: node scripts/e2e-run.mjs --summary "$RUNNER_TEMP/e2e-summary.md"
+      - if: always() && steps.needed.outputs.run == 'true'
+        name: Let go of the test database
+        run: bash scripts/e2e-lock.sh release
+      - if: always() && steps.needed.outputs.run == 'true'
+        name: Measurements (DEV-05 latency, WP-08 list entry)
+        run: |
+          if [ -f "$RUNNER_TEMP/e2e-report.txt" ]; then
+            { echo '### Measurements'; echo; cat "$RUNNER_TEMP/e2e-report.txt"; } | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+      # Red: one open issue says so, with each run's summary added to it. Green: it is closed.
+      - if: always() && steps.needed.outputs.run == 'true'
+        name: Report
+        env:
+          OUTCOME: ${{ steps.e2e.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TRIGGER: ${{ github.event_name }}
+        run: |
+          title='e2e on main is red'
+          open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" --json number,title \
+            --jq "[.[] | select(.title == \"$title\")][0].number // empty")
+          summary="$RUNNER_TEMP/e2e-summary.md"
+          [ -s "$summary" ] || echo "The run ended before e2e finished (step outcome: $OUTCOME)." > "$summary"
+          body="$RUNNER_TEMP/issue.md"
+          { echo "**${SHA:0:7}** ($TRIGGER): [run]($RUN_URL)"; echo; cat "$summary"; echo; echo '---'; echo '_Opened by the e2e-main workflow (D-104)._'; } > "$body"
+          if [ "$OUTCOME" = success ]; then
+            if [ -n "$open" ]; then
+              gh issue close "$open" --repo "$GITHUB_REPOSITORY" --comment "Green again on ${SHA:0:7}: [run]($RUN_URL)."
+            fi
+          elif [ -n "$open" ]; then
+            gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body-file "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body"
+          fi
+      - if: failure() && github.event.repository.private
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: e2e/playwright-report
+          retention-days: 14

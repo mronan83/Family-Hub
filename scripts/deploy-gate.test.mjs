@@ -13,11 +13,13 @@ const SHA = 'a'.repeat(40);
 const PR_HEAD = 'b'.repeat(40);
 
 const fakeGh = `#!/usr/bin/env bash
-# gh api PATH --jq EXPR: serve the fixture for PATH, filtered like gh does (raw strings).
-echo "$2" >> "$FAKE_DIR/gh.log"
-f="$FAKE_DIR/$(printf '%s' "$2" | tr '/?=' '___').json"
+# gh api [--paginate] PATH --jq EXPR: serve the fixture for PATH, filtered like gh does (raw strings).
+shift
+[ "$1" != --paginate ] || shift
+echo "$1" >> "$FAKE_DIR/gh.log"
+f="$FAKE_DIR/$(printf '%s' "$1" | tr '/?=&' '____').json"
 [ -f "$f" ] || { echo "gh: Not Found (HTTP 404)" >&2; exit 1; }
-jq -r "$4" "$f"
+jq -r "$3" "$f"
 `;
 const fakeCurl = `#!/usr/bin/env bash
 printf '%s' "$FAKE_VERCEL_STATUS"
@@ -55,7 +57,7 @@ function run({ env = {}, gh = fixtures(), vercel = '200' } = {}) {
   chmodSync(join(dir, 'curl'), 0o755);
   for (const [path, body] of Object.entries(gh)) {
     if (body !== undefined)
-      writeFileSync(join(dir, `${path.replace(/[/?=]/g, '_')}.json`), JSON.stringify(body));
+      writeFileSync(join(dir, `${path.replace(/[/?=&]/g, '_')}.json`), JSON.stringify(body));
   }
   const output = join(dir, 'output');
   writeFileSync(output, '');
@@ -167,8 +169,31 @@ test('[NFR-14] refuses when e2e did not pass on the pull request preview', () =>
     run({ gh: fixtures({ [preview]: checkRun('failure') }) }),
     /e2e \/ preview on PR #7 is 'failure'/,
   );
+  const files = `repos/${REPO}/pulls/7/files?per_page=100`;
   refused(
-    run({ gh: fixtures({ [preview]: checkRun(null) }) }),
+    run({
+      gh: fixtures({ [preview]: checkRun(null), [files]: [{ filename: 'apps/web/proxy.ts' }] }),
+    }),
+    /e2e \/ preview on PR #7 is 'missing'/,
+  );
+});
+
+test('[NFR-14][D-104] ships a docs-only pull request whose preview never reported e2e', () => {
+  const preview = `repos/${REPO}/commits/${PR_HEAD}/check-runs?check_name=preview`;
+  const files = `repos/${REPO}/pulls/7/files?per_page=100`;
+  const docs = [{ filename: 'docs/05-backlog.md' }, { filename: 'CLAUDE.md' }];
+  const r = run({ gh: fixtures({ [preview]: checkRun(null), [files]: docs }) });
+  assert.equal(r.code, 0, r.out);
+  assert.equal(r.deploy, 'true');
+  assert.match(r.out, /PR #7 changed nothing a spec covers; no e2e needed/);
+});
+
+test('[NFR-14][D-104] refuses a pull request that changed code and has no e2e result', () => {
+  const preview = `repos/${REPO}/commits/${PR_HEAD}/check-runs?check_name=preview`;
+  const files = `repos/${REPO}/pulls/7/files?per_page=100`;
+  const code = [{ filename: 'docs/05-backlog.md' }, { filename: 'supabase/migrations/x.sql' }];
+  refused(
+    run({ gh: fixtures({ [preview]: checkRun(null), [files]: code }) }),
     /e2e \/ preview on PR #7 is 'missing'/,
   );
 });

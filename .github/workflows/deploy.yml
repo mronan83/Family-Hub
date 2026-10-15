@@ -2,7 +2,8 @@
 # GitHub Free does not enforce branch protection or environment secrets on a private repository
 # (D-36), so the PR gates are enforced here instead: only the head of main deploys, and only if it
 # came from a merged pull request, passed every CI check, and its pull request passed e2e on its
-# preview. Migrations go through the Supabase session pooler (IPv4; the Free plan's direct
+# preview (the specs its change needs, D-104). The full suite on main (e2e-main.yml) runs after this
+# and never holds a deploy back. Migrations go through the Supabase session pooler (IPv4; the Free plan's direct
 # connection is IPv6-only). Enabled once the secrets in 01 §9.8 exist: set the repository variable
 # DEPLOY_ENABLED=true.
 name: deploy
@@ -42,9 +43,13 @@ jobs:
       PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
     steps:
       # The gate logic lives in a script so its refusals are tested (scripts/deploy-gate.test.mjs).
+      # It reads which specs a change needs from scripts/e2e-scope.mjs and its map (D-104).
       - uses: actions/checkout@v7
         with:
-          sparse-checkout: scripts/deploy-gate.sh
+          sparse-checkout: |
+            scripts/deploy-gate.sh
+            scripts/e2e-scope.mjs
+            e2e/areas.json
           sparse-checkout-cone-mode: false
       - id: check
         run: bash scripts/deploy-gate.sh

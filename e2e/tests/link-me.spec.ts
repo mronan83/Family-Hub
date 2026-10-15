@@ -40,6 +40,8 @@ test.beforeAll(async ({ browser }) => {
   await page.waitForURL(/\/admin$/);
 });
 
+// After each test too, so a test that fails half-way can't leave Alex unlinked for the next one.
+test.afterEach(() => putBack());
 test.afterAll(() => putBack());
 
 for (const [path, title, done] of [

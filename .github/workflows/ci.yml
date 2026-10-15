@@ -94,6 +94,10 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Brand checks (tile style snapshots, axe contrast, manifests, fonts)
         run: pnpm test:ui
+      # [D-104] The e2e run script's verdicts on a real Playwright run: an injected statement timeout
+      # re-runs once and is labelled; an injected assertion failure never re-runs.
+      - name: e2e re-run rules
+        run: node --test scripts/e2e-run.selftest.mjs
       - if: failure()
         uses: actions/upload-artifact@v7
         with:

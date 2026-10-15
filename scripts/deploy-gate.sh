@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Production deploy gate (01 §9.6, D-36). GitHub Free enforces no branch protection on a private
 # repository, so this decides whether a commit may ship: only the head of main, from a merged pull
-# request, with every CI check green and e2e green on that pull request's preview. Exits non-zero to
+# request, with every CI check green and e2e green on that pull request's preview. e2e / preview ran
+# only the specs the pull request's change needs, or none (D-104); a pull request that changed nothing
+# a spec covers (docs, say) ships even if its preview never reported (scripts/e2e-scope.mjs on its
+# files). The full suite on main (e2e-main.yml) never holds a deploy back. Exits non-zero to
 # refuse, writes deploy=false to skip quietly, deploy=true to ship. Tested by deploy-gate.test.mjs.
 #
 # Reads: SHA, CI_CONCLUSION (a ci run's conclusion, or "manual"), REPO, GITHUB_EVENT_NAME,
@@ -47,7 +50,14 @@ pr=$(gh api "repos/$REPO/commits/$SHA/pulls" \
 read -r number head_sha <<< "$pr"
 [ "$number" != null ] || fail "it reached main without a merged pull request"
 e2e=$(gh api "repos/$REPO/commits/$head_sha/check-runs?check_name=preview" --jq '.check_runs[0].conclusion // "missing"')
-[ "$e2e" = success ] || fail "e2e / preview on PR #$number is '$e2e'"
+if [ "$e2e" != success ]; then
+  [ "$e2e" = missing ] || fail "e2e / preview on PR #$number is '$e2e'"
+  # No e2e result at all: fine only when no spec covers anything the pull request changed.
+  files=$(gh api --paginate "repos/$REPO/pulls/$number/files?per_page=100" --jq '.[].filename')
+  mode=$(printf '%s\n' "$files" | node "$(dirname "$0")/e2e-scope.mjs" --files - | jq -r .mode)
+  [ "$mode" = none ] || fail "e2e / preview on PR #$number is 'missing'"
+  echo "PR #$number changed nothing a spec covers; no e2e needed (D-104)"
+fi
 
 echo "deploy=true" >> "$GITHUB_OUTPUT"
 echo "Deploying ${SHA:0:7} from PR #$number"
