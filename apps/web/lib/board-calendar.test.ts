@@ -21,6 +21,7 @@ import {
   rangeFor,
   step,
   weekStartOf,
+  shownCalendar,
   withSnapshot,
 } from './board-calendar';
 import { readCalendar, type BoardCalendarSource, type BoardEvent } from './snapshot';
@@ -180,6 +181,46 @@ describe('[CAL-05][WP-65] a week read earlier, brought up to the snapshot', () =
 
   it('with no snapshot calendar, what was read stands', () => {
     expect(withSnapshot(week, null)).toBe(week);
+  });
+});
+
+describe('[US-503][WP-70] a range not in the snapshot: shown while its read is out, then read', () => {
+  // A month from the 27th of September; the snapshot covers 13 October onward.
+  const snapshot = { from: '2026-10-13', to: '2026-11-03', calendars: [], events: [] };
+  const month = { from: '2026-09-27', to: '2026-11-07', calendars: [], events: [] };
+  const range = `${month.from}|${month.to}`;
+
+  it('while its first read is out, the snapshot’s part shows, partial and loading', () => {
+    expect(shownCalendar(snapshot, month.from, month.to, true, null)).toEqual({
+      cal: snapshot,
+      partial: true,
+      loading: true,
+    });
+    // A read for the range shown before (the month before) is not this range's.
+    const before = { range: '2026-08-30|2026-10-03', cal: month };
+    expect(shownCalendar(snapshot, month.from, month.to, true, before).loading).toBe(true);
+  });
+
+  it('once read, the read shows, brought up to the snapshot, and nothing is loading', () => {
+    const shown = shownCalendar(snapshot, month.from, month.to, true, { range, cal: month });
+    expect(shown).toEqual({ cal: withSnapshot(month, snapshot), partial: false, loading: false });
+  });
+
+  it('a read that failed (offline) is done: the snapshot’s part shows, partial, not loading', () => {
+    expect(shownCalendar(snapshot, month.from, month.to, true, { range, cal: null })).toEqual({
+      cal: snapshot,
+      partial: true,
+      loading: false,
+    });
+  });
+
+  it('dates the snapshot covers, or a screen that reads nothing, never wait on a read', () => {
+    expect(shownCalendar(snapshot, '2026-10-18', '2026-10-24', true, null)).toEqual({
+      cal: snapshot,
+      partial: false,
+      loading: false,
+    });
+    expect(shownCalendar(snapshot, month.from, month.to, false, null).loading).toBe(false);
   });
 });
 

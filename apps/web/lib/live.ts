@@ -74,6 +74,61 @@ export function coalesce(load: () => Promise<void>): () => Promise<void> {
   };
 }
 
+/**
+ * [CAL-05][WP-70] How long a snapshot read may be out before another starts beside it. The first is
+ * not given up: on a slow database it may still be the first back.
+ */
+export const READ_DEADLINE_MS = 4_000;
+/** [CAL-05][WP-70] Reads made for one change, at most, before the board waits for the next. */
+export const READ_TRIES = 3;
+
+/**
+ * [CAL-05][WP-70] A board's read after a change, made again when it fails or doesn't come back.
+ * `read` gets a signal (aborted once the result is known) and says whether it read (false for an
+ * error). One that fails or throws is made again at once; one still out after `deadlineMs` gets
+ * another beside it, and the first to read wins. At most `tries` reads; when the last has been out
+ * `2 × deadlineMs`, or every read has failed, it resolves false and all are aborted. Before WP-70 a
+ * failed read was dropped and a hung one blocked every later read, so the board kept a change it
+ * had heard off the screen until DEV-08's four-minute read.
+ */
+export function readSoon(
+  read: (signal: AbortSignal) => Promise<boolean>,
+  { deadlineMs = READ_DEADLINE_MS, tries = READ_TRIES } = {},
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    const reads: AbortController[] = [];
+    let failed = 0;
+    let done = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const finish = (ok: boolean) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      for (const r of reads) r.abort();
+      resolve(ok);
+    };
+    const start = () => {
+      if (done) return;
+      if (reads.length >= tries) return finish(false);
+      const r = new AbortController();
+      reads.push(r);
+      clearTimeout(timer);
+      // Still out at the deadline: another beside it (the last gets twice as long, then gives up).
+      timer = setTimeout(start, reads.length < tries ? deadlineMs : 2 * deadlineMs);
+      void read(r.signal)
+        .catch(() => false)
+        .then((ok) => {
+          if (done) return;
+          if (ok) return finish(true);
+          failed += 1;
+          // Every read made so far has failed: the next at once, or give up after the last.
+          if (failed === reads.length) start();
+        });
+    };
+    start();
+  });
+}
+
 /** Milliseconds until the next minute starts, so a clock ticks on the minute. */
 export function untilNextMinute(now: Date): number {
   return 60_000 - (now.getSeconds() * 1000 + now.getMilliseconds());

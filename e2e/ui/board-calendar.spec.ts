@@ -205,10 +205,13 @@ test('[US-503] 40 events in a month show at once, three a day and "+N more"; a d
   await openCalendar(page, '?busy=1');
   const started = Date.now();
   await views(page).getByRole('button', { name: 'Month' }).click();
-  // The 10th, where the fixture puts eight. The month draws first from the board's own days, then
-  // from the whole month a moment later, so the first "+N more" can move: wait for the 10th's.
-  const busiest = page.locator('li:not([data-outside]) > .fw-bcal__cell').nth(9);
-  await expect(busiest.locator('.fw-bcal__more')).toBeVisible();
+  // [WP-70] The month draws first from the board's own days, then from the whole month when its read
+  // lands; the calendar is aria-busy till then. Read once it has finished drawing, the first day
+  // with "+N more" stays that day (before WP-70 the test read it from the first draw).
+  await expect(page.locator('.fw-bcal__month')).toBeVisible();
+  await expect(page.locator('section.fw-bcal')).toHaveAttribute('aria-busy', 'false');
+  const busiest = page.locator('.fw-bcal__cell', { hasText: /\+\d+ more/ }).first();
+  await expect(busiest).toBeVisible();
   const ms = Date.now() - started;
   console.log(`[US-503] month view with 40 events drawn in ${ms} ms`);
   expect(ms).toBeLessThan(2000);
@@ -219,6 +222,7 @@ test('[US-503] 40 events in a month show at once, three a day and "+N more"; a d
     'aria-pressed',
     'true',
   );
+  await expect(page.locator('section.fw-bcal')).toHaveAttribute('aria-busy', 'false');
   await expect(page.locator('.fw-bcal__event, .fw-tgrid__bar')).toHaveCount(3 + more);
 });
 
@@ -239,6 +243,8 @@ test('[CAL-04] offline, a range the board hasn’t read shows what it has, and s
   await page.getByRole('button', { name: 'Next month' }).click();
   await page.getByRole('button', { name: 'Next month' }).click();
   await expect(page.getByText('Showing what this board has for these dates.')).toBeVisible();
+  // [WP-70] Its read failed, so the calendar has finished drawing: it is not left busy.
+  await expect(page.locator('section.fw-bcal')).toHaveAttribute('aria-busy', 'false');
   await context.setOffline(false);
 });
 

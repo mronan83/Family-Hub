@@ -111,6 +111,55 @@ async function boardCalendar() {
   await expect(board.locator('#cal-title')).toBeVisible();
 }
 
+/**
+ * [CAL-05][WP-70] Milliseconds from `saved` until the week shows `text` (or, `gone`, no longer does),
+ * in `selector`'s elements, timed in the board's own page every 50 ms as DEV-05 is, for up to 10 s so
+ * a late change says how late. Playwright's own wait backs off to a look every 500 ms: its last look
+ * within 3 s came at about 2.8 s, and the time it gave was up to half a second after the change.
+ */
+async function untilOnBoard(selector: string, text: string, gone: boolean, saved: number) {
+  return board
+    .waitForFunction(
+      ({ selector, text, gone }) => {
+        // Gone counts only while the week is on screen (the board may go back to Home).
+        if (!document.querySelector('.fw-tgrid')) return false;
+        const has = [...document.querySelectorAll(selector)].some((el) =>
+          el.textContent?.includes(text),
+        );
+        return has !== gone && Date.now();
+      },
+      { selector, text, gone },
+      { polling: 50, timeout: 10_000 },
+    )
+    .then(
+      async (handle) => ((await handle.jsonValue()) as number) - saved,
+      () => Infinity,
+    );
+}
+
+/**
+ * [CAL-05][WP-70] What the board did after Save, in ms from it: the last change it heard, its last
+ * read's start and return, and reads that failed; and when the database had School's choice.
+ */
+async function boardStages(saved: number, heard: string | null) {
+  const status = board.getByRole('status');
+  const at = async (name: string) => {
+    const t = Number((await status.getAttribute(name)) ?? 0);
+    return t > 0 ? `${t - saved >= 0 ? '+' : ''}${t - saved} ms` : 'never';
+  };
+  const stored = sql(`select coalesce(string_agg(dc.visible::text || ' at ' ||
+           to_char(dc.updated_at, 'HH24:MI:SS.MS'), ', '), 'nothing')
+      from public.device_calendar dc join public.calendar_source s on s.id = dc.calendar_source_id
+     where s.name = 'School e2e'`);
+  return (
+    `Save pressed at ${new Date(saved).toISOString().slice(11, 23)} UTC; ` +
+    `changes heard ${heard} → ${await status.getAttribute('data-events')}, the last at ${await at('data-heard-at')}; ` +
+    `last read from ${await at('data-read-from')} to ${await at('data-read-to')}, ` +
+    `${(await status.getAttribute('data-read-failed')) ?? 0} failed; ` +
+    `School on this board in the database: ${stored}`
+  );
+}
+
 test.beforeAll(async ({ browser }, testInfo) => {
   // Signing in, connecting and pairing a board can take most of 30 s on a cold preview.
   testInfo.setTimeout(90_000);
@@ -184,29 +233,18 @@ test('[CAL-05][US-507] unticking School for this board takes its events off it w
   await form.getByRole('checkbox', { name: 'School e2e' }).uncheck();
   await boardCalendar();
   await expect(week()).toContainText('Picture day e2e');
-  const live = board.getByRole('status');
-  const heard = await live.getAttribute('data-events');
-  const read = await board.locator('main.fw-board').getAttribute('data-fetched-at');
+  const heard = await board.getByRole('status').getAttribute('data-events');
   const saved = Date.now();
   await form.getByRole('button', { name: 'Save calendars' }).click();
-  try {
-    await expect(week()).not.toContainText('Picture day e2e', { timeout: 3_000 });
-  } catch (error) {
-    // Say what the board saw (WP-65): the changes it heard, its last read, and when the database
-    // had the choice, so a slow Realtime, a slow save and a slow read can be told apart.
-    const stored = sql(`select coalesce(string_agg(dc.visible::text || ' at ' ||
-             to_char(dc.updated_at, 'HH24:MI:SS.MS'), ', '), 'nothing')
-        from public.device_calendar dc join public.calendar_source s on s.id = dc.calendar_source_id
-       where s.name = 'School e2e'`);
-    throw new Error(
-      `[CAL-05] School still on the board ${Date.now() - saved} ms after Save (pressed at ${new Date(saved).toISOString().slice(11, 23)} UTC): ` +
-        `changes heard ${heard} → ${await live.getAttribute('data-events')}, ` +
-        `board read at ${read} → ${await board.locator('main.fw-board').getAttribute('data-fetched-at')}, ` +
-        `School on this board in the database: ${stored}`,
-      { cause: error },
-    );
-  }
-  console.log(`[CAL-05] School left the board ${Date.now() - saved} ms after Save`);
+  const ms = await untilOnBoard('.fw-tgrid', 'Picture day e2e', true, saved);
+  // Say what the board did (WP-65, WP-70): when it heard the change, read and drew it, so a slow
+  // save, Realtime, read or screen can be told apart.
+  const stages = await boardStages(saved, heard);
+  console.log(`[CAL-05] School left the board ${ms} ms after Save (${stages})`);
+  expect(
+    ms,
+    `[CAL-05] School left the board ${ms} ms after Save, over 3 s: ${stages}`,
+  ).toBeLessThanOrEqual(3_000);
   await expect(week()).toContainText('Swim e2e');
   await expect(admin.getByText(`Saved the calendars on ${BOARD}.`, { exact: false })).toBeVisible();
 });
@@ -219,9 +257,20 @@ test('[US-507] ticked again, School is back in its own color, with its person', 
   const form = choice.getByRole('form', { name: `Calendars on ${BOARD}` });
   await form.getByRole('checkbox', { name: 'School e2e' }).check();
   await boardCalendar();
+  const heard = await board.getByRole('status').getAttribute('data-events');
+  const saved = Date.now();
   await form.getByRole('button', { name: 'Save calendars' }).click();
-  const school = week().locator('.fw-tgrid__bar[data-calendar="School e2e"]');
-  await expect(school).toContainText('Picture day e2e', { timeout: 3_000 });
+  // [WP-70] Timed as CAL-05 is, and saying what the board did when it is late.
+  const bar = '.fw-tgrid__bar[data-calendar="School e2e"]';
+  const ms = await untilOnBoard(bar, 'Picture day e2e', false, saved);
+  const stages = await boardStages(saved, heard);
+  console.log(`[US-507] School back on the board ${ms} ms after Save (${stages})`);
+  expect(
+    ms,
+    `[US-507] School back on the board ${ms} ms after Save, over 3 s: ${stages}`,
+  ).toBeLessThanOrEqual(3_000);
+  const school = week().locator(bar);
+  await expect(school).toContainText('Picture day e2e');
   // The browser gives a custom property's value with var() resolved: School's color is member-3's,
   // as a line (D-70): the color itself by day, its lighter shade in the Evening theme.
   const color = await school.evaluate((el) => {

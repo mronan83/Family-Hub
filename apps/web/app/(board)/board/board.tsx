@@ -1,11 +1,11 @@
 'use client';
 
 import { BoardThemeController, Icon } from '@familywise/ui';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { boardHealth, type JobHealth, laterSnapshot } from '@/lib/board-health';
 import { type BoardStore, openBoardStore } from '@/lib/board-store';
 import { day, isoDay, time } from '@/lib/format';
-import { boardTables, coalesce } from '@/lib/live';
+import { boardTables, coalesce, readSoon } from '@/lib/live';
 import { postCompletions } from '@/lib/outbox';
 import { readCalendar, readSnapshot, type BoardCalendar, type BoardSnapshot } from '@/lib/snapshot';
 import { browserClient } from '@/lib/supabase/browser';
@@ -49,6 +49,12 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
   const [restored, setRestored] = useState(!store);
   // Changes heard, shown as data-events for e2e (a disconnected board must hear none).
   const [events, setEvents] = useState(0);
+  // [CAL-05][WP-70] When the board last heard a change, and its last read began and came back (ms
+  // since 1970), and how many reads failed: written on the status for e2e, so a slow change says
+  // whether Realtime, the read or the screen was slow. Written straight on the element, so marking
+  // them costs the board no render.
+  const status = useRef<HTMLSpanElement>(null);
+  const failed = useRef(0);
   // Read again on demand (a new day), through the same coalesced read.
   const refresh = useRef<() => void>(() => undefined);
   const householdId = initial.household.id;
@@ -78,14 +84,26 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
     let cancelled = false;
     const leave = () => window.location.assign('/board');
 
+    // [CAL-05][WP-70] A read that fails or hangs is made again at once (readSoon), so a change heard
+    // reaches the screen. Offline, the tries fail and what is on screen stays; the network's return
+    // or Realtime's reconnect reads again.
     const reload = coalesce(async () => {
-      const { data, error } = await db.rpc('board_snapshot');
-      if (cancelled) return;
-      // Offline or a passing error: keep what is on screen; the next change or reconnect reads again.
-      if (error) return;
-      const next = readSnapshot(data);
-      if (next) setSnapshot(next);
-      else leave();
+      await readSoon(async (signal) => {
+        mark(status, 'data-read-from', Date.now());
+        const { data, error } = await db.rpc('board_snapshot').abortSignal(signal);
+        // Unmounted: stop. Given up at the deadline: readSoon has already moved on to the next read.
+        if (cancelled) return true;
+        if (signal.aborted) return false;
+        if (error) {
+          mark(status, 'data-read-failed', ++failed.current);
+          return false;
+        }
+        const next = readSnapshot(data);
+        if (next) setSnapshot(next);
+        else leave();
+        mark(status, 'data-read-to', Date.now());
+        return true;
+      });
     });
     refresh.current = () => void reload();
     // [DEV-08] The jobs that keep today's list right, as this board may see them (job_run's RLS).
@@ -108,6 +126,7 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
       for (const { table, filter } of boardTables(householdId, deviceId)) {
         channel.on('postgres_changes', { event: '*', schema: 'public', table, filter }, () => {
           setEvents((n) => n + 1);
+          mark(status, 'data-heard-at', Date.now());
           void reload();
         });
       }
@@ -155,7 +174,12 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
   }, [householdId, deviceId, appVersion]);
 
   const again = useCallback(() => refresh.current(), []);
-  return { snapshot, link, jobs, events, refresh: again };
+  return { snapshot, link, jobs, events, status, refresh: again };
+}
+
+/** [CAL-05][WP-70] Marks a stage of the board's last change on its status, for e2e. */
+function mark(status: RefObject<HTMLSpanElement | null>, name: string, value: number) {
+  status.current?.setAttribute(name, String(value));
 }
 
 /** How long a signed photo link lasts, and how long before its end the board asks for a new one. */
@@ -240,9 +264,18 @@ function lunchLoader(householdId: string): LoadLunches {
   };
 }
 
-function LiveStatus({ link, events }: { link: Link; events: number }) {
+function LiveStatus({
+  link,
+  events,
+  status,
+}: {
+  link: Link;
+  events: number;
+  status: RefObject<HTMLSpanElement | null>;
+}) {
+  // data-heard-at, data-read-from, data-read-to and data-read-failed are written by mark().
   return (
-    <span className="fw-live" role="status" data-link={link} data-events={events}>
+    <span ref={status} className="fw-live" role="status" data-link={link} data-events={events}>
       <Icon name={link === 'offline' ? 'wifi-off' : 'wifi'} size={28} />
       {link === 'live' ? 'Live' : link === 'offline' ? 'Reconnecting…' : 'Connecting…'}
     </span>
@@ -255,7 +288,11 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
   const [store] = useState(() =>
     typeof window === 'undefined' ? null : openBoardStore(initial.device.id),
   );
-  const { snapshot, link, jobs, events, refresh } = useLiveSnapshot(initial, appVersion, store);
+  const { snapshot, link, jobs, events, status, refresh } = useLiveSnapshot(
+    initial,
+    appVersion,
+    store,
+  );
   const photoUrl = usePhotos(snapshot);
   const loadLunches = useMemo(() => lunchLoader(initial.household.id), [initial.household.id]);
   const [queue, setQueue] = useState<QueueState>({ pending: 0, waiting: false });
@@ -301,7 +338,7 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
               {time(now, tz)}
             </time>
           </div>
-          <LiveStatus link={link} events={events} />
+          <LiveStatus link={link} events={events} status={status} />
           {hydrated ? <HealthLines offline={health.offline} stale={health.stale} /> : null}
         </div>
       </header>
