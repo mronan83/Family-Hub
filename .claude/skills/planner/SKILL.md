@@ -20,7 +20,7 @@ The status board on `main` shows only merged work. What's in flight shows up onl
 ## When you start
 
 1. `git fetch origin main` and read `05` from `origin/main`, not from your working tree.
-2. List open PRs with their checks, the latest `deploy` run, the latest `e2e-main` run, and any open issue "e2e on main is red" (D-104): a red full suite on `main` blocks nothing, but it goes under "Waiting on you" as the next item to start, with the issue link.
+2. List open PRs with their checks, the latest `deploy` run, the latest `e2e-main` run, and any open issue "e2e on main is red" (D-104): a red full suite on `main` blocks nothing, but it goes under "Waiting on you" as the next item to start, with the issue link. Any open issue "Deploy refused: …" or "Deploy failed: …" goes at the top of "Waiting on you": production didn't get that merge.
 3. List sessions and pick out the workers. For each, note its item, PR, status, and session link (`https://claude.ai/code/<session_id>`).
 4. Send each running worker one line: `Planner is now <your session id>; send status lines here.`
 5. Show the owner the status report below.

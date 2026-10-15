@@ -8,6 +8,8 @@ const DEMO = '0de00000-0000-4000-8000-000000000001';
 
 /** Where a browser context reports what it saw: the test running now. */
 let sink: ((what: string) => void) | null = null;
+/** Bodies of Supabase 5xx answers still being read; a test's record waits for them (up to 5 s). */
+const reading = new Set<Promise<void>>();
 const watched = new WeakSet<BrowserContext>();
 
 /**
@@ -25,13 +27,15 @@ function watch(context: BrowserContext): void {
     const url = new URL(response.url());
     const what = `${response.request().method()} ${url.pathname}`;
     if (url.hostname.endsWith('.supabase.co')) {
-      response
+      const read: Promise<void> = response
         .text()
         .then((body) => {
           const timeout = /57014|statement timeout/.test(body) ? ', a statement timeout' : '';
           sink?.(`the browser saw Supabase answer ${status}${timeout} to ${what}`);
         })
-        .catch(() => sink?.(`the browser saw Supabase answer ${status} to ${what}`));
+        .catch(() => sink?.(`the browser saw Supabase answer ${status} to ${what}`))
+        .finally(() => reading.delete(read));
+      reading.add(read);
     } else if (status === 502 || status === 503 || status === 504) {
       sink?.(`the browser saw the preview's gateway answer ${status} to ${what}`);
     }
@@ -108,9 +112,11 @@ export const test = base.extend<{ infraWatch: void }, { cleanStart: void; contex
   // [NFR-14][D-104] What the run's verdict reads (scripts/e2e-run.mjs): the test's time limit, any
   // infrastructure failure seen under it, and, when it failed, whether the demo family's day had
   // turned since its data was loaded (seed data counts from the day it was loaded, so a test after
-  // the family's midnight reads yesterday's seed; it re-runs once on a reloaded family).
+  // the family's midnight reads yesterday's seed; it re-runs once on a reloaded family). It takes
+  // `context` so it ends before the test's own context closes, and can wait for the bodies it reads.
   infraWatch: [
-    async ({}, use, testInfo) => {
+    async ({ context }, use, testInfo) => {
+      void context;
       const seen: string[] = [];
       sink = (what) => {
         if (seen.length < 5) seen.push(what);
@@ -118,6 +124,12 @@ export const test = base.extend<{ infraWatch: void }, { cleanStart: void; contex
       try {
         await use();
       } finally {
+        if (reading.size) {
+          await Promise.race([
+            Promise.allSettled([...reading]),
+            new Promise((done) => setTimeout(done, 5_000)),
+          ]);
+        }
         sink = null;
         if (testInfo.status !== testInfo.expectedStatus) {
           const days = demoDays();

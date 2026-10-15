@@ -795,6 +795,7 @@ Each PR updates the affected docs (`01`–`05`) and logs the change in `04` §I.
 3. **app**: `vercel pull`, `vercel build --prod`, `vercel deploy --prebuilt --prod`.
 4. **smoke**: `GET /api/health` on production returns 200.
 5. **schedule**: `scripts/job-schedules.mjs` syncs the pg_cron jobs and `private.job_schedule` with `schedule.json` (§5.6), after the smoke check so no schedule calls an app that cannot answer it.
+6. **report**: when the gate refuses or any job fails, opens an issue, "Deploy refused: <commit>" with the gate's reason, or "Deploy failed: <commit>" with each job's result, once per commit, so a deploy that didn't happen is never silent (WP-84).
 
 Vercel's automatic production deploy from Git is turned off (`vercel.json`), so the app never ships ahead of its schema. Migrations are forward-only and compatible with the previously deployed app; a breaking change is split into expand and contract PRs.
 

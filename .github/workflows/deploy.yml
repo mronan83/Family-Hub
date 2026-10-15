@@ -31,6 +31,7 @@ jobs:
     outputs:
       sha: ${{ steps.check.outputs.sha }}
       deploy: ${{ steps.check.outputs.deploy }}
+      reason: ${{ steps.check.outputs.reason }}
     env:
       GH_TOKEN: ${{ github.token }}
       REPO: ${{ github.repository }}
@@ -117,3 +118,38 @@ jobs:
           node-version-file: .nvmrc
       - name: Sync job schedules
         run: node scripts/job-schedules.mjs | psql "$SUPABASE_DB_URL" -X -q -v ON_ERROR_STOP=1 --single-transaction
+
+  # A refused or failed deploy is never silent (WP-84): one issue per commit, "Deploy refused" or
+  # "Deploy failed", naming the job and the gate's reason. The worker that merged and the planner read it.
+  report:
+    needs: [gate, migrate, app, smoke, schedule]
+    if: failure()
+    runs-on: ubuntu-24.04
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SHA: ${{ needs.gate.outputs.sha || github.event.workflow_run.head_sha || github.sha }}
+      REASON: ${{ needs.gate.outputs.reason }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      RESULTS: >-
+        gate ${{ needs.gate.result }}, migrate ${{ needs.migrate.result }}, app ${{ needs.app.result }},
+        smoke ${{ needs.smoke.result }}, schedule ${{ needs.schedule.result }}
+    steps:
+      - name: Open an issue
+        run: |
+          if [ -n "$REASON" ]; then
+            title="Deploy refused: ${SHA:0:7}"
+            what="The deploy gate refused ${SHA:0:7}: $REASON. Nothing reached production."
+          else
+            title="Deploy failed: ${SHA:0:7}"
+            what="A deploy job failed for ${SHA:0:7} ($RESULTS)."
+          fi
+          if gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" \
+               --json title --jq ".[].title" | grep -qxF "$title"; then
+            echo "already reported: $title"
+            exit 0
+          fi
+          printf '%s\n\n[The deploy run](%s).\n\n---\n_Opened by the deploy workflow (WP-84)._\n' \
+            "$what" "$RUN_URL" > "$RUNNER_TEMP/issue.md"
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$RUNNER_TEMP/issue.md"

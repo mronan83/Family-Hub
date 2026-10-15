@@ -163,7 +163,7 @@ On `approve #nn` (or "approve" when only one PR is in question; ask if it's ambi
 - If the gate skips because a later merge is now the head of `main`, confirm that the later run deployed: it ships your change too.
 - Check that `GET /api/health` on production returns `"status":"ok"` and your merge commit in `commit`.
 - After the deploy, `e2e-main` runs the full suite on a preview of `main` (unless your merge changed nothing a spec covers). You don't wait for it: it blocks nothing. If it goes red, it opens or adds to the issue "e2e on main is red"; tell the owner and the planner in one line with the issue link.
-- If any deploy job fails, tell the owner at once with the failing job and its log. Find the cause. Never re-run the deploy blind.
+- If any deploy job fails, or the gate refuses, tell the owner at once with the failing job and its reason, and the planner in one line. The deploy run also opens an issue, "Deploy refused: <commit>" or "Deploy failed: <commit>", so it is never missed. Find the cause. Never re-run the deploy blind. A merge isn't done until its deploy run has ended green, so watch it to the end.
 
 ### 11. Republish the docs pages
 

@@ -86,6 +86,7 @@ function run({ env = {}, gh = fixtures(), vercel = '200' } = {}) {
     code: r.status,
     out: r.stdout + r.stderr,
     deploy: /^deploy=(\w+)$/m.exec(readFileSync(output, 'utf8'))?.[1],
+    reason: /^reason=(.*)$/m.exec(readFileSync(output, 'utf8'))?.[1],
     ghCalls: existsSync(log) ? readFileSync(log, 'utf8').trim().split('\n') : [],
   };
 }
@@ -94,6 +95,8 @@ const refused = (r, reason) => {
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, reason);
   assert.equal(r.deploy, undefined);
+  // [NFR-14] The reason is an output too, for the issue deploy.yml opens on a refusal.
+  assert.match(r.reason ?? '', reason);
 };
 
 test('[NFR-14] ships the head of main from a merged PR with every check and e2e green', () => {

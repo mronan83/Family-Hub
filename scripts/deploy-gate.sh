@@ -13,7 +13,12 @@
 set -euo pipefail
 
 echo "sha=$SHA" >> "$GITHUB_OUTPUT"
-fail() { echo "::error::Not deploying ${SHA:0:7}: $*"; exit 1; }
+# A refusal's reason is also an output, so deploy.yml's report job can open an issue with it.
+fail() {
+  echo "::error::Not deploying ${SHA:0:7}: $*"
+  echo "reason=$*" >> "$GITHUB_OUTPUT"
+  exit 1
+}
 skip() { echo "::notice::Not deploying ${SHA:0:7}: $*"; echo "deploy=false" >> "$GITHUB_OUTPUT"; exit 0; }
 
 missing=()
