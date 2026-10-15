@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.24: Edit on a planned meal (WP-76, D-111): **Change** offers **Edit**, which opens the meal filled in, and **Remove**.
 > v0.23: the board on a tablet such as an iPad, and at **Larger** or **Largest**: each chore's points under its own title, and the whole of every word in the rail (A14).
 > v0.22: a menu's "and" joins a side like "with" ("Fish sticks with Fries and Coleslaw"); a parent's lunch picks on **Meals** keep the entree when a milk is ticked; the board picks up a new version by itself when nobody is using it (WP-78, D-99).
 > v0.21: next week's lunches picked at the board (WP-49, D-95): **Lunches** on the board, a child's changes waiting on **Today**, picks on **Meals**, the cut-off on **School**, an item that opens Lunches (A2, A15, B1.2, B1.5, B1.10, B1.15, B2.9, B2.10).
@@ -834,9 +835,19 @@ Choose **Edit** (the meal's name) to change one. **Archive** takes a meal out of
 3. Under **For**, leave **Everyone** ticked, or tick each person it's for: one (a snack after school) or any mix (fish fingers for the children, sandwiches for Maya and Sam). Ticking a person unticks **Everyone**; ticking everyone, or nobody, is **Everyone**.
 4. Add a **Note** if you like ("Make extra for lunch"), then choose **Add to the plan**.
 
-Each thing planned names who it's for, unless it's for everyone. A meal of the day can hold several things, like two snacks. They show in the order you added them; **Change** on one offers **Earlier** and **Later** to reorder it, and **Remove**.
+Each thing planned names who it's for, unless it's for everyone. A meal of the day can hold several things, like two snacks. They show in the order you added them.
 
 ![The week's meals on a laptop: each day across, with its breakfast, snack, lunch and dinner; Wednesday marked today with two snacks.](guide/img/admin-meals-laptop.jpg "The week's meals, on a laptop")
+
+#### Change a planned meal
+
+Choose **Change** on a planned meal:
+
+- **Edit** opens it in place, filled in with what you saved: the **Day**, the **Meal**, the library meal or what you wrote, who it's for and the note. Change what you like, then choose **Save changes**; **Cancel** leaves it as it was. It keeps its place among that meal's other things; moved to another day or meal, it goes last there.
+- **Earlier** and **Later** reorder it, when that meal of the day has more than one thing.
+- **Remove** takes it off the plan.
+
+![A planned dinner opened with Edit on a phone: the day, the meal, what it is, who it's for and the note, with Save changes and Cancel.](guide/img/admin-meal-edit-phone.jpg "Edit on a planned meal, on a phone")
 
 #### Copy last week
 

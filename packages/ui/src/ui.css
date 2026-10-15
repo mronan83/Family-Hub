@@ -2719,6 +2719,14 @@ span.fw-heat__cell {
   align-items: center;
   font-weight: 600;
 }
+/* [MEAL-15] An entry opened with Edit, in place under it (WP-76). */
+.fw-meal-entry__edit {
+  margin-top: var(--s-2);
+  padding: var(--s-3);
+  border: 2px solid var(--primary);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
 .fw-meal-entry__change > summary,
 .fw-meal-slot__add {
   display: inline-flex;
@@ -2732,6 +2740,13 @@ span.fw-heat__cell {
   .fw-meal-day {
     grid-template-columns: 8rem repeat(4, minmax(0, 1fr));
     align-items: start;
+  }
+  /* [MEAL-15] A day with a meal open for editing stacks its meals, so the form has the width. */
+  .fw-meal-day:has(.fw-meal-entry__edit) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fw-meal-entry__edit {
+    max-width: 40rem;
   }
 }
 

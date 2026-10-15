@@ -28,6 +28,8 @@ export interface MealsViewProps {
   members: { id: string; displayName: string }[];
   /** A day and slot to add to, from an "Add" link. */
   addAt: { day: string; slot: Slot } | null;
+  /** [MEAL-15] The entry opened for editing, from Change's "Edit" (WP-76). */
+  editId?: string | null;
   /** The new entry's id, made by the page. */
   newId: string;
   /** Each child's school lunch for the week (WP-26). */
@@ -41,8 +43,9 @@ export interface MealsViewProps {
 /**
  * [MEAL-01][MEAL-02][MEAL-03][MEAL-08] The week's meals for a parent: each day's breakfast, snack,
  * lunch and dinner, each slot's entries in order (a meal from the library or something written in,
- * for everyone or any set of people, with a note) with Change (earlier, later, remove) and Add; the week
- * before and after; "Add to the plan"; and copying last week here.
+ * for everyone or any set of people, with a note) with Change (earlier, later, edit, remove) and Add;
+ * the week before and after; "Add to the plan"; and copying last week here. [MEAL-15] Edit opens the
+ * entry's form in place, under it, filled with what was saved (WP-76).
  */
 export function MealsView({
   week,
@@ -52,6 +55,7 @@ export function MealsView({
   meals,
   members,
   addAt,
+  editId = null,
   newId,
   lunch,
   menus = [],
@@ -142,8 +146,9 @@ export function MealsView({
                             const name = entryName(e, mealsById);
                             const meal = e.mealId ? mealsById.get(e.mealId) : undefined;
                             const people = whose(e.memberIds);
+                            const editing = e.id === editId;
                             return (
-                              <li key={e.id} className="fw-meal-entry">
+                              <li key={e.id} className="fw-meal-entry" id={`entry-${e.id}`}>
                                 <span className="fw-meal-entry__name">
                                   {meal ? <Icon name={meal.icon as IconName} size={20} /> : null}
                                   {name}
@@ -183,6 +188,14 @@ export function MealsView({
                                         Later
                                       </Button>
                                     ) : null}
+                                    <Link
+                                      className="fw-btn fw-btn--ghost"
+                                      href={`/admin/meals?week=${week}&edit=${e.id}#entry-${e.id}`}
+                                      aria-label={`Edit ${name}, ${label}`}
+                                    >
+                                      <Icon name="edit" className="fw-btn__icon" />
+                                      <span>Edit</span>
+                                    </Link>
                                     <Button
                                       type="submit"
                                       name="act"
@@ -195,6 +208,21 @@ export function MealsView({
                                     </Button>
                                   </form>
                                 </details>
+                                {editing ? (
+                                  <EntryForm
+                                    id={e.id}
+                                    week={week}
+                                    days={days}
+                                    today={today}
+                                    members={members}
+                                    meals={meals}
+                                    initialDay={e.planDate}
+                                    initialSlot={e.slot}
+                                    entry={e}
+                                    name={name}
+                                    cancelHref={`/admin/meals?week=${week}#${d}-${s}`}
+                                  />
+                                ) : null}
                               </li>
                             );
                           })}

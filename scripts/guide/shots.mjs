@@ -294,6 +294,13 @@ const SHOTS = [
   },
   // Meals (WP-25): the week on a laptop, and the library on a phone.
   { name: 'admin-meals-laptop', device: 'laptop', url: '/dev/meals', maxHeight: 1900, quality: 62 },
+  // [MEAL-15] A planned dinner opened with Edit, in place (WP-76).
+  {
+    name: 'admin-meal-edit-phone',
+    device: 'phone',
+    url: '/dev/meals?edit=f2e10000-0000-4000-8000-000000000010',
+    element: '#entry-f2e10000-0000-4000-8000-000000000010',
+  },
   // School lunch (WP-26): the section itself.
   // [MEAL-11] With a child's picks and a change waiting (WP-49).
   { name: 'admin-lunch-laptop', device: 'laptop', url: '/dev/meals?lunches=1', element: '#lunch' },

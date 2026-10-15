@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.48: US-701 as built for Edit on a planned meal (WP-76, D-111).
 > v0.8.47: US-911 gains a pull request's preview on a test database prepared with its own migrations (WP-89, added at the owner's request); its e2e criterion now reads as D-108 built it (WP-88).
 > v0.8.46: US-410 to US-415 added at the owner's request (WP-80 to WP-82, D-101 to D-103): goals that repeat each week, month or term, with "every day it's due" and misses allowed; the child's week won or missed; done by a time; tiers; perfect periods; a family goal every child meets. US-401 gains a goal's end date that can be cleared (WP-79, RWD-14).
 > v0.8.45: US-709, US-710, US-711 and US-1010 added at the owner's request (WP-72 to WP-75, D-97, D-98): the lunch picks one tap from Home; the lunch week as a list of days; the meal planner's days folded; a board laid out for its screen's shape. US-701 gains Edit on a planned meal (WP-76, MEAL-15).
@@ -626,6 +627,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a family dinner vs a per-child lunch, when I add entries, then I can scope each to the household or one member.
 - Given a planned meal, when I tap **Change**, then I can choose **Edit** or **Remove**; **Edit** opens the meal's form filled in with what was saved, and after I save, the plan shows my changes and opening it again shows them too (added at the owner's request, WP-76, MEAL-15).
 - As built (WP-25, D-77): **Meals** shows a week (**Last week**, **Next week**), each day's four meals with **Add** and **Change** (**Earlier**, **Later**, **Remove**); **Add to the plan** takes a meal from the library (those good for that meal first) or something written in, for **Everyone** or one person, with a note. The **Meal library** keeps each meal's name, what it's good for, a recipe link and an icon; archived meals keep their place in old plans.
+- As built (WP-76, D-111): **Change** offers **Edit** and **Remove** (with **Earlier** and **Later** where the meal of the day has more than one entry); **Edit** opens the meal's form in place, under it, filled with what was saved; **Save changes** updates that entry, keeping its place in the order, and **Edit** again shows what was saved.
 
 ### US-702 — Copy last week
 **As an** admin **I want** to copy a previous week or reuse meals **so that** planning takes minutes.
