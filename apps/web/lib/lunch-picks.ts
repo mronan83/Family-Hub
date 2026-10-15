@@ -262,12 +262,26 @@ export function pickValue(section: string, option: number, name: string): string
 }
 
 /**
- * [MEAL-11] The parent's picks form on Meals, as picks: each ticked option (`pick`), grouped by
- * section. Anything malformed is left out; the database checks the rest against the menu.
+ * [MEAL-11] The name of a section's inputs in the parent's picks form on Meals: one a section
+ * (`pick-0`, `pick-1` …). Radios that share a name are one group, so with one name for the form a
+ * pick in one "Choice of" section took the pick off another: a milk took off the entree (WP-78).
+ */
+export function pickName(section: number): string {
+  return `pick-${section}`;
+}
+
+/** A section's inputs, and `pick`: the one name of a form loaded before WP-78. */
+const PICK_NAME = /^pick(-\d+)?$/;
+
+/**
+ * [MEAL-11] The parent's picks form on Meals, as picks: each ticked option (`pick-N`, a section
+ * each), grouped by section. Anything malformed is left out; the database checks the rest against
+ * the menu.
  */
 export function parsePicksForm(form: FormData): LunchPick[] {
   const picks = new Map<string, LunchPick>();
-  for (const raw of form.getAll('pick')) {
+  for (const [field, raw] of form.entries()) {
+    if (!PICK_NAME.test(field)) continue;
     let v: unknown;
     try {
       v = JSON.parse(String(raw));

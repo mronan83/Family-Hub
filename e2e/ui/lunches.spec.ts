@@ -90,11 +90,24 @@ test.describe('the board', () => {
       'aria-pressed',
       'true',
     );
+    // [WP-78] Then a milk, then fruits: the entree and the milk stay picked.
+    await option('Chocolate milk').click();
+    await expect(option('Chicken wrap with Tortilla chips')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await option('Apple slices').click();
     await option('Grapes').click();
-    await option('Chocolate milk').click();
-    await expect(option('Apple slices')).toHaveAttribute('aria-pressed', 'true');
-    await expect(option('Grapes')).toHaveAttribute('aria-pressed', 'true');
+    for (const name of [
+      'Chicken wrap with Tortilla chips',
+      'Chocolate milk',
+      'Apple slices',
+      'Grapes',
+    ])
+      await expect(option(name), `WP-78 ${name} still picked`).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
     await expect(dialog.getByText(/Still to pick/)).toHaveCount(0);
     expect(
       await page.evaluate(floors, { buttons: '[role="dialog"]', text: '[role="dialog"]' }),
@@ -218,5 +231,22 @@ test('[MEAL-11][US-707] Meals in the admin app: picks, a change on the board, a 
   await expect(form.locator('input[type="radio"]')).toHaveCount(4);
   await expect(form.locator('input[type="checkbox"]')).toHaveCount(2);
   await expect(form.getByRole('button', { name: 'Save Leo’s picks' })).toBeVisible();
+  // [WP-78] An entree, then a milk, then fruits: every pick stays. With one radio group for the
+  // form, the milk took the entree off.
+  const box = (section: string, name: string) =>
+    form.getByRole('group', { name: new RegExp(`^${section}`) }).getByLabel(name, { exact: true });
+  await box('Entree', 'Cheese Pizza').check();
+  await box('Milk', 'Chocolate milk').check();
+  await box('Fruits', 'Green Beans').check();
+  await box('Fruits', 'Orange').check();
+  for (const [section, name] of [
+    ['Entree', 'Cheese Pizza'],
+    ['Milk', 'Chocolate milk'],
+    ['Fruits', 'Green Beans'],
+    ['Fruits', 'Orange'],
+  ] as const)
+    await expect(box(section, name), `WP-78 ${name} still picked`).toBeChecked();
+  await expect(box('Entree', 'Turkey sandwich')).not.toBeChecked();
+  await expect(box('Milk', '1% milk')).not.toBeChecked();
   await contrastOk(page);
 });
