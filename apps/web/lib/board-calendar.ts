@@ -114,6 +114,30 @@ export function withSnapshot(
   };
 }
 
+/**
+ * [CAL-04] What a range shows (`useCalendar()` in `calendar-ui.tsx`): the snapshot's calendar while
+ * it covers the range; else the range's own read (`fetched`), brought up to the snapshot (CAL-05);
+ * else, while that read is out or when it failed, the snapshot's events for those dates, `partial`.
+ * [US-503][WP-70] `loading` says the range's read is still out (none has come back for this range),
+ * so the board can say when its calendar has finished drawing: the screen is `aria-busy` till then.
+ */
+export function shownCalendar(
+  snapshot: BoardCalendar | null,
+  from: string,
+  to: string,
+  canLoad: boolean,
+  fetched: { range: string; cal: BoardCalendar | null } | null,
+): { cal: BoardCalendar | null; partial: boolean; loading: boolean } {
+  if (covers(snapshot, from, to)) return { cal: snapshot, partial: false, loading: false };
+  const range = `${from}|${to}`;
+  const loading = canLoad && fetched?.range !== range;
+  // [CAL-05][WP-65] What was read for the range, brought up to the snapshot read since: a change
+  // heard through Realtime shows with the snapshot's read, not after the range is read again.
+  if (fetched?.range === range && fetched.cal)
+    return { cal: withSnapshot(fetched.cal, snapshot), partial: false, loading };
+  return { cal: snapshot, partial: true, loading };
+}
+
 /** The events on a date: all-day ones first, then by start, then title. */
 export function eventsOn(events: BoardEvent[], date: string): BoardEvent[] {
   return events
