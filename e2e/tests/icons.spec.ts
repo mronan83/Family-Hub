@@ -2,6 +2,7 @@ import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
 import { pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
+import { signIn } from '../support/session';
 
 // [CHR-01][CHR-10][ACC-04] The larger icon set and the sixteen colors on the preview (WP-46, D-70).
 // The done-when: on a phone, Alex finds the fish icon by searching, saves a chore for Leo with it, and
@@ -49,9 +50,7 @@ test.beforeAll(async ({ browser }) => {
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
        delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
   admin = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
   await admin.goto('/admin/devices');
   const form = admin.getByRole('form', { name: 'Add a board', exact: true });
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);

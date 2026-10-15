@@ -4,6 +4,7 @@ import { parseMenuCsv } from '../../apps/web/lib/menu/csv';
 import { serviceRpc, sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf, weekday } from '../support/day';
 import { withSchoolDays } from '../support/school';
+import { signIn } from '../support/session';
 
 // [MENU-01..05][MEAL-05] School menus on the preview (WP-27, D-79), as Alex of the demo family. The
 // done-when: four weeks load from a file, and a feed that fails keeps its cached menus and shows a
@@ -103,9 +104,7 @@ function cleanUp() {
 }
 
 async function asAlexOnMenus(page: Page) {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await page.waitForURL(/\/admin$/);
+  await signIn(page);
   await page.goto('/admin/meals/menus');
   await expect(page.getByRole('heading', { name: 'School menus', level: 1 })).toBeVisible();
 }

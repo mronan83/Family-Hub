@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '../support/test';
 import { pairingCode, retireBoard } from '../support/board';
 import { addDays } from '../support/day';
+import { signIn } from '../support/session';
 
 // [PTS-05][PTS-06] Bonus rules and the wishlist on the preview (WP-30, D-57), as Alex of the demo
 // family with a paired board. Leo's seeded last week (see insights.spec.ts) has runs good 2, bad 1,
@@ -66,9 +67,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
        update public.points_rule set active = false, archived_at = now()
         where household_id = '${DEMO}' and archived_at is null and streak_days = 3 and bonus_points = 7;`);
   admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
   await admin.goto('/admin/devices');
   const form = admin.getByRole('form', { name: 'Add a board', exact: true });
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);

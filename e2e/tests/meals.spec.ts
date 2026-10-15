@@ -3,6 +3,7 @@ import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf, weekday } from '../support/day';
 import { withSchoolDays } from '../support/school';
+import { signIn } from '../support/session';
 
 // [MEAL-01][MEAL-02][MEAL-03][MEAL-04][MEAL-08] Meals on the preview (WP-25, D-77; lunch WP-26, D-78), as
 // Alex of the demo family.
@@ -62,9 +63,7 @@ test.beforeAll(async ({ browser }) => {
   second = addDays(first, 7);
   clear();
   admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
 });
 
 test.afterAll(async () => {

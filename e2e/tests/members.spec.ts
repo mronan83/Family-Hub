@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
+import { signIn } from '../support/session';
 
 // [ACC-04][PTS-07] Members on the preview, as Alex of the demo family (D-37, D-39): add a child and
 // an adult, check the earns-rewards default, change it, link an adult to an admin, archive and
@@ -36,9 +37,7 @@ async function expectContrastOk(page: Page) {
 }
 
 async function asAlex(page: Page) {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex' }).click();
-  await page.waitForURL(/\/admin/);
+  await signIn(page);
   await page
     .getByRole('navigation', { name: 'Admin' })
     .getByRole('link', { name: 'Members' })

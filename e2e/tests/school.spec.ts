@@ -3,6 +3,7 @@ import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { householdToday } from '../support/day';
 import { openSetting } from '../support/settings';
+import { signIn as signInAs } from '../support/session';
 
 // [SCH-01][SCH-02][SCH-03] School years on the preview, as the demo family (D-37): the seeded year and
 // next year's, today's day type for each member, the timeline, days off, overlapping defaults, and a
@@ -54,9 +55,7 @@ async function expectContrastOk(page: Page) {
 }
 
 async function signIn(page: Page) {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex' }).click();
-  await page.waitForURL(/\/admin/);
+  await signInAs(page);
   await openSetting(page, 'School');
   await expect(page.getByRole('heading', { name: 'School year', level: 1 })).toBeVisible();
 }

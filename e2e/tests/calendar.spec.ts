@@ -3,6 +3,7 @@ import { runCalendarSync, type Fetcher } from '../../apps/web/lib/calendar/sync'
 import { serviceRpc, sql as query } from '../support/db';
 import { openSetting } from '../support/settings';
 import { addDays, householdToday } from '../support/day';
+import { signIn } from '../support/session';
 
 // [CAL-01][CAL-02][CAL-03][CAL-06][CAL-07] Calendar sync on the preview (WP-22, D-63), as Alex of the
 // demo family. Alex adds a calendar by its link on Calendars: the link goes to Vault and nowhere
@@ -117,9 +118,7 @@ function cleanUp() {
 }
 
 async function asAlexOnCalendars(page: Page) {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await page.waitForURL(/\/admin$/);
+  await signIn(page);
   await openSetting(page, 'Calendars');
   await expect(page.getByRole('heading', { name: 'Calendars', level: 1 })).toBeVisible();
 }

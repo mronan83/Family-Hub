@@ -3,6 +3,7 @@ import { expect, test, type Page } from '../support/test';
 import { pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
+import { signIn } from '../support/session';
 
 // [RWD-11][RWD-12][US-408] Streak history and Insights on the preview (WP-17, D-55), as Alex of the
 // demo family. The first two tests read a child this file adds, with a last week of its own, so no
@@ -100,9 +101,7 @@ test.beforeAll(async ({ browser }) => {
   TODAY = householdToday(db!);
   addChildWithLastWeek();
   admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
 });
 
 test.afterAll(async () => {

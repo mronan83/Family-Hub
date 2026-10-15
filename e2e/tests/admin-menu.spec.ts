@@ -1,6 +1,7 @@
 import { expect, test } from '../support/test';
 import { sql as query } from '../support/db';
 import { openSetting } from '../support/settings';
+import { signIn } from '../support/session';
 
 // [NFR-15][US-107] The admin menu and Settings on the preview (WP-51, D-81), as Alex of the demo
 // family: Today carries how many check-offs wait for a parent, as the database counts them; Settings
@@ -15,9 +16,7 @@ test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e 
 test('[NFR-15][US-107] the menu, Today’s count, and Settings with Tags among its pages', async ({
   page,
 }) => {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await page.waitForURL(/\/admin$/);
+  await signIn(page);
   const nav = page.getByRole('navigation', { name: 'Admin' });
   await expect(nav.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
   const waiting = Number(

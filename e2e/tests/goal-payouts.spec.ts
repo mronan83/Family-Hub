@@ -2,6 +2,7 @@ import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { householdToday } from '../support/day';
+import { signIn } from '../support/session';
 
 // [RWD-04][RWD-10][RWD-13] Goal payouts and the preview of a change on the preview (WP-39, D-75), as
 // Alex of the demo family. The done-when: a goal that pays 10 points posts one bonus when Maya's bed
@@ -66,9 +67,7 @@ test.beforeAll(async ({ browser }) => {
   sql(`update public.reward_goal set status = 'cancelled', archived_at = now()
         where household_id = '${DEMO}' and title = '${TITLE}' and status <> 'cancelled'`);
   admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
 });
 
 test.afterAll(async () => {

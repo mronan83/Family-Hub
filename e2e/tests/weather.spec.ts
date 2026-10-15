@@ -2,6 +2,7 @@ import { expect, test, type Page } from '../support/test';
 import { type Fetcher, storeWeather, type WeatherPlace } from '../../apps/web/lib/weather';
 import { pairingCode, retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
+import { signIn } from '../support/session';
 
 // [BRD-04][US-1003] Weather on a board, on the preview (WP-45, D-69). Alex sets the demo family's
 // place; the weather job's own code reads made-up weather for it on the e2e runner (the preview holds
@@ -99,9 +100,7 @@ test.beforeAll(async ({ browser }) => {
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
        delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
   admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
   await admin.goto('/admin/devices');
   const form = admin.getByRole('form', { name: 'Add a board', exact: true });
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);

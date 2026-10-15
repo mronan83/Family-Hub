@@ -3,6 +3,7 @@ import { runReminders, webPushSender } from '../../apps/web/lib/reminders';
 import { serviceRpc, sql as query } from '../support/db';
 import { browserKeys, decryptPush, mockPushService, vapidKeys } from '../support/push';
 import { addDays, householdToday } from '../support/day';
+import { signIn } from '../support/session';
 
 // [CHR-15][CHR-16][CHR-17][CHR-20] The reminders job against a mocked push service (WP-40, D-58;
 // WP-63, D-88): the job's own code (lib/reminders.ts) runs here on the e2e runner against the shared
@@ -177,9 +178,7 @@ test('[CHR-20][US-322] a check-off waiting for a parent: exactly one push, and i
   expect(push.received).toEqual([]);
 
   // Tapping it opens Today, with both waiting there.
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await page.waitForURL(/\/admin/);
+  await signIn(page);
   await page.goto(alert.url);
   const waiting = page.getByRole('list', { name: 'Waiting for you' });
   await expect(waiting.getByText(`Read for 20 minutes ${TAG}`)).toBeVisible();

@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '../support/test';
 import { pairingCode, retireBoard } from '../support/board';
 import { addDays, householdToday } from '../support/day';
+import { signIn } from '../support/session';
 
 // [CHR-05][CHR-06][CHR-08][CHR-14] A parent's day on the preview (WP-12, D-52), as Alex of the demo
 // family: "Not actually done" on four of five check-offs is one batch, the board shows them open again
@@ -60,9 +61,7 @@ function putBack() {
 }
 
 async function asAlex(page: Page, path: string) {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await page.waitForURL(/\/admin$/);
+  await signIn(page);
   await page.goto(path);
 }
 

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { householdToday } from '../support/day';
+import { signIn } from '../support/session';
 
 // [RWD-01][RWD-04][RWD-06][RWD-09] Goals on the preview (WP-19, D-56), as Alex of the demo family. The
 // done-when: the seeded "Movie night" (Leo, 19 things done since last week; he has 18) becomes
@@ -59,9 +60,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
     });
   }
   admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
 });
 
 test.afterAll(async () => {

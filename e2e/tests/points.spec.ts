@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
+import { signIn } from '../support/session';
 
 // [PTS-01][PTS-02][PTS-07] Points on the preview, as Alex of the demo family (WP-16): each child's
 // balance on Members, their history on their page, and a parent adding and taking away points with a
@@ -23,9 +24,7 @@ const shown = (page: Page) =>
   page.getByRole('region', { name: 'Points' }).locator('.fw-points__value').first();
 
 async function asAlex(page: Page) {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex' }).click();
-  await page.waitForURL(/\/admin$/);
+  await signIn(page);
   await page
     .getByRole('navigation', { name: 'Admin' })
     .getByRole('link', { name: 'Members' })

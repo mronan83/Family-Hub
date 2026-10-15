@@ -4,6 +4,7 @@ import { type BrowserContext, expect, test, type Page } from '../support/test';
 import { pairingCode, retireBoard } from '../support/board';
 import { householdToday } from '../support/day';
 import { networkSwitch, type NetworkSwitch } from '../support/network';
+import { signIn } from '../support/session';
 
 // [DEV-06][DEV-08][NFR-01][US-205] A board offline on the preview (WP-13), paired to the demo family:
 // it goes offline, checks off three of Maya's items, reloads with no network (its page from the
@@ -109,9 +110,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
        delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
   const admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
   await admin.goto('/admin/devices');
   const form = admin.getByRole('form', { name: 'Add a board', exact: true });
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);

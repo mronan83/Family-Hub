@@ -5,6 +5,7 @@ import { expect, test, type Locator, type Page } from '../support/test';
 import { openFromMenu } from '../support/settings';
 import { addDays, householdToday } from '../support/day';
 import { withSchoolDays } from '../support/school';
+import { signIn as signInAs } from '../support/session';
 
 // [CHR-01][CHR-09][CHR-10][CHR-11][CHR-13] The family list on the preview, as the demo family
 // (D-37): the seeded list, entering a family's list on a phone, tags, time of day, archive, and
@@ -101,9 +102,7 @@ async function expectContrastOk(page: Page) {
 }
 
 async function signIn(page: Page, who: 'Alex' | 'Sam') {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: `Sign in as ${who}` }).click();
-  await page.waitForURL(/\/admin/);
+  await signInAs(page, who);
   await openFromMenu(page, 'Chores');
   await expect(page.getByRole('heading', { name: 'Chores and tasks', level: 1 })).toBeVisible();
 }

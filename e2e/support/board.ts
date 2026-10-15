@@ -1,5 +1,6 @@
 import { expect, type Browser, type BrowserContextOptions, type Page } from '@playwright/test';
 import { sql } from './db';
+import { signIn } from './session';
 
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 
@@ -59,9 +60,7 @@ export async function pairBoard(
      delete from public.device where household_id = '${DEMO}' and name = '${name}';`,
   );
   const admin = await browser.newPage(adminOptions);
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
   await admin.goto('/admin/devices');
   const form = admin.getByRole('form', { name: 'Add a board', exact: true });
   await form.getByLabel('Board name', { exact: true }).fill(name);

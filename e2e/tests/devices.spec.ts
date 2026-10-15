@@ -5,6 +5,7 @@ import { expect, test, type Browser, type Page } from '../support/test';
 import { pairingCode, retireBoard } from '../support/board';
 import { householdToday } from '../support/day';
 import { networkSwitch, type NetworkSwitch } from '../support/network';
+import { signIn } from '../support/session';
 
 // [DEV-01][DEV-02][DEV-03][DEV-05] A board on the preview (WP-05, WP-06, SPIKE-01, D-40): Alex gets
 // a code, a second browser pairs with it and reads the demo family, admin changes reach it within
@@ -27,9 +28,7 @@ function sql(query: string): string {
 
 async function alexOnBoards(browser: Browser): Promise<Page> {
   const page = await browser.newPage();
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await page.waitForURL(/\/admin$/);
+  await signIn(page);
   await page.goto('/admin/devices');
   await expect(page.getByRole('heading', { name: 'Boards', level: 1, exact: true })).toBeVisible();
   return page;

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
+import { signIn } from '../support/session';
 
 // [CHR-15][CHR-16][CHR-17] A parent's own reminders on the preview (WP-40, D-58), as Alex of the demo
 // family: his settings saved and read back, a device switched off, tested and removed, the bell on
@@ -36,9 +37,7 @@ test.beforeAll(async ({ browser }) => {
   ).toBe(ALEX_SIGN_IN);
   putBack();
   page = await browser.newPage();
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await page.waitForURL(/\/admin$/);
+  await signIn(page);
 });
 
 test.afterAll(() => putBack());

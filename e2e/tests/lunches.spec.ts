@@ -5,6 +5,7 @@ import { pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
 import { withSchoolDays } from '../support/school';
+import { signIn } from '../support/session';
 
 // [MEAL-09][MEAL-11][US-707][D-95] Next week's lunches picked on the board, on the preview (WP-49).
 // The done-when: a weekly item opens Maya's coming week on a paired board; a day changed there shows
@@ -131,9 +132,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
        delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
 
   admin = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
   await admin.goto('/admin/devices');
   const form = admin.getByRole('form', { name: 'Add a board', exact: true });
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '../support/test';
 import { pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
+import { signIn } from '../support/session';
 
 // [PTS-03][PTS-04] The rewards shop on the preview (WP-18, D-53), as Alex of the demo family with a
 // paired board: a reward added with a photo; the board asks for it for Maya (asking twice is one
@@ -55,9 +56,7 @@ test.beforeAll(async ({ browser }) => {
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
        delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
   admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
   await admin.goto('/admin/devices');
   const form = admin.getByRole('form', { name: 'Add a board', exact: true });
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);

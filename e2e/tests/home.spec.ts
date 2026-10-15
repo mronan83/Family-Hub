@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { householdToday } from '../support/day';
+import { signIn } from '../support/session';
 
 // [NFR-17][US-109][ACC-08][US-110] Home at a glance and Family options on the preview (WP-57, D-84),
 // as Alex in the demo family. The done-when: on a school day, one tap makes today a snow day (stored,
@@ -32,9 +33,7 @@ test.beforeAll(async ({ browser }) => {
   TODAY = `'${householdToday(db!)}'::date`;
   putBack();
   admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
 });
 
 test.afterAll(async () => {
