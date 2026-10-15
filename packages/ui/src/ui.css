@@ -1430,10 +1430,16 @@ html:has(.board) {
   text-align: center;
   cursor: pointer;
 }
-/* Home, Chores and the Calendar: the icon beside the word, so the people get the height. */
+/* Home, Chores and the Calendar: the icon beside the word, so the people get the height. A word
+   that doesn't fit beside its icon goes under it, never past the button's edge (WP-71). */
 .fw-today__person--all {
   flex-direction: row;
-  gap: var(--s-3);
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-2);
+  padding-inline: var(--s-1);
+}
+.fw-today__person--all > span {
+  max-width: 100%;
 }
 .fw-today__people svg {
   width: 48px;
@@ -4141,11 +4147,15 @@ span.fw-heat__cell {
   padding: 0;
   list-style: none;
 }
+/* [BRD-08] A row grows with what is in it (WP-71): its title and points chip (96 px) and a little room
+   above and below make 104 px, as before, and a chip a browser draws taller makes the row taller
+   instead of reaching the next row's title. */
 .fw-dash__row {
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  height: 104px;
+  min-height: 96px;
+  padding-block: var(--s-1);
   border-top: var(--border-w) solid var(--line);
 }
 .fw-dash__row:first-child {
@@ -4159,7 +4169,6 @@ span.fw-heat__cell {
   display: grid;
   flex: 1;
   justify-items: start;
-  gap: var(--s-1);
   min-width: 0;
 }
 .fw-dash__title {

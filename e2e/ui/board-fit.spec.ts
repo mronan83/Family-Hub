@@ -159,3 +159,95 @@ test.describe('a swipe on a 4K panel at device scale 1', () => {
     await expect(title).not.toHaveText(first!);
   });
 });
+
+// [BRD-08][NFR-16] The home screen on an iPad and on a 1080p board at large text (WP-71): in its
+// stacked layout on the owner's iPad, chores' points chips sat over the next chore's title and the
+// rail cut "Calendar" and its icon. Rows were a fixed 104 px with 4 px to spare, and the rail's
+// "Calendar" was 7 px wider than its button; a browser that drew either a little larger spilled
+// or clipped it. Measured in the board's own px, in Day and Evening, at each text size.
+const HOME_SHAPES: readonly (readonly [number, number, string, readonly string[]])[] = [
+  [1180, 820, 'an iPad in landscape', TEXT_SIZES.map((t) => t.value)],
+  [820, 1180, 'an iPad in portrait', TEXT_SIZES.map((t) => t.value)],
+  // Added at the owner's request: the kitchen board (24", 1920×1080) at Larger and Largest, stacked.
+  [1920, 1080, 'a 1080p board, stacked', ['larger', 'largest']],
+];
+
+for (const [width, height, screen, sizes] of HOME_SHAPES) {
+  test.describe(`the home screen on ${screen}`, () => {
+    test.use({ viewport: { width, height } });
+    for (const size of sizes)
+      for (const theme of ['day', 'evening'] as const) {
+        test(`[BRD-08][BRD-09][NFR-16] ${width}×${height} at ${size}, ${theme}: nothing over the next chore, nothing cut in the rail, no sideways scroll`, async ({
+          page,
+        }) => {
+          await page.goto(`/dev/board?text=${size}&theme=${theme}`);
+          await expect(page.locator('html')).toHaveAttribute('data-text-size', size);
+          await expect(page.locator('.fw-dash__row').first()).toBeVisible();
+          await page.evaluate(() => document.fonts.ready);
+          const m = await page.evaluate(() => {
+            const z = Number(
+              getComputedStyle(document.documentElement).getPropertyValue('--fw-zoom'),
+            );
+            const box = (e: Element) => e.getBoundingClientRect();
+            const px = (n: number) => Math.round((n / z) * 10) / 10;
+            // Each chore's chip: how far above its row's bottom edge, and above the next title.
+            const rows = [...document.querySelectorAll('.fw-dash__row')].flatMap((row) => {
+              const chip = row.querySelector('.fw-points');
+              if (!chip) return [];
+              const next = row.nextElementSibling?.querySelector('.fw-dash__title');
+              return [
+                {
+                  title: row.querySelector('.fw-dash__title')!.textContent!,
+                  toRowEnd: px(box(row).bottom - box(chip).bottom),
+                  toNextTitle: next ? px(box(next).top - box(chip).bottom) : null,
+                },
+              ];
+            });
+            // Each rail entry: its icon and words inside the button's padding, and the button
+            // inside the rail (which clips both sides).
+            const rail = box(document.querySelector('.fw-today__people')!);
+            const entries = [...document.querySelectorAll('.fw-today__people button')].map((b) => {
+              const cs = getComputedStyle(b);
+              const inset =
+                (Number.parseFloat(cs.paddingLeft) + Number.parseFloat(cs.borderLeftWidth)) * z;
+              const outer = box(b);
+              const kids = [...b.children]
+                .filter((k) => !k.classList.contains('fw-visually-hidden'))
+                .map(box);
+              return {
+                name: b.textContent!.trim(),
+                left: px(Math.min(...kids.map((k) => k.left)) - (outer.left + inset)),
+                right: px(outer.right - inset - Math.max(...kids.map((k) => k.right))),
+                inRail: outer.left >= rail.left - 0.5 && outer.right <= rail.right + 0.5,
+              };
+            });
+            const screenBox = box(document.querySelector('.fw-today__screen')!);
+            return {
+              rows,
+              entries,
+              railBesideScreen: rail.right <= screenBox.left + 0.5,
+              scrollWidth: document.documentElement.scrollWidth,
+            };
+          });
+          expect(m.scrollWidth, 'no sideways scroll').toBe(width);
+          expect(m.railBesideScreen, 'the rail beside the screen, not over it').toBe(true);
+          expect(m.rows.length).toBeGreaterThan(0);
+          for (const r of m.rows) {
+            // The row's own room below the chip (4 px), so it never reaches the next row.
+            expect
+              .soft(r.toRowEnd, `${r.title}: chip to its row's edge`)
+              .toBeGreaterThanOrEqual(3.5);
+            if (r.toNextTitle !== null)
+              expect
+                .soft(r.toNextTitle, `${r.title}: chip to the next title`)
+                .toBeGreaterThanOrEqual(8);
+          }
+          for (const e of m.entries) {
+            expect.soft(e.left, `${e.name}: room left of its icon`).toBeGreaterThanOrEqual(-0.5);
+            expect.soft(e.right, `${e.name}: room right of its words`).toBeGreaterThanOrEqual(-0.5);
+            expect.soft(e.inRail, `${e.name}: inside the rail`).toBe(true);
+          }
+        });
+      }
+  });
+}
