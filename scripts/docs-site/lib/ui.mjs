@@ -1,4 +1,4 @@
-// Shared building blocks for the six pages: the shell (masthead, hero, contents, footer), status pills,
+// Shared building blocks for the seven pages: the shell (masthead, hero, contents, footer), status pills,
 // ID tags, meters, filter bar, and the hover index. Every color comes from tokens in site.css.
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -41,6 +41,12 @@ export const PAGES = [
     label: 'User guide',
     title: 'FamilyWise User Guide and Manual',
     file: 'docs/07-user-guide.md',
+  },
+  {
+    key: 'test-strategy',
+    label: 'Test strategy',
+    title: 'FamilyWise Test Strategy',
+    file: 'docs/08-test-strategy.md',
   },
 ];
 

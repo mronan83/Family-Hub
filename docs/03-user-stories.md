@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.46: US-913 added at the owner's request (WP-85, NFR-18, D-107): every test traced to what it proves.
 > v0.8.45: US-709, US-710, US-711 and US-1010 added at the owner's request (WP-72 to WP-75, D-97, D-98): the lunch picks one tap from Home; the lunch week as a list of days; the meal planner's days folded; a board laid out for its screen's shape. US-701 gains Edit on a planned meal (WP-76, MEAL-15).
 > v0.8.44: US-707 as built (WP-49, D-95): a child's change waits for a parent on Today, picks included; the cut-off; Done; the picks in place of the options.
 > v0.8.43: US-804 as built (WP-64, D-94): the home screen's entree options with their sides, on one line, a tap opening the whole menu; the Meals screen's menu a row a section. US-707 gains the owner's answers at WP-64's mockup (D-94): pick one where a section says "Choice of"; Monday to Friday after a Sunday; today until a morning cut-off; a parent approves a change.
@@ -785,6 +786,13 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P3 · **Reqs:** NFR-16
 - Given any admin page or board screen, when it is shown on a phone, a tablet or a laptop in either theme, then no control overlaps another or is clipped, and fields and buttons in a row line up.
 - Given a change to any screen, when CI runs, then the layout sweep fails the build if it finds an overlap, a clip, or a row out of line.
+
+### US-913 — Every test traced to what it proves
+**As the** owner **I want** every requirement, story and backlog item traced to the tests that prove it **so that** I can see what is tested, what isn't, and that nothing new ships untested.
+**Priority:** Must · **Phase:** P3 · **Reqs:** NFR-18
+- Given the tests in every layer, when the docs are regenerated, then the Test catalogue (`08` §9) lists each requirement, story and backlog item with its tests (file, name, layer) and test cases, and whether it is covered or a gap.
+- Given a PR that adds a built requirement or story with no test, a Done item with no test cases, a test case with no test, or a test naming an unknown ID, when CI runs, then the traceability check fails and says which.
+- Given a gap that existed when the catalogue was made, when CI runs, then it is listed as a known gap and doesn't fail the build; once a test closes it, it comes off the list.
 
 ---
 

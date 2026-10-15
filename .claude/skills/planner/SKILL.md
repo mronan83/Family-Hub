@@ -49,7 +49,9 @@ State is one of: building · CI red · waiting on e2e · **waiting on you: appro
 - each item with what it waits on;
 - open PRs that wait only on an owner action (today: PR #63, WP-14 the Pi kit, waits on Y-7).
 
-Keep it to those tables and at most three lines of notes.
+**Test coverage** (D-107), one line: the known test gaps and built requirements with a test, from the Tests line in `04` §C on `origin/main`; and any **new gap**, from a red traceability step in an open PR's `checks` (name the PR and the gap).
+
+Keep it to those tables, the coverage line and at most three lines of notes.
 
 ## What the owner can ask
 

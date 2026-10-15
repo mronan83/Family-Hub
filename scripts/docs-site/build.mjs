@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Builds the five interactive build-artifact pages (Architecture, Data model, Requirements, Stories,
-// Backlog) from docs/01–05 and the repository, and the User guide page from docs/07 with its pictures
-// embedded. Published copies live at the URLs in artifacts.json.
+// Backlog) from docs/01–05 and the repository, the User guide page from docs/07 with its pictures
+// embedded, and the Test strategy page from docs/08 with its generated Test catalogue. Published copies live at the URLs in artifacts.json.
 //
 //   pnpm docs:build            write dist/docs-site/*.html
 //   pnpm docs:build --check    also fail on broken cross-links or unknown IDs (CI)
@@ -16,6 +16,7 @@ import { backlog } from './pages/backlog.mjs';
 import { dataModel } from './pages/data-model.mjs';
 import { requirements } from './pages/requirements.mjs';
 import { stories } from './pages/stories.mjs';
+import { testStrategy } from './pages/test-strategy.mjs';
 import { userGuide } from './pages/user-guide.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -35,6 +36,7 @@ const RENDER = {
   stories,
   backlog,
   'user-guide': userGuide,
+  'test-strategy': testStrategy,
 };
 const DOC = {
   architecture: ['01', 'arch'],
@@ -43,6 +45,7 @@ const DOC = {
   stories: ['03', 'stories'],
   backlog: ['05', 'backlog'],
   'user-guide': ['07', 'guide'],
+  'test-strategy': ['08', 'tests'],
 };
 
 const clip = (s, n = 240) => {

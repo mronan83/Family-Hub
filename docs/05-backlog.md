@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.115: WP-85 (the test strategy and the Test catalogue) added at the owner's request and done in the same change (NFR-18, D-106, D-107): `08` holds the strategy, and the catalogue generated from every test's name; CI fails a change that adds a test gap. Its test cases are the first in §5 (NFR-18-a to NFR-18-f). WP-86 (close the known test gaps) and WP-87 (smoke on the core loop, nightly speed checks and the weekly failure report: the parts of `08` neither WP-84 nor WP-85 builds) added at the owner's request with it, recorded only.
 > v0.8.114: WP-71 done (D-100): the board home on an iPad, fixed at the cause: a chore's row grows with its title and points chip, and a word in the rail goes under its icon when it doesn't fit beside it. The board's fit checks gain the iPad shapes, and, added at the owner's request, the kitchen board's 1920×1080 at Larger and Largest.
 > v0.8.113: WP-78 (a lunch pick taken off by another, a bug) added at the owner's request and done in the same change: on Meals in the admin app, every "Choice of" section's radios were one group, so ticking a milk took off the entree. Two more added to it at the owner's request and done with it: "and" in a school menu joins a side like "with" (a WP-64 gap); the board picks up a new deploy by itself (D-99).
 > v0.8.112: WP-71 to WP-76 added at the owner's request, recorded only (D-97, D-98), and WP-77 (WP-49's lunch test, root cause) added and done in the same change: the board home on an iPad (a bug); board layouts that adapt to the screen's shape, which WP-58 and WP-68 now build on, so WP-58 waits on it; the lunch picks one tap from Home; the lunch week as a list of days; the meal planner's days folded; Edit on a planned meal (a bug). WP-73 to WP-76 wait on one mockup. "Next, in order" is the owner's to set.
@@ -237,6 +238,9 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-76 | Edit on a planned meal | P2 | S | WP-25, WP-62 | Ready (mockup first, with WP-73 to WP-75) |
 | WP-77 | WP-49's lunch test, root cause: its time limit, and the board's lunch week read again | P2 | S | WP-49 | Done |
 | WP-78 | A lunch pick taken off by another; "and" in a menu; the board picks up a new deploy | P2 | S | WP-49, WP-64 | Done |
+| WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
+| WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
+| WP-87 | Smoke on the core loop, nightly speed checks, and the weekly failure report | P3 | M | WP-85 | Ready |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -422,6 +426,8 @@ flowchart LR
     WP22 --> WP36[WP-36 Closure import, grocery-ready]
     WP25 --> WP36
     WP03 --> WP38[WP-38 Apple sign-in and passkeys]
+    WP85[WP-85 Test strategy and catalogue] --> WP86[WP-86 Close the known test gaps]
+    WP85 --> WP87[WP-87 Smoke, nightly speed, weekly report]
   end
 ```
 
@@ -1242,6 +1248,44 @@ flowchart LR
 - As built, **"and" in a menu:** `withOptions()` in `apps/web/lib/menu/sections.ts` reads an "and" item like "with": dropped, and the next item joins the option before it as a side. In a typed-in or file line, "and" joins only after a "with" ("Fish sticks with Fries and Coleslaw"), so a food named with "and" ("Macaroni and cheese") stays whole. Sides read "with Fries and Coleslaw" (`sidesWords()`, used by `optionWords()`, the board's choices and Meals). Vitest `lib/menu/sections.test.ts`: a feed's A, or, B, or, C, or, D, with, E, and, F as four options, the last with two sides, and the home screen's line; a stray "and" never an item; a line's "D with E and F", and "Macaroni and cheese" kept whole. A feed's days already stored read right from the next daily fetch (10:29 UTC), which stores them again.
 - As built, **the board picks up a new deploy (D-99):** `DeployWatch` (`app/(board)/board/deploy-watch.tsx`, on the board) asks `/api/health` every 5 minutes which commit is deployed and, when it isn't the one the board runs (`isNewDeploy()` in `apps/web/lib/board-update.ts`), reloads once no dialog is open and nobody has touched the board for 2 minutes (`mayReload()`); a local or dev build never reloads. Vitest `lib/board-update.test.ts`; UI suite `e2e/ui/board-update.spec.ts` (on `/dev/board?deploy=…`, with Playwright's clock): an idle board reloads; it doesn't while Leo is picking, nor however long a dialog stays open; nor while someone is tapping, nor when the version is the same.
 
+
+### WP-85 — The test strategy and the Test catalogue
+**Phase:** P3 · **Size:** M · **Depends on:** — · **Reqs:** NFR-18, NFR-12, NFR-14
+- Added at the owner's request (15 October): "I think we need to develop an entire test strategy complete with documented rules and test cases. The strategy needs to think through what requires full e2e, what test cases are applicable for what changes, and the rules for that." And on the draft: "It also needs to contain all the tests and test cases and their relationship to items in the other documents. I want traceability back to requirements, user stories, backlog items, etc. This creates accountability and responsibility on your behalf to ensure we are testing the right things at the right time."
+- `08-test-strategy.md`, styled like `00`–`07`, from the draft the owner reviewed: the layers, the test types, the change classes and what each runs, the rules by class, what earns an e2e test, test cases, how tests are written, and what happens when one fails. A docs page of its own, **Test strategy**, republished with the others.
+- The Test catalogue (`08` §9), generated, not hand-written: every test in the Vitest, node:test, UI suite, e2e and pgTAP layers, traced to the requirements, stories, backlog items and test cases it names; per requirement, item and story; a coverage summary; counts by layer and area. `04` §B gains a generated Tests column and §C a Tests line.
+- CI fails a change that adds a test gap, or a test naming an unknown ID (`08` §6.2). The gaps that exist today are known gaps; closing them is WP-86.
+- The deliver skill's definition of done gains the item's test cases and the regenerated catalogue; a PR lists the cases it adds and the catalogue's diff. The planner's status reports include the coverage.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| NFR-18-a | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit |
+| NFR-18-b | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit |
+| NFR-18-c | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit |
+| NFR-18-d | A Done item's test case with no test fails the check; a case of an item not yet built may wait for its test | Unit |
+| NFR-18-e | `--fix` writes the catalogue to `08` and the Tests column and line to `04`, and the check fails while they are out of date | Unit |
+| NFR-18-f | `--fix` takes a closed gap off the known gaps and never adds one | Unit |
+
+- **Done when:** `08` is in the docs index and on the docs site; each of NFR-18-a to NFR-18-f has a test (node:test `scripts/trace-catalogue.test.mjs`); `pnpm trace` fails on a new gap and on an unknown ID; the catalogue, `04` §B's Tests column and §C's Tests line are generated; the skills say who answers for it; and the PR's e2e is green.
+- As built: `docs/test_catalogue.py` reads every test by name: Vitest and node:test (`it`, `test`, an `.each` table once, with the titles of the `describe` blocks around it), the UI suite and e2e (`test`), and pgTAP (each assertion's description); counted as written, so a test in a loop counts once. `check_traceability.py` builds a `Catalogue` from it: unknown IDs and new gaps are errors, `--fix` writes `08` §9 between `<!-- catalogue -->` markers, `04` §B's Tests column (counts by layer) and §C's Tests line, and takes closed gaps off `docs/known-test-gaps.txt`; `--baseline-gaps` wrote the 93 known gaps once. The docs site gains the **Test strategy** page (`scripts/docs-site/pages/test-strategy.mjs`; `08` § references link across pages). node:test `scripts/trace-catalogue.test.mjs` runs the check on a copy of the docs and tests for each of NFR-18-a to NFR-18-f. Deliver skill: definition of done line 13, test cases first (step 3), `08` in the docs table, the PR's test cases and catalogue diff, and the catalogue in the conflict table; planner skill: the coverage line; the PR template's Test cases and catalogue section.
+
+### WP-86 — Close the known test gaps
+**Phase:** P3 · **Size:** L · **Depends on:** WP-85 · **Reqs:** NFR-18
+- Added at the owner's request with WP-85: close every known test gap in `docs/known-test-gaps.txt` (`08` §9.6). When WP-85 was made there were 93 known gaps: 41 built stories no test names, and 52 Done items whose Done when has no test cases. Every built requirement had at least one test.
+- Also a plain fact when WP-85 was made: 419 of 2,174 tests named no ID, so they trace to nothing; each gets the ID of what it proves.
+- A story's gap closes with a test that names it, at the lowest layer that shows it (`08` §1). A Done item's closes with its test cases in its §5 section, each proved by a test.
+- **Done when:** `docs/known-test-gaps.txt` lists no gap, `08` §9.1 shows none, and every test names at least one ID.
+
+### WP-87 — Smoke on the core loop, nightly speed checks, and the weekly failure report
+**Phase:** P3 · **Size:** M · **Depends on:** WP-85 · **Reqs:** NFR-14, NFR-12
+- Added at the owner's request with WP-85: the parts of the test strategy (`08`) that neither WP-84 nor WP-85 builds, recorded only. WP-84 builds e2e by area, burn-in, the full suite on `main` and nightly, and re-running only infrastructure faults (D-104, D-105).
+- Smoke after a deploy grows from the health check to the core loop, as the demo family on production: the board loads, a check-off lands, the admin app shows it (`08` §2).
+- Speed nightly: DEV-05's and the WP-08 list entry's measurements gathered from the nightly run, with their trend (`08` §2).
+- Run summaries list failures by class (assertion or infrastructure), with a weekly count of red runs by class, and push to green for a small change measured before and after (`08` §8).
+- A test with two infrastructure faults in two weeks is named in the weekly report, for a robustness fix (`08` §8).
+- **Done when:** the smoke check runs the core loop after a deploy and fails the deploy run when it breaks; the nightly run reports DEV-05's and the list entry's times; the weekly report lists red runs by class and the tests with two infrastructure faults in two weeks; each with a test.
+
 ---
 
 ## 6. Size summary
@@ -1254,6 +1298,6 @@ flowchart LR
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-78 | Menu adapters and WP-49 are the Ls |
-| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
+| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-85 – WP-87 | WP-56, WP-58, WP-68, WP-72 and WP-86 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.24: the test strategy's story (US-913) left out of the guide, with its reason: it is for the people building FamilyWise (WP-85).
 > v0.23: the board on a tablet such as an iPad, and at **Larger** or **Largest**: each chore's points under its own title, and the whole of every word in the rail (A14).
 > v0.22: a menu's "and" joins a side like "with" ("Fish sticks with Fries and Coleslaw"); a parent's lunch picks on **Meals** keep the entree when a milk is ticked; the board picks up a new version by itself when nobody is using it (WP-78, D-99).
 > v0.21: next week's lunches picked at the board (WP-49, D-95): **Lunches** on the board, a child's changes waiting on **Today**, picks on **Meals**, the cut-off on **School**, an item that opens Lunches (A2, A15, B1.2, B1.5, B1.10, B1.15, B2.9, B2.10).
@@ -1587,4 +1588,5 @@ Every user story linked to a work package that is Done (`05`) is covered by at l
 | US-901 | Data isolation and secret storage happen in the database and the server; there is nothing for the family to see or do. |
 | US-908 | Automated tests are for the people building FamilyWise. |
 | US-911 | The delivery pipeline (checks, previews and the owner's approval before anything ships) is how FamilyWise is built and released, not part of using it. |
+| US-913 | The test strategy and the Test catalogue (`08`) are how FamilyWise is tested and held to account, not part of using it. |
 <!-- /guide-exclusions -->
