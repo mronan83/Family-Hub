@@ -301,9 +301,24 @@ const SHOTS = [
     url: '/dev/meals?edit=f2e10000-0000-4000-8000-000000000010',
     element: '#entry-f2e10000-0000-4000-8000-000000000010',
   },
-  // School lunch (WP-26): the section itself.
-  // [MEAL-11] With a child's picks and a change waiting (WP-49).
-  { name: 'admin-lunch-laptop', device: 'laptop', url: '/dev/meals?lunches=1', element: '#lunch' },
+  // School lunch (WP-26) as a list of days (WP-74): on a phone, Leo's week with today opened.
+  {
+    name: 'admin-lunch-phone',
+    device: 'phone',
+    url: '/dev/meals',
+    element: '#lunch',
+    // The whole section, the usual weeks too, kept under 120 KB.
+    quality: 48,
+    act: (page) => page.locator('.fw-lunchday[data-today]:visible summary').click(),
+  },
+  // [MEAL-11] On a laptop, with a child's picks (WP-49), today opened.
+  {
+    name: 'admin-lunch-laptop',
+    device: 'laptop',
+    url: '/dev/meals?lunches=1',
+    element: '#lunch',
+    act: (page) => page.locator('.fw-lunchday[data-today]:visible summary').click(),
+  },
   // [MEAL-09] The children's lunch changes waiting on Today (WP-49), on a laptop and a phone.
   {
     name: 'admin-lunch-changes-laptop',

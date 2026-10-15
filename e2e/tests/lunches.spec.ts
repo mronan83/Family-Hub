@@ -230,10 +230,10 @@ test('[MEAL-09][MEAL-11][US-707] done-when: the item opens Maya’s week; she pi
       sql(`select mode || ' ' || jsonb_array_length(choices) || ' ' || status from public.lunch_request
           where member_id = '${maya}' and lunch_date = '${day}'`),
     ).toBe('buy 3 waiting');
+    // [MEAL-13] On her day in the list of days (WP-74), closed or open, whichever child is shown.
     const waiting = admin
-      .getByRole('region', { name: 'School lunch' })
-      .getByRole('row', { name: /^Maya/ })
-      .getByRole('link', { name: 'Buy? waiting' });
+      .locator(`.fw-lunchdays[aria-label="Maya’s lunch week"] .fw-lunchday[data-date="${day}"]`)
+      .locator('a.fw-lunch__waiting', { hasText: 'Buy? waiting' });
     // Each reload's time is kept, so a miss says whether the page itself took the 3 s (WP-77).
     const reloads: number[] = [];
     try {
@@ -336,18 +336,16 @@ test('[MEAL-09][MEAL-11][US-707] done-when: the item opens Maya’s week; she pi
 
   await test.step('[MEAL-11][US-707] WP-78: a parent picks an entree, then a milk, then fruits on Meals; all are saved', async () => {
     await admin.goto(`/admin/meals?week=${day}`);
-    const name = new Intl.DateTimeFormat('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      timeZone: 'UTC',
-    }).format(new Date(`${day}T12:00:00Z`));
+    // [MEAL-13] Her day on the list of days (WP-74), opened.
+    await admin
+      .getByRole('group', { name: 'Whose lunches' })
+      .getByRole('button', { name: /^Maya/ })
+      .click();
     const cell = admin
-      .getByRole('region', { name: 'School lunch' })
-      .getByRole('cell')
-      .filter({ has: admin.getByRole('button', { name: new RegExp(`^Maya, ${name}: buy`) }) });
-    await cell.getByText('Change picks').click();
-    const form = cell.locator('details[open] form');
+      .getByRole('list', { name: 'Maya’s lunch week' })
+      .locator(`.fw-lunchday[data-date="${day}"]`);
+    await cell.locator('summary').click();
+    const form = cell.locator('form.fw-lunchday__picks');
     const box = (section: string, option: string) =>
       form
         .getByRole('group', { name: new RegExp(`^${section}`) })

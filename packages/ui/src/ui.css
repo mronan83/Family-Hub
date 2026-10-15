@@ -2750,36 +2750,7 @@ span.fw-heat__cell {
   }
 }
 
-/* School lunch (WP-26): a child per row, the week's days across (it scrolls inside itself on a
-   phone), each school day's buy or bring a button; then each child's usual week. ------------- */
-.fw-lunch__table {
-  overflow-x: auto;
-  border: var(--border-w) solid var(--line);
-  border-radius: var(--r-sm);
-}
-.fw-lunch__table table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.fw-lunch__table :is(th, td) {
-  padding: var(--s-2);
-  text-align: left;
-  vertical-align: middle;
-  border-bottom: var(--border-w) solid var(--line);
-  white-space: nowrap;
-}
-.fw-lunch__table thead th {
-  background: var(--surface);
-  font-size: var(--t-small);
-}
-.fw-lunch__table tbody tr:last-child :is(th, td) {
-  border-bottom: 0;
-}
-.fw-lunch__table form {
-  display: grid;
-  gap: 2px;
-  justify-items: start;
-}
+/* School lunch (WP-26): the week as a list of days (WP-74), then each child's usual week. ------- */
 .fw-lunch__changed {
   color: var(--primary-text);
   font-size: var(--t-small);
@@ -2797,17 +2768,8 @@ span.fw-heat__cell {
 
 /* [MEAL-09][MEAL-11] A child's picks and changes in the lunch table (WP-49): the picks under the
    day, a change waiting for a parent as a link to Today, and the parent's picks form. */
-.fw-lunch__picks {
-  display: block;
-  max-width: 14rem;
-  margin-top: var(--s-1);
-  font-size: var(--t-small);
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
 .fw-lunch__flag {
-  display: inline-block;
-  margin-left: var(--s-1);
+  justify-self: start;
   padding: 0 var(--s-2);
   border-radius: var(--r-pill);
   background: var(--reward-tint);
@@ -2822,29 +2784,253 @@ span.fw-heat__cell {
   font-size: var(--t-small);
   font-weight: 600;
 }
-.fw-lunch__edit {
-  margin-top: var(--s-1);
-  max-width: 16rem;
-  white-space: normal;
-  font-size: var(--t-small);
-}
-.fw-lunch__edit summary {
-  min-height: 44px;
+/* [MEAL-13][US-710][D-98] The lunch week as a list of days (WP-74): the children's faces in a row
+   (a dot on one with a day to pick), then one child's Monday to Friday, each day closed at first
+   (weekday, date, Buy or Bring, a check when complete) and opened to Buy or Bring and the day's
+   menu, the picks highlighted. A day without school is greyed and doesn't open; today is outlined.
+   One column at every width, so nothing scrolls sideways on a phone. */
+.fw-lunchkids {
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.fw-lunchkids__kid {
+  display: inline-flex;
   align-items: center;
-  color: var(--primary-text);
+  gap: var(--s-2);
+  min-height: 56px;
+  padding: var(--s-1) var(--s-4) var(--s-1) var(--s-1);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
-.fw-lunch__section {
+.fw-lunchkids__kid[aria-pressed='true'] {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 2px var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-lunchkids__face {
+  position: relative;
+  display: inline-flex;
+}
+.fw-lunchkids__dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--reward);
+  border: 2px solid var(--surface);
+}
+.fw-lunchdays {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  gap: var(--s-1);
+  gap: var(--s-2);
+}
+.fw-lunchdays[hidden] {
+  display: none;
+}
+.fw-lunchday {
+  min-width: 0;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.fw-lunchday[data-today] {
+  border: 2px solid var(--primary);
+}
+.fw-lunchday--off {
+  background: var(--bg);
+  color: var(--text-soft);
+}
+.fw-lunchday__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  min-height: 64px;
+  padding: var(--s-2) var(--s-4);
+  list-style: none;
+  cursor: pointer;
+}
+.fw-lunchday--off .fw-lunchday__head {
+  cursor: default;
+}
+.fw-lunchday__head::-webkit-details-marker {
+  display: none;
+}
+.fw-lunchday__chev {
+  width: var(--icon-row);
+  height: var(--icon-row);
+  flex: none;
+  color: var(--text-soft);
+  transition: transform 0.2s var(--ease);
+}
+details[open] > .fw-lunchday__head .fw-lunchday__chev {
+  transform: rotate(90deg);
+}
+.fw-lunchday__when {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--s-2);
+  min-width: 0;
+}
+.fw-lunchday__name {
+  font-weight: 700;
+}
+.fw-lunchday--off .fw-lunchday__name {
+  font-weight: 600;
+}
+.fw-lunchday__date {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-lunchday__today {
+  padding: 0 var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.fw-lunchday__end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--s-2);
+  margin-left: auto;
+}
+.fw-lunchday__none {
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.fw-lunchday__mode,
+.fw-lunchday__waiting {
+  padding: 2px var(--s-2);
+  border-radius: var(--r-sm);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+  font-size: var(--t-small);
+  font-weight: 700;
+}
+.fw-lunchday__mode[data-mode='bring'] {
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-lunchday__waiting {
+  border-radius: var(--r-pill);
+  font-weight: 600;
+}
+.fw-lunchday__check,
+.fw-lunchday__todo {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+}
+.fw-lunchday__check {
+  background: var(--success);
+  color: var(--surface);
+}
+.fw-lunchday__check .fw-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 3;
+}
+.fw-lunchday__todo {
+  border: 2px dashed var(--text-soft);
+}
+.fw-lunchday__body {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-lunchday__body > :is(.fw-lunch__changed, .fw-lunch__waiting) {
+  justify-self: start;
+}
+.fw-lunchday__toggle > div {
+  display: inline-flex;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.fw-lunchday__opt-mode {
+  min-width: 6rem;
+  min-height: 48px;
+  padding: 0 var(--s-4);
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.fw-lunchday__opt-mode[aria-pressed='true'] {
+  background: var(--primary);
+  color: var(--on-primary);
+  cursor: default;
+}
+.fw-lunchday__opt-mode:disabled:not([aria-pressed='true']) {
+  cursor: wait;
+}
+.fw-lunchday__section {
+  display: grid;
+  gap: var(--s-2);
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
 }
-.fw-lunch__section legend {
-  font-weight: 600;
+.fw-lunchday__section legend {
+  margin-bottom: var(--s-2);
+  font-weight: 700;
+}
+.fw-lunchday__opts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: var(--s-2);
+}
+.fw-lunchday__opt {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 52px;
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.fw-lunchday__opt input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  margin: 0;
+  accent-color: var(--primary);
+}
+.fw-lunchday__opt:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fw-lunchday__chev {
+    transition: none;
+  }
 }
 
 /* [MEAL-09][US-707][D-95] Today's lunch changes (WP-49): a group a child, a row a day: the day and its
@@ -2937,17 +3123,6 @@ span.fw-heat__cell {
   }
 }
 
-/* School menus (WP-27): a menu's days, a line each (the date, then what's served), the parent's own
-   marked; a buy day's menu under it in the lunch table, wrapping in its cell. --------------------- */
-.fw-lunch__menu {
-  display: block;
-  max-width: 14rem;
-  margin-top: var(--s-1);
-  color: var(--text-soft);
-  font-size: var(--t-small);
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
 /* [MENU-06][D-94] A day's menu in the admin app, a line a section, its name small above (WP-64). */
 .fw-menu-text {
   position: relative; /* keeps the hidden ": " inside a table that scrolls sideways */

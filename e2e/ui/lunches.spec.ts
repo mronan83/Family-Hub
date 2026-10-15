@@ -5,8 +5,8 @@ import { floors } from '../support/floors';
 // [MEAL-09][MEAL-11][US-707][D-95] Next week's lunches picked on the board (WP-49), with made-up
 // families and menus, no database: Lunches on /dev/board (fixtureLunches: Leo's week has a buy day
 // with picks, a change waiting for a parent, a buy day with nothing picked, a day Sam kept and a
-// bring day), the children's changes waiting on Today on /dev/admin?lunches=1, and the picks and a
-// change waiting on Meals on /dev/meals?lunches=1. The same against the database, from a paired
+// bring day) and the children's changes waiting on Today on /dev/admin?lunches=1; the picks and a
+// change waiting on Meals are in lunch-week.spec.ts (WP-74). The same against the database, from a paired
 // board to the admin app, runs in e2e/tests/lunches.spec.ts.
 
 async function contrastOk(page: Page) {
@@ -211,42 +211,4 @@ test.describe('Today in the admin app', () => {
       await contrastOk(page);
     });
   }
-});
-
-test('[MEAL-11][US-707] Meals in the admin app: picks, a change on the board, a change waiting', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto('/dev/meals?lunches=1');
-  const table = page.locator('.fw-lunch__table');
-  await expect(table).toContainText('Changed on the board');
-  await expect(table).toContainText('Picked: Turkey sandwich · Orange · 1% milk');
-  await expect(table.getByRole('link', { name: 'Buy? waiting' })).toHaveAttribute(
-    'href',
-    '/admin/today',
-  );
-  // A parent changes the picks there: one entree (radio), any fruits (checkboxes).
-  await table.getByText('Change picks').click();
-  const form = table.locator('details[open] form');
-  await expect(form.locator('input[type="radio"]')).toHaveCount(4);
-  await expect(form.locator('input[type="checkbox"]')).toHaveCount(2);
-  await expect(form.getByRole('button', { name: 'Save Leo’s picks' })).toBeVisible();
-  // [WP-78] An entree, then a milk, then fruits: every pick stays. With one radio group for the
-  // form, the milk took the entree off.
-  const box = (section: string, name: string) =>
-    form.getByRole('group', { name: new RegExp(`^${section}`) }).getByLabel(name, { exact: true });
-  await box('Entree', 'Cheese Pizza').check();
-  await box('Milk', 'Chocolate milk').check();
-  await box('Fruits', 'Green Beans').check();
-  await box('Fruits', 'Orange').check();
-  for (const [section, name] of [
-    ['Entree', 'Cheese Pizza'],
-    ['Milk', 'Chocolate milk'],
-    ['Fruits', 'Green Beans'],
-    ['Fruits', 'Orange'],
-  ] as const)
-    await expect(box(section, name), `WP-78 ${name} still picked`).toBeChecked();
-  await expect(box('Entree', 'Turkey sandwich')).not.toBeChecked();
-  await expect(box('Milk', '1% milk')).not.toBeChecked();
-  await contrastOk(page);
 });
