@@ -353,6 +353,9 @@ test('[CHR-11] the list filters by time of day, person and kind', async ({ page 
 });
 
 test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', async ({ page }) => {
+  // Three item saves, each timed (WP-83), within the test's own limit (D-92).
+  test.setTimeout(120_000);
+  const times: string[] = [];
   await signIn(page, 'Alex');
   await page.getByRole('link', { name: 'Tags', exact: true }).click();
   const add = page.getByRole('form', { name: 'Add a tag' });
@@ -368,9 +371,15 @@ test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', asy
     await page.getByRole('link', { name: `Edit ${title}` }).click();
     const form = page.getByRole('form', { name: 'Edit item' });
     await form.getByRole('checkbox', { name: 'Tidy-up' }).check();
-    await form.getByRole('button', { name: 'Save changes' }).click();
-    await expect(page.getByRole('status')).toHaveText(`Saved ${title}.`);
+    await save(
+      page,
+      form.getByRole('button', { name: 'Save changes' }),
+      title,
+      `Saved ${title}.`,
+      times,
+    );
   }
+  report(`CHR-10 saves: ${times.join(', ')}`);
 
   const filters = page.getByRole('form', { name: 'Filter the list' });
   await filters.getByLabel('Tag').selectOption('Tidy-up');
