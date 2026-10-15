@@ -390,6 +390,13 @@ describe('the status changes an evaluation calls for', () => {
     ]);
   });
 
+  it('[RWD-14] a goal whose end date was taken off stays active past the old date', () => {
+    expect(transitions('active', [], { end_date: '2026-10-05' })).toEqual([
+      'active>expired>expired',
+    ]);
+    expect(transitions('active', [], { end_date: null })).toEqual([]);
+  });
+
   it('[RWD-04] a redeemed goal whose rules are no longer met stays redeemed and needs review', () => {
     expect(transitions('redeemed', [open('2026-10-02')])).toEqual([
       'redeemed>needs_review>redeemed',

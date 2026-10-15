@@ -7,8 +7,8 @@ import { signIn } from '../support/session';
 // [RWD-04][RWD-10][RWD-13] Goal payouts and the preview of a change on the preview (WP-39, D-75), as
 // Alex of the demo family. The done-when: a goal that pays 10 points posts one bonus when Maya's bed
 // reaches it, even when it is worked out twice; unchecking the bed takes the 10 back once; checking
-// it again pays again as achievement 2. Then the change form's Preview says what raising the target
-// would do, and saves nothing. (A fulfilled shop reward raising the review flag is pgTAP's,
+// it again pays again as achievement 2. Then its change form keeps its rules and dates: a reached goal
+// can't change them (D-115), so nothing it paid can be taken back by an edit. (A fulfilled shop reward raising the review flag is pgTAP's,
 // 320_goal_payouts.) Previews run no jobs, so the Goals page works goals out before it reads.
 //
 // Leo is left alone (goals.spec reads his goal's history). Afterwards Maya's bed is put back (which
@@ -190,18 +190,18 @@ test('[RWD-13][RWD-10][RWD-04][US-409][US-406] a goal that pays 10 points: set w
     await expect(history).toContainText('Payout undone: 10 points taken back');
   });
 
-  await test.step('the preview of raising the target says it would take the goal and its 10 points back; nothing is saved', async () => {
+  await test.step('a reached goal keeps its rules and dates (D-115): its form offers no target, end date or preview; nothing changes', async () => {
     const version = sql(`select rules_version from public.reward_goal where id = '${goalId()}'`);
     await admin.goto('/admin/goals');
     await admin.getByRole('link', { name: `Change ${TITLE}` }).click();
+    await expect(
+      admin.getByText('It has been reached, so its rules and dates stay as they are.'),
+    ).toBeVisible();
     const form = admin.getByRole('form', { name: `Edit ${TITLE}` });
-    await form.getByRole('spinbutton', { name: 'Target', exact: true }).fill('2');
-    await form.getByRole('button', { name: 'Preview' }).click();
-    const preview = form.getByRole('region', { name: 'Preview' });
-    await expect(preview).toContainText(
-      'Saving takes it back to going: 50% there, and what it paid (10 points) is taken back.',
-    );
-    await expect(preview.getByRole('row', { name: /The goal/ })).toContainText('Reached50% there');
+    await expect(form.getByLabel('Name')).toBeEditable();
+    await expect(form.getByRole('spinbutton', { name: 'Target', exact: true })).toHaveCount(0);
+    await expect(form.getByRole('group', { name: 'Ends' })).toHaveCount(0);
+    await expect(form.getByRole('button', { name: 'Preview' })).toHaveCount(0);
     expect(sql(`select rules_version from public.reward_goal where id = '${goalId()}'`)).toBe(
       version,
     );

@@ -2642,6 +2642,23 @@ span.fw-heat__cell {
 .fw-goal-form__dates > .fw-field {
   flex: 1 1 180px;
 }
+/* [RWD-14] The end date: a check box, then the date and Clear side by side (D-115). */
+.fw-end-date {
+  display: grid;
+  gap: var(--s-2);
+  align-content: start;
+}
+.fw-end-date__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-3);
+  align-items: center;
+}
+.fw-end-date__row .fw-input {
+  box-sizing: border-box; /* its padding inside its column, so it never runs under Clear */
+  min-width: 0;
+  width: 100%;
+}
 .fw-goal-rule {
   gap: var(--s-3);
   padding: var(--s-4);
