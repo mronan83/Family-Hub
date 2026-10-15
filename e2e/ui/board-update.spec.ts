@@ -34,8 +34,12 @@ test('[DEV-05] WP-78: an idle board reloads once a new version is deployed', asy
 
 test('[DEV-05] WP-78: never with a dialog open, however long it is left', async ({ page }) => {
   await open(page, 'b'.repeat(40));
-  // A new version is seen at 5 minutes; Leo then opens a day's choices.
-  await page.clock.runFor(5 * 60_000 + 1_000);
+  // A new version is seen at 5 minutes; Leo then opens a day's choices. Leo is at the board from
+  // 4 minutes, so it isn't idle when the version is seen: idle since the start, it would reload at
+  // 5:00 whenever /api/health answers before that minute's own reload check (WP-71: CI saw it).
+  await page.clock.runFor(4 * 60_000);
+  await page.keyboard.press('Shift');
+  await page.clock.runFor(60_000 + 1_000);
   expect(await marked(page)).toBe(true);
   await page.getByRole('button', { name: 'Open Pick next week’s lunches for Leo' }).click();
   await page.getByRole('button', { name: 'Next week' }).click();
