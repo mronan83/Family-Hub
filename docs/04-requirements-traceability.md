@@ -156,7 +156,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | DEV-02 | US-201, US-202 | WP-05, WP-59 | AUTH, DB, SAUTH | device | DB |
 | DEV-03 | US-202 | WP-05 | ADM, AUTH | device | E2E |
 | DEV-04 | US-203 | WP-14 | PI, BRD | — | HW, E2E |
-| DEV-05 | US-204 | WP-06, WP-70 | RT, BRD, DB | board_snapshot, all board-readable tables | U, DB, E2E |
+| DEV-05 | US-204 | WP-06, WP-70, WP-78 | RT, BRD, DB | board_snapshot, all board-readable tables | U, DB, E2E |
 | DEV-06 | US-205 | WP-13 | OUTBOX, BRD, API | chore_completion_event | E2E, U |
 | DEV-07 | US-207 | WP-34 | PI, BRD | household_settings | HW |
 | DEV-08 | US-206 | WP-13 | BRD, OBS | job_run | E2E, U, DB |
@@ -229,7 +229,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | MENU-03 | US-802 | WP-27 | ADM, MENUIMP | school_menu_day | U, DB, E2E |
 | MENU-04 | US-803 | WP-27 | MENUIMP, ADM, OBS | school_menu_day, menu_source | U, DB, E2E |
 | MENU-05 | US-803 | WP-27 | MENUIMP, SCHED | school_menu_day | U, DB, E2E |
-| MENU-06 | US-804 | WP-64 | MENUIMP, BRD, ADM | school_menu_day | U, E2E |
+| MENU-06 | US-804 | WP-64, WP-78 | MENUIMP, BRD, ADM | school_menu_day | U, E2E |
 | BRD-01 | US-303, US-1001 | WP-11, WP-35 | BRD | board_snapshot | E2E |
 | BRD-02 | US-1002 | WP-11 | BRD | member | E2E |
 | BRD-03 | US-905 | WP-11 | BRD | — | E2E, HW, REV |
@@ -442,7 +442,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
-| 0.8.115 | WP-78 a lunch pick taken off by another (MEAL-11, US-707), a bug added at the owner's request and done in the same change: on Meals in the admin app, each section's picks have a name of their own (`pickName()`, read by `parsePicksForm()` in `lib/lunch-picks.ts`, used by `lunch-section.tsx`), so a milk no longer takes off the entree (Vitest `lunch-picks.test.ts`; UI suite and e2e `lunches.spec.ts`, on the board and on Meals). |
+| 0.8.115 | WP-78 a lunch pick taken off by another (MEAL-11, US-707), a bug added at the owner's request and done in the same change: on Meals in the admin app, each section's picks have a name of their own (`pickName()`, read by `parsePicksForm()` in `lib/lunch-picks.ts`, used by `lunch-section.tsx`), so a milk no longer takes off the entree (Vitest `lunch-picks.test.ts`; UI suite and e2e `lunches.spec.ts`, on the board and on Meals). Added to it at the owner's request: "and" in a school menu joins a side like "with" (MENU-06; `withOptions()` and `sidesWords()` in `lib/menu/sections.ts`; Vitest `sections.test.ts`); the board picks up a new deploy by itself, once idle with no dialog open (DEV-05, D-99; `DeployWatch`, `lib/board-update.ts`; Vitest `board-update.test.ts`, UI suite `board-update.spec.ts`). |
 | 0.8.114 | WP-77 WP-49's lunch test, root cause (MEAL-09, MEAL-11, US-707), added at the owner's request and done in the same change: in the test, its own 90 s limit (D-92), each `/api/lunches` POST checked for 200 and timed (`lunchPost()`), and each reload's time kept in the 3 s check on Meals (e2e `lunches.spec.ts`); in the app, the board's lunch week read again after a failed read, up to three (`readWeek()` in `lib/lunch-picks.ts`, used by the board's `lunches-ui.tsx`; Vitest `lunch-picks.test.ts`). |
 | 0.8.113 | Six items added at the owner's request, recorded only (D-97, D-98): WP-71 the board home on an iPad, fixed at the cause (BRD-08, BRD-09, NFR-16; points badges over the next chore, the rail's labels and icons clipped), with iPad shapes and the stacked layout in the board's layout checks; WP-72 board layouts that adapt to the screen's width and shape (BRD-11, US-1010, D-97), L, which WP-58 and WP-68 now build on; WP-73 a quick action on the admin Home to the school lunch picks (MEAL-12, US-709); WP-74 the lunch week as a stacked list of days, all collapsed at first (MEAL-13, US-710); WP-75 the meal planner's days as collapsible sections (MEAL-14, US-711); WP-76 Edit on a planned meal (MEAL-15, US-701). WP-73 to WP-76 are the admin app only and wait on one mockup, on the demo family, approved by the owner. `CLAUDE.md` gains three rules for talking to the owner. |
 | 0.8.112 | WP-70 The board calendar's refresh timing, root cause (NFR-14, DEV-05, CAL-05, US-503, US-507, D-96), added at the owner's request and built in the same change: three causes. In the test, CAL-05's and US-507's 3 s check looked last at about 2.8 s and gave times up to 0.5 s late; both are timed in the board's page every 50 ms (`untilOnBoard()` in e2e `board-calendar.spec.ts`), up to 10 s, and say what the board did. In the app, a board read after a change that failed was dropped and one that hung held back the reads after it; `readSoon()` in `lib/live.ts` makes a failed read again and starts another beside one still out after 4 s, the first back winning, up to three, and the board's status shows when it heard, began and finished its last read (Vitest `board.test.ts`). In the app and the test, the calendar gave no sign that a month had finished drawing; `shownCalendar()` in `lib/board-calendar.ts` gives `loading`, the Calendar screen is `aria-busy` until the range's read lands, and the UI suite's US-503 waits for it (Vitest `board-calendar.test.ts`, UI suite `board-calendar.spec.ts`). WP-65's tally restarts. |

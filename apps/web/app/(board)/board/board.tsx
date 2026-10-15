@@ -16,6 +16,7 @@ import { lunchFromDb } from '@/lib/lunch';
 import { postLunch, postLunchSeen } from '@/lib/lunch-picks';
 import type { LoadLunches } from './lunches-ui';
 import { effectiveLayout } from '@/lib/board-layout';
+import { DeployWatch } from './deploy-watch';
 import { HealthLines } from './health-lines';
 import type { PhotoUrl } from './picture';
 import { type QueueState, Today } from './today';
@@ -317,6 +318,7 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
 
   return (
     <main className="fw-board" data-fetched-at={snapshot.fetchedAt}>
+      <DeployWatch version={appVersion} />
       <BoardThemeController timeZone={tz} override={device.theme} />
       <header className="fw-board__bar">
         <div className="fw-board__title">

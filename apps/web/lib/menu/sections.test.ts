@@ -9,6 +9,7 @@ import {
   pickOne,
   sectionLabel,
   sectionWords,
+  sidesWords,
   withOptions,
 } from './sections';
 
@@ -139,6 +140,86 @@ describe('the school menu by section', () => {
       { name: 'Milk, 1%', section: MILK, option: 1 },
       { name: 'Chocolate milk', section: MILK, option: 2 },
     ]);
+  });
+
+  it('[MENU-06][US-804] a feed’s "and" joins like "with": the next item is a side (WP-78)', () => {
+    const title = (text: string) => ({ is_section_title: true, text, food: null });
+    const food = (name: string) => ({ is_section_title: false, text: '', food: { name } });
+    const word = (text: string) => ({ is_section_title: false, text, food: null });
+    const [day] = readWeek({
+      days: [
+        {
+          date: '2027-02-02',
+          menu_items: [
+            title(ENTREE),
+            food('Pancakes'),
+            word('or'),
+            food('Bean burrito'),
+            word('or'),
+            food('Veggie wrap'),
+            word('or'),
+            food('Fish sticks'),
+            word('with'),
+            food('Fries'),
+            word('and'),
+            food('Coleslaw'),
+            title(MILK),
+            food('1% milk'),
+          ],
+        },
+      ],
+    });
+    const [entree] = menuSections(day!.items);
+    expect(entree!.options).toEqual([
+      { name: 'Pancakes', sides: [] },
+      { name: 'Bean burrito', sides: [] },
+      { name: 'Veggie wrap', sides: [] },
+      { name: 'Fish sticks', sides: ['Fries', 'Coleslaw'] },
+    ]);
+    // The home screen's line: no "and" option of its own.
+    expect(entreeWords(day!.items)).toBe(
+      'Pancakes, Bean burrito, Veggie wrap or Fish sticks with Fries and Coleslaw',
+    );
+    // A stray "and" is no item, and never joins across sections.
+    expect(
+      withOptions([
+        { name: 'and', section: 'A' },
+        { name: 'Soup', section: 'A' },
+        { name: 'and', section: 'A' },
+        { name: 'Bread', section: 'B' },
+      ]),
+    ).toEqual([
+      { name: 'Soup', section: 'A', option: 1 },
+      { name: 'Bread', section: 'B', option: 1 },
+    ]);
+  });
+
+  it('[MENU-06][US-804] a typed-in or file line reads "D with E and F"; a food named with "and" stays whole (WP-78)', () => {
+    const items = withOptions(
+      [
+        { name: 'Macaroni and cheese or Fish sticks with Fries and Coleslaw', section: ENTREE },
+        { name: 'Chicken with rice, beans and salsa or Salad', section: 'Specials' },
+      ],
+      { split: true },
+    );
+    expect(items).toEqual([
+      { name: 'Macaroni and cheese', section: ENTREE, option: 1 },
+      { name: 'Fish sticks', section: ENTREE, option: 2 },
+      { name: 'Fries', section: ENTREE, option: 2 },
+      { name: 'Coleslaw', section: ENTREE, option: 2 },
+      { name: 'Chicken', section: 'Specials', option: 1 },
+      { name: 'rice, beans', section: 'Specials', option: 1 },
+      { name: 'salsa', section: 'Specials', option: 1 },
+      { name: 'Salad', section: 'Specials', option: 2 },
+    ]);
+    const { days } = parseMenuCsv(
+      [
+        'date,item,section',
+        '2027-02-01,Pizza or Hot dog with Chips and Pickle,Choice of Entree',
+      ].join('\n'),
+    );
+    expect(entreeWords(days[0]!.items)).toBe('Pizza or Hot dog with Chips and Pickle');
+    expect(sidesWords(['A', 'B', 'C'])).toBe('A, B and C');
   });
 
   it('[MENU-06] shortens a section’s title to show it, and keeps "Choice of" for picking one', () => {
