@@ -17,7 +17,7 @@ import {
   weekDates,
   weekMenus,
 } from '@/lib/board-meals';
-import { type MenuOption, type MenuSection, sectionLabel } from '@/lib/menu/sections';
+import { type MenuOption, type MenuSection, sectionLabel, sidesWords } from '@/lib/menu/sections';
 import { peopleWords } from '@/lib/meals';
 import type { BoardMember } from '@/lib/snapshot';
 import { iconOf } from './picture';
@@ -120,9 +120,7 @@ function Option({ o }: { o: MenuOption }) {
   return (
     <li>
       {o.name}
-      {o.sides.length ? (
-        <span className="fw-menu__with"> with {o.sides.join(' with ')}</span>
-      ) : null}
+      {o.sides.length ? <span className="fw-menu__with"> with {sidesWords(o.sides)}</span> : null}
     </li>
   );
 }

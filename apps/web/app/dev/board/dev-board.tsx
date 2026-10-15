@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { boardHealth, type JobHealth } from '@/lib/board-health';
 import { openBoardStore } from '@/lib/board-store';
 import { day, isoDay, time } from '@/lib/format';
+import { DeployWatch } from '../../(board)/board/deploy-watch';
 import { HealthLines } from '../../(board)/board/health-lines';
 import { useMinute } from '../../(board)/board/use-minute';
 import { useOnline } from '../../(board)/board/use-online';
@@ -52,6 +53,7 @@ export function DevBoard({
   meals,
   textSize = 'standard',
   lunchItem = false,
+  deploy,
 }: {
   theme: Theme;
   stale: boolean;
@@ -71,6 +73,8 @@ export function DevBoard({
   textSize?: TextSize;
   /** [MEAL-09] Leo's "Pick next week's lunches", which opens Lunches (WP-49). */
   lunchItem?: boolean;
+  /** [DEV-05] The commit this board runs, to watch for a new deploy (WP-78); none: not watched. */
+  deploy?: string;
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
@@ -146,6 +150,7 @@ export function DevBoard({
   });
   return (
     <main className="fw-board">
+      {deploy ? <DeployWatch version={deploy} /> : null}
       <ThemeLock theme={theme} />
       <header className="fw-board__bar">
         <div className="fw-board__title">

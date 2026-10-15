@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.22: a menu's "and" joins a side like "with" ("Fish sticks with Fries and Coleslaw"); a parent's lunch picks on **Meals** keep the entree when a milk is ticked; the board picks up a new version by itself when nobody is using it (WP-78, D-99).
 > v0.21: next week's lunches picked at the board (WP-49, D-95): **Lunches** on the board, a child's changes waiting on **Today**, picks on **Meals**, the cut-off on **School**, an item that opens Lunches (A2, A15, B1.2, B1.5, B1.10, B1.15, B2.9, B2.10).
 > v0.20: the school menu by section (WP-64, D-94): a buy day's entree options on the board's home screen, the whole menu at a tap, the menu a row a section on the **Meals** screen, and a line a section on **Meals** and **School menus**; a day typed in with "or" and "with" (A5, A15, B1.15, B2, B7).
 > v0.19: a meal for any mix of people (WP-62, D-87): **For** on **Add to the plan** is **Everyone** or a tick per person, and the boards show each person's face (A15, B1.15, B2.9).
@@ -862,9 +863,9 @@ A day a child buys can show what the school serves that day. Open **School menus
 
 Then, under **Usual week** on **Meals**, choose each child's **School menu**. A day they buy shows what's served, a line a section (**Entree**: Beef tacos or Chicken wrap with tortilla chips; **Fruits & Vegetables**: Corn, Orange; **Milk**: 1% milk or Chocolate milk), or **No menu yet**.
 
-FamilyWise reads a menu as the school writes it: each section's options, "or" between them, and "with" for what comes with one. A section's name is shortened to show it ("Choice of Entree" shows as **Entree**, "Fruits & Vegetables offered" as **Fruits & Vegetables**), and the **Entree** is the section whose name says entree or main (else the first). A menu with no sections lists what's served with commas, as before.
+FamilyWise reads a menu as the school writes it: each section's options, "or" between them, and "with" (or "and" after it) for what comes with one: "Fish sticks with Fries and Coleslaw" is one option with two sides. A section's name is shortened to show it ("Choice of Entree" shows as **Entree**, "Fruits & Vegetables offered" as **Fruits & Vegetables**), and the **Entree** is the section whose name says entree or main (else the first). A menu with no sections lists what's served with commas, as before.
 
-- **Change a day:** each day's **Change** lets you write it yourself: a section a line, its name and a colon first, "or" between options and "with" before a side (Choice of Milk: 1% milk or Chocolate milk), or **No lunch that day** with a note. A day you change is **Yours**: the morning's fetch never replaces it. **Use Nutrislice's menu again** hands it back.
+- **Change a day:** each day's **Change** lets you write it yourself: a section a line, its name and a colon first, "or" between options and "with" before a side, "and" before another (Choice of Milk: 1% milk or Chocolate milk; Choice of Entree: Pizza or Fish sticks with Fries and Coleslaw), or **No lunch that day** with a note. A day you change is **Yours**: the morning's fetch never replaces it. **Use Nutrislice's menu again** hands it back.
 - **When Nutrislice can't be reached:** the menu says **Can't fetch**, why, and when it last worked. The menus you have stay, and it tries again the next morning; **Fetch now** tries at once.
 
 ![School menus on a laptop: Maple Elementary from Nutrislice, fetched, its days with one marked Yours and a day with no lunch; a menu from a file; a feed that can't fetch keeping its menus.](guide/img/admin-menus-laptop.jpg "School menus, on a laptop")
@@ -1278,6 +1279,7 @@ Short messages appear under the bar for 6 seconds: "Asked for Movie night. A gro
 | **Pair this board** | **Pairing code from the admin app**, a keypad (**Clear**, **0**, **Back**), **Pair this board** (once all 8 digits are in). |
 | Disconnected | "This board was disconnected. Ask an admin for a new code to pair it again." |
 | **Can't reach FamilyWise** | "Trying again in 30 seconds." It reloads by itself. |
+| A new version | The board picks it up by itself within about 5 minutes of its release, once nobody has touched it for 2 minutes and nothing is open on it: it reloads and comes back on the home screen. Nothing to do at the board. |
 
 Pairing messages: "Enter all 8 digits from the admin app.", "That code didn't match. Codes work once, for 10 minutes. …", "Too many codes were tried. Wait 10 minutes, then try again."
 

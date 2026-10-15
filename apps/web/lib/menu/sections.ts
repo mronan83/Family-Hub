@@ -4,24 +4,44 @@ import { MAX_ITEMS, type MenuItem } from './nutrislice';
 // under its section title, with "or" and "with" as items of their own ("Choice of Entree": Beef
 // tacos, or, Chicken wrap, with, Tortilla chips); a file or a typed-in day writes them inside a line
 // ("Beef tacos or Chicken wrap with tortilla chips"). Each item becomes an option of its section,
-// "or" only separates options, and "with" joins the next item to the option before it as a side.
+// "or" only separates options, and "with" joins the next item to the option before it as a side;
+// "and" joins like "with" (a feed's "D, with, E, and, F"; a line's "D with E and F", WP-78).
 // A stored item keeps its section title as the menu writes it (WP-49 reads "Choice of" from it) and
 // its option's number in that section. Relative imports only: the e2e runner uses this.
 
-const CONNECTOR = /^(or|with)$/i;
+const CONNECTOR = /^(or|with|and)$/i;
 const SPLIT = /\s+(or|with)\s+/i;
+const AND = /\s+(and)\s+/i;
 
-/** A name written with "or" and "with" in it, as its items and connectors: "A or B" → A, or, B. */
+/**
+ * A name written with "or", "with" and "and" in it, as its items and connectors: "A or B" → A, or,
+ * B. "and" joins only after a "with" ("D with E and F" → D, with, E, and, F), so a food named with
+ * "and" ("Macaroni and cheese") stays one item (WP-78).
+ */
 function splitWords(name: string): string[] {
-  return name
+  const out: string[] = [];
+  let sides = false;
+  for (const w of name
     .split(SPLIT)
-    .map((w) => w.trim())
-    .filter(Boolean);
+    .map((x) => x.trim())
+    .filter(Boolean)) {
+    if (CONNECTOR.test(w))
+      sides = w.toLowerCase() === 'with' || (sides && w.toLowerCase() !== 'or');
+    if (sides && !CONNECTOR.test(w))
+      out.push(
+        ...w
+          .split(AND)
+          .map((x) => x.trim())
+          .filter(Boolean),
+      );
+    else out.push(w);
+  }
+  return out;
 }
 
 /**
- * [MENU-06] Items as a menu lists them into options: "or" items are dropped, a "with" item is
- * dropped and joins the next item to the option before it; every other item starts an option.
+ * [MENU-06] Items as a menu lists them into options: "or" items are dropped, a "with" or "and" item
+ * is dropped and joins the next item to the option before it; every other item starts an option.
  * Options are numbered from 1 in each section. `split` also reads "or" and "with" inside a name
  * (a file or a typed-in day; a feed sends them as items of their own).
  */
@@ -36,7 +56,7 @@ export function withOptions(items: MenuItem[], options: { split?: boolean } = {}
     const key = section ?? '';
     for (const word of options.split ? splitWords(item.name) : [item.name.trim()]) {
       if (CONNECTOR.test(word)) {
-        joining = word.toLowerCase() === 'with' && last.has(key);
+        joining = word.toLowerCase() !== 'or' && last.has(key);
         continue;
       }
       if (!word || out.length >= MAX_ITEMS) continue;
@@ -97,9 +117,16 @@ export function pickOne(title: string | null): boolean {
   return !!title && /\bchoice\s+of\b/i.test(title);
 }
 
-/** An option in words, with its sides: "Chicken wrap with Tortilla chips". */
+/** An option's sides in words: "Fries", "Fries and Slaw", "Fries, Slaw and Roll" (WP-78). */
+export function sidesWords(sides: string[]): string {
+  return sides.length < 2
+    ? (sides[0] ?? '')
+    : `${sides.slice(0, -1).join(', ')} and ${sides.at(-1)}`;
+}
+
+/** An option in words, with its sides: "Chicken wrap with Tortilla chips", "Fish with Fries and Slaw". */
 export function optionWords(o: MenuOption): string {
-  return [o.name, ...o.sides].join(' with ');
+  return o.sides.length ? `${o.name} with ${sidesWords(o.sides)}` : o.name;
 }
 
 /** Words as a choice: "A", "A or B", "A, B or C". */

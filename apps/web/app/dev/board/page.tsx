@@ -12,7 +12,8 @@ import { DevBoard } from './dev-board';
 // (?cards=goals,coming; the others hidden); the weather beside the clock (WP-45: ?weather=rain|snow|
 // night|celsius|yesterday|none, or ?weather=off for a layout that turns it off); the board fitted to
 // the window at a text size (WP-47: ?text=smaller|larger|largest); no meals planned (WP-28: ?meals=none);
-// Leo's item that opens Lunches (WP-49: ?lunches=1).
+// Leo's item that opens Lunches (WP-49: ?lunches=1); a board watching for a new deploy, running the
+// commit given (WP-78: ?deploy=<commit>).
 export const metadata: Metadata = { title: 'Board Today', robots: { index: false } };
 
 export default async function DevBoardPage({
@@ -32,6 +33,7 @@ export default async function DevBoardPage({
     text?: string;
     meals?: string;
     lunches?: string;
+    deploy?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -73,6 +75,7 @@ export default async function DevBoardPage({
         meals={params.meals}
         textSize={textSizeOf(params.text)}
         lunchItem={params.lunches === '1'}
+        deploy={params.deploy}
       />
     </div>
   );

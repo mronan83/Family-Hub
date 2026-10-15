@@ -10,7 +10,10 @@ import {
   lunchRequestSchema,
   menuChanged,
   missingPicks,
+  parsePicksForm,
+  pickName,
   picksWords,
+  pickValue,
   readWeek,
   samePicks,
   shownDay,
@@ -74,6 +77,54 @@ describe('lunches picked on the board', () => {
     expect(picks.some((p) => p.section === FRUIT.title)).toBe(false);
     expect(togglePick(picks, ENTREE, 2)).toEqual([]);
     expect(togglePick(picks, ENTREE, 9)).toBe(picks);
+  });
+
+  it('[MEAL-11] picks in two "Choice of" sections and another all stay: entree, milk, fruits (WP-78)', () => {
+    let picks: LunchPick[] = [];
+    picks = togglePick(picks, ENTREE, 2);
+    picks = togglePick(picks, MILK, 1);
+    picks = togglePick(picks, FRUIT, 1);
+    picks = togglePick(picks, FRUIT, 3);
+    expect(
+      samePicks(picks, [
+        { section: 'Choice of Entree', options: [2], names: ['Chicken wrap'] },
+        { section: 'Choice of Milk', options: [1], names: ['1% milk'] },
+        {
+          section: 'Fruits & Vegetables offered',
+          options: [1, 3],
+          names: ['Apple slices', 'Grapes'],
+        },
+      ]),
+    ).toBe(true);
+    expect(missingPicks(picks, SECTIONS)).toEqual([]);
+  });
+
+  it('[MEAL-11] the picks form on Meals has a name a section, and reads an entree, a milk and fruits (WP-78)', () => {
+    // One name for every radio made them one group: ticking a milk took the entree off.
+    expect(new Set(SECTIONS.map((_, i) => pickName(i))).size).toBe(SECTIONS.length);
+    const form = new FormData();
+    form.append('week', '2026-10-19');
+    form.append(pickName(0), pickValue('Choice of Entree', 2, 'Chicken wrap'));
+    form.append(pickName(2), pickValue('Choice of Milk', 1, '1% milk'));
+    form.append(pickName(1), pickValue('Fruits & Vegetables offered', 1, 'Apple slices'));
+    form.append(pickName(1), pickValue('Fruits & Vegetables offered', 3, 'Grapes'));
+    form.append(pickName(1), 'not json');
+    form.append('picks', pickValue('Choice of Dessert', 1, 'Cookie'));
+    expect(parsePicksForm(form)).toEqual([
+      { section: 'Choice of Entree', options: [2], names: ['Chicken wrap'] },
+      { section: 'Choice of Milk', options: [1], names: ['1% milk'] },
+      {
+        section: 'Fruits & Vegetables offered',
+        options: [1, 3],
+        names: ['Apple slices', 'Grapes'],
+      },
+    ]);
+    // A form loaded before WP-78 named every input "pick": still read.
+    const old = new FormData();
+    old.append('pick', pickValue('Choice of Milk', 2, 'Chocolate milk'));
+    expect(parsePicksForm(old)).toEqual([
+      { section: 'Choice of Milk', options: [2], names: ['Chocolate milk'] },
+    ]);
   });
 
   it('[MEAL-11] says the picks in the menu order, and the entree with its sides on the home line', () => {

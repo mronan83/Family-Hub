@@ -190,14 +190,18 @@ test('[MEAL-09][MEAL-11][US-707] done-when: the item opens Maya’s week; she pi
   );
   // Admin Meals for the day's week, ready before she taps.
   await admin.goto(`/admin/meals?week=${day}`);
-  // Buy, then her picks: an entree, two fruits, a milk.
+  // Buy, then her picks: an entree, a milk, then two fruits; each stays picked (WP-78).
   await lunchPost(() => theDay().getByRole('button', { name: /Buy$/ }).click(), 'Buy');
   const dialog = board.getByRole('dialog', { name: /^Maya’s lunch on / });
   await expect(dialog).toBeVisible({ timeout: 15_000 });
-  await dialog.getByRole('button', { name: 'Wrap e2e with Chips e2e', exact: true }).click();
-  await dialog.getByRole('button', { name: 'Corn e2e', exact: true }).click();
-  await dialog.getByRole('button', { name: 'Apple e2e', exact: true }).click();
-  await dialog.getByRole('button', { name: 'Milk e2e', exact: true }).click();
+  const option = (name: string) => dialog.getByRole('button', { name, exact: true });
+  const picked = ['Wrap e2e with Chips e2e', 'Milk e2e', 'Corn e2e', 'Apple e2e'];
+  for (const name of picked) await option(name).click();
+  for (const name of picked)
+    await expect(option(name), `WP-78 ${name} still picked`).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   await lunchPost(() => dialog.getByRole('button', { name: 'Save' }).click(), 'Save with picks');
   await expect(theDay()).toContainText('Waiting for a parent', { timeout: 15_000 });
   await expect(theDay()).toContainText('Wrap e2e · Corn e2e, Apple e2e · Milk e2e');
@@ -293,4 +297,42 @@ test('[MEAL-11][US-707] done-when: the home screen shows her entree that day in 
       `MEAL-11 no school today: Maya's picks for ${day} shown on her week, not the home screen`,
     );
   }
+});
+
+test('[MEAL-11][US-707] WP-78: a parent picks an entree, then a milk, then fruits on Meals; all are saved', async () => {
+  await admin.goto(`/admin/meals?week=${day}`);
+  const name = new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${day}T12:00:00Z`));
+  const cell = admin
+    .getByRole('region', { name: 'School lunch' })
+    .getByRole('cell')
+    .filter({ has: admin.getByRole('button', { name: new RegExp(`^Maya, ${name}: buy`) }) });
+  await cell.getByText('Change picks').click();
+  const form = cell.locator('details[open] form');
+  const box = (section: string, option: string) =>
+    form
+      .getByRole('group', { name: new RegExp(`^${section}`) })
+      .getByLabel(option, { exact: true });
+  const picks = [
+    ['Entree', 'Tacos e2e'],
+    ['Milk', 'Chocolate milk e2e'],
+    ['Fruits', 'Pear e2e'],
+    ['Fruits', 'Corn e2e'],
+  ] as const;
+  // Her picks were Wrap, Milk, Corn and Apple: now Tacos, Chocolate milk, Corn and Pear.
+  await box('Fruits', 'Apple e2e').uncheck();
+  for (const [section, option] of picks) await box(section, option).check();
+  for (const [section, option] of picks)
+    await expect(box(section, option), `WP-78 ${option} still picked`).toBeChecked();
+  await form.getByRole('button', { name: 'Save Maya’s picks' }).click();
+  await expect(admin.getByText('Lunch picks saved.')).toBeVisible({ timeout: 15_000 });
+  expect(
+    sql(`select string_agg(array_to_string(names, ','), ' | ' order by section) from public.lunch_choice
+          where member_id = '${maya}' and lunch_date = '${day}'`),
+  ).toBe('Tacos e2e | Chocolate milk e2e | Corn e2e,Pear e2e');
+  report('MEAL-11 WP-78 Meals saved an entree, a milk and two fruits, picked in that order');
 });

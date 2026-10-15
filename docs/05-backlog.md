@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.113: WP-78 (a lunch pick taken off by another, a bug) added at the owner's request and done in the same change: on Meals in the admin app, every "Choice of" section's radios were one group, so ticking a milk took off the entree. Two more added to it at the owner's request and done with it: "and" in a school menu joins a side like "with" (a WP-64 gap); the board picks up a new deploy by itself (D-99).
 > v0.8.112: WP-71 to WP-76 added at the owner's request, recorded only (D-97, D-98), and WP-77 (WP-49's lunch test, root cause) added and done in the same change: the board home on an iPad (a bug); board layouts that adapt to the screen's shape, which WP-58 and WP-68 now build on, so WP-58 waits on it; the lunch picks one tap from Home; the lunch week as a list of days; the meal planner's days folded; Edit on a planned meal (a bug). WP-73 to WP-76 wait on one mockup. "Next, in order" is the owner's to set.
 > v0.8.111: WP-70 (the board calendar's refresh timing, root cause) added at the owner's request and done in the same change (D-96): the test's own 3 s check looked last at about 2.8 s, fixed in the test; a board read after a change that failed or hung was never made again, fixed in the app; the calendar now says when it has finished drawing, and the month's test waits for it. WP-65's tally restarts with it.
 > v0.8.110: WP-49 done: next week's lunches picked on the board, with the day's choices (D-95; the parent's approval screen's mockup approved by the owner). A child's change, buy or bring and the picks alike, waits for a parent on Today until the morning cut-off (8:00 am by default, set on School).
@@ -234,6 +235,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-75 | The meal planner's days as collapsible sections | P2 | S | WP-25, WP-62, WP-76 | Queued (mockup first, with WP-73, WP-74 and WP-76) |
 | WP-76 | Edit on a planned meal | P2 | S | WP-25, WP-62 | Ready (mockup first, with WP-73 to WP-75) |
 | WP-77 | WP-49's lunch test, root cause: its time limit, and the board's lunch week read again | P2 | S | WP-49 | Done |
+| WP-78 | A lunch pick taken off by another; "and" in a menu; the board picks up a new deploy | P2 | S | WP-49, WP-64 | Done |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -391,6 +393,8 @@ flowchart LR
     WP62 --> WP75
     WP76 --> WP75
     WP49 --> WP77[WP-77 Lunch test, root cause]
+    WP49 --> WP78[WP-78 A pick taken off by another]
+    WP64 --> WP78
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP65 --> WP70[WP-70 Calendar refresh timing]
     WP23 --> WP70
@@ -1219,6 +1223,17 @@ flowchart LR
 - As built, cause 2, **in the app:** the board's Lunches screen read the week once after a change, and a read that failed was dropped, so the screen kept the week from before the change with nothing to say so (the retry's "Pick your lunch"). Fix: `readWeek()` in `apps/web/lib/lunch-picks.ts`, used by `useWeek()` in the board's `lunches-ui.tsx`, reads again after a failed read, 1 s apart, up to three reads, before giving up as before (with no week read yet, the screen says the lunches need the internet); it stops once the screen has moved on. Vitest `lib/lunch-picks.test.ts`: a failed read made again; one read when the first works; null after three, a thrown read counting as failed; no more reads once the screen has moved on.
 - Not known from the run: why the preview was slow after 00:00 UTC (no trace is kept, D-48). The test now reports each step's time, so the next slow run says where.
 
+### WP-78 — A lunch pick taken off by another; "and" in a menu; the board picks up a new deploy
+**Phase:** P2 · **Size:** S · **Depends on:** WP-49, WP-64 · **Reqs:** MEAL-11, MENU-06, DEV-05
+- Added at the owner's request, as a bug in production (15 October): "When a child is making their lunch selections for a day, if they choose an entree and then choose a milk, deselects the entree."
+- Added at the owner's request to the same item (15 October), a WP-64 gap: a menu's "and" joins like "with". A Nutrislice entree list reads A, or, B, or, C, or, D, with, E, and, F, and "and" became an option of its own on the board's choices and the home screen's lunch line. "and" joins the next item to the option before it as a side, in a feed and in a typed-in or file line ("D with E and F").
+- Added at the owner's request to the same item (15 October): the board picks up a new deploy by itself (D-99). The board reloaded only after an error, so a kiosk left open ran the version it first loaded: the owner's kitchen board still showed the menu as it was before WP-64, and no picks. It reloads itself, only with no dialog open and nobody touching it for a while, never mid-tap.
+- **Done when:** the cause is named in the As-built line; the Vitest test covers picking an entree, then a milk, then fruits, keeping all of them; an e2e or UI test does the same on the board and in admin; Vitest [MENU-06] cases read a feed's "D, with, E, and, F" and a line's "D with E and F" as one option with two sides; a unit test for the deploy check, and a UI test showing the board reloads when idle and doesn't while a dialog is open; and the PR's e2e is green.
+- As built, **the cause, on Meals in the admin app:** the parent's picks form (`lunch-section.tsx`) gave every option the one name `pick`, and radios that share a name are one group in the browser, so the radios of "Choice of Entree" and "Choice of Milk" were one group: ticking a milk took off the entree, and only one of the two could be saved. Fix: each section's inputs have a name of their own (`pickName()`, `pick-0`, `pick-1` …), and `parsePicksForm()` in `apps/web/lib/lunch-picks.ts` reads them all (and `pick`, so a Meals page loaded before the change still saves its picks). Reproduced on a made-up menu shaped like a school day (entree with a side, fruits and vegetables, milk) before the fix: the UI test failed with the entree unticked.
+- **The board was not affected:** its picker (`togglePick()`, keyed by section title) keeps a pick in each section, and its tests passed in the owner's order before the fix. Vitest `lib/lunch-picks.test.ts`: an entree, then a milk, then two fruits all kept; the form's names one a section, read back as three sections. UI suite `e2e/ui/lunches.spec.ts`: on the board and on Meals, an entree, then a milk, then fruits, all still picked. e2e `e2e/tests/lunches.spec.ts`: Maya picks in that order on the board, and a parent does the same on Meals and saves all three sections.
+- As built, **"and" in a menu:** `withOptions()` in `apps/web/lib/menu/sections.ts` reads an "and" item like "with": dropped, and the next item joins the option before it as a side. In a typed-in or file line, "and" joins only after a "with" ("Fish sticks with Fries and Coleslaw"), so a food named with "and" ("Macaroni and cheese") stays whole. Sides read "with Fries and Coleslaw" (`sidesWords()`, used by `optionWords()`, the board's choices and Meals). Vitest `lib/menu/sections.test.ts`: a feed's A, or, B, or, C, or, D, with, E, and, F as four options, the last with two sides, and the home screen's line; a stray "and" never an item; a line's "D with E and F", and "Macaroni and cheese" kept whole. A feed's days already stored read right from the next daily fetch (10:29 UTC), which stores them again.
+- As built, **the board picks up a new deploy (D-99):** `DeployWatch` (`app/(board)/board/deploy-watch.tsx`, on the board) asks `/api/health` every 5 minutes which commit is deployed and, when it isn't the one the board runs (`isNewDeploy()` in `apps/web/lib/board-update.ts`), reloads once no dialog is open and nobody has touched the board for 2 minutes (`mayReload()`); a local or dev build never reloads. Vitest `lib/board-update.test.ts`; UI suite `e2e/ui/board-update.spec.ts` (on `/dev/board?deploy=…`, with Playwright's clock): an idle board reloads; it doesn't while Leo is picking, nor however long a dialog stays open; nor while someone is tapping, nor when the version is the same.
+
 ---
 
 ## 6. Size summary
@@ -1230,7 +1245,7 @@ flowchart LR
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
-| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-77 | Menu adapters and WP-49 are the Ls |
+| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-78 | Menu adapters and WP-49 are the Ls |
 | P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

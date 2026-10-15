@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.62: the board reloads itself after a new deploy, once idle with no dialog open (WP-78, D-99); "and" in a school menu joins a side like "with" (WP-78).
 > v0.8.61: the board's reads after a change (WP-70, D-96): one that fails or is still out at 4 s is made again at once, up to three; the board shows when it heard, read and drew a change, for e2e; the calendar is `aria-busy` while a range's first read is out (§7).
 > v0.8.60: next week's lunches picked on the board (WP-49, D-95): the board's Lunches screen reads `lunch_week()` itself for the coming week and changes a day through `POST /api/lunches` (`request_lunch()`), a child's change waiting for a parent on Today; `lunch_request` and `lunch_choice` in Realtime; the approvals alert counts lunch changes (§5.7, §7).
 > v0.8.59: the school menu by section, as options (WP-64, D-94): `lib/menu/sections.ts` reads "or" and "with" into options for the feed, a file and a day typed in; the board's home shows the entree's options with a tap to the whole menu, and its Meals screen the menu a row a section (§5.5, §7).
@@ -694,6 +695,7 @@ sequenceDiagram
 - Raspberry Pi 5 (8 GB), **NVMe or SSD boot** (SD cards corrupt under power loss), official 27 W PSU, active cooler.
 - Raspberry Pi OS (64-bit), autologin, systemd unit launching Chromium in kiosk mode with the board URL and flags to disable error dialogs, pinch zoom, overscroll navigation, and update prompts (verify flags against the current Chromium and Pi OS release).
 - Watchdog: systemd `Restart=always`, hardware watchdog, optional nightly reboot at low-traffic hour.
+- **New deploys (D-99):** the board asks `/api/health` every 5 minutes which commit is deployed (`DeployWatch`, `lib/board-update.ts`) and reloads itself when it isn't the one it runs, once no dialog is open and nobody has touched it for 2 minutes. The kiosk needs no restart to pick up a release.
 - Display: touch calibration verified, screen blanking/dim schedule controlled by quiet hours (DEV-07) and burn-in mitigation (slow pixel drift / dim idle layout).
 - **4K target (32" 3840×2160):** the Pi 5 can drive 4Kp60 over HDMI. The UI is laid out at 1920×1080 logical pixels and zooms itself to the screen (D-73): at device scale factor 1 the panel's 3840×2160 CSS px give a zoom of 2, at factor 2 its 1920×1080 give 1, the same picture either way, crisp, with touch targets at a predictable physical size (about 0.37 mm per logical pixel on a 32" panel). Any other screen gets the same layout at its own size; each board's **Text size** zooms it further. Animation performance at 4K on the Pi GPU is the main risk: budget it in SPIKE-03 and keep a 1080p output fallback.
 - No local secrets beyond the paired device session. Remote support: optional Tailscale/SSH on the Pi for maintenance only; not required by the app.

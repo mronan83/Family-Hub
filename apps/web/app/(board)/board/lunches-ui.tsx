@@ -23,7 +23,13 @@ import {
   shownDay,
   togglePick,
 } from '@/lib/lunch-picks';
-import { menuSections, type MenuSection, pickOne, sectionLabel } from '@/lib/menu/sections';
+import {
+  menuSections,
+  type MenuSection,
+  pickOne,
+  sectionLabel,
+  sidesWords,
+} from '@/lib/menu/sections';
 import type { BoardMember } from '@/lib/snapshot';
 
 /** Reads each child's lunches for the seven days from a date (lunch_week); null offline. */
@@ -131,7 +137,7 @@ function DayChoices({
                         <span>
                           {o.name}
                           {o.sides.length ? (
-                            <span className="fw-menu__with"> with {o.sides.join(' with ')}</span>
+                            <span className="fw-menu__with"> with {sidesWords(o.sides)}</span>
                           ) : null}
                         </span>
                       </button>

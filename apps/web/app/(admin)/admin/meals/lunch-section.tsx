@@ -3,14 +3,15 @@ import Link from 'next/link';
 import { dayName } from '@/lib/board-calendar';
 import { type LunchChild, MODE_WORDS, noLunchWords, WEEKDAY_WORDS, WEEKDAYS } from '@/lib/lunch';
 import { setLunchDay, setLunchPicks, setUsualLunch } from './actions';
-import { menuChanged, pickValue, picksWords } from '@/lib/lunch-picks';
+import { menuChanged, pickName, pickValue, picksWords } from '@/lib/lunch-picks';
 import { menuSections, pickOne, sectionLabel } from '@/lib/menu/sections';
 import type { LunchDay } from '@/lib/lunch';
 
 /**
  * [MEAL-11][US-707] A buy day's picks (WP-49): what the child picked, "Menu changed" when the menu
  * no longer has a pick, and a form a parent changes them with, a section each (one where it says
- * "Choice of"), which saves at once.
+ * "Choice of"), which saves at once. Each section's inputs have a name of their own, so the radios
+ * of one "Choice of" section don't take the pick off another's (WP-78).
  */
 function Picks({
   week,
@@ -56,7 +57,7 @@ function Picks({
                     <label key={j} className="fw-picker__item">
                       <input
                         type={one ? 'radio' : 'checkbox'}
-                        name="pick"
+                        name={pickName(i)}
                         value={pickValue(key, j + 1, o.name)}
                         defaultChecked={mine.includes(j + 1)}
                       />
