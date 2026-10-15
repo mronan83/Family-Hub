@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.26: the lunch picks one tap from Home (WP-73, D-113): **School lunches** on Home says whose days still need a choice, and **Pick lunches** opens the lunch week on the child chosen last (A2, B1.1).
 > v0.25: the lunch week as a list of days (WP-74, D-112): **School lunch** on **Meals** shows one child's Monday to Friday, each day closed at first with a check once it's set, opened to Buy or Bring and the day's menu (A15, B1).
 > v0.24: Edit on a planned meal (WP-76, D-111): **Change** offers **Edit**, which opens the meal filled in, and **Remove**.
 > v0.23: the board on a tablet such as an iPad, and at **Larger** or **Largest**: each chore's points under its own title, and the whole of every word in the rail (A14).
@@ -169,7 +170,7 @@ The board shows the family's day at once. From then on it keeps itself signed in
 > **Note:** If the board is a browser where a parent is signed in to the admin app, pairing signs that browser out of the admin app.
 
 ### A2 A parent's day
-<!-- covers: US-109 US-306 US-307 US-309 US-310 US-316 -->
+<!-- covers: US-109 US-306 US-307 US-309 US-310 US-316 US-709 -->
 
 **What this is.** The admin app's **Today** and **My tasks** pages. **When.** Whenever you want to see how the day is going, settle what's waiting for you, or put something right. **How.** Open **Today** from the menu.
 
@@ -179,7 +180,7 @@ The board shows the family's day at once. From then on it keeps itself signed in
 
 **Home** is the first page you see. It shows what needs you, then the things you do most, a tap away.
 
-![Home on a laptop: Needs you lists 2 check-offs wait for you (Review), 1 reward request waits for you (Decide), and School can't sync (Calendars); Heads-up says Den hasn't been seen for 3 days (Boards) and No school menu for next week yet (School menus). Below, Quick actions: Add a chore, Add a task, Add a reward and Add a goal, then Add a meal (Plan a meal, New in the library), School today (No school today, Add a day off…) and School menu (Refresh school menu).](guide/img/admin-home-laptop.jpg "Home, on a laptop")
+![Home on a laptop: Needs you lists 2 check-offs wait for you (Review), 1 reward request waits for you (Decide), and School can't sync (Calendars); Heads-up says Den hasn't been seen for 3 days (Boards) and No school menu for next week yet (School menus). Below, Quick actions: Add a chore, Add a task, Add a reward and Add a goal, then Add a meal (Plan a meal, New in the library), School lunches (This week: Maya has 1 day to pick; Leo is all set. Pick lunches), School today (No school today, Add a day off…) and School menu (Refresh school menu).](guide/img/admin-home-laptop.jpg "Home, on a laptop")
 
 - **Needs you** lists what needs you now, each with a button to where you deal with it: check-offs and reward requests waiting for you, a calendar that can't sync, a school menu that can't be read, and a background job that needs a look.
 - **Heads-up** lists what to know soon: no school menu for next week yet, no school year set up (or this one ending within two weeks), weather that hasn't updated, an invite about to run out, and a board that hasn't been seen for a day (switched off, or off the Wi-Fi; a board asleep overnight doesn't count).
@@ -189,10 +190,11 @@ The board shows the family's day at once. From then on it keeps itself signed in
 
 - **Add a chore**, **Add a task**, **Add a reward** and **Add a goal** open the page that adds one.
 - **Add a meal**: **Plan a meal** puts a meal on a day of the week; **New in the library** adds a meal you make again.
+- **School lunches** says whose days still need a lunch choice ("This week: Maya has 1 day to pick; Leo is all set."). **Pick lunches** opens **School lunch** on **Meals** in one tap: this week from Monday to Friday, next week on Saturday and Sunday, on the child you chose last on this phone or computer. Tap another child's face there to switch. It shows when a child has school lunch.
 - **School today**: **No school today** makes today a snow day in one tap. Today's school-day items (like homework) go at once; anything already checked off stays; the board shows a day off school. **Undo** makes it a school day again. **Add a day off…** adds a day off or a break on another date, without leaving Home.
 - **Refresh school menu** reads your school menu feeds now, rather than waiting for the morning.
 
-![Home on a phone in Evening, on a quiet day: Nothing needs you right now; the four add tiles two by two; School today says No school today: Snow day with Undo.](guide/img/admin-home-phone.jpg "Home on a phone, on a snow day")
+![Home on a phone in Evening, on a quiet day: Nothing needs you right now; the four add tiles two by two; Add a meal; School lunches with Pick lunches; School today says No school today: Snow day with Undo.](guide/img/admin-home-phone.jpg "Home on a phone, on a snow day")
 
 #### Check the day on Today
 
@@ -960,14 +962,14 @@ The admin app is for parents, on a phone or a laptop. On a laptop its menu is do
 ![The menu open on a phone: Your day, The family two to a row, Set-up with Settings, then Help and Sign out.](guide/img/admin-menu-phone.jpg "The menu, on a phone")
 
 #### B1.1 Home
-<!-- covers: US-109 -->
+<!-- covers: US-109 US-709 -->
 
 | Part | What it shows or does |
 |---|---|
 | The household | Its name and today's date. |
 | **Needs you** | Check-offs and reward requests waiting for you, calendars that can't sync, school menus that can't be read and background jobs that need a look, each with a button to where you deal with it (**Review**, **Decide**, **Calendars**, **School menus**, **Health**). "Nothing needs you right now." when there's none. |
 | **Heads-up** | No school menu for next week, no school year (or one ending within two weeks), weather that hasn't updated, an invite about to run out. Shown only when there is one. |
-| **Quick actions** | **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**. **Add a meal**: **Plan a meal**, **New in the library**. **School today**: **No school today** (then "No school today: Snow day" and **Undo**), or "No school today: the weekend" or the day off's name; **Add a day off…** opens **Name**, **Kind**, **From**, **To (optional)** and **Add day off**. **School menu**: **Refresh school menu**, or **Set up school menus** when there's no feed. |
+| **Quick actions** | **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**. **Add a meal**: **Plan a meal**, **New in the library**. **School lunches**: whose days still need a choice this week (next week at the weekend), and **Pick lunches**, which opens the lunch week on the child chosen last. **School today**: **No school today** (then "No school today: Snow day" and **Undo**), or "No school today: the weekend" or the day off's name; **Add a day off…** opens **Name**, **Kind**, **From**, **To (optional)** and **Add day off**. **School menu**: **Refresh school menu**, or **Set up school menus** when there's no feed. |
 
 Messages: "No school today. Today's chores follow a day off school.", "Today is a school day again.", "Day off saved.", "School menus fetched.", "A school menu couldn't be fetched. School menus says why."
 

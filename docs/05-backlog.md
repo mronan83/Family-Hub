@@ -1,7 +1,8 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.121: WP-75 gains two sections that fold on Meals, added at the owner's request, recorded only (D-98): **School lunch**'s usual week and **Add to the plan**, both collapsed at first on every screen size; **Add** on a day opens **Add to the plan** with that day filled. The WP-75 worker adds both collapsed states to the mockup for the owner's approval before building.
+> v0.8.122: WP-75 gains two sections that fold on Meals, added at the owner's request, recorded only (D-98): **School lunch**'s usual week and **Add to the plan**, both collapsed at first on every screen size; **Add** on a day opens **Add to the plan** with that day filled. The WP-75 worker adds both collapsed states to the mockup for the owner's approval before building.
+> v0.8.121: WP-73 (the lunch picks one tap from Home) done (D-113).
 > v0.8.120: WP-74 (the lunch week as a list of days) done (D-112), so WP-73 is Ready.
 > v0.8.119: WP-76 (Edit on a planned meal) done (D-111). The one mockup for WP-73 to WP-76 was approved by the owner on 15 October, so WP-73 to WP-75 no longer wait on it.
 > v0.8.118: WP-90 (nightly e2e reliability) added at the owner's request and done in the same change (D-110), harvested from the closed e2e speed-up work (branches `claude/e2e-speed-up` and `claude/e2e-tooling`): sign in once per persona per worker; a page used only once hydrated; the test database's reset ends sessions stuck in a transaction; an infrastructure failure re-runs once and is labelled, an assertion failure never re-runs; the specs' clock in the household's zone, their own data and measured limits; the test standard in `CLAUDE.md`. WP-89 no longer carries the stuck-transaction fix.
@@ -238,7 +239,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-70 | The board calendar's refresh timing, root cause | P3 | S | WP-65, WP-23 | Done |
 | WP-71 | The board home on an iPad: badges over chores, the rail clipped | P3 | S | WP-47, WP-48 | Done |
 | WP-72 | Board layouts that adapt to the screen's width and shape | P3 | L | WP-71, WP-53, WP-52 | Queued (mockup first) |
-| WP-73 | The lunch picks one tap from the admin app's Home | P3 | S | WP-57, WP-74 | Ready (mockup approved) |
+| WP-73 | The lunch picks one tap from the admin app's Home | P3 | S | WP-57, WP-74 | Done |
 | WP-74 | The lunch week as a list of days | P2 | M | WP-49, WP-64 | Done |
 | WP-75 | The meal planner's days as collapsible sections, with the usual lunch week and Add to the plan folded | P2 | S | WP-25, WP-62, WP-76 | Ready (mockup approved; the two folded sections' mockup to approve) |
 | WP-76 | Edit on a planned meal | P2 | S | WP-25, WP-62 | Done |
@@ -1231,6 +1232,7 @@ flowchart LR
 - A quick action on Home (beside Add a meal) opens the lunch week (WP-74): the current week if today is Monday to Friday, the coming week on Saturday and Sunday. It opens on the child chosen last (kept on the device); WP-74's row of children switches, with a dot on a child who still has days without a choice. With one child, there is no switcher (D-98).
 - Admin app only, not the board. One mockup covers WP-73 to WP-76 (and WP-76's Edit and Remove), on the demo family; the owner approved it on 15 October.
 - **Done when:** unit tests on the week opened for each day of the week; on the preview, Alex taps the quick action on a weekday and lands on this week's lunches, and on a Saturday (the clock set in the test) on next week's, on the child they chose last; the UI suite shows Home with the quick action at 390 and 1280 px in both themes.
+- **As built:** no migration. `lunchWeekToOpen()`, `daysToPick()` and `lunchQuickWords()` in `apps/web/lib/lunch-list.ts`; the **School lunches** card beside **Add a meal** in `apps/web/app/(admin)/admin/home-view.tsx`, with **Pick lunches** to `/admin/meals?week=<Monday>#lunch` and a line saying whose days still need a choice (as in the mockup), read in `page.tsx` through `lunch_week()`; it shows when a child has school lunch. The child chosen last is WP-74's (`fw-lunch-child` on the device). **Pick lunches** is a link, so a tap before hydration still opens the week. D-113: the Saturday case is proved by the unit tests, since the server's clock can't be set from a test. Tests: Vitest `lib/lunch-list.test.ts` (each day of the week, month, year and DST changes, the card's words); UI suite `e2e/ui/home.spec.ts` (390 and 1280 px in both themes, the card beside Add a meal, its link, none without a child); e2e `e2e/tests/lunch-quick.spec.ts` (the done-when on the preview on the day it runs, nightly, D-108).
 
 ### WP-74 — The lunch week as a list of days
 **Phase:** P2 · **Size:** M · **Depends on:** WP-49, WP-64 · **Reqs:** MEAL-13

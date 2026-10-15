@@ -6,6 +6,14 @@ import { noSchoolToday, refreshMenus, undoNoSchool } from './home-actions';
 import type { NavWho } from './nav';
 import { ClosureForm } from './school/forms';
 
+/** [MEAL-12] Home's lunch card (WP-73): the lunch week it opens, and what it says of it. */
+export interface LunchQuick {
+  /** `/admin/meals?week=…#lunch`: this week Monday to Friday, the coming week at the weekend. */
+  href: string;
+  /** "This week: Maya has 1 day to pick; Leo is all set." */
+  words: string;
+}
+
 /** Today at school, for Home's school tile. */
 export type SchoolToday =
   | { state: 'school'; yearId: string }
@@ -67,7 +75,8 @@ function AlertRow({ a }: { a: HomeAlert }) {
  * [NFR-17][US-109] Home at a glance (WP-57, D-84): what needs a parent now and what to know soon,
  * each with where to deal with it, then one tap to add a chore, a task, a reward, a goal or a meal,
  * to call off school today or add a day off, and to fetch the school menus. The household's options
- * moved to Settings, Family options.
+ * moved to Settings, Family options. [MEAL-12][US-709] Beside Add a meal, the school lunches card
+ * opens the lunch week (WP-73, D-98); it shows only when a child has school lunch.
  */
 export function HomeView({
   name,
@@ -75,6 +84,7 @@ export function HomeView({
   alerts,
   school,
   menuFeeds,
+  lunch,
   notice,
   waiting,
   who,
@@ -85,6 +95,8 @@ export function HomeView({
   alerts: HomeAlert[];
   school: SchoolToday;
   menuFeeds: number;
+  /** None when no child has school lunch. */
+  lunch?: LunchQuick | null;
   notice?: string | null;
   waiting?: number;
   who?: NavWho | null;
@@ -152,6 +164,22 @@ export function HomeView({
               </Link>
             </div>
           </li>
+          {lunch ? (
+            <li className="fw-quick__card" aria-labelledby="lunch-quick-heading">
+              <span className="fw-quick__icon">
+                <Icon name="lunch" size={24} />
+              </span>
+              <span className="fw-quick__name" id="lunch-quick-heading">
+                School lunches
+              </span>
+              <p className="fw-quick__status fw-quick__words">{lunch.words}</p>
+              <div className="fw-quick__actions">
+                <Link href={lunch.href} className="fw-btn fw-btn--primary">
+                  Pick lunches
+                </Link>
+              </div>
+            </li>
+          ) : null}
           <li className="fw-quick__card" aria-labelledby="school-heading">
             <span className="fw-quick__icon">
               <Icon name="snowflake" size={24} />

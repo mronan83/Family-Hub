@@ -2,15 +2,18 @@ import type { Metadata } from 'next';
 import { HomeView, type SchoolToday } from '../../(admin)/admin/home-view';
 import { isoDay } from '@/lib/format';
 import { type AlertFacts, homeAlerts } from '@/lib/home-alerts';
+import { lunchQuickWords, lunchWeekToOpen } from '@/lib/lunch-list';
 
 // [NFR-17][US-109] Home at a glance (WP-57) with the made-up family and no database, for the UI suite
 // and the guide: Alex signed in; two check-offs and a reward request waiting, the Den board quiet,
 // the School calendar failing, and no menu for next week. ?state=quiet for nothing to look at;
 // ?school=off (today's snow day, with Undo), weekend, none (no school year); ?menus=none for no feed;
-// ?theme=evening; ?notice= one of Home's notices.
+// ?lunch=none for no child with school lunch (WP-73); ?theme=evening; ?notice= one of Home's notices.
 export const metadata: Metadata = { title: 'Home', robots: { index: false } };
 
 const TZ = 'America/New_York';
+/** The day the page says it is ("Tuesday, October 13"), for the lunch card's week (WP-73). */
+const SHOWN = '2026-10-13';
 
 export default async function DevHomePage({
   searchParams,
@@ -20,6 +23,7 @@ export default async function DevHomePage({
     state?: string;
     school?: string;
     menus?: string;
+    lunch?: string;
     notice?: string;
   }>;
 }) {
@@ -72,6 +76,20 @@ export default async function DevHomePage({
         alerts={homeAlerts(facts)}
         school={school}
         menuFeeds={p.menus === 'none' ? 0 : 1}
+        lunch={
+          p.lunch === 'none'
+            ? null
+            : {
+                href: `/admin/meals?week=${lunchWeekToOpen(SHOWN)}#lunch`,
+                words: lunchQuickWords(
+                  [
+                    { name: 'Maya', toPick: 1 },
+                    { name: 'Leo', toPick: 0 },
+                  ],
+                  lunchWeekToOpen(SHOWN) > SHOWN,
+                ),
+              }
+        }
         notice={p.notice ?? null}
         waiting={quiet ? 0 : 2}
         who={{ name: 'Alex', avatarKey: 'owl', color: 'member-1' }}
