@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf } from '../support/day';
+import { mealDay, unfold } from '../support/fold';
 import { signIn } from '../support/session';
 
 // [MEAL-15][US-701] Edit on a planned meal (WP-76, D-111), as Alex of the demo family, on the preview.
@@ -65,6 +66,8 @@ test('[MEAL-15][US-701] done-when: Alex edits a planned dinner in place, and Edi
 
   await test.step('Change on the second dinner offers Edit, which opens the form filled in', async () => {
     await admin.goto(`/admin/meals?week=${week}`);
+    // [MEAL-14] The day is folded at first (WP-75); after the save it comes back open.
+    await unfold(mealDay(admin, day));
     await slot.getByText('Change', { exact: true }).nth(1).click();
     await slot.getByRole('link', { name: /^Edit Pasta e2e-edit/ }).click();
     await expect(form.getByRole('textbox', { name: 'Something else' })).toHaveValue(

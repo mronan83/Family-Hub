@@ -2658,31 +2658,99 @@ span.fw-heat__cell {
 }
 
 /* Meals (WP-25): the week's plan, a day per row (its four meals across on a laptop, stacked on a
-   phone), each meal's entries in order with Change and Add. ---------------------------------- */
+   phone), each meal's entries in order with Change and Add. [MEAL-14][D-98] Each day folds as the
+   lunch days do (WP-75), with their classes (.fw-lunchday…): closed at first, its weekday, date and
+   "X of Y set" or a check; today outlined, open or closed. Opened, the day's meals below. ------- */
 .fw-meal-week {
   display: grid;
-  gap: var(--s-3);
+  gap: var(--s-2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.fw-meal-day {
+.fw-meal-day__count {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.fw-meal-day__body {
   display: grid;
   gap: var(--s-3);
-  padding: var(--s-3);
-  border: var(--border-w) solid var(--line);
-  border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  border-top: var(--border-w) solid var(--line);
 }
-.fw-meal-day[data-today] {
-  border-color: var(--primary);
+
+/* [MEAL-14][D-98] A section folded at first (WP-75): Add to the plan, Copy last week, School lunch's
+   usual week. Closed, its header (and Add to the plan's button, or the usual week's line per child);
+   opened on a tap. The browser's own details, so it works before the page hydrates. */
+.fw-card.fw-fold {
+  padding: 0;
+  gap: 0;
 }
-.fw-meal-day__name {
+.fw-fold__head {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-2);
   align-items: center;
+  gap: var(--s-2) var(--s-3);
+  min-height: 64px;
+  padding: var(--s-2) var(--s-4);
+  list-style: none;
+  cursor: pointer;
+}
+.fw-fold__head::-webkit-details-marker {
+  display: none;
+}
+.fw-fold__head > :is(h2, h3) {
   margin: 0;
-  font-size: var(--t-body);
+}
+details[open] > .fw-fold__head .fw-lunchday__chev {
+  transform: rotate(90deg);
+}
+.fw-fold__closed {
+  margin-left: auto;
+  pointer-events: none;
+  white-space: nowrap;
+}
+/* On a phone the header and Add a meal share one row, as in the mockup. */
+@media (max-width: 480px) {
+  .fw-fold__head:not(:has(.fw-fold__sum)) {
+    flex-wrap: nowrap;
+    padding-inline: var(--s-3);
+  }
+  .fw-fold__head > h2 {
+    font-size: var(--t-heading);
+  }
+  .fw-fold__closed.fw-btn {
+    padding-inline: var(--s-3);
+  }
+}
+details[open] > .fw-fold__head .fw-fold__closed,
+details[open] > .fw-fold__head .fw-fold__sum {
+  display: none;
+}
+.fw-fold__sum {
+  display: grid;
+  flex-basis: 100%;
+  gap: var(--s-1);
+  padding-left: calc(var(--icon-row) + var(--s-3));
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-fold__sum b {
+  color: var(--text);
+  font-weight: 600;
+}
+.fw-fold__body {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-fold--inner {
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
 }
 .fw-meal-slot {
   display: grid;
@@ -2742,12 +2810,12 @@ span.fw-heat__cell {
   cursor: pointer;
 }
 @media (min-width: 900px) {
-  .fw-meal-day {
-    grid-template-columns: 8rem repeat(4, minmax(0, 1fr));
+  .fw-meal-day__body {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     align-items: start;
   }
   /* [MEAL-15] A day with a meal open for editing stacks its meals, so the form has the width. */
-  .fw-meal-day:has(.fw-meal-entry__edit) {
+  .fw-meal-day__body:has(.fw-meal-entry__edit) {
     grid-template-columns: minmax(0, 1fr);
   }
   .fw-meal-entry__edit {
@@ -2764,6 +2832,10 @@ span.fw-heat__cell {
 .fw-lunch__usual {
   padding-block: var(--s-3);
   border-top: var(--border-w) solid var(--line);
+}
+.fw-fold__body > .fw-lunch__usual:first-child {
+  padding-top: 0;
+  border-top: 0;
 }
 .fw-lunch__weekdays {
   display: grid;

@@ -64,7 +64,7 @@ export async function addMealEntry(_prev: FormState, form: FormData): Promise<Fo
     return { message: mealRefusal(error) };
   }
   revalidatePath('/admin/meals');
-  redirect(`/admin/meals?week=${week}&did=added#${v.planDate}-${v.slot}`);
+  redirect(`/admin/meals?week=${week}&did=added&open=${v.planDate}#${v.planDate}-${v.slot}`);
 }
 
 /**
@@ -103,7 +103,7 @@ export async function updateMealEntry(_prev: FormState, form: FormData): Promise
     return { message: mealRefusal(error) };
   }
   revalidatePath('/admin/meals');
-  redirect(`/admin/meals?week=${week}&did=saved#${v.planDate}-${v.slot}`);
+  redirect(`/admin/meals?week=${week}&did=saved&open=${v.planDate}#${v.planDate}-${v.slot}`);
 }
 
 /** [MEAL-08] Moves an entry one place earlier or later in its slot, or removes it. */
@@ -121,8 +121,10 @@ export async function changeMealEntry(form: FormData): Promise<void> {
   if (error) log('warn', 'meal entry not changed', { code: error.code, hint: error.hint });
   revalidatePath('/admin/meals');
   const anchor = String(form.get('at') ?? '');
+  // [MEAL-14] Back to the week with the entry's day still open (WP-75).
+  const day = /^\d{4}-\d{2}-\d{2}-/.test(anchor) ? `&open=${anchor.slice(0, 10)}` : '';
   redirect(
-    `/admin/meals?week=${week}&did=${error ? 'failed' : act === 'remove' ? 'removed' : 'moved'}${/^[\w-]+$/.test(anchor) ? `#${anchor}` : ''}`,
+    `/admin/meals?week=${week}&did=${error ? 'failed' : act === 'remove' ? 'removed' : 'moved'}${day}${/^[\w-]+$/.test(anchor) ? `#${anchor}` : ''}`,
   );
 }
 

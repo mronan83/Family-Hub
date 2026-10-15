@@ -2,6 +2,7 @@ import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf, weekday } from '../support/day';
+import { mealDay, unfold } from '../support/fold';
 import { withSchoolDays } from '../support/school';
 import { signIn } from '../support/session';
 
@@ -84,6 +85,8 @@ async function add(
     // The week's page is loaded only when it is not the one showing: after an add it stays on it.
     if (!admin.url().includes(`/admin/meals?week=${week}`))
       await admin.goto(`/admin/meals?week=${week}`);
+    // [MEAL-14] Add to the plan is folded at first (WP-75); it stays open after an add.
+    await unfold(admin.getByRole('region', { name: 'Add to the plan' }).locator('details'));
     const form = admin.getByRole('form', { name: 'Add to the plan' });
     await form.getByRole('combobox', { name: 'Day' }).selectOption(day);
     await form.getByRole('combobox', { name: 'Meal' }).selectOption(slot);
@@ -146,6 +149,8 @@ test('[MEAL-02][MEAL-01][MEAL-08][US-701][MEAL-03][US-702] done-when: a meal add
     report(`WP-62: ten things planned through the form in ${Date.now() - started} ms`);
     // Maya's apple first.
     await admin.goto(`/admin/meals?week=${first}`);
+    // [MEAL-14] Each day is folded at first (WP-75); the moved entry's day comes back open.
+    await unfold(mealDay(admin, wed));
     const snack = admin.locator(`[id="${wed}-snack"]`);
     await snack.getByText('Change', { exact: true }).nth(1).click();
     await snack.getByRole('button', { name: 'Move Apple earlier' }).click();
@@ -153,6 +158,7 @@ test('[MEAL-02][MEAL-01][MEAL-08][US-701][MEAL-03][US-702] done-when: a meal add
     await expect(admin.locator(`[id="${wed}-snack"]`).getByRole('listitem').first()).toContainText(
       'AppleMaya',
     );
+    await unfold(mealDay(admin, thu));
     await expect(admin.locator(`[id="${thu}-lunch"]`).getByRole('listitem')).toContainText(
       'WrapsLeoMaya',
     );
@@ -174,6 +180,9 @@ test('[MEAL-02][MEAL-01][MEAL-08][US-701][MEAL-03][US-702] done-when: a meal add
     // The week after already has its first day's dinner.
     await add(second, second, 'dinner', { text: 'Pizza' });
     await admin.goto(`/admin/meals?week=${second}`);
+    // [MEAL-14] Copy last week is folded at first (WP-75).
+    const copyFold = admin.getByRole('region', { name: 'Copy last week' }).locator('details');
+    await unfold(copyFold);
     const copy = admin.getByRole('form', { name: 'Copy last week' });
     await copy.getByRole('radio', { name: 'Keep it' }).check();
     const started = Date.now();
@@ -193,6 +202,7 @@ test('[MEAL-02][MEAL-01][MEAL-08][US-701][MEAL-03][US-702] done-when: a meal add
     expect(after.split('; ')).toHaveLength(10);
 
     await admin.goto(`/admin/meals?week=${second}`);
+    await unfold(copyFold);
     await copy.getByRole('radio', { name: 'Replace it with last week’s' }).check();
     await copy.getByRole('button', { name: 'Copy last week here' }).click();
     await expect(admin.getByRole('status')).toHaveText(
@@ -205,6 +215,7 @@ test('[MEAL-02][MEAL-01][MEAL-08][US-701][MEAL-03][US-702] done-when: a meal add
         .map((row) => `${addDays(row.slice(0, 10), 7)}${row.slice(10)}`)
         .join('; '),
     );
+    await unfold(mealDay(admin, second));
     await expect(admin.locator(`[id="${second}-dinner"]`)).toContainText(MEAL);
     await admin.locator(`[id="${second}-dinner"]`).getByText('Change', { exact: true }).click();
     await admin.getByRole('button', { name: new RegExp(`^Remove ${MEAL} from `) }).click();
@@ -233,6 +244,12 @@ test('[MEAL-04][US-703] school lunch: Maya’s usual week set, then one school d
     };
     const inWeek = `member_id = '${maya}' and lunch_date between '${first}' and '${addDays(first, 6)}'`;
     await admin.goto(`/admin/meals?week=${first}`);
+    // [MEAL-04][D-98] The usual week is folded at first (WP-75), a line per child.
+    const usualFold = admin
+      .getByRole('region', { name: 'School lunch' })
+      .locator('details.fw-fold');
+    await expect(usualFold.locator('summary')).toContainText('Maya: Mon');
+    await unfold(usualFold);
     const usual = admin.getByRole('form', { name: 'Maya’s usual lunches' });
     await usual.getByRole('combobox', { name: words[weekday(day)] }).selectOption('buy');
     await usual.getByRole('button', { name: 'Save Maya’s usual lunches' }).click();

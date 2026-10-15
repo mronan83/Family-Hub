@@ -172,6 +172,22 @@ export function noLunchWords(dayType: string): string {
 
 export const MODE_WORDS: Record<LunchMode, string> = { buy: 'Buy', bring: 'Bring' };
 
+const WEEKDAY_SHORT: Record<Weekday, string> = {
+  mon: 'Mon',
+  tue: 'Tue',
+  wed: 'Wed',
+  thu: 'Thu',
+  fri: 'Fri',
+};
+
+/**
+ * [MEAL-04][D-98] A child's usual week in one line, for the folded Usual week (WP-75): "Sam: Mon Buy ·
+ * Tue Bring · …". A weekday without a choice is Bring, as the form shows it.
+ */
+export function usualLine(name: string, usual: Partial<Record<Weekday, LunchMode>>): string {
+  return `${name}: ${WEEKDAYS.map((d) => `${WEEKDAY_SHORT[d]} ${MODE_WORDS[usual[d] ?? 'bring']}`).join(' · ')}`;
+}
+
 /** [MEAL-04] The usual lunches form: one choice per weekday, buy or bring (anything else is bring). */
 export function parseUsualLunch(form: FormData): Record<Weekday, LunchMode> {
   return Object.fromEntries(

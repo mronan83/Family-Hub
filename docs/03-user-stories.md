@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.50: US-711 as built (WP-75, D-114): **Copy last week** also collapsed at first and moved up under **Add to the plan**, added at the owner's request; a day opens by itself after a change to it.
 > v0.8.49: US-711 gains the usual lunch week and Add to the plan collapsed at first (WP-75, D-98), added at the owner's request.
 > v0.8.48: US-701 as built for Edit on a planned meal (WP-76, D-111).
 > v0.8.47: US-911 gains a pull request's preview on a test database prepared with its own migrations (WP-89, added at the owner's request); its e2e criterion now reads as D-108 built it (WP-88).
@@ -711,6 +712,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given today is in the week, when its day is open or closed, then it is outlined as it is now.
 - Given Meals on any screen size, when it opens, then **School lunch**'s usual week is collapsed, showing one line per child ("Sam: Mon Buy · Tue Bring · …"), and **Add to the plan** is collapsed to its header and button; each opens on tap (added at the owner's request).
 - Given a day of the meal week, when I tap **Add**, then **Add to the plan** opens with that day filled in.
+- Given Meals, when it opens, then the week's days come first, then **Add to the plan**, then **Copy last week** (collapsed at first, opening on tap), then **School lunch** (added at the owner's request, D-114).
+- Given I add, edit, move or remove a meal of a day, when the page comes back, then that day is open.
 
 ---
 
