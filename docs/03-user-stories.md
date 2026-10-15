@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.47: US-911 gains a pull request's preview on a test database prepared with its own migrations (WP-89, added at the owner's request); its e2e criterion now reads as D-108 built it (WP-88).
 > v0.8.46: US-410 to US-415 added at the owner's request (WP-80 to WP-82, D-101 to D-103): goals that repeat each week, month or term, with "every day it's due" and misses allowed; the child's week won or missed; done by a time; tiers; perfect periods; a family goal every child meets. US-401 gains a goal's end date that can be cleared (WP-79, RWD-14).
 > v0.8.45: US-709, US-710, US-711 and US-1010 added at the owner's request (WP-72 to WP-75, D-97, D-98): the lunch picks one tap from Home; the lunch week as a list of days; the meal planner's days folded; a board laid out for its screen's shape. US-701 gains Edit on a planned meal (WP-76, MEAL-15).
 > v0.8.44: US-707 as built (WP-49, D-95): a child's change waits for a parent on Today, picks included; the cut-off; Done; the picks in place of the options.
@@ -808,7 +809,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As an** admin **I want** every change to pass automated checks and a preview before it reaches production **so that** a mistake never breaks the family's board.
 **Priority:** Must · **Phase:** P0 · **Reqs:** NFR-14, NFR-12
 - Given a pull request, when it is opened, then lint, typecheck, unit tests, database tests, traceability and build run without Docker, and the PR cannot merge until they pass.
-- Given a pull request, when Vercel finishes its preview, then the PR's new migrations are applied (unless one removes or renames something), the demo family is reset, and the e2e suite runs against the preview; two PRs never test at the same time.
+- Given a pull request, when Vercel finishes its preview, then a job empties the test database, applies the PR's migrations and loads the demo family, so the preview shows the PR's schema; the job runs no tests and never blocks the PR or a deploy (WP-89).
+- Given `main`, when the nightly e2e run starts, then it runs the suite on a preview of `main` against the test database, and a red run opens an issue without blocking a PR or a deploy (D-108).
 - Given a pull request with every check green, when I open its preview, then I see the demo family, and nothing I do there changes my family's data.
 - Given a pull request, when I have not approved it, then it is not merged or deployed.
 - Given a merge to `main`, when the deploy runs, then migrations are applied to production before the app is deployed, and a failed migration stops the app deploy.
