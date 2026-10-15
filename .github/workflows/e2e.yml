@@ -1,10 +1,13 @@
-# e2e, nightly only (01 §9.3, §9.5, D-85, D-108). It never runs on a pull request or after a deploy,
-# is never a required check or a deploy input, and never cancels, delays or rolls back anything. Each
-# run builds a Vercel preview of the head of main (preview settings: the test database, a second
-# Supabase project that holds only made-up families; production's database never sees a test),
-# empties the test database, applies every migration, loads the demo family, then runs Playwright
-# against that preview. A failure opens or updates one issue per spec, "E2E red on main: <spec>",
-# and does nothing else.
+# e2e, nightly only (01 §9.3, §9.5, D-85, D-108, D-110). It never runs on a pull request or after a
+# deploy, is never a required check or a deploy input, and never cancels, delays or rolls back
+# anything. Each run builds a Vercel preview of the head of main (preview settings: the test database,
+# a second Supabase project that holds only made-up families; production's database never sees a
+# test), waits for it to answer, empties the test database, applies every migration, loads the demo
+# family, then runs Playwright against that preview through scripts/e2e-run.mjs: an assertion failure
+# is red at once; a failure the infrastructure caused (a statement timeout, a reset connection, a
+# Supabase or Auth 5xx, the preview not answering) re-runs that test once, and its cause is labelled in
+# the run summary. A red spec opens or updates one issue, "E2E red on main: <spec>", naming each red
+# test's kind and cause, and does nothing else.
 name: e2e
 
 on:
@@ -63,6 +66,10 @@ jobs:
           url=$(vercel deploy --prebuilt --token="$VERCEL_TOKEN")
           echo "E2E_BASE_URL=$url" >> "$GITHUB_ENV"
           echo "Preview: $url"
+      # No test starts against a deployment that isn't serving yet (up to 5 minutes).
+      - name: Wait for the preview to answer
+        id: ready
+        run: bash scripts/e2e-ready.sh
       # The reset seeds the demo family's history from its own today, and a run takes about 10
       # minutes. One that crossed the family's midnight would compare yesterday's seed with today's
       # dates (it did once, at 04:00 UTC: a calendar window and a streak date each off by a day), so
@@ -80,15 +87,16 @@ jobs:
       - name: Empty the test database, apply main's migrations, load the demo family
         run: bash scripts/preview-db.sh
       - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm e2e
+      - name: e2e
+        id: e2e
+        run: node scripts/e2e-run.mjs --summary "$RUNNER_TEMP/e2e-summary.md" --reds "$RUNNER_TEMP/e2e-reds.json"
         env:
           E2E_REPORT: ${{ runner.temp }}/e2e-report.txt
-          E2E_JSON: ${{ runner.temp }}/e2e-results.json
       - name: Measurements (DEV-05 latency, WP-08 list entry)
         if: always()
         run: |
           if [ -f "$RUNNER_TEMP/e2e-report.txt" ]; then
-            tee -a "$GITHUB_STEP_SUMMARY" < "$RUNNER_TEMP/e2e-report.txt"
+            { echo '### Measurements'; echo; cat "$RUNNER_TEMP/e2e-report.txt"; } | tee -a "$GITHUB_STEP_SUMMARY"
           fi
       # Traces record request headers, the deployment-protection bypass among them, and a public
       # repository's artifacts are public (D-48): the report is kept only while the repository is private.
@@ -98,20 +106,35 @@ jobs:
           name: playwright-report
           path: e2e/playwright-report
           retention-days: 14
-      # A red run opens or updates one issue per failing spec, and does nothing else (D-108).
+      # A red run opens or updates one issue per red spec, naming each red test's kind (infra or
+      # assertion) and cause, and does nothing else (D-108, D-110). A run that failed before e2e ran
+      # opens "E2E red on main: set-up", naming the step; the preview not answering is labelled as such.
       - name: Open or update "E2E red on main"
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          READY: ${{ steps.ready.outcome }}
         run: |
-          f="$RUNNER_TEMP/e2e-results.json"
-          specs=$( [ -s "$f" ] && jq -r '[.. | objects | select(has("specs")) | select(any(.specs[].tests[]?; .status == "unexpected")) | .file] | unique | .[]' "$f" || true)
-          [ -n "$specs" ] || specs=set-up
           sha=$(git rev-parse HEAD)
-          while read -r spec; do
-            bash scripts/open-issue.sh "E2E red on main: $spec" "The nightly e2e run on ${sha:0:7} failed in $spec.
+          reds="$RUNNER_TEMP/e2e-reds.json"
+          if [ ! -s "$reds" ] || [ "$(jq length "$reds")" = 0 ]; then
+            if [ "$READY" = failure ]; then
+              cause='infra: the preview was not ready (it did not answer /api/health with "ok" in 5 minutes)'
+            else
+              cause='the run ended before e2e finished; see the run for the failing step'
+            fi
+            jq -n --arg c "$cause" '[{spec: "set-up", tests: [{test: "the run", kind: "set-up", cause: $c, then: ""}]}]' > "$reds"
+          fi
+          jq -c '.[]' "$reds" | while read -r entry; do
+            spec=$(jq -r .spec <<< "$entry")
+            rows=$(jq -r '.tests[] | "| \(.test | gsub("\\|"; "\\|")) | \(.kind) | \(.cause | gsub("\\|"; "\\|")) | \(.then) |"' <<< "$entry")
+            bash scripts/open-issue.sh "E2E red on main: $spec" "The nightly e2e run on ${sha:0:7} is red in $spec.
+
+          | Test | Kind | Cause | Then |
+          |---|---|---|---|
+          $rows
 
           Run: $RUN_URL"
-          done <<< "$specs"
+          done

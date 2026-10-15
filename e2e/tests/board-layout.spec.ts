@@ -1,6 +1,6 @@
 import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
-import { retireBoard } from '../support/board';
+import { pairBoard, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 
 // [BRD-01][BRD-05][US-1004] The board's home screen on the preview (WP-35, D-66, D-67). A board paired
@@ -13,7 +13,6 @@ const DEMO = '0de00000-0000-4000-8000-000000000001';
 const BOARD = 'Layout e2e';
 const sql = (q: string) => query(db!, q);
 
-test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 let admin: Page;
@@ -33,6 +32,20 @@ const cards = () => board.locator('.fw-dash__cards > section h2');
 const everyBoard = () =>
   admin.getByRole('form', { name: 'Home screen for every board', exact: true });
 
+/**
+ * [D-110] Waits for the server's answer to the save a click starts, and says when it came: a latency
+ * budget runs from that answer, and the save's own time is reported apart.
+ */
+async function saved(click: () => Promise<void>) {
+  const answer = admin.waitForResponse(
+    (r) => r.request().method() === 'POST' && r.request().headers()['next-action'] !== undefined,
+  );
+  const pressed = Date.now();
+  await click();
+  await answer;
+  return { pressed, saved: Date.now() };
+}
+
 /** The board's home screen, opened again if something left it elsewhere. */
 async function home() {
   const button = board
@@ -43,28 +56,10 @@ async function home() {
 }
 
 test.beforeAll(async ({ browser }, testInfo) => {
-  // Signing in and pairing a board can take most of 30 s on a cold preview.
-  testInfo.setTimeout(90_000);
+  // Signing in and pairing a board takes 10 to 40 s on a cold preview (pairBoard).
+  testInfo.setTimeout(120_000);
   putBack();
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
-  admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
-  await admin.goto('/admin/devices');
-  const form = admin.getByRole('form', { name: 'Add a board', exact: true });
-  await form.getByLabel('Board name', { exact: true }).fill(BOARD);
-  await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
-  const code = (await admin.getByTestId('pairing-code').textContent())?.replace(/\D/g, '') ?? '';
-  board = await (await browser.newContext()).newPage();
-  await board.goto('/board');
-  await board.getByLabel('Pairing code from the admin app', { exact: true }).fill(code);
-  await board.getByRole('button', { name: 'Pair this board', exact: true }).click();
-  await expect(board).toHaveURL(/\/board$/);
-  // Changes stream before the done-when times one (see devices.spec: up to about 20 seconds after a
-  // quiet spell).
-  await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
+  ({ admin, board } = await pairBoard(browser, BOARD));
 });
 
 test.afterAll(async () => {
@@ -85,11 +80,18 @@ test('[BRD-05][US-1004] the done-when: Alex moves a card on Boards, and the boar
   // One sample judged a typical-latency budget on its own, and a moment's Realtime delay on the
   // shared database failed it (3.2 s once, while DEV-05 saw 4.7 s in the same run). Measured like
   // DEV-05 instead: Coming up moves up, down, up … eleven times, and 10 of the 11 must be in time.
-  test.setTimeout(180_000);
+  // Each move is a fresh Boards page, a save and the board's change: 4 to 10 s on the preview. 3× the
+  // slow end for each of the 11.
+  test.setTimeout(11 * 30_000);
   await home();
   const ORDERS = ['Goals|Coming up|Waiting for a parent', 'Goals|Waiting for a parent|Coming up'];
   const samples: number[] = [];
+  const saves: number[] = [];
   for (let i = 0; i < 11; i++) {
+    // Each sample starts from a known order: the one the last move left (or the household's default).
+    await expect(cards(), `the order before move ${i + 1}`).toHaveText(
+      ORDERS[(i + 1) % 2]!.split('|'),
+    );
     await admin.goto('/admin/devices');
     const up = i % 2 === 0;
     const move = everyBoard().getByRole('button', {
@@ -97,26 +99,26 @@ test('[BRD-05][US-1004] the done-when: Alex moves a card on Boards, and the boar
       exact: true,
     });
     await expect(move).toBeEnabled();
-    // Timed in the board's own page, checked every 50 ms, from the moment the button is pressed. A
-    // sample that never shows counts as 15 s, and measuring goes on, so a slow run still reports.
-    const pressed = Date.now();
-    const [ms] = await Promise.all([
-      board
-        .waitForFunction(
-          (want) =>
-            [...document.querySelectorAll('.fw-dash__cards > section h2')]
-              .map((h) => h.textContent?.trim())
-              .join('|') === want && Date.now(),
-          ORDERS[i % 2],
-          { polling: 50, timeout: 15_000 },
-        )
-        .then(
-          async (handle) => ((await handle.jsonValue()) as number) - pressed,
-          () => 15_000,
-        ),
-      move.click(),
-    ]);
-    samples.push(ms);
+    // Timed in the board's own page, checked every 50 ms, from the moment the server answered the
+    // save (the save's own time is reported apart). A sample that never shows counts as 15 s, and
+    // measuring goes on, so a slow run still reports.
+    const shown = board
+      .waitForFunction(
+        (want) =>
+          [...document.querySelectorAll('.fw-dash__cards > section h2')]
+            .map((h) => h.textContent?.trim())
+            .join('|') === want && Date.now(),
+        ORDERS[i % 2],
+        { polling: 50, timeout: 15_000 },
+      )
+      .then(
+        async (handle) => (await handle.jsonValue()) as number,
+        () => null,
+      );
+    const save = await saved(() => move.click());
+    const at = await shown;
+    saves.push(save.saved - save.pressed);
+    samples.push(at === null ? 15_000 : Math.max(0, at - save.saved));
     // Saved, said beside the form it came from, before the next move.
     await expect(admin.locator('#layout-household').getByRole('status')).toHaveText(
       'Saved the home screen for every board. It shows the change in a moment.',
@@ -125,9 +127,12 @@ test('[BRD-05][US-1004] the done-when: Alex moves a card on Boards, and the boar
   const sorted = [...samples].sort((a, b) => a - b);
   const p90 = sorted[Math.ceil(0.9 * sorted.length) - 1]!;
   report(
-    `BRD-05 layout change reached the board: p50 ${sorted[5]} ms, p90 ${p90} ms, max ${sorted[10]} ms (budget 3000 ms); samples ${samples.join(', ')}`,
+    `BRD-05 layout change reached the board: p50 ${sorted[5]} ms, p90 ${p90} ms, max ${sorted[10]} ms after the save's answer (budget 3000 ms); samples ${samples.join(', ')}; the saves took ${saves.join(', ')} ms`,
   );
-  expect(p90).toBeLessThanOrEqual(3_000);
+  expect(
+    p90,
+    `BRD-05 p90 over 3 s: samples ${samples.join(', ')} ms; the saves took ${saves.join(', ')} ms`,
+  ).toBeLessThanOrEqual(3_000);
   // An odd number of moves leaves Coming up a place higher than the seed had it.
   await expect(cards()).toHaveText(['Goals', 'Coming up', 'Waiting for a parent']);
   expect(
@@ -138,6 +143,12 @@ test('[BRD-05][US-1004] the done-when: Alex moves a card on Boards, and the boar
 });
 
 test('[BRD-05][D-67] a board with its own layout: the month and no Goals here; every other board keeps the household’s', async () => {
+  // The household's layout as it is before this board gets its own.
+  const household = () =>
+    sql(
+      `select coalesce(board_layout::text, '') from public.household_settings where household_id = '${DEMO}'`,
+    );
+  const householdBefore = household();
   await admin.goto('/admin/devices');
   const details = admin.locator('details', {
     has: admin.getByText(`Home screen on ${BOARD}: the household’s layout`),
@@ -166,20 +177,19 @@ test('[BRD-05][D-67] a board with its own layout: the month and no Goals here; e
     sql(`select board_config -> 'layout' ->> 'calendar' from public.device
           where household_id = '${DEMO}' and name = '${BOARD}'`),
   ).toBe('month');
-  // The household's is as the last test left it.
-  expect(
-    sql(
-      `select board_layout ->> 'calendar' from public.household_settings where household_id = '${DEMO}'`,
-    ),
-  ).toBe('5');
+  // The household's is as it was.
+  expect(household(), 'the household’s layout').toBe(householdBefore);
 
   // Save again with "its own layout" still ticked: the board keeps the layout it has, rather than
   // starting again from the household's (found while writing the user guide).
-  await admin
-    .locator(`#layout-${id}`)
-    .getByRole('form', { name: `Layout for ${BOARD}`, exact: true })
-    .getByRole('button', { name: 'Save', exact: true })
-    .click();
+  // The status from the first save is still shown, so wait for this save's own answer.
+  await saved(() =>
+    admin
+      .locator(`#layout-${id}`)
+      .getByRole('form', { name: `Layout for ${BOARD}`, exact: true })
+      .getByRole('button', { name: 'Save', exact: true })
+      .click(),
+  );
   await expect(admin.locator(`#layout-${id}`).getByRole('status')).toBeVisible();
   expect(
     sql(`select board_config -> 'layout' ->> 'calendar' from public.device

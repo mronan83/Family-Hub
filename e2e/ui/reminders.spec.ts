@@ -24,6 +24,12 @@ for (const [width, height, name] of [
         page,
       }) => {
         await page.goto(`/dev/reminders?theme=${theme}`);
+        // [D-110] "Turn on reminders" is disabled until React has hydrated the page (it can't tell
+        // the browser's push support before then), then fades in: axe read it mid-fade at 2.13:1.
+        await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+        await page.waitForFunction(() =>
+          document.getAnimations().every((a) => a.playState !== 'running'),
+        );
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
         const small = await page.evaluate(() =>
           [...document.querySelectorAll('main button, main input, main select')]

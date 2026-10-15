@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
+import { householdToday } from '../support/day';
+import { signIn } from '../support/session';
 
 // [NFR-17][US-109][ACC-08][US-110] Home at a glance and Family options on the preview (WP-57, D-84),
 // as Alex in the demo family. The done-when: on a school day, one tap makes today a snow day (stored,
@@ -10,7 +12,8 @@ import { sql as query } from '../support/db';
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const sql = (q: string) => query(db!, q);
-const TODAY = `(now() at time zone 'America/New_York')::date`;
+/** The demo family's today, read once for the file ([D-110]), as an SQL date. */
+let TODAY = '';
 
 test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
@@ -18,6 +21,7 @@ test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e 
 let admin: Page;
 
 function putBack() {
+  if (!TODAY) return;
   sql(`delete from public.school_closure
         where household_id = '${DEMO}' and name = 'Snow day' and closure_type = 'snow_day'
           and start_date = ${TODAY} and end_date = ${TODAY};
@@ -25,13 +29,11 @@ function putBack() {
         where household_id = '${DEMO}';`);
 }
 
-test.beforeAll(async ({ browser }, testInfo) => {
-  testInfo.setTimeout(90_000);
+test.beforeAll(async ({ browser }) => {
+  TODAY = `'${householdToday(db!)}'::date`;
   putBack();
   admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
 });
 
 test.afterAll(async () => {
@@ -61,7 +63,6 @@ test('[NFR-17][US-109] Home: what needs Alex matches the database, and the quick
 });
 
 test('[NFR-17][SCH-01] the done-when: no school today in one tap, then Undo', async () => {
-  await admin.goto('/admin');
   const kind = sql(`select coalesce((select 'off' from public.school_closure c
                       join public.school_year y on y.id = c.school_year_id and y.archived_at is null
                      where c.household_id = '${DEMO}' and ${TODAY} between c.start_date and c.end_date
@@ -71,6 +72,7 @@ test('[NFR-17][SCH-01] the done-when: no school today in one tap, then Undo', as
                        where household_id = '${DEMO}' and archived_at is null
                          and ${TODAY} between start_date and end_date limit 1),
                      'none')`);
+  await admin.goto('/admin');
   const more = admin.getByRole('list', { name: 'More quick actions' });
   if (kind !== 'school') {
     // Not a school day (the weekend, a day off, or summer): Home says so, and offers no snow day.

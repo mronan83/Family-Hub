@@ -1,8 +1,10 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
 import { type BrowserContext, expect, test, type Page } from '../support/test';
-import { retireBoard } from '../support/board';
+import { pairingCode, retireBoard } from '../support/board';
+import { householdToday } from '../support/day';
 import { networkSwitch, type NetworkSwitch } from '../support/network';
+import { signIn } from '../support/session';
 
 // [DEV-06][DEV-08][NFR-01][US-205] A board offline on the preview (WP-13), paired to the demo family:
 // it goes offline, checks off three of Maya's items, reloads with no network (its page from the
@@ -16,7 +18,8 @@ const BOARD = 'Porch e2e';
 const MAKE_BED = '0de00000-0000-4000-8000-0000000c0001';
 const BRUSH_TEETH = '0de00000-0000-4000-8000-0000000c0002';
 const FEED_THE_DOG = '0de00000-0000-4000-8000-0000000c0003';
-const TODAY = `(now() at time zone 'America/New_York')::date`;
+/** The demo family's day, read once (D-110): what this spec checks off, and puts back, is that day's. */
+let day = '';
 
 function sql(query: string): string {
   return execFileSync('psql', [db!, '-X', '-A', '-t', '-q', '-v', 'ON_ERROR_STOP=1', '-c', query], {
@@ -28,7 +31,7 @@ const memberId = (name: string) =>
   sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
 const todayOf = (chore: string, member?: string) =>
   sql(`select id from public.chore_occurrence
-        where chore_id = '${chore}' and due_date = ${TODAY}
+        where chore_id = '${chore}' and due_date = '${day}'
           and ${member ? `member_id = '${member}'` : 'member_id is null'}`);
 const status = (occurrence: string) =>
   sql(`select status from public.chore_occurrence where id = '${occurrence}'`);
@@ -38,11 +41,10 @@ function putBack() {
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
        select gen_random_uuid(), o.id, 'admin_uncomplete', now()
          from public.chore_occurrence o
-        where o.household_id = '${DEMO}' and o.due_date = ${TODAY} and o.status <> 'scheduled'
+        where o.household_id = '${DEMO}' and o.due_date = '${day}' and o.status <> 'scheduled'
           and o.chore_id in ('${MAKE_BED}', '${BRUSH_TEETH}', '${FEED_THE_DOG}')`);
 }
 
-test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 function report(line: string) {
@@ -102,19 +104,18 @@ async function asMaya(page: Page) {
 test.beforeAll(async ({ browser }, testInfo) => {
   // Signing in and pairing a board can take most of 30 s on a cold preview.
   testInfo.setTimeout(90_000);
+  day = householdToday(db!);
   // A retry starts from today as the seed left it, with no board of this name.
   putBack();
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
        delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
   const admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
   await admin.goto('/admin/devices');
   const form = admin.getByRole('form', { name: 'Add a board', exact: true });
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);
   await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
-  code = (await admin.getByTestId('pairing-code').textContent())?.replace(/\D/g, '') ?? '';
+  code = await pairingCode(admin);
   await admin.close();
 
   net = await networkSwitch();
@@ -132,7 +133,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
 });
 
 test.afterAll(async () => {
-  putBack();
+  if (day) putBack();
   await retireBoard(board, BOARD);
   await net?.close();
 });
@@ -149,6 +150,9 @@ test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no netwo
     teeth: todayOf(BRUSH_TEETH, maya),
     dog: todayOf(FEED_THE_DOG),
   };
+  // The board made today's items when it loaded; each is there to check.
+  for (const [item, id] of Object.entries(items))
+    expect(id, `today's (${day}) ${item}`).not.toBe('');
   const started = sql('select now()');
   const context = board.context();
   const boardEvents = () =>
@@ -205,6 +209,8 @@ test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no netwo
   await step('online, exactly three events', async () => {
     await goOnline(context);
     await expect.poll(boardEvents, { timeout: 30_000 }).toBe('3');
+    // Maya's page again, in case the wait above took the board past its idle return to Home.
+    await asMaya(board);
     // The later event by time wins: Brush teeth stays open; the others are done.
     expect([status(items.bed), status(items.teeth), status(items.dog)]).toEqual([
       'completed',
@@ -226,6 +232,21 @@ test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no netwo
 });
 
 test('[NFR-01][DEV-08][US-205] opened after a day offline, the board shows its last day and says how old it is', async () => {
+  // [D-110] A 30 s wait for Live, then a reload and about five 15 s waits: about 50 s at worst.
+  test.setTimeout(150_000);
+  // Its own data: Maya's bed done today (by the family's own hand if the test before did not do it),
+  // and the board online.
+  await goOnline(board.context());
+  sql(
+    `select private.generate_occurrences('${DEMO}', '${day}', '${day}', array['${MAKE_BED}']::uuid[])`,
+  );
+  const maya = memberId('Maya');
+  sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)
+       select gen_random_uuid(), o.id, 'complete', array['${maya}'::uuid], now()
+         from public.chore_occurrence o
+        where o.chore_id = '${MAKE_BED}' and o.due_date = '${day}' and o.member_id = '${maya}'
+          and o.status = 'scheduled'`);
+  expect(status(todayOf(MAKE_BED, maya)), `Maya's Make bed on ${day}`).toBe('completed');
   // The same board in a page whose clock can run ahead.
   const page = await board.context().newPage();
   await page.clock.install();

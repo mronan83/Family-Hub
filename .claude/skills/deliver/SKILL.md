@@ -22,6 +22,7 @@ An item is done when **every** line holds. Report against this list.
 |---|---|---|
 | 1 | The item's `Done when` list in `05` passes in CI and on its preview | The tests named there exist and are green |
 | 2 | Tests ship with it: pgTAP for schema, Vitest for logic, Playwright e2e for flows (they run nightly, not on the PR, D-108), the UI suite for any screen | They are in the PR |
+| 2a | Every new or changed test meets the test standard (`CLAUDE.md` "Tests", D-110): no fixed waits, no real clock, its own data, limits with 3× headroom, sign-in through `signIn()`. No e2e and no burn-in on the PR | Your own diff review, listed in the PR |
 | 3 | Validated locally before the first push (step 5) | You ran the commands |
 | 4 | The docs are updated in the same PR, and show the item as done (step 4) | `pnpm trace` and `pnpm docs:build --check` pass |
 | 5 | The user guide covers anything a parent or child can see, with screenshots retaken | `07` diff, `docs/guide/img/` |
@@ -53,10 +54,13 @@ If the item adds or changes a screen and `05` doesn't say its mockup is approved
 - **Migration:** a new file `supabase/migrations/<UTC timestamp>_<snake_case>.sql`, stamped with the current time (`date -u +%Y%m%d%H%M%S`) so two items never share a version. No `BEGIN`/`COMMIT`. Never edit a migration that is already on `main`. Keep it compatible with the deployed app; split a breaking change into expand and contract.
 - **New tables:** `household_id`, RLS, and pgTAP in `supabase/tests/NNN_<name>.test.sql`, numbered after the highest on `main`.
 - **Code:** follow `00-README` "Conventions for Claude Code".
-- **Tests:**
-  - e2e specs import `test` from `e2e/support/test.ts`, and put back anything they change in the demo family;
-  - a board a spec pairs is retired when the spec ends;
-  - a flaky test says what it saw when it fails.
+- **Tests:** build them to the test standard in `CLAUDE.md` ("Tests", D-110), with the same care as the code:
+  - prefer Vitest and the UI suite; e2e only for what needs the real database and a preview;
+  - e2e specs import `test` from `e2e/support/test.ts`, sign in with `signIn()` (`e2e/support/session.ts`), take dates from `e2e/support/day.ts` (and school days from `e2e/support/school.ts`), create their own data with unique names, and put back anything they change in the demo family in `afterAll` or `finally`;
+  - no fixed waits, no test that needs another test first; steps of one story are one test with `test.step`;
+  - a test that takes long sets its limit from its measured time with 3× headroom;
+  - a board a spec pairs is made with `pairBoard()` and retired when the spec ends (`retireBoard()`);
+  - a check that could flake says what it saw when it fails.
 - **Scheduled jobs:** in `apps/web/lib/jobs/schedule.json`, one cron minute per HTTP job.
 
 ### 4. Docs, in the same branch
@@ -110,7 +114,7 @@ Re-read your own diff as a reviewer would, and ask what would make CI reject it.
 ### 7. Get to green
 
 - **CI red:** find the cause and fix it, re-validate (step 5), push.
-- **e2e:** it doesn't run on a PR (D-108). Don't wait on it, queue for it or re-run it. A spec you add or change runs in the next nightly run; an "E2E red on main" issue names a failing spec.
+- **e2e:** it doesn't run on a PR (D-108). Don't wait on it, queue for it or re-run it. A spec you add or change runs in the next nightly run; an "E2E red on main" issue names a failing spec, and each red test's kind (infra or assertion) and cause (D-110). An infra failure was already re-run once; red after that means it failed twice. An assertion failure is real: fix it in the app or the test, never by loosening the check.
 - **Review comments:** address them, or reply with why not.
 - Never end a wake on a red PR without a pushed fix or a clear message to the owner on what is blocking.
 
