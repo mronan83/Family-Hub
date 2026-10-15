@@ -21,17 +21,16 @@ An item is done when **every** line holds. Report against this list.
 | # | Done when | Proof |
 |---|---|---|
 | 1 | The item's `Done when` list in `05` passes in CI and on its preview | The tests named there exist and are green |
-| 2 | Tests ship with it: pgTAP for schema, Vitest for logic, Playwright e2e for flows, the UI suite for any screen | They are in the PR |
+| 2 | Tests ship with it: pgTAP for schema, Vitest for logic, Playwright e2e for flows (they run nightly, not on the PR, D-108), the UI suite for any screen | They are in the PR |
 | 3 | Validated locally before the first push (step 5) | You ran the commands |
 | 4 | The docs are updated in the same PR, and show the item as done (step 4) | `pnpm trace` and `pnpm docs:build --check` pass |
 | 5 | The user guide covers anything a parent or child can see, with screenshots retaken | `07` diff, `docs/guide/img/` |
 | 6 | CI is green on the PR's head: `checks`, `database`, `docs`, `build` | Check runs |
-| 7 | e2e is green on the PR's preview: `e2e / preview` | Check run, with pass, retry and time counts |
-| 8 | The owner has typed `approve #nn` in this session | The chat |
-| 9 | Squash-merged, with the head SHA pinned | Merge commit on `main` |
-| 10 | Deployed: the deploy run is green through `smoke` and `schedule`, and `/api/health` reports the merge commit | Deploy run and health response |
-| 11 | The six docs pages are republished from `main`, by a sub-agent (step 11) | Its six `published` lines |
-| 12 | Anything deferred is listed in the PR and recorded in `05` | PR "Deferred" section |
+| 7 | The owner has typed `approve #nn` in this session | The chat |
+| 8 | Squash-merged, with the head SHA pinned | Merge commit on `main` |
+| 9 | Deployed: the deploy run is green through `smoke` and `schedule`, and `/api/health` reports the merge commit | Deploy run and health response |
+| 10 | The six docs pages are republished from `main`, by a sub-agent (step 11) | Its six `published` lines |
+| 11 | Anything deferred is listed in the PR and recorded in `05` | PR "Deferred" section |
 
 ## Steps
 
@@ -82,7 +81,7 @@ Update only what the item changes:
 Rules:
 - Version lines go directly under each doc's `> Version` header, newest first: `> v0.8.N: <summary> (WP-nn, D-nn).`
 - Take every new number (version line, §I row, `D-nn`, `US-nnn`, requirement ID) as the next free one **on `main` when you write it**. Check again at step 8.
-- Don't put PR numbers or e2e results in the docs. The squash title carries the PR number, and e2e results go in the PR. This keeps the docs correct without a second e2e run.
+- Don't put PR numbers in the docs. The squash title carries the PR number.
 
 ### 5. Validate locally
 
@@ -102,7 +101,6 @@ Re-read your own diff as a reviewer would, and ask what would make CI reject it.
 
 ### 6. Push once and open the PR
 
-- **Check the e2e queue first** (see "The e2e queue" below).
 - Push. Open the PR with `.github/pull_request_template.md`:
   - title `WP-nn: <title from 05> (D-nn)`;
   - fill every section, including Deferred.
@@ -111,25 +109,21 @@ Re-read your own diff as a reviewer would, and ask what would make CI reject it.
 
 ### 7. Get to green
 
-- **CI red:** find the cause and fix it, re-validate (step 5), check the queue, push.
-- **e2e red:**
-  - Read the failing spec's report.
-  - A latency budget or statement timeout is a real failure until you show otherwise.
-  - Re-run only if the run died before any test ran (set-up, runner loss), and only once.
+- **CI red:** find the cause and fix it, re-validate (step 5), push.
+- **e2e:** it doesn't run on a PR (D-108). Don't wait on it, queue for it or re-run it. A spec you add or change runs in the next nightly run; an "E2E red on main" issue names a failing spec.
 - **Review comments:** address them, or reply with why not.
 - Never end a wake on a red PR without a pushed fix or a clear message to the owner on what is blocking.
 
 ### 8. Ask for approval
 
-When CI and e2e are green on the head:
-1. **Sync check.** If `main` moved since your branch point, merge `origin/main` in (never rebase). Resolve with the conflict table below. Re-validate, check the queue, push, and wait for green again.
+When CI is green on the head (`checks`, `database`, `docs`, `build`):
+1. **Sync check.** If `main` moved since your branch point, merge `origin/main` in (never rebase). Resolve with the conflict table below. Re-validate, push, and wait for green again.
 2. **Post in this session** for the owner:
 
    | | |
    |---|---|
    | PR | #nn, linked, with the preview link |
    | CI | checks · database · docs · build, all green |
-   | e2e | N passed, retries, minutes, and the latency figures the run reports (DEV-05, BRD-05) |
    | Decisions to confirm | each D-nn, one line each |
    | Deferred | or "nothing" |
    | Look at | where on the preview to see the change, with demo-family sign-ins |
@@ -152,7 +146,7 @@ On `approve #nn` (or "approve" when only one PR is in question; ask if it's ambi
 
 ### 10. Deploy
 
-- `deploy.yml` starts when CI finishes on `main`. Watch the run for your merge commit: `gate` → `migrate` → `app` → `smoke` → `schedule`.
+- `deploy.yml` starts when CI finishes on `main`. Watch the run for your merge commit: `gate` → `migrate` → `app` → `smoke` → `schedule`. The gate reads the fast checks only; a refused or failed deploy opens the issue "Deploy refused: <commit>".
 - If the gate skips because a later merge is now the head of `main`, confirm that the later run deployed: it ships your change too.
 - Check that `GET /api/health` on production returns `"status":"ok"` and your merge commit in `commit`.
 - If any deploy job fails, tell the owner at once with the failing job and its log. Find the cause. Never re-run the deploy blind.
@@ -177,16 +171,6 @@ If this session can't start a sub-agent, do the same steps yourself.
 - Unsubscribe from the PR and cancel your check-in.
 - Post the final line in this session: `WP-nn deployed (merge abc1234), docs republished.` Send the same line to the planner.
 - Start nothing else. The owner or the planner names the next item.
-
-## The e2e queue
-
-- All PRs share one test database, so e2e runs one at a time (concurrency group `demo-family`).
-- GitHub keeps only **one** waiting run in that group. A new push that deploys a preview **replaces any run that is waiting**, and the replaced PR then can't deploy.
-
-Before every push to a PR branch:
-1. List the e2e workflow's runs that are `queued` or `waiting`.
-2. If one belongs to another branch, don't push. Wait until it starts running, then push.
-3. Never cancel another PR's run. Never re-run your own while another is waiting.
 
 ## Resolving conflicts with `main`
 
@@ -225,4 +209,3 @@ For new asks, a reorder, or splitting an item. No code; steps 1 and 4–12 apply
   - a requirement in `04` §A and §B, then `--fix`;
   - decisions in `00`.
 - Word new items "added at the owner's request". Put the owner's order in the "Next, in order" line under the status board.
-- A docs-only PR still needs a green e2e run on its preview, or the merge doesn't deploy.

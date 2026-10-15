@@ -17,8 +17,15 @@ export default defineConfig({
   // by the tests that time it (DEV-05, the WP-08 list entry), not by this timeout.
   expect: { timeout: 15_000 },
   // The HTML report sits next to this file, where the workflow uploads it from on a failure.
+  // E2E_JSON names the failing specs for the nightly run's issues (D-108).
   reporter: process.env.CI
-    ? [['github'], ['html', { open: 'never', outputFolder: 'playwright-report' }]]
+    ? [
+        ['github'],
+        ['html', { open: 'never', outputFolder: 'playwright-report' }],
+        ...(process.env.E2E_JSON
+          ? [['json', { outputFile: process.env.E2E_JSON }] as ['json', { outputFile: string }]]
+          : []),
+      ]
     : 'list',
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',

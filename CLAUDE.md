@@ -41,6 +41,7 @@ The planner follows `.claude/skills/planner/SKILL.md`. A worker follows `.claude
 - Free plans only (Vercel Hobby, Supabase Free, GitHub Actions). No Docker, anywhere.
 - Board: text at least 28 px, buttons at least 56 px, works by touch and by mouse. Admin: works on a 13" laptop.
 - Validate locally and run the format check before every push. One validated push beats three speculative ones.
+- e2e runs nightly only and never blocks a PR or a deploy (D-108). A PR is ready when the fast checks are green; a red nightly run opens an issue.
 
 **Secrets and data**
 - Never ask the owner to paste a token or key. Secrets go straight into GitHub, Vercel or Supabase settings, or are made by a workflow that never prints them.
@@ -52,7 +53,6 @@ The planner follows `.claude/skills/planner/SKILL.md`. A worker follows `.claude
 
 - Skip, disable or quarantine a test, or call a failure a flake without a cause.
 - Push an empty commit, or close and reopen a PR, to restart CI.
-- Cancel or displace another PR's e2e run (see "The e2e queue" in the deliver skill).
 - Rebase or force-push a branch that is in review. Merge `main` into it instead.
 - Put a model name or ID in a commit, PR, comment or doc.
 - Commit `.claude/worktrees/`, or the `AGENTS.md` and `CLAUDE.md` that the Next.js build writes under `apps/web/`.
