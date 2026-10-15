@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.66: Edit on a planned meal (WP-76, D-111): the Meals page edits an entry in place through `update_meal_entry()`.
 > v0.8.65: nightly e2e reliability (WP-90, D-110): each worker signs in once per demo persona and reuses the session; a page is used only once React has hydrated it; no blind retries: a failure the infrastructure caused (a statement timeout, a reset connection, a Supabase or Auth 5xx, the preview not answering) re-runs that test once and is labelled in the run summary and the issue, an assertion failure never re-runs; the test database's reset ends sessions stuck in a transaction and logs who waited on them (§9.5).
 > v0.8.64: e2e runs nightly only, on a preview of `main`, and never blocks a pull request or a deploy; the deploy gate reads the fast checks on the merge commit and on its pull request's head, and a refused or failed deploy, or a red nightly run, opens an issue (WP-88, D-108) (§9.2, §9.3, §9.5, §9.6).
 > v0.8.63: the board's chore rows and rail entries grow with what is in them, so a browser that draws a chip or a word larger never spills or clips them (WP-71, D-100).
@@ -19,7 +20,7 @@
 > v0.8.50: meals on the board (WP-28, D-80): the snapshot's `meals`, five meal tables in Realtime, today's meals above Today's list and the Meals screen (§7).
 > v0.8.49: school menus (WP-27, D-79): the Nutrislice adapter, a CSV file and days typed in; the `menu_import` job daily over 28 days; a parent's days never replaced; a failed fetch keeps its menus (§5.5, §5.6).
 > v0.8.48: school lunch (WP-26, D-78): buy or bring per child and school day, through `set_lunch()`, `set_lunch_defaults()` and `lunch_week()`.
-> v0.8.47: meal planning (WP-25, D-77): the admin app's Meals page and meal library, through RLS and `add_meal_entry()`, `move_meal_entry()`, `copy_meal_week()`.
+> v0.8.47: meal planning (WP-25, D-77): the admin app's Meals page and meal library, through RLS and `add_meal_entry()`, `move_meal_entry()`, `copy_meal_week()` (and, from WP-76, `update_meal_entry()`).
 > v0.8.46: goal payouts and the preview of a change (WP-39, D-75): `save_goal_evaluation()` pays an achievement in the same transaction and undoes it when the goal is undone (§6.2, §8); the goal form's Preview reads `goal_preview_facts()` and runs the engine without saving.
 > v0.8.45: the jobs' queries stop after 60 seconds (D-76, §5.6).
 > v0.8.44: the board's home screen is one screen with a rail (WP-48, D-74): the page never scrolls, each screen scrolls inside itself, and the calendar's view can be changed on the board until it goes home (§7).

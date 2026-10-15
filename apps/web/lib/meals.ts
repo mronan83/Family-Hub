@@ -238,6 +238,8 @@ export function mealRefusal(error: { code?: string | null; hint?: string | null 
       return 'That’s the same week.';
     case 'not_allowed':
       return 'Only a parent of this family can do that.';
+    case 'not_found':
+      return 'That meal isn’t on the plan any more. Reload the page.';
     default:
       return 'That didn’t save. Try again in a moment.';
   }

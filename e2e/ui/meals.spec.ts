@@ -7,6 +7,11 @@ import { expect, test, type Page } from '@playwright/test';
 // written in), copying last week, the library, and the layout on a phone and a laptop in Day and
 // Evening. The same pages run signed in against the database in e2e/tests/meals.spec.ts.
 
+// Entries of /dev/meals's week, by their ids there.
+const TACOS = 'f2e10000-0000-4000-8000-000000000003';
+const CHICKEN_SOUP = 'f2e10000-0000-4000-8000-000000000009';
+const FISH_FINGERS = 'f2e10000-0000-4000-8000-000000000010';
+
 async function contrastOk(page: Page) {
   const { violations } = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze();
   expect(violations.flatMap((v) => v.nodes.map((n) => `${n.target}: ${n.failureSummary}`))).toEqual(
@@ -51,6 +56,16 @@ for (const [device, viewport] of [
           .locator('summary')
           .first()
           .click();
+        await fits(page, viewport.width);
+        await contrastOk(page);
+        // [MEAL-15] An entry opened for editing, in place (WP-76).
+        await page.goto(`/dev/meals?theme=${theme}&edit=${FISH_FINGERS}`);
+        const edit = page.getByRole('form', { name: 'Edit Fish fingers' });
+        await expect(edit).toBeVisible();
+        // On a laptop its day stacks its meals, so the form isn't squeezed into one meal's column.
+        expect((await edit.boundingBox())!.width).toBeGreaterThan(
+          Math.min(400, viewport.width * 0.7),
+        );
         await fits(page, viewport.width);
         await contrastOk(page);
         await page.goto(`/dev/meals?page=library&theme=${theme}`);
@@ -109,7 +124,7 @@ test('[MEAL-01][MEAL-08][US-701] the week: seven days of four meals, each in ord
   );
 });
 
-test('[MEAL-08] Change: earlier, later or remove, as the entry’s place allows', async ({
+test('[MEAL-08][MEAL-15] Change: earlier and later as the entry’s place allows, then Edit and Remove', async ({
   page,
 }) => {
   await page.goto('/dev/meals');
@@ -123,10 +138,72 @@ test('[MEAL-08] Change: earlier, later or remove, as the entry’s place allows'
   await snack.getByText('Change', { exact: true }).nth(1).click();
   await expect(snack.getByRole('button', { name: 'Move Crackers earlier' })).toBeVisible();
   await expect(snack.getByRole('button', { name: 'Move Crackers later' })).toHaveCount(0);
-  // A meal alone in its slot is only removed.
-  const dinner = page.getByRole('group', { name: 'Sun, Oct 11 dinner' });
-  await dinner.getByText('Change', { exact: true }).click();
-  await expect(dinner.getByRole('button')).toHaveText(['Remove']);
+  // [MEAL-15] Each entry's Change offers Edit, which opens it in place, and Remove (WP-76).
+  const dinner = page.getByRole('group', { name: 'Wed, Oct 14 dinner' });
+  await dinner.getByText('Change', { exact: true }).first().click();
+  await expect(
+    dinner.locator('details[open]').getByRole('link').or(dinner.locator('details[open] button')),
+  ).toHaveText(['Later', 'Edit', 'Remove']);
+  await expect(
+    dinner.getByRole('link', { name: 'Edit Chicken soup, Wed, Oct 14 dinner' }),
+  ).toHaveAttribute(
+    'href',
+    `/admin/meals?week=2026-10-11&edit=${CHICKEN_SOUP}#entry-${CHICKEN_SOUP}`,
+  );
+  // A meal alone in its slot has the two: Edit and Remove.
+  const sunday = page.getByRole('group', { name: 'Sun, Oct 11 dinner' });
+  await sunday.getByText('Change', { exact: true }).click();
+  await expect(
+    sunday.locator('details[open]').getByRole('link').or(sunday.locator('details[open] button')),
+  ).toHaveText(['Edit', 'Remove']);
+  await expect(page.getByRole('form', { name: /^Edit / })).toHaveCount(0);
+});
+
+test('[MEAL-15][US-701] Edit opens the entry’s form filled with what was saved: written in, for two', async ({
+  page,
+}) => {
+  await page.goto(`/dev/meals?edit=${FISH_FINGERS}`);
+  const form = page
+    .getByRole('group', { name: 'Wed, Oct 14 dinner' })
+    .getByRole('form', { name: 'Edit Fish fingers' });
+  await expect(form.getByRole('combobox', { name: 'Day' })).toHaveValue('2026-10-14');
+  await expect(form.getByRole('combobox', { name: 'Meal' })).toHaveValue('dinner');
+  await expect(form.getByRole('radio', { name: 'Something else' })).toBeChecked();
+  await expect(form.getByRole('textbox', { name: 'Something else' })).toHaveValue('Fish fingers');
+  const who = form.getByRole('group', { name: 'For' });
+  await expect(who.getByRole('checkbox', { checked: true })).toHaveCount(2);
+  await expect(who.getByRole('checkbox', { name: 'Maya' })).toBeChecked();
+  await expect(who.getByRole('checkbox', { name: 'Leo' })).toBeChecked();
+  await expect(who).toContainText('For Maya and Leo.');
+  await expect(form.getByRole('textbox', { name: 'Note (optional)' })).toHaveValue('');
+  await expect(form.locator('input[name=id]')).toHaveValue(FISH_FINGERS);
+  // Save works once the page is hydrated; Cancel goes back to the slot.
+  await expect(form.getByRole('button', { name: 'Save changes' })).toBeEnabled();
+  await expect(form.getByRole('link', { name: 'Cancel' })).toHaveAttribute(
+    'href',
+    '/admin/meals?week=2026-10-11#2026-10-14-dinner',
+  );
+  // The page's own "Add to the plan" is still there, empty.
+  await expect(
+    page.getByRole('form', { name: 'Add to the plan' }).getByRole('checkbox', { name: 'Everyone' }),
+  ).toBeChecked();
+});
+
+test('[MEAL-15][US-701] Edit opens the entry’s form filled with what was saved: a library meal for everyone, with a note', async ({
+  page,
+}) => {
+  await page.goto(`/dev/meals?edit=${TACOS}`);
+  const form = page.getByRole('form', { name: 'Edit Tacos' });
+  await expect(form.getByRole('combobox', { name: 'Day' })).toHaveValue('2026-10-12');
+  await expect(form.getByRole('combobox', { name: 'Meal' })).toHaveValue('dinner');
+  await expect(form.getByRole('radio', { name: 'From the library' })).toBeChecked();
+  await expect(form.getByRole('combobox', { name: 'From the library' })).toHaveValue(
+    'f2d00000-0000-4000-8000-000000000001',
+  );
+  await expect(form.getByRole('checkbox', { name: 'Everyone' })).toBeChecked();
+  await expect(form.getByRole('textbox', { name: 'Note (optional)' })).toHaveValue(
+    'Make extra for lunch',
+  );
 });
 
 test('[MEAL-01][MEAL-02] Add to the plan: the library’s meals for the meal chosen first, or something written in', async ({

@@ -6,8 +6,9 @@ import { type MealRow, type PlanEntry, type Slot, weekDays } from '@/lib/meals';
 
 // The admin Meals pages (WP-25) with a made-up family and no database, for the UI suite and the
 // guide's pictures: the week in Day or Evening (?theme=evening), opened to add a Wednesday snack
-// (?add=1), and the meal library (?page=library). School lunch (WP-26): Thursday is a day off, Leo's
-// Tuesday is changed to buy. School menus (WP-27): both have Maple Elementary's; a buy day shows it.
+// (?add=1), an entry opened for editing (?edit=<its id>, WP-76), and the meal library
+// (?page=library). School lunch (WP-26): Thursday is a day off, Leo's Tuesday is changed to buy.
+// School menus (WP-27): both have Maple Elementary's; a buy day shows it.
 export const metadata: Metadata = { title: 'Meals', robots: { index: false } };
 
 const MAYA = 'f2000000-0000-4000-8000-000000000001';
@@ -169,7 +170,13 @@ const LUNCH_PICKED: LunchChild[] = LUNCH.map((c) => ({
 export default async function DevMealsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; page?: string; add?: string; lunches?: string }>;
+  searchParams: Promise<{
+    theme?: string;
+    page?: string;
+    add?: string;
+    edit?: string;
+    lunches?: string;
+  }>;
 }) {
   const p = await searchParams;
   const theme = p.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -190,6 +197,7 @@ export default async function DevMealsPage({
             { id: 'f2000000-0000-4000-8000-0000000000a1', displayName: 'Alex' },
           ]}
           addAt={p.add ? { day: TODAY, slot: 'snack' } : null}
+          editId={p.edit ?? null}
           newId="f2e10000-0000-4000-8000-0000000000ff"
           lunch={p.lunches === '1' ? LUNCH_PICKED : LUNCH}
           menus={[{ id: MAPLE, name: 'Maple Elementary' }]}

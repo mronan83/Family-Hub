@@ -13,6 +13,7 @@ export const metadata: Metadata = { title: 'Meals' };
 
 const DID: Record<string, string> = {
   added: 'Added to the plan.',
+  saved: 'Saved.',
   moved: 'Moved.',
   removed: 'Removed from the plan.',
   lunch: 'Lunch changed.',
@@ -64,6 +65,7 @@ export default async function MealsPage({
         .filter((m) => !m.archivedAt)
         .map((m) => ({ id: m.id, displayName: m.displayName }))}
       addAt={addAt}
+      editId={p.edit ?? null}
       newId={crypto.randomUUID()}
       lunch={lunch}
       menus={menus}
