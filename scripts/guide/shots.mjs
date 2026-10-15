@@ -293,7 +293,14 @@ const SHOTS = [
     element: '.fw-goal-preview',
   },
   // Meals (WP-25): the week on a laptop, and the library on a phone.
-  { name: 'admin-meals-laptop', device: 'laptop', url: '/dev/meals', maxHeight: 1900, quality: 62 },
+  // [MEAL-14] The days folded, today opened (WP-75).
+  {
+    name: 'admin-meals-laptop',
+    device: 'laptop',
+    url: '/dev/meals?open=2026-10-14',
+    maxHeight: 1900,
+    quality: 62,
+  },
   // [MEAL-15] A planned dinner opened with Edit, in place (WP-76).
   {
     name: 'admin-meal-edit-phone',
@@ -309,7 +316,7 @@ const SHOTS = [
     element: '#lunch',
     // The whole section, the usual weeks too, kept under 120 KB.
     quality: 48,
-    act: (page) => page.locator('.fw-lunchday[data-today]:visible summary').click(),
+    act: (page) => page.locator('#lunch .fw-lunchday[data-today]:visible summary').click(),
   },
   // [MEAL-11] On a laptop, with a child's picks (WP-49), today opened.
   {
@@ -317,7 +324,7 @@ const SHOTS = [
     device: 'laptop',
     url: '/dev/meals?lunches=1',
     element: '#lunch',
-    act: (page) => page.locator('.fw-lunchday[data-today]:visible summary').click(),
+    act: (page) => page.locator('#lunch .fw-lunchday[data-today]:visible summary').click(),
   },
   // [MEAL-09] The children's lunch changes waiting on Today (WP-49), on a laptop and a phone.
   {

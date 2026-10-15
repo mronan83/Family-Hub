@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.123: WP-75 (the meal planner's days as collapsible sections, with the usual lunch week and Add to the plan folded) done (D-114), with **Copy last week** folded too and Meals reordered, added at the owner's request.
 > v0.8.122: WP-75 gains two sections that fold on Meals, added at the owner's request, recorded only (D-98): **School lunch**'s usual week and **Add to the plan**, both collapsed at first on every screen size; **Add** on a day opens **Add to the plan** with that day filled. The WP-75 worker adds both collapsed states to the mockup for the owner's approval before building.
 > v0.8.121: WP-73 (the lunch picks one tap from Home) done (D-113).
 > v0.8.120: WP-74 (the lunch week as a list of days) done (D-112), so WP-73 is Ready.
@@ -241,7 +242,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-72 | Board layouts that adapt to the screen's width and shape | P3 | L | WP-71, WP-53, WP-52 | Queued (mockup first) |
 | WP-73 | The lunch picks one tap from the admin app's Home | P3 | S | WP-57, WP-74 | Done |
 | WP-74 | The lunch week as a list of days | P2 | M | WP-49, WP-64 | Done |
-| WP-75 | The meal planner's days as collapsible sections, with the usual lunch week and Add to the plan folded | P2 | S | WP-25, WP-62, WP-76 | Ready (mockup approved; the two folded sections' mockup to approve) |
+| WP-75 | The meal planner's days as collapsible sections, with the usual lunch week and Add to the plan folded | P2 | S | WP-25, WP-62, WP-76 | Done |
 | WP-76 | Edit on a planned meal | P2 | S | WP-25, WP-62 | Done |
 | WP-77 | WP-49's lunch test, root cause: its time limit, and the board's lunch week read again | P2 | S | WP-49 | Done |
 | WP-78 | A lunch pick taken off by another; "and" in a menu; the board picks up a new deploy | P2 | S | WP-49, WP-64 | Done |
@@ -1251,7 +1252,9 @@ flowchart LR
   - **School lunch's usual week:** collapsed at first on every screen size. Collapsed, it shows one line per child ("Sam: Mon Buy · Tue Bring · …"); it opens on tap.
   - **Add to the plan:** collapsed at first on every screen size, showing only its header and button. It opens on tap, or when **Add** is tapped on a day, which opens it with that day filled in.
   - The approved mockup for WP-73 to WP-76 doesn't show these two collapsed states. Before building, the WP-75 worker adds them to the mockup, on the demo family, for the owner's approval.
+- Added at the owner's request, 15 October, while approving the mockup: "Copy last weeks should also move up under weekly meals directly under add to plan. And it should default to collapsed." Meals reads the days, **Add to the plan**, **Copy last week** (collapsed at first), then **School lunch** (D-114). The owner approved the mockup with these on 15 October.
 - **Done when:** unit tests on "X of Y set" and the checkmark, and on the usual week's one-line summary; on the preview, Alex opens Meals with every day collapsed, sees "2 of 4 set" on a day with two meals, adds the other two from the expanded day and sees the checkmark, and edits a meal there; the UI suite at 390 and 1280 px in both themes, collapsed and expanded, today outlined, and the usual lunch week and **Add to the plan** collapsed at first, expanded on tap, and **Add** on a day opening **Add to the plan** with the day filled.
+- **As built:** no migration. `daySet()` and `daySetWords()` in `apps/web/lib/meals.ts` ("X of Y set" of the four meals the planner shows, the check when all are set); `usualLine()` in `apps/web/lib/lunch.ts` (a weekday without a choice reads Bring). In `apps/web/app/(admin)/admin/meals/view.tsx` each day is a `<details>` closed at first, with the lunch days' look (`.fw-lunchday`), opened by itself for the entry being edited or by `?open=<day>`, which `addMealEntry`, `updateMealEntry`, `changeMealEntry` and Edit's **Cancel** now send; **Add to the plan** and **Copy last week** follow the days, each a folded card (`.fw-fold`), **Add to the plan** opened by a day's **Add** (`?day=&slot=`); the usual week folded in `lunch-section.tsx`. Folding is the browser's own, so it works before hydration. D-114: the new order and **Copy last week** folded, added at the owner's request; the day opened after a change, proposed by Claude Code. Tests: Vitest `lib/meals.test.ts`, `lib/lunch.test.ts`; UI suite `e2e/ui/meals.spec.ts` (390 and 1280 px in both themes: the days closed and opened, today outlined; the three sections closed, then opened on a tap; a day's **Add**; taps after hydration); e2e `e2e/tests/meal-days.spec.ts` (the done-when on the preview, nightly, D-108), and `meals.spec.ts`, `meal-edit.spec.ts` and `menus.spec.ts` opening the folds they use (`e2e/support/fold.ts`). Not in scope, as before: **Add to the plan** and the other admin forms still lose a submit made before the page hydrates (recorded in WP-76).
 
 ### WP-76 — Edit on a planned meal
 **Phase:** P2 · **Size:** S · **Depends on:** WP-25, WP-62 · **Reqs:** MEAL-15

@@ -1,6 +1,6 @@
 import { type AvatarKey, Button, Icon, type MemberColor } from '@familywise/ui';
 import Link from 'next/link';
-import { type LunchChild, WEEKDAY_WORDS, WEEKDAYS } from '@/lib/lunch';
+import { type LunchChild, usualLine, WEEKDAY_WORDS, WEEKDAYS } from '@/lib/lunch';
 import { setUsualLunch } from './actions';
 import { LunchWeek } from './lunch-week';
 
@@ -8,6 +8,8 @@ import { LunchWeek } from './lunch-week';
  * [MEAL-04][US-703] School lunch for the week: [MEAL-13] one child's Monday to Friday as a list of
  * days (WP-74, D-98), each day's Buy or Bring and, on a Buy day, the day's menu to pick from (WP-49,
  * WP-64); then each child's usual week, Monday to Friday, and the school menu their lunch comes from.
+ * [MEAL-04][D-98] The usual week is folded at first (WP-75), a line per child ("Sam: Mon Buy · …"),
+ * and opens on a tap to the forms.
  */
 export function LunchSection({
   week,
@@ -55,55 +57,73 @@ export function LunchSection({
         })}
       />
 
-      <h3>Usual week</h3>
-      {lunch.map((c) => {
-        const name = names.get(c.memberId) ?? 'A child';
-        return (
-          <form
-            key={c.memberId}
-            action={setUsualLunch}
-            className="fw-form fw-lunch__usual"
-            aria-label={`${name}’s usual lunches`}
-          >
-            <input type="hidden" name="week" value={week} />
-            <input type="hidden" name="member" value={c.memberId} />
-            <strong>{name}</strong>
-            <div className="fw-lunch__weekdays">
-              {WEEKDAYS.map((w) => (
-                <label key={w} className="fw-field">
-                  <span className="fw-field__label">{WEEKDAY_WORDS[w]}</span>
-                  <select
-                    className="fw-input"
-                    name={`usual-${w}`}
-                    defaultValue={c.usual[w] ?? 'bring'}
-                  >
-                    <option value="bring">Bring</option>
-                    <option value="buy">Buy</option>
-                  </select>
-                </label>
-              ))}
-            </div>
-            {menus.length > 0 ? (
-              <label className="fw-field">
-                <span className="fw-field__label">School menu</span>
-                <select className="fw-input" name="menu" defaultValue={c.menuSourceId ?? ''}>
-                  <option value="">None</option>
-                  {menus.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
+      <details className="fw-fold fw-fold--inner">
+        <summary className="fw-fold__head">
+          <Icon name="chevron-right" className="fw-lunchday__chev" />
+          <h3>Usual week</h3>
+          <span className="fw-fold__sum">
+            {lunch.map((c) => {
+              const name = names.get(c.memberId) ?? 'A child';
+              return (
+                <span key={c.memberId}>
+                  <b>{name}:</b>
+                  {usualLine(name, c.usual).slice(name.length + 1)}
+                </span>
+              );
+            })}
+          </span>
+        </summary>
+        <div className="fw-fold__body">
+          {lunch.map((c) => {
+            const name = names.get(c.memberId) ?? 'A child';
+            return (
+              <form
+                key={c.memberId}
+                action={setUsualLunch}
+                className="fw-form fw-lunch__usual"
+                aria-label={`${name}’s usual lunches`}
+              >
+                <input type="hidden" name="week" value={week} />
+                <input type="hidden" name="member" value={c.memberId} />
+                <strong>{name}</strong>
+                <div className="fw-lunch__weekdays">
+                  {WEEKDAYS.map((w) => (
+                    <label key={w} className="fw-field">
+                      <span className="fw-field__label">{WEEKDAY_WORDS[w]}</span>
+                      <select
+                        className="fw-input"
+                        name={`usual-${w}`}
+                        defaultValue={c.usual[w] ?? 'bring'}
+                      >
+                        <option value="bring">Bring</option>
+                        <option value="buy">Buy</option>
+                      </select>
+                    </label>
                   ))}
-                </select>
-              </label>
-            ) : null}
-            <div className="fw-actions">
-              <Button type="submit" variant="secondary" icon="check">
-                {`Save ${name}’s usual lunches`}
-              </Button>
-            </div>
-          </form>
-        );
-      })}
+                </div>
+                {menus.length > 0 ? (
+                  <label className="fw-field">
+                    <span className="fw-field__label">School menu</span>
+                    <select className="fw-input" name="menu" defaultValue={c.menuSourceId ?? ''}>
+                      <option value="">None</option>
+                      {menus.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : null}
+                <div className="fw-actions">
+                  <Button type="submit" variant="secondary" icon="check">
+                    {`Save ${name}’s usual lunches`}
+                  </Button>
+                </div>
+              </form>
+            );
+          })}
+        </div>
+      </details>
     </section>
   );
 }

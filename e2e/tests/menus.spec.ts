@@ -4,6 +4,7 @@ import { parseMenuCsv } from '../../apps/web/lib/menu/csv';
 import { serviceRpc, sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf, weekday } from '../support/day';
 import { withSchoolDays } from '../support/school';
+import { unfold } from '../support/fold';
 import { signIn } from '../support/session';
 
 // [MENU-01..05][MEAL-05] School menus on the preview (WP-27, D-79), as Alex of the demo family. The
@@ -236,6 +237,8 @@ test('[MEAL-05][US-704] Maya’s buy day shows the menu her lunch comes from', a
     const words = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][weekday(school)]!;
     await asAlexOnMenus(page);
     await page.goto(`/admin/meals?week=${next}`);
+    // [MEAL-04][D-98] The usual week is folded at first (WP-75).
+    await unfold(page.getByRole('region', { name: 'School lunch' }).locator('details.fw-fold'));
     const usual = page.getByRole('form', { name: 'Maya’s usual lunches' });
     await usual.getByRole('combobox', { name: words }).selectOption('buy');
     await usual.getByRole('combobox', { name: 'School menu' }).selectOption({ label: BIRCH });

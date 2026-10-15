@@ -71,6 +71,7 @@ export default async function MealsPage({
         }))}
       addAt={addAt}
       editId={p.edit ?? null}
+      openDay={p.open ?? null}
       newId={crypto.randomUUID()}
       lunch={lunch}
       menus={menus}

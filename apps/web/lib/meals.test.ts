@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   copyWords,
+  daySet,
+  daySetWords,
   entryName,
   type MealRow,
   mealRefusal,
@@ -137,6 +139,43 @@ describe('the week', () => {
     expect(copyWords({ copied: 1, skipped: 0, replaced: 3 })).toBe(
       'Copied 1 thing from last week. 3 meals were replaced.',
     );
+  });
+});
+
+describe('[MEAL-14] a folded day: X of Y set, or a check', () => {
+  const at = (slot: PlanEntry['slot'], n: number): PlanEntry => ({
+    id: `f2e10000-0000-4000-8000-00000000010${n}`,
+    planDate: '2026-10-15',
+    slot,
+    sortOrder: n,
+    memberIds: [],
+    mealId: null,
+    freeText: `Meal ${n}`,
+    notes: null,
+  });
+  const day = (...entries: PlanEntry[]) => planByDay(entries, ['2026-10-15']).get('2026-10-15')!;
+
+  it('[MEAL-14] an empty day is 0 of 4 set, not complete', () => {
+    expect(daySet(day())).toEqual({ set: 0, of: 4, complete: false });
+    expect(daySetWords(daySet(day()))).toBe('0 of 4 set');
+  });
+
+  it('[MEAL-14] counts meal types with a meal, not entries: two lunches are one set', () => {
+    const d = day(at('breakfast', 1), at('lunch', 2), at('lunch', 3));
+    expect(daySet(d)).toEqual({ set: 2, of: 4, complete: false });
+    expect(daySetWords(daySet(d))).toBe('2 of 4 set');
+  });
+
+  it('[MEAL-14] every meal type set is complete: the check', () => {
+    const d = day(at('breakfast', 1), at('snack', 2), at('lunch', 3), at('dinner', 4));
+    expect(daySet(d)).toEqual({ set: 4, of: 4, complete: true });
+  });
+
+  it('[MEAL-14] Y is the meal types the day shows', () => {
+    const d = day(at('lunch', 1), at('dinner', 2));
+    expect(daySet(d, ['lunch', 'dinner'])).toEqual({ set: 2, of: 2, complete: true });
+    expect(daySet(d, ['breakfast', 'dinner'])).toEqual({ set: 1, of: 2, complete: false });
+    expect(daySet(d, [])).toEqual({ set: 0, of: 0, complete: false });
   });
 });
 

@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.27: the meal week folded (WP-75, D-114): each day of **Meals** closed at first with "2 of 4 set" or a check, then **Add to the plan**, **Copy last week** and the usual lunch week, each closed until tapped (A15, B1.15).
 > v0.26: the lunch picks one tap from Home (WP-73, D-113): **School lunches** on Home says whose days still need a choice, and **Pick lunches** opens the lunch week on the child chosen last (A2, B1.1).
 > v0.25: the lunch week as a list of days (WP-74, D-112): **School lunch** on **Meals** shows one child's Monday to Friday, each day closed at first with a check once it's set, opened to Buy or Bring and the day's menu (A15, B1).
 > v0.24: Edit on a planned meal (WP-76, D-111): **Change** offers **Edit**, which opens the meal filled in, and **Remove**.
@@ -830,17 +831,22 @@ Choose **Edit** (the meal's name) to change one. **Archive** takes a meal out of
 ![The meal library on a phone: the Add a meal form, then Our meals with what each is good for and a recipe link.](guide/img/admin-meal-library-phone.jpg "The meal library, on a phone")
 
 #### Plan the week
+<!-- covers: US-711 -->
 
-**Meals** shows the week, each day with its **Breakfast**, **Snack**, **Lunch** and **Dinner**. **Last week** and **Next week** move between weeks; **This week** comes back. Today is marked.
+**Meals** shows the week, a day under the other. **Last week** and **Next week** move between weeks; **This week** comes back.
 
-1. Choose **Add** beside a meal of a day (or go to **Add to the plan**): the **Day** and **Meal** are filled in.
+- **Each day, closed:** the weekday, the date and how many of its four meals (**Breakfast**, **Snack**, **Lunch**, **Dinner**) have something planned, like "2 of 4 set", or a check once all four have. Today is outlined, open or closed.
+- **Open a day:** tap it to see its meals, each with what's planned, **Add** and **Change**. Tap it again to close it. After you add, edit, move or remove one of its meals, the day stays open.
+- Under the days come **Add to the plan**, **Copy last week** and **School lunch**. **Add to the plan**, **Copy last week** and the lunch **Usual week** are closed until you tap them.
+
+1. Open a day and choose **Add** beside one of its meals: **Add to the plan** opens with the **Day** and **Meal** filled in. (Or tap **Add to the plan** and choose them.)
 2. Under **What**, choose **From the library** and pick a meal (those good for that meal of the day come first), or **Something else** and write it in ("Leftovers", "Out for Grandma's birthday").
 3. Under **For**, leave **Everyone** ticked, or tick each person it's for: one (a snack after school) or any mix (fish fingers for the children, sandwiches for Maya and Sam). Ticking a person unticks **Everyone**; ticking everyone, or nobody, is **Everyone**.
 4. Add a **Note** if you like ("Make extra for lunch"), then choose **Add to the plan**.
 
 Each thing planned names who it's for, unless it's for everyone. A meal of the day can hold several things, like two snacks. They show in the order you added them.
 
-![The week's meals on a laptop: each day across, with its breakfast, snack, lunch and dinner; Wednesday marked today with two snacks.](guide/img/admin-meals-laptop.jpg "The week's meals, on a laptop")
+![The week's meals on a laptop: Sunday to Saturday a row each with "1 of 4 set" or a check, Wednesday, today, outlined and open with its breakfast, snack, lunch and dinner and two snacks; then Add to the plan, Copy last week and School lunch, closed.](guide/img/admin-meals-laptop.jpg "The week's meals, on a laptop")
 
 #### Change a planned meal
 
@@ -854,7 +860,7 @@ Choose **Change** on a planned meal:
 
 #### Copy last week
 
-Under **Copy last week**, choose what happens where this week already has something planned for a meal of a day: **Keep it**, or **Replace it with last week's**. Then choose **Copy last week here**. Everything planned last week is copied to the same days this week; meals last week left empty stay as they are this week. Each copy is for the same people, and is its own, so changing one doesn't change last week.
+Tap **Copy last week** to open it, then choose what happens where this week already has something planned for a meal of a day: **Keep it**, or **Replace it with last week's**. Then choose **Copy last week here**. Everything planned last week is copied to the same days this week; meals last week left empty stay as they are this week. Each copy is for the same people, and is its own, so changing one doesn't change last week.
 
 > **Tip:** Plan a good week once, then copy it forward and change only what's different.
 
@@ -866,7 +872,7 @@ Under **Copy last week**, choose what happens where this week already has someth
 - **Each day, closed:** the weekday, the date, **Buy** (school lunch) or **Bring** (a packed lunch), and a check once the day is set. A Bring day is set as it is; a Buy day once there is a pick in every "Choice of" section of the day's menu (the entree, the milk). Today is outlined. A day without school is greyed and says **No school**; it doesn't open.
 - **Change one day:** tap it to open it, then tap **Buy** or **Bring** at its top. A day not as the usual says **Changed from the usual**; tap the other one to put it back.
 - **Pick a Buy day's lunch:** open the day. Its menu is listed a section at a time: one in a section that says **pick one**, any number in one that says **any**. What is picked is ticked and highlighted. Tap **Save** (their name)**'s picks**.
-- **The usual week:** under **Usual week**, choose **Buy** or **Bring** for each weekday for a child, then **Save** (their name)**'s usual lunches**. A day you had changed to what is now the usual stops being a change.
+- **The usual week:** closed, **Usual week** shows a line per child ("Maya: Mon Bring · Tue Bring · Wed Bring · Thu Bring · Fri Buy"). Tap it, choose **Buy** or **Bring** for each weekday for a child, then **Save** (their name)**'s usual lunches**. A day you had changed to what is now the usual stops being a change.
 
 A chore can follow these days, like "Pack lunch" only when a child brings: see [Chores on lunch days](#chores-on-lunch-days).
 
@@ -880,7 +886,7 @@ A day a child buys can show what the school serves that day. Open **School menus
 - **From a file**, for a school whose menu comes another way: a spreadsheet saved as CSV with a row for each item, and the columns **date** (like 2027-02-01, or 2/1/2027), **item** and, if you like, **section** (Choice of Entree, Choice of Milk). An item can hold choices: "Beef tacos or Chicken wrap with tortilla chips" is two options, the wrap with its chips. A date with no item means no lunch that day, and its section says why (Presidents' Day). **Look at the file** shows how many days it holds and the first few; **Load** stores them.
 - **Typed in**, a day at a time with **Add a day**.
 
-Then, under **Usual week** on **Meals**, choose each child's **School menu**. A day they buy shows what's served, a line a section (**Entree**: Beef tacos or Chicken wrap with tortilla chips; **Fruits & Vegetables**: Corn, Orange; **Milk**: 1% milk or Chocolate milk), or **No menu yet**.
+Then, under **Usual week** on **Meals** (tap it to open it), choose each child's **School menu**. A day they buy shows what's served, a line a section (**Entree**: Beef tacos or Chicken wrap with tortilla chips; **Fruits & Vegetables**: Corn, Orange; **Milk**: 1% milk or Chocolate milk), or **No menu yet**.
 
 FamilyWise reads a menu as the school writes it: each section's options, "or" between them, and "with" (or "and" after it) for what comes with one: "Fish sticks with Fries and Coleslaw" is one option with two sides. A section's name is shortened to show it ("Choice of Entree" shows as **Entree**, "Fruits & Vegetables offered" as **Fruits & Vegetables**), and the **Entree** is the section whose name says entree or main (else the first). A menu with no sections lists what's served with commas, as before.
 
@@ -1156,16 +1162,16 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | Invite | **Join** (household): **Join household**, or **Create account and join**, or **Sign out** to switch account. |
 
 #### B1.15 Meals
-<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-708 US-804 -->
+<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-708 US-804 US-711 -->
 
 | Part | What it shows or does |
 |---|---|
 | **Meal library** | Opens the library. |
 | **Last week** · **This week** · **Next week** | Move between weeks. |
-| The week | Each day (today marked) with **Breakfast**, **Snack**, **Lunch** and **Dinner**: what is planned in order, with each person it's for and its note; **Change** (**Earlier**, **Later**, **Remove**); **Add**. |
-| **Add to the plan** | **Day**, **Meal**, **What** (**From the library** or **Something else**), **For** (**Everyone**, or a tick per person; "For Maya and Leo." under it), **Note (optional)**, **Add to the plan**. |
-| **Copy last week** | **Keep it** or **Replace it with last week's**, **Copy last week here**. |
-| **School lunch** | **School menus**. The children's faces (a dot: a day still to pick), then one child's Monday to Friday, each day closed: weekday, date, **Buy** or **Bring**, a check once set, **Today**, **Waiting** for a child's change; **No school**, greyed, on a day without. Opened: **Buy** · **Bring**, **Changed from the usual** or **Changed on the board**, **Buy? waiting** (or **New picks waiting**) linking to **Today**. **Usual week**, Monday to Friday, and **School menu**, **Save** (name)**'s usual lunches**. |
+| The week | Each day closed at first: weekday, date, **Today** (outlined), and "X of 4 set" or a check. Opened: **Breakfast**, **Snack**, **Lunch** and **Dinner**, what is planned in order, with each person it's for and its note; **Change** (**Earlier**, **Later**, **Edit**, **Remove**); **Add**, which opens **Add to the plan** filled in. |
+| **Add to the plan** | Closed at first: its header and **Add a meal**. Opened: **Day**, **Meal**, **What** (**From the library** or **Something else**), **For** (**Everyone**, or a tick per person; "For Maya and Leo." under it), **Note (optional)**, **Add to the plan**. |
+| **Copy last week** | Closed at first. Opened: **Keep it** or **Replace it with last week's**, **Copy last week here**. |
+| **School lunch** | **School menus**. The children's faces (a dot: a day still to pick), then one child's Monday to Friday, each day closed: weekday, date, **Buy** or **Bring**, a check once set, **Today**, **Waiting** for a child's change; **No school**, greyed, on a day without. Opened: **Buy** · **Bring**, **Changed from the usual** or **Changed on the board**, **Buy? waiting** (or **New picks waiting**) linking to **Today**. **Usual week**, closed at first with a line per child ("Maya: Mon Bring · …"); opened, Monday to Friday and **School menu**, **Save** (name)**'s usual lunches**. |
 | Picks | A Buy day opened: its menu a section each (**pick one** or **any**), the picks ticked and highlighted (**Menu changed: look again** if the menu no longer has one), **Save** (name)**'s picks**; **No menu yet**, or the menu as text when it has nothing to pick. |
 
 **The meal library:** **Add a meal** (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe link (optional)**, **Icon**, **Add meal**); **Our meals**, each with what it's good for and its recipe, **Edit** and **Archive**; **Archived**, with **Restore**.
