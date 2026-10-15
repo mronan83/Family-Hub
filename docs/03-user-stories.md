@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.45: US-709, US-710, US-711 and US-1010 added at the owner's request (WP-72 to WP-75, D-97, D-98): the lunch picks one tap from Home; the lunch week as a list of days; the meal planner's days folded; a board laid out for its screen's shape. US-701 gains Edit on a planned meal (WP-76, MEAL-15).
 > v0.8.44: US-707 as built (WP-49, D-95): a child's change waits for a parent on Today, picks included; the cut-off; Done; the picks in place of the options.
 > v0.8.43: US-804 as built (WP-64, D-94): the home screen's entree options with their sides, on one line, a tap opening the whole menu; the Meals screen's menu a row a section. US-707 gains the owner's answers at WP-64's mockup (D-94): pick one where a section says "Choice of"; Monday to Friday after a Sunday; today until a morning cut-off; a parent approves a change.
 > v0.8.42: US-1009 added at the owner's request (WP-58's scope, built as WP-68, D-93): a board set to portrait for a screen hung taller than it is wide.
@@ -574,10 +575,11 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 
 ### US-701 — Plan the week
 **As an** admin **I want** to plan breakfast, snack, lunch, and dinner for each day **so that** we stop deciding at 5 pm.
-**Priority:** Must · **Phase:** P2 · **Reqs:** MEAL-01, MEAL-02, MEAL-08
+**Priority:** Must · **Phase:** P2 · **Reqs:** MEAL-01, MEAL-02, MEAL-08, MEAL-15
 - Given a week view with 4 slots × 7 days, when I add a saved meal or free text to a slot, then it shows on that day.
 - Given a day, when I add two snacks, then both display in order.
 - Given a family dinner vs a per-child lunch, when I add entries, then I can scope each to the household or one member.
+- Given a planned meal, when I tap **Change**, then I can choose **Edit** or **Remove**; **Edit** opens the meal's form filled in with what was saved, and after I save, the plan shows my changes and opening it again shows them too (added at the owner's request, WP-76, MEAL-15).
 - As built (WP-25, D-77): **Meals** shows a week (**Last week**, **Next week**), each day's four meals with **Add** and **Change** (**Earlier**, **Later**, **Remove**); **Add to the plan** takes a meal from the library (those good for that meal first) or something written in, for **Everyone** or one person, with a note. The **Meal library** keeps each meal's name, what it's good for, a recipe link and an icon; archived meals keep their place in old plans.
 
 ### US-702 — Copy last week
@@ -635,6 +637,30 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a change still waiting at the morning cut-off (8:00 am unless a parent sets another on **School**), when the cut-off passes, then it is dropped and the day stays as it was (D-95).
 - Given a day I buy, when I look at it, then I pick one option in each section that says "Choice of" (the entree, the milk) and any number in the others (fruits and vegetables) from that day's menu, and the board then shows what I picked instead of every option (D-89, D-94).
 - Given I picked Thursday's lunch, when a parent opens **Meals**, then they see my picks and can change them.
+
+### US-709 — The lunch picks one tap from Home
+**As a** parent **I want** a quick action on the admin app's Home that goes straight to the school lunch picks **so that** choosing lunches isn't buried in the admin app (added at the owner's request).
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-12
+- Given it is Monday to Friday, when I tap the lunch quick action on Home, then the lunch week opens on this week.
+- Given it is Saturday or Sunday, when I tap it, then it opens on the coming week.
+- Given two or more children, when it opens, then it shows the child I chose last, and a row of the children's faces and names lets me switch; a child with days still to choose has a dot.
+- Given one child, when it opens, then there is no row to switch.
+
+### US-710 — The lunch week as a list of days
+**As a** parent **I want** the lunch week as a list of school days I can open one at a time **so that** I can choose lunches on my iPhone without scrolling sideways (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** MEAL-13
+- Given the lunch week on any screen, when it opens, then Monday to Friday are listed one under another, all closed, and nothing scrolls sideways.
+- Given a closed day, when I look at it, then I see its weekday, its date for the week shown, **Buy** or **Bring**, and a checkmark when its lunch is chosen: on a Buy day, a pick in every "Choice of" section (the entree, the milk); on a Bring day, as soon as Bring is set.
+- Given I open a day, when it expands, then I can change Buy or Bring at the top, and the day's menu sections list their options, with my picks checked and highlighted.
+- Given a day without school, when I look at it, then it is greyed, says **No school**, and doesn't open.
+- Given today is in the week, when its day is open or closed, then it is outlined.
+
+### US-711 — A meal week that fits my phone
+**As a** parent **I want** the meal planner's days to fold away **so that** the week takes less room (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** MEAL-14
+- Given the meal planner, when it opens, then every day is closed, showing its weekday, its date for the week shown, and "2 of 4 set" (the meals that day has a meal for, of the meals it shows), or a checkmark when all are set.
+- Given I open a day, when it expands, then I see its meals and what is planned as today, with **Add** and **Change**.
+- Given today is in the week, when its day is open or closed, then it is outlined as it is now.
 
 ---
 
@@ -831,6 +857,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a board I never set (**Automatic**), when its screen is taller than it is wide, then it shows its portrait layout, and on a wider screen its landscape layout, as before; when the window changes shape, it follows.
 - Given a board set to **Landscape**, when its screen is taller than it is wide, then it stays landscape.
 - Given a portrait board set to Larger, when its words no longer fit side by side, then the parts stack, as they do in landscape.
+
+### US-1010 — A board laid out for its screen
+**As a** parent **I want** the board laid out for the screen it is on, a wall panel, a laptop or a tablet held either way **so that** it reads well everywhere, rather than one wall-panel layout shrunk to fit (added at the owner's request).
+**Priority:** Should · **Phase:** P3 · **Reqs:** BRD-11
+- Given a board on an iPad in landscape (1180×820), when the home screen shows, then it is laid out for that shape at the board's sizes, with nothing overlapping or clipped and no sideways scroll.
+- Given the same iPad turned to portrait (820×1180), when the screen turns, then the board changes to its tall, narrow layout without a reload.
+- Given a 32" panel or a 24" screen, when the board shows, then it looks as it does now.
+- Given the board on an iPhone (WP-58) or a board set to portrait (WP-68), when it shows, then it uses the same layouts.
 
 ---
 

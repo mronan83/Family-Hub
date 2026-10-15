@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.112: WP-71 to WP-76 added at the owner's request, recorded only (D-97, D-98), and WP-77 (WP-49's lunch test, root cause) added and done in the same change: the board home on an iPad (a bug); board layouts that adapt to the screen's shape, which WP-58 and WP-68 now build on, so WP-58 waits on it; the lunch picks one tap from Home; the lunch week as a list of days; the meal planner's days folded; Edit on a planned meal (a bug). WP-73 to WP-76 wait on one mockup. "Next, in order" is the owner's to set.
 > v0.8.111: WP-70 (the board calendar's refresh timing, root cause) added at the owner's request and done in the same change (D-96): the test's own 3 s check looked last at about 2.8 s, fixed in the test; a board read after a change that failed or hung was never made again, fixed in the app; the calendar now says when it has finished drawing, and the month's test waits for it. WP-65's tally restarts with it.
 > v0.8.110: WP-49 done: next week's lunches picked on the board, with the day's choices (D-95; the parent's approval screen's mockup approved by the owner). A child's change, buy or bring and the picks alike, waits for a parent on Today until the morning cut-off (8:00 am by default, set on School).
 > v0.8.109: WP-64 done: the school menu by section, as options (D-94; mockup approved with WP-49's choice screens). The owner's answers for WP-49 recorded in its section; WP-49 is ready, its parent's approval screen and the morning cut-off's time to settle first.
@@ -214,7 +215,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-55 | The household's AI provider in Settings | P3 | M | WP-51 | Ready |
 | WP-56 | The school calendar from a document | P3 | L | WP-54, WP-55, SPIKE-06 | Queued |
 | WP-57 | Home at a glance; Family options in Settings | P3 | M | WP-51, WP-21, WP-27 | Done (PR #64) |
-| WP-58 | The board on an iPhone, from the admin app | P3 | L | WP-48, WP-20, WP-57 | Ready (iPhone mockup approved; its portrait boards, WP-68, need their own) |
+| WP-58 | The board on an iPhone, from the admin app | P3 | L | WP-48, WP-20, WP-57, WP-72 | Queued: WP-72 first (iPhone mockup approved; its portrait boards, WP-68, need their own) |
 | WP-59 | A child's own phone, paired as their board | P3 | M | WP-58, WP-05 | Queued (when a child has a phone) |
 | WP-60 | Testing made reliable: a test database | P3 | M | WP-41 | Merged (PR #65); a week's tally to record |
 | WP-61 | Chores on lunch days | P2 | S | WP-26, WP-43 | Done (PR #66) |
@@ -224,8 +225,15 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-65 | First-attempt e2e passes: CAL-05 and DEV-06 | P3 | S | WP-60 | Merged; its tally restarts with WP-70 (0 of 5) |
 | WP-66 | The docs pages republished by a sub-agent | P3 | S | WP-01 | Done |
 | WP-67 | Stale lines in `00-README` | P3 | S | WP-01 | Done |
-| WP-68 | WP-58's second part: a board in portrait | P3 | L | WP-58, WP-53, WP-47, WP-48, WP-52 | Queued (portrait mockup first) |
+| WP-68 | WP-58's second part: a board in portrait | P3 | L | WP-58, WP-53, WP-47, WP-48, WP-52, WP-72 | Queued (portrait mockup first) |
 | WP-70 | The board calendar's refresh timing, root cause | P3 | S | WP-65, WP-23 | Done |
+| WP-71 | The board home on an iPad: badges over chores, the rail clipped | P3 | S | WP-47, WP-48 | Ready |
+| WP-72 | Board layouts that adapt to the screen's width and shape | P3 | L | WP-71, WP-53, WP-52 | Queued (mockup first) |
+| WP-73 | The lunch picks one tap from the admin app's Home | P3 | S | WP-57, WP-74 | Queued (mockup first, with WP-74 to WP-76) |
+| WP-74 | The lunch week as a list of days | P2 | M | WP-49, WP-64 | Ready (mockup first, with WP-73, WP-75 and WP-76) |
+| WP-75 | The meal planner's days as collapsible sections | P2 | S | WP-25, WP-62, WP-76 | Queued (mockup first, with WP-73, WP-74 and WP-76) |
+| WP-76 | Edit on a planned meal | P2 | S | WP-25, WP-62 | Ready (mockup first, with WP-73 to WP-75) |
+| WP-77 | WP-49's lunch test, root cause: its time limit, and the board's lunch week read again | P2 | S | WP-49 | Done |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -375,16 +383,33 @@ flowchart LR
     WP27 --> WP64[WP-64 School menu by section]
     WP28 --> WP64
     WP64 --> WP49
+    WP49 --> WP74[WP-74 Lunch week as a list]
+    WP64 --> WP74
+    WP25 --> WP76[WP-76 Edit a planned meal]
+    WP62 --> WP76
+    WP25 --> WP75[WP-75 Meal days folded]
+    WP62 --> WP75
+    WP76 --> WP75
+    WP49 --> WP77[WP-77 Lunch test, root cause]
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP65 --> WP70[WP-70 Calendar refresh timing]
     WP23 --> WP70
     WP01 --> WP66[WP-66 Docs pages by a sub-agent]
     WP01 --> WP67[WP-67 Stale README lines]
     WP58 --> WP68[WP-68 A board in portrait]
+    WP72 --> WP68
+    WP72 --> WP58
     WP53 --> WP68
     WP47 --> WP68
     WP48 --> WP68
     WP52 --> WP68
+    WP47 --> WP71[WP-71 Board home on an iPad]
+    WP48 --> WP71
+    WP71 --> WP72[WP-72 Layouts by screen shape]
+    WP53 --> WP72
+    WP52 --> WP72
+    WP57 --> WP73[WP-73 Lunch picks from Home]
+    WP74 --> WP73
     WP55 --> SP06[SPIKE-06 AI reads a document]
     WP54 --> WP56[WP-56 School calendar from a document]
     WP55 --> WP56
@@ -999,6 +1024,7 @@ flowchart LR
 **Phase:** P3 · **Size:** M · **Depends on:** WP-51 · **Reqs:** NFR-16
 - The owner sees drop-downs, buttons and fields across the app, mostly in the admin app, spaced badly or overlapping. First an automated sweep: every admin page and board screen, filled with the demo family's data (and with long names and empty states), at 390, 768 and 1280 px wide (the board at its 1920×1080 canvas) in both themes, checking that no two controls overlap, nothing is clipped or scrolls sideways, and controls in a row share a baseline and a height. Then every finding is fixed at its cause (shared form and toolbar styles before single pages), with screenshots before and after.
 - The sweep stays in the UI suite, so CI fails a change that brings an overlap back.
+- **iPad shapes** (added at the owner's request with WP-71): the sweep also checks the board at 1180×820 and 820×1180, at Standard, Larger and Largest (the stacked layout), not only at its 1920×1080 canvas.
 - **Done when:** the sweep finds nothing on any page at any of the three widths in either theme, and it runs in CI.
 
 ### WP-54 — Short school days: early dismissal and late start
@@ -1032,11 +1058,12 @@ flowchart LR
   - **Tests:** pgTAP `390_week_start_change`, `395_no_school_today`; unit `home-alerts.test.ts`, `schedule.test.ts`; the UI suite's `home.spec.ts` (with an overlap check) and `admin-menu.spec.ts`; e2e `home.spec.ts`, with `auth`, `admin-day` and `weather` now using Family options.
 
 ### WP-58 — The board on an iPhone, from the admin app
-**Phase:** P3 · **Size:** L · **Depends on:** WP-48, WP-20, WP-57 · **Reqs:** BRD-08
+**Phase:** P3 · **Size:** L · **Depends on:** WP-48, WP-20, WP-57, WP-72 · **Reqs:** BRD-08
 - The owner asked for an iPhone-friendly board view they can switch to from the admin app and back. Mockup approved (the "Board on iPhone" canvas): **Board view** at the top of the admin menu; on the phone, the chosen board's Home cards stacked in its own order, the calendar as a list, a tab bar (Home, Chores, Calendar, Meals), the family across the top, and **Admin** to go back.
 - Signed in as the admin, not as a board, so there is no pairing and no second sign-in; the server shows **Admin** only to an admin. Everything a board does works: a parent's check-off counts at once and is recorded as done by that parent for the child, with Undo; a reward is **Given** (the stars taken at once) rather than asked for; requests waiting can be answered there. A board picker mirrors one board's layout and calendars; the phone remembers the choice.
 - Phone sizes follow the admin app (16–17 px text, controls of 44 px or more), not the wall board's BRD-03 sizes, which are for reading across a room.
 - **Orientation** (added at the owner's request, 14 October, D-93): WP-58's scope grows to setting each board to portrait or landscape, for example a 24" Dell monitor turned to portrait, since the phone already needs each board screen stacked for a tall screen. Together that is more than one L, so it is split: this item is the iPhone, as approved, and **WP-68** is the portrait boards (the setting, the fit and every board screen at the wall board's sizes), which follows it. The approved mockup covers the iPhone only; portrait boards need their own mockup, approved before WP-68 is built.
+- **Builds on WP-72** (added at the owner's request with WP-72, D-97): the phone's layouts use WP-72's layout system rather than solving layout alone, so WP-58 now waits on WP-72. The approved iPhone mockup stands.
 - **Done when:** on the preview, an admin opens Board view on a 390 px phone, checks off a child's chore that the wall board shows done within 3 s, gives a reward, switches boards, and returns to the admin app; the UI suite shows each screen on a phone in Day and Evening with nothing overlapping.
 
 ### WP-59 — A child's own phone, paired as their board
@@ -1118,7 +1145,7 @@ flowchart LR
 - As built: `00-README.md`'s Document map links the User guide page with the other five, and its table says 103 stories, 115 requirements, 67 work packages and 6 spikes; Build order points to `05` §4 for spikes.
 
 ### WP-68 — WP-58's second part: a board in portrait
-**Phase:** P3 · **Size:** L · **Depends on:** WP-58, WP-53, WP-47, WP-48, WP-52 · **Reqs:** BRD-10
+**Phase:** P3 · **Size:** L · **Depends on:** WP-58, WP-53, WP-47, WP-48, WP-52, WP-72 · **Reqs:** BRD-10
 - Added at the owner's request (D-93), as part of WP-58's scope: "I'd like to be able to set the orientation for a given dashboard in portrait or landscape", for example the 24" Dell monitor turned on its side, taller than it is wide. WP-58 and this together are more than one L, so the portrait boards are split out here and follow WP-58 (see WP-58's section). Today every board is laid out at 1920×1080 (D-16) and zoomed to its screen (WP-47), and the board's app manifest is fixed to landscape (WP-37); on a tall screen the board is a strip across the middle.
 - **The setting:** **Set orientation** on Boards, beside the text size: **Automatic** (the default: the board follows its screen's shape, portrait when taller than wide, and decides again on every resize, so a turned monitor needs no setting; added at the owner's request), **Landscape** or **Portrait** (fixed, whatever the shape); `board_config.orientation` (checked; none is Automatic), carried by the snapshot and kept in `localStorage`, so the first paint, even offline, is in the board's orientation. A change reaches the board without a reload.
 - **The fit:** a portrait board zooms a 1080×1920 logical canvas to its screen (the smaller of width ÷ 1080 and height ÷ 1920, times the text size), with WP-47's limits and text sizes. The board's manifest stops forcing landscape. The picture is turned by the screen's own computer (its display setting), not by the board; on the Pi that is the kiosk's display configuration (WP-14, WP-34, blocked on hardware).
@@ -1126,6 +1153,7 @@ flowchart LR
 - **The layout sweep (WP-53)** gains the portrait canvas, in both themes and at each text size.
 - WP-58's mockup was approved for the iPhone only. Portrait boards need their own mockup, on the demo family, approved before this is built.
 - Why these dependencies: WP-58 builds the stacked layouts this reuses; WP-53's sweep is what proves portrait has no overlaps; WP-47, WP-48 and WP-52 built what this lays out again.
+- **Builds on WP-72** (added at the owner's request with WP-72, D-97): the portrait layouts use WP-72's layout system, so WP-68 now waits on WP-72 too.
 - **Done when:** pgTAP: `board_config.orientation` accepts only its three values and the snapshot carries it; unit tests on the orientation chosen from the setting and the screen's shape; the UI suite and the layout sweep: every board screen in portrait at 1080×1920 in Day and Evening, at Standard and Largest, with nothing overlapping, no sideways scroll, no page scroll on Home at Standard, and the board's floors (`e2e/support/floors.ts`); a landscape board unchanged; in the UI suite, an Automatic board turns portrait when its window is made taller than wide and back again, and a board set to Landscape does not; on the preview, Alex sets a paired board to Portrait on Boards and, without a reload, a 1080×1920 window shows the portrait Home, still portrait after a reload; on that board a check-off on Chores shows on the admin app within 3 s, the Calendar's Week shows the hours to scale, and a child asks for a reward in the shop.
 
 ### WP-70 — The board calendar's refresh timing, root cause
@@ -1137,6 +1165,60 @@ flowchart LR
 - As built, cause 2, **in the app** (CAL-05, DEV-05): the board's read after a change had no second chance. `board_snapshot()`'s errors were dropped (the board waited for the next change), and a read that never came back held up every read after it (`coalesce()` waits for the one in flight). A change the board had heard could stay off its screen until the four-minute read (DEV-08). That matches run 213's retry, where both changes were heard and no read came back in 5 s. Run 213 didn't record whether its read failed, hung, or ran late after a late change, so the board now records each stage. Fix in `apps/web/lib/live.ts` and the board (`board.tsx`): `readSoon()` makes a failed read again at once, and starts another beside a read still out after 4 s (`READ_DEADLINE_MS`); the first back wins and the rest are aborted (`abortSignal()`); up to three reads (D-96; e2e's `retries` and the 3 s budget unchanged). Its first version aborted a read still out at 4 s and started again; on this pull request's first e2e run (a slow test database) that kept the board shop's request on "Sending…", so a slow read is now never given up. The status shows `data-heard-at`, `data-read-from`, `data-read-to` and `data-read-failed`, and both calendar tests print them with every result: when the last change was heard, and when the last read began and came back, in ms from Save. Vitest `lib/board.test.ts`: a failed read made again; one still out at 4 s joined by another, the first back winning; a slow read still first back; reads that never come back given up after 16 s; a hung read no longer holding back the change heard after it; offline, three reads and then the board waits.
 - As built, cause 3, **in the app and the test** (US-503): the calendar didn't say when it had finished drawing. A month beyond the snapshot draws twice: first the snapshot's days, then the whole month when `board_calendar()` comes back (CAL-04). The page gave no sign of which, so the test read "+N more" from the first drawing and clicked after the second, by then a different day once the 10th fell outside the snapshot (from the 12th of a month). The follow-up's wait for the 10th worked only because the fixture puts eight events there. Fix: `shownCalendar()` in `apps/web/lib/board-calendar.ts` (used by `useCalendar()`) also gives `loading` while a range's first read is out, and the Calendar screen is `aria-busy` until it lands (or fails, offline). The UI suite's US-503 waits for that, then reads the first day with "+N more", whatever the date; its 2 s budget is unchanged. The Day view it opens waits the same way, and the offline test checks that a failed read leaves the screen not busy. Vitest `lib/board-calendar.test.ts`: busy while the first read is out, including after another range's read; not busy once read, or once failed; never busy for dates in the snapshot. No app race was found under it: a tap during the first drawing opens the day tapped, which reads its own range.
 - WP-65's tally restarts with this pull request (D-96; recorded in WP-65's section).
+
+### WP-71 — The board home on an iPad: badges over chores, the rail clipped
+**Phase:** P3 · **Size:** S · **Depends on:** WP-47, WP-48 · **Reqs:** BRD-08, BRD-09, NFR-16
+- Added at the owner's request, as a bug. On the owner's iPad ("Matt's iPad"), the board home in its stacked layout (under 1800 board px, so at Larger or Largest text on a tablet): the chore list's points badges (+2, +1, +5) sit over the next chore's title; the rail's words are cut off ("Calenda") and its icons are cut at the left edge.
+- Found while recording this (to confirm in the build): a chore row has a fixed height (`.fw-dash__row`, 104 px) that its title (40 px), gap (4 px) and points chip (56 px, the board's touch floor) fill to within 4 px, and nothing clips it, so on the iPad the row's content spills onto the next one; the rail is a fixed 216 px column whose rows put a 48 px icon beside the word, centered, wider than the 192 px inside it, and its `overflow-y: auto` clips both sides. The fix is at the cause: rows that grow with what is in them, and a rail whose entries fit it (the word wraps or shrinks before anything is cut), not a fix for one screen size.
+- **The board's layout checks gain the iPad shapes** (added at the owner's request): the UI suite's board fit (`e2e/ui/board-fit.spec.ts`) checks the home screen at 1180×820 and 820×1180 at Standard, Larger and Largest (the stacked layout), in Day and Evening: no two parts overlapping, no word or icon clipped in the rail, no sideways scroll. Today they check only laptop, 1080p, 4K, ultrawide and 16:10 screens. WP-53's planned sweep, which checks the board only at its 1920×1080 canvas, gains the same shapes.
+- **Done when:** the UI suite fails on `main` at 1180×820 at Larger (badges over the next title, the rail clipped) and passes with the fix, at both iPad shapes and every text size, in both themes; the board at 1920×1080 is unchanged; on the preview, the board home at 1180×820 at Larger shows each chore's badge under its own title and the whole word "Calendar" in the rail.
+
+### WP-72 — Board layouts that adapt to the screen's width and shape
+**Phase:** P3 · **Size:** L · **Depends on:** WP-71, WP-53, WP-52 · **Reqs:** BRD-11
+- Added at the owner's request: the owner expected the board to be responsive. Today it lays out one 1920×1080 canvas (D-16) and zooms it to the screen (D-73), stacking the home screen under 1800 board px; on an iPad that is the wall panel's layout shrunk to about 0.6 (0.5 in portrait, the zoom's floor), not a layout for a tablet.
+- The board picks a layout from its screen's width and shape, in the board's own px after the text size (D-97): a wall panel or a laptop keeps today's layout; a tablet in landscape and a tablet in portrait each get their own, at the board's sizes (BRD-03), with every board screen laid out for them: the rail and the bar, Home, Chores, the Calendar's views, a person's screen with the shop, Meals, the dialogs, and the pairing, offline and stale screens. The layout follows a change of shape (an iPad turned) without a reload.
+- **WP-58 (iPhone) and WP-68 (portrait boards) build on it**, rather than each solving layout alone: both now depend on WP-72. The phone stays in WP-58 at the admin app's sizes, as its mockup was approved, and the portrait wall board in WP-68; both use WP-72's layout system.
+- **Size:** every shape at once (tablet, phone, portrait wall panel) is more than one L, so it is split three ways: WP-72 (L) is the layout system and the tablet shapes; WP-58 (L) the phone; WP-68 (L) the portrait boards.
+- **Effect on the order (a fact, not a change to "Next, in order"):** WP-58, the next item in the owner's order, now waits on WP-72, which waits on WP-71 and WP-53. Before WP-58 can start: WP-71, WP-53, WP-72's mockup and WP-72.
+- Mockup first: the tablet layouts on the demo family, landscape and portrait, approved by the owner before this is built; the mockup sets where one shape ends and the next begins.
+- **Done when:** unit tests on the layout chosen from width, height and text size; the UI suite and WP-53's sweep: every board screen at 1180×820, 820×1180, 1366×1024 and 1024×1366, at Standard and Largest, in Day and Evening, with nothing overlapping or clipped, no sideways scroll, and the board's floors (`e2e/support/floors.ts`); a 1920×1080 and a 3840×2160 board unchanged; a window turned from 1180×820 to 820×1180 changes layout without a reload; on the preview, the demo family's board on an iPad-sized window shows the tablet home, and a check-off there shows in the admin app within 3 s.
+
+### WP-73 — The lunch picks one tap from the admin app's Home
+**Phase:** P3 · **Size:** S · **Depends on:** WP-57, WP-74 · **Reqs:** MEAL-12
+- Added at the owner's request: "We need a quick actions on the Home Screen in the admin portal that goes straight to the school lunch menu selections where we can select lunches. It's too buried in the admin portal and cumbersome to get to."
+- A quick action on Home (beside Add a meal) opens the lunch week (WP-74): the current week if today is Monday to Friday, the coming week on Saturday and Sunday. It opens on the child chosen last (kept on the device); WP-74's row of children switches, with a dot on a child who still has days without a choice. With one child, there is no switcher (D-98).
+- Admin app only, not the board. One mockup covers WP-73 to WP-76 (and WP-76's Edit and Remove), on the demo family, approved by the owner before any of them is built.
+- **Done when:** unit tests on the week opened for each day of the week; on the preview, Alex taps the quick action on a weekday and lands on this week's lunches, and on a Saturday (the clock set in the test) on next week's, on the child they chose last; the UI suite shows Home with the quick action at 390 and 1280 px in both themes.
+
+### WP-74 — The lunch week as a list of days
+**Phase:** P2 · **Size:** M · **Depends on:** WP-49, WP-64 · **Reqs:** MEAL-13
+- Added at the owner's request: "We need a better way for the lunch menu week to be displayed. Currently when viewing it on an iPhone it's a section that you have to scroll horizontally. I'm thinking we should have a stacked list with the days of the week (not including Saturday or Sunday because there is never school on those days). Each day will be expandable. Each expandable day section will show what day of the week it is, the date (the date will dynamically change based on the week), buy vs bring, and a checkmark if a lunch selection has been chosen or not. When expanded, there will be the lunch menu sections and the available selections within each section. If selections have been made, they will be shown as checked and highlighted."
+- Today **School lunch** on Meals is a table, a row a child and a column a day (`lunch-section.tsx`), which scrolls sideways on a phone. It becomes a stacked list, on every screen size, of one child's Monday to Friday, with the children's faces and names in a row at the top (none for a single child), opening on the child chosen last, a dot on a child with days still without a choice (D-98).
+- **All days start collapsed.** Collapsed, a day shows its weekday, its date (following the week shown), **Buy** or **Bring**, and a checkmark when its selection is complete: on a Buy day when every "Choice of" section (the entree, the milk) has a pick; on a Bring day as soon as Bring is set. Expanded: **Buy** or **Bring** can be changed at the top, and the day's menu sections are listed with their options (MENU-06); chosen options are checked and highlighted. A school closure stays in the list, greyed, says **No school**, and doesn't expand. Today stays highlighted or outlined, collapsed or expanded. Picks and changes save as they do now (WP-49), and a child's change waiting for a parent still shows as waiting.
+- Admin app only, not the board. One mockup covers WP-73 to WP-76, on the demo family, approved by the owner before any of them is built.
+- **Done when:** unit tests on a day's completeness (Buy with and without each "Choice of" pick, Bring, no school); on the preview, Alex opens the lunch week on a 390 px phone with nothing scrolling sideways, every day collapsed, expands a Buy day, picks an entree and a milk and sees its checkmark, sets a day to Bring and sees its checkmark, and finds a closure greyed as "No school"; the UI suite at 390, 768 and 1280 px in both themes, collapsed and expanded, today outlined.
+
+### WP-75 — The meal planner's days as collapsible sections
+**Phase:** P2 · **Size:** S · **Depends on:** WP-25, WP-62, WP-76 · **Reqs:** MEAL-14
+- Added at the owner's request: "The meal planner also needs to be updates to save real estate. each day section should be expandable section. The expandable section will show what day of the week it is, the date (the date will dynamically changed based on the week), and a dynamic count of meals set (example, if there are 4 meals for a day and only 2 are set, it will show 2 of 4 set. If all meals are set, a checkmark is shown. When expanded, it will show the meal types like it does currently and what the set meals are like it does currently. There will also be an add ability like there is now. You should still be able to change a meal as well. The current day should still be highlighted/outlined like it currently is, expanded or collapsed."
+- **All days start collapsed.** Collapsed, a day shows its weekday, its date (following the week), and "X of Y set", where Y is the meal types shown for that day and X how many have a meal; when all are set, a checkmark instead (D-98). Expanded: the meal types and their meals as today, **Add** as today, and every meal can still be changed (**Change**, with WP-76's **Edit** and **Remove**). Today stays highlighted or outlined as it is now, collapsed or expanded.
+- Admin app only, not the board. One mockup covers WP-73 to WP-76, on the demo family, approved by the owner before any of them is built.
+- **Done when:** unit tests on "X of Y set" and the checkmark; on the preview, Alex opens Meals with every day collapsed, sees "2 of 4 set" on a day with two meals, adds the other two from the expanded day and sees the checkmark, and edits a meal there; the UI suite at 390 and 1280 px in both themes, collapsed and expanded, today outlined.
+
+### WP-76 — Edit on a planned meal
+**Phase:** P2 · **Size:** S · **Depends on:** WP-25, WP-62 · **Reqs:** MEAL-15
+- Added at the owner's request, as a bug: "Also fix the "change" feature on an existing meal that is entered. Right now all that does is allow me to "remove". There should be an edit capability that opens the set meal allowing me to make changes. Right now I have to delete and re-add… it's a pain in the ass."
+- Today **Change** on a planned meal offers **Earlier** and **Later** (only when its meal has more than one entry) and **Remove**, and nothing edits an entry: the database has `add_meal_entry()`, `move_meal_entry()` and `copy_meal_week()`, and removing is a delete. **Change** offers two options, **Edit** and **Remove** (Earlier and Later stay where a meal has more than one entry). **Edit** opens the meal's form filled in with what was saved (the day, the meal, the library meal or what was written, the people, the note); saving updates the entry in place, keeping its place in order, and opening it again shows the last saved values.
+- Recorded as its own small item, so it can ship ahead of WP-75. Its Edit and Remove choice is in the one mockup for WP-73 to WP-76, approved by the owner before it is built.
+- **Done when:** pgTAP: an entry's update keeps its id and order and replaces its people, and another household can't update it; on the preview, Alex taps **Change** on a planned dinner, chooses **Edit**, finds the form filled in, changes the meal, the people and the note, saves, sees the change on the plan, and opens **Edit** again to find the saved values; the UI suite shows Change's two options and the filled form.
+### WP-77 — WP-49's lunch test, root cause: its time limit, and the board's lunch week read again
+**Phase:** P2 · **Size:** S · **Depends on:** WP-49 · **Reqs:** MEAL-09, MEAL-11
+- Added at the owner's request (15 October: "fix in #80"), and done in the same change as WP-71 to WP-76, whose e2e run it held up. In e2e run 224 (15 October, about 00:42 UTC), WP-49's done-when test in `lunches.spec.ts` failed twice. On the first attempt, Meals in the admin app didn't show Maya's waiting change within 3 s. On the retry, the board stayed on "Pick your lunch" for 15 s after Save. The run before it (223, the same code) also failed this test's first attempt, on Playwright's 30 s test limit, and passed its retry. Every attempt since 00:00 UTC had been slow; earlier first-try passes took 1.1 to 1.5 s. Nothing in the dates was wrong: the admin page, `lunch_week()` and `request_lunch()` all use the household's time zone.
+- **Done when:** this pull request's e2e run passes the test, and a slow or refused change in it says which step was slow.
+- As built, cause 1, **in the test:** the test chained up to five 15 s waits under Playwright's default 30 s limit, so a slow preview ran out the test's time before an assertion could say what was slow (D-92's rule). Fix in `e2e/tests/lunches.spec.ts`: the test has its own 90 s limit; it waits for each POST to `/api/lunches` (Buy, then Save with the picks), checks it answered 200 and reports its time (`lunchPost()`); and the 3 s check on Meals keeps each reload's time and prints them when it misses. MEAL-09's 3 s budget and e2e's `retries` are unchanged.
+- As built, cause 2, **in the app:** the board's Lunches screen read the week once after a change, and a read that failed was dropped, so the screen kept the week from before the change with nothing to say so (the retry's "Pick your lunch"). Fix: `readWeek()` in `apps/web/lib/lunch-picks.ts`, used by `useWeek()` in the board's `lunches-ui.tsx`, reads again after a failed read, 1 s apart, up to three reads, before giving up as before (with no week read yet, the screen says the lunches need the internet); it stops once the screen has moved on. Vitest `lib/lunch-picks.test.ts`: a failed read made again; one read when the first works; null after three, a thrown read counting as failed; no more reads once the screen has moved on.
+- Not known from the run: why the preview was slow after 00:00 UTC (no trace is kept, D-48). The test now reports each step's time, so the next slow run says where.
+
 ---
 
 ## 6. Size summary
@@ -1148,7 +1230,7 @@ flowchart LR
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
-| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64 | Menu adapters and WP-49 are the Ls |
-| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 | WP-56, WP-58 and WP-68 are the Ls |
+| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-77 | Menu adapters and WP-49 are the Ls |
+| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

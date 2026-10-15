@@ -154,7 +154,27 @@ test.afterAll(async () => {
 
 const theDay = () => board.locator(`.fw-lunches__day[data-date="${day}"]`);
 
+/**
+ * The board's next POST to /api/lunches, for `act`: its status and how long it took, so a slow or
+ * refused change says so instead of running out the test's time (WP-77).
+ */
+async function lunchPost(act: () => Promise<void>, what: string) {
+  const started = Date.now();
+  const answer = board.waitForResponse(
+    (r) => r.url().endsWith('/api/lunches') && r.request().method() === 'POST',
+    { timeout: 20_000 },
+  );
+  await act();
+  const res = await answer;
+  const ms = Date.now() - started;
+  report(`MEAL-09 ${what}: /api/lunches answered ${res.status()} in ${ms} ms`);
+  expect(res.status(), `${what}: /api/lunches answered ${res.status()} in ${ms} ms`).toBe(200);
+}
+
 test('[MEAL-09][MEAL-11][US-707] done-when: the item opens Maya’s week; she picks a buy day; Meals shows it within 3 s', async () => {
+  // Up to five waits of 15 s each: the test's limit covers them (D-92), so a slow preview says
+  // which step was slow rather than running out Playwright's 30 s first (WP-77).
+  test.setTimeout(90_000);
   // The item is on the home screen's list; a tap opens her coming week instead of checking it off.
   const open = board.getByRole('button', { name: new RegExp(`^Open ${ITEM}`) }).first();
   await expect(open).toBeVisible({ timeout: 15_000 });
@@ -171,14 +191,14 @@ test('[MEAL-09][MEAL-11][US-707] done-when: the item opens Maya’s week; she pi
   // Admin Meals for the day's week, ready before she taps.
   await admin.goto(`/admin/meals?week=${day}`);
   // Buy, then her picks: an entree, two fruits, a milk.
-  await theDay().getByRole('button', { name: /Buy$/ }).click();
+  await lunchPost(() => theDay().getByRole('button', { name: /Buy$/ }).click(), 'Buy');
   const dialog = board.getByRole('dialog', { name: /^Maya’s lunch on / });
   await expect(dialog).toBeVisible({ timeout: 15_000 });
   await dialog.getByRole('button', { name: 'Wrap e2e with Chips e2e', exact: true }).click();
   await dialog.getByRole('button', { name: 'Corn e2e', exact: true }).click();
   await dialog.getByRole('button', { name: 'Apple e2e', exact: true }).click();
   await dialog.getByRole('button', { name: 'Milk e2e', exact: true }).click();
-  await dialog.getByRole('button', { name: 'Save' }).click();
+  await lunchPost(() => dialog.getByRole('button', { name: 'Save' }).click(), 'Save with picks');
   await expect(theDay()).toContainText('Waiting for a parent', { timeout: 15_000 });
   await expect(theDay()).toContainText('Wrap e2e · Corn e2e, Apple e2e · Milk e2e');
   // The database has it: from here, Meals in the admin app shows it within 3 seconds.
@@ -191,15 +211,26 @@ test('[MEAL-09][MEAL-11][US-707] done-when: the item opens Maya’s week; she pi
     .getByRole('region', { name: 'School lunch' })
     .getByRole('row', { name: /^Maya/ })
     .getByRole('link', { name: 'Buy? waiting' });
-  await expect
-    .poll(
-      async () => {
-        await admin.reload();
-        return waiting.count();
-      },
-      { timeout: 3_000, intervals: [0] },
-    )
-    .toBe(1);
+  // Each reload's time is kept, so a miss says whether the page itself took the 3 s (WP-77).
+  const reloads: number[] = [];
+  try {
+    await expect
+      .poll(
+        async () => {
+          const at = Date.now();
+          await admin.reload();
+          reloads.push(Date.now() - at);
+          return waiting.count();
+        },
+        { timeout: 3_000, intervals: [0] },
+      )
+      .toBe(1);
+  } catch (e) {
+    throw new Error(
+      `Meals in the admin app didn't show it within 3 s; its reloads took ${reloads.join(', ')} ms`,
+      { cause: e },
+    );
+  }
   report(
     `MEAL-09 a change on the board showed on Meals in the admin app in ${Date.now() - saved} ms`,
   );

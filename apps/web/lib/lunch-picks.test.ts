@@ -11,6 +11,7 @@ import {
   menuChanged,
   missingPicks,
   picksWords,
+  readWeek,
   samePicks,
   shownDay,
   togglePick,
@@ -195,5 +196,54 @@ describe('lunches picked on the board', () => {
     expect(cutoffWords('12:30')).toBe('12:30 pm');
     expect(lunchAnswerWords('locked')).toBe('That day can’t change now.');
     expect(lunchAnswerWords('whatever')).toBe('That didn’t save. Ask a grown-up.');
+  });
+});
+
+describe('[MEAL-09] readWeek: a failed read of the lunch week is made again (WP-77)', () => {
+  const noWait = async () => {};
+
+  it('returns the first read that works, after failed ones', async () => {
+    const answers = [null, null, ['week']];
+    let reads = 0;
+    const got = await readWeek(async () => answers[reads++] ?? null, 3, noWait);
+    expect(got).toEqual(['week']);
+    expect(reads).toBe(3);
+  });
+
+  it('reads once when the first read works', async () => {
+    let reads = 0;
+    expect(await readWeek(async () => (reads++, 'week'), 3, noWait)).toBe('week');
+    expect(reads).toBe(1);
+  });
+
+  it('gives null after three failed reads, and a thrown read counts as failed', async () => {
+    let reads = 0;
+    const got = await readWeek(
+      async () => {
+        reads++;
+        throw new Error('network');
+      },
+      3,
+      noWait,
+    );
+    expect(got).toBeNull();
+    expect(reads).toBe(3);
+  });
+
+  it('stops reading once the screen has moved on', async () => {
+    let reads = 0;
+    let gone = false;
+    const got = await readWeek(
+      async () => {
+        reads++;
+        gone = true;
+        return null;
+      },
+      3,
+      noWait,
+      () => gone,
+    );
+    expect(got).toBeNull();
+    expect(reads).toBe(1);
   });
 });

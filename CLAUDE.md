@@ -27,6 +27,9 @@ The planner follows `.claude/skills/planner/SKILL.md`. A worker follows `.claude
 **Talking to the owner**
 - Answer the owner's questions before doing anything else.
 - Keep status short. "Status?" gets a table, not prose.
+- Be short, clear and direct, without losing the context.
+- No "pushback" framing. If you disagree, give your recommendation and why, in one line.
+- Every ask and every instruction to the owner says exactly what to do, where, and the exact words to type.
 - Flag every new decision (D-nn) for the owner to confirm before approval.
 - Say exactly what is done and what is not. If an item is only partly done, name the missing part and what it gates.
 - Challenge the owner's thinking when there is a better option. Don't just agree.
