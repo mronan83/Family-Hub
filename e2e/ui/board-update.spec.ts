@@ -13,6 +13,8 @@ async function open(page: Page, deployed: string) {
     route.fulfill({ json: { status: 'ok', app: 'familywise', commit: deployed } }),
   );
   await page.goto(`/dev/board?lunches=1&deploy=${RUNNING}`);
+  // [D-105] React has hydrated the page (apps/web/app/hydrated.tsx): its timers and handlers are live.
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await page.evaluate(() => {
     (window as unknown as { mark?: boolean }).mark = true;

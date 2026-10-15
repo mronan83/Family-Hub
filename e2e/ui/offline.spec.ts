@@ -49,6 +49,8 @@ async function controlled(page: Page, path = '/dev/board') {
 }
 
 async function asMaya(page: Page) {
+  // [D-105] React has hydrated the page (apps/web/app/hydrated.tsx): its timers and handlers are live.
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
   await people(page).getByRole('button', { name: 'Maya', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Maya', level: 2 })).toBeVisible();
 }
