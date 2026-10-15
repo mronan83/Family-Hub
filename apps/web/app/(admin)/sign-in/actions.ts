@@ -65,12 +65,19 @@ export async function demoSignIn(form: FormData): Promise<void> {
   const db = await serverClient();
   if (!secret || !db || !isDemoPersona(persona)) redirect('/sign-in');
   const email = demoEmail(persona);
-  const { error } = await db.auth.signInWithPassword({
-    email,
-    password: demoPassword(secret, email),
-  });
+  const credentials = { email, password: demoPassword(secret, email) };
+  let { error } = await db.auth.signInWithPassword(credentials);
+  // Supabase Auth answering 5xx, or not answering (status 0), is its own failure, not a refusal:
+  // asked once more. A refusal (a 4xx) is final.
+  if (error && (!error.status || error.status >= 500)) {
+    log('warn', 'demo sign-in: Auth did not answer; asking once more', {
+      persona,
+      status: error.status ?? 0,
+    });
+    ({ error } = await db.auth.signInWithPassword(credentials));
+  }
   if (error) {
-    log('warn', 'demo sign-in refused', { persona, code: error.code });
+    log('warn', 'demo sign-in refused', { persona, code: error.code, status: error.status ?? 0 });
     redirect('/sign-in?error=demo');
   }
   redirect(safeNext(form.get('next')));

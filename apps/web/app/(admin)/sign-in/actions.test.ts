@@ -110,4 +110,29 @@ describe('sign-in actions', () => {
       password: '045626f96e2913b275eee7347abe26d196002e0fec0d237641b91979c093c14d',
     });
   });
+
+  it('[ACC-02] demo sign-in asks Auth once more when it answers 5xx or not at all, never after a refusal', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('VERCEL_AUTOMATION_BYPASS_SECRET', 'test-secret');
+    auth.signInWithPassword
+      .mockResolvedValueOnce({ data: {}, error: { status: 504, message: 'HTTP 504' } })
+      .mockResolvedValueOnce({ data: {}, error: null });
+    expect(await redirectOf(demoSignIn(form({ persona: 'alex' })))).toBe('/admin');
+    expect(auth.signInWithPassword).toHaveBeenCalledTimes(2);
+
+    auth.signInWithPassword.mockClear();
+    auth.signInWithPassword
+      .mockResolvedValueOnce({ data: {}, error: { status: 0, message: 'fetch failed' } })
+      .mockResolvedValueOnce({ data: {}, error: { status: 500, message: 'HTTP 500' } });
+    expect(await redirectOf(demoSignIn(form({ persona: 'alex' })))).toBe('/sign-in?error=demo');
+    expect(auth.signInWithPassword).toHaveBeenCalledTimes(2);
+
+    auth.signInWithPassword.mockClear();
+    auth.signInWithPassword.mockResolvedValueOnce({
+      data: {},
+      error: { code: 'invalid_credentials', status: 400, message: 'Invalid login credentials' },
+    });
+    expect(await redirectOf(demoSignIn(form({ persona: 'alex' })))).toBe('/sign-in?error=demo');
+    expect(auth.signInWithPassword).toHaveBeenCalledTimes(1);
+  });
 });
