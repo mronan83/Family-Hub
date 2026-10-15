@@ -43,3 +43,12 @@ test('a Supabase 5xx the browser saw, then an assertion on what the page shows',
   });
   expect(ok).toBe(true);
 });
+
+test('the preview’s demo sign-in finding Supabase Auth not answering', async ({ page }) => {
+  const fail = firstRun('auth');
+  await page.route('https://preview.test/**', (route) =>
+    route.fulfill({ status: 200, contentType: 'text/html', body: '<h1>Admin</h1>' }),
+  );
+  await page.goto(fail ? 'https://preview.test/sign-in?error=auth' : 'https://preview.test/admin');
+  await expect(page).toHaveURL(/\/admin$/);
+});

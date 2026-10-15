@@ -124,7 +124,7 @@ describe('sign-in actions', () => {
     auth.signInWithPassword
       .mockResolvedValueOnce({ data: {}, error: { status: 0, message: 'fetch failed' } })
       .mockResolvedValueOnce({ data: {}, error: { status: 500, message: 'HTTP 500' } });
-    expect(await redirectOf(demoSignIn(form({ persona: 'alex' })))).toBe('/sign-in?error=demo');
+    expect(await redirectOf(demoSignIn(form({ persona: 'alex' })))).toBe('/sign-in?error=auth');
     expect(auth.signInWithPassword).toHaveBeenCalledTimes(2);
 
     auth.signInWithPassword.mockClear();

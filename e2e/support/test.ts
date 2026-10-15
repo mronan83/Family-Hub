@@ -48,11 +48,30 @@ function waitForHydration(page: Page): void {
   };
 }
 
+/**
+ * [NFR-14][D-104] The preview's demo sign-in lands on `/sign-in?error=auth` when Supabase Auth
+ * answered 5xx or not at all, twice (app/(admin)/sign-in/actions.ts): Auth failing under the test.
+ */
+function watchSignIn(page: Page): void {
+  page.on('framenavigated', (frame) => {
+    if (frame !== page.mainFrame()) return;
+    const url = new URL(frame.url());
+    if (url.pathname === '/sign-in' && url.searchParams.get('error') === 'auth') {
+      sink?.('the preview’s demo sign-in found Supabase Auth not answering (5xx or no answer)');
+    }
+  });
+}
+
+function watchPage(page: Page): void {
+  waitForHydration(page);
+  watchSignIn(page);
+}
+
 function watch(context: BrowserContext): void {
   if (watched.has(context)) return;
   watched.add(context);
-  for (const page of context.pages()) waitForHydration(page);
-  context.on('page', waitForHydration);
+  for (const page of context.pages()) watchPage(page);
+  context.on('page', watchPage);
   context.on('response', (response) => {
     const status = response.status();
     if (status < 500) return;

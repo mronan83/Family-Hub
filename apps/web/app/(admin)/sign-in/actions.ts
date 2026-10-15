@@ -76,8 +76,13 @@ export async function demoSignIn(form: FormData): Promise<void> {
     });
     ({ error } = await db.auth.signInWithPassword(credentials));
   }
+  if (error && (!error.status || error.status >= 500)) {
+    // Not a refusal: e2e reads `error=auth` as Supabase failing under the test (e2e/support/test.ts).
+    log('warn', 'demo sign-in: Auth did not answer', { persona, status: error.status ?? 0 });
+    redirect('/sign-in?error=auth');
+  }
   if (error) {
-    log('warn', 'demo sign-in refused', { persona, code: error.code, status: error.status ?? 0 });
+    log('warn', 'demo sign-in refused', { persona, code: error.code, status: error.status });
     redirect('/sign-in?error=demo');
   }
   redirect(safeNext(form.get('next')));

@@ -45,13 +45,13 @@ function run(specs, env = {}) {
   return { code: r.status, summary: readFileSync(summary, 'utf8'), out: r.stdout + r.stderr };
 }
 
-test('[NFR-14] an injected statement timeout and a Supabase 5xx re-run once, labelled, and pass', () => {
+test('[NFR-14] an injected statement timeout, a Supabase 5xx and Auth not answering re-run once, labelled, and pass', () => {
   const r = run('infra.spec.ts');
   assert.equal(r.code, 0, r.out);
   assert.match(r.summary, /## e2e: green/);
   assert.match(
     r.summary,
-    /1 passed, 2 failed \(2 infrastructure, 0 assertion\), 2 passed on a re-run/,
+    /1 passed, 3 failed \(3 infrastructure, 0 assertion\), 3 passed on a re-run/,
   );
   assert.match(
     r.summary,
@@ -61,7 +61,11 @@ test('[NFR-14] an injected statement timeout and a Supabase 5xx re-run once, lab
     r.summary,
     /infra \| the browser saw Supabase answer 500, a statement timeout to GET \/rest\/v1\/rpc\/board_snapshot \| passed on its re-run/,
   );
-  assert.match(r.summary, /Re-runs \| 2 test\(s\), once each/);
+  assert.match(
+    r.summary,
+    /infra \| the preview’s demo sign-in found Supabase Auth not answering \(5xx or no answer\) \| passed on its re-run/,
+  );
+  assert.match(r.summary, /Re-runs \| 3 test\(s\), once each/);
 });
 
 test('[NFR-14] a second infrastructure failure is red, with its cause', () => {
