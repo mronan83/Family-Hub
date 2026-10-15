@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.46: US-410 to US-415 added at the owner's request (WP-80 to WP-82, D-101 to D-103): goals that repeat each week, month or term, with "every day it's due" and misses allowed; the child's week won or missed; done by a time; tiers; perfect periods; a family goal every child meets. US-401 gains a goal's end date that can be cleared (WP-79, RWD-14).
 > v0.8.45: US-709, US-710, US-711 and US-1010 added at the owner's request (WP-72 to WP-75, D-97, D-98): the lunch picks one tap from Home; the lunch week as a list of days; the meal planner's days folded; a board laid out for its screen's shape. US-701 gains Edit on a planned meal (WP-76, MEAL-15).
 > v0.8.44: US-707 as built (WP-49, D-95): a child's change waits for a parent on Today, picks included; the cut-off; Done; the picks in place of the options.
 > v0.8.43: US-804 as built (WP-64, D-94): the home screen's entree options with their sides, on one line, a tap opening the whole menu; the Meals screen's menu a row a section. US-707 gains the owner's answers at WP-64's mockup (D-94): pick one where a section says "Choice of"; Monday to Friday after a Sunday; today until a morning cut-off; a parent approves a change.
@@ -393,9 +394,10 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 
 ### US-401 — Create a reward goal
 **As an** admin **I want** to define a reward with start and end dates and rules **so that** my child works toward something specific.
-**Priority:** Must · **Phase:** P1 · **Reqs:** RWD-01, RWD-02, RWD-03
+**Priority:** Must · **Phase:** P1 · **Reqs:** RWD-01, RWD-02, RWD-03, RWD-14
 - Given I create a goal "Movie night" with a 14-day window and rules (COUNT ≥ 20 chores tagged Morning) AND (STREAK ≥ 5), when I save, then its status is `scheduled` or `active` depending on the start date.
 - Given the rule logic is `any`, when only one rule is met, then the goal is achieved.
+- Given a goal with an end date, when I choose **No end date** or **Clear** on any device, an iPhone included, and save, then the goal has no end date (added at the owner's request, WP-79, RWD-14).
 
 ### US-402 — Streaks that forgive
 **As an** admin **I want** streaks to tolerate a limited number of misses and ignore non-chore days **so that** one bad day doesn't crush motivation.
@@ -456,6 +458,48 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** RWD-04
 - Given a completion was stored but evaluation failed, when the reconcile job runs, then the dirty goal is recomputed within 5 minutes.
 - Given the same event is replayed, when evaluated, then progress is unchanged.
+
+### US-410 — A goal that repeats each week
+**As a** parent **I want** a goal that repeats each week, month or school term and asks for every day its chore is due **so that** "homework home every school day" is won or lost one week at a time (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-15, RWD-16
+- Given a goal "Homework home, every day it's due, each week" with 0 misses allowed, when a week has 5 school days and all 5 are done, then that week is reached and pays.
+- Given a week with a closure on Friday, when Monday to Thursday are done, then the week is reached: it needs 4.
+- Given Tuesday is missed with 0 allowed, when Tuesday closes, then the week is lost, and the goal shows "Missed, starts again Monday <date>" with no part count.
+- Given 1 miss allowed, when one day is missed, then the week can still be reached; when a second is missed, then it is lost.
+- Given a week of school break, when it ends, then it is neither won nor missed.
+- Given a day I skipped, when the week is worked out, then that day is neutral.
+- Given I tick Tuesday's homework late for my child, after the week has ended, when the goal is worked out again, then the week is reached.
+- Given a repeating goal with no end date, when I look at it, then it keeps repeating until I stop it, and Goals shows its history ("3 of the last 4 weeks").
+
+### US-411 — My week, won or missed
+**As a** kid **I want** to see this week's goal and whether it is still on **so that** I know a missed day ended the week and when it starts again (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-15, RWD-16
+- Given my repeating goal, when I open my screen on the board, then I see this week's days done of those due, and my last weeks won.
+- Given I missed Tuesday, when I look at the goal, then it says "Missed, starts again Monday <date>".
+
+### US-412 — Done by a time
+**As a** parent **I want** a goal to count only check-offs made by a set time **so that** "homework before 6 pm" and "bed made before school" mean what they say (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-17
+- Given a rule set to count by 6 pm, when my child ticks at 6:05 pm, then the chore is done and earns its points, but doesn't count toward the goal.
+- Given a rule set to each chore's due time, when a chore is ticked before its due time, then it counts.
+
+### US-413 — Goals that pay in tiers
+**As a** parent **I want** a goal or a week to pay at steps **so that** partial effort earns something without lowering the bar for the full payout (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-18
+- Given steps 3 days = 5 points, 4 = 10, 5 = 20, when the week closes with 4 done, then 10 points are paid, once.
+- Given all 5 are done, when the fifth is ticked, then 20 points are paid at once, not 35.
+
+### US-414 — Perfect weeks
+**As a** parent **I want** a goal that counts the weeks a repeating goal was reached, in total or in a row **so that** "4 perfect weeks this term" or "3 in a row" earns something bigger (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-19
+- Given "3 perfect weeks in a row", when a week is lost, then the run starts again; when a week is a break, then the run holds.
+- Given "4 perfect weeks this term", when the fourth week is reached, then the goal is reached.
+
+### US-415 — A family goal every child meets
+**As a** parent **I want** a family goal that is reached only when each child meets it on their own **so that** one child can't carry the others (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-20
+- Given a family goal with "every child meets it", when Maya is done every day and Leo missed Tuesday, then the week is not reached.
+- Given a child with nothing due that week, when the others meet it, then the week is reached.
 
 ---
 
