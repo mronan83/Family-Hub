@@ -75,4 +75,21 @@ check "[NFR-14] a second run resets again" \
   "$(is "$rc:$(q "select count(*) from auth.users where email like '%@demo.familywise.invalid' and encrypted_password is not null")" "0:4")"
 check "[ACC-02] the secret is not printed" "$(is "$(grep -c 'test-secret\|045626f9' "$work/out")" "0")"
 
+# A session left idle in a transaction, holding the demo household's row: the reset ends it rather
+# than waiting behind it (e2e runs 238 to 242), and later sessions end themselves after 60 s.
+(echo "begin; select id from public.household where id = '0de00000-0000-4000-8000-000000000001' for update;"; sleep 300) |
+  psql "$(url)" -X -q > /dev/null 2>&1 &
+holder=$!
+for _ in $(seq 50); do
+  [ "$(q "select count(*) from pg_stat_activity where datname = '$db' and state = 'idle in transaction'")" = 1 ] && break
+  sleep 0.2
+done
+sleep 1.5
+SUPABASE_DB_URL=$(url) IDLE_TX_SECONDS=1 timeout 120 bash "$root/scripts/preview-db.sh" > "$work/out" 2>&1; rc=$?
+check "[NFR-14] a session idle in a transaction is ended, not waited behind" \
+  "$(is "$rc:$(grep -c 'ended 1 session(s) idle in a transaction' "$work/out"):$(q "select count(*) from pg_stat_activity where datname = '$db' and state like 'idle in transaction%'")" "0:1:0")"
+check "[NFR-14] new sessions end themselves after 60 s idle in a transaction" \
+  "$(is "$(q "show idle_in_transaction_session_timeout")" "1min")"
+kill "$holder" 2> /dev/null
+
 [ "$failures" -eq 0 ] && echo "preview-db: all checks passed" || { echo "preview-db: $failures check(s) failed"; exit 1; }
