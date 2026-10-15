@@ -25,6 +25,33 @@ function isoDow(date: string): number {
   return d === 0 ? 7 : d;
 }
 
+/** [MEAL-09] Reads of the lunch week a board makes before it says the week can't be read (WP-77). */
+export const WEEK_READS = 3;
+/** The wait before reading the lunch week again after a read fails. */
+export const WEEK_READ_WAIT_MS = 1_000;
+
+/**
+ * [MEAL-09] Reads the lunch week, reading again after a failed read (null), up to `tries` reads with
+ * `wait` ms between them (WP-77). Before, one failed read after a change left the board showing the
+ * week from before the change, with nothing to say so. Null when every read failed.
+ */
+export async function readWeek<T>(
+  load: () => Promise<T | null>,
+  tries = WEEK_READS,
+  wait: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
+  stop: () => boolean = () => false,
+): Promise<T | null> {
+  for (let i = 0; i < tries; i++) {
+    if (i > 0) {
+      await wait(WEEK_READ_WAIT_MS);
+      if (stop()) return null;
+    }
+    const got = await load().catch(() => null);
+    if (got !== null || stop()) return got;
+  }
+  return null;
+}
+
 /**
  * [MEAL-09] The coming school week, Monday to Friday (D-94): on a Saturday or Sunday the week after
  * it; on a weekday this week (its earlier days are locked). `weeks` moves it on by whole weeks.

@@ -18,6 +18,7 @@ import {
   menuChanged,
   missingPicks,
   picksWords,
+  readWeek,
   type SeenLunch,
   shownDay,
   togglePick,
@@ -30,7 +31,8 @@ export type LoadLunches = (from: string) => Promise<LunchChild[] | null>;
 
 /**
  * The week's lunches as the database has them, read again whenever the snapshot is (a change heard
- * through Realtime, D-80) and after this board's own change.
+ * through Realtime, D-80) and after this board's own change. A failed read is made again, up to
+ * three reads (WP-77), before it gives up.
  */
 function useWeek(load: LoadLunches | undefined, from: string, fetchedAt: string) {
   const [week, setWeek] = useState<{ from: string; children: LunchChild[] } | null>(null);
@@ -39,7 +41,12 @@ function useWeek(load: LoadLunches | undefined, from: string, fetchedAt: string)
   useEffect(() => {
     if (!load) return;
     let cancelled = false;
-    void load(from).then((children) => {
+    void readWeek(
+      () => load(from),
+      undefined,
+      undefined,
+      () => cancelled,
+    ).then((children) => {
       if (cancelled) return;
       if (children) {
         setWeek({ from, children });
