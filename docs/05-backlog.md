@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.121: WP-75 gains two sections that fold on Meals, added at the owner's request, recorded only (D-98): **School lunch**'s usual week and **Add to the plan**, both collapsed at first on every screen size; **Add** on a day opens **Add to the plan** with that day filled. The WP-75 worker adds both collapsed states to the mockup for the owner's approval before building.
 > v0.8.120: WP-74 (the lunch week as a list of days) done (D-112), so WP-73 is Ready.
 > v0.8.119: WP-76 (Edit on a planned meal) done (D-111). The one mockup for WP-73 to WP-76 was approved by the owner on 15 October, so WP-73 to WP-75 no longer wait on it.
 > v0.8.118: WP-90 (nightly e2e reliability) added at the owner's request and done in the same change (D-110), harvested from the closed e2e speed-up work (branches `claude/e2e-speed-up` and `claude/e2e-tooling`): sign in once per persona per worker; a page used only once hydrated; the test database's reset ends sessions stuck in a transaction; an infrastructure failure re-runs once and is labelled, an assertion failure never re-runs; the specs' clock in the household's zone, their own data and measured limits; the test standard in `CLAUDE.md`. WP-89 no longer carries the stuck-transaction fix.
@@ -239,7 +240,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-72 | Board layouts that adapt to the screen's width and shape | P3 | L | WP-71, WP-53, WP-52 | Queued (mockup first) |
 | WP-73 | The lunch picks one tap from the admin app's Home | P3 | S | WP-57, WP-74 | Ready (mockup approved) |
 | WP-74 | The lunch week as a list of days | P2 | M | WP-49, WP-64 | Done |
-| WP-75 | The meal planner's days as collapsible sections | P2 | S | WP-25, WP-62, WP-76 | Ready (mockup approved) |
+| WP-75 | The meal planner's days as collapsible sections, with the usual lunch week and Add to the plan folded | P2 | S | WP-25, WP-62, WP-76 | Ready (mockup approved; the two folded sections' mockup to approve) |
 | WP-76 | Edit on a planned meal | P2 | S | WP-25, WP-62 | Done |
 | WP-77 | WP-49's lunch test, root cause: its time limit, and the board's lunch week read again | P2 | S | WP-49 | Done |
 | WP-78 | A lunch pick taken off by another; "and" in a menu; the board picks up a new deploy | P2 | S | WP-49, WP-64 | Done |
@@ -1244,7 +1245,11 @@ flowchart LR
 - Added at the owner's request: "The meal planner also needs to be updates to save real estate. each day section should be expandable section. The expandable section will show what day of the week it is, the date (the date will dynamically changed based on the week), and a dynamic count of meals set (example, if there are 4 meals for a day and only 2 are set, it will show 2 of 4 set. If all meals are set, a checkmark is shown. When expanded, it will show the meal types like it does currently and what the set meals are like it does currently. There will also be an add ability like there is now. You should still be able to change a meal as well. The current day should still be highlighted/outlined like it currently is, expanded or collapsed."
 - **All days start collapsed.** Collapsed, a day shows its weekday, its date (following the week), and "X of Y set", where Y is the meal types shown for that day and X how many have a meal; when all are set, a checkmark instead (D-98). Expanded: the meal types and their meals as today, **Add** as today, and every meal can still be changed (**Change**, with WP-76's **Edit** and **Remove**). Today stays highlighted or outlined as it is now, collapsed or expanded.
 - Admin app only, not the board. One mockup covers WP-73 to WP-76, on the demo family; the owner approved it on 15 October.
-- **Done when:** unit tests on "X of Y set" and the checkmark; on the preview, Alex opens Meals with every day collapsed, sees "2 of 4 set" on a day with two meals, adds the other two from the expanded day and sees the checkmark, and edits a meal there; the UI suite at 390 and 1280 px in both themes, collapsed and expanded, today outlined.
+- Added at the owner's request, 15 October: "Enhancement - Meals. Expandable and collapsible sections for: School lunch 'usual week' - it shouldn't always be expanded. It rarely changes. Add to plan - this should be collapsed by default especially on the phone view." Then: "add to WP-75".
+  - **School lunch's usual week:** collapsed at first on every screen size. Collapsed, it shows one line per child ("Sam: Mon Buy · Tue Bring · …"); it opens on tap.
+  - **Add to the plan:** collapsed at first on every screen size, showing only its header and button. It opens on tap, or when **Add** is tapped on a day, which opens it with that day filled in.
+  - The approved mockup for WP-73 to WP-76 doesn't show these two collapsed states. Before building, the WP-75 worker adds them to the mockup, on the demo family, for the owner's approval.
+- **Done when:** unit tests on "X of Y set" and the checkmark, and on the usual week's one-line summary; on the preview, Alex opens Meals with every day collapsed, sees "2 of 4 set" on a day with two meals, adds the other two from the expanded day and sees the checkmark, and edits a meal there; the UI suite at 390 and 1280 px in both themes, collapsed and expanded, today outlined, and the usual lunch week and **Add to the plan** collapsed at first, expanded on tap, and **Add** on a day opening **Add to the plan** with the day filled.
 
 ### WP-76 — Edit on a planned meal
 **Phase:** P2 · **Size:** S · **Depends on:** WP-25, WP-62 · **Reqs:** MEAL-15

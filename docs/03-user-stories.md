@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.49: US-711 gains the usual lunch week and Add to the plan collapsed at first (WP-75, D-98), added at the owner's request.
 > v0.8.48: US-701 as built for Edit on a planned meal (WP-76, D-111).
 > v0.8.47: US-911 gains a pull request's preview on a test database prepared with its own migrations (WP-89, added at the owner's request); its e2e criterion now reads as D-108 built it (WP-88).
 > v0.8.46: US-410 to US-415 added at the owner's request (WP-80 to WP-82, D-101 to D-103): goals that repeat each week, month or term, with "every day it's due" and misses allowed; the child's week won or missed; done by a time; tiers; perfect periods; a family goal every child meets. US-401 gains a goal's end date that can be cleared (WP-79, RWD-14).
@@ -708,6 +709,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given the meal planner, when it opens, then every day is closed, showing its weekday, its date for the week shown, and "2 of 4 set" (the meals that day has a meal for, of the meals it shows), or a checkmark when all are set.
 - Given I open a day, when it expands, then I see its meals and what is planned as today, with **Add** and **Change**.
 - Given today is in the week, when its day is open or closed, then it is outlined as it is now.
+- Given Meals on any screen size, when it opens, then **School lunch**'s usual week is collapsed, showing one line per child ("Sam: Mon Buy · Tue Bring · …"), and **Add to the plan** is collapsed to its header and button; each opens on tap (added at the owner's request).
+- Given a day of the meal week, when I tap **Add**, then **Add to the plan** opens with that day filled in.
 
 ---
 
