@@ -1,7 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.115: WP-79 to WP-82 added at the owner's request, recorded only (D-101 to D-103): a goal's end date that can be cleared (a bug, on its own so it waits on nothing else); goals that repeat each week, month or school term, with "every day it's due" and misses allowed, each period won or missed on its own; done by a time, and tiers; perfect periods, and "every child meets it". WP-80 to WP-82 wait on one mockup. Avoidance goals (no screen time over a limit) are not covered: nothing records them. "Next, in order" is the owner's to set.
+> v0.8.115: WP-79 to WP-82 added at the owner's request, recorded only (D-101 to D-103): a goal's end date that can be cleared (a bug, on its own so it waits on nothing else); goals that repeat each week, month or school term, with "every day it's due" and misses allowed, each period won or missed on its own; done by a time, and tiers; perfect periods, and "every child meets it". WP-80 to WP-82 wait on one mockup. Avoidance goals (no screen time over a limit) are not covered: nothing records them.  WP-83 (the family-list test's time limit, root cause) added at the owner's request and done in the same change: it gets its own limit, and each save is checked and timed. "Next, in order" is the owner's to set.
 > v0.8.114: WP-71 done (D-100): the board home on an iPad, fixed at the cause: a chore's row grows with its title and points chip, and a word in the rail goes under its icon when it doesn't fit beside it. The board's fit checks gain the iPad shapes, and, added at the owner's request, the kitchen board's 1920×1080 at Larger and Largest.
 > v0.8.113: WP-78 (a lunch pick taken off by another, a bug) added at the owner's request and done in the same change: on Meals in the admin app, every "Choice of" section's radios were one group, so ticking a milk took off the entree. Two more added to it at the owner's request and done with it: "and" in a school menu joins a side like "with" (a WP-64 gap); the board picks up a new deploy by itself (D-99).
 > v0.8.112: WP-71 to WP-76 added at the owner's request, recorded only (D-97, D-98), and WP-77 (WP-49's lunch test, root cause) added and done in the same change: the board home on an iPad (a bug); board layouts that adapt to the screen's shape, which WP-58 and WP-68 now build on, so WP-58 waits on it; the lunch picks one tap from Home; the lunch week as a list of days; the meal planner's days folded; Edit on a planned meal (a bug). WP-73 to WP-76 wait on one mockup. "Next, in order" is the owner's to set.
@@ -242,6 +242,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-80 | Goals that repeat each week, month or school term | P2 | L | WP-79, WP-19, WP-39, WP-20, WP-21 | Queued: WP-79 first (mockup first, one for WP-80 to WP-82) |
 | WP-81 | A goal done by a time, and goals that pay in tiers | P2 | M | WP-80 | Queued (mockup first, with WP-80 and WP-82) |
 | WP-82 | Perfect periods, and a family goal every child meets | P2 | M | WP-80 | Queued (mockup first, with WP-80 and WP-81) |
+| WP-83 | The family-list test's time limit, root cause | P3 | S | WP-08 | Done |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -408,6 +409,7 @@ flowchart LR
     WP21 --> WP80
     WP80 --> WP81[WP-81 Done by a time, and tiers]
     WP80 --> WP82[WP-82 Perfect periods, every child]
+    WP08 --> WP83[WP-83 Family-list test, root cause]
     WP64 --> WP78
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP65 --> WP70[WP-70 Calendar refresh timing]
@@ -1293,6 +1295,13 @@ flowchart LR
 - Mockup first, with WP-80 and WP-81 (one mockup, approved by the owner before any is built).
 - **Done when:** engine tests: in total and in a row, with a break week and a lost week; every child meets it with one child short, with all met, and with a child who has nothing due. pgTAP: the counted goal and the option saved and checked; a family goal that every child meets pays each child once. On the preview, Alex sets the family "Everyone's homework home, each week" with every child meets it: Leo's missed Tuesday leaves the week unreached though Maya made every day; and Maya's "3 perfect weeks in a row" counts her won weeks. The UI suite: the counted goal and each child's progress, in both themes.
 
+### WP-83 — The family-list test's time limit, root cause
+**Phase:** P3 · **Size:** S · **Depends on:** WP-08 · **Reqs:** CHR-01, NFR-14
+- Added at the owner's request (15 October: "fix in #83"), and done in the same change as WP-79 to WP-82, whose e2e run it held up. In e2e run 232 (15 October, about 11:15 UTC), WP-08's test "a parent enters the family's list on a phone in under five minutes" (`e2e/tests/chores.spec.ts`) failed twice. On the first attempt, the banner for the third save ("Tidy toys") hadn't shown within about 15 s. On the retry, the test ran out of time on the sixth save, with five saved. The pull request changes only docs.
+- **Done when:** this pull request's e2e run passes the test, and a slow or refused save in it says which item and how long it took.
+- As built, **the cause, in the test:** the test signs in and saves eight items, each waiting up to 15 s for its banner, under Playwright's default 30 s limit, while its own target is 300 s. A slower preview ran out the test's time before an assertion could say what was slow (D-92's rule). Fix: the test has its own limit (330 s, its 300 s target with room for the checks after it); `save()` waits for each save's server action, checks it answered under 400 and reports its time, then waits for the banner; the run's report lists every save's time (`WP-08 saves: …`). WP-08's 300 s target and e2e's `retries` are unchanged.
+- Not known from the run: whether the first attempt's third save was slow or never answered. The test didn't time its saves; it now does, so the next slow run says which.
+
 ---
 
 ## 6. Size summary
@@ -1305,6 +1314,6 @@ flowchart LR
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82 | Menu adapters, WP-49 and WP-80 are the Ls |
-| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
+| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

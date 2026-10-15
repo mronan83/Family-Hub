@@ -84,6 +84,27 @@ async function enter(form: Locator, e: Entry) {
   await pick(form, e.icon);
 }
 
+/**
+ * Saves the form and waits for its banner, timing the save (WP-83): the click's server action, its
+ * status and time, then the banner. A slow or refused save says which item and how long it took.
+ */
+async function save(page: Page, button: Locator, title: string, banner: string, times: string[]) {
+  const started = Date.now();
+  const answer = page.waitForResponse(
+    (r) => r.request().method() === 'POST' && !!r.request().headers()['next-action'],
+    { timeout: 30_000 },
+  );
+  await button.click();
+  const res = await answer;
+  const ms = Date.now() - started;
+  times.push(`${title} ${res.status()} in ${ms} ms`);
+  expect(res.status(), `saving ${title}: answered ${res.status()} in ${ms} ms`).toBeLessThan(400);
+  await expect(page.getByRole('status'), `saving ${title}: answered in ${ms} ms`).toHaveText(
+    banner,
+    { timeout: 15_000 },
+  );
+}
+
 test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
@@ -145,6 +166,10 @@ test('[CHR-13] Sam sees the gift they’re responsible for, marked private', asy
 test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in under five minutes', async ({
   page,
 }) => {
+  // Eight saves, each up to 30 s for its answer and 15 s for its banner, against a 300 s target:
+  // the test's own limit covers them (D-92), and each save's time is reported (WP-83).
+  test.setTimeout(330_000);
+  const times: string[] = [];
   await page.setViewportSize({ width: 390, height: 844 });
   const started = Date.now();
   await signIn(page, 'Alex');
@@ -168,8 +193,13 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
   ];
   for (const c of chores) {
     await enter(form, c);
-    await form.getByRole('button', { name: 'Save and add another' }).click();
-    await expect(page.getByRole('status')).toHaveText(`Saved ${c.title}. Add the next one.`);
+    await save(
+      page,
+      form.getByRole('button', { name: 'Save and add another' }),
+      c.title,
+      `Saved ${c.title}. Add the next one.`,
+      times,
+    );
     form = page.getByRole('form', { name: 'Add an item' });
   }
 
@@ -182,8 +212,13 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
     icon: 'calendar',
     onDate: demoDate(5),
   });
-  await form.getByRole('button', { name: 'Save and add another' }).click();
-  await expect(page.getByRole('status')).toHaveText('Saved Renew car insurance. Add the next one.');
+  await save(
+    page,
+    form.getByRole('button', { name: 'Save and add another' }),
+    'Renew car insurance',
+    'Saved Renew car insurance. Add the next one.',
+    times,
+  );
   form = page.getByRole('form', { name: 'Add an item' });
   await expect(form.getByLabel('Task', { exact: true })).toBeChecked();
   await enter(form, {
@@ -192,13 +227,19 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
     icon: 'backpack',
     onDate: demoDate(2),
   });
-  await form.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('Saved Order school uniform.');
+  await save(
+    page,
+    form.getByRole('button', { name: 'Save', exact: true }),
+    'Order school uniform',
+    'Saved Order school uniform.',
+    times,
+  );
 
   const seconds = Math.round((Date.now() - started) / 1000);
   report(
     `WP-08: the family list (six chores and two adult tasks) entered on a 390 px phone screen in ${seconds} s (target under 300 s).`,
   );
+  report(`WP-08 saves: ${times.join(', ')}`);
   expect(seconds).toBeLessThan(300);
 
   expect(
