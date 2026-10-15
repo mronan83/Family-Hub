@@ -285,6 +285,13 @@ const SHOTS = [
     // under 120 KB.
     quality: 48,
   },
+  // [RWD-14] A started goal's end date (WP-79): Ends on a date ticked, the date and Clear.
+  {
+    name: 'admin-goal-end-date-phone',
+    device: 'phone',
+    url: '/dev/goals?form=started',
+    element: '.fw-goal-form__dates',
+  },
   // The preview of a change (WP-39): the panel itself, under the form.
   {
     name: 'admin-goal-preview-phone',

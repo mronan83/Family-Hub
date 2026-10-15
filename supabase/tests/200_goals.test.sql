@@ -5,7 +5,7 @@
 -- changed. The engine's own results are lib/goals.test.ts's and packages/rules-engine's; here the
 -- evaluations are written by hand, as the engine would send them.
 begin;
-select plan(52);
+select plan(53);
 
 insert into auth.users (id, email) values
   ('20100000-0000-0000-0000-000000000001', 'parent@example.com'),
@@ -240,15 +240,24 @@ select pg_temp.save(1, 'achieved', 2, 4, 100, true, '[]', clock_timestamp() - in
 select is((select dirty from public.reward_goal_progress where goal_id = pg_temp.g(1)), true,
           '[US-407] a mark made after the read keeps the goal dirty');
 
+-- [RWD-14] A reached goal keeps its rules (D-115); a check-off undone puts it back to going, and then
+-- they can change.
+select pg_temp.parent();
+select throws_ok($$ select public.save_goal(pg_temp.goal(1, 'a', -5, 5,
+         '[{"type": "COUNT", "target": 8, "scope": {"tag_ids": ["20a00000-0000-0000-0000-000000000001"]}}]', 'Movie night')) $$,
+                 '22023', 'a reached goal keeps its rules', '[RWD-14] a reached goal keeps its rules');
+select pg_temp.as_job();
+select pg_temp.save(1, 'achieved', 2, 3, 75, false, pg_temp.t('unachieved', 'achieved', 'active'));
+
 -- New rules are recomputed and logged with the progress before and after.
 select pg_temp.parent();
 select public.save_goal(pg_temp.goal(1, 'a', -5, 5,
          '[{"type": "COUNT", "target": 8, "scope": {"tag_ids": ["20a00000-0000-0000-0000-000000000001"]}}]', 'Movie night'));
 select pg_temp.as_job();
-select pg_temp.save(1, 'achieved', 3, 4, 50, false, pg_temp.t('unachieved', 'achieved', 'active'));
+select pg_temp.save(1, 'active', 3, 4, 50, false);
 select is((select payload ->> 'from_pct' || '>' || (payload ->> 'to_pct') from public.reward_goal_event
             where goal_id = pg_temp.g(1) and type = 'recomputed'),
-          '100.00>50.00', '[US-406] the first evaluation of new rules is logged recomputed, before and after');
+          '75.00>50.00', '[US-406] the first evaluation of new rules is logged recomputed, before and after');
 
 -- [RWD-04] Dirty marks: what a check-off can change.
 select pg_temp.as_owner();

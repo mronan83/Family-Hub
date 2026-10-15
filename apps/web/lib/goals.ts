@@ -207,6 +207,21 @@ const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 const realDay = (s: string) =>
   ISO_DAY.test(s) && new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s;
 
+/** The goal form's end date fields (D-115): this form has the check box, and the box itself. */
+export const END_CHOICE_FIELD = 'endChoice';
+export const ENDS_ON_DATE_FIELD = 'endsOnDate';
+
+/**
+ * [RWD-14] The end date the goal form asks for, as typed ('' for none). With the check box (D-115),
+ * an unticked box is no end date whatever date came with it; a ticked box with the date cleared is
+ * no end date too. A form without the box (a page loaded before it, or a finished goal's fixed
+ * dates) sends the date alone.
+ */
+export function readEndDate(form: FormData): string {
+  if (form.has(END_CHOICE_FIELD) && !form.has(ENDS_ON_DATE_FIELD)) return '';
+  return String(form.get('endDate') ?? '').trim();
+}
+
 /**
  * [RWD-01][RWD-02][RWD-03] The goal form, or a line saying what to fix. Rules arrive as rows named
  * `rule-<key>-<field>`, in the order `rule-keys` lists them: a type, a target, what counts (everything,
@@ -232,7 +247,7 @@ export function parseGoalForm(
   }
   const startDate = String(form.get('startDate') ?? '');
   if (!realDay(startDate)) return { ok: false, message: 'Choose the day it starts.' };
-  const endRaw = String(form.get('endDate') ?? '');
+  const endRaw = readEndDate(form);
   if (endRaw && !realDay(endRaw)) return { ok: false, message: 'That end date isn’t a day.' };
   if (endRaw && endRaw < startDate) {
     return { ok: false, message: 'It can’t end before it starts.' };
@@ -349,6 +364,10 @@ export function goalRefusal(error: { code?: string | null; hint?: string | null 
       return 'This goal has started, so who it’s for and its start date stay as they are.';
     case 'goal_closed':
       return 'This goal has finished, so its rules and dates stay as they are.';
+    case 'goal_achieved':
+      return 'This goal has been reached, so its rules and dates stay as they are.';
+    case 'end_in_past':
+      return 'A goal that has started ends today or later.';
     case 'end_before_start':
       return 'It can’t end before it starts.';
     case 'rule_scope':

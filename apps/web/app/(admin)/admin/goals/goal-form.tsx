@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { useFormAction } from '@/lib/forms';
 import { type GoalPayout, RULE_TYPES, RULE_WORDS, type ScopeChoice } from '@/lib/goals';
 import { type GoalFormState, type GoalPreviewView, saveGoal } from './actions';
+import { EndDateField } from './end-date-field';
 
 export interface GoalFormRule {
   type: RuleType;
@@ -46,8 +47,8 @@ export interface GoalPrize {
 
 /**
  * What may still change: everything while a goal waits to start; once it has started, not who it's
- * for or its start date; once it is redeemed, ended or cancelled, only its name, description and
- * picture (D-56).
+ * for or its start date, and its end date is today or later; once it is reached, redeemed, ended or
+ * cancelled, only its name, description and picture (D-56, D-115).
  */
 export type GoalLock = 'none' | 'started' | 'finished';
 
@@ -213,15 +214,10 @@ export function GoalForm({
         {rulesLocked ? (
           <input type="hidden" name="endDate" value={initial?.endDate ?? ''} />
         ) : (
-          <label className="fw-field">
-            <span className="fw-field__label">Ends (optional)</span>
-            <input
-              className="fw-input"
-              type="date"
-              name="endDate"
-              defaultValue={initial?.endDate ?? ''}
-            />
-          </label>
+          <EndDateField
+            initial={initial?.endDate ?? null}
+            min={lock === 'started' ? today : undefined}
+          />
         )}
       </div>
 
