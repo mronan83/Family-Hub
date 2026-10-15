@@ -206,7 +206,7 @@ test('[SCH-01][SCH-02] two default school years may not overlap; one that isn’
     const camp = sql(
       `select id from public.school_year where household_id = '${DEMO}' and name = '${CAMP}'`,
     );
-    await signIn(page);
+    // Still signed in from the step before: /sign-in would send a signed-in parent on to Home.
     await page.goto(`/admin/school/${camp}`);
     const closure = page.getByRole('form', { name: 'Add a day off' });
     await closure.getByLabel('Name').fill('Camp break');

@@ -22,6 +22,7 @@ concurrency:
 permissions:
   contents: read
   issues: write
+  actions: read
 
 jobs:
   full:
@@ -95,7 +96,7 @@ jobs:
       - if: steps.needed.outputs.run == 'true'
         name: Hold the test database
         env:
-          E2E_LOCK_NAME: main ${{ github.run_id }}
+          E2E_LOCK_RUN: ${{ github.run_id }}
         run: bash scripts/e2e-lock.sh acquire
       - if: steps.needed.outputs.run == 'true'
         name: Empty the test database, apply main's migrations, load the demo family

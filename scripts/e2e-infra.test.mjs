@@ -28,6 +28,19 @@ test('[NFR-14][D-104] the database and network errors that count as infrastructu
     'database connections full',
   );
   assert.equal(causeInText('503 Service Unavailable'), 'gateway 5xx');
+  // The pooler with no free connection, and a database too busy to sign a connection in (run 236).
+  assert.equal(
+    causeInText(
+      'FATAL:  (ECHECKOUTTIMEOUT) unable to check out connection from the pool after 15000ms in Session mode',
+    ),
+    'database connections full',
+  );
+  assert.equal(
+    causeInText(
+      'FATAL:  Failed to connect to database: authentication did not complete within 15000ms',
+    ),
+    'database not answering',
+  );
 });
 
 test('[NFR-14][D-104] an assertion failure is not infrastructure, however slow', () => {

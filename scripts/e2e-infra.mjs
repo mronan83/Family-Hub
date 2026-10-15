@@ -25,8 +25,12 @@ export const INFRA_PATTERNS = [
     'connection reset',
   ],
   [
-    /remaining connection slots are reserved|too many connections|max client connections reached/i,
+    /remaining connection slots are reserved|too many connections|max client connections reached|ECHECKOUTTIMEOUT|unable to check out connection from the pool/i,
     'database connections full',
+  ],
+  [
+    /authentication did not complete within|Failed to connect to database/i,
+    'database not answering',
   ],
   [/ETIMEDOUT|EAI_AGAIN|ENOTFOUND|getaddrinfo/i, 'network unreachable'],
   [

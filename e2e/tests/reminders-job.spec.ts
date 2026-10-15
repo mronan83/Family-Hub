@@ -224,13 +224,18 @@ test('[CHR-15][CHR-16] switched off for the item, the device or the person: noth
   expect(await run('16:45')).toMatchObject({ planned: 0, sent: 0 });
 
   const gate = task('Fix the gate', '18:00');
-  sql(`update public.push_subscription set enabled = false where endpoint = '${PHONE}'`);
+  // Every one of Alex's devices off (this test's own two, from beforeEach).
+  sql(
+    `update public.push_subscription set enabled = false where endpoint in ('${PHONE}', '${LAPTOP}')`,
+  );
   expect(await run('17:45')).toMatchObject({ planned: 1, sent: 0 });
   expect(
     sql(`select status || ':' || detail from public.reminder_delivery
           where dedupe_key = 'due:${occurrence(gate)}:${alex}'`),
   ).toBe('skipped:no_device');
-  sql(`update public.push_subscription set enabled = true where endpoint = '${PHONE}'`);
+  sql(
+    `update public.push_subscription set enabled = true where endpoint in ('${PHONE}', '${LAPTOP}')`,
+  );
 
   // Off for the person: nothing is planned while they are off (turned back on, the last two hours
   // catch up; this one's time is long past by then).

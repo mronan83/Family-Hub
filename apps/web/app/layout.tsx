@@ -3,6 +3,7 @@ import { BRAND_COLORS } from '@familywise/ui';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { preload } from 'react-dom';
+import { Hydrated } from './hydrated';
 import { ServiceWorker } from './service-worker';
 
 // App identity (06 §9). Icons, fonts, manifests and the service worker are built from brand/ into
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="stylesheet" href="/brand/fonts.css" precedence="default" />
         {children}
         <ServiceWorker />
+        <Hydrated />
       </body>
     </html>
   );

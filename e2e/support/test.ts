@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
-import { test as base, type BrowserContext } from '@playwright/test';
+import { test as base, type BrowserContext, type Page, type Response } from '@playwright/test';
 
 export * from '@playwright/test';
 
@@ -18,9 +18,41 @@ const watched = new WeakSet<BrowserContext>();
  * or 504. A failed test with such a record re-runs once (scripts/e2e-run.mjs); an app's own 500 is an
  * assertion failure like any other, and never re-runs.
  */
+/**
+ * [NFR-14][D-105] After a page load (goto, reload), waits until React has hydrated the page
+ * (`<html data-hydrated>`, apps/web/app/hydrated.tsx). A click before then is the browser's own:
+ * a form reloads the page with its fields in the URL and saves nothing, which a test sees as a save
+ * that never answered. Pages that aren't the app's (JSON, a gateway's error page) are left alone
+ * after 15 s; what the test checks next says what it found.
+ */
+function waitForHydration(page: Page): void {
+  const settle = async (response: Response | null) => {
+    if (!response || !(response.headers()['content-type'] ?? '').includes('text/html')) return;
+    await page
+      .waitForFunction(() => document.documentElement.dataset.hydrated === 'true', null, {
+        timeout: 15_000,
+      })
+      .catch(() => {});
+  };
+  const goto = page.goto.bind(page);
+  page.goto = async (...args: Parameters<Page['goto']>) => {
+    const response = await goto(...args);
+    await settle(response);
+    return response;
+  };
+  const reload = page.reload.bind(page);
+  page.reload = async (...args: Parameters<Page['reload']>) => {
+    const response = await reload(...args);
+    await settle(response);
+    return response;
+  };
+}
+
 function watch(context: BrowserContext): void {
   if (watched.has(context)) return;
   watched.add(context);
+  for (const page of context.pages()) waitForHydration(page);
+  context.on('page', waitForHydration);
   context.on('response', (response) => {
     const status = response.status();
     if (status < 500) return;

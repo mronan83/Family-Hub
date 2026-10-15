@@ -17,6 +17,8 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  pull-requests: read
 
 jobs:
   scope:
@@ -27,6 +29,7 @@ jobs:
       github.event.deployment.ref != 'main'
     runs-on: ubuntu-24.04
     outputs:
+      branch: ${{ steps.branch.outputs.branch }}
       mode: ${{ steps.scope.outputs.mode }}
       specs: ${{ steps.scope.outputs.specs }}
       burn_in: ${{ steps.scope.outputs.burn_in }}
@@ -35,6 +38,17 @@ jobs:
         with:
           ref: ${{ github.event.deployment.sha }}
           fetch-depth: 0
+      # Vercel's deployment names the commit, not the branch; the pull request's branch keys the
+      # cancelling of this branch's older run (run's concurrency group).
+      - id: branch
+        name: The pull request's branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.deployment.sha }}
+        run: |
+          branch=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/pulls" --jq '[.[] | select(.state == "open")][0].head.ref // empty' || true)
+          echo "branch=${branch:-$SHA}" >> "$GITHUB_OUTPUT"
+          echo "branch: ${branch:-$SHA (no open pull request)}"
       - id: scope
         name: Which specs this change needs
         run: |
@@ -57,7 +71,7 @@ jobs:
     timeout-minutes: 300
     # A newer push to the same branch replaces this branch's run; another branch's run is never touched.
     concurrency:
-      group: e2e-${{ github.event.deployment.ref }}
+      group: e2e-${{ needs.scope.outputs.branch }}
       cancel-in-progress: true
     env:
       E2E_BASE_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
@@ -105,7 +119,8 @@ jobs:
         run: bash scripts/e2e-ready.sh
       - name: Hold the test database
         env:
-          E2E_LOCK_NAME: ${{ github.event.deployment.ref }} ${{ github.run_id }}
+          E2E_LOCK_RUN: ${{ github.run_id }}
+          GH_TOKEN: ${{ github.token }}
         run: bash scripts/e2e-lock.sh acquire
       - name: Empty the test database, apply this PR's migrations, load the demo family
         run: bash scripts/preview-db.sh
