@@ -57,3 +57,38 @@ export function openOn(children: LunchChild[], last: string | null): string | nu
 
 /** Where this device keeps the child chosen last (WP-73's quick action opens on them too). */
 export const LAST_CHILD_KEY = 'fw-lunch-child';
+
+const addDays = (date: string, n: number) =>
+  new Date(Date.parse(`${date}T12:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
+
+/**
+ * [MEAL-12][US-709] The Monday of the lunch week Home's quick action opens (WP-73, D-98): this
+ * week's from Monday to Friday, the coming week's on Saturday and Sunday. Calendar dates only, so
+ * the household's time zone and DST don't come into it.
+ */
+export function lunchWeekToOpen(today: string): string {
+  const dow = isoDow(today);
+  return addDays(today, dow <= 5 ? 1 - dow : 8 - dow);
+}
+
+/** How many of a child's days, today or later in the week shown, still have no choice. */
+export function daysToPick(child: LunchChild, today: string): number {
+  return schoolWeek(child.days).filter((d) => d.date >= today && lunchDayStatus(d) === 'to-pick')
+    .length;
+}
+
+/**
+ * [MEAL-12] What Home's lunch card says (WP-73): "This week: Maya has 1 day to pick; Leo is all
+ * set." The coming week's on Saturday and Sunday.
+ */
+export function lunchQuickWords(
+  children: { name: string; toPick: number }[],
+  coming: boolean,
+): string {
+  const each = children.map((c) =>
+    c.toPick === 0
+      ? `${c.name} is all set`
+      : `${c.name} has ${c.toPick} ${c.toPick === 1 ? 'day' : 'days'} to pick`,
+  );
+  return `${coming ? 'Next week' : 'This week'}: ${each.join('; ')}.`;
+}

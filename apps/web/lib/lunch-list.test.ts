@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { LunchChild, LunchDay, LunchPick } from './lunch';
-import { hasDaysToPick, lunchDayStatus, openOn, schoolWeek } from './lunch-list';
+import {
+  daysToPick,
+  hasDaysToPick,
+  lunchDayStatus,
+  lunchQuickWords,
+  lunchWeekToOpen,
+  openOn,
+  schoolWeek,
+} from './lunch-list';
 
 // [MEAL-13][US-710] A day's completeness on the lunch list (WP-74, D-98), on a made-up menu.
 
@@ -111,5 +119,67 @@ describe('[MEAL-13] the list', () => {
     expect(openOn(kids, null)).toBe('a');
     expect(openOn(kids, 'gone')).toBe('a');
     expect(openOn([], 'b')).toBeNull();
+  });
+});
+
+// [MEAL-12][US-709] The week Home's quick action opens (WP-73, D-98): this week Monday to Friday,
+// the coming week on Saturday and Sunday. Calendar dates, so no clock and no time zone.
+describe('[MEAL-12] lunchWeekToOpen', () => {
+  it('opens this week from Monday to Friday, and the coming week on Saturday and Sunday', () => {
+    // The week of Monday 12 October 2026.
+    for (const [today, monday] of [
+      ['2026-10-12', '2026-10-12'], // Monday
+      ['2026-10-13', '2026-10-12'], // Tuesday
+      ['2026-10-14', '2026-10-12'], // Wednesday
+      ['2026-10-15', '2026-10-12'], // Thursday
+      ['2026-10-16', '2026-10-12'], // Friday
+      ['2026-10-17', '2026-10-19'], // Saturday
+      ['2026-10-18', '2026-10-19'], // Sunday
+    ] as const) {
+      expect(lunchWeekToOpen(today), today).toBe(monday);
+    }
+  });
+
+  it('crosses a month, a year and the DST changes on calendar dates', () => {
+    expect(lunchWeekToOpen('2026-11-01')).toBe('2026-11-02'); // Sunday, US clocks go back
+    expect(lunchWeekToOpen('2026-03-08')).toBe('2026-03-09'); // Sunday, US clocks go forward
+    expect(lunchWeekToOpen('2026-10-31')).toBe('2026-11-02'); // Saturday into November
+    expect(lunchWeekToOpen('2027-01-01')).toBe('2026-12-28'); // Friday, the week began last year
+    expect(lunchWeekToOpen('2027-01-02')).toBe('2027-01-04'); // Saturday into the new year's week
+  });
+});
+
+describe('[MEAL-12] what Home’s lunch card says', () => {
+  const child = (days: Partial<LunchDay>[]): LunchChild => ({
+    memberId: 'c',
+    usual: {},
+    days: days.map((d) => day(d)),
+  });
+
+  it('counts the days still without a choice, today and after it', () => {
+    const c = child([
+      { date: '2026-10-12' }, // gone: doesn't count
+      { date: '2026-10-13', mode: 'bring' },
+      { date: '2026-10-14' }, // today, no picks
+      { date: '2026-10-15', choices: [ENTREE, MILK] },
+      { date: '2026-10-16' },
+    ]);
+    expect(daysToPick(c, '2026-10-14')).toBe(2);
+    expect(daysToPick(c, '2026-10-17')).toBe(0);
+  });
+
+  it('names each child, this week or the coming one', () => {
+    expect(
+      lunchQuickWords(
+        [
+          { name: 'Maya', toPick: 1 },
+          { name: 'Leo', toPick: 0 },
+        ],
+        false,
+      ),
+    ).toBe('This week: Maya has 1 day to pick; Leo is all set.');
+    expect(lunchQuickWords([{ name: 'Leo', toPick: 3 }], true)).toBe(
+      'Next week: Leo has 3 days to pick.',
+    );
   });
 });
