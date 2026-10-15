@@ -1,4 +1,11 @@
-import { Banner, Button, Icon, type IconName } from '@familywise/ui';
+import {
+  type AvatarKey,
+  Banner,
+  Button,
+  Icon,
+  type IconName,
+  type MemberColor,
+} from '@familywise/ui';
 import Link from 'next/link';
 import { addDays, dayName } from '@/lib/board-calendar';
 import {
@@ -25,7 +32,13 @@ export interface MealsViewProps {
   days: string[];
   entries: PlanEntry[];
   meals: MealRow[];
-  members: { id: string; displayName: string }[];
+  /** The family; faces for the lunch list's children (WP-74). */
+  members: {
+    id: string;
+    displayName: string;
+    avatarKey?: AvatarKey | null;
+    color?: MemberColor;
+  }[];
   /** A day and slot to add to, from an "Add" link. */
   addAt: { day: string; slot: Slot } | null;
   /** [MEAL-15] The entry opened for editing, from Change's "Edit" (WP-76). */
@@ -237,13 +250,7 @@ export function MealsView({
         </ol>
       </section>
 
-      <LunchSection
-        week={week}
-        days={days}
-        lunch={lunch}
-        menus={menus}
-        names={new Map(members.map((m) => [m.id, m.displayName]))}
-      />
+      <LunchSection week={week} today={today} lunch={lunch} menus={menus} members={members} />
 
       <section className="fw-card" id="add" aria-labelledby="add-heading">
         <h2 id="add-heading">Add to the plan</h2>

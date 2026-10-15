@@ -231,13 +231,6 @@ test('[MEAL-04][US-703] school lunch: Maya’s usual week set, then one school d
       4: 'Thursday',
       5: 'Friday',
     };
-    // [MEAL-04] The day's button by its name, as the page says it: "Maya, Mon, Oct 19: buy. …".
-    const named = new Intl.DateTimeFormat('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      timeZone: 'UTC',
-    }).format(new Date(`${day}T12:00:00Z`));
     const inWeek = `member_id = '${maya}' and lunch_date between '${first}' and '${addDays(first, 6)}'`;
     await admin.goto(`/admin/meals?week=${first}`);
     const usual = admin.getByRole('form', { name: 'Maya’s usual lunches' });
@@ -246,22 +239,36 @@ test('[MEAL-04][US-703] school lunch: Maya’s usual week set, then one school d
     await expect(admin.getByRole('status')).toHaveText('Usual lunches saved.');
     expect(sql(`select public.lunch_mode('${maya}', '${day}')`)).toBe('buy');
 
-    const lunch = admin.getByRole('region', { name: 'School lunch' });
-    await lunch
-      .getByRole('button', { name: `Maya, ${named}: buy. Change to bring`, exact: true })
+    // [MEAL-13] Maya's week on the list of days (WP-74): her day opened, Bring tapped at its top.
+    await admin
+      .getByRole('group', { name: 'Whose lunches' })
+      .getByRole('button', { name: /^Maya/ })
       .click();
+    const theDay = admin
+      .getByRole('list', { name: 'Maya’s lunch week' })
+      .locator(`.fw-lunchday[data-date="${day}"]`);
+    const mode = theDay.getByRole('group', { name: `Maya, ${words[weekday(day)]}: buy or bring` });
+    /** Opens the day unless it is open already (the page keeps it open after a change). */
+    const openDay = async () => {
+      if ((await theDay.locator('details').getAttribute('open')) === null)
+        await theDay.locator('summary').click();
+      await expect(mode).toBeVisible();
+    };
+    await openDay();
+    await mode.getByRole('button', { name: 'Bring' }).click();
     await expect(admin.getByRole('status')).toHaveText('Lunch changed.');
     expect(
       sql(`select public.lunch_mode('${maya}', '${day}') || ':' || count(*) from public.lunch_override
                  where ${inWeek}`),
     ).toBe('bring:1');
-    await expect(lunch.getByRole('row', { name: /^Maya/ })).toContainText('Changed');
-    await lunch
-      .getByRole('button', { name: `Maya, ${named}: bring (changed). Change to buy`, exact: true })
-      .click();
-    // The status already says "Lunch changed." from the first tap, so wait for the row itself: once
-    // the change is undone and the page is back, Maya's week has no changed day.
-    await expect(lunch.getByRole('row', { name: /^Maya/ })).not.toContainText('Changed');
+    await expect(theDay).toContainText('Changed from the usual');
+    await expect(theDay.locator('.fw-lunchday__end')).toHaveText('Bring');
+    await openDay();
+    await mode.getByRole('button', { name: 'Buy' }).click();
+    // The status already says "Lunch changed." from the first tap, so wait for the day itself: once
+    // the change is undone and the page is back, the day is Buy and not changed.
+    await expect(theDay.locator('.fw-lunchday__end')).toHaveText(/^Buy/);
+    await expect(theDay).not.toContainText('Changed from the usual');
     expect(sql(`select count(*) from public.lunch_override where ${inWeek}`)).toBe('0');
   } finally {
     undo();

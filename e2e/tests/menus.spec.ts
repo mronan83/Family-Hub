@@ -241,14 +241,19 @@ test('[MEAL-05][US-704] Maya’s buy day shows the menu her lunch comes from', a
     await usual.getByRole('combobox', { name: 'School menu' }).selectOption({ label: BIRCH });
     await usual.getByRole('button', { name: 'Save Maya’s usual lunches' }).click();
     await expect(page.getByRole('status')).toHaveText('Usual lunches saved.');
-    const lunch = page.getByRole('region', { name: 'School lunch' });
-    await expect(
-      lunch
-        .getByRole('row', { name: /^Maya/ })
-        .getByRole('cell')
-        .filter({ hasText: `Birch lunch ${school}` })
-        .locator('.fw-menu-text__row'),
-    ).toHaveText([`Main Line: Birch lunch ${school}`, 'Beverages: Milk, 1%']);
+    // [MEAL-13] Her Buy day on the list of days (WP-74), opened: the menu a section each, to pick from.
+    await page
+      .getByRole('group', { name: 'Whose lunches' })
+      .getByRole('button', { name: /^Maya/ })
+      .click();
+    const theDay = page
+      .getByRole('list', { name: 'Maya’s lunch week' })
+      .locator(`.fw-lunchday[data-date="${school}"]`);
+    await theDay.locator('summary').click();
+    await expect(theDay.locator('fieldset')).toHaveText([
+      new RegExp(`^Main Line · any\\s*Birch lunch ${school}$`),
+      /^Beverages · any\s*Milk, 1%$/,
+    ]);
   } finally {
     undo();
   }

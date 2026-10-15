@@ -8,7 +8,8 @@ import { type MealRow, type PlanEntry, type Slot, weekDays } from '@/lib/meals';
 // guide's pictures: the week in Day or Evening (?theme=evening), opened to add a Wednesday snack
 // (?add=1), an entry opened for editing (?edit=<its id>, WP-76), and the meal library
 // (?page=library). School lunch (WP-26): Thursday is a day off, Leo's Tuesday is changed to buy.
-// School menus (WP-27): both have Maple Elementary's; a buy day shows it.
+// School menus (WP-27): both have Maple Elementary's; a buy day shows it. The lunch week is a list of
+// days (WP-74): Leo's Wednesday (today) has nothing picked yet, so his face has a dot.
 export const metadata: Metadata = { title: 'Meals', robots: { index: false } };
 
 const MAYA = 'f2000000-0000-4000-8000-000000000001';
@@ -192,8 +193,8 @@ export default async function DevMealsPage({
           entries={ENTRIES}
           meals={MEALS}
           members={[
-            { id: MAYA, displayName: 'Maya' },
-            { id: LEO, displayName: 'Leo' },
+            { id: MAYA, displayName: 'Maya', avatarKey: 'fox', color: 'member-3' },
+            { id: LEO, displayName: 'Leo', avatarKey: null, color: 'member-4' },
             { id: 'f2000000-0000-4000-8000-0000000000a1', displayName: 'Alex' },
           ]}
           addAt={p.add ? { day: TODAY, slot: 'snack' } : null}

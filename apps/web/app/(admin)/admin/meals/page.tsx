@@ -63,7 +63,12 @@ export default async function MealsPage({
       meals={meals}
       members={members
         .filter((m) => !m.archivedAt)
-        .map((m) => ({ id: m.id, displayName: m.displayName }))}
+        .map((m) => ({
+          id: m.id,
+          displayName: m.displayName,
+          avatarKey: m.avatarKey,
+          color: m.color,
+        }))}
       addAt={addAt}
       editId={p.edit ?? null}
       newId={crypto.randomUUID()}
