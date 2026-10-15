@@ -1,7 +1,8 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.51: US-207 gains sleep and wake per board and when a board counts as missed, added at the owner's request (WP-34, D-115).
+> v0.8.52: US-207 gains sleep and wake per board and when a board counts as missed, added at the owner's request (WP-34, D-116).
+> v0.8.51: US-401 as built for a goal's end date that can be cleared (WP-79, D-115): **Ends on a date** and **Clear**; a started goal ends today or later; a reached goal keeps its rules and dates, added at the owner's request.
 > v0.8.50: US-711 as built (WP-75, D-114): **Copy last week** also collapsed at first and moved up under **Add to the plan**, added at the owner's request; a day opens by itself after a change to it.
 > v0.8.49: US-711 gains the usual lunch week and Add to the plan collapsed at first (WP-75, D-98), added at the owner's request.
 > v0.8.48: US-701 as built for Edit on a planned meal (WP-76, D-111).
@@ -204,7 +205,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a calendar source's last success is older than three sync intervals, when the calendar view renders, then it shows a "calendar may be out of date" badge.
 
 ### US-207 — Quiet hours and burn-in protection
-**As an** admin **I want** the display to dim or sleep overnight and avoid static pixels, and to choose for each board when it sleeps and whether I hear that it is missing, **so that** it's not a night light, the panel lasts, and a board that is often off doesn't keep reminding me (the per-board choices added at the owner's request, WP-34, D-115).
+**As an** admin **I want** the display to dim or sleep overnight and avoid static pixels, and to choose for each board when it sleeps and whether I hear that it is missing, **so that** it's not a night light, the panel lasts, and a board that is often off doesn't keep reminding me (the per-board choices added at the owner's request, WP-34, D-116).
 **Priority:** Should · **Phase:** P3 · **Reqs:** DEV-07
 - Given quiet hours 21:00–06:30, when the time is reached, then the board dims to a minimal clock layout (or powers the screen down on the Pi) and touch wakes it.
 - Given the board is idle, when more than 10 minutes pass, then the layout drifts or dims to avoid static high-contrast elements.
@@ -408,7 +409,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** RWD-01, RWD-02, RWD-03, RWD-14
 - Given I create a goal "Movie night" with a 14-day window and rules (COUNT ≥ 20 chores tagged Morning) AND (STREAK ≥ 5), when I save, then its status is `scheduled` or `active` depending on the start date.
 - Given the rule logic is `any`, when only one rule is met, then the goal is achieved.
-- Given a goal with an end date, when I choose **No end date** or **Clear** on any device, an iPhone included, and save, then the goal has no end date (added at the owner's request, WP-79, RWD-14).
+- Given a goal with an end date, when I untick **Ends on a date** or choose **Clear** on any device, an iPhone included, and save, then the goal has no end date and opens with the box unticked (added at the owner's request, WP-79, RWD-14, D-115).
+- Given a started goal, when I add an end date or move it, then it is today or later; given a reached goal, when I open it, then its rules and dates can't change, only its name, description and picture (added at the owner's request, D-115).
 
 ### US-402 — Streaks that forgive
 **As an** admin **I want** streaks to tolerate a limited number of misses and ignore non-chore days **so that** one bad day doesn't crush motivation.

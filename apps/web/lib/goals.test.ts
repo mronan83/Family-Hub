@@ -15,6 +15,7 @@ import {
   payoutWords,
   previewGoal,
   previewOutcome,
+  readEndDate,
   streakLine,
 } from './goals';
 
@@ -244,6 +245,12 @@ describe('the goal form', () => {
       'Goals are for someone who earns rewards, or the whole family.',
     );
     expect(goalRefusal({ hint: 'goal_started' })).toContain('has started');
+    expect(goalRefusal({ hint: 'goal_achieved' })).toBe(
+      'This goal has been reached, so its rules and dates stay as they are.',
+    );
+    expect(goalRefusal({ hint: 'end_in_past' })).toBe(
+      'A goal that has started ends today or later.',
+    );
     expect(goalRefusal({ hint: 'payout_item' })).toContain('isn’t in the shop');
     expect(goalRefusal({ hint: 'payout_family_item' })).toContain('each child');
     expect(goalRefusal({ code: '23514' })).toContain('isn’t right');
@@ -581,5 +588,40 @@ describe('the preview of a change', () => {
     expect(previewOutcome(lower, { saved: true, pays: null, paid: null, paidItem: false })).toBe(
       'Its progress goes from 95% to 80%.',
     );
+  });
+});
+
+describe('[RWD-14] the end date (D-115)', () => {
+  const rule: [string, string][] = [
+    ['rule-keys', 'a'],
+    ['rule-a-type', 'COUNT'],
+    ['rule-a-target', '3'],
+  ];
+  const noEnd = base.filter(([k]) => k !== 'endDate');
+  const endOf = (entries: [string, string][]) => {
+    const p = parseGoalForm(form([...entries, ...rule]), ctx);
+    if (!p.ok) throw new Error(p.message);
+    return p.value.endDate;
+  };
+
+  it('[RWD-14] the box ticked with a date: that date', () => {
+    const f: [string, string][] = [...noEnd, ['endChoice', '1'], ['endsOnDate', 'on']];
+    expect(endOf([...f, ['endDate', '2026-10-24']])).toBe('2026-10-24');
+  });
+
+  it('[RWD-14] the box unticked saves no end date, whatever date came with it', () => {
+    expect(endOf([...noEnd, ['endChoice', '1']])).toBeNull();
+    expect(endOf([...noEnd, ['endChoice', '1'], ['endDate', '2026-10-24']])).toBeNull();
+  });
+
+  it('[RWD-14] a cleared date saves no end date, the box still ticked', () => {
+    expect(endOf([...noEnd, ['endChoice', '1'], ['endsOnDate', 'on'], ['endDate', '']])).toBeNull();
+    expect(endOf([...noEnd, ['endChoice', '1'], ['endsOnDate', 'on']])).toBeNull();
+  });
+
+  it('[RWD-14] a form without the box (loaded before it, or a finished goal) sends the date alone', () => {
+    expect(endOf([...noEnd, ['endDate', '2026-10-24']])).toBe('2026-10-24');
+    expect(endOf([...noEnd, ['endDate', '']])).toBeNull();
+    expect(readEndDate(form([['endDate', ' 2026-10-24 ']]))).toBe('2026-10-24');
   });
 });

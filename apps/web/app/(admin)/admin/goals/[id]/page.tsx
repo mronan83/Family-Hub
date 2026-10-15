@@ -42,7 +42,8 @@ export default async function GoalPage({
     ),
   ]);
   const removed = (await searchParams).photo === 'removed';
-  const lock: GoalLock = ['redeemed', 'expired', 'cancelled'].includes(goal.status)
+  // A reached goal is locked as a finished one is: a change could take back what it unlocked (D-115).
+  const lock: GoalLock = ['achieved', 'redeemed', 'expired', 'cancelled'].includes(goal.status)
     ? 'finished'
     : goal.status === 'scheduled' || goal.status === 'draft'
       ? 'none'
@@ -107,7 +108,9 @@ export default async function GoalPage({
           <p className="fw-field__help">
             {lock === 'started'
               ? 'It has started, so who it’s for and its start date stay as they are. Changing its rules or end date works its progress out again from every check-off.'
-              : 'It has finished, so its rules and dates stay as they are.'}
+              : goal.status === 'achieved'
+                ? 'It has been reached, so its rules and dates stay as they are. Its name, description and picture can still change.'
+                : 'It has finished, so its rules and dates stay as they are.'}
           </p>
         ) : null}
         <GoalForm

@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.28: a goal's end date that can be cleared (WP-79, D-115): **Ends on a date** with the date and **Clear**, on an iPhone too; a started goal's end date added, moved or taken off; a reached goal keeps its rules and dates (A7, B1, B3).
 > v0.27: the meal week folded (WP-75, D-114): each day of **Meals** closed at first with "2 of 4 set" or a check, then **Add to the plan**, **Copy last week** and the usual lunch week, each closed until tapped (A15, B1.15).
 > v0.26: the lunch picks one tap from Home (WP-73, D-113): **School lunches** on Home says whose days still need a choice, and **Pick lunches** opens the lunch week on the child chosen last (A2, B1.1).
 > v0.25: the lunch week as a list of days (WP-74, D-112): **School lunch** on **Meals** shows one child's Monday to Friday, each day closed at first with a check once it's set, opened to Buy or Bring and the day's menu (A15, B1).
@@ -585,7 +586,7 @@ On **Rewards**, a reward someone is saving for says so ("Maya is saving for it")
 
 1. Enter a **Name** and, optionally, a **Description**.
 2. Choose **Who it's for**: someone who earns rewards, or **The whole family** (which counts what everyone does).
-3. Set when it **Starts** and, optionally, when it **Ends**.
+3. Set when it **Starts**. To give it an end date, tick **Ends on a date** and choose the day. Left unticked, it has no end date and keeps going until it's reached or you end it.
 4. Set the **Rule**: what it **Counts** and its **Target**:
    - **Things done**: items done within the goal's dates.
    - **Days with everything done**: days when every routine was done.
@@ -623,14 +624,20 @@ A child's own check-offs celebrate too, in a small way: when a check-off earns p
 
 #### Change or cancel a goal
 
-Choose **Change** to open a goal. Before it starts, everything can change. Once it has started, who it's for and its start date stay as they are; changing its rules or end date works its progress out again from every check-off. What it pays can change until it finishes, and applies the next time it is reached. Once it is redeemed, ended or cancelled, its rules, dates and payout stay as they are.
+Choose **Change** to open a goal. Before it starts, everything can change. Once it has started, who it's for and its start date stay as they are; changing its rules or end date works its progress out again from every check-off. What it pays can change, and applies the next time it is reached.
+
+To take an end date off, untick **Ends on a date**, or choose **Clear** beside the date, and save: the goal has no end date and keeps going. To change the date, tap it and choose another day; a goal that has started ends today or later. A goal with no end date can be given one the same way: tick **Ends on a date** and choose the day. This works on an iPhone too.
+
+![A started goal's end date on a phone: Ends on a date ticked, the date, and Clear beside it.](guide/img/admin-goal-end-date-phone.jpg "Changing or clearing the end date")
+
+Once a goal is reached, its rules, dates and payout stay as they are, so a change can't take back what reaching it unlocked; its name, description and picture can still change. If a check-off it needed is undone, it is going again and can change. Once it is redeemed, ended or cancelled, its rules, dates and payout stay as they are.
 
 Before you save a change, choose **Preview**. It works the goal out from every check-off as the form has it, and nothing is saved:
 
-- a line saying what saving would do: reach it now (and what it pays), take it back to going (and take back what it paid), end it, or how its progress moves;
+- a line saying what saving would do: reach it now (and what it pays), end it, or how its progress moves;
 - a table with each rule's progress **Now** and **After saving** (a rule you changed shows **New or changed**), and the goal's.
 
-![The preview of a change on a phone: "Saving takes it back to going: 88% there, and Ice cream from the shop is called off", then each rule now and after saving.](guide/img/admin-goal-preview-phone.jpg "Preview before saving a change")
+![The preview of a change on a phone: "Its progress goes from 96% to 88%.", then each rule now and after saving.](guide/img/admin-goal-preview-phone.jpg "Preview before saving a change")
 
 The goal's page lists **What happened** to it, with when and who. **Cancel** (the goal's name) stops it counting and moves it to **History**. Goals are never deleted.
 
@@ -1090,7 +1097,7 @@ A member who doesn't earn rewards can't be given points; what they earned before
 | Goals in play | Each goal: picture, name, who and dates, what it pays ("Pays 10 points", "Pays Ice cream from the shop"), **Needs a look** if flagged, state (**Starts later**, **Going**, **Achieved**, **Achieved again**), a meter per rule, **Mark redeemed** when achieved, **Change**. "Working out its progress…" before its first evaluation. |
 | **History** | Goals **Redeemed** (when and by whom), **Ended**, or **Cancelled**; **Needs a look** if flagged; **Details**. |
 
-**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Starts**, **Ends (optional)**, one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **What counts**), **Add a rule**, **It's reached when**, **What reaching it pays** (**Just the celebration**, **Points** with **Points paid** 1 to 10,000, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
+**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Starts**, **Ends** (**Ends on a date**, then the date and **Clear**), one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **What counts**), **Add a rule**, **It's reached when**, **What reaching it pays** (**Just the celebration**, **Points** with **Points paid** 1 to 10,000, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
 
 **A goal's page:** who, state and "% there"; **Clear** for a **Needs a look** flag; **Remove photo**; the form (locked as the goal progresses, see [A7](#change-or-cancel-a-goal)); **What happened** (set up, started, rules or dates changed, what it pays changed, progress worked out again with the old and new %, achieved and what it paid, back to going, payout undone, points put back, needs a look, redeemed, ended, cancelled); **Cancel**.
 
@@ -1455,7 +1462,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Lunch | Buy or bring, on a child's school days only; a usual for each weekday, Monday to Friday |
 | School menu | A name up to 40 characters; up to 60 items a day, each up to 120 characters; a file up to 512 KB and 120 days; Nutrislice fetched each morning for the next four weeks |
 | Meals | Something written in up to 80 characters, a note up to 200; any number in a meal of a day; one library meal of a name at a time |
-| Goal | 1 to 5 rules; target 1 to 100,000; 0 to 3 misses forgiven a week; pays 1 to 10,000 points, or one reward from the shop (a child's goal) |
+| Goal | 1 to 5 rules; target 1 to 100,000; 0 to 3 misses forgiven a week; pays 1 to 10,000 points, or one reward from the shop (a child's goal); an end date or none, and once started it ends today or later; once reached, only its name, description and picture change |
 | Photos | JPEG, PNG or WebP, up to 2 MB |
 | Password | At least 8 characters |
 | Setup code · invite link · pairing code | Once, for 24 hours · once, for 7 days · once, for 10 minutes |
