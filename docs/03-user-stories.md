@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.54: US-208 Boards that fit on one screen, added at the owner's request (WP-91, D-118).
 > v0.8.53: US-207 as built (WP-34, D-117): a night takes its times from the day after it; a touch in the night wakes a board for its idle time or 5 minutes; Only while awake counts a board's hours awake; the picture drifts; the Pi's screen helper.
 > v0.8.52: US-207 gains sleep and wake per board and when a board counts as missed, added at the owner's request (WP-34, D-116).
 > v0.8.51: US-401 as built for a goal's end date that can be cleared (WP-79, D-115): **Ends on a date** and **Clear**; a started goal ends today or later; a reached goal keeps its rules and dates, added at the owner's request.
@@ -217,6 +218,16 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a board set to **Never**, when it hasn't been seen for a day, then Home doesn't list it; set to **Only while awake**, Home doesn't list it while it is in its scheduled sleep; set to **Always**, Home lists it after a day unseen, as now.
 - Given a board in a browser (such as an iPad), when it sleeps, then its screen is black; on the Pi the kiosk also turns the screen off.
 - As built (WP-34, D-117): on Boards, each board's **Sleep and wake**: **Tell me when (board) isn't seen** (Always, Only while awake, Never), **Sleep at night** with a school night's and a weekend's sleep and wake times, and **Sleep when nobody touches it** (Never, or 5 minutes to 2 hours); the board's row says "Asleep · wakes at 6:30 am" or "Awake · sleeps at 9:30 pm". A night takes its times from the day after it, so Sunday night is a school night and the night before a day off a weekend night. Asleep, the board is black; the touch, click or mouse movement that wakes it presses nothing; at night it stays awake for its idle time (5 minutes if Never) after the last touch, then sleeps again. **Only while awake** counts only a board's hours awake toward the day unseen. The picture drifts a px every 5 minutes within a 4 px square; there is no separate dim. On the Pi, a helper installed once with one command turns the monitor off and on.
+
+### US-208 — Boards that fit on one screen
+**As an** admin **I want** each board and the home screen layout on **Boards** to fold away **so that** I see every board at a glance and open only the one I'm changing (added at the owner's request, WP-91, D-118).
+**Priority:** Should · **Phase:** P3 · **Reqs:** DEV-09
+- Given Boards, when it opens, then every board is folded, showing its name, "Awake · sleeps at 9:30 pm" or "Asleep · wakes at 6:30 am", when it was last seen, its theme and text size, and whether it has its own layout or the household's.
+- Given a board Home would list as not seen, when it is folded, then the warning shows on its folded row.
+- Given I open a board, when it expands, then I see its settings in groups: **Display** (theme, text size), **Sleep and wake**, **Calendars**, **Home screen**, and, set apart at the bottom, **Rename** and **Disconnect**, which still asks first.
+- Given Boards, when it opens, then the household's **Home screen** layout is folded to one line ("5 days · meals on · Goals, Waiting, Coming up · weather on"), and opens to its form on tap.
+- Given Boards, when it opens, then **Add a board** is one button that opens the name and pairing code form, and **Disconnected** shows a count that opens the list.
+- Given I save a change inside a board, when the page comes back, then that board is open.
 
 ---
 

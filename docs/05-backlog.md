@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.127: WP-91 (the Boards settings as collapsible sections) added at the owner's request, recorded only (D-118): each board folded at first, showing its name and what matters about it, opening to grouped sections; the household's **Home screen** layout, **Add a board** and **Disconnected** folded too, in WP-75's fold style. Ready, mockup first. "Next, in order" is the owner's to set.
 > v0.8.126: WP-34 (quiet hours and burn-in mitigation, with sleep and wake per board) built and merged (D-116, D-117), from the mockup the owner approved on 16 October with its six recommendations; its 3 days on the owner's Pi 4 are open (Y-11).
 > v0.8.125: WP-34 gains sleep and wake per board, added at the owner's request, recorded only (D-116): when a board counts as missed (Always, Only while awake, Never), sleep and wake times for school days and weekends, an idle sleep woken by a touch, click or mouse movement that only wakes. WP-34 now depends on WP-06 and WP-47 and is Ready: the owner's Pi 4 on a 24" Dell is the board in use, so it no longer waits on WP-14 or SPIKE-03. Size S to M. A mockup comes first. "Next, in order" is the owner's to set.
 > v0.8.124: WP-79 (a goal's end date that can be cleared) done (D-115), from the mockup the owner approved with their changes; added at the owner's request with it: a started goal's end date today or later, and a reached goal that can't change (read per period for WP-80). WP-80 no longer waits on WP-79.
@@ -258,6 +259,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-88 | Fast deploy gate; e2e nightly only | P3 | S | WP-41, WP-60 | Done |
 | WP-89 | The test database prepared for a pull request's preview | P3 | S | WP-60, WP-88 | Ready |
 | WP-90 | Nightly e2e reliability | P3 | M | WP-60, WP-88 | Done |
+| WP-91 | The Boards settings as collapsible sections | P3 | S | WP-34, WP-75, WP-35 | Ready (mockup first) |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -432,6 +434,9 @@ flowchart LR
     WP88 --> WP89
     WP60 --> WP90[WP-90 Nightly e2e reliability]
     WP88 --> WP90
+    WP34 --> WP91[WP-91 Boards settings folded]
+    WP75 --> WP91
+    WP35 --> WP91
     WP64 --> WP78
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP65 --> WP70[WP-70 Calendar refresh timing]
@@ -1396,6 +1401,19 @@ flowchart LR
 - **Done when:** `scripts/e2e-infra.test.mjs` tells infrastructure from assertion failures; `scripts/e2e-run.selftest.mjs` (CI `build`) shows an injected statement timeout, Supabase 5xx and Auth failure each re-run once, labelled, and pass, a second infrastructure failure red with its cause in the issue's list, and an assertion failure red and never re-run; `scripts/preview-db.test.sh` shows a session idle in a transaction ended, the waiter logged and the 60 s limit set; `e2e/ui/hydrated.spec.ts` shows pages marked hydrated; the sign-in's unit test shows Auth asked once more on 5xx and never after a refusal; the next nightly run is the proof on the real preview.
 - **As built:** `scripts/e2e-run.mjs`, `scripts/e2e-infra.mjs`, `scripts/e2e-ready.sh`, `.github/workflows/e2e.yml` (the run through `e2e-run.mjs`, the preview waited for, one issue per red spec with each test's kind and cause), `e2e/playwright.config.ts` (no retries, a 90 s limit, the household's zone), `e2e/support/session.ts`, `day.ts`, `school.ts`, `board.ts`, `test.ts`, the specs in `e2e/tests/`, `apps/web/app/hydrated.tsx`, the demo sign-in's second ask (`apps/web/app/(admin)/sign-in/actions.ts`), `scripts/preview-db.sh`; tests `scripts/e2e-infra.test.mjs`, `scripts/e2e-run.selftest.mjs`, `scripts/preview-db.test.sh`, `e2e/ui/hydrated.spec.ts`, `apps/web/app/(admin)/sign-in/actions.test.ts`. The UI suite's reminders layout check now waits for hydration and for the "Turn on reminders" button's fade-in before axe reads its contrast (it read 2.13:1 mid-fade, about 1 run in 40).
 - **Deferred:** the nightly run burns in no spec by itself: `scripts/e2e-run.mjs --burn-in` runs one five times, but nothing picks the changed specs for it. The idle-in-transaction limit is set on the test database, not on a role. Left out as moot since D-108: the scope classifier, the PR e2e queue and lock, any deploy-gate change and per-PR burn-in.
+### WP-91 — The Boards settings as collapsible sections
+**Phase:** P3 · **Size:** S · **Depends on:** WP-34, WP-75, WP-35 · **Reqs:** DEV-09
+- Added at the owner's request, 16 October: "Enhancement - boards settings. Similar to what we did with the meals and school lunch day selection sections, we need to make some of these sections expandable and collapsible. Each configured board should default collapsed. With the name and important meta data in the collapsed view. Once expanded there are neater sections with the settings and configurations for each board. Home Screen sections needs the same treatment and styling." Then, on 16 October: "add to the backlog as a new WP, yes the Home Screen setting sections within the boards settings". "Home Screen" is the household's home screen layout on **Boards** (`07` A11, B1.12), not the admin app's Home.
+- The scope the mockup shows (D-118), proposed by Claude Code; the owner confirms its details when they approve the mockup:
+  - **The fold:** WP-75's on Meals (`.fw-fold`, the browser's own `<details>`), so the two screens match.
+  - **Each board folded at first**, showing its name; **Awake** or **Asleep** with its next sleep or wake time; last seen; its theme and text size; its own layout or the household's; and, when Home would list it as not seen, that warning, visible while folded.
+  - **Opened, a board's grouped sections:** **Display** (theme, text size), **Sleep and wake**, **Calendars**, **Home screen**, and **Rename** and **Disconnect** set apart at the bottom (Disconnect is permanent, and still asks first).
+  - **The household's Home screen layout** folded to a one-line summary (for example "5 days · meals on · Goals, Waiting, Coming up · weather on"), opening to its form as now.
+  - **Add a board** folded to one button that opens the name and pairing code form; **Disconnected** folded to a count that opens the list.
+- Admin app only, not the board. Nothing is removed: every setting on Boards today stays, inside a fold.
+- **Mockup first:** Boards, folded and opened, on the demo family at 390 and 1280 px, approved by the owner before WP-91 is built.
+- **Done when:** unit tests on a board's folded summary (awake or asleep with the next time, last seen, theme, text size, own or household layout, the not-seen warning by its **Tell me when** choice) and on the layout's one-line summary; on the preview, Alex opens Boards with every board folded, reads the Kitchen board's summary, opens it, changes its text size under **Display**, and finds the board open after the save; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, the not-seen warning shown while folded, and taps after hydration.
+
 ---
 
 ## 6. Size summary
@@ -1408,6 +1426,6 @@ flowchart LR
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82 | Menu adapters, WP-49 and WP-80 are the Ls |
-| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88 – WP-90 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
+| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88 – WP-91 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.
