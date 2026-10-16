@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.31: the Pi's screen helper starts with the Pi on any desktop, and installs over SSH too (WP-34 follow-up): A16 and troubleshooting.
 > v0.30: approvals alerts within seconds, counting all that waits for you, and which check-offs bring one: only those that wait for you, so with approval off, only items set to **Always needs a parent's OK** (WP-92, D-119; A3).
 > v0.29: sleep and wake per board (WP-34, D-116, D-117): A16, Boards (B1.12), the board asleep (B2), the rules, troubleshooting and questions.
 > v0.28: a goal's end date that can be cleared (WP-79, D-115): **Ends on a date** with the date and **Clear**, on an iPhone too; a started goal's end date added, moved or taken off; a reached goal keeps its rules and dates (A7, B1, B3).
@@ -956,7 +957,7 @@ The family can pick the coming week's school lunches at the board, on a Sunday s
 
 ![Boards on a laptop: Kitchen, last seen Thu, Oct 15 at 7:42 am, "Awake · sleeps at 9:30 pm", and its Sleep and wake open: Tell me when Kitchen isn't seen with Only while awake chosen; Sleep at night ticked, School nights 9:30 pm to 6:30 am and Weekends and days off 10:30 pm to 7:30 am; Sleep when nobody touches it, After 15 minutes; Save sleep and wake. Below, Playroom: never missed, sleeps after 10 minutes untouched.](guide/img/admin-boards-sleep-laptop.jpg "Sleep and wake on Boards, on a laptop")
 
-**Turning the screen off on the Raspberry Pi.** A web page can't turn its screen off, so on an iPad or a laptop a sleeping board is just black (an iPad's own Auto-Lock still works as usual). On the Pi, a small helper turns the monitor off when the board sleeps and back on when it wakes. Install it once: on the Pi, open a terminal, type `curl -fsSL https://family-wise-topaz.vercel.app/api/kiosk/install | bash`, then `sudo reboot`. It needs no password or key, listens only on the Pi itself, and answers only FamilyWise. Running the same command again updates it.
+**Turning the screen off on the Raspberry Pi.** A web page can't turn its screen off, so on an iPad or a laptop a sleeping board is just black (an iPad's own Auto-Lock still works as usual). On the Pi, a small helper turns the monitor off when the board sleeps and back on when it wakes. The Dell isn't switched off at its button: the Pi stops sending a picture, and the monitor goes into its own standby until the picture comes back. Install the helper once: on the Pi, in a terminal (or over SSH as the user the board runs as), type `curl -fsSL https://family-wise-topaz.vercel.app/api/kiosk/install | bash`, then `sudo reboot`. It needs no password or key, listens only on the Pi itself, and answers only FamilyWise; it starts with the Pi and again if it stops. Running the same command again updates it.
 
 > **Tip:** Moving the mouse wakes the Pi's monitor too. A monitor coming out of standby takes a second or two to show the picture.
 
@@ -1513,7 +1514,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Board: **Updated 12 minutes ago** | It couldn't read the latest for a while. | Check the wifi. If it stays, reload the board's page. |
 | Board: **Reconnecting…** | The live connection dropped. | Usually fixes itself; it reads everything again when back. |
 | Board: black | It is asleep: its set times, or nobody touched it for a while ([A16](#a16-sleep-and-wake)). | Touch it, click or move the mouse. The first touch only wakes it; tap again to check something off. |
-| The Pi's monitor stays on while the board is black | The screen helper isn't installed, or the Pi hasn't restarted since. | Install it (A16), then `sudo reboot`. |
+| The Pi's monitor stays on while the board is black | The screen helper isn't installed or isn't running, or the Pi hasn't restarted since it was installed. | On the Pi, type `curl -s http://127.0.0.1:8737/status`: no answer means it isn't running, and `systemctl --user status familywise-screen` says why. Install it again (A16), then `sudo reboot`. |
 | Board: words too small, or too big, to read from where you stand | Its text size suits a different spot. | On **Boards**, choose a **Text size** for it and **Set text size**. |
 | Board: today's list is under the calendar | It has **Larger** or **Largest** text, which leaves no room beside the calendar. | Scroll down; or choose **Standard text** on **Boards**. |
 | Board in a laptop's browser: the browser's zoom does nothing | The board fits the window, whatever its zoom. | Use the board's **Text size** on **Boards** instead. |
