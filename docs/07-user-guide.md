@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.30: which check-offs bring an approvals alert (WP-92, D-119): only those that wait for you, so with approval off, only items set to **Always needs a parent's OK** (A3).
 > v0.29: sleep and wake per board (WP-34, D-116, D-117): A16, Boards (B1.12), the board asleep (B2), the rules, troubleshooting and questions.
 > v0.28: a goal's end date that can be cleared (WP-79, D-115): **Ends on a date** with the date and **Clear**, on an iPhone too; a started goal's end date added, moved or taken off; a reached goal keeps its rules and dates (A7, B1, B3).
 > v0.27: the meal week folded (WP-75, D-114): each day of **Meals** closed at first with "2 of 4 set" or a check, then **Add to the plan**, **Copy last week** and the usual lunch week, each closed until tapped (A15, B1.15).
@@ -306,6 +307,8 @@ A reminder shows the item's name and when it is due ("Due at 3:00 pm", "Due toda
 **Choosing which items remind you.** In **My tasks**, each open item has a bell: **Bell on** or **Bell off**. Tap it to switch that item for you only. On an item's page, **Reminders** sets how early that item reminds everyone ("As each person chose", or a fixed time).
 
 **Told when something waits for you.** With **Approvals** on, you get an alert when a child checks off something that needs your OK, or asks for a reward. It comes within 5 minutes and counts everything new since your last one, by child: "Maya: 3 check-offs and 1 reward request waiting". A newer alert replaces the older one on your lock screen. Tapping it opens **Today**, where they wait under **Waiting for you**, or **Rewards** when only reward requests wait. Quiet hours hold it, and if the other parent has dealt with everything by then, nothing comes. You aren't told about a reward you asked for yourself, or a private item you can't see, and the alert never shows an item's name. When you turn it on, it counts what becomes waiting from then.
+
+The alert is only for a check-off that waits for you. With approval off in **Family options** (the default), a child's check-off counts straight away and brings no alert, unless its item is set to **Always needs a parent's OK**. To hear about every check-off, turn approval on: see [Approval: on or off](#approval-on-or-off). A check-off you or the other parent approve before the next alert (within about 5 minutes) is no longer waiting, so it brings none.
 
 Reminders come only for items you are on, at most once each, and never after the item is done. **Turn off reminders** stops them all; your devices stay listed for when you **Turn reminders back on**.
 

@@ -1,4 +1,4 @@
--- [CHR-20] Why approval alerts did or did not go (reminders-report workflow). Read only, and counts
+-- [CHR-20] Why approval alerts did or did not go (reminders-report workflow, WP-92, D-119). Read only, and counts
 -- and reasons only: households and parents are numbered (H1, P1), never named, and no item is named.
 -- Covers the household's local today and yesterday. Run by scripts/reminders-report.sh.
 

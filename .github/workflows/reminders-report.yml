@@ -1,13 +1,10 @@
-# [CHR-20] Why approval alerts did or did not go (WP-63, D-88): reads production, read only, and
+# [CHR-20] Why approval alerts did or did not go (WP-92, D-119; alerts as WP-63, D-88): reads production, read only, and
 # reports counts and reasons only (households and parents numbered, nothing named) to the log and the
 # run summary. Actions → reminders-report → Run workflow.
 name: reminders-report
 
 on:
   workflow_dispatch:
-  push:
-    branches: [claude/bug-approval-alerts]
-    paths: [.github/workflows/reminders-report.yml, scripts/reminders-report.*]
 
 permissions:
   contents: read

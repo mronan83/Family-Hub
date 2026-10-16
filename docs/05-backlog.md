@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.128: WP-92 (approval alerts that didn't come, a bug) added at the owner's request and done in the same change (D-119): a setting, not code. Most of the child's check-offs were on items left on the family setting with the family's approval off, so they never waited and no alert was due; the one that waited past a run was alerted, and the push service took it for both parents' phones. The read-only `reminders-report` workflow shows why, counts only.
 > v0.8.127: WP-91 (the Boards settings as collapsible sections) added at the owner's request, recorded only (D-118): each board folded at first, showing its name and what matters about it, opening to grouped sections; the household's **Home screen** layout, **Add a board** and **Disconnected** folded too, in WP-75's fold style. Ready, mockup first. "Next, in order" is the owner's to set.
 > v0.8.126: WP-34 (quiet hours and burn-in mitigation, with sleep and wake per board) built and merged (D-116, D-117), from the mockup the owner approved on 16 October with its six recommendations; its 3 days on the owner's Pi 4 are open (Y-11).
 > v0.8.125: WP-34 gains sleep and wake per board, added at the owner's request, recorded only (D-116): when a board counts as missed (Always, Only while awake, Never), sleep and wake times for school days and weekends, an idle sleep woken by a touch, click or mouse movement that only wakes. WP-34 now depends on WP-06 and WP-47 and is Ready: the owner's Pi 4 on a 24" Dell is the board in use, so it no longer waits on WP-14 or SPIKE-03. Size S to M. A mockup comes first. "Next, in order" is the owner's to set.
@@ -260,6 +261,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-89 | The test database prepared for a pull request's preview | P3 | S | WP-60, WP-88 | Ready |
 | WP-90 | Nightly e2e reliability | P3 | M | WP-60, WP-88 | Done |
 | WP-91 | The Boards settings as collapsible sections | P3 | S | WP-34, WP-75, WP-35 | Ready (mockup first) |
+| WP-92 | Approval alerts that didn't come (a bug) | P2 | S | WP-63 | Done |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -437,6 +439,7 @@ flowchart LR
     WP34 --> WP91[WP-91 Boards settings folded]
     WP75 --> WP91
     WP35 --> WP91
+    WP63 --> WP92[WP-92 Approval alerts that didn't come]
     WP64 --> WP78
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP65 --> WP70[WP-70 Calendar refresh timing]
@@ -1414,6 +1417,15 @@ flowchart LR
 - **Mockup first:** Boards, folded and opened, on the demo family at 390 and 1280 px, approved by the owner before WP-91 is built.
 - **Done when:** unit tests on a board's folded summary (awake or asleep with the next time, last seen, theme, text size, own or household layout, the not-seen warning by its **Tell me when** choice) and on the layout's one-line summary; on the preview, Alex opens Boards with every board folded, reads the Kitchen board's summary, opens it, changes its text size under **Display**, and finds the board open after the save; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, the not-seen warning shown while folded, and taps after hydration.
 
+### WP-92 — Approval alerts that didn't come (a bug)
+**Phase:** P2 · **Size:** S · **Depends on:** WP-63 · **Reqs:** CHR-20, CHR-05
+- Added at the owner's request, 16 October: "Bug - Notifications. I'm not getting notifications from the app on my phone. My child completed a few chores today that required approval and the notifications were not delivered. I am set up to receive notifications." The owner's checks: **Approvals** is on in Reminders; **Send a test** arrives on their phone; their device is listed and on. The reminders job ran every 5 minutes with no errors.
+- **Found (D-119), from production, counts only:** both parents have reminders and **Approvals** on, a device each, and one has quiet hours 10:00 pm to 6:00 am. Since the day before, the child made 20 check-offs on the board. 17 were on items left on the family setting, with the family's approval **off**: they counted at once and never waited for a parent, so no approval alert was due (D-88: an alert is for what waits). 3 were on items that always need a parent's OK: one was in an alert at 4:00 pm, sent to both parents and accepted by the push service for both phones; one was approved by a parent 34 seconds after the check-off, before the next 5-minute run, so nothing was still waiting; one came before **Approvals** was on. Planning and sending worked as designed: no code changed in either.
+- **The owner's fix, a setting:** to be told about every check-off, turn approval on in **Settings** → **Family options** → **Check-offs**: choose **It waits for a parent to approve it**, then **Save**. Every child's check-off on an item on the family setting then waits for a parent, and points come when it is approved. To be told about only some items, open each in **Chores**, **More options** → **Approval** → **Always needs a parent's OK**, then **Save**.
+- **Done when:** pgTAP shows a check-off on a family-setting item with approval off counts at once and plans no alert, an item that always needs a parent's OK waits and is alerted, and with approval on the family-setting item waits and is alerted; the report's test shows it runs read only, has every section and names no member, item or household.
+- **As built:** `.github/workflows/reminders-report.yml` (run by hand), `scripts/reminders-report.sh` and `scripts/reminders-report.sql` (a read-only session; households and parents numbered); the user guide says which check-offs bring an alert. Tests: `supabase/tests/470_approval_alert_findings.test.sql` (8), `scripts/reminders-report.test.sh` (CI `database`).
+- **Open, the owner's to check:** whether the 4:00 pm alert on 15 October ("1 check-off waiting") showed on their phone. The push service accepted it; if it did not show, iPhone's Focus or the app's notification settings in iOS **Settings** → **Notifications** are where to look, and the report shows the next one.
+
 ---
 
 ## 6. Size summary
@@ -1425,7 +1437,7 @@ flowchart LR
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
-| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82 | Menu adapters, WP-49 and WP-80 are the Ls |
+| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82, WP-92 | Menu adapters, WP-49 and WP-80 are the Ls |
 | P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88 – WP-91 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.
