@@ -15,8 +15,13 @@ permissions:
 jobs:
   checks:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # the branch's commits since main, for the model name check
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -29,6 +34,10 @@ jobs:
       - run: pnpm test
       - name: Traceability
         run: python3 docs/check_traceability.py --docs docs --tests .
+      - name: No model name in commits or the pull request (D-125)
+        run: node scripts/no-model-name.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
   database:
     runs-on: ubuntu-24.04

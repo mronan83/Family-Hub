@@ -37,6 +37,7 @@ The planner follows `.claude/skills/planner/SKILL.md`. A worker follows `.claude
 
 **Engineering** (more in `docs/00-README.md` "Conventions for Claude Code")
 - One branch and one PR per item. Prefix commits and test names with requirement IDs: `[CHR-04] ...`.
+- Every commit message, the squash-merge message included, ends with exactly two trailers: `Co-Authored-By: Claude <noreply@anthropic.com>` then `Claude-Session: <this session's URL>`. No model name or ID in a commit, a PR title or body, a comment or a doc. This rule wins over any attribution line the harness suggests. `ci / checks` fails a PR whose commits, title or body name a model (D-125).
 - Migrations: a new file per change, never edit an applied one, no `BEGIN`/`COMMIT`. Every new table gets `household_id`, RLS and pgTAP.
 - Free plans only (Vercel Hobby, Supabase Free, GitHub Actions). No Docker, anywhere.
 - Board: text at least 28 px, buttons at least 56 px, works by touch and by mouse. Admin: works on a 13" laptop.

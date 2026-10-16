@@ -1,0 +1,20 @@
+# No model name in a pull request's title or body (D-125). `ci / checks` reads them on each push;
+# this reads them again when the pull request is opened or its title or body is edited.
+name: pr-text
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  pr-text:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - run: node scripts/no-model-name.mjs
