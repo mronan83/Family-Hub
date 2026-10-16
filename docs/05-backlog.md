@@ -1,7 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.129: The fold audit of the admin app added at the owner's request, recorded only (D-120): every admin screen judged against WP-75's fold and mocked up on the demo family; five new work packages after WP-91 (WP-93 to WP-97), Queued until the owner approves the mockup. WP-91 is built first and on its own, with the shared fold. "Next, in order" is the owner's to set.
+> v0.8.129: The fold audit of the admin app added at the owner's request, recorded only (D-120): every admin screen judged against WP-75's fold and mocked up on the demo family; five new work packages after WP-91 (WP-93 to WP-97). The owner approved the mockup on 16 October, admin only, and confirmed D-120; WP-91 is Ready and built first and on its own, with the shared fold, and WP-93 to WP-97 are Queued behind it. "Next, in order" is the owner's to set.
 > v0.8.127: WP-91 (the Boards settings as collapsible sections) added at the owner's request, recorded only (D-118): each board folded at first, showing its name and what matters about it, opening to grouped sections; the household's **Home screen** layout, **Add a board** and **Disconnected** folded too, in WP-75's fold style. Ready, mockup first. "Next, in order" is the owner's to set.
 > v0.8.126: WP-34 (quiet hours and burn-in mitigation, with sleep and wake per board) built and merged (D-116, D-117), from the mockup the owner approved on 16 October with its six recommendations; its 3 days on the owner's Pi 4 are open (Y-11).
 > v0.8.125: WP-34 gains sleep and wake per board, added at the owner's request, recorded only (D-116): when a board counts as missed (Always, Only while awake, Never), sleep and wake times for school days and weekends, an idle sleep woken by a touch, click or mouse movement that only wakes. WP-34 now depends on WP-06 and WP-47 and is Ready: the owner's Pi 4 on a 24" Dell is the board in use, so it no longer waits on WP-14 or SPIKE-03. Size S to M. A mockup comes first. "Next, in order" is the owner's to set.
@@ -260,12 +260,12 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-88 | Fast deploy gate; e2e nightly only | P3 | S | WP-41, WP-60 | Done |
 | WP-89 | The test database prepared for a pull request's preview | P3 | S | WP-60, WP-88 | Ready |
 | WP-90 | Nightly e2e reliability | P3 | M | WP-60, WP-88 | Done |
-| WP-91 | The Boards settings as collapsible sections | P3 | S | WP-34, WP-75, WP-35 | Ready (mockup first) |
-| WP-93 | Calendars, school menus and the meal library folded | P3 | M | WP-91 | Queued (mockup approval pending) |
-| WP-94 | The set-up pages folded | P3 | M | WP-91 | Queued (mockup approval pending) |
-| WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Queued (mockup approval pending) |
-| WP-96 | Chores, an item's page and the icon picker folded | P3 | M | WP-91 | Queued (mockup approval pending) |
-| WP-97 | Today, My tasks and Insights folded | P3 | S | WP-91 | Queued (mockup approval pending) |
+| WP-91 | The Boards settings as collapsible sections | P3 | S | WP-34, WP-75, WP-35 | Ready (mockup approved) |
+| WP-93 | Calendars, school menus and the meal library folded | P3 | M | WP-91 | Queued: WP-91 first (mockup approved) |
+| WP-94 | The set-up pages folded | P3 | M | WP-91 | Queued: WP-91 first (mockup approved) |
+| WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Queued: WP-91 first (mockup approved) |
+| WP-96 | Chores, an item's page and the icon picker folded | P3 | M | WP-91 | Queued: WP-91 first (mockup approved) |
+| WP-97 | Today, My tasks and Insights folded | P3 | S | WP-91 | Queued: WP-91 first (mockup approved) |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -1422,8 +1422,8 @@ flowchart LR
   - **The household's Home screen layout** folded to a one-line summary (for example "5 days · meals on · Goals, Waiting, Coming up · weather on"), opening to its form as now.
   - **Add a board** folded to one button that opens the name and pairing code form; **Disconnected** folded to a count that opens the list.
 - Admin app only, not the board. Nothing is removed: every setting on Boards today stays, inside a fold.
-- **Mockup first:** Boards, folded and opened, on the demo family at 390 and 1280 px, approved by the owner before WP-91 is built. The fold audit's **Boards** page is that mockup ([Boards in the fold audit](https://claude.ai/artifact/XmqoDeW6RNFbov3dntr5F4#boards)).
-- **With the fold audit (D-120), proposed by Claude Code:** WP-91 is built first and on its own, and lifts the fold out of Meals into one shared component (the fold, its summary lines and the warning on its header) that WP-75's screens and WP-93 to WP-97 use. Meals looks and works as it does now.
+- **Mockup first:** Boards, folded and opened, on the demo family at 390 and 1280 px, approved by the owner before WP-91 is built. The fold audit's **Boards** page is that mockup, approved by the owner on 16 October ([Boards in the fold audit](https://claude.ai/artifact/XmqoDeW6RNFbov3dntr5F4#boards)).
+- **With the fold audit (D-120), approved by the owner with the mockup on 16 October:** WP-91 is built first and on its own, and lifts the fold out of Meals into one shared component (the fold, its summary lines and the warning on its header) that WP-75's screens and WP-93 to WP-97 use. Meals looks and works as it does now.
 - **Done when:** unit tests on a board's folded summary (awake or asleep with the next time, last seen, theme, text size, own or household layout, the not-seen warning by its **Tell me when** choice) and on the layout's one-line summary; on the preview, Alex opens Boards with every board folded, reads the Kitchen board's summary, opens it, changes its text size under **Display**, and finds the board open after the save; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, the not-seen warning shown while folded, and taps after hydration.
 
 ### The fold audit — every admin screen folded, one standard
@@ -1433,7 +1433,7 @@ flowchart LR
 - **The standard (D-120):** WP-75's fold, made one shared component in WP-91. Folded: forms that add something (to their button), archived lists, history and logs, settings set once (to what they are set to), each calendar, school menu and board (to its facts), and Archive, Remove, Cancel and Disconnect set apart at the bottom. Open: what waits for a parent, a page's main list, an edit page's form, and short pages. A warning or a count waiting for a parent shows on the folded header. A fold comes back open after a save, an add or an error inside it. The older plain disclosures become the same fold.
 - **No change:** Home (it is the glance: **Needs you**, **Heads-up** and **Quick actions** stay open), **Settings** (its tiles already summarise), and the sign-in, setup and invite pages.
 - **The board (a separate note):** no board screen is folded. Its Home never scrolls (D-74) and is read from 2 m away. If one ever is, **Lunches** (B2.10) and a person's screen (B2.3) at Larger and Largest text come first, each with 56 px headers and its own mockup.
-- **The build, in this order:** WP-91 (Boards, with the shared fold), WP-93, WP-94, WP-95, WP-96, WP-97. Each is Queued until the owner approves the mockup, then Ready; the mockup is each one's mockup, so none needs another unless the owner asks for a change. "Next, in order" is the owner's to set.
+- **The build, in this order:** WP-91 (Boards, with the shared fold), WP-93, WP-94, WP-95, WP-96, WP-97. The owner approved the mockup on 16 October, admin only, and confirmed D-120. It is each one's mockup, so none needs another unless the owner asks for a change; each is Queued until WP-91 is done, then Ready. "Next, in order" is the owner's to set.
 - **Nothing is removed:** every control on every page today stays, inside a fold or in the open.
 
 ### WP-93 — Calendars, school menus and the meal library folded
