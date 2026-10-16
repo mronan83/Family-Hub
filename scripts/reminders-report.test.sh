@@ -37,10 +37,11 @@ q "set role service_role; set request.jwt.claims = '{\"role\": \"service_role\"}
 
 SUPABASE_DB_URL="$(url)" bash "$root/scripts/reminders-report.sh" > "$work/log" 2>&1; rc=$?
 check "[CHR-20] runs and exits cleanly" "$(is "$rc" 0)"
+grep '^## ' "$work/log" > "$work/sections"
 for section in 'Parents: settings and devices' 'Approval alerts since yesterday' 'Reminders job runs' \
                'why each was or was not in an alert' 'Check-offs waiting now' 'what the item asked' \
-               'Approvals, rejections' 'Household approval switch'; do
-  check "[CHR-20] has the section \"$section\"" "$(grep -F "## " "$work/log" | grep -qF "$section" "$work/log" && echo ok || echo missing)"
+               'Approvals, rejections' 'Household approval switch' 'which alert, who approved and when'; do
+  check "[CHR-20] has the section \"$section\"" "$(grep -qF "$section" "$work/sections" && echo ok || echo missing)"
 done
 check "[CHR-20] shows the alert sent to each demo parent, numbered" \
   "$(is "$(grep -cE '^\| H1\.P[0-9]+ +\| sent ' "$work/log")" "$(q "select count(*) from public.reminder_delivery where kind = 'approval' and status = 'sent'")")"
