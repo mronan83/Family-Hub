@@ -93,14 +93,18 @@ create function pg_temp.result(p_hash text) returns jsonb language sql as $$
       jsonb_build_object('uid', 'trip@test', 'title', 'Trip', 'start', '2026-11-26', 'end', '2026-11-30',
                          'all_day', true)))
 $$;
+-- A calendar's one person (calendar_member), or null for the whole family's.
+create function pg_temp.person(p_calendar uuid) returns uuid language sql as $$
+  select member_id from public.calendar_member where calendar_id = p_calendar
+$$;
 create function pg_temp.hash(p_n int) returns text language sql as $$ select repeat(p_n::text, 64) $$;
 
 -- [CAL-01] Connecting ---------------------------------------------------------------------------
 select pg_temp.as_user('26100000-0000-0000-0000-000000000001');
-insert into cal (id) values (public.save_calendar_source('26000000-0000-0000-0000-000000000001', null, 'Family',
-  'https://p01-caldav.icloud.com/published/2/made-up-link', 'member-3', '26110000-0000-0000-0000-00000000000a', true));
+insert into cal (id) values (public.save_calendar('26000000-0000-0000-0000-000000000001', null, 'Family',
+  'https://p01-caldav.icloud.com/published/2/made-up-link', 'member-3', array['26110000-0000-0000-0000-00000000000a']::uuid[], true));
 select isnt(pg_temp.cal(), null, '[CAL-01] an admin connects a calendar by its link');
-select results_eq($$ select name, color, member_id, show_on_board, status from public.calendar_source $$,
+select results_eq($$ select name, color, pg_temp.person(id), show_on_board, status from public.calendar_source $$,
   $$ values ('Family'::text, 'member-3'::text, '26110000-0000-0000-0000-00000000000a'::uuid, true, 'pending'::text) $$,
   '[CAL-01] it is listed with its color and person, not synced yet');
 select throws_ok($$ select decrypted_secret from vault.decrypted_secrets $$, '42501', null,
@@ -113,11 +117,11 @@ select throws_ok($$ insert into public.calendar_source (household_id, name, url_
 select throws_ok($$ update public.calendar_source set status = 'ok' $$, '42501', null, '[CAL-03] no update');
 select throws_ok($$ delete from public.calendar_event_instance $$, '42501', null,
   '[CAL-03] and no event or instance is changed by hand');
-select throws_ok($$ select public.save_calendar_source('26000000-0000-0000-0000-000000000001', null, 'Plain',
-                      'http://example.com/a.ics', 'member-1', null, true) $$, '22023', null,
+select throws_ok($$ select public.save_calendar('26000000-0000-0000-0000-000000000001', null, 'Plain',
+                      'http://example.com/a.ics', 'member-1', '{}'::uuid[], true) $$, '22023', null,
   '[CAL-01] a link that is not https is refused');
-select throws_ok($$ select public.save_calendar_source('26000000-0000-0000-0000-000000000001', null, 'No link',
-                      null, 'member-1', null, true) $$, '22023', null, '[CAL-01] a new calendar needs its link');
+select throws_ok($$ select public.save_calendar('26000000-0000-0000-0000-000000000001', null, 'No link',
+                      null, 'member-1', '{}'::uuid[], true) $$, '22023', null, '[CAL-01] a new calendar needs its link');
 
 select pg_temp.as_owner();
 select is((select d.decrypted_secret from vault.decrypted_secrets d
@@ -133,8 +137,8 @@ select is((select count(*) from public.audit_log where entity_type = 'calendar_s
 -- Another household ------------------------------------------------------------------------------
 select pg_temp.as_user('26300000-0000-0000-0000-000000000003');
 select is((select count(*) from public.calendar_source), 0::bigint, '[NFR-04] another household sees no calendar');
-select throws_ok($$ select public.save_calendar_source('26000000-0000-0000-0000-000000000001', pg_temp.cal(), 'Mine',
-                      null, 'member-1', null, true) $$, '42501', null, '[NFR-04] nor changes one');
+select throws_ok($$ select public.save_calendar('26000000-0000-0000-0000-000000000001', pg_temp.cal(), 'Mine',
+                      null, 'member-1', '{}'::uuid[], true) $$, '42501', null, '[NFR-04] nor changes one');
 select throws_ok($$ select public.save_calendar_sync(pg_temp.cal(), '{"ok": false, "error": "x"}') $$, '42501', null,
   '[NFR-04] nor stores a sync for it');
 select throws_ok($$ select public.remove_calendar_source(pg_temp.cal()) $$, 'P0002', null, '[NFR-04] nor removes it');
@@ -229,8 +233,8 @@ select is((select count(*) from public.calendar_event), 1::bigint, '[CAL-02] and
 
 -- Replacing the link --------------------------------------------------------------------------------
 select pg_temp.as_user('26100000-0000-0000-0000-000000000001');
-select is(public.save_calendar_source('26000000-0000-0000-0000-000000000001', pg_temp.cal(), 'Family',
-  'https://p02-caldav.icloud.com/published/2/another-made-up-link', 'member-3', '26110000-0000-0000-0000-00000000000a', true),
+select is(public.save_calendar('26000000-0000-0000-0000-000000000001', pg_temp.cal(), 'Family',
+  'https://p02-caldav.icloud.com/published/2/another-made-up-link', 'member-3', array['26110000-0000-0000-0000-00000000000a']::uuid[], true),
   pg_temp.cal(), '[CAL-01] an admin replaces the link');
 select pg_temp.as_owner();
 select is((select d.decrypted_secret from vault.decrypted_secrets d
@@ -244,9 +248,9 @@ select is((select count(*) from public.audit_log where entity_type = 'calendar_s
   '[ACC-05] saving the same details is not a change');
 
 select pg_temp.as_user('26100000-0000-0000-0000-000000000001');
-select lives_ok($$ select public.save_calendar_source('26000000-0000-0000-0000-000000000001', pg_temp.cal(), 'Our family',
-                     null, 'member-5', null, false) $$, '[CAL-01] details change without the link');
-select results_eq($$ select name, color, member_id, show_on_board, status from public.calendar_source $$,
+select lives_ok($$ select public.save_calendar('26000000-0000-0000-0000-000000000001', pg_temp.cal(), 'Our family',
+                     null, 'member-5', '{}'::uuid[], false) $$, '[CAL-01] details change without the link');
+select results_eq($$ select name, color, pg_temp.person(id), show_on_board, status from public.calendar_source $$,
   $$ values ('Our family'::text, 'member-5'::text, null::uuid, false, 'pending'::text) $$,
   '[CAL-01] and the link and status stay');
 select pg_temp.as_owner();
@@ -262,14 +266,14 @@ select is((select count(*) from public.calendar_event) + (select count(*) from p
   '[CAL-01] its events go with it');
 
 select pg_temp.as_user('26300000-0000-0000-0000-000000000003');
-update cal set other = public.save_calendar_source('26000000-0000-0000-0000-000000000002', null, 'Theirs',
-  'https://example.com/made-up.ics', 'member-1', null, true);
+update cal set other = public.save_calendar('26000000-0000-0000-0000-000000000002', null, 'Theirs',
+  'https://example.com/made-up.ics', 'member-1', '{}'::uuid[], true);
 select pg_temp.as_owner();
 delete from public.household where id = '26000000-0000-0000-0000-000000000002';
 select is((select count(*) from vault.secrets), 0::bigint, '[CAL-01] a household''s removal takes its links from Vault');
 
 select ok(not has_function_privilege('authenticated', 'public.calendar_sources_due(uuid, timestamptz)', 'execute')
-      and not has_function_privilege('anon', 'public.save_calendar_source(uuid, uuid, text, text, text, uuid, boolean)', 'execute')
+      and not has_function_privilege('anon', 'public.save_calendar(uuid, uuid, text, text, text, uuid[], boolean)', 'execute')
       and not has_function_privilege('anon', 'public.save_calendar_sync(uuid, jsonb)', 'execute')
       and has_function_privilege('service_role', 'public.calendar_sources_due(uuid, timestamptz)', 'execute'),
   '[NFR-04] only the job reads links back; nobody signed out reaches any of it');

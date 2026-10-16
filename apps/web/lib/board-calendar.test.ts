@@ -292,7 +292,7 @@ describe('reading the board’s calendar', () => {
             id: 'c1',
             name: 'School',
             color: 'member-3',
-            member_id: 'm1',
+            member_ids: ['m1'],
             status: 'error',
             last_success_at: null,
           },
@@ -354,9 +354,8 @@ describe('reading the board’s calendar', () => {
           name: 'Kids',
           color: 'member-8',
           member_ids: ['maya', 'leo', 7],
-          member_id: null,
         },
-        { id: 'f', name: 'Family', color: 'member-6', member_ids: [], member_id: null },
+        { id: 'f', name: 'Family', color: 'member-6', member_ids: [] },
       ],
       events: [],
     });
@@ -364,6 +363,16 @@ describe('reading the board’s calendar', () => {
       ['Kids', ['maya', 'leo']],
       ['Family', []],
     ]);
+  });
+
+  it('[CAL-09-g] a calendar’s people come only from member_ids, not the one-person member_id', () => {
+    const read = readCalendar({
+      from: '2026-10-19',
+      to: '2026-10-19',
+      calendars: [{ id: 'w', name: 'Work', color: 'member-1', member_id: 'robin' }],
+      events: [],
+    });
+    expect(read!.calendars.map((c) => [c.name, c.memberIds])).toEqual([['Work', []]]);
   });
 
   it('[DEV-05] none from an older database or for anyone but a board', () => {

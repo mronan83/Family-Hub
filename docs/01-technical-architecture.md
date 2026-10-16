@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.71: WP-50's contract (D-122), added at the owner's request: `save_calendar()` is the only save of a calendar (`save_calendar_source()` dropped), and a board reads a calendar's people only as `member_ids`.
 > v0.8.70: a calendar for one or more people (WP-50, D-122): Calendars takes who a calendar is for as ticks, `save_calendar()` saves them, and a board reads each calendar's people (§5.4).
 > v0.8.69: WP-34 follow-up: the Pi's screen helper runs as a systemd user service with the desktop's display, not from the desktop's start-up folder (§8).
 > v0.8.68: approval alerts at once (WP-92, D-119): the database calls the reminders job for the household as something starts waiting, and each alert counts all that waits; the read-only `reminders-report` workflow says why each alert did or did not go (§ approval alerts).
@@ -635,7 +636,7 @@ sequenceDiagram
 
 ### 6.4 Secrets and calendar credentials
 
-- Calendar URLs/credentials live in `VAULT`; tables store only the secret ID. As built (WP-22, D-63): an admin's `save_calendar_source()` writes a link to Vault, only the job's `calendar_sources_due()` (service role) reads it back, and it goes with its calendar or household (trigger). The admin portal never shows it again, and no table, audit row or log holds it.
+- Calendar URLs/credentials live in `VAULT`; tables store only the secret ID. As built (WP-22, D-63): an admin's `save_calendar_source()` (since WP-50, `save_calendar()`) writes a link to Vault, only the job's `calendar_sources_due()` (service role) reads it back, and it goes with its calendar or household (trigger). The admin portal never shows it again, and no table, audit row or log holds it.
 - **Default (MVP): published ICS link.** The URL is a bearer secret, so treat it like a password and store it in Vault.
 - **Web push (D-35):** a VAPID key pair; the public key ships to browsers and the private key is a server-only Vercel secret. Push subscriptions are stored per device, readable only by their owner and by the reminders job.
 - **Later (CAL-08): CalDAV.** An Apple app-specific password is **not scoped to one calendar**; it exposes the whole Apple ID's CalDAV data. Use a secondary Apple ID that is shared read-only on just the calendars the board needs, and generate the app-specific password on that account.

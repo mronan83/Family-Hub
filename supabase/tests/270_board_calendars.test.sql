@@ -33,17 +33,17 @@ insert into public.device (id, household_id, name, auth_user_id) values
   ('27dd0000-0000-0000-0000-00000000000c', '27000000-0000-0000-0000-000000000002', 'Porch',
    '27d00000-0000-0000-0000-00000000000c');
 -- Calendars as the sync leaves them (the links' Vault ids are made up: nothing here reads them).
-insert into public.calendar_source (id, household_id, name, url_secret_id, color, member_id, show_on_board,
+insert into public.calendar_source (id, household_id, name, url_secret_id, color, show_on_board,
                                     status, last_success_at) values
   ('27ca0000-0000-0000-0000-000000000001', '27000000-0000-0000-0000-000000000001', 'Family', gen_random_uuid(),
-   'member-6', null, true, 'ok', now()),
+   'member-6', true, 'ok', now()),
   ('27ca0000-0000-0000-0000-000000000002', '27000000-0000-0000-0000-000000000001', 'School', gen_random_uuid(),
-   'member-3', '27110000-0000-0000-0000-00000000000a', true, 'ok', now()),
+   'member-3', true, 'ok', now()),
   ('27ca0000-0000-0000-0000-000000000003', '27000000-0000-0000-0000-000000000001', 'Work', gen_random_uuid(),
-   'member-1', null, false, 'ok', now()),
+   'member-1', false, 'ok', now()),
   ('27ca0000-0000-0000-0000-000000000004', '27000000-0000-0000-0000-000000000002', 'Theirs', gen_random_uuid(),
-   'member-2', null, true, 'ok', now());
--- School's one person, as WP-50's carry-over leaves it.
+   'member-2', true, 'ok', now());
+-- School's one person.
 insert into public.calendar_member (household_id, calendar_id, member_id) values
   ('27000000-0000-0000-0000-000000000001', '27ca0000-0000-0000-0000-000000000002', '27110000-0000-0000-0000-00000000000a');
 
@@ -116,9 +116,8 @@ select is((select e from jsonb_array_elements(public.board_calendar(pg_temp.toda
 select is((select c from jsonb_array_elements(public.board_calendar(pg_temp.today(), pg_temp.today()) -> 'calendars') c
             where c ->> 'name' = 'School') - 'last_success_at',
   jsonb_build_object('id', '27ca0000-0000-0000-0000-000000000002', 'name', 'School', 'color', 'member-3',
-                     'member_id', '27110000-0000-0000-0000-00000000000a', 'status', 'ok',
-                     'member_ids', jsonb_build_array('27110000-0000-0000-0000-00000000000a')),
-  '[CAL-05][CAL-09] each calendar with its color and whose it is');
+                     'status', 'ok', 'member_ids', jsonb_build_array('27110000-0000-0000-0000-00000000000a')),
+  '[CAL-05][CAL-09][CAL-09-g] each calendar with its color and whose it is, as member_ids only');
 select is((public.board_snapshot() -> 'calendar' -> 'calendars'), public.board_calendar(pg_temp.today() - 1, pg_temp.today() + 21) -> 'calendars',
   '[DEV-05] the snapshot carries the calendar over its own window');
 select is(jsonb_array_length(public.board_snapshot() -> 'calendar' -> 'events'), 3,
@@ -159,7 +158,7 @@ select is(public.set_board_calendars('27dd0000-0000-0000-0000-00000000000a',
                   '27ca0000-0000-0000-0000-000000000003']::uuid[]),
   '{"shown": 3, "hidden": 1}'::jsonb, '[US-507] School ticked again (Sports added, unticked)');
 select pg_temp.as_kitchen();
-select is((select c ->> 'color' || ' ' || (c ->> 'member_id') from jsonb_array_elements(
+select is((select c ->> 'color' || ' ' || (c -> 'member_ids' ->> 0) from jsonb_array_elements(
             public.board_calendar(pg_temp.today(), pg_temp.today()) -> 'calendars') c where c ->> 'name' = 'School'),
   'member-3 27110000-0000-0000-0000-00000000000a', '[US-507] with its color and person kept');
 select pg_temp.as_owner();

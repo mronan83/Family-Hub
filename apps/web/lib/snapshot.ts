@@ -409,12 +409,9 @@ export function readCalendar(x: unknown): BoardCalendar | null {
               id: c.id,
               name: c.name,
               color: (typeof c.color === 'string' ? c.color : 'member-6') as MemberColor,
-              // A database before WP-50 sends its one person as member_id.
               memberIds: Array.isArray(c.member_ids)
                 ? c.member_ids.filter((id): id is string => typeof id === 'string')
-                : typeof c.member_id === 'string'
-                  ? [c.member_id]
-                  : [],
+                : [],
               status: CALENDAR_STATUSES.includes(c.status as BoardCalendarSource['status'])
                 ? (c.status as BoardCalendarSource['status'])
                 : 'ok',
