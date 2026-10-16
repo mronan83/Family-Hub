@@ -104,7 +104,7 @@ function ruleUnits(rule: Rule, units: Unit[]): Unit[] {
   if (!on) return inRule;
   return inRule.map((u) =>
     (u.state === 'done' || u.state === 'pending') && isLate(u.fact, on)
-      ? { ...u, state: 'missed' as const }
+      ? { ...u, state: 'missed' as const, late: true }
       : u,
   );
 }
@@ -225,6 +225,9 @@ interface Window {
 /** [RWD-16] Each day of `from` to `until` for the routines in scope: due or not, and how it went. */
 function daysDueTally(units: Unit[], from: string, until: string, asOf: string) {
   const tally = tallyRoutines(units);
+  const late = new Set(
+    units.filter((u) => u.late && u.fact.kind === 'chore').map((u) => u.fact.due_date),
+  );
   let due = 0;
   let good = 0;
   let bad = 0;
@@ -237,7 +240,7 @@ function daysDueTally(units: Unit[], from: string, until: string, asOf: string) 
     let mark: DayMark;
     if (cls === 'neutral') mark = 'none';
     else if (cls === 'good') mark = 'done';
-    else if (cls === 'bad') mark = 'missed';
+    else if (cls === 'bad') mark = late.has(date) ? 'late' : 'missed';
     else mark = date === asOf ? 'today' : date > asOf ? 'later' : 'open';
     if (cls !== 'neutral') due += 1;
     if (cls === 'good') {

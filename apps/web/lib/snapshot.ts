@@ -175,6 +175,11 @@ export interface BoardGoal {
   history: PeriodOutline[];
   /** [RWD-13] The points it (or each period) pays; null when it pays something else. */
   pays?: number | null;
+  /** [RWD-18] Its lower steps, when it pays in steps (the top is `pays`). */
+  steps?: { misses?: number; at?: number; amount: number }[];
+  /** [RWD-18] A one-off goal's step reached and the best in reach. */
+  step?: number | null;
+  stepBest?: number | null;
 }
 
 export interface BoardGoalRule {
@@ -187,6 +192,10 @@ export interface BoardGoalRule {
   /** A streak rule's run now and best; null for the others. */
   streak: number | null;
   best: number | null;
+  /** [RWD-18] Its weight on a weighted goal that pays in steps. */
+  weight?: number | null;
+  /** [RWD-17] When a tick counts: 'due_time' or 'HH:MM'; null for any time. */
+  onTime?: string | null;
 }
 
 export interface BoardMember {
@@ -335,7 +344,7 @@ function readRequests(x: unknown): BoardRequest[] {
 const RULE_TYPES: readonly RuleType[] = ['COUNT', 'STREAK', 'DAILY_ALL_DONE', 'POINTS', 'DAYS_DUE'];
 const REPEATS: readonly Repeat[] = ['none', 'week', 'month', 'term'];
 const OUTCOMES: readonly PeriodOutcome[] = ['open', 'won', 'missed', 'neutral'];
-const MARKS: readonly DayMark[] = ['done', 'missed', 'open', 'today', 'later', 'none'];
+const MARKS: readonly DayMark[] = ['done', 'missed', 'late', 'open', 'today', 'later', 'none'];
 const date = (x: unknown): string | null =>
   typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) ? x : null;
 
@@ -368,9 +377,29 @@ function readPeriod(x: unknown): GoalPeriod | null {
     daysMissed: num(x.days_missed),
     missesAllowed: num(x.misses_allowed),
     days,
+    step: num(x.step),
+    stepBest: num(x.step_best),
   };
 }
 const num = (x: unknown): number | null => (typeof x === 'number' ? x : null);
+
+/** [RWD-18] A goal's lower steps as the snapshot has them; any step it can't read leaves out all. */
+function readSteps(x: unknown): NonNullable<BoardGoal['steps']> {
+  if (!Array.isArray(x)) return [];
+  const out = x.flatMap((s) =>
+    isObject(s) &&
+    typeof s.amount === 'number' &&
+    (typeof s.misses === 'number' || typeof s.at === 'number')
+      ? [
+          {
+            ...(typeof s.misses === 'number' ? { misses: s.misses } : { at: s.at as number }),
+            amount: s.amount,
+          },
+        ]
+      : [],
+  );
+  return out.length === x.length ? out : [];
+}
 
 /** The goals in play (WP-20); a goal in a state the board doesn't show, or a rule it can't draw, is left out. */
 function readGoals(x: unknown): BoardGoal[] {
@@ -396,9 +425,12 @@ function readGoals(x: unknown): BoardGoal[] {
         repeat: REPEATS.includes(g.repeat as Repeat) ? (g.repeat as Repeat) : 'none',
         period: readPeriod(g.period),
         pays: num(g.pays),
+        steps: readSteps(g.steps),
+        step: num(g.step),
+        stepBest: num(g.step_best),
         history: (Array.isArray(g.history) ? g.history : []).flatMap((h) => {
           const p = readPeriod(h);
-          return p ? [{ start: p.start, end: p.end, outcome: p.outcome }] : [];
+          return p ? [{ start: p.start, end: p.end, outcome: p.outcome, step: p.step }] : [];
         }),
         rules: rules.flatMap((r) =>
           isObject(r) && RULE_TYPES.includes(r.type as RuleType)
@@ -412,6 +444,8 @@ function readGoals(x: unknown): BoardGoal[] {
                   met: r.met === true,
                   streak: num(r.streak),
                   best: num(r.best),
+                  weight: num(r.weight),
+                  onTime: typeof r.on_time === 'string' ? r.on_time : null,
                 },
               ]
             : [],

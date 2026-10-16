@@ -5,6 +5,7 @@ import { notFound, redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { dayAndTime, isoDay } from '@/lib/format';
 import { daysLine, periodWord, REPEAT_WORDS, spanWords, thisPeriod } from '@/lib/goal-periods';
+import { goalSteps, stepKind } from '@/lib/goal-steps';
 import { eventWords, payoutWords, STATUS_WORDS } from '@/lib/goals';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
@@ -146,6 +147,8 @@ export default async function GoalPage({
               itemIds: 'all' in r.scope ? [] : (r.scope.chore_ids ?? []),
               grace: r.params.grace_per_week ?? 1,
               misses: r.params.misses_allowed ?? 0,
+              onTime: r.params.on_time ?? null,
+              weight: r.weight,
             })),
           }}
           members={ctx.earners}
@@ -164,6 +167,8 @@ export default async function GoalPage({
           periods={goal.periods}
           today={today}
           points={goal.payout.type === 'points' ? goal.payout.amount : null}
+          steps={goalSteps(goal.payout, goal.rules)}
+          kind={stepKind(goal.rules)}
         />
       ) : null}
 

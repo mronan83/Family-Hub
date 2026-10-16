@@ -6,6 +6,7 @@ import type { GoalRow } from '../../(admin)/admin/goals/data';
 import { GoalForm } from '../../(admin)/admin/goals/goal-form';
 import { WeeksFold } from '../../(admin)/admin/goals/repeating';
 import { GoalsView } from '../../(admin)/admin/goals/view';
+import { goalSteps } from '@/lib/goal-steps';
 
 // The admin Goals page and goal form (WP-19, WP-39) with a made-up family and no database, for the UI
 // suite: the list in Day or Evening (?theme=evening), the form for a new goal (?form=new), for one
@@ -83,6 +84,110 @@ function week(
   };
 }
 const SCHOOL_WEEK = ['done', 'done', 'done', 'done', 'done', 'none', 'none'] as const;
+
+/** [RWD-17][RWD-18] A week won or going at a step (WP-81). */
+const stepWeek = (
+  start: string,
+  outcome: GoalPeriod['outcome'],
+  marks: DayMark[],
+  step: number | null,
+  stepBest: number | null,
+): GoalPeriod => ({
+  ...week(start, outcome, marks, 2),
+  daysMissed: marks.filter((m) => m === 'missed' || m === 'late').length,
+  step,
+  stepBest,
+});
+const STEPS_PAYOUT = {
+  type: 'points' as const,
+  amount: 20,
+  steps: [
+    { misses: 1, amount: 10 },
+    { misses: 2, amount: 5 },
+  ],
+};
+
+/** [RWD-17][RWD-18] Maya's goals done by a time and paid in steps (WP-81, ?list=steps). */
+const STEP_GOALS: GoalRow[] = [
+  goal({
+    id: 'g10',
+    title: 'Homework before 6 pm',
+    memberId: MAYA,
+    icon: 'backpack',
+    status: 'active',
+    repeat: 'week',
+    startDate: '2026-09-14',
+    endDate: null,
+    payout: STEPS_PAYOUT,
+    pct: 60,
+    achievementCount: 3,
+    periods: [
+      stepWeek(
+        '2026-09-14',
+        'won',
+        ['done', 'done', 'late', 'missed', 'done', 'none', 'none'],
+        2,
+        2,
+      ),
+      stepWeek('2026-09-21', 'won', [...SCHOOL_WEEK], 0, 0),
+      stepWeek(
+        '2026-09-28',
+        'missed',
+        ['done', 'missed', 'late', 'missed', 'done', 'none', 'none'],
+        null,
+        null,
+      ),
+      stepWeek('2026-10-05', 'won', ['done', 'late', 'done', 'done', 'done', 'none', 'none'], 1, 1),
+      stepWeek(
+        '2026-10-12',
+        'open',
+        ['done', 'done', 'late', 'today', 'later', 'none', 'none'],
+        null,
+        1,
+      ),
+    ],
+    rules: [
+      {
+        id: 'r10',
+        type: 'DAYS_DUE',
+        target: 1,
+        scope: { chore_ids: [HOMEWORK] },
+        params: { misses_allowed: 2, on_time: '18:00' },
+        progress: { current: 2, pct: 67, met: false, currentStreak: null, bestStreak: null },
+      },
+    ],
+  }),
+  goal({
+    id: 'g11',
+    title: 'Read 20 books',
+    memberId: MAYA,
+    icon: 'book-open',
+    status: 'active',
+    startDate: '2026-09-01',
+    endDate: '2026-12-20',
+    payout: {
+      type: 'points',
+      amount: 20,
+      steps: [
+        { at: 15, amount: 10 },
+        { at: 10, amount: 5 },
+      ],
+    },
+    pct: 80,
+    step: 1,
+    stepBest: 0,
+    rules: [
+      {
+        id: 'r11',
+        type: 'COUNT',
+        target: 20,
+        scope: { chore_ids: [READING] },
+        params: {},
+        progress: { current: 16, pct: 80, met: false, currentStreak: null, bestStreak: null },
+      },
+    ],
+  }),
+];
 
 const GOALS: GoalRow[] = [
   goal({
@@ -274,12 +379,154 @@ const ITEMS = [
 export default async function DevGoalsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; form?: string }>;
+  searchParams: Promise<{ theme?: string; form?: string; list?: string }>;
 }) {
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
   // [RWD-14] no-end: a started goal with no end date (WP-79); reached: an achieved goal, locked (D-115).
   const forms = ['new', 'started', 'preview', 'no-end', 'reached'];
+  // [RWD-17][RWD-18] steps: Maya's "Homework before 6 pm" page, by a time and in steps, its weeks;
+  // weighted: a new goal with two weighted rules in steps; count-steps: a one-off goal in steps (WP-81).
+  if (params.list === 'steps') {
+    return (
+      <div className={`admin ${theme}`}>
+        <GoalsView
+          goals={STEP_GOALS}
+          members={MEMBERS}
+          names={{
+            tags: new Map(TAGS.map((t) => [t.id, t.name])),
+            items: new Map(ITEMS.map((t) => [t.id, t.title])),
+          }}
+          admins={new Map([['u1', 'Alex']])}
+          prizes={new Map(PRIZES.map((p) => [p.id, p.title]))}
+          timezone="America/New_York"
+          today={TODAY}
+          notice={null}
+          error={null}
+        />
+      </div>
+    );
+  }
+  if (params.form === 'steps' || params.form === 'weighted' || params.form === 'count-steps') {
+    const g = STEP_GOALS[0]!;
+    const initial =
+      params.form === 'steps'
+        ? {
+            title: g.title,
+            description: null,
+            icon: 'backpack' as const,
+            memberId: MAYA,
+            startDate: g.startDate,
+            endDate: null,
+            logic: 'all' as const,
+            repeat: 'week' as const,
+            payout: STEPS_PAYOUT,
+            rules: [
+              {
+                type: 'DAYS_DUE' as const,
+                target: 1,
+                scope: 'items' as const,
+                tagIds: [],
+                itemIds: [HOMEWORK],
+                grace: 1,
+                misses: 2,
+                onTime: '18:00',
+              },
+            ],
+          }
+        : params.form === 'weighted'
+          ? {
+              title: 'School week',
+              description: null,
+              icon: 'backpack' as const,
+              memberId: MAYA,
+              startDate: TODAY,
+              endDate: null,
+              logic: 'all' as const,
+              repeat: 'week' as const,
+              payout: {
+                type: 'points' as const,
+                amount: 20,
+                steps: [
+                  { at: 75, amount: 10 },
+                  { at: 50, amount: 5 },
+                ],
+              },
+              rules: [
+                {
+                  type: 'DAYS_DUE' as const,
+                  target: 1,
+                  scope: 'items' as const,
+                  tagIds: [],
+                  itemIds: [HOMEWORK],
+                  grace: 1,
+                  misses: 0,
+                  onTime: '18:00',
+                  weight: 60,
+                },
+                {
+                  type: 'COUNT' as const,
+                  target: 5,
+                  scope: 'items' as const,
+                  tagIds: [],
+                  itemIds: [READING],
+                  grace: 1,
+                  weight: 40,
+                },
+              ],
+            }
+          : {
+              title: 'Read 20 books',
+              description: null,
+              icon: 'book-open' as const,
+              memberId: MAYA,
+              startDate: '2026-09-01',
+              endDate: '2026-12-20',
+              logic: 'all' as const,
+              repeat: 'none' as const,
+              payout: STEP_GOALS[1]!.payout,
+              rules: [
+                {
+                  type: 'COUNT' as const,
+                  target: 20,
+                  scope: 'items' as const,
+                  tagIds: [],
+                  itemIds: [READING],
+                  grace: 1,
+                },
+              ],
+            };
+    return (
+      <div className={`admin ${theme}`}>
+        <main className="fw-page">
+          <AdminHeader current="/admin/goals" />
+          <section className="fw-card">
+            <h1>{params.form === 'weighted' ? 'Set a goal' : initial.title}</h1>
+            <GoalForm
+              id="f2e00000-0000-4000-8000-000000000010"
+              members={MEMBERS}
+              tags={TAGS}
+              items={ITEMS}
+              prizes={PRIZES}
+              today={TODAY}
+              lock={params.form === 'steps' ? 'started' : 'none'}
+              initial={initial}
+            />
+          </section>
+          {params.form === 'steps' ? (
+            <WeeksFold
+              repeat="week"
+              periods={g.periods}
+              today={TODAY}
+              points={20}
+              steps={goalSteps(g.payout, g.rules)}
+              kind="misses"
+            />
+          ) : null}
+        </main>
+      </div>
+    );
+  }
   // [RWD-15] repeating: Maya's homework goal's page, its form and its weeks (WP-80).
   if (params.form === 'repeating') {
     const homework = GOALS.find((g) => g.id === 'g8')!;

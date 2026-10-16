@@ -117,11 +117,13 @@ describe('[US-412] done by a time', () => {
       at('2026-10-14', '17:00'),
       at('2026-10-15', '18:30'),
     ];
-    const now = evaluate([by6({ params: { misses_allowed: 1, on_time: '18:00' } })], facts)
-      .periods.at(-1)!;
+    const now = evaluate(
+      [by6({ params: { misses_allowed: 1, on_time: '18:00' } })],
+      facts,
+    ).periods.at(-1)!;
     expect(now.days!.map((d) => d.mark)).toEqual([
       'done',
-      'missed',
+      'late',
       'done',
       'today',
       'none',
@@ -144,12 +146,11 @@ describe('[US-412] done by a time', () => {
     const waiting = pending('2026-10-14', { ...hw, done_at: '2026-10-14T17:50' });
     expect(isLate(waiting, '18:00')).toBe(false);
     const late = pending('2026-10-13', { ...hw, done_at: '2026-10-13T18:10' });
-    const now = evaluate([by6({ params: { misses_allowed: 3, on_time: '18:00' } })], [
-      parent,
-      late,
-      waiting,
-    ]).periods.at(-1)!;
-    expect(now.days!.slice(0, 3).map((d) => d.mark)).toEqual(['missed', 'missed', 'open']);
+    const now = evaluate(
+      [by6({ params: { misses_allowed: 3, on_time: '18:00' } })],
+      [parent, late, waiting],
+    ).periods.at(-1)!;
+    expect(now.days!.slice(0, 3).map((d) => d.mark)).toEqual(['late', 'late', 'open']);
   });
 
   it('[RWD-17-g] the time is each chore’s due time or a time of day, nothing else', () => {
@@ -310,11 +311,41 @@ describe('[US-413] goals that pay in steps', () => {
     const bad: [Step[], Rule[]][] = [
       [[{ misses: 0, amount: 20 }], one], // no lower step
       [[...BY_MISSES, { misses: 3, amount: 2 }, { misses: 3, amount: 1 }], one], // 4 lower
-      [[{ misses: 0, amount: 20 }, { misses: 1, amount: 20 }], one], // not fewer points
-      [[{ misses: 1, amount: 20 }, { misses: 2, amount: 10 }], one], // top isn't all days
-      [[{ misses: 0, amount: 20 }, { misses: 4, amount: 10 }], one], // more than 3 missed
-      [[{ at: 20, amount: 20 }, { at: 25, amount: 10 }], [countRule()]], // above the target
-      [[{ at: 19, amount: 20 }, { at: 10, amount: 10 }], [countRule()]], // top isn't the target
+      [
+        [
+          { misses: 0, amount: 20 },
+          { misses: 1, amount: 20 },
+        ],
+        one,
+      ], // not fewer points
+      [
+        [
+          { misses: 1, amount: 20 },
+          { misses: 2, amount: 10 },
+        ],
+        one,
+      ], // top isn't all days
+      [
+        [
+          { misses: 0, amount: 20 },
+          { misses: 4, amount: 10 },
+        ],
+        one,
+      ], // more than 3 missed
+      [
+        [
+          { at: 20, amount: 20 },
+          { at: 25, amount: 10 },
+        ],
+        [countRule()],
+      ], // above the target
+      [
+        [
+          { at: 19, amount: 20 },
+          { at: 10, amount: 10 },
+        ],
+        [countRule()],
+      ], // top isn't the target
       [
         [
           { at: 100, amount: 20 },

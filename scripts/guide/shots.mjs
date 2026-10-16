@@ -328,6 +328,22 @@ const SHOTS = [
     },
     element: 'details:has(#goal-weeks-heading)',
   },
+  // [RWD-18] Pay in steps in the form, and a goal in steps on the board (WP-81).
+  {
+    name: 'admin-goal-steps-phone',
+    device: 'phone',
+    url: '/dev/goals?form=steps',
+    element: '.fw-goal-steps',
+  },
+  {
+    name: 'board-goal-steps',
+    device: 'board',
+    url: '/dev/board?steps=going',
+    act: async (page) => {
+      await person(page, 'Maya').click();
+    },
+    element: '[data-goal="g-steps"]',
+  },
   {
     name: 'board-goal-repeating',
     device: 'board',

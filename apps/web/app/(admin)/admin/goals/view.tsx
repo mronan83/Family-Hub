@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { day } from '@/lib/format';
 import { REPEAT_WORDS } from '@/lib/goal-periods';
+import { goalSteps, stepChips, stepKind, stepNudge } from '@/lib/goal-steps';
 import { describeRule, OPEN_STATUSES, payoutWords, STATUS_WORDS, streakLine } from '@/lib/goals';
 import { AdminHeader } from '../header';
 import { goalAction } from './actions';
@@ -85,9 +86,13 @@ function RuleMeters({
   goal: GoalRow;
   names: { tags: Map<string, string>; items: Map<string, string> };
 }) {
+  const steps = goalSteps(g.payout, g.rules);
+  const weighted = steps.length > 0 && g.rules.length > 1;
   return (
     <div className="fw-goal__rules">
-      {g.rules.length > 1 ? (
+      {weighted ? (
+        <p className="fw-muted">Weighted: reached at 100%, every rule met.</p>
+      ) : g.rules.length > 1 ? (
         <p className="fw-muted">
           {g.logic === 'all'
             ? 'Reached when every rule is met.'
@@ -104,7 +109,7 @@ function RuleMeters({
           return (
             <div key={r.id} className="fw-goal__rule">
               <GoalMeter
-                label={describeRule(r, names)}
+                label={`${describeRule(r, names)}${weighted && r.weight ? ` · ${r.weight}%` : ''}`}
                 value={Math.min(value, r.target)}
                 target={r.target}
               />
@@ -120,6 +125,19 @@ function RuleMeters({
             </div>
           );
         })}
+      {steps.length && g.repeat === 'none' ? (
+        <p className="fw-muted fw-goal__steps" data-testid="goal-steps">
+          <b>Steps:</b> {stepChips(steps, stepKind(g.rules)).join(' · ')}
+          {(() => {
+            const nudge = stepNudge(
+              steps,
+              { reached: g.step ?? null, best: g.stepBest ?? null },
+              stepKind(g.rules),
+            );
+            return nudge ? ` · ${nudge}` : '';
+          })()}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -224,6 +242,9 @@ export function GoalsView({
                     periods={g.periods}
                     today={today}
                     pays={payoutWords(g.payout, g.memberId === null, (i) => prizes.get(i))}
+                    steps={goalSteps(g.payout, g.rules)}
+                    kind={stepKind(g.rules)}
+                    onTime={g.rules[0]?.params.on_time ?? null}
                   >
                     {g.rules.some((r) => r.type !== 'DAYS_DUE') ? (
                       <RuleMeters goal={g} names={names} />

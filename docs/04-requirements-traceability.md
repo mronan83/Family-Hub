@@ -68,7 +68,7 @@
 | RWD-15 | A goal may repeat each week (the household's week), month or school term, from its start date to its end date or, with no end date, until stopped; a part-period counts only the days due inside it; each period is worked out, reached and paid on its own; the goal keeps a history of its periods (D-101). | S | P2 | User |
 | RWD-16 | A rule "every day it's due, each period" shall take as its target the days in the period when a chore in its scope is due for the member, with 0 to N misses allowed (default 0); a miss beyond the allowance ends that period ("Missed, starts again" the next period's first day); a period with no days due is neutral, a skipped day is neutral, and a parent's late credit counts (D-101). | S | P2 | User |
 | RWD-17 | A rule may count only check-offs made by a set time, each chore's due time or a time on the rule; a later check-off completes the chore but doesn't count toward the rule (D-102). | S | P2 | User |
-| RWD-18 | A goal, or each period of a repeating goal, may pay points at steps; the highest step reached pays, the top step at once and a lower step when its period or window closes (D-102). | S | P2 | User |
+| RWD-18 | A goal, or each period of a repeating goal, may pay points at steps (days missed, the number reached, or the goal's % with each rule weighted, together 100%); the highest step reached pays, the top step at once and a lower step when its period or window closes (D-102, D-124). | S | P2 | User |
 | RWD-19 | A goal may count the periods a repeating goal was reached, in total or in a row; a period with no days due neither counts nor breaks a run (D-103). | S | P2 | User |
 | RWD-20 | A family goal may require every child who earns rewards to meet its rules on their own, each period for a repeating goal (D-103). | S | P2 | User |
 | CAL-01 | Admins shall connect calendars by ICS URL, with the URL stored only in Vault. | M | P1 | User |
@@ -207,8 +207,8 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | RWD-14 | US-401 | WP-79 | ADM | reward_goal | U, E2E | U 5 · DB 5 · UI 3 · E2E 1 |
 | RWD-15 | US-410, US-411 | WP-80 | RULES, ADM, BRD, DB, SCHED | reward_goal, reward_rule, reward_goal_period, reward_goal_event, points_ledger | U, DB, E2E | U 17 · DB 22 · UI 7 · E2E 1 |
 | RWD-16 | US-410, US-411 | WP-80 | RULES, ADM, BRD, DB | reward_rule, chore_occurrence, reward_rule_progress, reward_goal_period | U, DB, E2E | U 14 · DB 5 · UI 4 |
-| RWD-17 | US-412 | WP-81 | RULES, ADM, DB | reward_rule, chore_completion_event | U, DB, E2E | — |
-| RWD-18 | US-413 | WP-81 | RULES, ADM, DB | reward_goal, points_ledger | U, DB, E2E | — |
+| RWD-17 | US-412 | WP-81 | RULES, ADM, DB | reward_rule, chore_completion_event | U, DB, E2E | U 9 · DB 10 · UI 1 · E2E 1 |
+| RWD-18 | US-413 | WP-81 | RULES, ADM, DB | reward_goal, points_ledger | U, DB, E2E | U 16 · DB 19 · UI 9 · E2E 1 |
 | RWD-19 | US-414 | WP-82 | RULES, ADM, DB | reward_goal, reward_rule | U, DB, E2E | — |
 | RWD-20 | US-415 | WP-82 | RULES, ADM, BRD, DB | reward_goal, reward_goal_progress, points_ledger | U, DB, E2E | — |
 | CAL-01 | US-501 | WP-22 | ADM, CALSYNC, VAULT | calendar_source | INT, E2E | U 6 · DB 19 · UI 2 · E2E 1 |
@@ -261,7 +261,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | BRD-11 | US-1010 | WP-72 | BRD | — | U, E2E | — |
 | NFR-01 | US-205 | WP-13, WP-44 | OUTBOX, BRD | — | E2E, U, HW | U 11 · UI 2 · E2E 2 |
 | NFR-02 | US-905 | WP-14 | BRD, PI | — | HW, E2E | UI 1 |
-| NFR-03 | US-905 | WP-11 | BRD | — | HW, E2E | UI 4 · E2E 1 |
+| NFR-03 | US-905 | WP-11 | BRD | — | HW, E2E | UI 5 · E2E 1 |
 | NFR-04 | US-102, US-901 | WP-02, WP-03, WP-05 | DB, VAULT, SAUTH, API | all tables | DB, REV | U 1 · DB 82 |
 | NFR-05 | US-902 | WP-33 | ADM, API, DB | household, member | E2E, INT | U 1 |
 | NFR-06 | US-907 | WP-10 | DB, API | chore_completion_event | DB, U, E2E | U 7 · DB 20 |
@@ -269,7 +269,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-08 | US-909 | WP-01, WP-41, WP-42 | CICD, OBS | private.usage_sample | U, DB, E2E, REV | U 5 · DB 11 · E2E 1 |
 | NFR-09 | US-101, US-901 | WP-02 | DB | all tables | DB | DB 4 |
 | NFR-10 | US-903 | WP-24 | DB | — | REV | — |
-| NFR-11 | US-906 | WP-31, WP-46 | BRD, ADM, UI | — | E2E, REV | U 4 · UI 26 |
+| NFR-11 | US-906 | WP-31, WP-46 | BRD, ADM, UI | — | E2E, REV | U 4 · UI 27 |
 | PTS-01 | US-309, US-1101, US-1106 | WP-16 | DB, API, ADM | points_ledger, chore_occurrence | DB, U, E2E | U 10 · DB 42 · E2E 5 |
 | PTS-02 | US-1102 | WP-11, WP-16, WP-20 | BRD, DB | v_points_balance, points_ledger | E2E | U 4 · DB 11 · UI 1 · E2E 2 |
 | PTS-03 | US-1103 | WP-18 | ADM, API, BRD | reward_catalog_item | E2E, DB | U 5 · DB 6 · UI 4 · E2E 1 |
@@ -300,7 +300,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 
 - Requirements: **131** · with at least one story: **131** · stories: **117** (P0: 12 · P1: 52 · P2: 30 · P3: 23).
 - With at least one work package: **131** · work packages: **96**.
-- Tests: **2442** (1939 name a requirement) · built requirements with a test: **112 of 112** · known test gaps: **104** (`08` §9.6).
+- Tests: **2510** (2003 name a requirement) · built requirements with a test: **114 of 114** · known test gaps: **104** (`08` §9.6).
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -463,6 +463,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.141 | WP-81 A goal done by a time, and goals that pay in tiers (RWD-17, RWD-18, US-412, US-413, D-102, D-124), from the mockup for WP-80 to WP-82 and its WP-81 addendum the owner approved on 16 October: the rules engine's times and steps (`packages/rules-engine/src/goal.ts`: `onTimeParam()`, `isLate()`, `checkSteps()`, each period's `step`; `ENGINE_VERSION` 3); migration `20261016181909_goal_times_and_steps.sql` (`reward_rule.weight`, `params.on_time`, the payout's `steps`, `private.clean_goal_steps()`, `private.pay_goal_step()`, `private.settle_goal_to()`, each fact's `done_at` and `due_time`, the step kept per period and goal, `step_changed`, the board snapshot); the goal form's **Counts only when done**, **Pay in steps** and **Weight (%)**, Goals' steps and a late day, a goal's weeks by step, the board's steps; tests `tiers.test.ts`, `goal-steps.test.ts`, `510_goal_times_and_steps.test.sql`, UI `goal-steps.spec.ts`, e2e `goal-steps.spec.ts` (nightly). |
 | 0.8.140 | WP-80 Goals that repeat each week, month or school term (RWD-15, RWD-16, US-410, US-411, D-101, D-123), from the mockup for WP-80 to WP-82 the owner approved on 16 October: the rules engine's periods and the `DAYS_DUE` rule (`packages/rules-engine/src/periods.ts`, `goal.ts`, `ENGINE_VERSION` 2); migration `20261016143718_repeating_goals.sql` (`reward_goal.repeats` and `periods_from`, `reward_goal_period` with RLS and Realtime, `save_goal()`, `private.clean_goal_rules()` with `DAYS_DUE`, `goal_facts()` and `goal_preview_facts()` 14 days ahead with a term goal's terms, `private.save_goal_periods()` paying and taking back each period once, `stop_goal_after_period()`, `mark_goal_celebrated()` per period, the board snapshot's `repeat`, `pays`, `period` and `history`); the goal form's **Repeats**, **Every day it's due** and misses allowed; the Goals card's days and weeks, History folded; a goal's **Weeks**, **What happened** and **Stop or cancel** folds; the board's card going, missed and won (`DayMarks`, `PeriodMarks`, `lib/goal-periods.ts`). Tests: Vitest `rules-engine/src/repeat.test.ts`, `lib/goal-periods.test.ts`, `lib/goals.test.ts`, `lib/board-goals.test.ts`, `lib/board.test.ts`; pgTAP `500_repeating_goals.test.sql`; UI suite `goals.spec.ts`, `board-repeating.spec.ts`; e2e `repeating-goals.spec.ts` (RWD-15-a to RWD-15-m, RWD-16-a to RWD-16-i). |
 | 0.8.139 | WP-50's contract (CAL-09, US-508, D-122), added at the owner's request: migration `20261016135756_calendar_people_contract.sql` drops `calendar_source.member_id`, `save_calendar_source()` and `private.carry_calendar_members()` after `private.assert_calendar_people_carried()` (refuses while any calendar's person is not in `calendar_member`); `save_calendar()` and `board_calendar()` without `member_id`; the audit trigger without it; `readCalendar()` reads people only from `member_ids`. Tests: pgTAP `500_calendar_people_contract.test.sql`, `490_calendar_people`, `260_calendar_sync`, `270_board_calendars`; Vitest `board-calendar.test.ts` |
 | 0.8.138 | WP-50 A calendar for one or more people (CAL-09, US-508, D-122): migration `20261016130550_calendar_people.sql` (`calendar_member` with RLS, audit and Realtime; each calendar's one person carried over; `save_calendar()`; `private.calendar_people()`; `board_calendar()`'s `member_ids`; expand only, `member_id` and the one-person save kept); Calendars' **Who it's for** ticks and line with faces; the board's Coming up, event details and a person's screen (`calendarsFor()`). Tests: pgTAP `490_calendar_people.test.sql`; Vitest `board-calendar.test.ts`, `calendars.test.ts`; UI suite `calendars.spec.ts`, `board-calendar.spec.ts`, `dashboard.spec.ts`; e2e `board-calendar.spec.ts` (CAL-09-a to CAL-09-f). |

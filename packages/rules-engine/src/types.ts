@@ -165,8 +165,11 @@ export interface GoalTransition {
 /** [RWD-15] How a period of a repeating goal stands. */
 export type PeriodOutcome = 'open' | 'won' | 'missed' | 'neutral';
 
-/** [RWD-16] A day of a week, for its mark: done, missed, still open (past, waiting), today, to come, or nothing due. */
-export type DayMark = 'done' | 'missed' | 'open' | 'today' | 'later' | 'none';
+/**
+ * [RWD-16][RWD-17] A day of a week, for its mark: done, missed, missed by a tick after the rule's time
+ * (`late`), still open (past, waiting), today, to come, or nothing due.
+ */
+export type DayMark = 'done' | 'missed' | 'late' | 'open' | 'today' | 'later' | 'none';
 
 /** [RWD-15][RWD-16] One period of a repeating goal, from its first day due to today or its end. */
 export interface PeriodResult {

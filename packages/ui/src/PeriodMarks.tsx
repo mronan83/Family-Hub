@@ -4,7 +4,8 @@ import { Icon } from './Icon';
 // and a mark per period won or missed. The state is in the shape and the words (an aria-label), never
 // colour alone: done a filled check, missed a cross, a day with nothing due a dash, today ringed.
 
-export type DayMarkState = 'done' | 'missed' | 'open' | 'today' | 'later' | 'none';
+/** [RWD-17] `late`: ticked after the rule's time, so the day is missed for the goal. */
+export type DayMarkState = 'done' | 'missed' | 'late' | 'open' | 'today' | 'later' | 'none';
 
 export interface DayMarksProps {
   /** Each day shown: its short name ("Mon") and its mark; `note` names a day with nothing due. */
@@ -14,6 +15,7 @@ export interface DayMarksProps {
 const DAY_WORDS: Record<DayMarkState, string> = {
   done: 'done',
   missed: 'missed',
+  late: 'missed, ticked after the time',
   open: 'waiting',
   today: 'today, to do',
   later: 'still to come',
@@ -33,7 +35,7 @@ export function DayMarks({ days }: DayMarksProps) {
           <span className="fw-days__mark" aria-hidden="true">
             {d.mark === 'done' ? (
               <Icon name="check" />
-            ) : d.mark === 'missed' ? (
+            ) : d.mark === 'missed' || d.mark === 'late' ? (
               <Icon name="close" />
             ) : d.mark === 'none' ? (
               <Icon name="minus" />

@@ -42,6 +42,8 @@ export function inScope(f: OccurrenceFact, scope: RuleScope): boolean {
 export interface Unit {
   fact: OccurrenceFact;
   state: FactState;
+  /** [RWD-17] Ticked after the rule's time: counted as missed for that rule. */
+  late?: boolean;
 }
 
 const byId = (a: Unit, b: Unit) => (a.fact.id < b.fact.id ? -1 : a.fact.id > b.fact.id ? 1 : 0);

@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.35: a goal done by a time, and goals that pay in steps (WP-81, D-124): **Counts only when done**, **Pay in steps** by days missed, by number or by weighted rules, and the board's steps (A7b, B1.8).
 > v0.34: goals that repeat each week, month or school term (WP-80, D-123): **Repeats**, **Every day it's due** and its misses, a goal's weeks, **Stop after this week**, and the board's week won or missed (A7a, B1.8); Goals' **History** and a goal's **What happened** and **Cancel** folded.
 > v0.33: the test strategy's story (US-913) left out of the guide, with its reason: it is for the people building FamilyWise (WP-85).
 > v0.33: a calendar for one or more people (WP-50, D-122): **Who it's for** on Calendars, and each of its people's faces on the board (A9, B1.11).
@@ -682,6 +683,24 @@ On the goal's page, **Weeks** is folded to "Won 3 of the last 4 weeks" and the p
 
 ![Maya's homework goal on the board: Monday done, Tuesday missed, Wednesday today, Thursday to come, Friday off; Missed, starts again Monday, Oct 19; Won 1 of the last 4 weeks.](guide/img/board-goal-repeating.jpg "A week missed, on the board")
 
+### A7b Goals done by a time, and in steps
+<!-- covers: US-412 US-413 -->
+
+**What this is.** A goal that counts only what is done by a set time ("homework before 6 pm"), and a goal that pays less for less instead of nothing. **When.** When on time matters, or when nearly there should still earn something. **How.** In the goal form, under each rule, and under what it pays.
+
+- **Counts only when done**: **Any time that day** (as before), **By each chore's due time**, or **By a time** you set. A tick after the time still completes the chore and earns its points; it just doesn't count for this goal. A chore without a due time, under **By each chore's due time**, counts any time that day. The tick's own time decides, even when the board was offline. Your own tick after the time doesn't count either.
+- **Pay in steps** (when it pays points): the points you set are the top step. On **Every day it's due**, the steps are days missed: "All days 20, 1 missed 10, 2 missed 5", so a short week's top step is still all its days, and the lowest step sets the misses allowed. On a goal counted by number, a step is a number reached: "20 pays 20, 15 pays 10, 10 pays 5"; a goal like that that doesn't repeat needs an end date.
+- **Two or more rules in steps**: each rule gets a **Weight (%)**, together 100%. The goal's % is each rule's % times its weight ("homework 75% × 60% + reading 80% × 40% = 77%"), the steps are % of the goal, and it is reached at 100%, every rule met.
+- **The highest step reached pays, not the sum.** The top step pays the moment it's reached. A lower step pays when the week (or the goal) ends, or as soon as nothing higher can be reached. If you fix a tick later and the week moves to another step, the difference is paid or taken back.
+
+**On Goals,** the goal shows its steps and where it stands ("Steps: All 5: 20 · 4: 10 · 3: 5 · On course for 10 points."), and a day ticked late ("Wednesday was after 6:00 pm."). The goal's **Weeks** say the step each week was won at: "Won at 1 missed: 10 points".
+
+![Pay in steps in the goal form on a phone: Pay less for a week with misses ticked, All days the points above, 1 missed 10, 2 missed 5, 3 missed empty.](guide/img/admin-goal-steps-phone.jpg "Pay in steps")
+
+**On the board,** your child sees the steps as chips, the one in reach marked, with a line such as "Wednesday was after 6:00 pm. On course for 10 points."; a week won at a step says "Won this week! 10 points."
+
+![Homework before 6 pm on the board: Monday and Tuesday done, Wednesday missed, Thursday today, Friday to come; the steps All 5: 20, 4: 10 (marked) and 3: 5; Wednesday was after 6:00 pm. On course for 10 points.](guide/img/board-goal-steps.jpg "Steps, on the board")
+
 ### A8 Streaks and insights
 <!-- covers: US-408 -->
 
@@ -1165,7 +1184,7 @@ A member who doesn't earn rewards can't be given points; what they earned before
 | A repeating goal | How it repeats, misses allowed and what each week pays; **Going**, **Missed this week** or **Won this week**; this week's days and a mark for each; the lost week's line; its last weeks as marks with "Won 3 of the last 4 weeks"; **Change**. See [A7a](#a7a-goals-that-repeat). |
 | **History** (folded) | Folded to how many are redeemed, ended and cancelled, and "needs a look". Open: goals **Redeemed** (when and by whom), **Ended**, or **Cancelled**; **Needs a look** if flagged; **Details**. |
 
-**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Repeats** (**Doesn't repeat**, **Each week**, **Each month**, **Each school term**; fixed once it starts), **Starts**, **Ends** (**Ends on a date**, then the date and **Clear**), one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **Every day it's due** with **Misses allowed each week** 0 to 3 for a goal that repeats, **What counts**), **Add a rule**, **It's reached when**, **What reaching it pays** (**What each week pays** for a goal that repeats) (**Just the celebration**, **Points** with **Points paid** 1 to 10,000, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
+**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Repeats** (**Doesn't repeat**, **Each week**, **Each month**, **Each school term**; fixed once it starts), **Starts**, **Ends** (**Ends on a date**, then the date and **Clear**), one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **Every day it's due** with **Misses allowed each week** 0 to 3 for a goal that repeats, **What counts**, **Counts only when done**: **Any time that day**, **By each chore's due time** or **By a time** with **Time**; **Weight (%)** on a goal with two or more rules in steps), **Add a rule**, **It's reached when**, **What reaching it pays** (**What each week pays** for a goal that repeats) (**Just the celebration**, **Points** with **Points paid** 1 to 10,000 and **Pay in steps**, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
 
 **A goal's page:** who, state and "% there"; **Clear** for a **Needs a look** flag; **Remove photo**; the form (locked as the goal progresses, see [A7](#change-or-cancel-a-goal)); **Weeks** for a goal that repeats (folded; each week, its days and what it paid); **What happened** (folded to its latest line: set up, started, rules or dates changed, what it pays changed, progress worked out again with the old and new %, achieved and what it paid, a week won or no longer won, back to going, payout undone, points put back, needs a look, set to stop, redeemed, ended, cancelled); **Stop or cancel** (folded: **Stop after this week** for a goal that repeats, and **Cancel**).
 

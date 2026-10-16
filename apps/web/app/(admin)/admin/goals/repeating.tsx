@@ -1,5 +1,7 @@
 import type { Repeat } from '@familywise/rules-engine';
+import type { Step } from '@familywise/rules-engine';
 import { DayMarks, Fold, Icon, PeriodMarks } from '@familywise/ui';
+import { lateLine, type StepKind, stepChips, stepNudge, stepWonWords } from '@/lib/goal-steps';
 import {
   daysLine,
   type GoalPeriod,
@@ -44,6 +46,9 @@ export function PeriodProgress({
   periods,
   today,
   pays,
+  steps = [],
+  kind = 'misses',
+  onTime = null,
   children,
 }: {
   repeat: Exclude<Repeat, 'none'>;
@@ -51,6 +56,11 @@ export function PeriodProgress({
   today: string;
   /** What a won period paid, for its line: "10 points". */
   pays: string | null;
+  /** [RWD-18] Its steps, highest first, when it pays in steps. */
+  steps?: Step[];
+  kind?: StepKind;
+  /** [RWD-17] Its first rule's time, for "Wednesday was after 6:00 pm." */
+  onTime?: string | null;
   /** The rules' meters, for a goal without "every day it's due". */
   children?: React.ReactNode;
 }) {
@@ -58,7 +68,7 @@ export function PeriodProgress({
   const recent = periods.filter((p) => p.start <= today).slice(-5);
   const won = wonLine(recent, repeat);
   const days = now ? shownDays(now) : [];
-  const line = now ? daysLine(now) : null;
+  const line = now ? daysLine(steps.length ? { ...now, missesAllowed: 0 } : now) : null;
   const notDue = now ? notDueLine(now) : null;
   return (
     <div className="fw-goal__period">
@@ -81,18 +91,48 @@ export function PeriodProgress({
           {now.outcome === 'missed' ? (
             <p className="fw-goal-line" data-kind="missed">
               <Icon name="repeat" />
-              <span>{[missedDaysLine(now) ?? `Missed.`, startsAgainShort(now)].join(' ')}</span>
+              <span>
+                {[
+                  missedDaysLine(now) ?? `Missed.`,
+                  lateLine(now.days, onTime),
+                  startsAgainShort(now),
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              </span>
             </p>
           ) : now.outcome === 'won' ? (
             <p className="fw-goal-line" data-kind="won">
               <Icon name="trophy" />
               <span>
                 Won this {periodWord(repeat)}
-                {pays ? `: ${pays}` : '!'}
+                {steps.length && now.step != null && steps[now.step]
+                  ? `: ${steps[now.step]!.amount} points`
+                  : pays
+                    ? `: ${pays}`
+                    : '!'}
               </span>
             </p>
           ) : null}
           {days.length ? <DayMarks days={days} /> : null}
+          {now.outcome === 'open' && lateLine(now.days, onTime) ? (
+            <p className="fw-muted">{lateLine(now.days, onTime)}</p>
+          ) : null}
+          {steps.length ? (
+            <p className="fw-muted fw-goal__steps" data-testid="goal-steps">
+              <b>Steps:</b> {stepChips(steps, kind, now.daysDue).join(' · ')}
+              {now.outcome === 'open'
+                ? (() => {
+                    const n = stepNudge(
+                      steps,
+                      { reached: now.step ?? null, best: now.stepBest ?? null },
+                      kind,
+                    );
+                    return n ? ` · ${n}` : '';
+                  })()
+                : ''}
+            </p>
+          ) : null}
         </>
       )}
       {children}
@@ -122,18 +162,26 @@ export function WeeksFold({
   periods,
   today,
   points,
+  steps = [],
+  kind = 'misses',
 }: {
   repeat: Exclude<Repeat, 'none'>;
   periods: GoalPeriod[];
   today: string;
   /** The points a won period pays; null when it pays something else. */
   points: number | null;
+  /** [RWD-18] Its steps, highest first, when it pays in steps: each won period pays its own. */
+  steps?: Step[];
+  kind?: StepKind;
 }) {
   const now = currentPeriod(periods, today);
   const shown = periods.filter((p) => p.start <= today);
-  const won = shown.filter((p) => p.outcome === 'won').length;
+  const paidFor = (p: GoalPeriod) =>
+    steps.length && p.step != null ? (steps[p.step]?.amount ?? 0) : (points ?? 0);
+  const paid = shown.filter((p) => p.outcome === 'won').reduce((sum, p) => sum + paidFor(p), 0);
   const plural = periodWord(repeat, 2);
-  const nowLine = now && now.end >= today ? daysLine(now) : null;
+  const nowLine =
+    now && now.end >= today ? daysLine(steps.length ? { ...now, missesAllowed: 0 } : now) : null;
   return (
     <Fold
       title={`${plural[0]!.toUpperCase()}${plural.slice(1)}`}
@@ -141,7 +189,7 @@ export function WeeksFold({
       summary={[
         <b key="won">{wonLine(shown, repeat) ?? `Its first ${periodWord(repeat)}`}</b>,
         [
-          points !== null ? `${(points * won).toLocaleString('en-US')} points paid` : null,
+          points !== null ? `${paid.toLocaleString('en-US')} points paid` : null,
           nowLine ? `${thisPeriod(repeat).toLowerCase()} ${nowLine}` : null,
         ]
           .filter(Boolean)
@@ -173,7 +221,13 @@ export function WeeksFold({
                       {spanWords(p)}
                     </strong>
                     <span className="fw-muted">
-                      {[missedDaysLine(p) ?? words, daysLine(p), notDueLine(p)]
+                      {[
+                        p.outcome === 'won' && steps.length
+                          ? stepWonWords(steps, kind, p.step ?? null)
+                          : (missedDaysLine(p) ?? words),
+                        daysLine(steps.length ? { ...p, missesAllowed: 0 } : p),
+                        notDueLine(p),
+                      ]
                         .filter(Boolean)
                         .join(' · ')}
                     </span>
@@ -181,7 +235,7 @@ export function WeeksFold({
                 </span>
                 {p.outcome === 'won' && points !== null ? (
                   <span className="fw-goal__status" data-status="achieved">
-                    +{points}
+                    +{paidFor(p)}
                   </span>
                 ) : null}
               </li>
