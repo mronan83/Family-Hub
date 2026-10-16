@@ -158,7 +158,7 @@ const ID_RX = new RegExp(
   `\\b(${REQ})-(\\d{2})((?:\\/\\d{2})+|\\.\\.\\d{2})?|\\b(US-\\d{3,4}|WP-\\d{2}|SPIKE-\\d{2}|OQ-\\d{2}b?|[DRAL]-\\d{2}|Y-\\d)\\b`,
   'g',
 );
-const SEC_RX = /(\b0[0-6] )?§\s?([0-9]+(?:\.[0-9]+)*[a-z]?|[A-I](?![a-z]))/g;
+const SEC_RX = /(\b0[0-8] )?§\s?([0-9]+(?:\.[0-9]+)*[a-z]?|[A-I](?![a-z]))/g;
 const DOC_PAGE = {
   '00': ['architecture', 'decisions'],
   '01': ['architecture'],
@@ -167,6 +167,7 @@ const DOC_PAGE = {
   '04': ['requirements'],
   '05': ['backlog'],
   '07': ['user-guide'],
+  '08': ['test-strategy'],
 };
 
 export function refLink(ctx, id, label = id) {
@@ -243,7 +244,7 @@ export function linkify(html, ctx) {
     }
     // "`01` §9.8": the code span two parts back names the doc the section belongs to.
     const code =
-      parts[i - 1] === '</code>' ? (parts[i - 2] || '').match(/^(0[0-6])(?:-[a-z-]+\.md)?$/) : null;
+      parts[i - 1] === '</code>' ? (parts[i - 2] || '').match(/^(0[0-8])(?:-[a-z-]+\.md)?$/) : null;
     const hint = code ? code[1] : null;
     parts[i] = linkSections(linkIds(p, ctx), ctx, hint);
   }

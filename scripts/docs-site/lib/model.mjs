@@ -92,6 +92,7 @@ export function loadModel(root) {
     reqs: parseDoc(read('04-requirements-traceability.md')),
     backlog: parseDoc(read('05-backlog.md')),
     guide: parseDoc(read('07-user-guide.md')),
+    tests: parseDoc(read('08-test-strategy.md')),
   };
   const m = { src, git: gitInfo(root) };
 

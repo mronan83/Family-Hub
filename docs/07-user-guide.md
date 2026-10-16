@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.33: the test strategy's story (US-913) left out of the guide, with its reason: it is for the people building FamilyWise (WP-85).
 > v0.32: the Boards settings folded (WP-91, D-118, D-120): each board folded to its name and facts, with the not-seen warning on its header, opened to **Display**, **Sleep and wake**, **Calendars**, **Home screen**, then **Name and connection** set apart; the household's **Home screen**, **Add a board** and **Disconnected** folded (A16, B1.12).
 > v0.31: the Pi's screen helper starts with the Pi on any desktop, and installs over SSH too (WP-34 follow-up): A16 and troubleshooting.
 > v0.30: approvals alerts within seconds, counting all that waits for you, and which check-offs bring one: only those that wait for you, so with approval off, only items set to **Always needs a parent's OK** (WP-92, D-119; A3).
@@ -1655,4 +1656,5 @@ Every user story linked to a work package that is Done (`05`) is covered by at l
 | US-901 | Data isolation and secret storage happen in the database and the server; there is nothing for the family to see or do. |
 | US-908 | Automated tests are for the people building FamilyWise. |
 | US-911 | The delivery pipeline (checks, previews and the owner's approval before anything ships) is how FamilyWise is built and released, not part of using it. |
+| US-913 | The test strategy and the Test catalogue (`08`) are how FamilyWise is tested and held to account, not part of using it. |
 <!-- /guide-exclusions -->

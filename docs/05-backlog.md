@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.134: WP-85 (the test strategy and the Test catalogue) added at the owner's request and done in the same change (NFR-19, D-106, D-107), restarted on 16 October at the owner's request to match `main` (D-108, D-110 and everything shipped since): `08` holds the strategy, with guidance by type of change, and the catalogue generated from every test's name; CI fails a change that adds a test gap. Its test cases are the first in §5 (NFR-19-a to NFR-19-f). WP-86 (close the known test gaps) added at the owner's request with it, recorded only.
 > v0.8.133: Three e2e items added at the owner's request, recorded only (D-121): SPIKE-07 audits every e2e spec by layer and lists what to keep, move or drop, for the owner to decide; WP-98 a findings log of each nightly run's red tests; WP-99 lean e2e (data set up by SQL, a household per spec, parallel runs, unchanged nights skipped). Found: the first scheduled nightly e2e run (07:17 UTC, 16 October) never started, and `e2e.yml` has no other trigger, so it can't be run by hand. The owner chose: a manual trigger in WP-98, and with unchanged nights skipped, a run once a week regardless (WP-99). SPIKE-07 and WP-98 are Ready; WP-99 is Queued behind SPIKE-07. "Next, in order" is the owner's to set.
 > v0.8.132: WP-91 (the Boards settings as collapsible sections) done (D-118, D-120), from the fold audit's Boards page the owner approved on 16 October: each board folded to its name and facts with Home's not-seen warning on its header, opened to Display, Sleep and wake, Calendars, Home screen, then its name and Disconnect set apart; the household's Home screen, Add a board and Disconnected folded; Meals' fold made one shared component (`Fold`). WP-93 to WP-97 are Ready. "Next, in order" is the owner's to set.
 > v0.8.131: WP-34 follow-up: the Pi's screen helper runs as a systemd user service, so it starts with the Pi on any desktop (labwc on Debian 13 doesn't read the start-up folder the first installer used); found on the owner's Pi 4, at the owner's request.
@@ -274,6 +275,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-97 | Today, My tasks and Insights folded | P3 | S | WP-91 | Ready (mockup approved) |
 | WP-98 | The e2e findings log | P3 | S | WP-90 | Ready |
 | WP-99 | Lean e2e: SQL set-up, a household per spec, parallel runs, unchanged nights skipped | P3 | L | SPIKE-07, WP-90 | Queued: SPIKE-07 first |
+| WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
+| WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -488,6 +491,7 @@ flowchart LR
     WP22 --> WP36[WP-36 Closure import, grocery-ready]
     WP25 --> WP36
     WP03 --> WP38[WP-38 Apple sign-in and passkeys]
+    WP85[WP-85 Test strategy and catalogue] --> WP86[WP-86 Close the known test gaps]
   end
 ```
 
@@ -1503,6 +1507,33 @@ flowchart LR
 - **My tasks:** **Coming up** folded (how many in the next seven days, and the next one).
 - **Insights:** **Streaks** and **Done** open; **Day by day**, **Missed most**, **By tag** and **Checking** folded to their one-line finding; **History** folded.
 - **Done when:** unit tests on a part's done count and when it folds (done, skipped, sent back, waiting for a parent); on the preview, Alex marks the last open item of a part done and finds that part folded with its count, then opens it and unchecks one; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
+### WP-85 — The test strategy and the Test catalogue
+**Phase:** P3 · **Size:** M · **Depends on:** — · **Reqs:** NFR-19, NFR-12, NFR-14
+- Added at the owner's request (15 October): "I think we need to develop an entire test strategy complete with documented rules and test cases. The strategy needs to think through what requires full e2e, what test cases are applicable for what changes, and the rules for that." And on the draft: "It also needs to contain all the tests and test cases and their relationship to items in the other documents. I want traceability back to requirements, user stories, backlog items, etc. This creates accountability and responsibility on your behalf to ensure we are testing the right things at the right time."
+- `08-test-strategy.md`, styled like `00`–`07`, from the draft the owner reviewed, brought up to date at the owner's request on 16 October ("Make sure this is up to date with the most recent strategy, plan, and information"): the layers, the test types, what runs when under D-108 (the fast checks gate every PR and deploy; e2e nightly only), the rules by type of change (docs only, test only, bug fix, small feature, large feature across capabilities, shared code), what earns an e2e test, test cases, how tests are written (D-110), and what happens when one fails. A docs page of its own, **Test strategy**, republished with the others. SPIKE-07, WP-98 and WP-99 (D-121) and WP-89 are referenced as planned, not duplicated.
+- The Test catalogue (`08` §9), generated, not hand-written: every test in the Vitest, node:test, UI suite, e2e and pgTAP layers, traced to the requirements, stories, backlog items and test cases it names; per requirement, item and story; a coverage summary; counts by layer and area. `04` §B gains a generated Tests column and §C a Tests line.
+- CI fails a change that adds a test gap, or a test naming an unknown ID (`08` §6.2). The gaps that exist today are known gaps; closing them is WP-86.
+- The deliver skill's definition of done gains the item's test cases and the regenerated catalogue; a PR lists the cases it adds and the catalogue's diff. The planner's status reports include the coverage.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| NFR-19-a | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit |
+| NFR-19-b | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit |
+| NFR-19-c | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit |
+| NFR-19-d | A Done item's test case with no test fails the check; a case of an item not yet built may wait for its test | Unit |
+| NFR-19-e | `--fix` writes the catalogue to `08` and the Tests column and line to `04`, and the check fails while they are out of date | Unit |
+| NFR-19-f | `--fix` takes a closed gap off the known gaps and never adds one | Unit |
+
+- **Done when:** `08` is in the docs index and on the docs site; each of NFR-19-a to NFR-19-f has a test (node:test `scripts/trace-catalogue.test.mjs`); `pnpm trace` fails on a new gap and on an unknown ID; the catalogue, `04` §B's Tests column and §C's Tests line are generated; the skills say who answers for it; and the four fast checks are green on the PR.
+- As built: `docs/test_catalogue.py` reads every test by name: Vitest and node:test (`it`, `test`, an `.each` table once, with the titles of the `describe` blocks around it), the UI suite and e2e (`test`), and pgTAP (each assertion's description); counted as written, so a test in a loop counts once. `check_traceability.py` builds a `Catalogue` from it: unknown IDs and new gaps are errors, `--fix` writes `08` §9 between `<!-- catalogue -->` markers, `04` §B's Tests column (counts by layer) and §C's Tests line, and takes closed gaps off `docs/known-test-gaps.txt`; `--baseline-gaps` wrote the 104 known gaps once, on 16 October. The docs site gains the **Test strategy** page (`scripts/docs-site/pages/test-strategy.mjs`; `08` § references link across pages). node:test `scripts/trace-catalogue.test.mjs` runs the check on a copy of the docs and tests for each of NFR-19-a to NFR-19-f. Deliver skill: definition of done line 12, test cases first (step 3), `08` in the docs table, the PR's test cases and catalogue diff, and the catalogue in the conflict table; planner skill: the coverage line; the PR template's Test cases and catalogue section.
+
+### WP-86 — Close the known test gaps
+**Phase:** P3 · **Size:** L · **Depends on:** WP-85 · **Reqs:** NFR-19
+- Added at the owner's request with WP-85: close every known test gap in `docs/known-test-gaps.txt` (`08` §9.6). When WP-85 was made (16 October) there were 104 known gaps: 42 built stories no test names, and 62 Done items whose Done when has no test cases. Every built requirement had at least one test.
+- Also a plain fact when WP-85 was made: 448 of 2,330 tests named no ID, so they trace to nothing; each gets the ID of what it proves.
+- A story's gap closes with a test that names it, at the lowest layer that shows it (`08` §1). A Done item's closes with its test cases in its §5 section, each proved by a test.
+- **Done when:** `docs/known-test-gaps.txt` lists no gap, `08` §9.1 shows none, and every test names at least one ID.
 
 ### SPIKE-07 — Every e2e spec audited by layer
 **Milestone:** P3 · **Size:** S · **Depends on:** WP-90 · **Gates:** WP-99 · **Reqs:** NFR-14
@@ -1544,6 +1575,6 @@ flowchart LR
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82, WP-92 | Menu adapters, WP-49 and WP-80 are the Ls |
-| P3 | SPIKE-06, SPIKE-07, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88 – WP-91, WP-93 – WP-99 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
+| P3 | SPIKE-06, SPIKE-07, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-85, WP-86, WP-88 – WP-91, WP-93 – WP-99 | WP-56, WP-58, WP-68, WP-72, WP-86 and WP-99 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.
