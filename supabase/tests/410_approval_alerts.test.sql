@@ -140,22 +140,22 @@ select is((select claim_reminders('41000000-0000-0000-0000-000000000001', pg_tem
 select is(pg_temp.plan(pg_temp.at('15:10')), 0, '[CHR-20] a replay plans nothing: nothing is in two alerts');
 select is(pg_temp.plan(pg_temp.at('15:05')), 0, '... nor the same run again');
 
--- What became waiting since: several children in one line; requests only open Rewards ------------------
+-- What became waiting since brings an alert counting all still waiting, several children in one line ---
 select pg_temp.as_owner();
 select pg_temp.check_off((select id from public.chore where title = 'Feed the fish'), '41110000-0000-0000-0000-00000000000d', pg_temp.at('15:11'));
 select pg_temp.ask('41110000-0000-0000-0000-00000000000c', pg_temp.at('15:12'));
 select pg_temp.as_job();
 select is(pg_temp.plan(pg_temp.at('15:15')), 1, 'Leo''s check-off and Maya''s second request: a new alert');
 select is(pg_temp.claim(pg_temp.at('15:15')),
-          'Pat: Maya: 1 reward request · Leo: 1 check-off waiting | Open Today to approve -> /admin/today [approval]',
-          '[CHR-20] only what is new since the last alert, several children in one line');
+          'Pat: Maya: 3 check-offs and 2 reward requests · Leo: 1 check-off waiting | Open Today to approve -> /admin/today [approval]',
+          '[CHR-20] something new brings an alert that counts all still waiting (D-119), several children in one line');
 select pg_temp.as_owner();
 select pg_temp.ask('41110000-0000-0000-0000-00000000000d', pg_temp.at('15:16'));
 select pg_temp.as_job();
 select is(pg_temp.plan(pg_temp.at('15:20')), 1, 'a request alone');
 select is(pg_temp.claim(pg_temp.at('15:20')),
-          'Pat: Leo: 1 reward request waiting | Open Rewards to decide -> /admin/rewards [approval]',
-          '... opens Rewards');
+          'Pat: Maya: 3 check-offs and 2 reward requests · Leo: 1 check-off and 1 reward request waiting | Open Today to approve -> /admin/today [approval]',
+          '... with check-offs still waiting it opens Today');
 
 -- What waits only for others is left out ---------------------------------------------------------------
 select pg_temp.as_owner();
@@ -168,10 +168,10 @@ select pg_temp.ask('41110000-0000-0000-0000-00000000000d', pg_temp.at('15:21'), 
 select pg_temp.as_job();
 select is(pg_temp.plan(pg_temp.at('15:25')), 2, 'Quinn turns Approvals on; Pat''s private item and her own request for Leo');
 select is(pg_temp.claim(pg_temp.at('15:25')),
-          'Pat: Maya: 1 check-off waiting | Open Today to approve -> /admin/today [approval]; '
-          || 'Quinn: Leo: 1 reward request waiting | Open Rewards to decide -> /admin/rewards [approval]',
-          '[CHR-20] Pat hears of her private item but not her own request; Quinn of the request but not '
-          || 'the private item, nor of what was already waiting when he turned Approvals on');
+          'Pat: Maya: 4 check-offs and 2 reward requests · Leo: 1 check-off and 1 reward request waiting | Open Today to approve -> /admin/today [approval]; '
+          || 'Quinn: Maya: 3 check-offs and 2 reward requests · Leo: 1 check-off and 2 reward requests waiting | Open Today to approve -> /admin/today [approval]',
+          '[CHR-20] Pat counts her private item but not her own request; Quinn counts the request but not '
+          || 'the private item, and is alerted only because something new waits since he turned Approvals on');
 select is((select string_agg(to_char(waiting_from at time zone 'America/Chicago', 'HH24:MI'), ',' order by created_at)
              from public.reminder_delivery where member_id = '41110000-0000-0000-0000-00000000000b'),
           '15:20', '... his first alert counts from when he turned it on');

@@ -147,6 +147,12 @@ test.beforeEach(() => {
               ('${DEMO}', '${alex}', '${user}', '${LAPTOP}', '${laptop.p256dh}', '${laptop.auth}', 'Old laptop');`);
 });
 
+/** [CHR-20] How many of Maya's check-offs an approvals alert counts ("Maya: 3 check-offs and …"). */
+function mayasCheckOffs(title: string): number {
+  const m = /(?:^|· )Maya: (\d+) check-offs?/.exec(title);
+  return m ? Number(m[1]) : 0;
+}
+
 test.afterAll(() => cleanUp());
 
 test('[CHR-20][US-322] a check-off waiting for a parent: exactly one push, and its link opens Today', async ({
@@ -155,24 +161,28 @@ test('[CHR-20][US-322] a check-off waiting for a parent: exactly one push, and i
   page: Page;
 }) => {
   checkOff('Read for 20 minutes');
-  // Alex turned reminders on (and with them Approvals) before it: one alert, for it alone.
+  // Alex turned reminders on (and with them Approvals) before it: one alert, counting everything that
+  // waits for Alex (D-119), Maya's check-offs among it (the demo family may have more waiting).
   expect(await runNow()).toMatchObject({ approvals: 1, sent: 1, delivered: 2, gone: 0 });
   const [alert] = phonePayloads();
   expect(phonePayloads()).toHaveLength(1);
+  const first = mayasCheckOffs(alert.title);
+  expect(first, `Maya's check-offs in "${alert.title}"`).toBeGreaterThanOrEqual(1);
   expect(alert).toEqual({
-    title: 'Maya: 1 check-off waiting',
+    title: alert.title,
     body: 'Open Today to approve',
     url: '/admin/today',
     tag: 'approval',
     renotify: true,
   });
 
-  // A second check-off: one more alert, for only what is new, replacing the first on the lock screen.
+  // A second check-off: one more alert, replacing the first on the lock screen and counting one more.
   checkOff('Practice piano');
   expect(await runNow()).toMatchObject({ approvals: 1, sent: 1 });
-  expect(phonePayloads().map((p) => `${p.title} | ${p.body} | ${p.tag}`)).toEqual([
-    'Maya: 1 check-off waiting | Open Today to approve | approval',
-  ]);
+  const [second] = phonePayloads();
+  expect(phonePayloads()).toHaveLength(1);
+  expect(mayasCheckOffs(second.title), `Maya's check-offs in "${second.title}"`).toBe(first + 1);
+  expect(`${second.body} | ${second.tag}`).toBe('Open Today to approve | approval');
   // A replay sends nothing.
   expect(await runNow()).toMatchObject({ approvals: 0, sent: 0 });
   expect(push.received).toEqual([]);

@@ -94,7 +94,8 @@ select is(pg_temp.check_off((select id from public.chore where title = 'Later ch
           '[CHR-05] approval switched on: a family-setting item still to do now waits');
 select pg_temp.as_job();
 select is(pg_temp.plan(now() + interval '2 seconds'), 1, '[CHR-20] ... and is in a new approval alert');
-select is(pg_temp.claim(now() + interval '2 seconds'), 'Sky: 1 check-off waiting', '... for that check-off only');
+select is(pg_temp.claim(now() + interval '2 seconds'), 'Sky: 2 check-offs waiting',
+          '... counting both still waiting (D-119)');
 
 select * from finish();
 rollback;
