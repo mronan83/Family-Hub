@@ -1,5 +1,6 @@
 import type { RuleType } from '@familywise/rules-engine';
 import { z } from 'zod';
+import { periodWord } from './goal-periods';
 import type { BoardGoal, BoardGoalRule } from './snapshot';
 
 // Goals on the board (WP-20, D-59): WP-19 works out the progress; the board draws it in a child's words,
@@ -11,6 +12,7 @@ export const BOARD_RULE_WORDS: Record<RuleType, string> = {
   DAILY_ALL_DONE: 'Days with everything done',
   STREAK: 'Good days in a row',
   POINTS: 'Points earned',
+  DAYS_DUE: 'Days',
 };
 
 /** [RWD-07] A child's own goals first, then the family's. */
@@ -70,6 +72,9 @@ function closeLine(r: BoardGoalRule, title: string): string | null {
       return left === 1 ? `One more day with everything done for ${title}!` : null;
     case 'STREAK':
       return left === 1 ? `One more good day in a row for ${title}!` : null;
+    case 'DAYS_DUE':
+      // [RWD-16] A repeating goal says it on its own card ("Today makes it!").
+      return null;
   }
 }
 
@@ -111,14 +116,25 @@ export const celebrationKey = (g: Pick<BoardGoal, 'id' | 'n'>): string => `${g.i
 
 /** [RWD-08] The reached goals still to celebrate, first reached first, less those this board did. */
 export function toCelebrate(goals: BoardGoal[], done: ReadonlySet<string>): BoardGoal[] {
-  return goals
-    .filter((g) => g.status === 'achieved' && g.celebrate && !done.has(celebrationKey(g)))
-    .sort((a, b) => (a.achievedAt ?? '').localeCompare(b.achievedAt ?? ''));
+  return (
+    goals
+      // [RWD-15] A repeating goal stays going: each won period is celebrated, as its achievement n.
+      .filter(
+        (g) =>
+          (g.status === 'achieved' || g.repeat !== 'none') &&
+          g.celebrate &&
+          !done.has(celebrationKey(g)),
+      )
+      .sort((a, b) => (a.achievedAt ?? '').localeCompare(b.achievedAt ?? ''))
+  );
 }
 
-/** "Leo reached Movie night!" · "The family reached Pizza night!" */
+/** "Leo reached Movie night!" · "The family reached Pizza night!" · "Maya won this week of Homework home!" */
 export function celebrationLine(g: BoardGoal, name: (id: string) => string): string {
-  return `${g.memberId ? name(g.memberId) : 'The family'} reached ${g.title}!`;
+  const who = g.memberId ? name(g.memberId) : 'The family';
+  return g.repeat !== 'none'
+    ? `${who} won this ${periodWord(g.repeat)} of ${g.title}!`
+    : `${who} reached ${g.title}!`;
 }
 
 /** [RWD-08] A board says it has celebrated achievement n of a goal. */

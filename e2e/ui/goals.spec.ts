@@ -48,6 +48,11 @@ for (const [device, viewport] of [
         await page.goto(`/dev/goals?theme=${theme}`);
         await fits(page, viewport.width);
         await contrastOk(page);
+        // [RWD-15-l] A repeating goal's page: its form and its weeks, folded and opened.
+        await page.goto(`/dev/goals?form=repeating&theme=${theme}`);
+        await page.locator('summary').filter({ hasText: 'Weeks' }).click();
+        await fits(page, viewport.width);
+        await contrastOk(page);
         await page.goto(`/dev/goals?form=new&theme=${theme}`);
         await page.getByRole('button', { name: 'Add a rule' }).click();
         await page.getByRole('combobox', { name: 'Counts' }).nth(1).selectOption('STREAK');
@@ -84,7 +89,8 @@ test('[RWD-04][RWD-07] goals in play: achieved first, each rule’s meter and wh
 }) => {
   await page.goto('/dev/goals');
   const inPlay = page.getByRole('list', { name: 'Goals in play' });
-  await expect(inPlay.getByRole('listitem')).toHaveCount(4);
+  // Each goal is a list item of its own (a repeating goal's days and weeks are lists inside it).
+  await expect(inPlay.locator(':scope > li')).toHaveCount(6);
   await expect(inPlay.getByRole('listitem').first()).toContainText('Trip to the park');
   await expect(inPlay.getByRole('listitem').first()).toContainText('Achieved again');
   const movie = inPlay.getByRole('listitem').filter({ hasText: 'Movie night' });
@@ -113,6 +119,11 @@ test('[RWD-09][US-405] an achieved goal is marked redeemed; history keeps the re
   await page.goto('/dev/goals');
   await expect(page.getByRole('button', { name: 'Mark Trip to the park redeemed' })).toBeVisible();
   await expect(page.getByRole('button', { name: /redeemed$/ })).toHaveCount(1);
+  // History is folded (D-120) to its counts, with the goal that needs a look on the header.
+  const fold = page.locator('summary').filter({ hasText: 'History' });
+  await expect(fold).toContainText('1 redeemed · 1 ended · 1 cancelled');
+  await expect(fold).toContainText('1 needs a look');
+  await fold.click();
   const history = page.getByRole('list', { name: 'History' });
   await expect(history.getByRole('listitem')).toHaveCount(3);
   await expect(history.getByRole('listitem').filter({ hasText: 'Zoo trip' })).toContainText(
@@ -298,4 +309,79 @@ test('[RWD-10][US-406] the preview: what saving would do, and each rule now and 
       .getByRole('group', { name: 'What reaching it pays' })
       .getByRole('radio', { name: 'A reward from the shop' }),
   ).toBeChecked();
+});
+
+test('[RWD-15-l][RWD-16][US-410] a repeating goal on Goals: this week’s days, a lost week, and the weeks', async ({
+  page,
+}) => {
+  await page.goto('/dev/goals');
+  const inPlay = page.getByRole('list', { name: 'Goals in play' });
+  const maya = inPlay.getByRole('listitem').filter({ hasText: 'Homework home every school day' });
+  await expect(maya).toContainText('Maya · each week · Pays 10 points');
+  await expect(maya).toContainText('This week: 3 of 4 days · Friday no school');
+  await expect(maya.locator('.fw-goal__status')).toHaveText('Going');
+  const days = maya.getByRole('list', { name: 'This week’s days' }).getByRole('listitem');
+  await expect(days).toHaveCount(5);
+  await expect(days.nth(4)).toHaveAttribute('aria-label', 'Fri: no school');
+  await expect(maya).toContainText('Won 3 of the last 4 weeks');
+  await expect(
+    maya.getByRole('list', { name: 'The last 5 weeks' }).getByRole('listitem').nth(2),
+  ).toHaveAttribute('aria-label', 'Week of Sep 28: missed');
+  // Leo's, one miss allowed, lost on its second miss: no part count, starts again next week.
+  const leo = inPlay.getByRole('listitem').filter({ hasText: 'Reading every day it’s due' });
+  await expect(leo).toContainText('Leo · each week · 1 miss allowed · Pays 10 points');
+  await expect(leo.locator('.fw-goal__status')).toHaveText('Missed this week');
+  await expect(leo.locator('.fw-goal-line')).toHaveText(
+    'Missed Tuesday and Wednesday. Starts again Monday, Oct 19.',
+  );
+  // A break week neither won nor missed is left out of the count.
+  await expect(leo).toContainText('Won 2 of the last 4 weeks');
+});
+
+test('[RWD-15-l][RWD-15-e] a repeating goal’s page: how it repeats stays, its rule and its weeks', async ({
+  page,
+}) => {
+  await page.goto('/dev/goals?form=repeating');
+  const form = page.getByRole('form', { name: 'Edit Homework home every school day' });
+  // Started: how it repeats is fixed (D-123), sent back as it is.
+  await expect(form.getByRole('group', { name: 'Repeats' })).toHaveCount(0);
+  await expect(form.locator('input[name="repeat"]')).toHaveValue('week');
+  await expect(form.getByRole('combobox', { name: 'Counts' })).toHaveValue('DAYS_DUE');
+  await expect(form.getByRole('combobox', { name: 'Misses allowed each week' })).toHaveValue('0');
+  await expect(form.getByRole('spinbutton', { name: 'Target' })).toHaveCount(0);
+  await expect(form.getByRole('group', { name: 'What each week pays' })).toBeVisible();
+  await expect(form).toContainText('This week Homework home is due 4 days, so this week needs 4.');
+  const weeks = page.locator('summary').filter({ hasText: 'Weeks' });
+  await expect(weeks).toContainText('Won 3 of the last 4 weeks');
+  await expect(weeks).toContainText('30 points paid · this week 3 of 4 days');
+  await weeks.click();
+  const rows = page.getByRole('list', { name: 'Weeks' }).locator(':scope > li');
+  await expect(rows).toHaveCount(5);
+  await expect(rows.nth(0)).toContainText('This week, Oct 12 to 18');
+  await expect(rows.nth(0)).toContainText('Going · 3 of 4 days · Friday no school');
+  await expect(rows.nth(2)).toContainText('Sep 28 to Oct 4');
+  await expect(rows.nth(2)).toContainText('Missed Tuesday. · 4 of 5 days');
+  await expect(rows.nth(1)).toContainText('+10');
+});
+
+test('[RWD-15-l][RWD-16-i] a new goal: choosing how it repeats offers "every day it’s due" and its misses', async ({
+  page,
+}) => {
+  await page.goto('/dev/goals?form=new');
+  const form = page.getByRole('form', { name: 'Set a goal' });
+  const repeats = form.getByRole('group', { name: 'Repeats' });
+  await expect(repeats.getByRole('radio', { name: 'Doesn’t repeat' })).toBeChecked();
+  const counts = form.getByRole('combobox', { name: 'Counts' });
+  await expect(counts.getByRole('option', { name: 'Every day it’s due' })).toHaveCount(0);
+  await repeats.getByRole('radio', { name: 'Each week' }).check();
+  await expect(form.getByRole('group', { name: 'What each week pays' })).toBeVisible();
+  await counts.selectOption('DAYS_DUE');
+  await expect(form.getByRole('spinbutton', { name: 'Target' })).toHaveCount(0);
+  await form.getByRole('combobox', { name: 'Misses allowed each week' }).selectOption('1');
+  await repeats.getByRole('radio', { name: 'Each school term' }).check();
+  await expect(form.getByRole('combobox', { name: 'Misses allowed each term' })).toHaveValue('1');
+  // Back to a goal reached once: the rule can't be "every day it's due".
+  await repeats.getByRole('radio', { name: 'Doesn’t repeat' }).check();
+  await expect(counts).toHaveValue('COUNT');
+  await expect(form.getByRole('group', { name: 'What reaching it pays' })).toBeVisible();
 });

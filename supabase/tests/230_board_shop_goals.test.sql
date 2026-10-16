@@ -193,7 +193,8 @@ select is(pg_temp.goals(), 'Bike ride:achieved:true, Zoo trip:active:false, Pizz
 select is(pg_temp.goal('Zoo trip'),
   jsonb_build_object('id', '23900000-0000-0000-0000-000000000001', 'member_id', '23110000-0000-0000-0000-00000000000a',
     'title', 'Zoo trip', 'icon', 'star', 'photo', null, 'status', 'active', 'n', 0, 'achieved_at', null,
-    'celebrate', false, 'end_date', current_date + 9, 'logic', 'all', 'pct', 70,
+    'celebrate', false, 'end_date', current_date + 9, 'repeat', 'none', 'pays', null, 'period', null,
+    'history', '[]'::jsonb, 'logic', 'all', 'pct', 70,
     'rules', jsonb_build_array(
       jsonb_build_object('id', '23a00000-0000-0000-0000-000000000001', 'type', 'COUNT', 'target', 10, 'current', 9,
                          'pct', 90, 'met', false, 'streak', null, 'best', null),

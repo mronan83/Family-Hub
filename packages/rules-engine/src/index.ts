@@ -3,14 +3,14 @@
 import type { OccurrenceStatus } from './types';
 
 export type * from './types';
-export { evaluateGoal } from './goal';
+export { daysDueParams, evaluateGoal } from './goal';
 export { evaluateHistory } from './history';
 
 /**
  * Stored on every derived row (reward_rule_progress, member_daily_summary, streak_segment). Bump it
  * when a rule's meaning changes, so the nightly job recomputes everything with the new rules.
  */
-export const ENGINE_VERSION = 1;
+export const ENGINE_VERSION = 2;
 
 export const OCCURRENCE_STATUSES: readonly OccurrenceStatus[] = [
   'scheduled',

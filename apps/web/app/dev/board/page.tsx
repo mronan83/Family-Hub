@@ -17,7 +17,8 @@ import { KITCHEN_SLEEP } from './fixture';
 // Leo's item that opens Lunches (WP-49: ?lunches=1); a board watching for a new deploy, running the
 // commit given (WP-78: ?deploy=<commit>); asleep and woken (WP-34: ?sleep=kitchen, Kitchen's set times
 // from the mockup, school nights 9:30 pm to 6:30 am and weekends 10:30 pm to 7:30 am, 15 minutes
-// untouched; ?sleep=idle, 5 minutes untouched and no set times; the school days are Monday to Friday).
+// untouched; ?sleep=idle, 5 minutes untouched and no set times; the school days are Monday to Friday);
+// repeating goals (WP-80: ?repeating=going|missed|won, Maya's homework this week, Leo's reading missed).
 export const metadata: Metadata = { title: 'Board Today', robots: { index: false } };
 
 export default async function DevBoardPage({
@@ -39,6 +40,7 @@ export default async function DevBoardPage({
     lunches?: string;
     deploy?: string;
     sleep?: string;
+    repeating?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -87,6 +89,13 @@ export default async function DevBoardPage({
             : params.sleep === 'idle'
               ? readBoardSleep({ idle_minutes: 5 })
               : undefined
+        }
+        repeating={
+          params.repeating === 'going' ||
+          params.repeating === 'missed' ||
+          params.repeating === 'won'
+            ? params.repeating
+            : undefined
         }
       />
     </div>

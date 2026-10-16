@@ -258,16 +258,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2365** tests: Unit 688 · DB 1336 · UI 218 · E2E 123. 1917 name at least one ID; 448 name none.
+**2442** tests: Unit 719 · DB 1374 · UI 225 · E2E 124. 1985 name at least one ID; 457 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 110 of 131 |
+| Requirements built (a Done item builds them) | 112 of 131 |
 | Built requirements with no test | 0 |
-| Stories built | 97 of 117 |
+| Stories built | 99 of 117 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 13 (with a test: 13) |
+| Test cases | 35 (with a test: 35) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -283,7 +283,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 |---|---|---|---|---|---|
 | Chores | 90 | 192 | 29 | 30 | 341 |
 | Points | 38 | 92 | 17 | 12 | 159 |
-| Goals and rewards | 104 | 46 | 23 | 9 | 182 |
+| Goals and rewards | 135 | 73 | 29 | 10 | 247 |
 | Calendar | 64 | 92 | 18 | 4 | 178 |
 | School year | 10 | 43 | 1 | 4 | 58 |
 | Meals and lunch | 57 | 43 | 29 | 11 | 140 |
@@ -291,9 +291,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 7 | 15 | 135 |
-| Platform | 118 | 155 | 29 | 10 | 312 |
-| Not named | 58 | 425 | 10 | 1 | 494 |
-| **Total** | **688** | **1336** | **218** | **123** | **2365** |
+| Platform | 118 | 157 | 30 | 10 | 315 |
+| Not named | 58 | 434 | 10 | 1 | 503 |
+| **Total** | **719** | **1374** | **225** | **124** | **2442** |
 
 ### 9.3 By requirement
 
@@ -352,8 +352,8 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | RWD-12 | S | Covered | US-408 | WP-17 | — | U 1 · DB 6 · UI 1 · E2E 1 |
 | RWD-13 | S | Covered | US-409 | WP-39 | — | U 3 · DB 4 · UI 3 · E2E 1 |
 | RWD-14 | S | Covered | US-401 | WP-79 | — | U 5 · DB 5 · UI 3 · E2E 1 |
-| RWD-15 | S | Not built | US-410, US-411 | WP-80 | — | — |
-| RWD-16 | S | Not built | US-410, US-411 | WP-80 | — | — |
+| RWD-15 | S | Covered | US-410, US-411 | WP-80 | RWD-15-a, RWD-15-b, RWD-15-c, RWD-15-d, RWD-15-e, RWD-15-f, RWD-15-g, RWD-15-h, RWD-15-i, RWD-15-j, RWD-15-k, RWD-15-l, RWD-15-m | U 17 · DB 22 · UI 7 · E2E 1 |
+| RWD-16 | S | Covered | US-410, US-411 | WP-80 | RWD-16-a, RWD-16-b, RWD-16-c, RWD-16-d, RWD-16-e, RWD-16-f, RWD-16-g, RWD-16-h, RWD-16-i | U 14 · DB 5 · UI 4 |
 | RWD-17 | S | Not built | US-412 | WP-81 | — | — |
 | RWD-18 | S | Not built | US-413 | WP-81 | — | — |
 | RWD-19 | S | Not built | US-414 | WP-82 | — | — |
@@ -408,8 +408,8 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | BRD-11 | M | Not built | US-1010 | WP-72 | — | — |
 | NFR-01 | M | Covered | US-205 | WP-13, WP-44 | — | U 11 · UI 2 · E2E 2 |
 | NFR-02 | M | Not built | US-905 | WP-14 | — | UI 1 |
-| NFR-03 | M | Covered | US-905 | WP-11 | — | UI 3 · E2E 1 |
-| NFR-04 | M | Covered | US-102, US-901 | WP-02, WP-03, WP-05 | — | U 1 · DB 80 |
+| NFR-03 | M | Covered | US-905 | WP-11 | — | UI 4 · E2E 1 |
+| NFR-04 | M | Covered | US-102, US-901 | WP-02, WP-03, WP-05 | — | U 1 · DB 82 |
 | NFR-05 | S | Not built | US-902 | WP-33 | — | U 1 |
 | NFR-06 | M | Covered | US-907 | WP-10 | — | U 7 · DB 20 |
 | NFR-07 | S | Covered | US-904 | WP-07, WP-42 | — | U 43 · DB 28 · UI 1 · E2E 4 |
@@ -458,7 +458,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-17 | Done | **No cases** | — | U 1 |
 | WP-18 | Done | **No cases** | — | — |
 | WP-19 | Done | **No cases** | — | — |
-| WP-20 | Done | **No cases** | — | U 3 |
+| WP-20 | Done | **No cases** | — | U 4 |
 | WP-21 | Done | **No cases** | — | — |
 | WP-22 | Done | **No cases** | — | — |
 | WP-23 | Done | **No cases** | — | — |
@@ -517,9 +517,9 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-77 | Done | **No cases** | — | U 4 |
 | WP-78 | Done | **No cases** | — | U 7 · UI 3 |
 | WP-79 | Done | **No cases** | — | — |
-| WP-80 | Ready | — | — | — |
-| WP-81 | Queued | — | — | — |
-| WP-82 | Queued | — | — | — |
+| WP-80 | Done | RWD-16-a, RWD-16-b, RWD-16-c, RWD-16-d, RWD-16-e, RWD-16-f, RWD-16-g, RWD-16-h, RWD-16-i, RWD-15-a, RWD-15-b, RWD-15-c, RWD-15-d, RWD-15-e, RWD-15-f, RWD-15-g, RWD-15-h, RWD-15-i, RWD-15-j, RWD-15-k, RWD-15-l, RWD-15-m | 22 of 22 | U 4 |
+| WP-81 | Ready | — | — | — |
+| WP-82 | Ready | — | — | — |
 | WP-83 | Done | **No cases** | — | — |
 | WP-85 | Done | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | 6 of 6 | — |
 | WP-86 | Ready | — | — | — |
@@ -547,6 +547,28 @@ Test cases and the tests that prove them:
 | CAL-09-e | WP-50 | A calendar for two people is on each one's screen and not on a third's; the whole family's is on everyone's | Unit, UI | Unit `apps/web/lib/board-calendar.test.ts`: `a person’s calendars › [CAL-09-e] a calendar for two people is on each one’s screen, and not on a third’s`<br>Unit `apps/web/lib/board-calendar.test.ts`: `a person’s calendars › [CAL-09-e] the whole family’s calendar is on everyone’s screen`<br>UI `e2e/ui/board-calendar.spec.ts`: `[CAL-09-e][US-508] a calendar for two people is on each one’s screen, not on a third’s` |
 | CAL-09-f | WP-50 | On the preview, School given Leo as well as Maya on Calendars shows both their faces on the board | E2E | E2E `e2e/tests/board-calendar.spec.ts`: `[CAL-09-f][US-508] a calendar given two people on Calendars shows both faces on the board` |
 | CAL-09-g | WP-50 | After the contract, `calendar_source` has no `member_id`, the one-person save and the carry-over are gone, the audit trigger doesn't name it, and a board reads a calendar's people only from `member_ids` | DB, Unit | Unit `apps/web/lib/board-calendar.test.ts`: `reading the board’s calendar › [CAL-09-g] a calendar’s people come only from member_ids, not the one-person member_id`<br>DB `supabase/tests/270_board_calendars.test.sql`: `[CAL-05][CAL-09][CAL-09-g] each calendar with its color and whose it is, as member_ids only`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-g] calendar_source has no member_id`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-g] the one-person save is gone`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-g] and so is WP-50's carry-over`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-g] the save of a calendar with its people stays`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-g] the audit trigger watches name, color and show_on_board` |
+| RWD-16-a | WP-80 | A 5-day week with everything in scope done every day is won | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-a] a 5-day week with everything done every day is won` |
+| RWD-16-b | WP-80 | A 4-day week (Friday a closure, nothing due) is won with 4 | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-b] a 4-day week (Friday a closure, nothing due) is won with 4`<br>Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-b] the week is not won while a day due is still to come` |
+| RWD-16-c | WP-80 | Tuesday missed with 0 allowed loses the week once Tuesday closes, "starts again" the next Monday; the next week starts afresh | Unit | UI `e2e/ui/board-repeating.spec.ts`: `the card › [RWD-15-l][RWD-16-c][US-411] missed: "Missed, starts again" the next week’s first day, no part count`<br>Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-c] Tuesday missed with 0 allowed loses the week when Tuesday closes; the next week starts afresh` |
+| RWD-16-d | WP-80 | With 1 miss allowed, one miss is forgiven and two lose the week | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-d] with 1 miss allowed one miss is forgiven, and two lose the week` |
+| RWD-16-e | WP-80 | A break week (nothing due) is neither won nor missed | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-e] a break week, with nothing due, is neither won nor missed` |
+| RWD-16-f | WP-80 | A day a parent skipped is neutral: neither due nor missed | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-f] a day a parent skipped is neutral: not due, not missed` |
+| RWD-16-g | WP-80 | Today is never a miss, whatever is still to do | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-g] today is never a miss, whatever is still to do` |
+| RWD-16-h | WP-80 | A parent's late tick after the week closed turns it from missed to won, and an uncheck turns it back | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-h] a parent’s late tick after the week closed turns it from missed to won, and an uncheck back` |
+| RWD-16-i | WP-80 | "Every day it's due" is refused on a goal that doesn't repeat, and its misses allowed are 0 to 3 | Unit, DB | Unit `apps/web/lib/goals.test.ts`: `repeating goals (WP-80) › [RWD-16-i] every day it’s due on a goal that doesn’t repeat says what to fix`<br>UI `e2e/ui/goals.spec.ts`: `[RWD-15-l][RWD-16-i] a new goal: choosing how it repeats offers "every day it’s due" and its misses`<br>Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-i] every day it’s due needs a repeating goal, and 0 to 3 misses allowed`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-16-i] every day it's due is stored with its misses allowed, 0 by default`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-16-i] up to 3 misses allowed`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-16-i] not 4`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-16-i] every day it's due is refused on a goal that doesn't repeat` |
+| RWD-15-a | WP-80 | A part first week counts only the days due inside it | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `periods › [RWD-15-a] a part first week counts only the days due inside it`<br>Unit `packages/rules-engine/src/repeat.test.ts`: `periods › [RWD-15-a] a part last week ends with the goal, and nothing follows it` |
+| RWD-15-b | WP-80 | Each calendar month is its own period | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `periods › [RWD-15-b] each calendar month is its own period` |
+| RWD-15-c | WP-80 | Each school term is a period, and days between terms belong to none | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `periods › [RWD-15-c] each school term is a period, and days between terms belong to none` |
+| RWD-15-d | WP-80 | Every rule is worked out inside each period ("20 things done each week") | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `periods › [RWD-15-d] every rule is worked out inside each period: 3 things done each week`<br>Unit `packages/rules-engine/src/repeat.test.ts`: `periods › [RWD-15-d] a week closed unmet is missed, and one with nothing in scope due is neutral` |
+| RWD-15-e | WP-80 | The repeat and the rule are saved and checked; the repeat stays once the goal has started | DB | UI `e2e/ui/goals.spec.ts`: `[RWD-15-l][RWD-15-e] a repeating goal’s page: how it repeats stays, its rule and its weeks`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-e] a goal that repeats each week, every day it's due, is saved`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-e] a repeat is a week, month or term`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-e] a goal left without a repeat doesn't repeat`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-e] a goal not yet started may change how it repeats`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-e] a started goal keeps how it repeats (D-123)` |
+| RWD-15-f | WP-80 | Each period's outcome and achievement are recorded once; its payout is paid once and reversed once | DB | DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-f] an evaluation with its periods is saved`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-f] each period's outcome is recorded, the won week as achievement 1`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-f] the won week pays its 10 points`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-f] worked out again, it is recorded and paid once`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-f] a won week undone takes back its payout once`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-f] won again, each week is its own next achievement`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-f] a shop reward goes to To give once for each won week` |
+| RWD-15-g | WP-80 | A won week keeps its outcome and what it paid when the rules change; the change counts from the next week | DB | DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-g] a started repeating goal's rules change`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-g] the change counts from the next week, this one being won`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-g] the weeks before keep their outcome under the new rules`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-g] ... and what they paid` |
+| RWD-15-h | WP-80 | Stop after this week ends the goal on the last day of the period going now | DB | DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-h] stop after this week ends it on the last day of the week going now`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-h] safe to send twice`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-h] only a repeating goal stops after a period` |
+| RWD-15-i | WP-80 | Each won period is celebrated once on the board | DB | Unit `apps/web/lib/board-goals.test.ts`: `celebrating once › [RWD-15-i] a repeating goal is celebrated for each won week while it goes on`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-i] a won week is celebrated`<br>DB `supabase/tests/500_repeating_goals.test.sql`: `[RWD-15-i] ... once` |
+| RWD-15-j | WP-80 | The form reads the repeat, "every day it's due" and its misses | Unit | Unit `apps/web/lib/goals.test.ts`: `repeating goals (WP-80) › [RWD-15-j] reads how it repeats, "every day it’s due" and its misses allowed`<br>Unit `apps/web/lib/goals.test.ts`: `repeating goals (WP-80) › [RWD-15-j] a goal without a repeat doesn’t repeat; an unknown one is read as none` |
+| RWD-15-k | WP-80 | The board's and the Goals card's words: the days, "Missed, starts again", the won line and the weeks | Unit | Unit `apps/web/lib/board.test.ts`: `the shop, requests and goals (WP-20) › [RWD-15-k] reads a repeating goal’s week going now and its last weeks`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a week’s days › [RWD-15-k] shows each school day and a day off with nothing due, never the weekend`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a week’s days › [RWD-15-k] says "3 of 4 days · Friday no school", and what is left`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a lost or won week › [RWD-15-k] lost: "Missed, starts again Monday, Oct 19", and which days`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a lost or won week › [RWD-15-k] the weeks: "Won 3 of the last 4 weeks", a break week left out` |
+| RWD-15-l | WP-80 | The form, the Goals card and the goal's Weeks at 390 and 1280 px, and the board's card going, missed and won, in both themes | UI | UI `e2e/ui/board-repeating.spec.ts`: `at ${viewport.width}×${viewport.height} › [RWD-15-l][NFR-03] Maya’s goal going, missed and won, in ${theme}: 28 px text, AA contrast`<br>UI `e2e/ui/board-repeating.spec.ts`: `the card › [RWD-15-l][RWD-16][US-411] going: a mark for each day, a day off a dash, "3 of 4 days" and what it pays`<br>UI `e2e/ui/board-repeating.spec.ts`: `the card › [RWD-15-l][RWD-16-c][US-411] missed: "Missed, starts again" the next week’s first day, no part count`<br>UI `e2e/ui/board-repeating.spec.ts`: `the card › [RWD-15-l] won: "Won this week! 10 points." and when the next week starts`<br>UI `e2e/ui/goals.spec.ts`: `[RWD-15-l][RWD-16][US-410] a repeating goal on Goals: this week’s days, a lost week, and the weeks`<br>UI `e2e/ui/goals.spec.ts`: `[RWD-15-l][RWD-15-e] a repeating goal’s page: how it repeats stays, its rule and its weeks`<br>UI `e2e/ui/goals.spec.ts`: `[RWD-15-l][RWD-16-i] a new goal: choosing how it repeats offers "every day it’s due" and its misses` |
+| RWD-15-m | WP-80 | On the preview: Maya's weekly homework goal, Monday to Thursday done and Friday a closure, is won and pays 10 once; a missed Tuesday next week shows "Missed, starts again Monday"; Goals shows the weeks | E2E | E2E `e2e/tests/repeating-goals.spec.ts`: `[RWD-15-m][US-410][US-411] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board` |
 | NFR-19-a | WP-85 | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-a][US-913] a test traces to the IDs in its name and its describe blocks, in every layer` |
 | NFR-19-b | WP-85 | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-b][US-913] a test naming an unknown requirement, story, item or test case fails the check` |
 | NFR-19-c | WP-85 | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-c][US-913] a new gap fails the check, and a known gap does not` |
@@ -610,8 +632,8 @@ Status as in §9.3, for tests that name the story itself.
 | US-405 | RWD-06, RWD-09 | Covered | UI 1 · E2E 1 |
 | US-406 | RWD-10, RWD-04 | Covered | U 1 · DB 1 · UI 1 · E2E 1 |
 | US-407 | RWD-04 | Covered | U 1 · DB 1 · E2E 1 |
-| US-410 | RWD-15, RWD-16 | Not built | — |
-| US-411 | RWD-15, RWD-16 | Not built | — |
+| US-410 | RWD-15, RWD-16 | Covered | U 11 · UI 1 · E2E 1 |
+| US-411 | RWD-15, RWD-16 | Covered | UI 2 · E2E 1 |
 | US-412 | RWD-17 | Not built | — |
 | US-413 | RWD-18 | Not built | — |
 | US-414 | RWD-19 | Not built | — |
@@ -793,7 +815,7 @@ Unit · 6 tests
 
 #### `apps/web/lib/board-goals.test.ts`
 
-Unit · 10 tests
+Unit · 11 tests
 
 | Test | Names |
 |---|---|
@@ -806,6 +828,7 @@ Unit · 10 tests
 | `nudges › [RWD-07] a child’s first nudge: their own goals, then the family’s` | RWD-07 |
 | `celebrating once › [RWD-08][US-404] reached goals not yet celebrated, first reached first, less those done here` | RWD-08, US-404 |
 | `celebrating once › [RWD-08] names who reached it` | RWD-08 |
+| `celebrating once › [RWD-15-i] a repeating goal is celebrated for each won week while it goes on` | RWD-15-i |
 | `celebrating once › [RWD-08] tells the server which goal and which time it was reached` | RWD-08 |
 
 #### `apps/web/lib/board-health.test.ts`
@@ -909,7 +932,7 @@ Unit · 3 tests
 
 #### `apps/web/lib/board.test.ts`
 
-Unit · 21 tests
+Unit · 22 tests
 
 | Test | Names |
 |---|---|
@@ -924,6 +947,7 @@ Unit · 21 tests
 | `wishes in the snapshot › [PTS-06] reads the shop and each child’s wish (WP-30); an older snapshot has neither` | PTS-06, WP-30 |
 | `the shop, requests and goals (WP-20) › [PTS-04] reads what a child can spend, their requests and their weekly limits` | PTS-04, WP-20 |
 | `the shop, requests and goals (WP-20) › [PTS-03] reads how many of a reward are left and its photo; a wish has neither` | PTS-03, WP-20 |
+| `the shop, requests and goals (WP-20) › [RWD-15-k] reads a repeating goal’s week going now and its last weeks` | RWD-15-k, WP-20 |
 | `the shop, requests and goals (WP-20) › [RWD-07] reads the goals in play with each rule; leaves out what it cannot draw` | RWD-07, WP-20 |
 | `notify, then refetch › [DEV-05] listens to every board-readable table, filtered to this board` | DEV-05 |
 | `notify, then refetch › [DEV-05] a burst of changes costs at most two reads, the last after the last change` | DEV-05 |
@@ -1082,9 +1106,21 @@ Unit · 6 tests
 | `format › writes dates and times the brand way, in the household timezone (06 §2)` | — |
 | `board theme › [DEV-05] a board follows the time of day unless an admin holds it on Day or Evening` | DEV-05 |
 
+#### `apps/web/lib/goal-periods.test.ts`
+
+Unit · 5 tests
+
+| Test | Names |
+|---|---|
+| `a week’s days › [RWD-15-k] shows each school day and a day off with nothing due, never the weekend` | RWD-15-k |
+| `a week’s days › [RWD-15-k] says "3 of 4 days · Friday no school", and what is left` | RWD-15-k |
+| `a week’s days › [RWD-16] needs every day due less the misses allowed, and at least one` | RWD-16 |
+| `a lost or won week › [RWD-15-k] lost: "Missed, starts again Monday, Oct 19", and which days` | RWD-15-k |
+| `a lost or won week › [RWD-15-k] the weeks: "Won 3 of the last 4 weeks", a break week left out` | RWD-15-k |
+
 #### `apps/web/lib/goals.test.ts`
 
-Unit · 22 tests
+Unit · 26 tests
 
 | Test | Names |
 |---|---|
@@ -1110,6 +1146,10 @@ Unit · 22 tests
 | `[RWD-14] the end date (D-115) › [RWD-14] the box unticked saves no end date, whatever date came with it` | RWD-14 |
 | `[RWD-14] the end date (D-115) › [RWD-14] a cleared date saves no end date, the box still ticked` | RWD-14 |
 | `[RWD-14] the end date (D-115) › [RWD-14] a form without the box (loaded before it, or a finished goal) sends the date alone` | RWD-14 |
+| `repeating goals (WP-80) › [RWD-15-j] reads how it repeats, "every day it’s due" and its misses allowed` | RWD-15-j, WP-80 |
+| `repeating goals (WP-80) › [RWD-15-j] a goal without a repeat doesn’t repeat; an unknown one is read as none` | RWD-15-j, WP-80 |
+| `repeating goals (WP-80) › [RWD-16-i] every day it’s due on a goal that doesn’t repeat says what to fix` | RWD-16-i, WP-80 |
+| `repeating goals (WP-80) › [RWD-16] describes the rule, and a period’s events and a stop` | RWD-16, WP-80 |
 
 #### `apps/web/lib/health.test.ts`
 
@@ -1981,6 +2021,14 @@ E2E · 4 tests
 | `[CHR-16][US-318] the bell on an item in My tasks: off for this item only, then on again` | CHR-16, US-318 |
 | `[CHR-16] an item’s reminder lead time, in the editor` | CHR-16 |
 
+#### `e2e/tests/repeating-goals.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[RWD-15-m][US-410][US-411] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board` | RWD-15-m, US-410, US-411 |
+
 #### `e2e/tests/rewards.spec.ts`
 
 E2E · 3 tests
@@ -2107,6 +2155,17 @@ UI · 7 tests
 | `[MENU-06][US-804] the school menu by section: the entree on one line, a tap shows it all, a row a section on Meals` | MENU-06, US-804 |
 | `[BRD-03][NFR-11] meals in ${theme}: 56 px targets, 28 px text, AA contrast, no sideways scroll` | BRD-03, NFR-11 |
 
+#### `e2e/ui/board-repeating.spec.ts`
+
+UI · 4 tests
+
+| Test | Names |
+|---|---|
+| `at ${viewport.width}×${viewport.height} › [RWD-15-l][NFR-03] Maya’s goal going, missed and won, in ${theme}: 28 px text, AA contrast` | RWD-15-l, NFR-03 |
+| `the card › [RWD-15-l][RWD-16][US-411] going: a mark for each day, a day off a dash, "3 of 4 days" and what it pays` | RWD-15-l, RWD-16, US-411 |
+| `the card › [RWD-15-l][RWD-16-c][US-411] missed: "Missed, starts again" the next week’s first day, no part count` | RWD-15-l, RWD-16-c, US-411 |
+| `the card › [RWD-15-l] won: "Won this week! 10 points." and when the next week starts` | RWD-15-l |
+
 #### `e2e/ui/board-shop.spec.ts`
 
 UI · 12 tests
@@ -2226,7 +2285,7 @@ UI · 10 tests
 
 #### `e2e/ui/goals.spec.ts`
 
-UI · 11 tests
+UI · 14 tests
 
 | Test | Names |
 |---|---|
@@ -2241,6 +2300,9 @@ UI · 11 tests
 | `[RWD-13][US-409] what each goal pays, and a goal whose reward was given then undone needs a look` | RWD-13, US-409 |
 | `[RWD-13] the form: the celebration, points, or a reward from the shop (a child’s goal only)` | RWD-13 |
 | `[RWD-10][US-406] the preview: what saving would do, and each rule now and after` | RWD-10, US-406 |
+| `[RWD-15-l][RWD-16][US-410] a repeating goal on Goals: this week’s days, a lost week, and the weeks` | RWD-15-l, RWD-16, US-410 |
+| `[RWD-15-l][RWD-15-e] a repeating goal’s page: how it repeats stays, its rule and its weeks` | RWD-15-e, RWD-15-l |
+| `[RWD-15-l][RWD-16-i] a new goal: choosing how it repeats offers "every day it’s due" and its misses` | RWD-15-l, RWD-16-i |
 
 #### `e2e/ui/help.spec.ts`
 
@@ -2554,6 +2616,33 @@ Unit · 9 tests
 | `rules engine properties › [RWD-02][RWD-05] doing more never lowers progress: a missed or open routine done instead` | RWD-02, RWD-05 |
 | `rules engine properties › [D-31][RWD-11] tasks, skipped and covered routines never change how a day went` | RWD-11 |
 | `rules engine properties › [RWD-03][D-30] progress stays within 0–100; any is at least all; a family goal counts at least any one member` | RWD-03 |
+
+#### `packages/rules-engine/src/repeat.test.ts`
+
+Unit · 20 tests
+
+| Test | Names |
+|---|---|
+| `[US-410] every day it’s due, each week › [RWD-16-a] a 5-day week with everything done every day is won` | RWD-16-a, US-410 |
+| `[US-410] every day it’s due, each week › [RWD-16-b] a 4-day week (Friday a closure, nothing due) is won with 4` | RWD-16-b, US-410 |
+| `[US-410] every day it’s due, each week › [RWD-16-b] the week is not won while a day due is still to come` | RWD-16-b, US-410 |
+| `[US-410] every day it’s due, each week › [RWD-16-c] Tuesday missed with 0 allowed loses the week when Tuesday closes; the next week starts afresh` | RWD-16-c, US-410 |
+| `[US-410] every day it’s due, each week › [RWD-16-d] with 1 miss allowed one miss is forgiven, and two lose the week` | RWD-16-d, US-410 |
+| `[US-410] every day it’s due, each week › [RWD-16-e] a break week, with nothing due, is neither won nor missed` | RWD-16-e, US-410 |
+| `[US-410] every day it’s due, each week › [RWD-16-f] a day a parent skipped is neutral: not due, not missed` | RWD-16-f, US-410 |
+| `[US-410] every day it’s due, each week › [RWD-16-g] today is never a miss, whatever is still to do` | RWD-16-g, US-410 |
+| `[US-410] every day it’s due, each week › [RWD-16-h] a parent’s late tick after the week closed turns it from missed to won, and an uncheck back` | RWD-16-h, US-410 |
+| `[US-410] every day it’s due, each week › [RWD-16-i] every day it’s due needs a repeating goal, and 0 to 3 misses allowed` | RWD-16-i, US-410 |
+| `[US-410] every day it’s due, each week › [RWD-16] with any one rule, a lost DAYS_DUE rule doesn’t lose the week while another can still be met` | RWD-16, US-410 |
+| `periods › [RWD-15-a] a part first week counts only the days due inside it` | RWD-15-a |
+| `periods › [RWD-15-a] a part last week ends with the goal, and nothing follows it` | RWD-15-a |
+| `periods › [RWD-15-b] each calendar month is its own period` | RWD-15-b |
+| `periods › [RWD-15-c] each school term is a period, and days between terms belong to none` | RWD-15-c |
+| `periods › [RWD-15-d] every rule is worked out inside each period: 3 things done each week` | RWD-15-d |
+| `periods › [RWD-15-d] a week closed unmet is missed, and one with nothing in scope due is neutral` | RWD-15-d |
+| `periods › [RWD-15] a goal not started yet has no periods and nothing done` | RWD-15 |
+| `periods › [RWD-15] a started goal starts; an unknown repeat is refused` | RWD-15 |
+| `periods › [RWD-15] weeks follow the family’s week start, and months their own lengths` | RWD-15 |
 
 #### `packages/rules-engine/src/status.test.ts`
 
@@ -4476,5 +4565,50 @@ DB · 10 tests
 | `[CAL-09-c] and lets the drop go on once every calendar's person is in calendar_member` | CAL-09-c |
 | `[CAL-09-c] the whole family's calendar needs no one` | CAL-09-c |
 | `[CAL-09-c] someone else on the calendar is not its person carried over` | CAL-09-c |
+
+#### `supabase/tests/500_repeating_goals.test.sql`
+
+DB · 38 tests
+
+| Test | Names |
+|---|---|
+| `[RWD-15-e] a goal that repeats each week, every day it's due, is saved` | RWD-15-e |
+| `... repeating each week` | — |
+| `[RWD-16-i] every day it's due is stored with its misses allowed, 0 by default` | RWD-16-i |
+| `[RWD-16-i] up to 3 misses allowed` | RWD-16-i |
+| `[RWD-16-i] not 4` | RWD-16-i |
+| `[RWD-16-i] every day it's due is refused on a goal that doesn't repeat` | RWD-16-i |
+| `[RWD-15-e] a repeat is a week, month or term` | RWD-15-e |
+| `[RWD-15-e] a goal left without a repeat doesn't repeat` | RWD-15-e |
+| `... stored as none` | — |
+| `[RWD-15-e] a goal not yet started may change how it repeats` | RWD-15-e |
+| `[RWD-15-e] a started goal keeps how it repeats (D-123)` | RWD-15-e |
+| `... a goal that didn't repeat too` | — |
+| `[RWD-15-f] an evaluation with its periods is saved` | RWD-15-f |
+| `[RWD-15-f] each period's outcome is recorded, the won week as achievement 1` | RWD-15-f |
+| `[RWD-15-f] the won week pays its 10 points` | RWD-15-f |
+| `[RWD-15-f] worked out again, it is recorded and paid once` | RWD-15-f |
+| `[RWD-15] the goal itself goes on, with one achievement` | RWD-15 |
+| `[RWD-15-f] a won week undone takes back its payout once` | RWD-15-f |
+| `... logged once each, with the week` | — |
+| `... the log names the week` | — |
+| `[RWD-15-f] won again, each week is its own next achievement` | RWD-15-f |
+| `... each paid once` | — |
+| `[RWD-15-f] a shop reward goes to To give once for each won week` | RWD-15-f |
+| `[RWD-15-i] a won week is celebrated` | RWD-15-i |
+| `[RWD-15-i] ... once` | RWD-15-i |
+| `... and not an achievement that isn't a won week` | — |
+| `[RWD-16] a day with nothing due says what kind of day it is` | RWD-16 |
+| `[RWD-15-g] a started repeating goal's rules change` | RWD-15-g |
+| `[RWD-15-g] the change counts from the next week, this one being won` | RWD-15-g |
+| `[RWD-15-g] the weeks before keep their outcome under the new rules` | RWD-15-g |
+| `[RWD-15-g] ... and what they paid` | RWD-15-g |
+| `[RWD-15-h] stop after this week ends it on the last day of the week going now` | RWD-15-h |
+| `... which is stored` | — |
+| `[RWD-15-h] safe to send twice` | RWD-15-h |
+| `... logged once` | — |
+| `[RWD-15-h] only a repeating goal stops after a period` | RWD-15-h |
+| `[NFR-04] another family sees none of the periods` | NFR-04 |
+| `[NFR-04] nor stops the goal` | NFR-04 |
 
 <!-- /catalogue -->

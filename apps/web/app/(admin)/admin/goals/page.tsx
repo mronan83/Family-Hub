@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
+import { isoDay } from '@/lib/format';
 import { goalRefusal } from '@/lib/goals';
 import { serverClient } from '@/lib/supabase/server';
 import { loadGoals } from './data';
@@ -13,6 +14,7 @@ const DID: Record<string, string> = {
   redeem: 'Marked redeemed. It’s in the history.',
   cancel: 'Cancelled. It’s in the history.',
   review: 'Cleared.',
+  stop: 'It stops after the period going now.',
 };
 
 /** [RWD-01][RWD-04][RWD-09] The family's goals, brought up to date first, as this admin through RLS. */
@@ -44,6 +46,7 @@ export default async function GoalsPage({
       admins={ctx.adminNames}
       prizes={ctx.prizeNames}
       timezone={household.timezone}
+      today={isoDay(household.timezone)}
       notice={notice}
       error={params.error ? goalRefusal({ hint: params.error }) : null}
     />

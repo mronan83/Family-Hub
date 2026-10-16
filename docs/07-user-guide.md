@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.34: goals that repeat each week, month or school term (WP-80, D-123): **Repeats**, **Every day it's due** and its misses, a goal's weeks, **Stop after this week**, and the board's week won or missed (A7a, B1.8); Goals' **History** and a goal's **What happened** and **Cancel** folded.
 > v0.33: the test strategy's story (US-913) left out of the guide, with its reason: it is for the people building FamilyWise (WP-85).
 > v0.33: a calendar for one or more people (WP-50, D-122): **Who it's for** on Calendars, and each of its people's faces on the board (A9, B1.11).
 > v0.32: the Boards settings folded (WP-91, D-118, D-120): each board folded to its name and facts, with the not-seen warning on its header, opened to **Display**, **Sleep and wake**, **Calendars**, **Home screen**, then **Name and connection** set apart; the household's **Home screen**, **Add a board** and **Disconnected** folded (A16, B1.12).
@@ -648,9 +649,38 @@ Before you save a change, choose **Preview**. It works the goal out from every c
 
 ![The preview of a change on a phone: "Its progress goes from 96% to 88%.", then each rule now and after saving.](guide/img/admin-goal-preview-phone.jpg "Preview before saving a change")
 
-The goal's page lists **What happened** to it, with when and who. **Cancel** (the goal's name) stops it counting and moves it to **History**. Goals are never deleted.
+The goal's page folds **What happened** to it to its latest line; open it for each event, with when and who. **Cancel**, set apart at the bottom (open it, then choose **Cancel** and the goal's name), stops it counting and moves it to **History**. Goals are never deleted. **History** on Goals is folded to how many are redeemed, ended and cancelled, with "needs a look" on it when one does.
 
 A goal marked **Needs a look** had its reward given (redeemed, or its reward from the shop marked given) and then a check-off it needed was undone. A redeemed goal stays redeemed; points it paid are taken back, and put back if it is met again. Have a look, then choose **Clear**: it isn't marked again unless it stops being met again.
+
+### A7a Goals that repeat
+<!-- covers: US-410 US-411 -->
+
+**What this is.** A goal that starts again each week, month or school term, and is won or missed one period at a time: "Homework home every school day, each week". **When.** For a habit, rather than a one-off target. **How.** On **Goals**, choose **Set a goal**, and under **Repeats** choose **Each week**, **Each month** or **Each school term**.
+
+- **Each week** follows your family's week. **Each month** is the calendar month. **Each school term** follows the child's school year (the family's, for a family goal); days between terms don't count. A goal that starts mid-week counts only the days left in that week.
+- Once it repeats, **Counts** offers **Every day it's due**: a day counts when everything it counts that is due that day is done. Choose what counts (for homework, **Some items** and the homework item). A short week needs only its days: with Friday a day off school, a week needs Monday to Thursday.
+- **Misses allowed each week** is 0 to 3 (0 by default). With 1, a week of 5 needs 4. Today is never a miss; a day you skip isn't due.
+- **What each week pays** is paid once for each week won: points, or a reward from the shop, which goes to **To give** once a week. For a bigger reward after several weeks, set a second goal later that counts the weeks won (coming with WP-82).
+- The other rules work too, inside each period: "20 things done each week".
+
+How a goal repeats is fixed once it starts. Its rules, misses and what it pays can still change: a change counts from this week, or from next week if this week is already won. A week already won keeps its rules and what it paid.
+
+**A week won or missed.** As soon as the days it needs are done, the week is won and pays. When a day is missed beyond the misses allowed, the week is lost at once: the goal says "Missed, starts again Monday, Oct 19", with no part credit and no restart mid-week. If you tick a missed day late for your child, even after the week has ended, the week is worked out again and can still be won; if a check-off it needed is undone, what that week paid is taken back. A week of school break, with nothing due, is neither won nor missed.
+
+**On Goals,** a repeating goal shows how it repeats and what it pays, **Going**, **Missed this week** or **Won this week**, this week's days ("This week: 3 of 4 days · Friday no school") with a mark for each, and its last weeks: "Won 3 of the last 4 weeks".
+
+![A repeating goal on Goals, on a phone: Homework home every school day, Maya · each week · Pays 10 points, Going, This week: 3 of 4 days · Friday no school, a mark for Monday to Friday, and Won 3 of the last 4 weeks with a mark per week.](guide/img/admin-goal-repeating-phone.jpg "A goal that repeats each week")
+
+On the goal's page, **Weeks** is folded to "Won 3 of the last 4 weeks" and the points paid; open it for each week, newest first, with its days and what it paid.
+
+![A goal's Weeks opened on a phone: this week going, 3 of 4 days, Friday no school; Oct 5 to 11 won, +10; Sep 28 to Oct 4, Missed Tuesday.](guide/img/admin-goal-weeks-phone.jpg "A goal's weeks")
+
+**To stop it,** open **Stop or cancel** at the bottom of the goal's page. **Stop after this week** ends it on the last day of this week, so this week still counts and pays. **Cancel** stops it now; nothing more is paid. You can also give it an end date in the form.
+
+**On the board,** your child's screen shows the goal with a mark for each day of this week (done, missed, today, a day off school), "Days · 10 points" with how many of how many, "Today makes it!", and their last weeks. A lost week says "Missed, starts again Monday, Oct 19"; a won week says "Won this week! 10 points." and is celebrated once.
+
+![Maya's homework goal on the board: Monday done, Tuesday missed, Wednesday today, Thursday to come, Friday off; Missed, starts again Monday, Oct 19; Won 1 of the last 4 weeks.](guide/img/board-goal-repeating.jpg "A week missed, on the board")
 
 ### A8 Streaks and insights
 <!-- covers: US-408 -->
@@ -1132,11 +1162,12 @@ A member who doesn't earn rewards can't be given points; what they earned before
 |---|---|
 | **Set a goal** | Opens the goal form. |
 | Goals in play | Each goal: picture, name, who and dates, what it pays ("Pays 10 points", "Pays Ice cream from the shop"), **Needs a look** if flagged, state (**Starts later**, **Going**, **Achieved**, **Achieved again**), a meter per rule, **Mark redeemed** when achieved, **Change**. "Working out its progress…" before its first evaluation. |
-| **History** | Goals **Redeemed** (when and by whom), **Ended**, or **Cancelled**; **Needs a look** if flagged; **Details**. |
+| A repeating goal | How it repeats, misses allowed and what each week pays; **Going**, **Missed this week** or **Won this week**; this week's days and a mark for each; the lost week's line; its last weeks as marks with "Won 3 of the last 4 weeks"; **Change**. See [A7a](#a7a-goals-that-repeat). |
+| **History** (folded) | Folded to how many are redeemed, ended and cancelled, and "needs a look". Open: goals **Redeemed** (when and by whom), **Ended**, or **Cancelled**; **Needs a look** if flagged; **Details**. |
 
-**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Starts**, **Ends** (**Ends on a date**, then the date and **Clear**), one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **What counts**), **Add a rule**, **It's reached when**, **What reaching it pays** (**Just the celebration**, **Points** with **Points paid** 1 to 10,000, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
+**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Repeats** (**Doesn't repeat**, **Each week**, **Each month**, **Each school term**; fixed once it starts), **Starts**, **Ends** (**Ends on a date**, then the date and **Clear**), one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **Every day it's due** with **Misses allowed each week** 0 to 3 for a goal that repeats, **What counts**), **Add a rule**, **It's reached when**, **What reaching it pays** (**What each week pays** for a goal that repeats) (**Just the celebration**, **Points** with **Points paid** 1 to 10,000, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
 
-**A goal's page:** who, state and "% there"; **Clear** for a **Needs a look** flag; **Remove photo**; the form (locked as the goal progresses, see [A7](#change-or-cancel-a-goal)); **What happened** (set up, started, rules or dates changed, what it pays changed, progress worked out again with the old and new %, achieved and what it paid, back to going, payout undone, points put back, needs a look, redeemed, ended, cancelled); **Cancel**.
+**A goal's page:** who, state and "% there"; **Clear** for a **Needs a look** flag; **Remove photo**; the form (locked as the goal progresses, see [A7](#change-or-cancel-a-goal)); **Weeks** for a goal that repeats (folded; each week, its days and what it paid); **What happened** (folded to its latest line: set up, started, rules or dates changed, what it pays changed, progress worked out again with the old and new %, achieved and what it paid, a week won or no longer won, back to going, payout undone, points put back, needs a look, set to stop, redeemed, ended, cancelled); **Stop or cancel** (folded: **Stop after this week** for a goal that repeats, and **Cancel**).
 
 #### B1.9 Insights
 <!-- covers: US-408 -->

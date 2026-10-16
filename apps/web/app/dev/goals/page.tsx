@@ -1,12 +1,16 @@
 import type { Metadata } from 'next';
 import { AdminHeader } from '../../(admin)/admin/header';
+import type { DayMark } from '@familywise/rules-engine';
+import type { GoalPeriod } from '@/lib/goal-periods';
 import type { GoalRow } from '../../(admin)/admin/goals/data';
 import { GoalForm } from '../../(admin)/admin/goals/goal-form';
+import { WeeksFold } from '../../(admin)/admin/goals/repeating';
 import { GoalsView } from '../../(admin)/admin/goals/view';
 
 // The admin Goals page and goal form (WP-19, WP-39) with a made-up family and no database, for the UI
 // suite: the list in Day or Evening (?theme=evening), the form for a new goal (?form=new), for one
-// that has started (?form=started), and that one with a preview of a change (?form=preview).
+// that has started (?form=started), and that one with a preview of a change (?form=preview). Today is
+// Thursday, Oct 15, 2026: Maya's and Leo's goals repeat each week (WP-80), and Friday is a day off.
 export const metadata: Metadata = { title: 'Goals', robots: { index: false } };
 
 const MAYA = 'f2000000-0000-4000-8000-000000000001';
@@ -29,6 +33,8 @@ const goal = (o: Partial<GoalRow> & Pick<GoalRow, 'id' | 'title' | 'status'>): G
   startDate: '2026-10-03',
   endDate: '2026-10-17',
   logic: 'all',
+  repeat: 'none',
+  periods: [],
   payout: { type: 'custom' },
   achievementCount: 0,
   achievedAt: null,
@@ -43,7 +49,107 @@ const goal = (o: Partial<GoalRow> & Pick<GoalRow, 'id' | 'title' | 'status'>): G
   ...o,
 });
 
+const TODAY = '2026-10-15';
+const HOMEWORK = 'f2c00000-0000-4000-8000-000000000003';
+const READING = 'f2c00000-0000-4000-8000-000000000004';
+
+/** A week of a repeating goal: from Monday `start`, each day's mark, Friday Oct 16 a day off school. */
+function week(
+  start: string,
+  outcome: GoalPeriod['outcome'],
+  marks: DayMark[],
+  missesAllowed = 0,
+): GoalPeriod {
+  const day = (n: number) => {
+    const d = new Date(`${start}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  };
+  const days = marks.map((mark, i) => ({
+    date: day(i),
+    mark,
+    dayType: mark === 'none' ? (i >= 5 ? 'weekend' : 'no_school') : null,
+  }));
+  return {
+    start,
+    end: day(6),
+    outcome,
+    nextStart: day(7),
+    daysDue: days.filter((d) => d.mark !== 'none').length,
+    daysDone: days.filter((d) => d.mark === 'done').length,
+    daysMissed: days.filter((d) => d.mark === 'missed').length,
+    missesAllowed,
+    days,
+  };
+}
+const SCHOOL_WEEK = ['done', 'done', 'done', 'done', 'done', 'none', 'none'] as const;
+
 const GOALS: GoalRow[] = [
+  goal({
+    id: 'g8',
+    title: 'Homework home every school day',
+    memberId: MAYA,
+    icon: 'backpack',
+    status: 'active',
+    repeat: 'week',
+    startDate: '2026-09-14',
+    endDate: null,
+    payout: { type: 'points', amount: 10 },
+    pct: 75,
+    achievementCount: 3,
+    periods: [
+      week('2026-09-14', 'won', ['none', 'done', 'done', 'done', 'done', 'none', 'none']),
+      week('2026-09-21', 'won', [...SCHOOL_WEEK]),
+      week('2026-09-28', 'missed', ['done', 'missed', 'done', 'done', 'done', 'none', 'none']),
+      week('2026-10-05', 'won', [...SCHOOL_WEEK]),
+      week('2026-10-12', 'open', ['done', 'done', 'done', 'today', 'none', 'none', 'none']),
+    ],
+    rules: [
+      {
+        id: 'r8',
+        type: 'DAYS_DUE',
+        target: 1,
+        scope: { chore_ids: [HOMEWORK] },
+        params: { misses_allowed: 0 },
+        progress: { current: 3, pct: 75, met: false, currentStreak: null, bestStreak: null },
+      },
+    ],
+  }),
+  goal({
+    id: 'g9',
+    title: 'Reading every day it’s due',
+    memberId: LEO,
+    icon: 'book-open',
+    status: 'active',
+    repeat: 'week',
+    startDate: '2026-09-14',
+    endDate: null,
+    payout: { type: 'points', amount: 10 },
+    pct: 40,
+    achievementCount: 2,
+    periods: [
+      week('2026-09-14', 'won', [...SCHOOL_WEEK], 1),
+      week('2026-09-21', 'missed', ['done', 'missed', 'missed', 'done', 'done', 'none', 'none'], 1),
+      week('2026-09-28', 'neutral', ['none', 'none', 'none', 'none', 'none', 'none', 'none'], 1),
+      week('2026-10-05', 'won', ['done', 'done', 'missed', 'done', 'done', 'none', 'none'], 1),
+      week(
+        '2026-10-12',
+        'missed',
+        ['done', 'missed', 'missed', 'today', 'none', 'none', 'none'],
+        1,
+      ),
+    ],
+    rules: [
+      {
+        id: 'r9',
+        type: 'DAYS_DUE',
+        target: 1,
+        scope: { chore_ids: [READING] },
+        params: { misses_allowed: 1 },
+        progress: { current: 1, pct: 25, met: false, currentStreak: null, bestStreak: null },
+      },
+    ],
+  }),
   goal({
     id: 'g1',
     title: 'Movie night',
@@ -160,6 +266,8 @@ const TAGS = [
 ];
 const ITEMS = [
   { id: BED, title: 'Make bed' },
+  { id: HOMEWORK, title: 'Homework home' },
+  { id: READING, title: 'Reading' },
   { id: 'f2c00000-0000-4000-8000-000000000002', title: 'Set the table' },
 ];
 
@@ -172,6 +280,66 @@ export default async function DevGoalsPage({
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
   // [RWD-14] no-end: a started goal with no end date (WP-79); reached: an achieved goal, locked (D-115).
   const forms = ['new', 'started', 'preview', 'no-end', 'reached'];
+  // [RWD-15] repeating: Maya's homework goal's page, its form and its weeks (WP-80).
+  if (params.form === 'repeating') {
+    const homework = GOALS.find((g) => g.id === 'g8')!;
+    return (
+      <div className={`admin ${theme}`}>
+        <main className="fw-page">
+          <AdminHeader current="/admin/goals" />
+          <section className="fw-card">
+            <h1>{homework.title}</h1>
+            <GoalForm
+              id="f2e00000-0000-4000-8000-000000000008"
+              members={MEMBERS}
+              tags={TAGS}
+              items={ITEMS}
+              prizes={PRIZES}
+              today={TODAY}
+              lock="started"
+              preview={{
+                period: 'This week Homework home is due 4 days, so this week needs 4.',
+                outcome: 'Its progress stays at 75%.',
+                before: '75% there',
+                after: '75% there',
+                rows: [
+                  {
+                    text: 'Every day it’s due, from Homework home (no misses allowed)',
+                    before: '3 of 4',
+                    after: '3 of 4',
+                    met: false,
+                  },
+                ],
+              }}
+              initial={{
+                title: homework.title,
+                description: null,
+                icon: 'backpack',
+                memberId: MAYA,
+                startDate: homework.startDate,
+                endDate: null,
+                logic: 'all',
+                repeat: 'week',
+                payout: { type: 'points', amount: 10 },
+                rules: [
+                  {
+                    type: 'DAYS_DUE',
+                    target: 1,
+                    scope: 'items',
+                    tagIds: [],
+                    itemIds: [HOMEWORK],
+                    grace: 1,
+                    misses: 0,
+                  },
+                ],
+              }}
+            />
+          </section>
+          <WeeksFold repeat="week" periods={homework.periods} today={TODAY} points={10} />
+        </main>
+      </div>
+    );
+  }
   if (params.form && forms.includes(params.form)) {
     const started = params.form !== 'new';
     return (
@@ -262,6 +430,7 @@ export default async function DevGoalsPage({
         admins={new Map([['u1', 'Alex']])}
         prizes={new Map(PRIZES.map((p) => [p.id, p.title]))}
         timezone="America/New_York"
+        today={TODAY}
         notice={null}
         error={null}
       />

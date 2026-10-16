@@ -5086,3 +5086,152 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
 .fw-help__callout > :last-child {
   margin-bottom: 0;
 }
+
+/* [RWD-15][RWD-16] A repeating goal (WP-80): a mark per day of the week going now and a mark per
+   period, sized by the surface (--touch). Shape and words carry the state, never colour alone. */
+.fw-days,
+.fw-periods {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-days {
+  gap: var(--s-2);
+}
+.board .fw-days {
+  gap: var(--s-3);
+}
+.fw-days__day {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 44px;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.board .fw-days__day {
+  min-width: 72px;
+}
+.fw-days__mark {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  border: 2px dashed var(--text-soft);
+  border-radius: 50%;
+  color: var(--text-soft);
+}
+.board .fw-days__mark {
+  width: var(--touch-min);
+  height: var(--touch-min);
+}
+.fw-days__mark .fw-icon {
+  width: 60%;
+  height: 60%;
+  stroke-width: 3;
+}
+.fw-days__day[data-mark='done'] .fw-days__mark {
+  border: 0;
+  background: var(--success);
+  color: var(--surface);
+}
+.fw-days__day[data-mark='missed'] .fw-days__mark {
+  border: 2px solid var(--missed);
+  background: var(--missed-tint);
+  color: var(--missed-text);
+}
+.fw-days__day[data-mark='today'] {
+  color: var(--primary-text);
+}
+.fw-days__day[data-mark='today'] .fw-days__mark {
+  border: 3px solid var(--primary);
+}
+.fw-days__day[data-mark='none'] .fw-days__mark {
+  border: 2px solid var(--line);
+}
+.fw-days__day[data-mark='later'] .fw-days__mark {
+  border-color: var(--line);
+}
+.fw-periods {
+  gap: var(--s-1);
+}
+.board .fw-periods {
+  gap: var(--s-2);
+}
+.fw-periods__period {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+}
+.board .fw-periods__period {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--s-3);
+}
+.fw-periods__period .fw-icon {
+  width: 60%;
+  height: 60%;
+}
+.fw-periods__period[data-outcome='won'] {
+  background: var(--reward);
+  color: var(--on-reward);
+}
+.fw-periods__period[data-outcome='missed'] {
+  border: 1.5px solid var(--missed);
+  background: var(--missed-tint);
+  color: var(--missed-text);
+}
+.fw-periods__period[data-outcome='neutral'] {
+  border: 1.5px solid var(--line);
+  color: var(--text-soft);
+}
+.fw-periods__period[data-outcome='open'] {
+  border: 2px dashed var(--primary);
+}
+/* The line a repeating goal says when a period is lost or won. */
+.fw-goal-line {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+  font-weight: 600;
+}
+.board .fw-goal-line {
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+}
+.fw-goal-line[data-kind='missed'] {
+  background: var(--missed-tint);
+  color: var(--missed-text);
+}
+.fw-goal-line[data-kind='won'] {
+  background: var(--reward-tint);
+  color: var(--reward-text);
+}
+.fw-goal-line .fw-icon {
+  flex: none;
+}
+.fw-goal__period {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-goal__weeks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+.fw-goal__status[data-status='missed'] {
+  background: var(--missed-tint);
+  color: var(--missed-text);
+}

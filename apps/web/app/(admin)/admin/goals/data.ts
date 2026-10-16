@@ -1,6 +1,13 @@
-import type { GoalStatus, RuleType } from '@familywise/rules-engine';
+import type {
+  DayMark,
+  GoalStatus,
+  PeriodOutcome,
+  Repeat,
+  RuleType,
+} from '@familywise/rules-engine';
 import type { IconName } from '@familywise/ui';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { GoalPeriod } from '@/lib/goal-periods';
 import type { GoalPayout, RuleFormValue } from '@/lib/goals';
 
 // Goals (WP-19), read through RLS as the parent: each goal with its rules and what the rules engine
@@ -11,7 +18,7 @@ export interface GoalRule {
   type: RuleType;
   target: number;
   scope: RuleFormValue['scope'];
-  params: { grace_per_week?: number };
+  params: { grace_per_week?: number; misses_allowed?: number };
   progress: {
     current: number;
     pct: number;
@@ -32,6 +39,10 @@ export interface GoalRow {
   startDate: string;
   endDate: string | null;
   logic: 'all' | 'any';
+  /** [RWD-15] How it repeats; 'none' for a goal reached once. */
+  repeat: Repeat;
+  /** [RWD-15] A repeating goal's periods as last worked out, oldest first; empty otherwise. */
+  periods: GoalPeriod[];
   /** What reaching it pays (RWD-13). */
   payout: GoalPayout;
   status: GoalStatus;
@@ -59,11 +70,11 @@ export interface GoalEvent {
 
 /** [RWD-01][RWD-04] The household's goals, newest first, with their rules and progress. */
 export async function loadGoals(db: SupabaseClient, householdId: string): Promise<GoalRow[]> {
-  const [goals, rules, progress, ruleProgress] = await Promise.all([
+  const [goals, rules, progress, ruleProgress, periods] = await Promise.all([
     db
       .from('reward_goal')
       .select(
-        'id, member_id, title, description, icon, image_path, payout, start_date, end_date, rule_logic, status, achievement_count, achieved_at, redeemed_at, redeemed_by, needs_review, archived_at, created_at',
+        'id, member_id, title, description, icon, image_path, payout, start_date, end_date, rule_logic, repeats, status, achievement_count, achieved_at, redeemed_at, redeemed_by, needs_review, archived_at, created_at',
       )
       .eq('household_id', householdId)
       .order('created_at', { ascending: false }),
@@ -80,8 +91,15 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
       .from('reward_rule_progress')
       .select('rule_id, current_value, pct, is_met, current_streak, best_streak')
       .eq('household_id', householdId),
+    db
+      .from('reward_goal_period')
+      .select(
+        'goal_id, start_date, end_date, outcome, next_start, days_due, days_done, days_missed, misses_allowed, days',
+      )
+      .eq('household_id', householdId)
+      .order('start_date'),
   ]);
-  for (const r of [goals, rules, progress, ruleProgress]) {
+  for (const r of [goals, rules, progress, ruleProgress, periods]) {
     if (r.error) throw new Error(`goals: ${r.error.message}`);
   }
   const goalProgress = new Map(
@@ -102,6 +120,34 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
       }[]
     ).map((p) => [p.rule_id, p]),
   );
+  const periodsByGoal = new Map<string, GoalPeriod[]>();
+  for (const p of periods.data as {
+    goal_id: string;
+    start_date: string;
+    end_date: string;
+    outcome: PeriodOutcome;
+    next_start: string | null;
+    days_due: number | null;
+    days_done: number | null;
+    days_missed: number | null;
+    misses_allowed: number | null;
+    days: { date: string; mark: DayMark; day_type?: string }[] | null;
+  }[]) {
+    const list = periodsByGoal.get(p.goal_id) ?? [];
+    list.push({
+      start: p.start_date,
+      end: p.end_date,
+      outcome: p.outcome,
+      nextStart: p.next_start,
+      daysDue: p.days_due,
+      daysDone: p.days_done,
+      daysMissed: p.days_missed,
+      missesAllowed: p.misses_allowed,
+      days:
+        p.days?.map((d) => ({ date: d.date, mark: d.mark, dayType: d.day_type ?? null })) ?? null,
+    });
+    periodsByGoal.set(p.goal_id, list);
+  }
   const rulesByGoal = new Map<string, GoalRule[]>();
   for (const r of rules.data as {
     id: string;
@@ -109,7 +155,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     rule_type: RuleType;
     target: number;
     scope: RuleFormValue['scope'];
-    params: { grace_per_week?: number };
+    params: { grace_per_week?: number; misses_allowed?: number };
   }[]) {
     const p = perRule.get(r.id);
     const list = rulesByGoal.get(r.goal_id) ?? [];
@@ -141,6 +187,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     start_date: string;
     end_date: string | null;
     rule_logic: 'all' | 'any';
+    repeats: Repeat;
     payout: GoalPayout;
     status: GoalStatus;
     achievement_count: number;
@@ -170,6 +217,8 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
       startDate: g.start_date,
       endDate: g.end_date,
       logic: g.rule_logic,
+      repeat: g.repeats,
+      periods: periodsByGoal.get(g.id) ?? [],
       payout: g.payout,
       status: g.status,
       achievementCount: g.achievement_count,

@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.60: US-410 and US-411 as built (WP-80, D-123): the goal form's **Repeats** and **Every day it's due**, a goal's **Weeks**, **Stop after this week**, and the board's card going, missed and won.
 > v0.8.59: US-508 as built (WP-50, D-122): who a calendar is for, ticked on Calendars; every face on the board's Coming up and an event's details.
 > v0.8.58: US-913 added at the owner's request (WP-85, NFR-19, D-107): every test traced to what it proves.
 > v0.8.57: US-911 gains three e2e criteria added at the owner's request (SPIKE-07, WP-98, WP-99, D-121): each spec checked at the layer it belongs in, a log of each nightly run's red tests, and a leaner nightly run.
@@ -512,12 +513,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a day I skipped, when the week is worked out, then that day is neutral.
 - Given I tick Tuesday's homework late for my child, after the week has ended, when the goal is worked out again, then the week is reached.
 - Given a repeating goal with no end date, when I look at it, then it keeps repeating until I stop it, and Goals shows its history ("3 of the last 4 weeks").
+- As built (WP-80, D-123): the goal form's **Repeats** (doesn't repeat, each week, each month, each school term), fixed once the goal starts; **Every day it's due** in **Counts** once it repeats, with **Misses allowed each week** (0 to 3); **What each week pays**, paid once a week won (a reward from the shop to To give once a week). On Goals the card shows this week's days ("This week: 3 of 4 days · Friday no school"), a mark for each, the lost week's line ("Missed Tuesday and Wednesday. Starts again Monday, Oct 19.") and the last weeks as marks with "Won 3 of the last 4 weeks"; the goal's page folds **Weeks** to that line and the points paid, opening to each week, and **Stop or cancel** holds **Stop after this week**.
 
 ### US-411 — My week, won or missed
 **As a** kid **I want** to see this week's goal and whether it is still on **so that** I know a missed day ended the week and when it starts again (added at the owner's request).
 **Priority:** Should · **Phase:** P2 · **Reqs:** RWD-15, RWD-16
 - Given my repeating goal, when I open my screen on the board, then I see this week's days done of those due, and my last weeks won.
 - Given I missed Tuesday, when I look at the goal, then it says "Missed, starts again Monday <date>".
+- As built (WP-80, D-123): the goal's card on my screen shows a mark for each day of this week (done, missed, today, a day off school a dash), "Days · 10 points" with 3 of 4, "Today makes it!", and my last weeks as marks; lost, "Missed, starts again Monday, Oct 19"; won, "Won this week! 10 points." and a celebration once.
 
 ### US-412 — Done by a time
 **As a** parent **I want** a goal to count only check-offs made by a set time **so that** "homework before 6 pm" and "bed made before school" mean what they say (added at the owner's request).

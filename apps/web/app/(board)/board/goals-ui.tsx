@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, GoalMeter, Icon } from '@familywise/ui';
+import { Button, DayMarks, GoalMeter, Icon, PeriodMarks } from '@familywise/ui';
 import {
   type CSSProperties,
   type ReactNode,
@@ -18,6 +18,15 @@ import {
   ruleNote,
   toCelebrate,
 } from '@/lib/board-goals';
+import {
+  boardNote,
+  daysNeeded,
+  periodLabel,
+  periodWord,
+  shownDays,
+  startsAgainLine,
+  wonLine,
+} from '@/lib/goal-periods';
 import type { BoardGoal } from '@/lib/snapshot';
 import { Picture, type PhotoUrl } from './picture';
 
@@ -42,6 +51,19 @@ export function GoalItem({
   /** [D-74] A button over the whole goal, on the dashboard: it opens whose goal it is. */
   action?: ReactNode;
 }) {
+  if (goal.repeat !== 'none') {
+    return (
+      <RepeatingGoal
+        goal={goal}
+        repeat={goal.repeat}
+        today={today}
+        photoUrl={photoUrl}
+        compact={compact}
+        who={who}
+        action={action}
+      />
+    );
+  }
   const ends = endsLine(goal.endDate, today);
   return (
     <li className="fw-today__goal" data-status={goal.status} data-goal={goal.id}>
@@ -82,6 +104,122 @@ export function GoalItem({
           {ends ? <p className="fw-today__goal-ends">{ends}</p> : null}
         </>
       )}
+      {action}
+    </li>
+  );
+}
+
+/**
+ * [RWD-15][RWD-16] A repeating goal (the approved mockup, D-123): this period's days, each a mark
+ * (a day off school a dash), "3 of 4 days" with what it pays, "Today makes it!"; lost, "Missed,
+ * starts again Monday, Oct 19"; won, "Won this week! 10 points."; and the last weeks as marks.
+ */
+function RepeatingGoal({
+  goal,
+  repeat,
+  today,
+  photoUrl,
+  compact,
+  who,
+  action,
+}: {
+  goal: BoardGoal;
+  repeat: 'week' | 'month' | 'term';
+  today: string;
+  photoUrl?: PhotoUrl;
+  compact: boolean;
+  who?: ReactNode;
+  action?: ReactNode;
+}) {
+  const p = goal.period;
+  const word = periodWord(repeat);
+  const days = p ? shownDays(p) : [];
+  const needed = p ? daysNeeded(p) : 0;
+  const note = p ? boardNote(p, today) : null;
+  const won = wonLine(goal.history, repeat);
+  const pays = goal.pays ? `${goal.pays} ${goal.pays === 1 ? 'point' : 'points'}` : null;
+  const daysRule = goal.rules.some((r) => r.type === 'DAYS_DUE');
+  return (
+    <li
+      className="fw-today__goal"
+      data-status={goal.status}
+      data-goal={goal.id}
+      data-period={p?.outcome ?? 'none'}
+    >
+      <p className="fw-today__goal-head">
+        <Picture
+          icon={goal.icon}
+          photo={goal.photo}
+          size={compact ? 40 : 48}
+          photoUrl={photoUrl}
+          fallback="trophy"
+        />
+        <span className="fw-today__goal-title">{goal.title}</span>
+        {who}
+        {goal.memberId === null && !compact ? <span className="fw-pill">Family</span> : null}
+      </p>
+      {p === null ? (
+        <p className="fw-today__goal-ends">Its first {word} hasn’t started yet.</p>
+      ) : (
+        <>
+          <p className="fw-today__goal-ends">
+            {daysRule ? `Every day it’s due this ${word}` : `This ${word}`}
+          </p>
+          {days.length ? <DayMarks days={days} /> : null}
+          {p.outcome === 'missed' ? (
+            <p className="fw-goal-line" data-kind="missed">
+              <Icon name="repeat" size={36} />
+              <span>{startsAgainLine(p, repeat)}</span>
+            </p>
+          ) : p.outcome === 'won' ? (
+            <p className="fw-goal-line" data-kind="won">
+              <Icon name="trophy" size={36} />
+              <span>
+                Won this {word}!{pays ? ` ${pays}.` : ''}
+              </span>
+            </p>
+          ) : daysRule && p.daysDue !== null ? (
+            <GoalMeter
+              label={pays ? `Days · ${pays}` : 'Days'}
+              value={Math.min(p.daysDone ?? 0, needed)}
+              target={needed}
+            />
+          ) : (
+            goal.rules
+              .filter((r) => r.type !== 'DAYS_DUE')
+              .map((r) => {
+                const m = ruleMeter(r);
+                return (
+                  <div key={r.id} className="fw-today__goal-rule" data-met={r.met || undefined}>
+                    <GoalMeter label={m.label} value={m.value} target={m.target} />
+                  </div>
+                );
+              })
+          )}
+          {note ? <p className="fw-today__goal-note">{note}</p> : null}
+          {p.outcome === 'won' && p.nextStart ? (
+            <p className="fw-today__goal-note">
+              {`Next ${word} starts ${new Date(`${p.nextStart}T12:00:00Z`).toLocaleDateString(
+                'en-US',
+                { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' },
+              )}.`}
+            </p>
+          ) : null}
+        </>
+      )}
+      {goal.history.length ? (
+        <div className="fw-goal__weeks">
+          <span className="fw-today__goal-note">{won ?? `First ${word} going now`}</span>
+          <PeriodMarks
+            label={`The last ${goal.history.length} ${periodWord(repeat, goal.history.length)}`}
+            periods={goal.history.map((h) => ({
+              key: h.start,
+              outcome: h.outcome,
+              label: periodLabel(h, repeat),
+            }))}
+          />
+        </div>
+      ) : null}
       {action}
     </li>
   );

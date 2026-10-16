@@ -29,6 +29,7 @@ import {
   fixtureSnapshot,
   fixtureWeather,
   reachedBike,
+  withRepeating,
   TZ,
 } from './fixture';
 
@@ -57,6 +58,7 @@ export function DevBoard({
   lunchItem = false,
   deploy,
   sleep = NO_SLEEP,
+  repeating,
 }: {
   theme: Theme;
   stale: boolean;
@@ -80,6 +82,8 @@ export function DevBoard({
   deploy?: string;
   /** [DEV-07] When it sleeps and wakes (WP-34), with no school year: school Monday to Friday. */
   sleep?: BoardSleep;
+  /** [RWD-15] Repeating goals for Maya and Leo (WP-80), Maya's going, missed or won this week. */
+  repeating?: 'going' | 'missed' | 'won';
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
@@ -122,6 +126,7 @@ export function DevBoard({
     }
     if (lunchItem) s = withLunchItem(s);
     if (stale) s = { ...s, fetchedAt: new Date(opened.getTime() - 12 * 60_000).toISOString() };
+    if (repeating) s = withRepeating(s, repeating, opened);
     return celebrate ? reachedBike(s, opened) : s;
   });
   const post = useMemo(() => fixturePost(snapshot), [snapshot]);

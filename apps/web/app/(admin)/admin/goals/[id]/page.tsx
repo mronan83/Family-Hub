@@ -1,9 +1,10 @@
-import { Banner, Button } from '@familywise/ui';
+import { Banner, Button, Fold } from '@familywise/ui';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { dayAndTime, isoDay } from '@/lib/format';
+import { daysLine, periodWord, REPEAT_WORDS, spanWords, thisPeriod } from '@/lib/goal-periods';
 import { eventWords, payoutWords, STATUS_WORDS } from '@/lib/goals';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
@@ -11,6 +12,7 @@ import { goalAction, removeGoalPhoto } from '../actions';
 import { loadGoalEvents, loadGoals } from '../data';
 import { GoalForm, type GoalLock } from '../goal-form';
 import { bringGoalsUpToDate, loadGoalContext } from '../load';
+import { currentPeriod, WeeksFold } from '../repeating';
 
 export const metadata: Metadata = { title: 'Goal' };
 
@@ -23,7 +25,7 @@ export default async function GoalPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ photo?: string }>;
+  searchParams: Promise<{ photo?: string; did?: string }>;
 }) {
   const { id } = await params;
   const db = await serverClient();
@@ -41,7 +43,12 @@ export default async function GoalPage({
       goal.payout.type === 'catalog_item' ? goal.payout.item_id : undefined,
     ),
   ]);
-  const removed = (await searchParams).photo === 'removed';
+  const query = await searchParams;
+  const removed = query.photo === 'removed';
+  const stopped = query.did === 'stop';
+  const today = isoDay(household.timezone);
+  const repeat = goal.repeat;
+  const now = repeat !== 'none' ? currentPeriod(goal.periods, today) : null;
   // A reached goal is locked as a finished one is: a change could take back what it unlocked (D-115).
   const lock: GoalLock = ['achieved', 'redeemed', 'expired', 'cancelled'].includes(goal.status)
     ? 'finished'
@@ -64,7 +71,11 @@ export default async function GoalPage({
         <h1>{goal.title}</h1>
         <p className="fw-muted">
           {who} · {STATUS_WORDS[goal.status]}
-          {goal.pct !== null ? ` · ${Math.round(goal.pct)}% there` : ''}
+          {repeat !== 'none'
+            ? ` · ${REPEAT_WORDS[repeat].toLowerCase()}${now && daysLine(now) ? ` · ${thisPeriod(repeat).toLowerCase()} ${daysLine(now)}` : ''}`
+            : goal.pct !== null
+              ? ` · ${Math.round(goal.pct)}% there`
+              : ''}
           {pays ? ` · Pays ${pays}` : ''}
         </p>
         {goal.needsReview ? (
@@ -106,11 +117,13 @@ export default async function GoalPage({
         ) : null}
         {lock !== 'none' ? (
           <p className="fw-field__help">
-            {lock === 'started'
-              ? 'It has started, so who it’s for and its start date stay as they are. Changing its rules or end date works its progress out again from every check-off.'
-              : goal.status === 'achieved'
-                ? 'It has been reached, so its rules and dates stay as they are. Its name, description and picture can still change.'
-                : 'It has finished, so its rules and dates stay as they are.'}
+            {lock === 'started' && repeat !== 'none'
+              ? `It has started, so who it’s for, its start date and how it repeats stay as they are. A change counts from this ${periodWord(repeat)}, or from the next one when this one is already won; a ${periodWord(repeat)} already won keeps its rules and what it paid.`
+              : lock === 'started'
+                ? 'It has started, so who it’s for and its start date stay as they are. Changing its rules or end date works its progress out again from every check-off.'
+                : goal.status === 'achieved'
+                  ? 'It has been reached, so its rules and dates stay as they are. Its name, description and picture can still change.'
+                  : 'It has finished, so its rules and dates stay as they are.'}
           </p>
         ) : null}
         <GoalForm
@@ -123,6 +136,7 @@ export default async function GoalPage({
             startDate: goal.startDate,
             endDate: goal.endDate,
             logic: goal.logic,
+            repeat: goal.repeat,
             payout: goal.payout,
             rules: goal.rules.map((r) => ({
               type: r.type,
@@ -131,6 +145,7 @@ export default async function GoalPage({
               tagIds: 'all' in r.scope ? [] : (r.scope.tag_ids ?? []),
               itemIds: 'all' in r.scope ? [] : (r.scope.chore_ids ?? []),
               grace: r.params.grace_per_week ?? 1,
+              misses: r.params.misses_allowed ?? 0,
             })),
           }}
           members={ctx.earners}
@@ -143,8 +158,30 @@ export default async function GoalPage({
         />
       </section>
 
-      <section className="fw-card" aria-labelledby="goal-history-heading">
-        <h2 id="goal-history-heading">What happened</h2>
+      {repeat !== 'none' ? (
+        <WeeksFold
+          repeat={repeat}
+          periods={goal.periods}
+          today={today}
+          points={goal.payout.type === 'points' ? goal.payout.amount : null}
+        />
+      ) : null}
+
+      <Fold
+        title="What happened"
+        headingId="goal-history-heading"
+        summary={
+          events[0]
+            ? [
+                <span key="latest">
+                  <b>Latest:</b> {eventWords(events[0])},{' '}
+                  {dayAndTime(events[0].at, household.timezone)} · {events.length}{' '}
+                  {events.length === 1 ? 'event' : 'events'}
+                </span>,
+              ]
+            : undefined
+        }
+      >
         <ul className="fw-list" aria-labelledby="goal-history-heading">
           {events.map((e) => (
             <li key={e.id} className="fw-list__row">
@@ -158,24 +195,67 @@ export default async function GoalPage({
             </li>
           ))}
         </ul>
-      </section>
+      </Fold>
 
       {goal.status !== 'redeemed' && goal.status !== 'cancelled' ? (
-        <section className="fw-card" aria-labelledby="cancel-heading">
-          <h2 id="cancel-heading">Cancel</h2>
-          <p className="fw-muted">It stops counting and moves to the history.</p>
-          <form action={goalAction}>
-            <Button
-              type="submit"
-              name="act"
-              value={`cancel:${goal.id}`}
-              variant="ghost"
-              icon="minus-circle"
-            >
-              {`Cancel ${goal.title}`}
-            </Button>
-          </form>
-        </section>
+        <Fold
+          id="stop"
+          title={repeat !== 'none' && goal.status === 'active' ? 'Stop or cancel' : 'Cancel'}
+          headingId="cancel-heading"
+          open={stopped}
+          summary={[
+            repeat !== 'none' && goal.status === 'active'
+              ? `Stop it after this ${periodWord(repeat)}, or cancel it now`
+              : 'It stops counting and moves to the history',
+          ]}
+        >
+          {stopped && goal.endDate ? (
+            <Banner kind="info">
+              It stops after{' '}
+              {
+                spanWords({ start: goal.endDate, end: goal.endDate, outcome: 'open' }).split(
+                  ' to ',
+                )[0]
+              }
+              : this {repeat === 'none' ? 'period' : periodWord(repeat)} still counts.
+            </Banner>
+          ) : null}
+          {repeat !== 'none' && goal.status === 'active' ? (
+            <p className="fw-muted">
+              <b>Stop after this {periodWord(repeat)}</b> ends it on the last day of this{' '}
+              {periodWord(repeat)}: it still counts and pays. <b>Cancel</b> stops it now; nothing
+              more is paid.
+            </p>
+          ) : (
+            <p className="fw-muted">It stops counting and moves to the history.</p>
+          )}
+          <div className="fw-actions">
+            {repeat !== 'none' && goal.status === 'active' ? (
+              <form action={goalAction}>
+                <Button
+                  type="submit"
+                  name="act"
+                  value={`stop:${goal.id}`}
+                  variant="secondary"
+                  icon="calendar-check"
+                >
+                  {`Stop after this ${periodWord(repeat)}`}
+                </Button>
+              </form>
+            ) : null}
+            <form action={goalAction}>
+              <Button
+                type="submit"
+                name="act"
+                value={`cancel:${goal.id}`}
+                variant="ghost"
+                icon="minus-circle"
+              >
+                {`Cancel ${goal.title}`}
+              </Button>
+            </form>
+          </div>
+        </Fold>
       ) : null}
     </main>
   );

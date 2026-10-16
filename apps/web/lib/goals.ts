@@ -5,10 +5,12 @@ import {
   type GoalInput,
   type GoalStatus,
   type OccurrenceFact,
+  type Repeat,
   type Rule,
   type RuleType,
 } from '@familywise/rules-engine';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { monthDay, spanWords } from './goal-periods';
 
 /**
  * [RWD-04][RWD-06] Goals (WP-19, D-56). The database keeps each goal, its facts and its progress; the
@@ -24,6 +26,8 @@ export interface GoalRead {
   week_start: number;
   rules_version: number;
   goal: GoalInput['goal'];
+  /** [RWD-15] The school terms a term goal follows. */
+  terms?: GoalInput['terms'];
   rules: Rule[];
   facts: OccurrenceFact[];
 }
@@ -45,6 +49,7 @@ export function evaluateRead(read: GoalRead): GoalEvaluation {
     occurrences: read.facts,
     asOf: read.as_of,
     weekStart: read.week_start,
+    terms: read.terms ?? [],
   });
 }
 
@@ -156,7 +161,16 @@ export async function evaluateAfterCompletions(
 // The parent's form
 // ---------------------------------------------------------------------------------------------
 
-export const RULE_TYPES: readonly RuleType[] = ['COUNT', 'DAILY_ALL_DONE', 'STREAK', 'POINTS'];
+export const RULE_TYPES: readonly RuleType[] = [
+  'COUNT',
+  'DAILY_ALL_DONE',
+  'STREAK',
+  'POINTS',
+  'DAYS_DUE',
+];
+
+/** [RWD-15] How a goal may repeat, in the form's order. */
+export const REPEATS: readonly Repeat[] = ['none', 'week', 'month', 'term'];
 
 /** What each kind of rule counts, in the parent's words. */
 export const RULE_WORDS: Record<RuleType, { label: string; unit: (n: number) => string }> = {
@@ -170,6 +184,10 @@ export const RULE_WORDS: Record<RuleType, { label: string; unit: (n: number) => 
     unit: (n) => (n === 1 ? 'good day in a row' : 'good days in a row'),
   },
   POINTS: { label: 'Points earned', unit: (n) => (n === 1 ? 'point earned' : 'points earned') },
+  DAYS_DUE: {
+    label: 'Every day it’s due',
+    unit: (n) => (n === 1 ? 'day it’s due' : 'days it’s due'),
+  },
 };
 
 export type ScopeChoice = 'all' | 'tags' | 'items';
@@ -178,7 +196,7 @@ export interface RuleFormValue {
   type: RuleType;
   target: number;
   scope: { all: true } | { tag_ids?: string[]; chore_ids?: string[] };
-  params: { grace_per_week?: number };
+  params: { grace_per_week?: number; misses_allowed?: number };
 }
 
 /** [RWD-13] What reaching a goal pays, as save_goal() stores it. */
@@ -196,6 +214,8 @@ export interface GoalFormValue {
   startDate: string;
   endDate: string | null;
   logic: 'all' | 'any';
+  /** [RWD-15] How it repeats; 'none' for a goal reached once. */
+  repeat: Repeat;
   rules: RuleFormValue[];
   payout: GoalPayout;
 }
@@ -253,6 +273,10 @@ export function parseGoalForm(
     return { ok: false, message: 'It can’t end before it starts.' };
   }
   const logic = form.get('logic') === 'any' ? 'any' : 'all';
+  // [RWD-15] A form without the choice (a page loaded before it, a started goal's fixed repeat) sends
+  // `repeat` as a hidden field, or nothing: a goal that doesn't repeat.
+  const repeatRaw = String(form.get('repeat') ?? 'none') as Repeat;
+  const repeat: Repeat = REPEATS.includes(repeatRaw) ? repeatRaw : 'none';
   const icon = String(form.get('icon') ?? 'trophy');
 
   const keys = String(form.get('rule-keys') ?? '')
@@ -266,7 +290,14 @@ export function parseGoalForm(
     const n = keys.length > 1 ? ` ${i + 1}` : '';
     const type = String(form.get(`rule-${k}-type`) ?? '') as RuleType;
     if (!RULE_TYPES.includes(type)) return { ok: false, message: `Choose what rule${n} counts.` };
-    const targetRaw = String(form.get(`rule-${k}-target`) ?? '').trim();
+    if (type === 'DAYS_DUE' && repeat === 'none') {
+      return {
+        ok: false,
+        message: `Rule${n}: every day it’s due is for a goal that repeats. Choose how it repeats, or another rule.`,
+      };
+    }
+    // [RWD-16] Every day it's due has no target of its own: each period's days due decide it.
+    const targetRaw = type === 'DAYS_DUE' ? '1' : String(form.get(`rule-${k}-target`) ?? '').trim();
     const target = /^\d+$/.test(targetRaw) ? Number(targetRaw) : NaN;
     if (!(target >= 1 && target <= 100_000)) {
       return { ok: false, message: `Rule${n} needs a target from 1 to 100,000.` };
@@ -292,6 +323,9 @@ export function parseGoalForm(
     if (type === 'STREAK') {
       const grace = Number(form.get(`rule-${k}-grace`) ?? 1);
       params.grace_per_week = [0, 1, 2, 3].includes(grace) ? grace : 1;
+    } else if (type === 'DAYS_DUE') {
+      const misses = Number(form.get(`rule-${k}-misses`) ?? 0);
+      params.misses_allowed = [0, 1, 2, 3].includes(misses) ? misses : 0;
     }
     rules.push({ type, target, scope, params });
   }
@@ -327,6 +361,7 @@ export function parseGoalForm(
       startDate,
       endDate: endRaw || null,
       logic,
+      repeat,
       rules,
       payout,
     },
@@ -349,6 +384,7 @@ export function goalPayload(
     start_date: v.startDate,
     end_date: v.endDate,
     rule_logic: v.logic,
+    repeat: v.repeat,
     rules: v.rules,
     payout: v.payout,
     ...(imagePath !== undefined ? { image_path: imagePath } : {}),
@@ -366,6 +402,18 @@ export function goalRefusal(error: { code?: string | null; hint?: string | null 
       return 'This goal has finished, so its rules and dates stay as they are.';
     case 'goal_achieved':
       return 'This goal has been reached, so its rules and dates stay as they are.';
+    case 'repeat_fixed':
+      return 'This goal has started, so how it repeats stays as it is.';
+    case 'repeat':
+      return 'Choose how it repeats: each week, month or school term, or not at all.';
+    case 'rule_repeat':
+      return 'Every day it’s due is for a goal that repeats. Choose how it repeats, or another rule.';
+    case 'rule_misses':
+      return 'Misses allowed: 0 to 3.';
+    case 'not_repeating':
+      return 'Only a goal that repeats stops after this period.';
+    case 'not_started':
+      return 'Only a goal that is going stops after this period. Cancel it instead.';
     case 'end_in_past':
       return 'A goal that has started ends today or later.';
     case 'end_before_start':
@@ -402,7 +450,10 @@ export function describeRule(
   r: { type: RuleType; target: number; scope: RuleFormValue['scope']; params: Rule['params'] },
   names: { tags: Map<string, string>; items: Map<string, string> },
 ): string {
-  const head = `${r.target.toLocaleString('en-US')} ${RULE_WORDS[r.type].unit(r.target)}`;
+  const head =
+    r.type === 'DAYS_DUE'
+      ? RULE_WORDS.DAYS_DUE.label
+      : `${r.target.toLocaleString('en-US')} ${RULE_WORDS[r.type].unit(r.target)}`;
   const parts: string[] = [];
   if (!('all' in r.scope)) {
     const tags = (r.scope.tag_ids ?? []).map((t) => names.tags.get(t) ?? 'a removed tag');
@@ -417,6 +468,11 @@ export function describeRule(
       grace === 0
         ? ' (no misses forgiven)'
         : ` (${grace} miss${grace > 1 ? 'es' : ''} a week forgiven)`;
+  }
+  if (r.type === 'DAYS_DUE') {
+    const misses = Number((r.params as { misses_allowed?: number }).misses_allowed ?? 0);
+    text +=
+      misses === 0 ? ' (no misses allowed)' : ` (${misses} miss${misses > 1 ? 'es' : ''} allowed)`;
   }
   return text;
 }
@@ -458,7 +514,37 @@ export function ordinal(n: number): string {
 export function eventWords(e: { type: string; payload: Record<string, unknown> }): string {
   const n = typeof e.payload.n === 'number' ? e.payload.n : null;
   const points = typeof e.payload.points === 'number' ? e.payload.points : 0;
+  // [RWD-15] A repeating goal's events name their period: "Oct 5 to 11 won: paid 10 points".
+  const start = typeof e.payload.period_start === 'string' ? e.payload.period_start : null;
+  const end = typeof e.payload.period_end === 'string' ? e.payload.period_end : null;
+  if (start && end) {
+    const span = spanWords({ start, end, outcome: 'won' });
+    const paid = e.payload.paid as
+      { type?: string; amount?: number; children?: number } | undefined;
+    switch (e.type) {
+      case 'achieved':
+        if (paid?.type === 'points' && paid.amount) {
+          const each = (paid.children ?? 1) > 1 ? ' each' : '';
+          return `${span} won: paid ${pointsWord(paid.amount)}${each}`;
+        }
+        if (paid?.type === 'catalog_item')
+          return `${span} won: its reward from the shop is approved`;
+        return `${span} won`;
+      case 'unachieved':
+        return `${span} no longer won: a check-off it needed was undone`;
+      case 'payout_reversed': {
+        const parts: string[] = [];
+        if (points > 0) parts.push(`${pointsWord(points)} taken back`);
+        if (e.payload.item === 'called_off') parts.push('its reward from the shop called off');
+        return `${span}: ${parts.join(', ') || 'payout undone'}`;
+      }
+    }
+  }
   switch (e.type) {
+    case 'stopped':
+      return typeof e.payload.end_date === 'string'
+        ? `Set to stop after ${monthDay(e.payload.end_date)}`
+        : 'Set to stop';
     case 'created':
       return 'Set up';
     case 'edited':
@@ -531,6 +617,8 @@ export function payoutWords(
 export interface PreviewRead {
   as_of: string;
   week_start: number;
+  /** [RWD-15] The terms a term goal follows. */
+  terms?: GoalInput['terms'];
   status: GoalStatus;
   saved: boolean;
   facts: OccurrenceFact[];
@@ -546,6 +634,8 @@ export interface GoalPreviewResult {
   /** The goal as saved, worked out now; null for a goal not yet set. */
   before: PreviewSide | null;
   after: PreviewSide;
+  /** [RWD-15] A repeating goal's period going now, as the form would have it; null otherwise. */
+  period: GoalEvaluation['periods'][number] | null;
   /** The status changes saving would make: started, achieved, unachieved, expired. */
   transitions: string[];
 }
@@ -579,15 +669,21 @@ export function previewGoal(
       end_date: v.endDate,
       rule_logic: v.logic,
       status: read.status,
+      repeat: v.repeat,
     },
     rules: v.rules.map((r, i) => ({ id: `rule-${i + 1}`, ...r })) as Rule[],
     occurrences: read.facts,
     asOf: read.as_of,
     weekStart: read.week_start,
+    terms: read.terms ?? [],
   });
   return {
     before: stored ? side(evaluateRead(stored)) : null,
     after: side(after),
+    period:
+      after.periods.find((p) => p.start <= read.as_of && read.as_of <= p.end) ??
+      after.periods.at(-1) ??
+      null,
     transitions: after.transitions.map((t) => t.type),
   };
 }

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { householdToday } from '../support/day';
+import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
 
 // [RWD-01][RWD-04][RWD-06][RWD-09] Goals on the preview (WP-19, D-56), as Alex of the demo family. The
@@ -181,6 +182,8 @@ test('[RWD-09][US-405] an achieved goal is marked redeemed: it moves to history 
   await admin.getByRole('button', { name: 'Mark Trip to the park redeemed', exact: true }).click();
   await expect(admin.getByRole('status')).toHaveText('Marked redeemed. It’s in the history.');
   await expect(goal('Trip to the park')).toHaveCount(0);
+  // History is folded (D-120, WP-80).
+  await unfold(foldOf(admin, 'History'));
   await expect(
     admin
       .getByRole('list', { name: 'History' })
@@ -210,8 +213,11 @@ test('[RWD-01][RWD-06] a parent sets a goal through the form, then cancels it', 
   ).toBe('active:COUNT:3');
 
   await admin.getByRole('link', { name: `Change ${BIKE}` }).click();
+  // Cancel is set apart at the bottom, folded (D-120, WP-80).
+  await unfold(foldOf(admin, 'Cancel'));
   await admin.getByRole('button', { name: `Cancel ${BIKE}`, exact: true }).click();
   await expect(admin.getByRole('status')).toHaveText('Cancelled. It’s in the history.');
+  await unfold(foldOf(admin, 'History'));
   await expect(
     admin.getByRole('list', { name: 'History' }).getByRole('listitem').filter({ hasText: BIKE }),
   ).toContainText('Cancelled');
