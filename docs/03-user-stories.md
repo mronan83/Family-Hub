@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.56: US-322 as changed at the owner's request (WP-92, D-119): an approvals alert comes within seconds and counts all that waits.
 > v0.8.55: US-111 Admin pages that fold to what matters, added at the owner's request (WP-93 to WP-97, D-120).
 > v0.8.54: US-208 Boards that fit on one screen, added at the owner's request (WP-91, D-118).
 > v0.8.53: US-207 as built (WP-34, D-117): a night takes its times from the day after it; a touch in the night wakes a board for its idle time or 5 minutes; Only while awake counts a board's hours awake; the picture drifts; the Pi's screen helper.
@@ -357,8 +358,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-322 — Told when something waits for me
 **As a** parent with notifications on **I want** an alert on my phone when a check-off or a reward request waits for me **so that** the kids aren't kept waiting until I next open the app.
 **Priority:** Should · **Phase:** P2 · **Reqs:** CHR-20
-- Given approval is on and Maya checks off "Make bed" on the board, when the reminders job next runs, then I get one alert, "Maya: 1 check-off waiting", and tapping it opens **Today** with it there.
-- Given Maya checks off three things and asks for a reward within a few minutes, when the alert comes, then it is one alert for all four, and it replaces any earlier one still on my lock screen.
+- Given approval is on and Maya checks off "Make bed" on the board, within seconds I get one alert, "Maya: 1 check-off waiting", and tapping it opens **Today** with it there.
+- Given Maya checks off three things and asks for a reward, when each starts waiting, then an alert comes at once, each replacing the one before on my lock screen and counting everything still waiting: the last says "Maya: 3 check-offs and 1 reward request waiting".
 - Given it is within my quiet hours, when something becomes waiting, then the alert waits until they end, and is not sent if another parent has cleared everything by then.
 - Given I switch **Approvals** off in Reminders, when something becomes waiting, then I get no alert, and the other parent still does if theirs is on.
 
