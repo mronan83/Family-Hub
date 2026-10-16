@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.133: Three e2e items added at the owner's request, recorded only (D-121): SPIKE-07 audits every e2e spec by layer and lists what to keep, move or drop, for the owner to decide; WP-98 a findings log of each nightly run's red tests; WP-99 lean e2e (data set up by SQL, a household per spec, parallel runs, unchanged nights skipped). Found: the first scheduled nightly e2e run (07:17 UTC, 16 October) never started, and `e2e.yml` has no other trigger, so it can't be run by hand. The owner chose: a manual trigger in WP-98, and with unchanged nights skipped, a run once a week regardless (WP-99). SPIKE-07 and WP-98 are Ready; WP-99 is Queued behind SPIKE-07. "Next, in order" is the owner's to set.
 > v0.8.132: WP-91 (the Boards settings as collapsible sections) done (D-118, D-120), from the fold audit's Boards page the owner approved on 16 October: each board folded to its name and facts with Home's not-seen warning on its header, opened to Display, Sleep and wake, Calendars, Home screen, then its name and Disconnect set apart; the household's Home screen, Add a board and Disconnected folded; Meals' fold made one shared component (`Fold`). WP-93 to WP-97 are Ready. "Next, in order" is the owner's to set.
 > v0.8.131: WP-34 follow-up: the Pi's screen helper runs as a systemd user service, so it starts with the Pi on any desktop (labwc on Debian 13 doesn't read the start-up folder the first installer used); found on the owner's Pi 4, at the owner's request.
 > v0.8.130: WP-92 (approval alerts at once, a bug) added at the owner's request and done in the same change (D-119). Found: the alerts job worked as designed, every 5 minutes; most of the child's check-offs were on items with approval off, so they never waited, and the homework check-off was approved 33 seconds after it, before the next run. At the owner's request, an approval alert now goes within seconds of something starting to wait, and counts all that waits. The read-only `reminders-report` workflow shows why an alert did or did not go, counts only.
@@ -180,6 +181,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | SPIKE-04 | School menu platform and feed | P2 | S | — | Done: Nutrislice public JSON API (`01` §5.5) |
 | SPIKE-03 | Pi 5 + 32" 4K panel: touch, kiosk flags, power, animation budget | P1a | S | — | Blocked: hardware being sourced (OQ-05b) |
 | SPIKE-06 | Reading a document with AI on the free plan | P3 | S | WP-55 | Queued |
+| SPIKE-07 | Every e2e spec audited by layer | P3 | S | WP-90 | Ready |
 | WP-01 | Repo, CI/CD pipeline, environments | P0 | M | — | Done (PR #1) |
 | WP-41 | Turn on previews, production deploys, and keepalive | P0 | S | WP-01 | Done (PR #4, #5) |
 | WP-37 | Brand system and design tokens | P0 | M | WP-01 | Done (PR #3) |
@@ -270,6 +272,8 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Ready (mockup approved) |
 | WP-96 | Chores, an item's page and the icon picker folded | P3 | M | WP-91 | Ready (mockup approved) |
 | WP-97 | Today, My tasks and Insights folded | P3 | S | WP-91 | Ready (mockup approved) |
+| WP-98 | The e2e findings log | P3 | S | WP-90 | Ready |
+| WP-99 | Lean e2e: SQL set-up, a household per spec, parallel runs, unchanged nights skipped | P3 | L | SPIKE-07, WP-90 | Queued: SPIKE-07 first |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -453,6 +457,10 @@ flowchart LR
     WP91 --> WP96[WP-96 Chores and icon picker folded]
     WP91 --> WP97[WP-97 Today and Insights folded]
     WP63 --> WP92[WP-92 Approval alerts at once]
+    WP90 --> SP07[SPIKE-07 e2e specs audited by layer]
+    WP90 --> WP98[WP-98 e2e findings log]
+    SP07 --> WP99[WP-99 Lean e2e]
+    WP90 --> WP99
     WP64 --> WP78
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP65 --> WP70[WP-70 Calendar refresh timing]
@@ -1496,6 +1504,34 @@ flowchart LR
 - **Insights:** **Streaks** and **Done** open; **Day by day**, **Missed most**, **By tag** and **Checking** folded to their one-line finding; **History** folded.
 - **Done when:** unit tests on a part's done count and when it folds (done, skipped, sent back, waiting for a parent); on the preview, Alex marks the last open item of a part done and finds that part folded with its count, then opens it and unchecks one; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
 
+### SPIKE-07 — Every e2e spec audited by layer
+**Milestone:** P3 · **Size:** S · **Depends on:** WP-90 · **Gates:** WP-99 · **Reqs:** NFR-14
+- Added at the owner's request on 16 October ("SPIKE to audit e2e specs by layer"). Recorded only; not started.
+- **The question:** for each of the 40 specs in `e2e/tests/` and each test in it, does what it checks need the real database and a preview, or would a lower layer cover it faster and more reliably: pgTAP (`supabase/tests/`), Vitest unit tests, or the UI suite (`e2e/ui/`)?
+- **For each test:** what it checks (requirement and story IDs); the layer it belongs in, and why; whether that layer already covers it (the test that does); its time on the last nightly runs; and **keep**, **move** (to which layer, and the test to write) or **drop** (only where a lower-layer test already covers the same check).
+- **Output:** a list for the owner to decide, line by line. The spike removes, skips, disables or quarantines no test, and moves nothing; what the owner chooses to move or drop becomes its own item, added at the owner's request. Tests stay within D-108 and D-110 (`CLAUDE.md` "Tests").
+- **Done when:** the list is recorded in `01` §9.5, with counts of keep, move and drop and the nightly run's time each would save; WP-99's design follows the owner's choices.
+
+### WP-98 — The e2e findings log
+**Phase:** P3 · **Size:** S · **Depends on:** WP-90 · **Reqs:** NFR-14
+- Added at the owner's request on 16 October ("WP for the e2e findings log"). Recorded only; not built.
+- **Why:** each red nightly run opens or updates one issue per spec (WP-88), with each red test's kind and cause (WP-90). Nothing keeps the run-by-run record, so a test red on Monday and again on Thursday reads as two separate failures, and what was done about each is only in the PR that fixed it.
+- **The item:** a durable log with one entry per red test per nightly run: the date, the run and `main`'s commit, the spec and test, its kind (assertion or infrastructure), its cause as `scripts/e2e-run.mjs` labelled it, whether its one infrastructure re-run passed, and what was done (the PR or commit that fixed it, or "open"). The nightly run writes the entry; the worker who fixes it fills in what was done. Repeat failures show: each entry says how many of the last 30 runs the same test was red, and the run summary lists any test red more than once in them.
+- **A run by hand (the owner's choice, D-121):** `e2e.yml` gains a manual trigger (`workflow_dispatch`), so the nightly run can be started from Actions → e2e → Run workflow, on `main` only. It runs exactly as the scheduled run does: never on a pull request, never a required check or a deploy input, and it never blocks, cancels or delays anything (D-108). It shares the `demo-family` concurrency group, so a run by hand and the night's run never overlap.
+- **Where it lives (proposed, D-121):** in GitHub, one issue, "E2E findings log", with one comment per red run, written by the nightly run's existing `issues: write` permission. The nightly run never pushes to `main`. Free plans only. Real family data never appears in it: e2e runs only on the made-up demo family.
+- **Done when:** a unit test shows a run's JSON report with an assertion failure, an infrastructure failure that passed on its re-run and one that failed twice turned into three entries with their kinds and causes; a test red in 2 of the last 30 runs counted and listed in the run summary; a green run writes no entry; `e2e.yml` has a `workflow_dispatch` trigger, and a run started by hand on `main` goes through to its summary; the next nightly runs are the proof on the real preview.
+
+### WP-99 — Lean e2e: SQL set-up, a household per spec, parallel runs, unchanged nights skipped
+**Phase:** P3 · **Size:** L · **Depends on:** SPIKE-07, WP-90 · **Reqs:** NFR-14
+- Added at the owner's request on 16 October ("WP for lean e2e (SQL setup, a household per spec, parallel runs, skip unchanged nights)"). Recorded only; not built. After SPIKE-07, so no spec the owner moves or drops is rewritten first.
+- **SQL set-up:** a test's data is made by SQL on the test database instead of through the admin app's screens, except where the screen is what the test checks. The SQL runs from the runner, as `scripts/preview-db.sh` does, behind its guard that refuses production; the preview still holds no secret key and no `JOB_SIGNING_SECRET`.
+- **A household per spec:** each spec gets a made-up household of its own, created at its start and removed at its end, so no spec shares state with another and none puts back the demo family. The demo family stays as `supabase/seed.sql` defines it, for previews. A spec's sign-ins stay within Supabase Auth's limits on the free plan: the run counts them.
+- **Parallel runs:** with no shared state, specs run in more than one Playwright worker, as many as the free test database and Auth hold, set from measured runs. Paired boards stay one per spec (`pairBoard()`, `retireBoard()`).
+- **Unchanged nights skipped:** a night when nothing on `main` changed since the last green nightly run is skipped, and its run summary says so with that run and commit.
+- **Once a week regardless (the owner's choice, D-121):** with no change on `main`, the run still goes once a week, to catch drift in Supabase, Auth or the browser that no commit caused. A run started by hand (WP-98) is never skipped.
+- **Within:** D-108 (nightly only, never on a pull request, never blocking anything), D-110 and `CLAUDE.md` "Tests" (no fixed waits, no real clock, own data, measured limits, no blind retries); no test is skipped, disabled or quarantined to make the run faster. Free plans only.
+- **Done when:** the run's time before and after is recorded in `01` §9.5 from measured nightly runs; every spec runs on its own household with its data set up by SQL, and `scripts/preview-db.test.sh` shows the set-up still refuses production; two specs run at once on the real preview without either seeing the other's data; a unit test shows an unchanged `main` skipped, a changed one run, the weekly run going with no change, and a run by hand never skipped; the run summary lists Auth sign-ins and the slowest tests against their limits.
+
 ---
 
 ## 6. Size summary
@@ -1508,6 +1544,6 @@ flowchart LR
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82, WP-92 | Menu adapters, WP-49 and WP-80 are the Ls |
-| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88 – WP-91, WP-93 – WP-97 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
+| P3 | SPIKE-06, SPIKE-07, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88 – WP-91, WP-93 – WP-99 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

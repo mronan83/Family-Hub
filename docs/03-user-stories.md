@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.57: US-911 gains three e2e criteria added at the owner's request (SPIKE-07, WP-98, WP-99, D-121): each spec checked at the layer it belongs in, a log of each nightly run's red tests, and a leaner nightly run.
 > v0.8.56: US-322 as changed at the owner's request (WP-92, D-119): an approvals alert comes within seconds and counts all that waits.
 > v0.8.55: US-111 Admin pages that fold to what matters, added at the owner's request (WP-93 to WP-97, D-120).
 > v0.8.54: US-208 Boards that fit on one screen, added at the owner's request (WP-91, D-118).
@@ -854,6 +855,9 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a pull request, when it is opened, then lint, typecheck, unit tests, database tests, traceability and build run without Docker, and the PR cannot merge until they pass.
 - Given a pull request, when Vercel finishes its preview, then a job empties the test database, applies the PR's migrations and loads the demo family, so the preview shows the PR's schema; the job runs no tests and never blocks the PR or a deploy (WP-89).
 - Given `main`, when the nightly e2e run starts, then it runs the suite on a preview of `main` against the test database, and a red run opens an issue without blocking a PR or a deploy (D-108).
+- Given the e2e suite, when I look at what a spec checks, then it checks only what needs the real database and a preview; what a lower layer (pgTAP, unit tests, the UI suite) covers faster and more reliably is listed for me to keep, move or drop (SPIKE-07).
+- Given a red nightly run, when I look at the e2e findings log, then I see each red test with its kind, its cause and what was done, and how often the same test was red before (WP-98).
+- Given the nightly run, when it runs, then each spec has a household of its own with its data set up by SQL, specs run in parallel, and a night with no change on `main` since the last green run is skipped, except once a week (WP-99); I can start a run by hand on `main` (WP-98).
 - Given a pull request with every check green, when I open its preview, then I see the demo family, and nothing I do there changes my family's data.
 - Given a pull request, when I have not approved it, then it is not merged or deployed.
 - Given a merge to `main`, when the deploy runs, then migrations are applied to production before the app is deployed, and a failed migration stops the app deploy.
