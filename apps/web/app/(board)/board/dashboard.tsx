@@ -375,6 +375,7 @@ export function Dashboard({
                   goal={g}
                   today={today}
                   photoUrl={photoUrl}
+                  members={snapshot.members}
                   compact
                   action={
                     <Open

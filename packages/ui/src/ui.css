@@ -5278,6 +5278,38 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   justify-content: space-between;
   gap: var(--s-2);
 }
+/* [RWD-20] An every-child goal's children (WP-82, the approved addendum): a row each, the avatar and
+   name with how it stands for them, and their days. */
+.fw-goal__kids {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-goal__kid {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-1) var(--s-3);
+  padding: var(--s-2) 0;
+  border-bottom: var(--border-w) solid var(--line);
+}
+.fw-goal__kid:last-child {
+  border-bottom: 0;
+}
+.fw-goal__kid-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.fw-goal__kid > .fw-days {
+  grid-column: 2;
+}
+/* [RWD-19] A goal counting another goal's weeks: its run, and that goal's weeks. */
+.fw-goal__counted {
+  display: grid;
+  gap: var(--s-2);
+}
 .fw-goal__status[data-status='missed'] {
   background: var(--missed-tint);
   color: var(--missed-text);

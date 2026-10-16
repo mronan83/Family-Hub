@@ -542,6 +542,8 @@ describe('the shop, requests and goals (WP-20)', () => {
         steps: [],
         step: null,
         stepBest: null,
+        eachChild: false,
+        children: null,
         rules: [
           {
             id: 'r1',
@@ -554,6 +556,8 @@ describe('the shop, requests and goals (WP-20)', () => {
             best: 5,
             weight: null,
             onTime: null,
+            inARow: null,
+            source: null,
           },
         ],
       },
@@ -577,6 +581,8 @@ describe('the shop, requests and goals (WP-20)', () => {
         steps: [],
         step: null,
         stepBest: null,
+        eachChild: false,
+        children: null,
         rules: [],
       },
     ]);

@@ -1267,3 +1267,141 @@ export function withSteps(s: BoardSnapshot, kind: 'going' | 'won' | 'weighted'):
   };
   return { ...s, goals: [goal, ...s.goals.filter((g) => g.memberId !== MAYA)] };
 }
+
+/**
+ * [RWD-19][RWD-20] Perfect weeks and a family goal every child meets (WP-82, ?perfect=going|missed|won),
+ * the week from its Monday, the clock held on a Thursday by the UI suite: the family's "Everyone's
+ * homework home", every child meets it, 20 points each: going with Leo having nothing due this week,
+ * missed on Leo's Tuesday, or won by both; and Maya's "3 perfect weeks in a row" counting her homework
+ * weeks, 1 of 3 so far with this week going.
+ */
+export function withPerfect(s: BoardSnapshot, kind: 'going' | 'missed' | 'won'): BoardSnapshot {
+  const idx = (new Date(`${s.today}T12:00:00Z`).getUTCDay() + 6) % 7;
+  const start = day(-idx, s.today);
+  const days = (marks: DayMark[]): GoalPeriod['days'] =>
+    marks.map((mark, i) => ({
+      date: day(i, start),
+      mark,
+      dayType: mark === 'none' ? (i === 4 ? 'no_school' : 'weekend') : null,
+    }));
+  const going: DayMark[] = ['done', 'done', 'done', 'today', 'none', 'none', 'none'];
+  const leo: Record<typeof kind, DayMark[]> = {
+    going: ['none', 'none', 'none', 'none', 'none', 'none', 'none'],
+    missed: ['done', 'missed', 'done', 'today', 'none', 'none', 'none'],
+    won: ['done', 'done', 'done', 'done', 'none', 'none', 'none'],
+  };
+  const maya = kind === 'won' ? leo.won : going;
+  const child = (
+    memberId: string,
+    marks: DayMark[],
+    outcome: GoalPeriod['outcome'],
+  ): NonNullable<GoalPeriod['children']>[number] => {
+    const d = days(marks)!;
+    const due = d.filter((x) => x.mark !== 'none').length;
+    return {
+      memberId,
+      contributes: due > 0,
+      outcome,
+      pct: due ? Math.round((d.filter((x) => x.mark === 'done').length / due) * 100) : 0,
+      daysDue: due,
+      daysDone: d.filter((x) => x.mark === 'done').length,
+      daysMissed: d.filter((x) => x.mark === 'missed').length,
+      days: d,
+    };
+  };
+  const outcome: GoalPeriod['outcome'] = kind === 'going' ? 'open' : kind;
+  const period: GoalPeriod = {
+    start,
+    end: day(6, start),
+    outcome,
+    nextStart: day(7, start),
+    daysDue: null,
+    daysDone: null,
+    daysMissed: null,
+    missesAllowed: 0,
+    days: null,
+    children: [
+      child(MAYA, maya, kind === 'won' ? 'won' : 'open'),
+      child(LEO, leo[kind], kind === 'going' ? 'neutral' : kind === 'won' ? 'won' : 'missed'),
+    ],
+  };
+  const past = (outcomes: GoalPeriod['outcome'][]) =>
+    outcomes.map((o, i) => ({
+      start: day(-7 * (outcomes.length - i), start),
+      end: day(6 - 7 * (outcomes.length - i), start),
+      outcome: o,
+    }));
+  const family: BoardGoal = {
+    id: 'g-everyone',
+    memberId: null,
+    title: 'Everyone’s homework home',
+    icon: 'family',
+    photo: null,
+    status: 'active',
+    n: kind === 'won' ? 3 : 2,
+    achievedAt: null,
+    celebrate: false,
+    endDate: null,
+    logic: 'all',
+    pct: kind === 'won' ? 100 : 75,
+    repeat: 'week',
+    period,
+    history: [...past(['won', 'missed', 'neutral', 'won']), { start, end: period.end, outcome }],
+    pays: 20,
+    eachChild: true,
+    rules: [
+      {
+        id: 'gr-everyone',
+        type: 'DAYS_DUE',
+        target: 4,
+        current: 3,
+        pct: 75,
+        met: false,
+        streak: null,
+        best: null,
+      },
+    ],
+  };
+  const perfect: BoardGoal = {
+    id: 'g-perfect',
+    memberId: MAYA,
+    title: '3 perfect weeks in a row',
+    icon: 'snack',
+    photo: null,
+    status: 'active',
+    n: 0,
+    achievedAt: null,
+    celebrate: false,
+    endDate: null,
+    logic: 'all',
+    pct: 33,
+    repeat: 'none',
+    period: null,
+    history: [],
+    pays: null,
+    rules: [
+      {
+        id: 'gr-perfect',
+        type: 'PERIODS_WON',
+        target: 3,
+        current: 1,
+        pct: 33,
+        met: false,
+        streak: 1,
+        best: 1,
+        inARow: true,
+        source: {
+          id: 'g-homework',
+          title: 'Homework home',
+          icon: 'backpack',
+          repeat: 'week',
+          history: [...past(['won', 'missed', 'won']), { start, end: period.end, outcome: 'open' }],
+        },
+      },
+    ],
+  };
+  return {
+    ...s,
+    goals: [perfect, ...s.goals.filter((g) => g.memberId !== MAYA && g.memberId !== null), family],
+  };
+}

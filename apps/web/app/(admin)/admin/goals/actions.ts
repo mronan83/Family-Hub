@@ -1,5 +1,6 @@
 'use server';
 
+import type { Repeat } from '@familywise/rules-engine';
 import { ICON_NAMES } from '@familywise/ui';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -106,6 +107,8 @@ async function preview(
       start_date: v.startDate,
       end_date: v.endDate,
       repeat: v.repeat,
+      // [RWD-19] The rules, so the goals they count come with the facts.
+      rules: v.rules,
     },
   });
   if (read.error) {
@@ -127,14 +130,21 @@ async function preview(
     stored = old.data as GoalRead;
     storedPayout = (goal.data?.payout as GoalPayout | undefined) ?? null;
   }
-  const [{ data: tags }, { data: chores }, { data: prizes }] = await Promise.all([
+  const [{ data: tags }, { data: chores }, { data: prizes }, { data: goals }] = await Promise.all([
     db.from('tag').select('id, name').eq('household_id', householdId),
     db.from('chore').select('id, title').eq('household_id', householdId),
     db.from('reward_catalog_item').select('id, title').eq('household_id', householdId),
+    db.from('reward_goal').select('id, title, repeats').eq('household_id', householdId),
   ]);
   const names = {
     tags: new Map((tags ?? []).map((t) => [t.id as string, t.name as string])),
     items: new Map((chores ?? []).map((c) => [c.id as string, c.title as string])),
+    goals: new Map(
+      (goals ?? []).map((g) => [
+        g.id as string,
+        { title: g.title as string, repeat: g.repeats as Repeat },
+      ]),
+    ),
   };
   const prize = (id: string) => prizes?.find((p) => p.id === id)?.title as string | undefined;
   const result = previewGoal(v, facts, stored);

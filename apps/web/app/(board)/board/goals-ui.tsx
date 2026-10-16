@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, DayMarks, GoalMeter, Icon, PeriodMarks } from '@familywise/ui';
+import { Avatar, Button, DayMarks, GoalMeter, Icon, PeriodMarks } from '@familywise/ui';
 import {
   type CSSProperties,
   type ReactNode,
@@ -27,8 +27,15 @@ import {
   startsAgainLine,
   wonLine,
 } from '@/lib/goal-periods';
+import {
+  type Counted,
+  countedLabel,
+  familyMissedLine,
+  familyWonLine,
+  makesLine,
+} from '@/lib/goal-perfect';
 import { boardSteps, lateLine, markedStep, stepChips, stepNudge } from '@/lib/goal-steps';
-import type { BoardGoal } from '@/lib/snapshot';
+import type { BoardGoal, BoardGoalRule, BoardMember } from '@/lib/snapshot';
 import { Picture, type PhotoUrl } from './picture';
 
 /** [RWD-18] A goal's steps as chips, the one in reach (or reached) marked. */
@@ -49,6 +56,92 @@ function StepChips({ chips, on }: { chips: string[]; on: number | null }) {
   );
 }
 
+/**
+ * [RWD-20] Each child of an every-child goal (the approved mockup): their avatar and name, and their
+ * days this period, or "Nothing due this week" (or, a goal that doesn't repeat, how far they are).
+ */
+function ChildRows({
+  kids,
+  word,
+  members,
+}: {
+  kids: NonNullable<BoardGoal['children']>;
+  word: string | null;
+  members: BoardMember[];
+}) {
+  return (
+    <ul className="fw-goal__kids" aria-label="Each child">
+      {kids.map((c) => {
+        const m = members.find((x) => x.id === c.memberId);
+        const name = m?.displayName ?? 'Someone';
+        const days = c.contributes ? shownDays(c) : [];
+        return (
+          <li key={c.memberId} className="fw-goal__kid" data-outcome={c.outcome}>
+            <Avatar
+              name={name}
+              avatarKey={m?.avatarKey ?? null}
+              color={m?.color}
+              size={48}
+              decorative
+            />
+            <span className="fw-goal__kid-body">
+              <b>{name}</b>
+              {!c.contributes ? (
+                <span className="fw-today__goal-note">
+                  {word ? `Nothing due this ${word}` : 'Nothing due'}
+                </span>
+              ) : !days.length ? (
+                <span className="fw-today__goal-note">
+                  {c.outcome === 'won' ? 'Made it!' : `${Math.round(c.pct)}% of the way`}
+                </span>
+              ) : null}
+            </span>
+            {days.length ? <DayMarks days={days} /> : null}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/**
+ * [RWD-19] A rule counting another goal's weeks (the approved mockup): "1 of 3 weeks in a row" with
+ * what it pays, the counted goal's weeks, and "This week makes 2 in a row."
+ */
+function CountedRule({ rule: r, pays }: { rule: BoardGoalRule; pays: string | null }) {
+  const source = r.source;
+  if (!source || source.repeat === 'none') return null;
+  const c: Counted = {
+    current: r.current,
+    target: r.target,
+    inARow: r.inARow === true,
+    best: r.best,
+    met: r.met,
+    repeat: source.repeat,
+  };
+  const makes = makesLine(c, source.history, 'board');
+  return (
+    <div className="fw-today__goal-rule" data-met={r.met || undefined}>
+      <GoalMeter
+        label={countedLabel(c, pays)}
+        value={Math.min(c.current, r.target)}
+        target={r.target}
+      />
+      {source.history.length ? (
+        <PeriodMarks
+          label={`${source.title}: the last ${source.history.length}`}
+          periods={source.history.map((h) => ({
+            key: h.start,
+            outcome: h.outcome,
+            label: periodLabel(h, source.repeat as 'week' | 'month' | 'term'),
+          }))}
+        />
+      ) : null}
+      {makes ? <p className="fw-today__goal-note">{makes}</p> : null}
+    </div>
+  );
+}
+
 /** How long the celebration stays without a tap. */
 const CELEBRATION_MS = 10_000;
 
@@ -60,6 +153,7 @@ export function GoalItem({
   compact = false,
   who,
   action,
+  members = [],
 }: {
   goal: BoardGoal;
   today: string;
@@ -69,6 +163,8 @@ export function GoalItem({
   who?: ReactNode;
   /** [D-74] A button over the whole goal, on the dashboard: it opens whose goal it is. */
   action?: ReactNode;
+  /** [RWD-20] The family, for an every-child goal's children. */
+  members?: BoardMember[];
 }) {
   if (goal.repeat !== 'none') {
     return (
@@ -80,6 +176,7 @@ export function GoalItem({
         compact={compact}
         who={who}
         action={action}
+        members={members}
       />
     );
   }
@@ -117,6 +214,11 @@ export function GoalItem({
             </p>
           ) : null}
           {goal.rules.map((r) => {
+            if (r.type === 'PERIODS_WON') {
+              return (
+                <CountedRule key={r.id} rule={r} pays={goal.pays ? `${goal.pays} points` : null} />
+              );
+            }
             const m = ruleMeter(r);
             const note = ruleNote(r);
             return (
@@ -155,6 +257,9 @@ export function GoalItem({
               ) : null}
             </>
           ) : null}
+          {goal.eachChild && goal.children?.length ? (
+            <ChildRows kids={goal.children} word={null} members={members} />
+          ) : null}
           {ends ? <p className="fw-today__goal-ends">{ends}</p> : null}
         </>
       )}
@@ -176,6 +281,7 @@ function RepeatingGoal({
   compact,
   who,
   action,
+  members,
 }: {
   goal: BoardGoal;
   repeat: 'week' | 'month' | 'term';
@@ -184,8 +290,12 @@ function RepeatingGoal({
   compact: boolean;
   who?: ReactNode;
   action?: ReactNode;
+  members: BoardMember[];
 }) {
   const p = goal.period;
+  // [RWD-20] An every-child goal: each child's days, and who lost or won it.
+  const kids = goal.eachChild && p?.children ? p.children : null;
+  const name = (id: string) => members.find((m) => m.id === id)?.displayName ?? 'Someone';
   const word = periodWord(repeat);
   const days = p ? shownDays(p) : [];
   const needed = p ? daysNeeded(p) : 0;
@@ -223,10 +333,28 @@ function RepeatingGoal({
       ) : (
         <>
           <p className="fw-today__goal-ends">
-            {daysRule && !weighted ? `Every day it’s due this ${word}` : `This ${word}`}
+            {kids
+              ? `Every child, ${daysRule ? 'every day it’s due' : 'all of it'} this ${word}${pays ? ` · ${pays} each` : ''}`
+              : daysRule && !weighted
+                ? `Every day it’s due this ${word}`
+                : `This ${word}`}
           </p>
-          {days.length ? <DayMarks days={days} /> : null}
-          {p.outcome === 'missed' ? (
+          {kids ? (
+            <ChildRows kids={kids} word={word} members={members} />
+          ) : days.length ? (
+            <DayMarks days={days} />
+          ) : null}
+          {kids && p.outcome === 'missed' ? (
+            <p className="fw-goal-line" data-kind="missed">
+              <Icon name="repeat" size={36} />
+              <span>{familyMissedLine(p, name) ?? startsAgainLine(p, repeat)}</span>
+            </p>
+          ) : kids && p.outcome === 'won' ? (
+            <p className="fw-goal-line" data-kind="won">
+              <Icon name="trophy" size={36} />
+              <span>{familyWonLine(p, name, goal.pays ?? null)}</span>
+            </p>
+          ) : kids ? null : p.outcome === 'missed' ? (
             <p className="fw-goal-line" data-kind="missed">
               <Icon name="repeat" size={36} />
               <span>{startsAgainLine(p, repeat)}</span>
@@ -331,10 +459,13 @@ export function GoalsCard({
   goals,
   today,
   photoUrl,
+  members = [],
 }: {
   goals: BoardGoal[];
   today: string;
   photoUrl?: PhotoUrl;
+  /** [RWD-20] The family, for an every-child goal's children. */
+  members?: BoardMember[];
 }) {
   if (goals.length === 0) return null;
   return (
@@ -342,7 +473,7 @@ export function GoalsCard({
       <h3 id="me-goals">Goals</h3>
       <ul className="fw-today__goal-list" aria-labelledby="me-goals">
         {goals.map((g) => (
-          <GoalItem key={g.id} goal={g} today={today} photoUrl={photoUrl} />
+          <GoalItem key={g.id} goal={g} today={today} photoUrl={photoUrl} members={members} />
         ))}
       </ul>
     </section>
@@ -354,10 +485,13 @@ export function FamilyGoals({
   goals,
   today,
   photoUrl,
+  members = [],
 }: {
   goals: BoardGoal[];
   today: string;
   photoUrl?: PhotoUrl;
+  /** [RWD-20] The family, for an every-child goal's children. */
+  members?: BoardMember[];
 }) {
   if (goals.length === 0) return null;
   return (
@@ -368,7 +502,14 @@ export function FamilyGoals({
       </h2>
       <ul className="fw-today__goal-list" aria-labelledby="family-goals">
         {goals.map((g) => (
-          <GoalItem key={g.id} goal={g} today={today} photoUrl={photoUrl} compact />
+          <GoalItem
+            key={g.id}
+            goal={g}
+            today={today}
+            photoUrl={photoUrl}
+            compact
+            members={members}
+          />
         ))}
       </ul>
     </section>

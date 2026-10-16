@@ -193,17 +193,19 @@ select is(pg_temp.goals(), 'Bike ride:achieved:true, Zoo trip:active:false, Pizz
 select is(pg_temp.goal('Zoo trip'),
   jsonb_build_object('id', '23900000-0000-0000-0000-000000000001', 'member_id', '23110000-0000-0000-0000-00000000000a',
     'title', 'Zoo trip', 'icon', 'star', 'photo', null, 'status', 'active', 'n', 0, 'achieved_at', null,
-    'celebrate', false, 'end_date', current_date + 9, 'repeat', 'none', 'pays', null, 'steps', null,
+    'celebrate', false, 'end_date', current_date + 9, 'repeat', 'none', 'each_child', false, 'children', null, 'pays', null, 'steps', null,
     'step', null, 'step_best', null, 'period', null, 'history', '[]'::jsonb, 'logic', 'all', 'pct', 70,
     'rules', jsonb_build_array(
       jsonb_build_object('id', '23a00000-0000-0000-0000-000000000001', 'type', 'COUNT', 'target', 10, 'current', 9,
-                         'pct', 90, 'met', false, 'streak', null, 'best', null, 'weight', null, 'on_time', null),
+                         'pct', 90, 'met', false, 'streak', null, 'best', null, 'weight', null, 'on_time', null,
+                         'in_a_row', null, 'source', null),
       jsonb_build_object('id', '23a00000-0000-0000-0000-000000000002', 'type', 'STREAK', 'target', 5, 'current', 3,
-                         'pct', 60, 'met', false, 'streak', 2, 'best', 3, 'weight', null, 'on_time', null))),
+                         'pct', 60, 'met', false, 'streak', 2, 'best', 3, 'weight', null, 'on_time', null,
+                         'in_a_row', null, 'source', null))),
   '[RWD-07][US-403] a goal with its progress, and each rule''s, with the run now and the best for a streak');
 select is(pg_temp.goal('Pizza night') -> 'rules',
   '[{"id": "23a00000-0000-0000-0000-000000000003", "type": "COUNT", "target": 20, "current": 0, "pct": 0,
-     "met": false, "streak": null, "best": null, "weight": null, "on_time": null}]'::jsonb,
+     "met": false, "streak": null, "best": null, "weight": null, "on_time": null, "in_a_row": null, "source": null}]'::jsonb,
   '[RWD-07] a goal not worked out yet reads as nothing done');
 select pg_temp.as_user('23d00000-0000-0000-0000-00000000000e');
 select is(pg_temp.goals(), 'Next door:active:false', '[NFR-04] another family''s board sees only its own goals');

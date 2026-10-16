@@ -4,6 +4,7 @@ import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
+import { countableGoals, loadGoals } from '../data';
 import { GoalForm } from '../goal-form';
 import { loadGoalContext } from '../load';
 
@@ -15,7 +16,10 @@ export default async function NewGoalPage() {
   const user = await requireSignedIn(db, '/admin/goals/new');
   const household = await adminHousehold(db!, user.userId);
   if (!household) redirect('/setup');
-  const ctx = await loadGoalContext(db!, household.id);
+  const [ctx, goals] = await Promise.all([
+    loadGoalContext(db!, household.id),
+    loadGoals(db!, household.id),
+  ]);
   return (
     <main className="fw-page">
       <AdminHeader current="/admin/goals" />
@@ -28,6 +32,7 @@ export default async function NewGoalPage() {
           items={ctx.items}
           prizes={ctx.prizes}
           today={isoDay(household.timezone)}
+          countable={countableGoals(goals)}
         />
       </section>
     </main>

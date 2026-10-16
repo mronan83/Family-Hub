@@ -328,6 +328,32 @@ const SHOTS = [
     },
     element: 'details:has(#goal-weeks-heading)',
   },
+  // [RWD-19][RWD-20] An every-child goal and perfect weeks on Goals, and the family card on the board
+  // (WP-82).
+  {
+    name: 'admin-goal-every-child-phone',
+    device: 'phone',
+    url: '/dev/goals?list=perfect',
+    element: '.fw-goals > li:first-child',
+  },
+  {
+    name: 'board-goal-every-child',
+    device: 'board',
+    url: '/dev/board?perfect=missed',
+    act: async (page) => {
+      await person(page, 'Maya').click();
+    },
+    element: '[data-goal="g-everyone"]',
+  },
+  {
+    name: 'board-goal-perfect-weeks',
+    device: 'board',
+    url: '/dev/board?perfect=going',
+    act: async (page) => {
+      await person(page, 'Maya').click();
+    },
+    element: '[data-goal="g-perfect"]',
+  },
   // [RWD-18] Pay in steps in the form, and a goal in steps on the board (WP-81).
   {
     name: 'admin-goal-steps-phone',

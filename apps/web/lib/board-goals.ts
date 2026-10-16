@@ -13,6 +13,7 @@ export const BOARD_RULE_WORDS: Record<RuleType, string> = {
   STREAK: 'Good days in a row',
   POINTS: 'Points earned',
   DAYS_DUE: 'Days',
+  PERIODS_WON: 'Weeks won',
 };
 
 /** [RWD-07] A child's own goals first, then the family's. */
@@ -73,7 +74,8 @@ function closeLine(r: BoardGoalRule, title: string): string | null {
     case 'STREAK':
       return left === 1 ? `One more good day in a row for ${title}!` : null;
     case 'DAYS_DUE':
-      // [RWD-16] A repeating goal says it on its own card ("Today makes it!").
+    case 'PERIODS_WON':
+      // [RWD-16][RWD-19] A repeating goal and a perfect-weeks goal say it on their own card.
       return null;
   }
 }
