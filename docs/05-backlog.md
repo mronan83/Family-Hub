@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.129: The fold audit of the admin app added at the owner's request, recorded only (D-120): every admin screen judged against WP-75's fold and mocked up on the demo family; five new work packages after WP-91 (WP-93 to WP-97), Queued until the owner approves the mockup. WP-91 is built first and on its own, with the shared fold. "Next, in order" is the owner's to set.
 > v0.8.127: WP-91 (the Boards settings as collapsible sections) added at the owner's request, recorded only (D-118): each board folded at first, showing its name and what matters about it, opening to grouped sections; the household's **Home screen** layout, **Add a board** and **Disconnected** folded too, in WP-75's fold style. Ready, mockup first. "Next, in order" is the owner's to set.
 > v0.8.126: WP-34 (quiet hours and burn-in mitigation, with sleep and wake per board) built and merged (D-116, D-117), from the mockup the owner approved on 16 October with its six recommendations; its 3 days on the owner's Pi 4 are open (Y-11).
 > v0.8.125: WP-34 gains sleep and wake per board, added at the owner's request, recorded only (D-116): when a board counts as missed (Always, Only while awake, Never), sleep and wake times for school days and weekends, an idle sleep woken by a touch, click or mouse movement that only wakes. WP-34 now depends on WP-06 and WP-47 and is Ready: the owner's Pi 4 on a 24" Dell is the board in use, so it no longer waits on WP-14 or SPIKE-03. Size S to M. A mockup comes first. "Next, in order" is the owner's to set.
@@ -260,6 +261,11 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-89 | The test database prepared for a pull request's preview | P3 | S | WP-60, WP-88 | Ready |
 | WP-90 | Nightly e2e reliability | P3 | M | WP-60, WP-88 | Done |
 | WP-91 | The Boards settings as collapsible sections | P3 | S | WP-34, WP-75, WP-35 | Ready (mockup first) |
+| WP-93 | Calendars, school menus and the meal library folded | P3 | M | WP-91 | Queued (mockup approval pending) |
+| WP-94 | The set-up pages folded | P3 | M | WP-91 | Queued (mockup approval pending) |
+| WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Queued (mockup approval pending) |
+| WP-96 | Chores, an item's page and the icon picker folded | P3 | M | WP-91 | Queued (mockup approval pending) |
+| WP-97 | Today, My tasks and Insights folded | P3 | S | WP-91 | Queued (mockup approval pending) |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -437,6 +443,11 @@ flowchart LR
     WP34 --> WP91[WP-91 Boards settings folded]
     WP75 --> WP91
     WP35 --> WP91
+    WP91 --> WP93[WP-93 Calendars and menus folded]
+    WP91 --> WP94[WP-94 Set-up pages folded]
+    WP91 --> WP95[WP-95 Rewards, Goals, Members folded]
+    WP91 --> WP96[WP-96 Chores and icon picker folded]
+    WP91 --> WP97[WP-97 Today and Insights folded]
     WP64 --> WP78
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP65 --> WP70[WP-70 Calendar refresh timing]
@@ -1411,8 +1422,62 @@ flowchart LR
   - **The household's Home screen layout** folded to a one-line summary (for example "5 days · meals on · Goals, Waiting, Coming up · weather on"), opening to its form as now.
   - **Add a board** folded to one button that opens the name and pairing code form; **Disconnected** folded to a count that opens the list.
 - Admin app only, not the board. Nothing is removed: every setting on Boards today stays, inside a fold.
-- **Mockup first:** Boards, folded and opened, on the demo family at 390 and 1280 px, approved by the owner before WP-91 is built.
+- **Mockup first:** Boards, folded and opened, on the demo family at 390 and 1280 px, approved by the owner before WP-91 is built. The fold audit's **Boards** page is that mockup ([Boards in the fold audit](https://claude.ai/artifact/XmqoDeW6RNFbov3dntr5F4#boards)).
+- **With the fold audit (D-120), proposed by Claude Code:** WP-91 is built first and on its own, and lifts the fold out of Meals into one shared component (the fold, its summary lines and the warning on its header) that WP-75's screens and WP-93 to WP-97 use. Meals looks and works as it does now.
 - **Done when:** unit tests on a board's folded summary (awake or asleep with the next time, last seen, theme, text size, own or household layout, the not-seen warning by its **Tell me when** choice) and on the layout's one-line summary; on the preview, Alex opens Boards with every board folded, reads the Kitchen board's summary, opens it, changes its text size under **Display**, and finds the board open after the save; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, the not-seen warning shown while folded, and taps after hydration.
+
+### The fold audit — every admin screen folded, one standard
+
+- Added at the owner's request, 16 October (in the planner session): "So, we may need to go through all the the pages / screens and give them the styling treatment and expandable and collapsible sections similar to the meals and school lunches. There are a lot that could benefit from that. Could you have a work go through the app and mock up what that would look like."
+- **The mockup:** [the fold audit](https://claude.ai/artifact/XmqoDeW6RNFbov3dntr5F4). Every admin screen (`07` B1.1 to B1.16, and the item, member, goal and school year pages) on the made-up demo family, at 390 and 1280 px, Day and Evening, before and after, with a table per screen of each section: folded at first or open, what its folded header shows, and why. Admin app only.
+- **The standard (D-120):** WP-75's fold, made one shared component in WP-91. Folded: forms that add something (to their button), archived lists, history and logs, settings set once (to what they are set to), each calendar, school menu and board (to its facts), and Archive, Remove, Cancel and Disconnect set apart at the bottom. Open: what waits for a parent, a page's main list, an edit page's form, and short pages. A warning or a count waiting for a parent shows on the folded header. A fold comes back open after a save, an add or an error inside it. The older plain disclosures become the same fold.
+- **No change:** Home (it is the glance: **Needs you**, **Heads-up** and **Quick actions** stay open), **Settings** (its tiles already summarise), and the sign-in, setup and invite pages.
+- **The board (a separate note):** no board screen is folded. Its Home never scrolls (D-74) and is read from 2 m away. If one ever is, **Lunches** (B2.10) and a person's screen (B2.3) at Larger and Largest text come first, each with 56 px headers and its own mockup.
+- **The build, in this order:** WP-91 (Boards, with the shared fold), WP-93, WP-94, WP-95, WP-96, WP-97. Each is Queued until the owner approves the mockup, then Ready; the mockup is each one's mockup, so none needs another unless the owner asks for a change. "Next, in order" is the owner's to set.
+- **Nothing is removed:** every control on every page today stays, inside a fold or in the open.
+
+### WP-93 — Calendars, school menus and the meal library folded
+**Phase:** P3 · **Size:** M · **Depends on:** WP-91 · **Reqs:** NFR-18
+- Added at the owner's request with the fold audit (D-120). The two longest pages in the admin app first.
+- **Calendars:** each calendar folded to its colour, name, whose it is, "Not on the boards" if hidden, its sync and how many events are coming up; **Can't sync** on the header while folded. Opened: what's coming up, then **Edit** (name) and **Remove** (name) as folds. **Add a calendar** folded to its button.
+- **School menus:** each menu folded to its name, where it comes from, whose lunch it is, **Fetched** (or **Can't fetch** on the header) and the days it has in the next four weeks. Opened: its weeks, then **Load a file into** (name) and **Add a day to** (name) as folds, and **Fetch now**, **Rename** and **Remove** set apart. **Add a school menu** folded to its button.
+- **The meal library:** **Add a meal** folded to its button; **Our meals** open; **Archived** folded to its count.
+- **Done when:** unit tests on each folded header (a calendar's sync and count, a menu's source, fetch and days, the warnings); on the preview, Alex opens Calendars with every calendar folded, reads the Family calendar's header, opens it and saves an edit, and finds it open after the save; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, the warnings shown while folded, taps after hydration.
+
+### WP-94 — The set-up pages folded
+**Phase:** P3 · **Size:** M · **Depends on:** WP-91 · **Reqs:** NFR-18
+- Added at the owner's request with the fold audit (D-120). Pages set once and left alone: each section folds to what it is set to.
+- **Family options:** **The week** (the start day, and a change waiting to start), **Check-offs** (the choice in words), **Weather on the boards** (the place, unit and last reading; a failed read on the header), **Admins** (names and roles), **Invite an admin** (to its button, with the invites waiting on the header).
+- **School:** today's day types and **School years** open; **Lunch changes** (the cut-off), **Add a school year** (to its button) and **Archived** (its count) folded. **A school year's page:** its timeline open; **Breaks and days off** (how many and the next), **Terms**, **Who follows it**, **Dates and name** folded; **Archive** set apart.
+- **Tags:** **Add a tag** folded to its button; **Our tags** open; **Archived** folded.
+- **Reminders:** the state line and its buttons open; **My devices** (how many, on or off, last reached; a removed device on the header) and **When to remind me** (each setting in one line) folded.
+- **Health:** the verdict open; **Background jobs** (how many fine, any failing or late by name on the header), **Server errors** (how many in 30 days, the latest) and **Usage** (the highest share of a free plan; near a limit on the header) folded.
+- Home's **Add a day off…** takes the fold's look.
+- **Done when:** unit tests on each folded header; on the preview, Alex changes the check-offs choice on Family options and finds **Check-offs** open after the save, and opens Health with a failing job named on the folded header; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, the warnings shown while folded, taps after hydration.
+
+### WP-95 — Rewards, Goals and Members folded
+**Phase:** P3 · **Size:** M · **Depends on:** WP-91 · **Reqs:** NFR-18
+- Added at the owner's request with the fold audit (D-120).
+- **Rewards:** **Asked for**, **To give** and **The shop** open; the shop's **Archived** folded to its count; **Bonus points** folded (how many on and off, their names and points), with **Add a bonus** and **Archived bonuses** as folds inside; **Lately** folded (the latest settled request, how many).
+- **Goals:** goals in play open; **History** folded (redeemed, ended, cancelled), "Needs a look" on the header. **A goal's page:** the form open; **What happened** folded to its latest line; **Cancel** set apart.
+- **Members:** the list open; **Archived** folded. **A member's page:** the form open; **Points** folded to the balance and the last change, opening to **Change points** and the history; **Archive** set apart.
+- **Done when:** unit tests on each folded header; on the preview, Alex changes Maya's points and finds **Points** open after the save, and sees "Needs a look" on Goals' folded **History**; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
+
+### WP-96 — Chores, an item's page and the icon picker folded
+**Phase:** P3 · **Size:** M · **Depends on:** WP-91 · **Reqs:** NFR-18
+- Added at the owner's request with the fold audit (D-120).
+- **Chores:** the list open; **Filters** folded to what they are set to and how many items show, so a filtered list reads as filtered while folded.
+- **An item's page and the item form:** the main fields open; **More options** folded to how it is set (approval, days, lunch); **Coming up** (the next one and how many in two weeks), **Last 7 days** (done, missed, skipped) folded; **Archive** set apart.
+- **The icon picker,** in every form that has one (chores and tasks, rewards, goals, meals, tags): folded to **Chosen:** and the icon, opening to **Find an icon** and the groups.
+- **Done when:** unit tests on the filter summary and each folded header; on the preview, Alex filters Chores by Maya and reads it on the folded header, then changes an item's icon and saves; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
+
+### WP-97 — Today, My tasks and Insights folded
+**Phase:** P3 · **Size:** S · **Depends on:** WP-91 · **Reqs:** NFR-18
+- Added at the owner's request with the fold audit (D-120). Last, because it changes the pages used most.
+- **Today:** **Waiting for you** open. A part of the day (**Morning**, **After school**, **Evening**, **Anytime**) folds by itself to "6 of 6 done" and the first names once every item in it is done or skipped, and stays open while anything in it is still to do; **Overdue** stays open while it has anything in it. A done part opens for **Uncheck**.
+- **My tasks:** **Coming up** folded (how many in the next seven days, and the next one).
+- **Insights:** **Streaks** and **Done** open; **Day by day**, **Missed most**, **By tag** and **Checking** folded to their one-line finding; **History** folded.
+- **Done when:** unit tests on a part's done count and when it folds (done, skipped, sent back, waiting for a parent); on the preview, Alex marks the last open item of a part done and finds that part folded with its count, then opens it and unchecks one; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
 
 ---
 
@@ -1426,6 +1491,6 @@ flowchart LR
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82 | Menu adapters, WP-49 and WP-80 are the Ls |
-| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88 – WP-91 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
+| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88 – WP-91, WP-93 – WP-97 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

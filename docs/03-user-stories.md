@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.55: US-111 Admin pages that fold to what matters, added at the owner's request (WP-93 to WP-97, D-120).
 > v0.8.54: US-208 Boards that fit on one screen, added at the owner's request (WP-91, D-118).
 > v0.8.53: US-207 as built (WP-34, D-117): a night takes its times from the day after it; a touch in the night wakes a board for its idle time or 5 minutes; Only while awake counts a board's hours awake; the picture drifts; the Pi's screen helper.
 > v0.8.52: US-207 gains sleep and wake per board and when a board counts as missed, added at the owner's request (WP-34, D-116).
@@ -156,6 +157,17 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P3 · **Reqs:** ACC-08
 - Given **Settings → Family options**, when I open it, then I find the day the week starts on, check-offs, the weather on the boards, the admins and invites.
 - Given I choose a new start day, when I save, then the week now running keeps its days and the new day starts from the next week, as the page says; **Keep** cancels it.
+
+### US-111 — Admin pages that fold to what matters
+**As an** admin **I want** each admin page's set-up and reference sections to fold to a line that says what matters, the way Meals does **so that** a page fits my phone's screen and I open only what I'm changing (added at the owner's request, WP-93 to WP-97, D-120).
+**Priority:** Should · **Phase:** P3 · **Reqs:** NFR-18
+- Given an admin page with a form that adds something, an archived list, a history or a log, or a setting set once, when it opens, then that section is folded, its header showing its button or what it is set to.
+- Given **Calendars**, **School menus** or **Boards**, when it opens, then each calendar, menu or board is folded to its facts and opens to its settings.
+- Given something waiting for a parent, a page's main list or an edit page's form, when the page opens, then it is open.
+- Given a folded section with a warning ("Can't sync", "Can't fetch", a failing job, weather not updated, a removed device) or something waiting, when it is folded, then that shows on its header.
+- Given I save, add or get an error inside a fold, when the page comes back, then that section is open.
+- Given **Today**, when every item in a part of the day is done or skipped, then that part is folded to "6 of 6 done" and opens for **Uncheck**; **Overdue** stays open while it has anything in it.
+- Given a form with an icon, when it opens, then the icon picker is folded to the icon chosen.
 
 ---
 
