@@ -27,7 +27,7 @@ import {
   step,
   shownCalendar,
 } from '@/lib/board-calendar';
-import { dayAndTime } from '@/lib/format';
+import { andList, dayAndTime } from '@/lib/format';
 import type {
   BoardCalendar,
   BoardCalendarSource,
@@ -82,13 +82,14 @@ export function EventLine({
   event,
   date,
   calendar,
-  member,
+  members,
   timeZone,
 }: {
   event: BoardEvent;
   date: string;
   calendar: BoardCalendarSource | undefined;
-  member: BoardMember | undefined;
+  /** The calendar's people (WP-50). */
+  members: BoardMember[];
   timeZone: string;
 }) {
   return (
@@ -99,14 +100,9 @@ export function EventLine({
     >
       <span className="fw-bcal__when">{eventWhen(event, date, timeZone)}</span>
       <span className="fw-bcal__title">{event.title || 'Untitled event'}</span>
-      {member ? (
-        <Avatar
-          name={member.displayName}
-          avatarKey={member.avatarKey}
-          color={member.color}
-          size={40}
-        />
-      ) : null}
+      {members.map((m) => (
+        <Avatar key={m.id} name={m.displayName} avatarKey={m.avatarKey} color={m.color} size={40} />
+      ))}
     </li>
   );
 }
@@ -312,11 +308,22 @@ interface Ink {
 const calColor = (c: BoardCalendarSource | undefined): CSSProperties =>
   ({ ['--cal' as string]: `var(--${c?.color ?? 'member-6'}-line)` }) as CSSProperties;
 
-/** Whose an event is, as its button says it: the calendar's person, else the calendar's name. */
+/** [CAL-09] A calendar's people still on the board, in its order (WP-50). */
+function peopleOf(c: BoardCalendarSource | undefined, ink: Ink): BoardMember[] {
+  return (c?.memberIds ?? []).flatMap((id) => {
+    const m = ink.people.get(id);
+    return m ? [m] : [];
+  });
+}
+
+/**
+ * Whose an event is, as its button says it: the calendar's people ("Maya and Leo"), else the
+ * calendar's name.
+ */
 function whose(e: BoardEvent, ink: Ink): string {
   const c = ink.calendars.get(e.calendarId);
-  const m = c?.memberId ? ink.people.get(c.memberId) : undefined;
-  return m?.displayName ?? c?.name ?? 'Calendar';
+  const names = peopleOf(c, ink).map((m) => m.displayName);
+  return names.length ? andList(names) : (c?.name ?? 'Calendar');
 }
 
 /** "Dentist, 9:30 – 10:15 am, Leo": an event button's name, what the details sheet then shows. */
@@ -345,7 +352,7 @@ export function EventDetails({
     return () => window.removeEventListener('keydown', esc);
   }, [onClose]);
   const c = ink.calendars.get(event.calendarId);
-  const m = c?.memberId ? ink.people.get(c.memberId) : undefined;
+  const people = peopleOf(c, ink);
   return (
     <div className="fw-today__scrim">
       <div
@@ -385,17 +392,19 @@ export function EventDetails({
             Whose
           </dt>
           <dd className="fw-evdetails__who">
-            {m ? (
-              <>
-                <Avatar
-                  name={m.displayName}
-                  avatarKey={m.avatarKey}
-                  color={m.color}
-                  size={56}
-                  decorative
-                />
-                {m.displayName}
-              </>
+            {people.length ? (
+              people.map((m) => (
+                <span key={m.id} className="fw-evdetails__person">
+                  <Avatar
+                    name={m.displayName}
+                    avatarKey={m.avatarKey}
+                    color={m.color}
+                    size={56}
+                    decorative
+                  />
+                  {m.displayName}
+                </span>
+              ))
             ) : (
               <>
                 <Icon name="family" size={56} />

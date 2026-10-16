@@ -18,8 +18,8 @@ async function context() {
 }
 
 /**
- * [CAL-01][US-501] Adds a calendar by its link, or changes one (a link typed replaces the old one in
- * Vault). A link just typed is synced at once with that link, as the admin (D-63): they see its
+ * [CAL-01][CAL-09][US-501] Adds a calendar by its link, or changes one, with who it's for (a link
+ * typed replaces the old one in Vault). A link just typed is synced at once with that link, as the admin (D-63): they see its
  * events, or what's wrong with it, now, not in 15 minutes; previews, which can't read Vault, too.
  */
 export async function saveCalendar(_prev: FormState, form: FormData): Promise<FormState> {
@@ -28,13 +28,13 @@ export async function saveCalendar(_prev: FormState, form: FormData): Promise<Fo
   const parsed = parseCalendar(form, !id);
   if (!parsed.ok) return { message: parsed.message };
   const v = parsed.value;
-  const { data, error } = await db.rpc('save_calendar_source', {
+  const { data, error } = await db.rpc('save_calendar', {
     p_household: household.id,
     p_source: id,
     p_name: v.name,
     p_url: v.url,
     p_color: v.color,
-    p_member: v.memberId,
+    p_members: v.memberIds,
     p_show_on_board: v.showOnBoard,
   });
   if (error) {

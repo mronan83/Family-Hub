@@ -1,13 +1,13 @@
-import { Banner, Button, Icon, type IconName } from '@familywise/ui';
-import { syncStatus, whenWords, type CalendarRow } from '@/lib/calendars';
+import { Avatar, Banner, Button, Icon, type IconName } from '@familywise/ui';
+import { syncStatus, whenWords, whoFor, type CalendarRow } from '@/lib/calendars';
 import { AdminHeader } from '../header';
 import { removeCalendar } from './actions';
-import { CalendarForm } from './calendar-form';
+import { CalendarForm, type CalendarPerson } from './calendar-form';
 
 export interface CalendarsViewProps {
   calendars: CalendarRow[];
-  /** Members still in the family, for "whose calendar". */
-  members: { id: string; displayName: string }[];
+  /** The family's members in its order, archived ones too, for who a calendar is for. */
+  members: (CalendarPerson & { archived: boolean })[];
   timezone: string;
   notice: string | null;
   error: string | null;
@@ -20,12 +20,13 @@ const SYNC_ICONS: Record<'ok' | 'error' | 'pending', IconName> = {
 };
 
 /**
- * [CAL-01][CAL-03][CAL-06] The household's calendars (WP-22): each with its color, whose it is, how
+ * [CAL-01][CAL-03][CAL-06][CAL-09] The household's calendars (WP-22): each with its color, who it's
+ * for with their faces (WP-50), how
  * its sync went (US-505) and what's coming up, to edit, re-link or remove; and a form to add one by
  * its public link. Events themselves are never edited here: Apple Calendar is where they change.
  */
 export function CalendarsView({ calendars, members, timezone, notice, error }: CalendarsViewProps) {
-  const whose = (id: string | null) => members.find((m) => m.id === id)?.displayName ?? null;
+  const current = members.filter((m) => !m.archived);
   return (
     <main className="fw-page">
       <AdminHeader current="/admin/calendars" />
@@ -47,7 +48,7 @@ export function CalendarsView({ calendars, members, timezone, notice, error }: C
           <ul className="fw-list" aria-label="Calendars">
             {calendars.map((c) => {
               const sync = syncStatus(c, timezone);
-              const person = whose(c.memberId);
+              const faces = current.filter((m) => c.memberIds.includes(m.id));
               const more = c.upcomingCount - c.upcoming.length;
               return (
                 <li key={c.id} className="fw-list__row fw-list__row--stack">
@@ -60,8 +61,22 @@ export function CalendarsView({ calendars, members, timezone, notice, error }: C
                       />
                       <strong>{c.name}</strong>
                     </span>
-                    <span className="fw-muted">
-                      {person ? `${person}’s` : 'The whole family'}
+                    <span className="fw-muted fw-calendar__who">
+                      {faces.length ? (
+                        <span className="fw-calendar__faces" aria-hidden>
+                          {faces.map((m) => (
+                            <Avatar
+                              key={m.id}
+                              name={m.displayName}
+                              avatarKey={m.avatarKey}
+                              color={m.color}
+                              size={24}
+                              decorative
+                            />
+                          ))}
+                        </span>
+                      ) : null}
+                      {whoFor(c.memberIds, members)}
                       {c.showOnBoard ? '' : ' · Not on the boards'}
                     </span>
                   </span>
@@ -95,10 +110,10 @@ export function CalendarsView({ calendars, members, timezone, notice, error }: C
                       initial={{
                         name: c.name,
                         color: c.color,
-                        memberId: c.memberId,
+                        memberIds: c.memberIds,
                         showOnBoard: c.showOnBoard,
                       }}
-                      members={members}
+                      members={current}
                     />
                   </details>
                   <details>
@@ -124,7 +139,7 @@ export function CalendarsView({ calendars, members, timezone, notice, error }: C
 
       <section className="fw-card" aria-labelledby="add-calendar-heading">
         <h2 id="add-calendar-heading">Add a calendar</h2>
-        <CalendarForm members={members} />
+        <CalendarForm members={current} />
       </section>
     </main>
   );

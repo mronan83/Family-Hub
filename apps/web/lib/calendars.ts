@@ -1,17 +1,19 @@
 import { MEMBER_COLORS, type MemberColor } from '@familywise/ui';
 import { icsUrl } from './calendar/ics';
-import { day, dayAndTime, time } from './format';
+import { andList, day, dayAndTime, time } from './format';
 
-// [CAL-01][CAL-03][CAL-06] The household's calendars in the admin portal (WP-22, D-63): a name, a
-// color and optionally whose it is, and the published link, which goes to Vault and is never shown
-// again. Events come only from the calendar itself (read-only, CAL-03).
+// [CAL-01][CAL-03][CAL-06][CAL-09] The household's calendars in the admin portal (WP-22, D-63): a
+// name, a color, who it's for (the whole family or any of its people, WP-50), and the published link,
+// which goes to Vault and is never shown again. Events come only from the calendar itself (read-only,
+// CAL-03).
 
 export interface CalendarInput {
   name: string;
   /** The link to fetch (https), or null to keep the one in Vault. */
   url: string | null;
   color: MemberColor;
-  memberId: string | null;
+  /** Who it's for; none is the whole family. */
+  memberIds: string[];
   showOnBoard: boolean;
 }
 
@@ -46,15 +48,16 @@ export function parseCalendar(form: FormData, isNew: boolean): ParsedCalendar {
   if (!(MEMBER_COLORS as readonly string[]).includes(color)) {
     return { ok: false, message: 'Choose a color.' };
   }
-  const member = String(form.get('memberId') ?? '');
-  if (member && !UUID.test(member)) return { ok: false, message: 'Choose whose calendar it is.' };
+  // [CAL-09] A tick a person; The whole family ticked, or no one, is the whole family.
+  const ids = form.get('wholeFamily') === 'on' ? [] : form.getAll('memberIds').map(String);
+  if (ids.some((id) => !UUID.test(id))) return { ok: false, message: 'Choose who it’s for.' };
   return {
     ok: true,
     value: {
       name,
       url,
       color: color as MemberColor,
-      memberId: member || null,
+      memberIds: [...new Set(ids)],
       showOnBoard: form.get('showOnBoard') === 'on',
     },
   };
@@ -73,7 +76,8 @@ export interface CalendarRow {
   id: string;
   name: string;
   color: MemberColor;
-  memberId: string | null;
+  /** Who it's for, archived people too; none is the whole family. */
+  memberIds: string[];
   showOnBoard: boolean;
   status: CalendarStatus;
   lastSyncedAt: string | null;
@@ -132,4 +136,20 @@ export function whenWords(e: UpcomingEvent, timeZone: string): string {
     return `${e.startDate === e.endDate ? first : `${first} – ${last}`} · All day`;
   }
   return `${day(e.start, timeZone)} · ${time(e.start, timeZone)}`;
+}
+
+/**
+ * [CAL-09][US-508] Who a calendar is for, in words: "The whole family", "Alex’s", "Maya and Leo".
+ * People in the family's order; someone archived is named "(archived)", and someone no longer in
+ * the list of members is left out.
+ */
+export function whoFor(
+  memberIds: string[],
+  members: { id: string; displayName: string; archived?: boolean }[],
+): string {
+  const names = members
+    .filter((m) => memberIds.includes(m.id))
+    .map((m) => (m.archived ? `${m.displayName} (archived)` : m.displayName));
+  if (names.length === 0) return 'The whole family';
+  return names.length === 1 ? `${names[0]}’s` : andList(names);
 }

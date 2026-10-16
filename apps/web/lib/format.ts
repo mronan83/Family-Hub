@@ -22,3 +22,10 @@ export function dayAndTime(at: string | Date, timeZone: string): string {
 export function isoDay(timeZone: string, at: Date = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone }).format(at);
 }
+
+/** "Maya and Leo", "Alex, Maya and Leo": names as a list in words. */
+export function andList(names: string[]): string {
+  return names.length < 2
+    ? (names[0] ?? '')
+    : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+}

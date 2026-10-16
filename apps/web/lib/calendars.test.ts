@@ -5,6 +5,7 @@ import {
   parseCalendar,
   syncStatus,
   whenWords,
+  whoFor,
   type UpcomingEvent,
 } from './calendars';
 
@@ -23,7 +24,7 @@ describe('the calendar form', () => {
           name: '  Family   calendar ',
           url: ' webcal://p01-caldav.icloud.com/published/2/made-up ',
           color: 'member-3',
-          memberId: '',
+          wholeFamily: 'on',
           showOnBoard: 'on',
         }),
         true,
@@ -34,7 +35,7 @@ describe('the calendar form', () => {
         name: 'Family calendar',
         url: 'https://p01-caldav.icloud.com/published/2/made-up',
         color: 'member-3',
-        memberId: null,
+        memberIds: [],
         showOnBoard: true,
       },
     });
@@ -46,12 +47,16 @@ describe('the calendar form', () => {
       message: LINK_HELP,
     });
     const kept = parseCalendar(
-      form({ name: 'Family', color: 'member-1', memberId: 'f1000000-0000-4000-8000-000000000001' }),
+      form({
+        name: 'Family',
+        color: 'member-1',
+        memberIds: 'f1000000-0000-4000-8000-000000000001',
+      }),
       false,
     );
     expect(kept).toMatchObject({
       ok: true,
-      value: { url: null, memberId: 'f1000000-0000-4000-8000-000000000001', showOnBoard: false },
+      value: { url: null, memberIds: ['f1000000-0000-4000-8000-000000000001'], showOnBoard: false },
     });
   });
 
@@ -71,9 +76,28 @@ describe('the calendar form', () => {
       ok: false,
       message: 'Choose a color.',
     });
-    expect(parseCalendar(form({ ...good, name: 'A', memberId: 'Ava' }), true)).toEqual({
+    expect(parseCalendar(form({ ...good, name: 'A', memberIds: 'Ava' }), true)).toEqual({
       ok: false,
-      message: 'Choose whose calendar it is.',
+      message: 'Choose who it’s for.',
+    });
+  });
+
+  it('[CAL-09-d] any number of people, a tick each; The whole family ticked is no one', () => {
+    const f = form({ name: 'Kids', color: 'member-8' });
+    f.append('memberIds', 'f1000000-0000-4000-8000-000000000001');
+    f.append('memberIds', 'f1000000-0000-4000-8000-000000000002');
+    f.append('memberIds', 'f1000000-0000-4000-8000-000000000001');
+    expect(parseCalendar(f, false)).toMatchObject({
+      ok: true,
+      value: {
+        memberIds: ['f1000000-0000-4000-8000-000000000001', 'f1000000-0000-4000-8000-000000000002'],
+      },
+    });
+    f.set('wholeFamily', 'on');
+    expect(parseCalendar(f, false)).toMatchObject({ ok: true, value: { memberIds: [] } });
+    expect(parseCalendar(form({ name: 'Kids', color: 'member-8' }), false)).toMatchObject({
+      ok: true,
+      value: { memberIds: [] },
     });
   });
 
@@ -159,5 +183,27 @@ describe('when an event is', () => {
     expect(
       whenWords(event({ allDay: true, startDate: '2026-10-23', endDate: '2026-10-23' }), NY),
     ).toBe('Fri, Oct 23 · All day');
+  });
+});
+
+// [CAL-09][US-508] Who a calendar is for, in words (WP-50).
+describe('who a calendar is for', () => {
+  const members = [
+    { id: 'maya', displayName: 'Maya' },
+    { id: 'leo', displayName: 'Leo' },
+    { id: 'alex', displayName: 'Alex' },
+    { id: 'kit', displayName: 'Kit', archived: true },
+  ];
+
+  it('[CAL-09-d] the whole family, one person’s, or a list in the family’s order', () => {
+    expect(whoFor([], members)).toBe('The whole family');
+    expect(whoFor(['alex'], members)).toBe('Alex’s');
+    expect(whoFor(['leo', 'maya'], members)).toBe('Maya and Leo');
+    expect(whoFor(['alex', 'leo', 'maya'], members)).toBe('Maya, Leo and Alex');
+  });
+
+  it('[CAL-09-d] someone archived is named so; someone gone is left out', () => {
+    expect(whoFor(['maya', 'kit'], members)).toBe('Maya and Kit (archived)');
+    expect(whoFor(['gone'], members)).toBe('The whole family');
   });
 });

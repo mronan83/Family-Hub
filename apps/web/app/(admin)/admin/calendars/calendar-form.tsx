@@ -1,6 +1,14 @@
 'use client';
 
-import { Banner, Button, MEMBER_COLORS, type MemberColor } from '@familywise/ui';
+import { useState } from 'react';
+import {
+  Avatar,
+  Banner,
+  Button,
+  MEMBER_COLORS,
+  type AvatarKey,
+  type MemberColor,
+} from '@familywise/ui';
 import type { FormState } from '@/lib/auth/messages';
 import { LINK_HELP } from '@/lib/calendars';
 import { useFormAction } from '@/lib/forms';
@@ -10,13 +18,71 @@ import { saveCalendar } from './actions';
 export interface CalendarFormInitial {
   name: string;
   color: MemberColor;
-  memberId: string | null;
+  memberIds: string[];
   showOnBoard: boolean;
 }
 
+/** A person a calendar can be for: the family's members still in it, in the family's order. */
+export interface CalendarPerson {
+  id: string;
+  displayName: string;
+  avatarKey: AvatarKey | null;
+  color: MemberColor;
+}
+
 /**
- * [CAL-01][CAL-05] Add a calendar by its public link, or change one: its name, color, whose it is and
- * whether boards show it. The link is never shown again (it is in Vault); typing a new one replaces it.
+ * [CAL-09][US-508] Who a calendar is for (WP-50, D-122): The whole family, or a tick a person. Ticking
+ * a person clears The whole family; clearing every person ticks it again; ticking it clears them.
+ */
+function WhoFor({ members, initial }: { members: CalendarPerson[]; initial: string[] }) {
+  const [ticked, setTicked] = useState(initial.filter((id) => members.some((m) => m.id === id)));
+  return (
+    <fieldset className="fw-field fw-fieldset">
+      <legend className="fw-field__label">Who it’s for</legend>
+      <div className="fw-picker">
+        <label className="fw-picker__item">
+          <input
+            type="checkbox"
+            name="wholeFamily"
+            checked={ticked.length === 0}
+            onChange={(e) => e.target.checked && setTicked([])}
+          />
+          The whole family
+        </label>
+        {members.map((m) => (
+          <label key={m.id} className="fw-picker__item">
+            <input
+              type="checkbox"
+              name="memberIds"
+              value={m.id}
+              checked={ticked.includes(m.id)}
+              onChange={(e) =>
+                setTicked((t) => (e.target.checked ? [...t, m.id] : t.filter((id) => id !== m.id)))
+              }
+            />
+            <Avatar
+              name={m.displayName}
+              avatarKey={m.avatarKey}
+              color={m.color}
+              size={28}
+              decorative
+            />
+            {m.displayName}
+          </label>
+        ))}
+      </div>
+      <span className="fw-field__help">
+        Its events show on each of their screens and with their faces. The whole family’s show on
+        everyone’s.
+      </span>
+    </fieldset>
+  );
+}
+
+/**
+ * [CAL-01][CAL-05][CAL-09] Add a calendar by its public link, or change one: its name, color, who it's
+ * for and whether boards show it. The link is never shown again (it is in Vault); typing a new one
+ * replaces it.
  */
 export function CalendarForm({
   id,
@@ -25,7 +91,7 @@ export function CalendarForm({
 }: {
   id?: string;
   initial?: CalendarFormInitial;
-  members: { id: string; displayName: string }[];
+  members: CalendarPerson[];
 }) {
   const [state, onSubmit, pending] = useFormAction(saveCalendar, {} as FormState);
   const label = id ? `Edit ${initial?.name ?? 'calendar'}` : 'Add a calendar';
@@ -81,17 +147,7 @@ export function CalendarForm({
           ))}
         </div>
       </fieldset>
-      <label className="fw-field">
-        <span className="fw-field__label">Whose calendar (optional)</span>
-        <select className="fw-input" name="memberId" defaultValue={initial?.memberId ?? ''}>
-          <option value="">The whole family</option>
-          {members.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.displayName}
-            </option>
-          ))}
-        </select>
-      </label>
+      <WhoFor members={members} initial={initial?.memberIds ?? []} />
       <label className="fw-choice">
         <input type="checkbox" name="showOnBoard" defaultChecked={initial?.showOnBoard ?? true} />
         Show on the boards

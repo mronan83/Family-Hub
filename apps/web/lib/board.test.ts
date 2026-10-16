@@ -521,6 +521,7 @@ describe('notify, then refetch', () => {
       { table: 'reward_goal_progress', filter: 'household_id=eq.h1' },
       { table: 'reward_rule_progress', filter: 'household_id=eq.h1' },
       { table: 'calendar_source', filter: 'household_id=eq.h1' },
+      { table: 'calendar_member', filter: 'household_id=eq.h1' },
       { table: 'device_calendar', filter: 'device_id=eq.d1' },
       { table: 'weather_reading', filter: 'household_id=eq.h1' },
       { table: 'meal', filter: 'household_id=eq.h1' },

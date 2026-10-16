@@ -151,7 +151,11 @@ test('[CAL-01][US-501][CAL-02][CAL-07][CAL-06][US-505] a calendar added by its l
     await form.getByLabel('Name').fill(NAME);
     await form.getByLabel('Public link').fill(LINK.replace('https://', 'webcal://'));
     await form.getByText('Green', { exact: true }).click();
-    await form.getByRole('combobox', { name: 'Whose calendar (optional)' }).selectOption('Alex');
+    // [CAL-09] Who it's for: a tick a person (WP-50).
+    await form
+      .getByRole('group', { name: 'Who it’s for' })
+      .getByRole('checkbox', { name: 'Alex', exact: true })
+      .check();
     await form.getByRole('button', { name: 'Add calendar' }).click();
     await page.waitForURL(/did=added_failed/);
     // The preview tried the link at once; a made-up one can't be reached, and the page says so.

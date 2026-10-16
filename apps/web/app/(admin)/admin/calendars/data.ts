@@ -5,7 +5,10 @@ import type { MemberColor } from '@familywise/ui';
 /** How many of each calendar's next events the page lists. */
 export const UPCOMING = 5;
 
-/** [CAL-01][CAL-06] The household's calendars, oldest first, each with its next events (RLS). */
+/**
+ * [CAL-01][CAL-06][CAL-09] The household's calendars, oldest first, each with who it's for and its
+ * next events (RLS).
+ */
 export async function loadCalendars(
   db: SupabaseClient,
   householdId: string,
@@ -13,12 +16,15 @@ export async function loadCalendars(
 ): Promise<CalendarRow[]> {
   const { data, error } = await db
     .from('calendar_source')
-    .select(
-      'id, name, color, member_id, show_on_board, status, last_synced_at, last_success_at, last_error',
-    )
+    .select('id, name, color, show_on_board, status, last_synced_at, last_success_at, last_error')
     .eq('household_id', householdId)
     .order('created_at');
   if (error) throw new Error(`calendars: ${error.message}`);
+  const people = await db
+    .from('calendar_member')
+    .select('calendar_id, member_id')
+    .eq('household_id', householdId);
+  if (people.error) throw new Error(`calendar people: ${people.error.message}`);
   return Promise.all(
     (data ?? []).map(async (c) => {
       const upcoming = await db
@@ -37,7 +43,9 @@ export async function loadCalendars(
         id: c.id as string,
         name: c.name as string,
         color: c.color as MemberColor,
-        memberId: (c.member_id as string | null) ?? null,
+        memberIds: (people.data ?? [])
+          .filter((p) => p.calendar_id === c.id)
+          .map((p) => p.member_id as string),
         showOnBoard: c.show_on_board as boolean,
         status: c.status as CalendarStatus,
         lastSyncedAt: (c.last_synced_at as string | null) ?? null,

@@ -463,3 +463,14 @@ export function eventSpan(e: BoardEvent, timeZone: string): string {
   }
   return `${date(e.startDate)}, ${from} – ${date(e.endDate)}, ${to}`;
 }
+
+/**
+ * [CAL-09][US-508] The calendars on a person's screen (WP-50): those that include them and the whole
+ * family's.
+ */
+export function calendarsFor(
+  calendars: BoardCalendarSource[],
+  memberId: string,
+): BoardCalendarSource[] {
+  return calendars.filter((c) => c.memberIds.length === 0 || c.memberIds.includes(memberId));
+}

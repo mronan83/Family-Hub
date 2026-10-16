@@ -41,9 +41,13 @@ export default async function CalendarsPage({
   return (
     <CalendarsView
       calendars={calendars}
-      members={members
-        .filter((m) => !m.archivedAt)
-        .map((m) => ({ id: m.id, displayName: m.displayName }))}
+      members={members.map((m) => ({
+        id: m.id,
+        displayName: m.displayName,
+        avatarKey: m.avatarKey,
+        color: m.color,
+        archived: m.archivedAt !== null,
+      }))}
       timezone={household.timezone}
       notice={did && !failed ? did : null}
       error={params.error ? (ERRORS[params.error] ?? null) : failed ? (did ?? null) : null}
