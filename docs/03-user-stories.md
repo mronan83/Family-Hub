@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.61: US-412 and US-413 as built (WP-81, D-124): **Counts only when done**, **Pay in steps** and rule weights, and the board's steps.
 > v0.8.60: US-410 and US-411 as built (WP-80, D-123): the goal form's **Repeats** and **Every day it's due**, a goal's **Weeks**, **Stop after this week**, and the board's card going, missed and won.
 > v0.8.59: US-508 as built (WP-50, D-122): who a calendar is for, ticked on Calendars; every face on the board's Coming up and an event's details.
 > v0.8.58: US-913 added at the owner's request (WP-85, NFR-19, D-107): every test traced to what it proves.
@@ -527,12 +528,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P2 · **Reqs:** RWD-17
 - Given a rule set to count by 6 pm, when my child ticks at 6:05 pm, then the chore is done and earns its points, but doesn't count toward the goal.
 - Given a rule set to each chore's due time, when a chore is ticked before its due time, then it counts.
+- As built (WP-81, D-124): each rule's **Counts only when done** (**Any time that day**, **By each chore's due time**, **By a time**); a tick after the time completes the chore and earns its points, and its day shows as missed, "Wednesday was after 6:00 pm."
 
 ### US-413 — Goals that pay in tiers
 **As a** parent **I want** a goal or a week to pay at steps **so that** partial effort earns something without lowering the bar for the full payout (added at the owner's request).
 **Priority:** Should · **Phase:** P2 · **Reqs:** RWD-18
 - Given steps 3 days = 5 points, 4 = 10, 5 = 20, when the week closes with 4 done, then 10 points are paid, once.
 - Given all 5 are done, when the fifth is ticked, then 20 points are paid at once, not 35.
+- As built (WP-81, D-124): **Pay in steps** under what it pays: days missed on "every day it's due" (the lowest sets the misses allowed), the number reached on another rule (a one-off goal has an end date), or the goal's % with each rule's **Weight (%)**, together 100%; the board shows the steps as chips, the one in reach or won at marked; a goal's weeks say the step each was won at.
 
 ### US-414 — Perfect weeks
 **As a** parent **I want** a goal that counts the weeks a repeating goal was reached, in total or in a row **so that** "4 perfect weeks this term" or "3 in a row" earns something bigger (added at the owner's request).

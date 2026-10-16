@@ -18,7 +18,9 @@ export interface GoalRule {
   type: RuleType;
   target: number;
   scope: RuleFormValue['scope'];
-  params: { grace_per_week?: number; misses_allowed?: number };
+  params: { grace_per_week?: number; misses_allowed?: number; on_time?: string };
+  /** [RWD-18] Its weight in a goal with two or more rules that pays in steps. */
+  weight?: number | null;
   progress: {
     current: number;
     pct: number;
@@ -56,6 +58,9 @@ export interface GoalRow {
   /** The engine's last result; null before the first evaluation. */
   pct: number | null;
   computedAt: string | null;
+  /** [RWD-18] A one-off goal's step reached (0 the top) and the best in reach; null without steps. */
+  step?: number | null;
+  stepBest?: number | null;
   rules: GoalRule[];
 }
 
@@ -80,12 +85,12 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
       .order('created_at', { ascending: false }),
     db
       .from('reward_rule')
-      .select('id, goal_id, rule_type, target, scope, params, sort_order')
+      .select('id, goal_id, rule_type, target, scope, params, weight, sort_order')
       .eq('household_id', householdId)
       .order('sort_order'),
     db
       .from('reward_goal_progress')
-      .select('goal_id, pct, computed_at')
+      .select('goal_id, pct, computed_at, step, step_best')
       .eq('household_id', householdId),
     db
       .from('reward_rule_progress')
@@ -94,7 +99,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     db
       .from('reward_goal_period')
       .select(
-        'goal_id, start_date, end_date, outcome, next_start, days_due, days_done, days_missed, misses_allowed, days',
+        'goal_id, start_date, end_date, outcome, next_start, days_due, days_done, days_missed, misses_allowed, days, step, step_best',
       )
       .eq('household_id', householdId)
       .order('start_date'),
@@ -103,10 +108,15 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     if (r.error) throw new Error(`goals: ${r.error.message}`);
   }
   const goalProgress = new Map(
-    (progress.data as { goal_id: string; pct: number; computed_at: string | null }[]).map((p) => [
-      p.goal_id,
-      p,
-    ]),
+    (
+      progress.data as {
+        goal_id: string;
+        pct: number;
+        computed_at: string | null;
+        step: number | null;
+        step_best: number | null;
+      }[]
+    ).map((p) => [p.goal_id, p]),
   );
   const perRule = new Map(
     (
@@ -132,6 +142,8 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     days_missed: number | null;
     misses_allowed: number | null;
     days: { date: string; mark: DayMark; day_type?: string }[] | null;
+    step: number | null;
+    step_best: number | null;
   }[]) {
     const list = periodsByGoal.get(p.goal_id) ?? [];
     list.push({
@@ -145,6 +157,8 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
       missesAllowed: p.misses_allowed,
       days:
         p.days?.map((d) => ({ date: d.date, mark: d.mark, dayType: d.day_type ?? null })) ?? null,
+      step: p.step,
+      stepBest: p.step_best,
     });
     periodsByGoal.set(p.goal_id, list);
   }
@@ -155,7 +169,8 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     rule_type: RuleType;
     target: number;
     scope: RuleFormValue['scope'];
-    params: { grace_per_week?: number; misses_allowed?: number };
+    params: { grace_per_week?: number; misses_allowed?: number; on_time?: string };
+    weight: number | null;
   }[]) {
     const p = perRule.get(r.id);
     const list = rulesByGoal.get(r.goal_id) ?? [];
@@ -165,6 +180,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
       target: r.target,
       scope: r.scope,
       params: r.params ?? {},
+      weight: r.weight ?? null,
       progress: p
         ? {
             current: p.current_value,
@@ -230,6 +246,8 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
       createdAt: g.created_at,
       pct: p?.computed_at ? Number(p.pct) : null,
       computedAt: p?.computed_at ?? null,
+      step: p?.step ?? null,
+      stepBest: p?.step_best ?? null,
       rules: rulesByGoal.get(g.id) ?? [],
     };
   });

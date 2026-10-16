@@ -11,6 +11,7 @@ import {
 } from '@familywise/rules-engine';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { monthDay, spanWords } from './goal-periods';
+import { goalSteps, type LowerStep, onTimeWords, stepKind, stepsPayWords } from './goal-steps';
 
 /**
  * [RWD-04][RWD-06] Goals (WP-19, D-56). The database keeps each goal, its facts and its progress; the
@@ -25,7 +26,8 @@ export interface GoalRead {
   as_of: string;
   week_start: number;
   rules_version: number;
-  goal: GoalInput['goal'];
+  /** [RWD-18] With its payout, whose steps the engine reads. */
+  goal: GoalInput['goal'] & { payout?: GoalPayout };
   /** [RWD-15] The school terms a term goal follows. */
   terms?: GoalInput['terms'];
   rules: Rule[];
@@ -43,8 +45,9 @@ export interface GoalSave {
 
 /** The engine's reading of one goal as goal_facts gave it. Pure. */
 export function evaluateRead(read: GoalRead): GoalEvaluation {
+  const { payout, ...goal } = read.goal;
   return evaluateGoal({
-    goal: read.goal,
+    goal: { ...goal, steps: goalSteps(payout, read.rules) },
     rules: read.rules,
     occurrences: read.facts,
     asOf: read.as_of,
@@ -196,13 +199,16 @@ export interface RuleFormValue {
   type: RuleType;
   target: number;
   scope: { all: true } | { tag_ids?: string[]; chore_ids?: string[] };
-  params: { grace_per_week?: number; misses_allowed?: number };
+  /** [RWD-17] `on_time`: 'due_time' or 'HH:MM'; absent, any time that day. */
+  params: { grace_per_week?: number; misses_allowed?: number; on_time?: string };
+  /** [RWD-18] Its share of the goal's % (1 to 100) on a goal with two or more rules paying in steps. */
+  weight?: number | null;
 }
 
-/** [RWD-13] What reaching a goal pays, as save_goal() stores it. */
+/** [RWD-13][RWD-18] What reaching a goal pays, as save_goal() stores it; points may pay in steps. */
 export type GoalPayout =
   | { type: 'custom' }
-  | { type: 'points'; amount: number }
+  | { type: 'points'; amount: number; steps?: LowerStep[] }
   | { type: 'catalog_item'; item_id: string };
 
 export interface GoalFormValue {
@@ -320,6 +326,14 @@ export function parseGoalForm(
       scope = { chore_ids: [...new Set(items)].sort() };
     }
     const params: RuleFormValue['params'] = {};
+    // [RWD-17] When a tick counts: any time that day, by each chore's due time, or by a time.
+    const on = String(form.get(`rule-${k}-ontime`) ?? 'any');
+    if (on === 'due_time') params.on_time = 'due_time';
+    else if (on === 'by') {
+      const t = String(form.get(`rule-${k}-ontime-at`) ?? '').trim();
+      if (!CLOCK.test(t)) return { ok: false, message: `Rule${n}: choose the time it counts by.` };
+      params.on_time = t;
+    }
     if (type === 'STREAK') {
       const grace = Number(form.get(`rule-${k}-grace`) ?? 1);
       params.grace_per_week = [0, 1, 2, 3].includes(grace) ? grace : 1;
@@ -327,7 +341,9 @@ export function parseGoalForm(
       const misses = Number(form.get(`rule-${k}-misses`) ?? 0);
       params.misses_allowed = [0, 1, 2, 3].includes(misses) ? misses : 0;
     }
-    rules.push({ type, target, scope, params });
+    const weightRaw = String(form.get(`rule-${k}-weight`) ?? '').trim();
+    const weight = /^\d+$/.test(weightRaw) ? Number(weightRaw) : null;
+    rules.push({ type, target, scope, params, ...(weight !== null ? { weight } : {}) });
   }
   // [RWD-13] What reaching it pays: the celebration only, points, or a reward from the shop.
   let payout: GoalPayout = { type: 'custom' };
@@ -339,6 +355,25 @@ export function parseGoalForm(
       return { ok: false, message: 'Points paid: a whole number from 1 to 10,000.' };
     }
     payout = { type: 'points', amount };
+    // [RWD-18] Pay in steps: up to 3 lower steps, each days missed (one "every day it's due" rule)
+    // or where it's reached (a number, or the goal's % with two or more rules), and its points.
+    if (form.get('payoutSteps') === 'on') {
+      const steps = readSteps(form, rules, amount, endRaw || null, repeat);
+      if (!steps.ok) return steps;
+      payout = { type: 'points', amount, steps: steps.value };
+      if (steps.weighted) {
+        const total = rules.reduce((sum, r) => sum + (r.weight ?? 0), 0);
+        if (rules.some((r) => !r.weight || r.weight < 1 || r.weight > 100) || total !== 100) {
+          return {
+            ok: false,
+            message: `Give each rule a weight; together they make 100% (now ${total}%).`,
+          };
+        }
+      }
+      if (stepKind(rules) === 'misses') {
+        rules[0]!.params.misses_allowed = steps.value.at(-1)!.misses!;
+      }
+    }
   } else if (pays === 'item') {
     if (who === 'family') {
       return {
@@ -350,6 +385,9 @@ export function parseGoalForm(
     if (!GUID.test(item)) return { ok: false, message: 'Choose the reward from the shop.' };
     payout = { type: 'catalog_item', item_id: item };
   }
+  // [RWD-18] Weights are for a goal with two or more rules that pays in steps; it is reached at 100%.
+  const weighted = payout.type === 'points' && !!payout.steps?.length && rules.length > 1;
+  if (!weighted) for (const r of rules) delete r.weight;
   return {
     ok: true,
     value: {
@@ -360,12 +398,72 @@ export function parseGoalForm(
       icon: ctx.icons.includes(icon) ? icon : 'trophy',
       startDate,
       endDate: endRaw || null,
-      logic,
+      logic: weighted ? 'all' : logic,
       repeat,
       rules,
       payout,
     },
   };
+}
+
+const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** The form's step fields, `step-<i>-at` (or `-misses`) and `step-<i>-amount`, for i 1 to 3. */
+function readSteps(
+  form: FormData,
+  rules: RuleFormValue[],
+  top: number,
+  end: string | null,
+  repeat: Repeat,
+): { ok: true; value: LowerStep[]; weighted: boolean } | { ok: false; message: string } {
+  const kind = stepKind(rules);
+  if (repeat === 'none' && !end) {
+    return {
+      ok: false,
+      message: 'A goal that pays in steps needs an end date: a lower step pays when it ends.',
+    };
+  }
+  const out: LowerStep[] = [];
+  let prevAmount = top;
+  let prevAt = kind === 'misses' ? 0 : kind === 'weighted' ? 100 : (rules[0]?.target ?? 0);
+  for (const i of [1, 2, 3]) {
+    const atRaw = String(form.get(`step-${i}-at`) ?? '')
+      .trim()
+      .replace(/%$/, '');
+    const amountRaw = String(form.get(`step-${i}-amount`) ?? '').trim();
+    // A misses step left empty is none; a number step needs both.
+    if (!amountRaw && (kind === 'misses' || !atRaw)) continue;
+    const at = /^\d+$/.test(atRaw) ? Number(atRaw) : NaN;
+    const amount = /^\d+$/.test(amountRaw) ? Number(amountRaw) : NaN;
+    if (!(amount >= 1 && amount < prevAmount)) {
+      return {
+        ok: false,
+        message: `Step ${i + 1} pays fewer points than the step above it, 1 or more.`,
+      };
+    }
+    if (kind === 'misses') {
+      if (!(at > prevAt && at <= 3)) {
+        return {
+          ok: false,
+          message: `Step ${i + 1}: more days missed than the step above, up to 3.`,
+        };
+      }
+      out.push({ misses: at, amount });
+    } else {
+      if (!(at >= 1 && at < prevAt)) {
+        return {
+          ok: false,
+          message: `Step ${i + 1} is reached at less than the step above${kind === 'weighted' ? ' (under 100%)' : ''}.`,
+        };
+      }
+      out.push({ at, amount });
+    }
+    prevAmount = amount;
+    prevAt = at;
+  }
+  if (out.length === 0)
+    return { ok: false, message: 'Add at least one lower step, or untick Pay in steps.' };
+  return { ok: true, value: out, weighted: kind === 'weighted' };
 }
 
 /** What save_goal() takes. `imagePath` is sent only when the photo changes (null removes it). */
@@ -410,6 +508,18 @@ export function goalRefusal(error: { code?: string | null; hint?: string | null 
       return 'Every day it’s due is for a goal that repeats. Choose how it repeats, or another rule.';
     case 'rule_misses':
       return 'Misses allowed: 0 to 3.';
+    case 'rule_on_time':
+      return 'A rule counts by each chore’s due time, or by a time of day.';
+    case 'rule_weight':
+      return 'A rule’s weight is a whole number from 1 to 100.';
+    case 'rule_weights':
+      return 'Give each rule a weight; together they make 100%.';
+    case 'payout_steps':
+      return 'Each step pays fewer points than the one above it, and is reached with less.';
+    case 'payout_steps_points':
+      return 'Steps pay points.';
+    case 'steps_end_date':
+      return 'A goal that pays in steps needs an end date: a lower step pays when it ends.';
     case 'not_repeating':
       return 'Only a goal that repeats stops after this period.';
     case 'not_started':
@@ -474,6 +584,9 @@ export function describeRule(
     text +=
       misses === 0 ? ' (no misses allowed)' : ` (${misses} miss${misses > 1 ? 'es' : ''} allowed)`;
   }
+  // [RWD-17] "…, by 6:00 pm".
+  const by = onTimeWords((r.params as { on_time?: string }).on_time);
+  if (by) text += `, ${by}`;
   return text;
 }
 
@@ -540,6 +653,18 @@ export function eventWords(e: { type: string; payload: Record<string, unknown> }
       }
     }
   }
+  // [RWD-18] A parent's fix moved a reached goal or won period to another step.
+  if (e.type === 'step_changed') {
+    const amount = typeof e.payload.amount === 'number' ? e.payload.amount : 0;
+    const head = start && end ? spanWords({ start, end, outcome: 'won' }) : 'Its step';
+    const moved =
+      points > 0
+        ? `${pointsWord(points)} more paid`
+        : points < 0
+          ? `${pointsWord(-points)} taken back`
+          : 'nothing moved';
+    return `${head} now pays ${pointsWord(amount)}: ${moved}`;
+  }
   switch (e.type) {
     case 'stopped':
       return typeof e.payload.end_date === 'string'
@@ -604,6 +729,12 @@ export function payoutWords(
   family: boolean,
   item: (id: string) => string | undefined,
 ): string | null {
+  if (payout.type === 'points' && payout.steps?.length) {
+    return stepsPayWords(
+      [{ amount: payout.amount }, ...payout.steps.map((x) => ({ amount: x.amount }))],
+      family,
+    );
+  }
   if (payout.type === 'points') return `${pointsWord(payout.amount)}${family ? ' each' : ''}`;
   if (payout.type === 'catalog_item') return `${item(payout.item_id) ?? 'a reward'} from the shop`;
   return null;
@@ -670,6 +801,7 @@ export function previewGoal(
       rule_logic: v.logic,
       status: read.status,
       repeat: v.repeat,
+      steps: goalSteps(v.payout, v.rules),
     },
     rules: v.rules.map((r, i) => ({ id: `rule-${i + 1}`, ...r })) as Rule[],
     occurrences: read.facts,

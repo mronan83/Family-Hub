@@ -27,8 +27,27 @@ import {
   startsAgainLine,
   wonLine,
 } from '@/lib/goal-periods';
+import { boardSteps, lateLine, markedStep, stepChips, stepNudge } from '@/lib/goal-steps';
 import type { BoardGoal } from '@/lib/snapshot';
 import { Picture, type PhotoUrl } from './picture';
+
+/** [RWD-18] A goal's steps as chips, the one in reach (or reached) marked. */
+function StepChips({ chips, on }: { chips: string[]; on: number | null }) {
+  return (
+    <ul className="fw-steps" aria-label="Steps">
+      {chips.map((c, i) => (
+        <li
+          key={i}
+          className="fw-steps__step"
+          data-on={i === on || undefined}
+          aria-current={i === on ? 'step' : undefined}
+        >
+          {c}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 /** How long the celebration stays without a tap. */
 const CELEBRATION_MS = 10_000;
@@ -65,6 +84,8 @@ export function GoalItem({
     );
   }
   const ends = endsLine(goal.endDate, today);
+  const { steps, kind } = boardSteps(goal);
+  const weighted = steps.length > 0 && goal.rules.length > 1;
   return (
     <li className="fw-today__goal" data-status={goal.status} data-goal={goal.id}>
       <p className="fw-today__goal-head">
@@ -88,7 +109,11 @@ export function GoalItem({
         <>
           {goal.rules.length > 1 ? (
             <p className="fw-today__goal-logic">
-              {goal.logic === 'all' ? 'All of these:' : 'Any one of these:'}
+              {weighted
+                ? `${Math.round(goal.pct)}% of the way`
+                : goal.logic === 'all'
+                  ? 'All of these:'
+                  : 'Any one of these:'}
             </p>
           ) : null}
           {goal.rules.map((r) => {
@@ -96,11 +121,40 @@ export function GoalItem({
             const note = ruleNote(r);
             return (
               <div key={r.id} className="fw-today__goal-rule" data-met={r.met || undefined}>
-                <GoalMeter label={m.label} value={m.value} target={m.target} />
+                <GoalMeter
+                  label={weighted && r.weight ? `${m.label} · ${r.weight}%` : m.label}
+                  value={m.value}
+                  target={m.target}
+                />
                 {note ? <p className="fw-today__goal-note">{note}</p> : null}
               </div>
             );
           })}
+          {steps.length ? (
+            <>
+              <StepChips
+                chips={stepChips(steps, kind)}
+                on={markedStep(kind, {
+                  won: false,
+                  reached: goal.step ?? null,
+                  best: goal.stepBest ?? null,
+                })}
+              />
+              {stepNudge(
+                steps,
+                { reached: goal.step ?? null, best: goal.stepBest ?? null },
+                kind,
+              ) ? (
+                <p className="fw-today__goal-note">
+                  {stepNudge(
+                    steps,
+                    { reached: goal.step ?? null, best: goal.stepBest ?? null },
+                    kind,
+                  )}
+                </p>
+              ) : null}
+            </>
+          ) : null}
           {ends ? <p className="fw-today__goal-ends">{ends}</p> : null}
         </>
       )}
@@ -139,6 +193,12 @@ function RepeatingGoal({
   const won = wonLine(goal.history, repeat);
   const pays = goal.pays ? `${goal.pays} ${goal.pays === 1 ? 'point' : 'points'}` : null;
   const daysRule = goal.rules.some((r) => r.type === 'DAYS_DUE');
+  // [RWD-17][RWD-18] Its steps and the first rule's time.
+  const { steps, kind } = boardSteps(goal);
+  const weighted = steps.length > 0 && goal.rules.length > 1;
+  const late = p ? lateLine(p.days, goal.rules[0]?.onTime) : null;
+  const wonPays =
+    steps.length && p?.step != null && steps[p.step] ? `${steps[p.step]!.amount} points` : pays;
   return (
     <li
       className="fw-today__goal"
@@ -163,7 +223,7 @@ function RepeatingGoal({
       ) : (
         <>
           <p className="fw-today__goal-ends">
-            {daysRule ? `Every day it’s due this ${word}` : `This ${word}`}
+            {daysRule && !weighted ? `Every day it’s due this ${word}` : `This ${word}`}
           </p>
           {days.length ? <DayMarks days={days} /> : null}
           {p.outcome === 'missed' ? (
@@ -175,10 +235,26 @@ function RepeatingGoal({
             <p className="fw-goal-line" data-kind="won">
               <Icon name="trophy" size={36} />
               <span>
-                Won this {word}!{pays ? ` ${pays}.` : ''}
+                Won this {word}!{wonPays ? ` ${wonPays}.` : ''}
               </span>
             </p>
-          ) : daysRule && p.daysDue !== null ? (
+          ) : weighted ? (
+            <>
+              {goal.rules.map((r) => {
+                const m = ruleMeter(r);
+                return (
+                  <div key={r.id} className="fw-today__goal-rule" data-met={r.met || undefined}>
+                    <GoalMeter
+                      label={`${m.label}${r.weight ? ` · ${r.weight}%` : ''}`}
+                      value={m.value}
+                      target={m.target}
+                    />
+                  </div>
+                );
+              })}
+              <p className="fw-today__goal-logic">{`${Math.round(goal.pct)}% this ${word}`}</p>
+            </>
+          ) : steps.length && daysRule ? null : daysRule && p.daysDue !== null ? (
             <GoalMeter
               label={pays ? `Days · ${pays}` : 'Days'}
               value={Math.min(p.daysDone ?? 0, needed)}
@@ -196,7 +272,32 @@ function RepeatingGoal({
                 );
               })
           )}
-          {note ? <p className="fw-today__goal-note">{note}</p> : null}
+          {steps.length ? (
+            <StepChips
+              chips={stepChips(steps, kind, p.daysDue)}
+              on={markedStep(kind, {
+                won: p.outcome === 'won',
+                reached: p.step ?? null,
+                best: p.stepBest ?? null,
+              })}
+            />
+          ) : null}
+          {p.outcome === 'open' &&
+          (late ||
+            (steps.length &&
+              stepNudge(steps, { reached: p.step ?? null, best: p.stepBest ?? null }, kind))) ? (
+            <p className="fw-today__goal-note">
+              {[
+                late,
+                steps.length
+                  ? stepNudge(steps, { reached: p.step ?? null, best: p.stepBest ?? null }, kind)
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            </p>
+          ) : null}
+          {note && !steps.length ? <p className="fw-today__goal-note">{note}</p> : null}
           {p.outcome === 'won' && p.nextStart ? (
             <p className="fw-today__goal-note">
               {`Next ${word} starts ${new Date(`${p.nextStart}T12:00:00Z`).toLocaleDateString(

@@ -14,6 +14,7 @@ import {
 import { useState } from 'react';
 import { useFormAction } from '@/lib/forms';
 import { periodWord, REPEAT_WORDS } from '@/lib/goal-periods';
+import { type LowerStep, type StepKind, stepKind } from '@/lib/goal-steps';
 import { type GoalPayout, REPEATS, RULE_TYPES, RULE_WORDS, type ScopeChoice } from '@/lib/goals';
 import { type GoalFormState, type GoalPreviewView, saveGoal } from './actions';
 import { EndDateField } from './end-date-field';
@@ -27,6 +28,10 @@ export interface GoalFormRule {
   grace: number;
   /** [RWD-16] Every day it's due: the days a period may miss, 0 to 3. */
   misses?: number;
+  /** [RWD-17] When a tick counts: 'due_time', a time 'HH:MM', or null for any time that day. */
+  onTime?: string | null;
+  /** [RWD-18] Its weight, 1 to 100, on a goal with two or more rules that pays in steps. */
+  weight?: number | null;
 }
 
 export interface GoalFormInitial {
@@ -133,6 +138,15 @@ export function GoalForm({
   };
   const [pays, setPays] = useState<'custom' | 'points' | 'item'>(
     PAYOUT_CHOICE[initial?.payout.type ?? 'custom'],
+  );
+  // [RWD-18] Pay in steps (points only); with two or more rules, each rule's weight.
+  const initialSteps = initial?.payout.type === 'points' ? (initial.payout.steps ?? []) : [];
+  const [stepsOn, setStepsOn] = useState(initialSteps.length > 0);
+  const kind = stepKind(rows);
+  const inSteps = pays === 'points' && stepsOn;
+  const weighted = inSteps && rows.length > 1;
+  const [lowest, setLowest] = useState<number>(
+    initialSteps.at(-1)?.misses ?? (rows[0]?.misses || 1),
   );
   const label = initial ? `Edit ${initial.title}` : 'Set a goal';
   const points = initial?.payout.type === 'points' ? initial.payout.amount : 10;
@@ -272,6 +286,8 @@ export function GoalForm({
           key={r.key}
           row={r}
           n={i + 1}
+          weight={weighted ? (r.weight ?? equalWeight(rows.length, i)) : null}
+          missesByStep={inSteps && kind === 'misses' ? lowest : null}
           only={rows.length === 1}
           locked={rulesLocked}
           repeat={repeat}
@@ -293,7 +309,17 @@ export function GoalForm({
           </Button>
         </div>
       ) : null}
-      {rows.length > 1 ? (
+      {weighted && !rulesLocked ? (
+        <p className="fw-field__help" data-testid="weights-total">
+          Weights total{' '}
+          <b>{rows.reduce((sum, r, i) => sum + (r.weight ?? equalWeight(rows.length, i)), 0)}%</b>.
+          With steps, the goal’s % is each rule’s % times its weight, and it is reached at 100%:
+          every rule met.
+        </p>
+      ) : null}
+      {weighted ? (
+        <input type="hidden" name="logic" value="all" />
+      ) : rows.length > 1 ? (
         rulesLocked ? (
           <input type="hidden" name="logic" value={initial?.logic ?? 'all'} />
         ) : (
@@ -334,6 +360,13 @@ export function GoalForm({
         prize={prize}
         prizes={prizes}
         repeat={repeat}
+        stepsOn={stepsOn}
+        onStepsOn={setStepsOn}
+        steps={initialSteps}
+        kind={kind}
+        target={rows[0]?.target ?? 1}
+        oneOff={repeat === 'none'}
+        onLowest={setLowest}
       />
 
       <IconPicker
@@ -391,8 +424,22 @@ function PayoutField({
   prize,
   prizes,
   repeat,
+  stepsOn,
+  onStepsOn,
+  steps,
+  kind,
+  target,
+  oneOff,
+  onLowest,
 }: {
   repeat: Repeat;
+  stepsOn: boolean;
+  onStepsOn: (on: boolean) => void;
+  steps: LowerStep[];
+  kind: StepKind;
+  target: number;
+  oneOff: boolean;
+  onLowest: (misses: number) => void;
   locked: boolean;
   family: boolean;
   pays: 'custom' | 'points' | 'item';
@@ -407,6 +454,13 @@ function PayoutField({
         <input type="hidden" name="payout" value={pays} />
         <input type="hidden" name="payoutPoints" value={points} />
         <input type="hidden" name="payoutItem" value={prize ?? ''} />
+        {stepsOn ? <input type="hidden" name="payoutSteps" value="on" /> : null}
+        {steps.map((st, i) => (
+          <span key={i}>
+            <input type="hidden" name={`step-${i + 1}-at`} value={st.misses ?? st.at ?? ''} />
+            <input type="hidden" name={`step-${i + 1}-amount`} value={st.amount} />
+          </span>
+        ))}
       </>
     );
   }
@@ -464,6 +518,18 @@ function PayoutField({
           />
         </label>
       ) : null}
+      {pays === 'points' ? (
+        <StepsField
+          on={stepsOn}
+          onOn={onStepsOn}
+          steps={steps}
+          kind={kind}
+          target={target}
+          oneOff={oneOff}
+          period={repeat === 'none' ? null : periodWord(repeat)}
+          onLowest={onLowest}
+        />
+      ) : null}
       {pays === 'item' && !noItem ? (
         <label className="fw-field">
           <span className="fw-field__label">Reward</span>
@@ -489,6 +555,137 @@ function PayoutField({
                 ? 'You give the reward and mark it redeemed. A family goal can pay points to each child; a reward from the shop is for one child’s goal.'
                 : 'You give the reward and mark it redeemed.'}
       </span>
+    </fieldset>
+  );
+}
+
+/** An even split of 100 among `n` rules, the first taking what is left over. */
+function equalWeight(n: number, i: number): number {
+  const each = Math.floor(100 / n);
+  return i === 0 ? 100 - each * (n - 1) : each;
+}
+
+/**
+ * [RWD-18] Pay in steps (the approved mockups): the points above are the top step; up to 3 lower
+ * steps, each days missed (one "every day it's due" rule: 1, 2 and 3 missed, a step left empty is
+ * none), or where it's reached (a number under the target, or the goal's % with two or more rules).
+ */
+function StepsField({
+  on,
+  onOn,
+  steps,
+  kind,
+  target,
+  oneOff,
+  period,
+  onLowest,
+}: {
+  on: boolean;
+  onOn: (on: boolean) => void;
+  steps: LowerStep[];
+  kind: StepKind;
+  target: number;
+  oneOff: boolean;
+  period: string | null;
+  onLowest: (misses: number) => void;
+}) {
+  const missesAmounts = [1, 2, 3].map((m) => steps.find((st) => st.misses === m)?.amount);
+  const recount = (form: HTMLElement | null) => {
+    if (!form) return;
+    let last = 0;
+    for (const m of [1, 2, 3]) {
+      const el = form.querySelector<HTMLInputElement>(`[name="step-${m}-amount"]`);
+      if (el && el.value.trim()) last = m;
+    }
+    if (last) onLowest(last);
+  };
+  return (
+    <fieldset className="fw-fieldset fw-goal-steps" aria-label="Pay in steps">
+      <legend className="fw-field__label">Pay in steps</legend>
+      <label className="fw-choice">
+        <input
+          type="checkbox"
+          name="payoutSteps"
+          value="on"
+          checked={on}
+          onChange={(e) => onOn(e.target.checked)}
+        />
+        {kind === 'misses'
+          ? `Pay less for a ${period ?? 'period'} with misses`
+          : 'Pay less for less done'}
+      </label>
+      {on ? (
+        <>
+          {kind === 'misses' ? (
+            <div className="fw-goal-steps__grid" onInput={(e) => recount(e.currentTarget)}>
+              <span className="fw-field">
+                <span className="fw-field__label">All days</span>
+                <span className="fw-field__help">The points above</span>
+              </span>
+              {[1, 2, 3].map((m) => (
+                <label key={m} className="fw-field">
+                  <span className="fw-field__label">{m} missed</span>
+                  <input type="hidden" name={`step-${m}-at`} value={m} />
+                  <input
+                    className="fw-input fw-input--short"
+                    name={`step-${m}-amount`}
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={10000}
+                    placeholder="–"
+                    defaultValue={missesAmounts[m - 1] ?? ''}
+                  />
+                </label>
+              ))}
+            </div>
+          ) : (
+            <div className="fw-goal-steps__grid">
+              <span className="fw-field">
+                <span className="fw-field__label">
+                  {kind === 'weighted' ? '100%' : `${target.toLocaleString('en-US')} (the target)`}
+                </span>
+                <span className="fw-field__help">The points above</span>
+              </span>
+              {[1, 2, 3].map((i) => (
+                <span key={i} className="fw-goal-steps__step">
+                  <label className="fw-field">
+                    <span className="fw-field__label">{kind === 'weighted' ? 'At %' : 'At'}</span>
+                    <input
+                      className="fw-input fw-input--short"
+                      name={`step-${i}-at`}
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={kind === 'weighted' ? 99 : Math.max(1, target - 1)}
+                      defaultValue={steps[i - 1]?.at ?? ''}
+                    />
+                  </label>
+                  <label className="fw-field">
+                    <span className="fw-field__label">Pays</span>
+                    <input
+                      className="fw-input fw-input--short"
+                      name={`step-${i}-amount`}
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={10000}
+                      defaultValue={steps[i - 1]?.amount ?? ''}
+                    />
+                  </label>
+                </span>
+              ))}
+            </div>
+          )}
+          <span className="fw-field__help">
+            The highest step reached pays, not the sum. The top step pays as soon as it is reached;
+            a lower step pays when the {period ?? 'goal'} {period ? 'closes' : 'ends'}, or as soon
+            as nothing higher can be reached. Steps pay points only.
+            {kind === 'misses' ? ' The lowest step sets the misses allowed.' : ''}
+            {oneOff ? ' A goal in steps needs an end date.' : ''}
+          </span>
+        </>
+      ) : null}
     </fieldset>
   );
 }
@@ -535,6 +732,8 @@ function PreviewPanel({ preview }: { preview: GoalPreviewView }) {
 function RuleRow({
   row,
   n,
+  weight,
+  missesByStep,
   only,
   locked,
   repeat,
@@ -545,6 +744,10 @@ function RuleRow({
 }: {
   row: Row;
   n: number;
+  /** [RWD-18] Its weight when the goal pays in steps with two or more rules; null otherwise. */
+  weight: number | null;
+  /** [RWD-18] The misses allowed set by the steps' lowest; null when the steps don't set it. */
+  missesByStep: number | null;
   only: boolean;
   locked: boolean;
   repeat: Repeat;
@@ -569,9 +772,21 @@ function RuleRow({
         ))}
         <input type="hidden" name={name('grace')} value={row.grace} />
         <input type="hidden" name={name('misses')} value={row.misses ?? 0} />
+        <input
+          type="hidden"
+          name={name('ontime')}
+          value={!row.onTime ? 'any' : row.onTime === 'due_time' ? 'due_time' : 'by'}
+        />
+        <input
+          type="hidden"
+          name={name('ontime-at')}
+          value={row.onTime && row.onTime !== 'due_time' ? row.onTime : ''}
+        />
+        <input type="hidden" name={name('weight')} value={row.weight ?? ''} />
       </>
     );
   }
+  const onChoice = !row.onTime ? 'any' : row.onTime === 'due_time' ? 'due_time' : 'by';
   const daysDue = row.type === 'DAYS_DUE';
   return (
     <fieldset className="fw-field fw-fieldset fw-goal-rule">
@@ -596,23 +811,38 @@ function RuleRow({
           <>
             {/* [RWD-16] Its target is each period's days due: the database stores 1. */}
             <input type="hidden" name={name('target')} value={1} />
-            <label className="fw-field">
-              <span className="fw-field__label">
-                Misses allowed each {repeat === 'none' ? 'period' : periodWord(repeat)}
+            {missesByStep !== null ? (
+              <span className="fw-field">
+                <span className="fw-field__label">
+                  Misses allowed each {repeat === 'none' ? 'period' : periodWord(repeat)}
+                </span>
+                <input type="hidden" name={name('misses')} value={missesByStep} />
+                <span className="fw-input fw-input--short fw-input--read" aria-readonly="true">
+                  {missesByStep}
+                </span>
+                <span className="fw-field__help">
+                  Set by the steps: the lowest is {missesByStep} missed
+                </span>
               </span>
-              <select
-                className="fw-input fw-input--short"
-                name={name('misses')}
-                value={row.misses ?? 0}
-                onChange={(e) => onChange({ misses: Number(e.target.value) })}
-              >
-                {[0, 1, 2, 3].map((g) => (
-                  <option key={g} value={g}>
-                    {g}
-                  </option>
-                ))}
-              </select>
-            </label>
+            ) : (
+              <label className="fw-field">
+                <span className="fw-field__label">
+                  Misses allowed each {repeat === 'none' ? 'period' : periodWord(repeat)}
+                </span>
+                <select
+                  className="fw-input fw-input--short"
+                  name={name('misses')}
+                  value={row.misses ?? 0}
+                  onChange={(e) => onChange({ misses: Number(e.target.value) })}
+                >
+                  {[0, 1, 2, 3].map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
           </>
         ) : (
           <label className="fw-field">
@@ -630,6 +860,22 @@ function RuleRow({
             />
           </label>
         )}
+        {weight !== null ? (
+          <label className="fw-field">
+            <span className="fw-field__label">Weight (%)</span>
+            <input
+              className="fw-input fw-input--short"
+              name={name('weight')}
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={100}
+              required
+              value={weight}
+              onChange={(e) => onChange({ weight: Number(e.target.value) })}
+            />
+          </label>
+        ) : null}
         {row.type === 'STREAK' ? (
           <label className="fw-field">
             <span className="fw-field__label">Misses forgiven a week</span>
@@ -703,6 +949,62 @@ function RuleRow({
               </label>
             ))}
           </div>
+        ) : null}
+      </fieldset>
+      <fieldset className="fw-fieldset fw-goal-ontime">
+        <legend className="fw-field__label">Counts only when done</legend>
+        <div className="fw-actions">
+          <label className="fw-choice">
+            <input
+              type="radio"
+              name={name('ontime')}
+              value="any"
+              checked={onChoice === 'any'}
+              onChange={() => onChange({ onTime: null })}
+            />
+            Any time that day
+          </label>
+          <label className="fw-choice">
+            <input
+              type="radio"
+              name={name('ontime')}
+              value="due_time"
+              checked={onChoice === 'due_time'}
+              onChange={() => onChange({ onTime: 'due_time' })}
+            />
+            By each chore’s due time
+          </label>
+          <label className="fw-choice">
+            <input
+              type="radio"
+              name={name('ontime')}
+              value="by"
+              checked={onChoice === 'by'}
+              onChange={() => onChange({ onTime: '18:00' })}
+            />
+            By a time
+          </label>
+          {onChoice === 'by' ? (
+            <label className="fw-field">
+              <span className="fw-field__label">Time</span>
+              <input
+                className="fw-input fw-input--short"
+                type="time"
+                name={name('ontime-at')}
+                required
+                value={row.onTime ?? '18:00'}
+                onChange={(e) => onChange({ onTime: e.target.value || '18:00' })}
+              />
+            </label>
+          ) : null}
+        </div>
+        {onChoice !== 'any' ? (
+          <span className="fw-field__help">
+            A tick after {onChoice === 'due_time' ? 'its due time' : 'the time'} still completes the
+            chore and earns its points; it doesn’t count here. A board offline keeps the tick’s own
+            time; a parent’s tick after the time doesn’t count either.
+            {onChoice === 'due_time' ? ' A chore without a due time counts any time that day.' : ''}
+          </span>
         ) : null}
       </fieldset>
       {only ? null : (

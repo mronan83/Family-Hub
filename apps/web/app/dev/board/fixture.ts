@@ -1156,3 +1156,114 @@ export const KITCHEN_SLEEP = readBoardSleep({
   },
   idle_minutes: 15,
 });
+
+/**
+ * [RWD-17][RWD-18] Goals done by a time and paid in steps (WP-81, ?steps=going|won|weighted), for
+ * Maya, the week from its Monday, the clock held on a Thursday by the UI suite: "Homework before 6
+ * pm" with steps 20, 10 and 5 by days missed, going with Wednesday ticked late, or won at a lower
+ * step with Friday a day off school; and "School week", homework 60% and reading 40%, in steps by %.
+ */
+export function withSteps(s: BoardSnapshot, kind: 'going' | 'won' | 'weighted'): BoardSnapshot {
+  const idx = (new Date(`${s.today}T12:00:00Z`).getUTCDay() + 6) % 7;
+  const start = day(-idx, s.today);
+  const marks: Record<typeof kind, DayMark[]> = {
+    going: ['done', 'done', 'late', 'today', 'later', 'none', 'none'],
+    won: ['done', 'late', 'done', 'done', 'none', 'none', 'none'],
+    weighted: ['done', 'done', 'missed', 'today', 'none', 'none', 'none'],
+  };
+  const days = marks[kind].map((mark, i) => ({
+    date: day(i, start),
+    mark,
+    dayType: mark === 'none' ? (i === 4 ? 'no_school' : 'weekend') : null,
+  }));
+  const due = days.filter((d) => d.mark !== 'none').length;
+  const period: GoalPeriod = {
+    start,
+    end: day(6, start),
+    outcome: kind === 'won' ? 'won' : 'open',
+    nextStart: day(7, start),
+    daysDue: due,
+    daysDone: days.filter((d) => d.mark === 'done').length,
+    daysMissed: days.filter((d) => d.mark === 'missed' || d.mark === 'late').length,
+    missesAllowed: 2,
+    days,
+    step: kind === 'won' ? 1 : kind === 'weighted' ? 1 : null,
+    stepBest: kind === 'weighted' ? 0 : 1,
+  };
+  const past = [-28, -21, -14, -7].map((n, i) => ({
+    start: day(n, start),
+    end: day(n + 6, start),
+    outcome: (i === 2 ? 'missed' : 'won') as GoalPeriod['outcome'],
+    step: i === 2 ? null : i === 1 ? 0 : 1,
+  }));
+  const weighted = kind === 'weighted';
+  const goal: BoardGoal = {
+    id: 'g-steps',
+    memberId: MAYA,
+    title: weighted ? 'School week' : 'Homework before 6 pm',
+    icon: 'backpack',
+    photo: null,
+    status: 'active',
+    n: 3,
+    achievedAt: null,
+    celebrate: false,
+    endDate: null,
+    logic: 'all',
+    pct: weighted ? 77 : 60,
+    repeat: 'week',
+    period,
+    history: [...past, { start, end: period.end, outcome: period.outcome, step: period.step }],
+    pays: 20,
+    steps: weighted
+      ? [
+          { at: 75, amount: 10 },
+          { at: 50, amount: 5 },
+        ]
+      : [
+          { misses: 1, amount: 10 },
+          { misses: 2, amount: 5 },
+        ],
+    rules: weighted
+      ? [
+          {
+            id: 'gr-homework',
+            type: 'DAYS_DUE',
+            target: 3,
+            current: 2,
+            pct: 67,
+            met: false,
+            streak: null,
+            best: null,
+            weight: 60,
+            onTime: '18:00',
+          },
+          {
+            id: 'gr-reading',
+            type: 'COUNT',
+            target: 5,
+            current: 4,
+            pct: 80,
+            met: false,
+            streak: null,
+            best: null,
+            weight: 40,
+            onTime: null,
+          },
+        ]
+      : [
+          {
+            id: 'gr-homework',
+            type: 'DAYS_DUE',
+            target: 3,
+            current: period.daysDone ?? 0,
+            pct: 60,
+            met: false,
+            streak: null,
+            best: null,
+            weight: null,
+            onTime: '18:00',
+          },
+        ],
+  };
+  return { ...s, goals: [goal, ...s.goals.filter((g) => g.memberId !== MAYA)] };
+}

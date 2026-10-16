@@ -258,16 +258,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2442** tests: Unit 719 · DB 1374 · UI 225 · E2E 124. 1985 name at least one ID; 457 name none.
+**2510** tests: Unit 744 · DB 1407 · UI 234 · E2E 125. 2049 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 112 of 131 |
+| Requirements built (a Done item builds them) | 114 of 131 |
 | Built requirements with no test | 0 |
-| Stories built | 99 of 117 |
+| Stories built | 101 of 117 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 35 (with a test: 35) |
+| Test cases | 56 (with a test: 56) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -283,7 +283,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 |---|---|---|---|---|---|
 | Chores | 90 | 192 | 29 | 30 | 341 |
 | Points | 38 | 92 | 17 | 12 | 159 |
-| Goals and rewards | 135 | 73 | 29 | 10 | 247 |
+| Goals and rewards | 160 | 102 | 36 | 11 | 309 |
 | Calendar | 64 | 92 | 18 | 4 | 178 |
 | School year | 10 | 43 | 1 | 4 | 58 |
 | Meals and lunch | 57 | 43 | 29 | 11 | 140 |
@@ -291,9 +291,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 7 | 15 | 135 |
-| Platform | 118 | 157 | 30 | 10 | 315 |
-| Not named | 58 | 434 | 10 | 1 | 503 |
-| **Total** | **719** | **1374** | **225** | **124** | **2442** |
+| Platform | 118 | 157 | 32 | 10 | 317 |
+| Not named | 58 | 438 | 10 | 1 | 507 |
+| **Total** | **744** | **1407** | **234** | **125** | **2510** |
 
 ### 9.3 By requirement
 
@@ -354,8 +354,8 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | RWD-14 | S | Covered | US-401 | WP-79 | — | U 5 · DB 5 · UI 3 · E2E 1 |
 | RWD-15 | S | Covered | US-410, US-411 | WP-80 | RWD-15-a, RWD-15-b, RWD-15-c, RWD-15-d, RWD-15-e, RWD-15-f, RWD-15-g, RWD-15-h, RWD-15-i, RWD-15-j, RWD-15-k, RWD-15-l, RWD-15-m | U 17 · DB 22 · UI 7 · E2E 1 |
 | RWD-16 | S | Covered | US-410, US-411 | WP-80 | RWD-16-a, RWD-16-b, RWD-16-c, RWD-16-d, RWD-16-e, RWD-16-f, RWD-16-g, RWD-16-h, RWD-16-i | U 14 · DB 5 · UI 4 |
-| RWD-17 | S | Not built | US-412 | WP-81 | — | — |
-| RWD-18 | S | Not built | US-413 | WP-81 | — | — |
+| RWD-17 | S | Covered | US-412 | WP-81 | RWD-17-a, RWD-17-b, RWD-17-c, RWD-17-d, RWD-17-e, RWD-17-f, RWD-17-g, RWD-17-h | U 9 · DB 10 · UI 1 · E2E 1 |
+| RWD-18 | S | Covered | US-413 | WP-81 | RWD-18-a, RWD-18-b, RWD-18-c, RWD-18-d, RWD-18-e, RWD-18-f, RWD-18-g, RWD-18-h, RWD-18-i, RWD-18-j, RWD-18-k, RWD-18-l, RWD-18-m | U 16 · DB 19 · UI 9 · E2E 1 |
 | RWD-19 | S | Not built | US-414 | WP-82 | — | — |
 | RWD-20 | S | Not built | US-415 | WP-82 | — | — |
 | CAL-01 | M | Covered | US-501 | WP-22 | — | U 6 · DB 19 · UI 2 · E2E 1 |
@@ -408,7 +408,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | BRD-11 | M | Not built | US-1010 | WP-72 | — | — |
 | NFR-01 | M | Covered | US-205 | WP-13, WP-44 | — | U 11 · UI 2 · E2E 2 |
 | NFR-02 | M | Not built | US-905 | WP-14 | — | UI 1 |
-| NFR-03 | M | Covered | US-905 | WP-11 | — | UI 4 · E2E 1 |
+| NFR-03 | M | Covered | US-905 | WP-11 | — | UI 5 · E2E 1 |
 | NFR-04 | M | Covered | US-102, US-901 | WP-02, WP-03, WP-05 | — | U 1 · DB 82 |
 | NFR-05 | S | Not built | US-902 | WP-33 | — | U 1 |
 | NFR-06 | M | Covered | US-907 | WP-10 | — | U 7 · DB 20 |
@@ -416,7 +416,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-08 | S | Covered | US-909 | WP-01, WP-41, WP-42 | — | U 5 · DB 11 · E2E 1 |
 | NFR-09 | M | Covered | US-101, US-901 | WP-02 | — | DB 4 |
 | NFR-10 | M | Not built | US-903 | WP-24 | — | — |
-| NFR-11 | S | Covered | US-906 | WP-31, WP-46 | — | U 4 · UI 26 |
+| NFR-11 | S | Covered | US-906 | WP-31, WP-46 | — | U 4 · UI 27 |
 | PTS-01 | M | Covered | US-309, US-1101, US-1106 | WP-16 | — | U 10 · DB 42 · E2E 5 |
 | PTS-02 | M | Covered | US-1102 | WP-11, WP-16, WP-20 | — | U 4 · DB 11 · UI 1 · E2E 2 |
 | PTS-03 | M | Covered | US-1103 | WP-18 | — | U 5 · DB 6 · UI 4 · E2E 1 |
@@ -518,7 +518,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-78 | Done | **No cases** | — | U 7 · UI 3 |
 | WP-79 | Done | **No cases** | — | — |
 | WP-80 | Done | RWD-16-a, RWD-16-b, RWD-16-c, RWD-16-d, RWD-16-e, RWD-16-f, RWD-16-g, RWD-16-h, RWD-16-i, RWD-15-a, RWD-15-b, RWD-15-c, RWD-15-d, RWD-15-e, RWD-15-f, RWD-15-g, RWD-15-h, RWD-15-i, RWD-15-j, RWD-15-k, RWD-15-l, RWD-15-m | 22 of 22 | U 4 |
-| WP-81 | Ready | — | — | — |
+| WP-81 | Done | RWD-17-a, RWD-17-b, RWD-17-c, RWD-17-d, RWD-17-e, RWD-17-f, RWD-17-g, RWD-17-h, RWD-18-a, RWD-18-b, RWD-18-c, RWD-18-d, RWD-18-e, RWD-18-f, RWD-18-g, RWD-18-h, RWD-18-i, RWD-18-j, RWD-18-k, RWD-18-l, RWD-18-m | 21 of 21 | — |
 | WP-82 | Ready | — | — | — |
 | WP-83 | Done | **No cases** | — | — |
 | WP-85 | Done | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | 6 of 6 | — |
@@ -569,6 +569,27 @@ Test cases and the tests that prove them:
 | RWD-15-k | WP-80 | The board's and the Goals card's words: the days, "Missed, starts again", the won line and the weeks | Unit | Unit `apps/web/lib/board.test.ts`: `the shop, requests and goals (WP-20) › [RWD-15-k] reads a repeating goal’s week going now and its last weeks`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a week’s days › [RWD-15-k] shows each school day and a day off with nothing due, never the weekend`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a week’s days › [RWD-15-k] says "3 of 4 days · Friday no school", and what is left`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a lost or won week › [RWD-15-k] lost: "Missed, starts again Monday, Oct 19", and which days`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a lost or won week › [RWD-15-k] the weeks: "Won 3 of the last 4 weeks", a break week left out` |
 | RWD-15-l | WP-80 | The form, the Goals card and the goal's Weeks at 390 and 1280 px, and the board's card going, missed and won, in both themes | UI | UI `e2e/ui/board-repeating.spec.ts`: `at ${viewport.width}×${viewport.height} › [RWD-15-l][NFR-03] Maya’s goal going, missed and won, in ${theme}: 28 px text, AA contrast`<br>UI `e2e/ui/board-repeating.spec.ts`: `the card › [RWD-15-l][RWD-16][US-411] going: a mark for each day, a day off a dash, "3 of 4 days" and what it pays`<br>UI `e2e/ui/board-repeating.spec.ts`: `the card › [RWD-15-l][RWD-16-c][US-411] missed: "Missed, starts again" the next week’s first day, no part count`<br>UI `e2e/ui/board-repeating.spec.ts`: `the card › [RWD-15-l] won: "Won this week! 10 points." and when the next week starts`<br>UI `e2e/ui/goals.spec.ts`: `[RWD-15-l][RWD-16][US-410] a repeating goal on Goals: this week’s days, a lost week, and the weeks`<br>UI `e2e/ui/goals.spec.ts`: `[RWD-15-l][RWD-15-e] a repeating goal’s page: how it repeats stays, its rule and its weeks`<br>UI `e2e/ui/goals.spec.ts`: `[RWD-15-l][RWD-16-i] a new goal: choosing how it repeats offers "every day it’s due" and its misses` |
 | RWD-15-m | WP-80 | On the preview: Maya's weekly homework goal, Monday to Thursday done and Friday a closure, is won and pays 10 once; a missed Tuesday next week shows "Missed, starts again Monday"; Goals shows the weeks | E2E | E2E `e2e/tests/repeating-goals.spec.ts`: `[RWD-15-m][US-410][US-411] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board` |
+| RWD-17-a | WP-81 | By a time on the rule: a tick a minute after it doesn't count; one at the time and one a minute before do | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-a] by a time on the rule: a minute after doesn’t count; at the time and a minute before do` |
+| RWD-17-b | WP-81 | By each chore's due time: a tick after its due time doesn't count, one before does | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-b] by each chore’s due time: after it doesn’t count, before it does` |
+| RWD-17-c | WP-81 | A chore without a due time, under "its due time", counts at any time that day | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-c] a chore without a due time, under “its due time”, counts at any time that day` |
+| RWD-17-d | WP-81 | An offline tick counts by its own time, not when it reached the server | Unit, DB | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-d] an offline tick counts by its own time, not when it reached the server`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-h][RWD-17-d] and its tick's own time on the household's clock, though it reached the server later` |
+| RWD-17-e | WP-81 | A late tick completes the chore and earns its points but doesn't count; on "every day it's due" its day is a miss once the day closes, and today is never a miss | Unit | E2E `e2e/tests/goal-steps.spec.ts`: `[RWD-18-m][RWD-17-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10`<br>Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-e] a late tick doesn’t count; its day is a miss once the day closes, and today is never a miss` |
+| RWD-17-f | WP-81 | A parent's tick after the time doesn't count; a chore waiting for approval counts by the child's tick | Unit, DB | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-f] a parent’s tick after the time doesn’t count; a chore waiting for approval counts by the child’s tick`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-f] an approved chore keeps the child's tick, not the approval's time`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-f] a parent's tick carries its own time` |
+| RWD-17-g | WP-81 | The time is saved and checked: each chore's due time or a time of day, nothing else | Unit, DB | Unit `apps/web/lib/goal-steps.test.ts`: `[US-412] the form: done by a time › [RWD-17-g] reads by a time, by each chore’s due time, or any time; nothing else`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-412] the form: done by a time › [RWD-17-g] says a rule’s time in its line`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l][RWD-17-g] the form: by a time, and steps by days missed that set the misses allowed`<br>Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-g] the time is each chore’s due time or a time of day, nothing else`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-g] a time of day is stored on the rule`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-g] so is each chore's due time`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-g] anything else is refused`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-g] ... a time that isn't one too` |
+| RWD-17-h | WP-81 | The goal's facts carry each tick's time in the household's time and each chore's due time | DB | DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-h] a fact carries its chore's due time`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-h][RWD-17-d] and its tick's own time on the household's clock, though it reached the server later`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-h] a chore without a due time has none`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-h] a chore not ticked has no time` |
+| RWD-18-a | WP-81 | A lower step pays when its period closes | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-413] goals that pay in steps › [RWD-18-a] a lower step pays when its period closes` |
+| RWD-18-b | WP-81 | The top step pays at once, and only its own points, not the sum | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-413] goals that pay in steps › [RWD-18-b] the top step pays at once, and only its own points` |
+| RWD-18-c | WP-81 | Only the highest step reached pays | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-413] goals that pay in steps › [RWD-18-c] only the highest step reached pays` |
+| RWD-18-d | WP-81 | A lower step pays as soon as no higher step can still be reached | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-413] goals that pay in steps › [RWD-18-d] a lower step pays as soon as no higher step can still be reached` |
+| RWD-18-e | WP-81 | A 4-day week reaches its top step with 4 | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-413] goals that pay in steps › [RWD-18-e] a 4-day week reaches its top step with 4` |
+| RWD-18-f | WP-81 | Steps by number on a one-off goal: the top step at once, a lower step when the goal ends | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-413] goals that pay in steps › [RWD-18-f] steps by number on a one-off goal: the top at once, a lower step when it ends` |
+| RWD-18-g | WP-81 | Two weighted rules: the goal's % is the weighted sum; 100% pays the top step at once, a lower step at the close | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-413] goals that pay in steps › [RWD-18-g] two weighted rules: the weighted sum; 100% at once, a lower step at the close` |
+| RWD-18-h | WP-81 | Steps and weights are saved and checked: points only, up to 3 lower steps each paying less, misses 1 to 3 rising, a one-off goal with an end date, weights totalling 100; the lowest step sets the misses allowed | Unit, DB | Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the form: steps and weights › [RWD-18-h] says what to fix in the steps and weights`<br>Unit `packages/rules-engine/src/tiers.test.ts`: `[US-413] goals that pay in steps › [RWD-18-h] steps and weights are checked`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] a weekly goal pays in steps by days missed`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] the lowest step sets the misses allowed`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] steps pay points only`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] each step pays fewer points than the one above`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] days missed rise step by step`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] up to 3 days missed`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] up to 3 lower steps`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] a one-off goal in steps needs an end date`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] a step by number is under the target`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] a one-off goal with an end date pays in steps by number`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] weights total 100`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] a weight is 1 to 100`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-h] two weighted rules pay in steps by the goal's %` |
+| RWD-18-i | WP-81 | A step's payout is paid once and taken back once; a parent's fix that moves a won week to another step pays or takes back the difference | DB | DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-i] a week won at a lower step pays that step, once`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-i] a fix that lifts a won week to the top step pays the difference, once`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-i] a won week undone takes back what its step paid, once`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-i] a one-off goal reached at a lower step pays that step`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-18-i] lifted to the top step, it pays the difference once` |
+| RWD-18-j | WP-81 | The form reads the time, the steps and the weights | Unit | Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the form: steps and weights › [RWD-18-j] reads steps by days missed, and the lowest sets the misses allowed`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the form: steps and weights › [RWD-18-j] reads steps by number on a one-off goal with an end date`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the form: steps and weights › [RWD-18-j] reads each rule’s weight on a goal with two rules in steps; reached at 100%`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the form: steps and weights › [RWD-18-j] gives the engine the goal’s steps from its payout` |
+| RWD-18-k | WP-81 | The board's and the Goals page's words: the steps, a tick after the time, a week won at a step | Unit | Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the steps in words › [RWD-18-k] the steps as chips: days missed, a number, the goal’s %`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the steps in words › [RWD-18-k] what a week makes, what it was won at, and a tick after the time`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the steps in words › [RWD-18-k] the payout, a step changed, and a board goal’s steps`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l][RWD-18-k] Goals: a week’s steps and a late day; a one-off goal’s steps; each week’s step paid`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-412] going: the steps, the one in reach, and a day ticked after 6 pm`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-413] won at a step: "Won this week! 10 points." and its chip` |
+| RWD-18-l | WP-81 | The form's time, steps and weights, a goal's weeks at 390 and 1280 px, and the board's card going, won at a step and weighted, in both themes | UI | UI `e2e/ui/goal-steps.spec.ts`: `on a ${device} › [RWD-18-l][NFR-11] the time, the steps and the weights fit a ${device} in ${theme}`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l][RWD-17-g] the form: by a time, and steps by days missed that set the misses allowed`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l] the form: two rules weighted 60% and 40%, steps by %, reached at 100%`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l] the form: steps by number on a one-off goal, which needs an end date`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l][RWD-18-k] Goals: a week’s steps and a late day; a one-off goal’s steps; each week’s step paid`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app the board at ${viewport.width}×${viewport.height} › [RWD-18-l][NFR-03] Maya’s goal in steps going, won at a step and weighted, in ${theme}: 28 px…`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-412] going: the steps, the one in reach, and a day ticked after 6 pm`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-413] won at a step: "Won this week! 10 points." and its chip`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l] weighted: a meter for each rule with its weight, the week’s %, and the step reached` |
+| RWD-18-m | WP-81 | On the preview: Maya's "Homework before 6 pm" with steps 20, 10 and 5: a tick at 6:05 pm completes the chore and doesn't count; a week with 4 of 5 on time pays 10 at the week's close | E2E | E2E `e2e/tests/goal-steps.spec.ts`: `[RWD-18-m][RWD-17-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10` |
 | NFR-19-a | WP-85 | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-a][US-913] a test traces to the IDs in its name and its describe blocks, in every layer` |
 | NFR-19-b | WP-85 | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-b][US-913] a test naming an unknown requirement, story, item or test case fails the check` |
 | NFR-19-c | WP-85 | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-c][US-913] a new gap fails the check, and a known gap does not` |
@@ -634,8 +655,8 @@ Status as in §9.3, for tests that name the story itself.
 | US-407 | RWD-04 | Covered | U 1 · DB 1 · E2E 1 |
 | US-410 | RWD-15, RWD-16 | Covered | U 11 · UI 1 · E2E 1 |
 | US-411 | RWD-15, RWD-16 | Covered | UI 2 · E2E 1 |
-| US-412 | RWD-17 | Not built | — |
-| US-413 | RWD-18 | Not built | — |
+| US-412 | RWD-17 | Covered | U 9 · UI 1 · E2E 1 |
+| US-413 | RWD-18 | Covered | U 16 · UI 1 · E2E 1 |
 | US-414 | RWD-19 | Not built | — |
 | US-415 | RWD-20 | Not built | — |
 | US-501 | CAL-01, CAL-03 | Covered | E2E 1 |
@@ -1117,6 +1138,23 @@ Unit · 5 tests
 | `a week’s days › [RWD-16] needs every day due less the misses allowed, and at least one` | RWD-16 |
 | `a lost or won week › [RWD-15-k] lost: "Missed, starts again Monday, Oct 19", and which days` | RWD-15-k |
 | `a lost or won week › [RWD-15-k] the weeks: "Won 3 of the last 4 weeks", a break week left out` | RWD-15-k |
+
+#### `apps/web/lib/goal-steps.test.ts`
+
+Unit · 10 tests
+
+| Test | Names |
+|---|---|
+| `[US-412] the form: done by a time › [RWD-17-g] reads by a time, by each chore’s due time, or any time; nothing else` | RWD-17-g, US-412 |
+| `[US-412] the form: done by a time › [RWD-17-g] says a rule’s time in its line` | RWD-17-g, US-412 |
+| `[US-413] the form: steps and weights › [RWD-18-j] reads steps by days missed, and the lowest sets the misses allowed` | RWD-18-j, US-413 |
+| `[US-413] the form: steps and weights › [RWD-18-j] reads steps by number on a one-off goal with an end date` | RWD-18-j, US-413 |
+| `[US-413] the form: steps and weights › [RWD-18-j] reads each rule’s weight on a goal with two rules in steps; reached at 100%` | RWD-18-j, US-413 |
+| `[US-413] the form: steps and weights › [RWD-18-h] says what to fix in the steps and weights` | RWD-18-h, US-413 |
+| `[US-413] the form: steps and weights › [RWD-18-j] gives the engine the goal’s steps from its payout` | RWD-18-j, US-413 |
+| `[US-413] the steps in words › [RWD-18-k] the steps as chips: days missed, a number, the goal’s %` | RWD-18-k, US-413 |
+| `[US-413] the steps in words › [RWD-18-k] what a week makes, what it was won at, and a tick after the time` | RWD-18-k, US-413 |
+| `[US-413] the steps in words › [RWD-18-k] the payout, a step changed, and a board goal’s steps` | RWD-18-k, US-413 |
 
 #### `apps/web/lib/goals.test.ts`
 
@@ -1838,6 +1876,14 @@ E2E · 1 tests
 |---|---|
 | `[RWD-13][RWD-10][RWD-04][US-409][US-406] a goal that pays 10 points: set with a preview, paid once, taken back once, paid again as n + 1; a preview of raising…` | RWD-04, RWD-10, RWD-13, US-406, US-409 |
 
+#### `e2e/tests/goal-steps.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[RWD-18-m][RWD-17-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10` | RWD-17-e, RWD-18-m, US-412, US-413 |
+
 #### `e2e/tests/goals.spec.ts`
 
 E2E · 3 tests
@@ -2283,6 +2329,22 @@ UI · 10 tests
 | `[CHR-06][CHR-14] a parent’s day and My tasks need a signed-in admin` | CHR-06, CHR-14 |
 | `[CHR-15] the reminders page needs a signed-in admin` | CHR-15 |
 
+#### `e2e/ui/goal-steps.spec.ts`
+
+UI · 9 tests
+
+| Test | Names |
+|---|---|
+| `on a ${device} › [RWD-18-l][NFR-11] the time, the steps and the weights fit a ${device} in ${theme}` | RWD-18-l, NFR-11 |
+| `the admin app › [RWD-18-l][RWD-17-g] the form: by a time, and steps by days missed that set the misses allowed` | RWD-17-g, RWD-18-l |
+| `the admin app › [RWD-18-l] the form: two rules weighted 60% and 40%, steps by %, reached at 100%` | RWD-18-l |
+| `the admin app › [RWD-18-l] the form: steps by number on a one-off goal, which needs an end date` | RWD-18-l |
+| `the admin app › [RWD-18-l][RWD-18-k] Goals: a week’s steps and a late day; a one-off goal’s steps; each week’s step paid` | RWD-18-k, RWD-18-l |
+| `the admin app the board at ${viewport.width}×${viewport.height} › [RWD-18-l][NFR-03] Maya’s goal in steps going, won at a step and weighted, in ${theme}: 28 px…` | RWD-18-l, NFR-03 |
+| `the board’s card › [RWD-18-l][RWD-18-k][US-412] going: the steps, the one in reach, and a day ticked after 6 pm` | RWD-18-k, RWD-18-l, US-412 |
+| `the board’s card › [RWD-18-l][RWD-18-k][US-413] won at a step: "Won this week! 10 points." and its chip` | RWD-18-k, RWD-18-l, US-413 |
+| `the board’s card › [RWD-18-l] weighted: a meter for each rule with its weight, the week’s %, and the step reached` | RWD-18-l |
+
 #### `e2e/ui/goals.spec.ts`
 
 UI · 14 tests
@@ -2653,6 +2715,28 @@ Unit · 3 tests
 | `[CHR-07] occurrence status weights › [CHR-07] counts only completed and approved as done` | CHR-07 |
 | `[CHR-07] occurrence status weights › [CHR-07] treats skipped as neutral and missed as bad` | CHR-07 |
 | `[CHR-07] occurrence status weights › [CHR-07] does not count open, pending or rejected occurrences` | CHR-07 |
+
+#### `packages/rules-engine/src/tiers.test.ts`
+
+Unit · 15 tests
+
+| Test | Names |
+|---|---|
+| `[US-412] done by a time › [RWD-17-a] by a time on the rule: a minute after doesn’t count; at the time and a minute before do` | RWD-17-a, US-412 |
+| `[US-412] done by a time › [RWD-17-b] by each chore’s due time: after it doesn’t count, before it does` | RWD-17-b, US-412 |
+| `[US-412] done by a time › [RWD-17-c] a chore without a due time, under “its due time”, counts at any time that day` | RWD-17-c, US-412 |
+| `[US-412] done by a time › [RWD-17-d] an offline tick counts by its own time, not when it reached the server` | RWD-17-d, US-412 |
+| `[US-412] done by a time › [RWD-17-e] a late tick doesn’t count; its day is a miss once the day closes, and today is never a miss` | RWD-17-e, US-412 |
+| `[US-412] done by a time › [RWD-17-f] a parent’s tick after the time doesn’t count; a chore waiting for approval counts by the child’s tick` | RWD-17-f, US-412 |
+| `[US-412] done by a time › [RWD-17-g] the time is each chore’s due time or a time of day, nothing else` | RWD-17-g, US-412 |
+| `[US-413] goals that pay in steps › [RWD-18-a] a lower step pays when its period closes` | RWD-18-a, US-413 |
+| `[US-413] goals that pay in steps › [RWD-18-b] the top step pays at once, and only its own points` | RWD-18-b, US-413 |
+| `[US-413] goals that pay in steps › [RWD-18-c] only the highest step reached pays` | RWD-18-c, US-413 |
+| `[US-413] goals that pay in steps › [RWD-18-d] a lower step pays as soon as no higher step can still be reached` | RWD-18-d, US-413 |
+| `[US-413] goals that pay in steps › [RWD-18-e] a 4-day week reaches its top step with 4` | RWD-18-e, US-413 |
+| `[US-413] goals that pay in steps › [RWD-18-f] steps by number on a one-off goal: the top at once, a lower step when it ends` | RWD-18-f, US-413 |
+| `[US-413] goals that pay in steps › [RWD-18-g] two weighted rules: the weighted sum; 100% at once, a lower step at the close` | RWD-18-g, US-413 |
+| `[US-413] goals that pay in steps › [RWD-18-h] steps and weights are checked` | RWD-18-h, US-413 |
 
 #### `packages/ui/src/board-fit.test.ts`
 
@@ -4610,5 +4694,45 @@ DB · 38 tests
 | `[RWD-15-h] only a repeating goal stops after a period` | RWD-15-h |
 | `[NFR-04] another family sees none of the periods` | NFR-04 |
 | `[NFR-04] nor stops the goal` | NFR-04 |
+
+#### `supabase/tests/510_goal_times_and_steps.test.sql`
+
+DB · 33 tests
+
+| Test | Names |
+|---|---|
+| `[RWD-17-h] a fact carries its chore's due time` | RWD-17-h |
+| `[RWD-17-h][RWD-17-d] and its tick's own time on the household's clock, though it reached the server later` | RWD-17-d, RWD-17-h |
+| `[RWD-17-f] an approved chore keeps the child's tick, not the approval's time` | RWD-17-f |
+| `[RWD-17-h] a chore without a due time has none` | RWD-17-h |
+| `[RWD-17-f] a parent's tick carries its own time` | RWD-17-f |
+| `[RWD-17-h] a chore not ticked has no time` | RWD-17-h |
+| `[RWD-18] the engine reads the goal's payout` | RWD-18 |
+| `[RWD-17-g] a time of day is stored on the rule` | RWD-17-g |
+| `[RWD-17-g] so is each chore's due time` | RWD-17-g |
+| `[RWD-17-g] anything else is refused` | RWD-17-g |
+| `[RWD-17-g] ... a time that isn't one too` | RWD-17-g |
+| `[RWD-18-h] a weekly goal pays in steps by days missed` | RWD-18-h |
+| `... stored with its steps` | — |
+| `[RWD-18-h] the lowest step sets the misses allowed` | RWD-18-h |
+| `[RWD-18-h] steps pay points only` | RWD-18-h |
+| `[RWD-18-h] each step pays fewer points than the one above` | RWD-18-h |
+| `[RWD-18-h] days missed rise step by step` | RWD-18-h |
+| `[RWD-18-h] up to 3 days missed` | RWD-18-h |
+| `[RWD-18-h] up to 3 lower steps` | RWD-18-h |
+| `[RWD-18-h] a one-off goal in steps needs an end date` | RWD-18-h |
+| `[RWD-18-h] a step by number is under the target` | RWD-18-h |
+| `[RWD-18-h] a one-off goal with an end date pays in steps by number` | RWD-18-h |
+| `[RWD-18-h] weights total 100` | RWD-18-h |
+| `[RWD-18-h] a weight is 1 to 100` | RWD-18-h |
+| `[RWD-18-h] two weighted rules pay in steps by the goal's %` | RWD-18-h |
+| `... each rule stored with its weight` | — |
+| `[RWD-18-i] a week won at a lower step pays that step, once` | RWD-18-i |
+| `... and keeps the step` | — |
+| `[RWD-18-i] a fix that lifts a won week to the top step pays the difference, once` | RWD-18-i |
+| `... logged once` | — |
+| `[RWD-18-i] a won week undone takes back what its step paid, once` | RWD-18-i |
+| `[RWD-18-i] a one-off goal reached at a lower step pays that step` | RWD-18-i |
+| `[RWD-18-i] lifted to the top step, it pays the difference once` | RWD-18-i |
 
 <!-- /catalogue -->

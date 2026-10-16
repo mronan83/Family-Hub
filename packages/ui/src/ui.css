@@ -2756,6 +2756,29 @@ span.fw-heat__cell {
 .fw-goal-rule__head > .fw-field {
   flex: 1 1 160px;
 }
+/* [RWD-17][RWD-18] A rule's "Counts only when done", and the payout's steps (WP-81): the steps in a
+   grid that wraps on a phone, each number step its "At" and "Pays" side by side. */
+.fw-goal-ontime,
+.fw-goal-steps {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-goal-steps__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--s-3);
+  align-items: start;
+}
+.fw-goal-steps__step {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.fw-input--read {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+}
 
 /* Meals (WP-25): the week's plan, a day per row (its four meals across on a laptop, stacked on a
    phone), each meal's entries in order with Change and Add. [MEAL-14][D-98] Each day folds as the
@@ -5139,7 +5162,8 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   background: var(--success);
   color: var(--surface);
 }
-.fw-days__day[data-mark='missed'] .fw-days__mark {
+.fw-days__day[data-mark='missed'] .fw-days__mark,
+.fw-days__day[data-mark='late'] .fw-days__mark {
   border: 2px solid var(--missed);
   background: var(--missed-tint);
   color: var(--missed-text);
@@ -5214,6 +5238,29 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   color: var(--missed-text);
 }
 .fw-goal-line[data-kind='won'] {
+  background: var(--reward-tint);
+  color: var(--reward-text);
+}
+/* [RWD-18] A goal's steps as chips (WP-81, the approved mockup): the step in reach, or reached, in
+   Sun with a heavier border, so the state is in the shape and not colour alone. */
+.fw-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-steps__step {
+  padding: 2px var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  font-size: var(--t-small);
+  font-weight: 600;
+  color: var(--text-soft);
+}
+.fw-steps__step[data-on] {
+  border: 3px solid var(--reward);
   background: var(--reward-tint);
   color: var(--reward-text);
 }

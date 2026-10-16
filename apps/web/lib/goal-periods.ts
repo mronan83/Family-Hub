@@ -16,12 +16,17 @@ export interface GoalPeriod {
   missesAllowed: number | null;
   /** A week's days: each one's mark, and for a day with nothing due its day type. */
   days: { date: string; mark: DayMark; dayType?: string | null }[] | null;
+  /** [RWD-18] The step reached (0 the top) and the best still in reach; null without steps. */
+  step?: number | null;
+  stepBest?: number | null;
 }
 
 export interface PeriodOutline {
   start: string;
   end: string;
   outcome: PeriodOutcome;
+  /** [RWD-18] The step it was won at, for a goal that pays in steps. */
+  step?: number | null;
 }
 
 /** How a goal repeats, as the form and the goal's line say it. */
@@ -98,7 +103,9 @@ function andList(words: string[]): string {
 
 /** "Missed Tuesday and Wednesday." from a week's days; null when no day is marked missed. */
 export function missedDaysLine(p: Pick<GoalPeriod, 'days'>): string | null {
-  const missed = (p.days ?? []).filter((d) => d.mark === 'missed').map((d) => weekday(d.date));
+  const missed = (p.days ?? [])
+    .filter((d) => d.mark === 'missed' || d.mark === 'late')
+    .map((d) => weekday(d.date));
   return missed.length ? `Missed ${andList(missed)}.` : null;
 }
 

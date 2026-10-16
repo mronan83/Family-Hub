@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
 > Version 1.18 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-45, WP-46, WP-47, WP-48, WP-28, WP-51, WP-52)
+> v1.25: a goal's steps (WP-81, D-124): chips (`.fw-steps`), the one in reach or won at in Sun with a heavier border and `aria-current`; a day missed by a late tick marked as missed (`late`, the same Plum cross, its words "missed, ticked after the time").
 > v1.24: a repeating goal (WP-80, D-123): its days as marks (`DayMarks`: done a filled Leaf check, missed a Plum cross, today a Teal ring, a day off school a dash) and its periods as marks (`PeriodMarks`: won a Sun trophy, missed a Plum cross, a break a dash, the one going now a dashed Teal square); "Missed, starts again" in the missed tint with `repeat`, "Won this week!" in the Sun tint with `trophy` (§7.2, §7.3).
 > v1.23: the fold, one shared component (`Fold`): a section, an inner fold or a row of a list, its warning in amber on the header open or closed; Boards folded to each board's facts (§7.3, WP-91, D-118, D-120).
 > v1.22: a chore's row grows with its title and points chip; the rail's word goes under its icon when it doesn't fit beside it (§7.2, WP-71, D-100).
