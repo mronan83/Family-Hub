@@ -87,3 +87,30 @@ select hh.h, count(*) as waiting,
        to_char(max(o.status_changed_at) at time zone hh.timezone, 'Dy HH24:MI') as newest_changed
   from hh join public.chore_occurrence o on o.household_id = hh.id and o.status = 'pending_approval'
  group by hh.h, hh.timezone order by hh.h;
+
+\echo '## Check-offs since yesterday, per household: what the item asked and where each went'
+:people
+select hh.h, e.actor_type, c.approval as item_approval, o.requires_approval_snapshot as needs_ok,
+       (cardinality(e.rewarded) > 0) as earns, e.review_status, o.status as status_now, count(*) as check_offs
+  from hh
+  join public.chore_completion_event e on e.household_id = hh.id and e.event_type = 'complete'
+  join public.chore_occurrence o on o.id = e.occurrence_id
+  join public.chore c on c.id = o.chore_id
+ where e.recorded_at >= (hh.since_day::timestamp at time zone hh.timezone)
+ group by 1, 2, 3, 4, 5, 6, 7 order by 1, 2, 3, 4, 5, 6, 7;
+
+\echo '## Approvals, rejections and parent check-offs since yesterday, per household: how long after the check-off'
+:people
+select hh.h, e.event_type, e.actor_type, count(*) as events,
+       min(e.recorded_at - k.recorded_at) as min_after_check_off, max(e.recorded_at - k.recorded_at) as max_after_check_off
+  from hh
+  join public.chore_completion_event e on e.household_id = hh.id and e.event_type in ('approve', 'reject', 'admin_complete')
+  left join lateral (select k.recorded_at from public.chore_completion_event k
+                      where k.occurrence_id = e.occurrence_id and k.event_type = 'complete' and k.recorded_at <= e.recorded_at
+                      order by k.recorded_at desc limit 1) k on true
+ where e.recorded_at >= (hh.since_day::timestamp at time zone hh.timezone)
+ group by 1, 2, 3 order by 1, 2, 3;
+
+\echo '## Household approval switch'
+:people
+select hh.h, s.approval_mode from hh join public.household_settings s on s.household_id = hh.id order by hh.h;
