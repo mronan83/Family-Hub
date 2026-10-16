@@ -1,7 +1,7 @@
 import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
 import { comingWeek } from '../../apps/web/lib/lunch-picks';
-import { pairingCode, retireBoard } from '../support/board';
+import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
 import { withSchoolDays } from '../support/school';
@@ -134,7 +134,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
   admin = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   await signIn(admin);
   await admin.goto('/admin/devices');
-  const form = admin.getByRole('form', { name: 'Add a board', exact: true });
+  const form = await addBoardForm(admin);
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);
   await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
   const code = await pairingCode(admin);

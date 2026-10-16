@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.30: the Boards settings folded (WP-91, D-118, D-120): each board folded to its name and facts, with the not-seen warning on its header, opened to **Display**, **Sleep and wake**, **Calendars**, **Home screen**, then **Name and connection** set apart; the household's **Home screen**, **Add a board** and **Disconnected** folded (A16, B1.12).
 > v0.29: sleep and wake per board (WP-34, D-116, D-117): A16, Boards (B1.12), the board asleep (B2), the rules, troubleshooting and questions.
 > v0.28: a goal's end date that can be cleared (WP-79, D-115): **Ends on a date** with the date and **Clear**, on an iPhone too; a started goal's end date added, moved or taken off; a reached goal keeps its rules and dates (A7, B1, B3).
 > v0.27: the meal week folded (WP-75, D-114): each day of **Meals** closed at first with "2 of 4 set" or a check, then **Add to the plan**, **Copy last week** and the usual lunch week, each closed until tapped (A15, B1.15).
@@ -165,7 +166,7 @@ Only an adult can have a sign-in. If your record says Child, open it on **Member
 A board is any screen showing FamilyWise's board page: normally the wall touchscreen. It doesn't sign in like a parent. Instead, you pair it once with a code.
 
 1. On the board's screen, open FamilyWise's board page (the address ending in `/board`). It starts on **Pair this board**, with a keypad.
-2. On your phone, go to **Boards**. Under **Add a board**, enter a **Board name** (for example "Kitchen") and choose **Get a pairing code**.
+2. On your phone, go to **Boards**. Tap **Add a board** to open it, enter a **Board name** (for example "Kitchen") and choose **Get a pairing code**.
 3. The code has 8 digits, shown as two groups of four. It works once, for 10 minutes.
 4. Type the code on the board's keypad and choose **Pair this board**.
 
@@ -715,7 +716,7 @@ A month's day shows three events and "+N more"; tap it to see the day.
 
 #### Choose the calendars for each board
 
-By default, every board shows the calendars with **Show on the boards** ticked. To choose for one board, go to **Boards**, open **Calendars on** (the board's name), tick the ones it should show, and choose **Save calendars**. From then on that board shows exactly those: a calendar you connect later stays off it until you tick it there. Other boards are not affected. The board changes within seconds.
+By default, every board shows the calendars with **Show on the boards** ticked. To choose for one board, go to **Boards**, tap the board to open it, tick under **Calendars** the ones it should show, and choose **Save calendars**. From then on that board shows exactly those: a calendar you connect later stays off it until you tick it there. Other boards are not affected. The board changes within seconds.
 
 ### A10 School year and day types
 <!-- covers: US-601 US-602 -->
@@ -764,7 +765,7 @@ Changes to the school year start tomorrow: today stays as it was planned. Days a
 
 The boards change within seconds.
 
-**A board's own layout.** A board can have its own layout instead, for example a month on the kitchen board and three days in the hall. On **Boards**, open **Home screen on** (the board's name), tick **Give** (the board) **its own layout** and choose **Save**. It starts as a copy of the household's; then change it in the form that appears. Untick and **Save** to follow the household's layout again.
+**A board's own layout.** A board can have its own layout instead, for example a month on the kitchen board and three days in the hall. On **Boards**, tap the board to open it, then under **Home screen** tick **Give** (the board) **its own layout** and choose **Save**. It starts as a copy of the household's; then change it in the form that appears. Untick and **Save** to follow the household's layout again.
 
 > **Tip:** To change a board's own layout, use the form under it and **Save layout**. Choosing **Save** again with **Give … its own layout** still ticked keeps the layout it has.
 
@@ -775,7 +776,7 @@ The boards change within seconds.
 
 **What this is.** Two looks: **Day** (light) and **Evening** (dark, easier on the eyes at night). **When.** Automatic. **How.**
 
-- **The board** follows the household's clock: Day from 6:30 am, Evening from 7:00 pm. To hold a board on one, go to **Boards**, choose **Always Day** or **Always Evening** for it, and choose **Set theme**. **Automatic, by time of day** goes back to the clock. The board switches at once.
+- **The board** follows the household's clock: Day from 6:30 am, Evening from 7:00 pm. To hold a board on one, go to **Boards**, tap the board to open it, choose **Always Day** or **Always Evening** under **Display**, and choose **Set theme**. **Automatic, by time of day** goes back to the clock. The board switches at once.
 - **The admin app** follows your phone's or computer's dark mode: Evening when dark mode is on.
 
 Both looks use the same colors for the same things, never color alone: every state also has an icon and a word.
@@ -815,7 +816,7 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credi
 **What this is.** The board fills whatever screen it is on, and you choose how big its words are. **When.** When you set up a board, or when someone finds it hard to read from where they stand. **How.** The fit is automatic; the size is on **Boards**.
 
 - **Any screen.** The board is designed for a 1920 by 1080 screen and grows or shrinks to fit yours. A 4K panel shows exactly the same board twice as large, drawn with all its pixels, so it is sharper, not more crowded. A laptop shows it smaller, and it fits again when you change the window's size. A screen wider or taller than usual gives the board more room.
-- **Text size.** On **Boards**, choose **Smaller text**, **Standard text**, **Larger text** or **Largest text** for a board, and choose **Set text size**. The board changes at once and keeps its size, even after a restart without the internet.
+- **Text size.** On **Boards**, tap the board to open it and, under **Display**, choose **Smaller text**, **Standard text**, **Larger text** or **Largest text** for a board, and choose **Set text size**. The board changes at once and keeps its size, even after a restart without the internet.
 - **What larger text changes.** Larger words take more room. With **Larger** or **Largest**, today's list moves under the calendar instead of beside it, and the people at the top may take two rows. Scroll down for the rest.
 - **On a tablet.** A board on an iPad or another tablet works the same way, in landscape or portrait: the board fits the screen, and each chore's points stay under its own title at every text size. If a word in the rail is too long to sit beside its icon, it goes under it.
 
@@ -942,16 +943,16 @@ The family can pick the coming week's school lunches at the board, on a Sunday s
 ### A16 Sleep and wake
 <!-- covers: US-207 -->
 
-**What this is.** Each board can sleep at night and when nobody uses it, and you choose whether Home tells you when it hasn't been seen. **When.** When you set up a board, or when it lights up a room at night. **How.** On **Boards**, open **Sleep and wake on** (the board's name), choose, and press **Save sleep and wake**. The board follows within a minute.
+**What this is.** Each board can sleep at night and when nobody uses it, and you choose whether Home tells you when it hasn't been seen. **When.** When you set up a board, or when it lights up a room at night. **How.** On **Boards**, tap the board to open it, choose under **Sleep and wake**, and press **Save sleep and wake**. The board follows within a minute.
 
 - **Tell me when (the board) isn't seen.** **Always**: Home's heads-up says so after a day without it, at any hour (as before). **Only while awake**: its hours asleep don't count, and Home never says so while it is asleep; for a board switched off at the wall overnight. **Never**: for a board that is often off; Home never lists it.
 - **Sleep at night.** Tick **(the board) sleeps and wakes at set times**, then give **School nights** and **Weekends and days off** a time each to sleep and to wake. A night takes its times from the day after it: Sunday to Thursday night are school nights when school is the next day; Friday and Saturday night, and any night before a day off from school, are weekend nights. School days come from **School** in Settings; without a school year, every weekday is a school day.
 - **Sleep when nobody touches it.** **Never**, or after 5, 10, 15 or 30 minutes, 1 hour or 2 hours untouched. After its wake time in the morning it stays on for at least this long.
 - **Asleep, the board is black.** A touch, a click or moving the mouse wakes it. **That first touch only wakes it**: it never checks off a chore or presses a button, so tap again for that. A touch in the night wakes it for its idle time (5 minutes if **Never**), then it sleeps again.
-- **On the board's row** Boards says "Asleep · wakes at 6:30 am" or "Awake · sleeps at 9:30 pm" while it has set times.
+- **On the board's folded header** Boards says "Asleep · wakes at 6:30 am" or "Awake · sleeps at 9:30 pm" while it has set times, or "Awake · no set times".
 - **Burn-in.** Every board moves its picture by a pixel every 5 minutes, within a 4-pixel square, too little to see, so nothing stays on the same pixels all day. There is nothing to set.
 
-![Boards on a laptop: Kitchen, last seen Thu, Oct 15 at 7:42 am, "Awake · sleeps at 9:30 pm", and its Sleep and wake open: Tell me when Kitchen isn't seen with Only while awake chosen; Sleep at night ticked, School nights 9:30 pm to 6:30 am and Weekends and days off 10:30 pm to 7:30 am; Sleep when nobody touches it, After 15 minutes; Save sleep and wake. Below, Playroom: never missed, sleeps after 10 minutes untouched.](guide/img/admin-boards-sleep-laptop.jpg "Sleep and wake on Boards, on a laptop")
+![Boards on a laptop with Kitchen open: its header "Awake · sleeps at 9:30 pm · seen 1 min ago · Automatic · Standard text · household layout"; Display; Sleep and wake, "School nights 9:30 pm to 6:30 am, weekends 10:30 pm to 7:30 am; sleeps after 15 minutes untouched; missed only while awake.", Tell me when Kitchen isn't seen with Only while awake chosen, Sleep at night ticked with its times, Sleep when nobody touches it, After 15 minutes, Save sleep and wake.](guide/img/admin-boards-sleep-laptop.jpg "Sleep and wake on Boards, on a laptop")
 
 **Turning the screen off on the Raspberry Pi.** A web page can't turn its screen off, so on an iPad or a laptop a sleeping board is just black (an iPad's own Auto-Lock still works as usual). On the Pi, a small helper turns the monitor off when the board sleeps and back on when it wakes. Install it once: on the Pi, open a terminal, type `curl -fsSL https://family-wise-topaz.vercel.app/api/kiosk/install | bash`, then `sudo reboot`. It needs no password or key, listens only on the Pi itself, and answers only FamilyWise. Running the same command again updates it.
 
@@ -1150,21 +1151,23 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 | **Add a calendar** | **Name** (up to 40), **Public link**, **Color**, **Whose calendar (optional)**, **Show on the boards**, **Add calendar** ("Adding and syncing…"). |
 
 #### B1.12 Boards
-<!-- covers: US-201 US-202 US-507 US-1004 US-1007 US-207 -->
+<!-- covers: US-201 US-202 US-507 US-1004 US-1007 US-207 US-208 -->
+
+Every section starts folded: tap its header to open it, tap again to fold it. After you save something, the board (or the section) you were in comes back open.
 
 | Part | What it shows or does |
 |---|---|
-| Each board | Name and "Last seen" (or "Not seen yet"). |
-| **Rename** | A new name (up to 60 characters). |
-| Theme and **Set theme** | **Automatic, by time of day**, **Always Day** or **Always Evening**. |
-| Text size and **Set text size** | **Smaller text**, **Standard text**, **Larger text** or **Largest text** (see [A14](#a14-screens-and-text-size)). The board changes at once. |
-| **Sleep and wake on** (name) | How it is set ("school nights 9:30 pm to 6:30 am, weekends 10:30 pm to 7:30 am; sleeps after 15 minutes untouched"); **Tell me when** (name) **isn't seen** (**Always**, **Only while awake**, **Never**), **Sleep at night** with **School nights** and **Weekends and days off**, **Sleep when nobody touches it**, **Save sleep and wake** (see [A16](#a16-sleep-and-wake)). The board's row says "Asleep · wakes at …" or "Awake · sleeps at …". |
-| **Disconnect** (name) | Asks first: it says what will happen, and **Yes, disconnect** (name) disconnects the board for good. It reads nothing more and can't sign in again; pair it again for a new start. |
-| **Calendars on** (name) | Which calendars it shows; **Save calendars** makes it choose its own. |
-| **Home screen on** (name) | "its own layout" or "the household's layout"; **Give** (name) **its own layout**, **Save**; then its own layout form. |
-| **Home screen** | The household's layout: **The calendar shows**, **Show the weather beside the clock**, **Show today's meals**, **Under the calendar, in this order** with **Up** / **Down**, **Save layout**. |
-| **Add a board** | **Board name**, **Get a pairing code**: 8 digits, once, for 10 minutes. |
-| **Disconnected** | Boards disconnected, with when. |
+| Each board, folded | Its name, then "Awake · sleeps at 9:30 pm" or "Asleep · wakes at 6:30 am" (or "Awake · no set times"), when it was last seen ("seen 1 min ago", "seen 7 h ago", then the day and time, or "not seen yet"), its theme, its text size, and "household layout" or "its own layout". When Home lists it as not seen (by its **Tell me when** choice), "Not seen for 2 days" in amber, open or folded. |
+| **Display** | Theme and **Set theme**: **Automatic, by time of day**, **Always Day** or **Always Evening**. Text size and **Set text size**: **Smaller text**, **Standard text**, **Larger text** or **Largest text** (see [A14](#a14-screens-and-text-size)). The board changes at once. |
+| **Sleep and wake** | How it is set ("School nights 9:30 pm to 6:30 am, weekends 10:30 pm to 7:30 am; sleeps after 15 minutes untouched"); **Tell me when** (name) **isn't seen** (**Always**, **Only while awake**, **Never**), **Sleep at night** with **School nights** and **Weekends and days off**, **Sleep when nobody touches it**, **Save sleep and wake** (see [A16](#a16-sleep-and-wake)). |
+| **Calendars** | Which calendars it shows; **Save calendars** makes it choose its own. |
+| **Home screen** (a board's) | **Give** (name) **its own layout**, **Save**; then its own layout form. Without its own, it shows the household's. |
+| **Name and connection** | Set apart at the bottom. **Rename**: a new name (up to 60 characters). **Disconnect** (name): asks first, says what will happen, and **Yes, disconnect** (name) disconnects the board for good. It reads nothing more and can't sign in again; pair it again for a new start. |
+| **Home screen** | The household's layout, folded to one line ("5 days · meals on · Goals, Waiting, Coming up · weather on"). Opened: **The calendar shows**, **Show the weather beside the clock**, **Show today's meals**, **Under the calendar, in this order** with **Up** / **Down**, **Save layout**. |
+| **Add a board** | Folded to its **Add a board** button (open at first while there is no board). Opened: **Board name**, **Get a pairing code**: 8 digits, once, for 10 minutes. |
+| **Disconnected** | Folded to "2 disconnected". Opened: the boards disconnected, with when. |
+
+![Boards on a phone, every section folded: Kitchen "Awake · sleeps at 9:30 pm · seen 1 min ago · Automatic · Standard text · household layout"; Hallway tablet "Asleep · wakes at 8:00 am · seen 7 h ago · Always Day · Larger text · its own layout"; Playroom "Awake · no set times · seen Tue, Oct 13 at 7:12 am", with "Not seen for 2 days" in amber; then Home screen "5 days · meals on · Goals, Waiting, Coming up · weather on", Add a board with its button, and Disconnected, "2 disconnected".](guide/img/admin-boards-phone.jpg "Boards, folded, on a phone")
 
 #### B1.13 Health
 <!-- covers: US-904 US-909 -->
@@ -1399,7 +1402,7 @@ Messages: "Sent. A parent will look at it.", "Back as it was.", "That day can't 
 | A tap's answer | At once; the board shows it before the server answers. |
 | Changes from the admin app | Within about **3 seconds** while connected. |
 | "Updated … ago" | When the board's information is over **5 minutes** old. A board reads everything again every 4 minutes. |
-| "Last seen" on **Boards** | The board reports in every 5 minutes while open, asleep or not. |
+| "seen …" on a board's header on **Boards** | The board reports in every 5 minutes while open, asleep or not. |
 | Sending saved check-offs | Retried after 1, 2, 5 and 10 seconds, then every 30 seconds, and at once when the network returns. |
 | Goal celebration | Once per achievement, on one board; up to 10 seconds. |
 | Goal payout | Once per achievement, when it is reached. Undone once if the goal goes back to going (points taken back, a reward not yet given called off); paid again when it is reached again. |
@@ -1511,7 +1514,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Board: **Reconnecting…** | The live connection dropped. | Usually fixes itself; it reads everything again when back. |
 | Board: black | It is asleep: its set times, or nobody touched it for a while ([A16](#a16-sleep-and-wake)). | Touch it, click or move the mouse. The first touch only wakes it; tap again to check something off. |
 | The Pi's monitor stays on while the board is black | The screen helper isn't installed, or the Pi hasn't restarted since. | Install it (A16), then `sudo reboot`. |
-| Board: words too small, or too big, to read from where you stand | Its text size suits a different spot. | On **Boards**, choose a **Text size** for it and **Set text size**. |
+| Board: words too small, or too big, to read from where you stand | Its text size suits a different spot. | On **Boards**, tap the board to open it, choose a text size under **Display** and **Set text size**. |
 | Board: today's list is under the calendar | It has **Larger** or **Largest** text, which leaves no room beside the calendar. | Scroll down; or choose **Standard text** on **Boards**. |
 | Board in a laptop's browser: the browser's zoom does nothing | The board fits the window, whatever its zoom. | Use the board's **Text size** on **Boards** instead. |
 | Board: **Today's list may be out of date** | Planning or day closing is late or failing. | Open **Health** in the admin app. |
@@ -1524,7 +1527,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Calendars: **Can't sync**, "may no longer be public" | The link stopped working. | In Apple Calendar, share it publicly again; **Edit** and **Replace the link**. |
 | Calendars: "didn't return a calendar" | The link isn't a public calendar link. | Copy the public link (it starts with `webcal://`). |
 | Calendars: "took more than 15 seconds" | The calendar's server was slow. | Nothing: it tries again in 15 minutes. |
-| An event isn't on the board yet | Calendars sync every 15 minutes. | Wait up to 15 minutes. Check **Show on the boards** and the board's **Calendars on**. |
+| An event isn't on the board yet | Calendars sync every 15 minutes. | Wait up to 15 minutes. Check **Show on the boards** and the board's **Calendars** on **Boards**. |
 | Reminders: none arrive | Reminders are off, no device is switched on, the bell is off, quiet hours hold them, or the item is done or not yours. | On **Reminders**: check the state, **Send a test**. In **My tasks**: check the item's bell. |
 | Reminders: "On an iPhone or iPad, add FamilyWise to your Home Screen first" | iPhone notifications need the Home Screen app. | **Share**, **Add to Home Screen**, open it from there, then **Turn on reminders**. |
 | Reminders: "Notifications are blocked" | The browser was told not to allow them. | Allow notifications for FamilyWise in the browser's or phone's settings. |

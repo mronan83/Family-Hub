@@ -5,6 +5,7 @@ import { Avatar, initials } from './Avatar';
 import { Banner } from './Banner';
 import { Button } from './Button';
 import { ChoreTile } from './ChoreTile';
+import { Fold } from './Fold';
 import { GoalMeter } from './GoalMeter';
 import { Icon, iconLabel } from './Icon';
 import { PointsChip } from './PointsChip';
@@ -106,5 +107,59 @@ describe('Avatar, Banner, Button', () => {
     expect(out).toContain('fw-btn--secondary');
     expect(out).toContain('data-icon="plus"');
     expect(out).toContain('type="button"');
+  });
+});
+
+describe('Fold', () => {
+  it('[NFR-18][D-120] a card folds to its title and its button, closed at first', () => {
+    const out = html(
+      <Fold
+        title="Add a board"
+        headingId="pair"
+        id="add"
+        button={{ label: 'Add a board', icon: 'plus' }}
+      >
+        <p>Form</p>
+      </Fold>,
+    );
+    expect(out).toMatch(
+      /^<section id="add" class="fw-card fw-fold" aria-labelledby="pair"><details>/,
+    );
+    expect(out).toContain('<h2 id="pair">Add a board</h2>');
+    expect(out).toContain('class="fw-btn fw-btn--secondary fw-fold__closed" aria-hidden="true"');
+    expect(out).toContain('<div class="fw-fold__body"><p>Form</p></div>');
+  });
+
+  it('[NFR-18][D-120] opens after a save in it; an inner fold has an h3 and its summary lines', () => {
+    const out = html(
+      <Fold variant="inner" title="Usual week" open summary={['Sam: Mon Buy', 'Maya: Fri Buy']}>
+        x
+      </Fold>,
+    );
+    expect(out).toMatch(/^<details class="fw-fold fw-fold--inner" open="">/);
+    expect(out).toContain('<h3>Usual week</h3>');
+    expect(out).toContain(
+      '<span class="fw-fold__sum"><span>Sam: Mon Buy</span><span>Maya: Fri Buy</span></span>',
+    );
+  });
+
+  it('[NFR-18][DEV-09][D-118] a row shows its name, its facts and its warning on the header', () => {
+    const out = html(
+      <Fold
+        variant="row"
+        id="board-1"
+        title="Playroom"
+        meta="Awake · no set times"
+        warning="Not seen for 2 days"
+      >
+        x
+      </Fold>,
+    );
+    expect(out).toMatch(/^<details id="board-1" class="fw-fold fw-fold--row">/);
+    expect(out).toContain('<h2 class="fw-fold__name">Playroom</h2>');
+    expect(out).toContain('<span class="fw-fold__meta">Awake · no set times</span>');
+    const head = out.slice(0, out.indexOf('</summary>'));
+    expect(head).toContain('Not seen for 2 days');
+    expect(head).toContain('data-icon="warning"');
   });
 });

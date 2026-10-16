@@ -20,29 +20,26 @@ const DEFAULT_TIMES = {
 /**
  * [DEV-07][US-207] A board's "Sleep and wake" on Boards (WP-34, D-116): when it counts as
  * missed, its set times for school nights and weekends, and how long untouched before it sleeps.
- * It folds like the board's Calendars and Home screen, its summary saying how it is set.
+ * One of the groups inside a board's fold (WP-91), its line saying how it is set.
  */
 export function SleepForm({
   device,
   name,
   sleep,
-  open,
   notice,
 }: {
   device: string;
   name: string;
   sleep: BoardSleep;
-  open: boolean;
   /** Saved, or not, just now. */
   notice?: 'saved' | 'error' | null;
 }) {
   const times = sleep.schedule ?? DEFAULT_TIMES;
   const id = (k: string) => `${k}-${device}`;
   return (
-    <details id={`sleep-${device}`} className="fw-board-cals" open={open}>
-      <summary>
-        Sleep and wake on {name}: {sleepSummary(sleep)}
-      </summary>
+    <div id={`sleep-${device}`} className="fw-fold__group">
+      <h3>Sleep and wake</h3>
+      <p className="fw-muted">{capitalised(sleepSummary(sleep))}.</p>
       {notice === 'error' ? (
         <Banner kind="notice">
           That wasn’t saved. Give each night a sleep time and a different wake time.
@@ -159,9 +156,11 @@ export function SleepForm({
           </Button>
         </div>
       </form>
-    </details>
+    </div>
   );
 }
+
+const capitalised = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** [DEV-07] Whether a board is asleep at its set times now, and when that changes; none without. */
 export function SleepStatus({

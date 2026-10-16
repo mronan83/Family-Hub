@@ -7,7 +7,7 @@ import { expect, test, type Page } from '@playwright/test';
 // Friday), or ?sleep=idle (5 minutes untouched). The page's clock is Playwright's, set to a day and
 // time, so minutes pass at once and the test holds at any real hour. Boards, /dev/boards: the
 // section on a phone and a laptop, in Day and Evening. Saving, Home and the real board run on the
-// preview (e2e/tests/board-sleep.spec.ts).
+// preview (e2e/tests/board-sleep.spec.ts). Boards' folds themselves (WP-91) are in boards.spec.ts.
 
 const cover = (page: Page) => page.locator('.fw-sleep');
 const board = (page: Page) => page.locator('main.fw-board');
@@ -152,13 +152,14 @@ for (const [width, height, device] of [
 
     for (const theme of ['day', 'evening'] as const) {
       test(`[DEV-07][US-207] WP-34: each board’s sleep and wake, in ${theme}`, async ({ page }) => {
-        await page.goto(`/dev/boards${theme === 'evening' ? '?theme=evening' : ''}`);
+        // Kitchen opened, as after a save there (WP-91).
+        await page.goto(`/dev/boards?open=kitchen${theme === 'evening' ? '&theme=evening' : ''}`);
         const kitchen = page.getByRole('form', { name: 'Sleep and wake for Kitchen' });
         await expect(kitchen).toBeVisible();
-        await expect(page.getByText('Awake · sleeps at 9:30 pm')).toBeVisible();
+        await expect(page.getByText(/^Awake · sleeps at 9:30 pm · seen 1 min ago/)).toBeVisible();
         await expect(
           page.getByText(
-            'Sleep and wake on Kitchen: school nights 9:30 pm to 6:30 am, weekends 10:30 pm to 7:30 am; sleeps after 15 minutes untouched; missed only while awake',
+            'School nights 9:30 pm to 6:30 am, weekends 10:30 pm to 7:30 am; sleeps after 15 minutes untouched; missed only while awake.',
           ),
         ).toBeVisible();
         await expect(kitchen.getByRole('radio', { name: /^Only while awake/ })).toBeChecked();
@@ -170,11 +171,8 @@ for (const [width, height, device] of [
         await expect(
           kitchen.getByRole('combobox', { name: 'Sleep when nobody touches it' }),
         ).toHaveValue('15');
-        await expect(
-          page.getByText(
-            'Sleep and wake on Playroom: sleeps after 10 minutes untouched; never missed',
-          ),
-        ).toBeVisible();
+        // Hallway tablet, folded: asleep at its set times, with its wake time.
+        await expect(page.getByText(/^Asleep · wakes at 8:00 am · seen 7 h ago/)).toBeVisible();
         expect(await fit(page)).toEqual({ wide: width, small: [] });
         await contrastOk(page);
       });

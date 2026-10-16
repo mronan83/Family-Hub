@@ -109,3 +109,26 @@ export function layoutFromForm(
     weather: weather === 'on',
   };
 }
+
+/** The cards' names in the layout's one-line summary. */
+const SHORT_LABELS: Record<CardId, string> = {
+  meals: 'Meals',
+  goals: 'Goals',
+  waiting: 'Waiting',
+  coming: 'Coming up',
+};
+
+/**
+ * [BRD-05][DEV-09][D-118] A home screen layout in one line, for its folded header on Boards (WP-91):
+ * "5 days · meals on · Goals, Waiting, Coming up · weather on".
+ */
+export function layoutSummary(layout: BoardLayout): string {
+  const row = layout.cards.filter((c) => isRowCard(c.id) && c.show).map((c) => SHORT_LABELS[c.id]);
+  const meals = layout.cards.find((c) => c.id === 'meals')?.show ?? true;
+  return [
+    layout.calendar === 'month' ? 'Month' : SPAN_LABELS[layout.calendar],
+    meals ? 'meals on' : 'meals off',
+    row.length ? row.join(', ') : 'no cards',
+    layout.weather ? 'weather on' : 'weather off',
+  ].join(' · ');
+}

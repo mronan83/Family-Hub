@@ -2,6 +2,7 @@ import {
   type AvatarKey,
   Banner,
   Button,
+  Fold,
   Icon,
   type IconName,
   type MemberColor,
@@ -307,69 +308,53 @@ export function MealsView({
         </ol>
       </section>
 
-      <section className="fw-card fw-fold" id="add" aria-labelledby="add-heading">
-        <details open={addAt !== null || undefined}>
-          <summary className="fw-fold__head">
-            <Icon name="chevron-right" className="fw-lunchday__chev" />
-            <h2 id="add-heading">Add to the plan</h2>
-            <span className="fw-btn fw-btn--secondary fw-fold__closed" aria-hidden="true">
-              <Icon name="plus" className="fw-btn__icon" />
-              <span>Add a meal</span>
-            </span>
-          </summary>
-          <div className="fw-fold__body">
-            <EntryForm
-              key={`${newId}-${addAt?.day ?? ''}-${addAt?.slot ?? ''}`}
-              id={newId}
-              week={week}
-              days={days}
-              today={today}
-              members={members}
-              meals={meals}
-              initialDay={addAt?.day ?? (days.includes(today) ? today : days[0]!)}
-              initialSlot={addAt?.slot ?? 'dinner'}
-            />
-          </div>
-        </details>
-      </section>
+      <Fold
+        id="add"
+        title="Add to the plan"
+        headingId="add-heading"
+        open={addAt !== null}
+        button={{ label: 'Add a meal', icon: 'plus' }}
+      >
+        <EntryForm
+          key={`${newId}-${addAt?.day ?? ''}-${addAt?.slot ?? ''}`}
+          id={newId}
+          week={week}
+          days={days}
+          today={today}
+          members={members}
+          meals={meals}
+          initialDay={addAt?.day ?? (days.includes(today) ? today : days[0]!)}
+          initialSlot={addAt?.slot ?? 'dinner'}
+        />
+      </Fold>
 
-      <section className="fw-card fw-fold" aria-labelledby="copy-heading">
-        <details>
-          <summary className="fw-fold__head">
-            <Icon name="chevron-right" className="fw-lunchday__chev" />
-            <h2 id="copy-heading">Copy last week</h2>
-          </summary>
-          <div className="fw-fold__body">
-            <p className="fw-muted">
-              Everything planned for last week, copied into this week on the same days. Each copy
-              can be changed on its own.
-            </p>
-            <form action={copyLastWeek} className="fw-form" aria-label="Copy last week">
-              <input type="hidden" name="week" value={week} />
-              <fieldset className="fw-field fw-fieldset">
-                <legend className="fw-field__label">
-                  Where this week already has a meal planned
-                </legend>
-                <div className="fw-actions">
-                  <label className="fw-choice">
-                    <input type="radio" name="mode" value="skip" defaultChecked />
-                    Keep it
-                  </label>
-                  <label className="fw-choice">
-                    <input type="radio" name="mode" value="overwrite" />
-                    Replace it with last week’s
-                  </label>
-                </div>
-              </fieldset>
-              <div className="fw-actions">
-                <Button type="submit" variant="secondary" icon="copy">
-                  Copy last week here
-                </Button>
-              </div>
-            </form>
+      <Fold title="Copy last week" headingId="copy-heading">
+        <p className="fw-muted">
+          Everything planned for last week, copied into this week on the same days. Each copy can be
+          changed on its own.
+        </p>
+        <form action={copyLastWeek} className="fw-form" aria-label="Copy last week">
+          <input type="hidden" name="week" value={week} />
+          <fieldset className="fw-field fw-fieldset">
+            <legend className="fw-field__label">Where this week already has a meal planned</legend>
+            <div className="fw-actions">
+              <label className="fw-choice">
+                <input type="radio" name="mode" value="skip" defaultChecked />
+                Keep it
+              </label>
+              <label className="fw-choice">
+                <input type="radio" name="mode" value="overwrite" />
+                Replace it with last week’s
+              </label>
+            </div>
+          </fieldset>
+          <div className="fw-actions">
+            <Button type="submit" variant="secondary" icon="copy">
+              Copy last week here
+            </Button>
           </div>
-        </details>
-      </section>
+        </form>
+      </Fold>
 
       <LunchSection week={week} today={today} lunch={lunch} menus={menus} members={members} />
     </main>

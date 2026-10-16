@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
 > Version 1.18 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-45, WP-46, WP-47, WP-48, WP-28, WP-51, WP-52)
+> v1.23: the fold, one shared component (`Fold`): a section, an inner fold or a row of a list, its warning in amber on the header open or closed; Boards folded to each board's facts (§7.3, WP-91, D-118, D-120).
 > v1.22: a chore's row grows with its title and points chip; the rail's word goes under its icon when it doesn't fit beside it (§7.2, WP-71, D-100).
 > v1.21: the board's calendar as a time grid: all-day lanes, the hours, now, an event's details, and the calendar's own text sizes (§3, §7.2, WP-52, D-82).
 > v1.20: the admin app's one menu and Settings (§7.3, WP-51, D-81).
@@ -242,6 +243,7 @@ Admin views use plain words for the same statuses: Open, Done, Needs review, App
 
 ### 7.3 Admin conventions
 - Top app bar with the horizontal logo (112 px) and household name; bottom tab bar on phones (Today, Chores, Rewards, Calendar, More). As built (WP-51, D-81): one menu instead. From 1024 px it is a 264 px Surface column down the left with a line on its right: the logo, then the groups (Your day, The family, Set-up) under small uppercase soft labels, each page a 48 px row with its icon (22 px) and name in ink, the page you are on in Teal tint with Teal text; Help, the person's avatar and name, and a ghost **Sign out** at its foot. On a phone the logo and a pill **Menu** button head the page; the menu opens over the whole screen with **Close**, the family's six pages two to a row. Today's count is a Sun pill. **Settings** is a grid of Surface tiles (icon in a 44 px Teal-tint square, the name in Nunito 800 at heading size, a chevron, what it is for in soft text, and a status line in Teal text, or in amber with `warning` when it needs a look).
+- The fold (WP-75, made one component in WP-91, D-120): the browser's own disclosure, so it opens before the page loads. Its header, at least 64 px: the chevron (turning down when open), the title, then while closed its button (a form that adds something) or its summary lines in Text Soft, the key fact in 600 weight. A row of a list (a board) shows its name and facts, one line of Text Soft. A warning sits on the header in Sun tint with the `warning` sign, open or closed, so a fold never hides a problem. Opened, a row's groups have small headings; Rename and Disconnect sit apart under a dashed line. A fold comes back open after a save, an add or an error in it.
 - Approval queue is a badge on Chores, not a modal.
 - Insights uses the trust panel and heatmap; heatmap cells use Teal (good), Plum (missed), empty (neutral), plus a text legend.
 - Destructive actions: ghost button, confirm dialog stating the consequence ("This reverses 4 chores and 20 points").

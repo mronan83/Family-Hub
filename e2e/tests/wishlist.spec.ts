@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '../support/test';
-import { pairingCode, retireBoard } from '../support/board';
+import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { addDays } from '../support/day';
 import { signIn } from '../support/session';
 
@@ -69,7 +69,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
   admin = await browser.newPage();
   await signIn(admin);
   await admin.goto('/admin/devices');
-  const form = admin.getByRole('form', { name: 'Add a board', exact: true });
+  const form = await addBoardForm(admin);
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);
   await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
   const code = await pairingCode(admin);
