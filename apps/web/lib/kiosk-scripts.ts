@@ -6,8 +6,10 @@ import { SCREEN_HELPER_PORT } from './kiosk-screen';
  * on the Pi only (127.0.0.1), answers only the board's own site, and turns the monitor's power off
  * and on when the board sleeps and wakes: `wlopm` under Wayland (Pi OS's labwc or Wayfire), `xset
  * dpms` under X11. It needs no password, key or account. The installer also lets Chromium reach it
- * without asking (its Local Network Access policy, for the board's site only), and starts it at
- * every login. `origin` is the board's site, as the installer was fetched from.
+ * without asking (its Local Network Access policy, for the board's site only), and runs it as a
+ * systemd user service, so it starts with the Pi whichever desktop it has (the first version used
+ * the desktop's start-up folder, which labwc on Debian 13 doesn't read). `origin` is the board's
+ * site, as the installer was fetched from.
  */
 export function screenHelper(origin: string): string {
   return `#!/usr/bin/env python3
@@ -36,7 +38,8 @@ def screen(on):
             f.write('on' if on else 'off')
         return True
     if os.environ.get('WAYLAND_DISPLAY') and shutil.which('wlopm'):
-        return run('wlopm', '--on' if on else '--off', '*')
+        if run('wlopm', '--on' if on else '--off', '*'):
+            return True
     if os.environ.get('DISPLAY') and shutil.which('xset'):
         run('xset', '+dpms')
         return run('xset', 'dpms', 'force', 'on' if on else 'off')
@@ -92,22 +95,35 @@ export function installScript(origin: string): string {
   const q = (s: string) => `'${s.replace(/'/g, `'\\''`)}'`;
   return `#!/usr/bin/env bash
 # FamilyWise screen helper for the Raspberry Pi board (WP-34). On the Pi, as the user the board
-# runs as, in a terminal:
+# runs as, in a terminal or over SSH:
 #   curl -fsSL ${origin}/api/kiosk/install | bash
-# It installs the helper, lets Chromium reach it for this site only, starts it at every login and
-# now, then asks for a restart so Chromium reads its new setting. Running it again updates it.
+# It installs the helper, lets Chromium reach it for this site only, and runs it as a systemd user
+# service: started now, at every start of the Pi, and again if it stops. Running it again updates it.
 set -euo pipefail
 origin=${q(origin)}
 bin="$HOME/.local/bin/familywise-screen"
+unit_dir="$HOME/.config/systemd/user"
+runtime="\${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
 echo "FamilyWise: installing the screen helper for $origin"
-mkdir -p "$(dirname "$bin")" "$HOME/.config/autostart"
+mkdir -p "$(dirname "$bin")" "$unit_dir"
 curl -fsSL "$origin/api/kiosk/screen-helper" -o "$bin"
 chmod +x "$bin"
 
-# Under Wayland (labwc or Wayfire, as on Pi OS since 2023) the screen is turned by wlopm.
-if [ -n "\${WAYLAND_DISPLAY:-}" ] || pgrep -x labwc >/dev/null || pgrep -x wayfire >/dev/null; then
+# Which display the screen is on: Wayland (labwc or Wayfire, as on Pi OS since 2023), turned by
+# wlopm; else X11, turned by xset. Found from the running desktop, so it works over SSH too.
+wayland=""
+for socket in "$runtime"/wayland-[0-9]; do
+  if [ -S "$socket" ] || [ -e "$socket" ]; then wayland="$(basename "$socket")"; break; fi
+done
+if [ -z "$wayland" ] && { pgrep -x labwc >/dev/null || pgrep -x wayfire >/dev/null; }; then
+  wayland="wayland-0"
+fi
+if [ -n "$wayland" ]; then
   command -v wlopm >/dev/null || sudo apt-get install -y wlopm
+  display="WAYLAND_DISPLAY=$wayland"
+else
+  display="DISPLAY=:0"
 fi
 
 # Chromium may reach the helper on this Pi from this site, without asking (it can't ask in kiosk mode).
@@ -115,22 +131,31 @@ sudo mkdir -p /etc/chromium/policies/managed
 printf '{"LocalNetworkAccessAllowedForUrls": ["%s"], "InsecurePrivateNetworkRequestsAllowedForUrls": ["%s"]}\\n' \\
   "$origin" "$origin" | sudo tee /etc/chromium/policies/managed/familywise-screen.json >/dev/null
 
-# Started at every login, and again if it stops.
-cat > "$HOME/.config/autostart/familywise-screen.desktop" <<DESKTOP
-[Desktop Entry]
-Type=Application
-Name=FamilyWise screen
-Exec=sh -c 'while true; do python3 $bin; sleep 5; done'
-X-GNOME-Autostart-enabled=true
-DESKTOP
+# A systemd user service: it doesn't depend on which desktop reads which start-up folder.
+cat > "$unit_dir/familywise-screen.service" <<UNIT
+[Unit]
+Description=FamilyWise screen helper (turns the monitor off and on with the board)
 
-# And now. One already running is stopped, and its loop starts the new one.
-if pgrep -f "python3 $bin" >/dev/null; then
-  pkill -f "python3 $bin" || true
-else
-  nohup sh -c "while true; do python3 $bin; sleep 5; done" >/dev/null 2>&1 &
-fi
+[Service]
+ExecStart=/usr/bin/env python3 $bin
+Environment=$display
+Restart=always
+RestartSec=5
 
-echo "FamilyWise: done. Restart the Pi once so Chromium reads its new setting: sudo reboot"
+[Install]
+WantedBy=default.target
+UNIT
+
+# The first version started it from the desktop's start-up folder, which not every desktop reads;
+# that file is replaced by the service. A copy started by hand is stopped, so the service can listen.
+rm -f "$HOME/.config/autostart/familywise-screen.desktop"
+systemctl --user stop familywise-screen.service 2>/dev/null || true
+pkill -f "python3 $bin" 2>/dev/null || true
+systemctl --user daemon-reload
+systemctl --user enable familywise-screen.service
+systemctl --user restart familywise-screen.service
+
+echo "FamilyWise: done. The helper is running ($display)."
+echo "If this is the first install, restart the Pi once so Chromium reads its new setting: sudo reboot"
 `;
 }

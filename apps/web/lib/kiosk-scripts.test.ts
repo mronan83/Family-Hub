@@ -1,5 +1,12 @@
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -75,5 +82,78 @@ describe('[DEV-07] WP-34: the Pi’s screen helper', () => {
     execFileSync('bash', ['-n', file]);
     expect(readFileSync(file, 'utf8')).toContain(`origin='${ORIGIN}'`);
     expect(installScript("https://it's.example")).toContain(`origin='https://it'\\''s.example'`);
+  });
+});
+
+/**
+ * The installer run for real in a made-up home, with stand-ins on PATH for what it calls on a Pi
+ * (curl, sudo, systemctl, pgrep, pkill, wlopm): each writes what it was asked to a log.
+ */
+function install(opts: { wayland: string | null; labwc: boolean }) {
+  const home = mkdtempSync(join(tmpdir(), 'fw-install-'));
+  const runtime = join(home, 'run');
+  const bin = join(home, 'shims');
+  const log = join(home, 'calls.log');
+  mkdirSync(runtime);
+  mkdirSync(bin);
+  mkdirSync(join(home, '.config/autostart'), { recursive: true });
+  // The first version's start-up file, which the service replaces.
+  writeFileSync(join(home, '.config/autostart/familywise-screen.desktop'), '[Desktop Entry]\n');
+  if (opts.wayland) writeFileSync(join(runtime, opts.wayland), '');
+  const shim = (name: string, body: string) => {
+    writeFileSync(join(bin, name), `#!/bin/sh\necho "${name} $*" >> "${log}"\n${body}\n`);
+    chmodSync(join(bin, name), 0o755);
+  };
+  // curl -fsSL <url> -o <file>: writes the file.
+  shim('curl', 'while [ $# -gt 0 ]; do if [ "$1" = -o ]; then echo helper > "$2"; fi; shift; done');
+  shim('sudo', 'cat > /dev/null');
+  shim('systemctl', 'exit 0');
+  shim('pgrep', opts.labwc ? 'exit 0' : 'exit 1');
+  shim('pkill', 'exit 1');
+  shim('wlopm', 'exit 0');
+  const script = join(home, 'install.sh');
+  writeFileSync(script, installScript(ORIGIN));
+  const out = execFileSync('bash', [script], {
+    env: { ...process.env, PATH: `${bin}:/usr/bin:/bin`, HOME: home, XDG_RUNTIME_DIR: runtime },
+    input: '',
+    encoding: 'utf8',
+  });
+  return {
+    out,
+    unit: readFileSync(join(home, '.config/systemd/user/familywise-screen.service'), 'utf8'),
+    calls: readFileSync(log, 'utf8'),
+    oldStartup: existsSync(join(home, '.config/autostart/familywise-screen.desktop')),
+    home,
+  };
+}
+
+describe('[DEV-07] WP-34 follow-up: the installer runs the helper as a systemd user service', () => {
+  it('on Wayland (labwc on Debian 13): the desktop’s own display, started now and with the Pi', () => {
+    const r = install({ wayland: 'wayland-1', labwc: true });
+    expect(r.unit).toContain(
+      `ExecStart=/usr/bin/env python3 ${r.home}/.local/bin/familywise-screen`,
+    );
+    expect(r.unit).toContain('Environment=WAYLAND_DISPLAY=wayland-1');
+    expect(r.unit).toContain('Restart=always');
+    expect(r.unit).toContain('WantedBy=default.target');
+    expect(r.calls).toContain('systemctl --user enable familywise-screen.service');
+    expect(r.calls).toContain('systemctl --user restart familywise-screen.service');
+    expect(r.calls).toContain(`curl -fsSL ${ORIGIN}/api/kiosk/screen-helper`);
+    // wlopm is there already, so nothing is installed.
+    expect(r.calls).not.toContain('apt-get');
+    expect(r.oldStartup, 'the first version’s start-up file is replaced').toBe(false);
+    expect(r.out).toContain('The helper is running (WAYLAND_DISPLAY=wayland-1)');
+  });
+
+  it('on labwc with its socket not found, wayland-0', () => {
+    expect(install({ wayland: null, labwc: true }).unit).toContain(
+      'Environment=WAYLAND_DISPLAY=wayland-0',
+    );
+  });
+
+  it('on X11: the first display', () => {
+    const r = install({ wayland: null, labwc: false });
+    expect(r.unit).toContain('Environment=DISPLAY=:0');
+    expect(r.unit).not.toContain('WAYLAND_DISPLAY');
   });
 });
