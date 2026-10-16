@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '../support/test';
-import { pairingCode, retireBoard } from '../support/board';
+import { addBoardForm, boardFold, pairingCode, retireBoard } from '../support/board';
 import { householdToday } from '../support/day';
 import { networkSwitch, type NetworkSwitch } from '../support/network';
 import { signIn } from '../support/session';
@@ -36,7 +36,7 @@ async function alexOnBoards(browser: Browser): Promise<Page> {
 
 async function newCode(admin: Page, name = BOARD): Promise<string> {
   await admin.goto('/admin/devices');
-  const form = admin.getByRole('form', { name: 'Add a board', exact: true });
+  const form = await addBoardForm(admin);
   await form.getByLabel('Board name', { exact: true }).fill(name);
   await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
   const code = await pairingCode(admin);
@@ -389,7 +389,11 @@ test('[DEV-05] an admin holds the board on Evening or Day; it switches at once a
   ] as const) {
     // A fresh load each time, so no earlier save is still settling on the admin page.
     await admin.goto('/admin/devices');
-    const form = admin.getByRole('form', { name: `Theme for ${BOARD}`, exact: true });
+    // [DEV-09][D-118] The board's fold opened (WP-91), its theme under Display.
+    const form = (await boardFold(admin, BOARD)).getByRole('form', {
+      name: `Theme for ${BOARD}`,
+      exact: true,
+    });
     await form.getByLabel(`Theme for ${BOARD}`, { exact: true }).selectOption({ label });
     const confirmed = answered('/admin/devices');
     const clicked = Date.now();
@@ -407,7 +411,10 @@ test('[DEV-05] an admin holds the board on Evening or Day; it switches at once a
     await expectContrastOk(board);
   }
   await admin.goto('/admin/devices');
-  const form = admin.getByRole('form', { name: `Theme for ${BOARD}`, exact: true });
+  const form = (await boardFold(admin, BOARD)).getByRole('form', {
+    name: `Theme for ${BOARD}`,
+    exact: true,
+  });
   await form
     .getByLabel(`Theme for ${BOARD}`, { exact: true })
     .selectOption({ label: 'Automatic, by time of day' });
@@ -467,11 +474,14 @@ test('[DEV-03] the admin sees the board, renames it and disconnects it; the boar
     await admin.goto('/admin/devices');
     const boards = admin.getByRole('list', { name: 'Paired boards', exact: true });
     await expect(boards).toContainText(BOARD);
-    await expect(boards).toContainText('Last seen');
+    // [DEV-09][D-118] Folded, its header says when it was last seen (WP-91).
+    await expect(boards).toContainText(/seen (just now|\d+ min ago|\d+ h ago)/);
+    const fold = await boardFold(admin, BOARD);
 
     // Disconnecting asks first (06 §6): nothing happens until "Yes, disconnect".
-    await admin.getByText(`Disconnect ${BOARD}`, { exact: true }).click();
+    await fold.getByText(`Disconnect ${BOARD}`, { exact: true }).click();
     await admin.getByRole('button', { name: `Yes, disconnect ${BOARD}`, exact: true }).click();
+    // Disconnected opens on it (D-120).
     await expect(
       admin.getByRole('list', { name: 'Disconnected boards', exact: true }),
     ).toContainText(BOARD);

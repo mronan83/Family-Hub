@@ -1805,10 +1805,6 @@ html:has(.board) {
   font-variant-numeric: tabular-nums;
 }
 
-/* A board's calendars on the Boards page (WP-23): a full row under the board's own controls. */
-.fw-board-cals {
-  flex-basis: 100%;
-}
 /* [DEV-07][US-207] A board's sleep and wake on Boards (WP-34): the three choices for when it is
    missed side by side where they fit, the two nights' times, and whether it is asleep now. */
 .fw-sleep-choices,
@@ -2828,10 +2824,77 @@ details[open] > .fw-fold__head .fw-fold__sum {
   padding: var(--s-3) var(--s-4) var(--s-4);
   border-top: var(--border-w) solid var(--line);
 }
-.fw-fold--inner {
+.fw-fold--inner,
+.fw-fold--row {
   border: var(--border-w) solid var(--line);
   border-radius: var(--r-md);
   background: var(--surface);
+}
+/* [NFR-18][D-120] The shared fold (WP-91): a warning stays on the header, open or closed, in amber
+   with the sign, as the Settings tiles do. */
+.fw-fold__flag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+  font-size: var(--t-small);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.fw-fold__flag-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+/* A row of a list (a board, WP-91): its name and facts on the header, its warning at the end. */
+.fw-fold--row > .fw-fold__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.fw-fold__main {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 2px;
+  min-width: 0;
+}
+.fw-fold__name {
+  margin: 0;
+  font-size: var(--t-body);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.fw-fold__meta {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+/* On a phone the warning goes under the board's facts. */
+@media (max-width: 480px) {
+  .fw-fold--row .fw-fold__flag {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+}
+/* A board's groups when opened (WP-91): Display, Sleep and wake, Calendars, Home screen, then its
+   name and Disconnect set apart at the bottom. */
+.fw-fold__group {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-fold__group > h3 {
+  margin: 0;
+  font-size: var(--t-body);
+}
+.fw-fold__apart {
+  padding-top: var(--s-3);
+  border-top: var(--border-w) dashed var(--line);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fw-lunchday__chev {
+    transition: none;
+  }
 }
 .fw-meal-slot {
   display: grid;

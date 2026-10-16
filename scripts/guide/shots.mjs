@@ -244,7 +244,15 @@ const SHOTS = [
   // The menu and Settings (WP-51): Settings on a laptop with the menu beside it, the menu on a phone.
   { name: 'admin-settings-laptop', device: 'laptop', url: '/dev/settings' },
   // [DEV-07] A board's Sleep and wake on Boards (WP-34): Kitchen's, open, as in the mockup.
-  { name: 'admin-boards-sleep-laptop', device: 'laptop', url: '/dev/boards', full: true },
+  {
+    name: 'admin-boards-sleep-laptop',
+    device: 'laptop',
+    url: '/dev/boards?open=kitchen',
+    // Kitchen opened (WP-91), down to Save sleep and wake: the page whole is over 120 KB.
+    maxHeight: 1080,
+  },
+  // [D-118] Boards folded (WP-91): every board to its facts, Playroom's not-seen warning.
+  { name: 'admin-boards-phone', device: 'phone', url: '/dev/boards', full: true },
   // Home at a glance and Family options (WP-57): what needs you and the quick actions; a quiet day
   // with today's snow day on a phone; the week's start day with a change waiting.
   { name: 'admin-home-laptop', device: 'laptop', url: '/dev/home', full: true },

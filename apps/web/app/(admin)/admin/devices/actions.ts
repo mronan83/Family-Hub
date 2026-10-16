@@ -60,7 +60,13 @@ export async function renameDevice(form: FormData): Promise<void> {
     if (error) log('warn', 'board not renamed', { code: error.code });
   }
   revalidatePath('/admin/devices');
-  redirect('/admin/devices');
+  redirect(backToBoard(String(form.get('id') ?? '')));
+}
+
+/** [D-120] Back to Boards with the board just saved open (WP-91). */
+function backToBoard(id: string, more: Record<string, string> = {}): string {
+  const q = new URLSearchParams({ ...more, board: id });
+  return `/admin/devices?${q}#board-${id}`;
 }
 
 /**
@@ -98,7 +104,7 @@ export async function setBoardSleep(form: FormData): Promise<void> {
   redirect(`/admin/devices?${q}#sleep-${id}`);
 }
 
-/** Puts `change` into the board's settings, keeping the rest, then shows Boards again. */
+/** Puts `change` into the board's settings, keeping the rest, then shows Boards with the board open. */
 async function setBoardConfig(
   form: FormData,
   change: Record<string, string> | null,
@@ -106,7 +112,7 @@ async function setBoardConfig(
 ): Promise<void> {
   if (change) await saveBoardConfig(form, change, failure);
   revalidatePath('/admin/devices');
-  redirect('/admin/devices');
+  redirect(backToBoard(String(form.get('id') ?? '')));
 }
 
 /** Puts `change` into the board's settings, keeping the rest; false when it wasn't saved. */
@@ -139,7 +145,12 @@ export async function disconnectDevice(form: FormData): Promise<void> {
   const { error } = await db.rpc('revoke_device', { p_device_id: String(form.get('id') ?? '') });
   if (error) log('warn', 'board not disconnected', { code: error.code, hint: error.hint });
   revalidatePath('/admin/devices');
-  redirect('/admin/devices');
+  // [D-120] The list it went to, opened; or the board still there, opened, when it didn't go.
+  redirect(
+    error
+      ? backToBoard(String(form.get('id') ?? ''))
+      : '/admin/devices?did=disconnected#disconnected',
+  );
 }
 
 /**
@@ -156,11 +167,7 @@ export async function setBoardCalendars(form: FormData): Promise<void> {
   });
   if (error) log('warn', 'board calendars not saved', { code: error.code });
   revalidatePath('/admin/devices');
-  redirect(
-    error
-      ? '/admin/devices?error=calendars'
-      : `/admin/devices?did=calendars&name=${encodeURIComponent(name)}`,
-  );
+  redirect(backToBoard(id, error ? { error: 'calendars' } : { did: 'calendars', name }));
 }
 
 /** Back to the layout just saved (the household's, or a board's, opened), its notice beside it. */

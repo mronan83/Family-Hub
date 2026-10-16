@@ -1,6 +1,7 @@
 import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
-import { pairBoard, retireBoard } from '../support/board';
+import { boardFold, pairBoard, retireBoard } from '../support/board';
+import { unfold } from '../support/fold';
 import { sql as query } from '../support/db';
 
 // [BRD-01][BRD-05][US-1004] The board's home screen on the preview (WP-35, D-66, D-67). A board paired
@@ -93,6 +94,8 @@ test('[BRD-05][US-1004] the done-when: Alex moves a card on Boards, and the boar
       ORDERS[(i + 1) % 2]!.split('|'),
     );
     await admin.goto('/admin/devices');
+    // [DEV-09][D-118] The household's Home screen, folded at first to one line (WP-91).
+    await unfold(admin.locator('#layout-household > details'));
     const up = i % 2 === 0;
     const move = everyBoard().getByRole('button', {
       name: `Move Coming up ${up ? 'up' : 'down'}`,
@@ -150,16 +153,16 @@ test('[BRD-05][D-67] a board with its own layout: the month and no Goals here; e
     );
   const householdBefore = household();
   await admin.goto('/admin/devices');
-  const details = admin.locator('details', {
-    has: admin.getByText(`Home screen on ${BOARD}: the household’s layout`),
-  });
-  await details.locator('summary').click();
-  const own = details.getByRole('form', { name: `Layout for ${BOARD}`, exact: true });
+  // [DEV-09][D-118] The board's fold opened (WP-91), its Home screen inside.
+  const fold = await boardFold(admin, BOARD);
+  await expect(fold.locator(':scope > summary')).toContainText('household layout');
+  const own = fold.getByRole('form', { name: `Layout for ${BOARD}`, exact: true });
   await own.getByLabel(`Give ${BOARD} its own layout`).check();
   await own.getByRole('button', { name: 'Save', exact: true }).click();
-  // It starts as a copy of the household's, opened where it was saved.
+  // It starts as a copy of the household's, the board opened where it was saved.
   const mine = admin.getByRole('form', { name: `Home screen on ${BOARD}`, exact: true });
   await expect(mine).toBeVisible();
+  await expect(fold.locator(':scope > summary')).toContainText('its own layout');
   await mine.getByRole('radio', { name: 'Month', exact: true }).check();
   await mine.getByRole('checkbox', { name: /^Goals/ }).uncheck();
   await mine.getByRole('button', { name: 'Save layout', exact: true }).click();

@@ -1,5 +1,12 @@
-import { expect, type Browser, type BrowserContextOptions, type Page } from '@playwright/test';
+import {
+  expect,
+  type Browser,
+  type BrowserContextOptions,
+  type Locator,
+  type Page,
+} from '@playwright/test';
 import { sql } from './db';
+import { unfold } from './fold';
 import { signIn } from './session';
 
 const DEMO = '0de00000-0000-4000-8000-000000000001';
@@ -23,6 +30,24 @@ export async function retireBoard(board: Page | undefined, name: string): Promis
     `delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${name}';
      delete from public.device where household_id = '${DEMO}' and name = '${name}';`,
   );
+}
+
+/** [DEV-01][DEV-09][D-118] Boards' "Add a board" form, its fold opened (WP-91): folded at first, to its button. */
+export async function addBoardForm(admin: Page): Promise<Locator> {
+  await unfold(admin.locator('#add-board > details'));
+  return admin.getByRole('form', { name: 'Add a board', exact: true });
+}
+
+/**
+ * [DEV-03][DEV-09][D-118] A board's fold on Boards, opened (WP-91): each board is folded at first to its name
+ * and facts, and comes back open after a save in it.
+ */
+export async function boardFold(admin: Page, name: string): Promise<Locator> {
+  const fold = admin
+    .getByRole('list', { name: 'Paired boards', exact: true })
+    .locator('details.fw-fold--row', { has: admin.getByRole('heading', { name, exact: true }) });
+  await unfold(fold);
+  return fold;
 }
 
 /**
@@ -62,7 +87,7 @@ export async function pairBoard(
   const admin = await browser.newPage(adminOptions);
   await signIn(admin);
   await admin.goto('/admin/devices');
-  const form = admin.getByRole('form', { name: 'Add a board', exact: true });
+  const form = await addBoardForm(admin);
   await form.getByLabel('Board name', { exact: true }).fill(name);
   await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
   const code = await pairingCode(admin);

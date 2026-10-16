@@ -1,26 +1,12 @@
-import { Banner, Button } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
-import { TEXT_SIZES } from '@familywise/ui';
-import { BOARD_THEMES, boardTextSize, boardThemeSetting } from '@/lib/devices';
-import { dayAndTime } from '@/lib/format';
+import { effectiveLayout } from '@/lib/board-layout';
+import { addDays, readSchoolDays } from '@/lib/board-sleep';
+import { isoDay } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../header';
-import { effectiveLayout, readLayout } from '@/lib/board-layout';
-import { addDays, readBoardSleep, readSchoolDays } from '@/lib/board-sleep';
-import { isoDay } from '@/lib/format';
-import {
-  disconnectDevice,
-  renameDevice,
-  setBoardCalendars,
-  setBoardTextSize,
-  setBoardTheme,
-  setOwnLayout,
-} from './actions';
-import { LayoutForm } from './layout-form';
-import { PairingForm } from './pairing-form';
-import { SleepForm, SleepStatus } from './sleep-form';
+import { BoardsView } from './view';
 
 export const metadata: Metadata = { title: 'Boards' };
 
@@ -43,6 +29,7 @@ interface CalendarRow {
 
 // [DEV-01][DEV-03][DEV-05] The household's boards: pair a new one, rename, set its theme, see when
 // each was last seen, and disconnect one that is lost or retired. Disconnected boards stay listed.
+// [DEV-09][D-118] Each board folded to its name and facts (WP-91); the page is BoardsView.
 // [CAL-05] Each board's calendars (WP-23): the calendars' own setting until a board's choice is saved.
 // [BRD-05][US-1004] The home screen's layout (WP-35, D-67): the household's, and a board's own.
 // [BRD-08][US-1007] Each board's text size (WP-47, D-73).
@@ -108,298 +95,27 @@ export default async function DevicesPage({
     };
   };
   const params = await searchParams;
-  const active = devices.filter((d) => d.status === 'active');
-  const revoked = devices.filter((d) => d.status === 'revoked');
-  const tz = household.timezone;
-  // Where a layout was just saved: its notice shows there, not at the top of the page.
-  const layoutNotice = (where: string) =>
-    params.board !== where ? null : params.error === 'layout' ? (
-      <Banner kind="notice">That layout wasn’t saved. Try again in a moment.</Banner>
-    ) : params.did === 'layout' ? (
-      <Banner kind="info">
-        Saved the home screen for {params.name || 'the board'}. It shows the change in a moment.
-      </Banner>
-    ) : null;
-
   return (
-    <main className="fw-page fw-page--wide">
-      <AdminHeader current="/admin/devices" />
-      {params.error === 'calendars' ? (
-        <Banner kind="notice">Those calendars weren’t saved. Try again in a moment.</Banner>
-      ) : params.did === 'calendars' ? (
-        <Banner kind="info">
-          Saved the calendars on {params.name || 'the board'}. It shows them in a moment.
-        </Banner>
-      ) : null}
-      <section className="fw-card" aria-labelledby="boards-heading">
-        <h1 id="boards-heading">Boards</h1>
-        {active.length === 0 ? (
-          <p className="fw-muted">No boards yet. Pair the first one below.</p>
-        ) : (
-          <ul className="fw-list" aria-label="Paired boards">
-            {active.map((d) => (
-              <li key={d.id} className="fw-list__row">
-                <span>
-                  <strong>{d.name}</strong>
-                  <span className="fw-muted">
-                    {' · '}
-                    {d.last_seen_at
-                      ? `Last seen ${dayAndTime(d.last_seen_at, tz)}`
-                      : 'Not seen yet'}
-                  </span>
-                  <SleepStatus
-                    sleep={readBoardSleep((d.board_config as { sleep?: unknown } | null)?.sleep)}
-                    now={now}
-                    timeZone={tz}
-                    school={schoolDays}
-                  />
-                </span>
-                <span className="fw-actions">
-                  <form
-                    action={renameDevice}
-                    className="fw-actions"
-                    aria-label={`Rename ${d.name}`}
-                  >
-                    <input type="hidden" name="id" value={d.id} />
-                    <label className="fw-visually-hidden" htmlFor={`name-${d.id}`}>
-                      New name for {d.name}
-                    </label>
-                    <input
-                      id={`name-${d.id}`}
-                      className="fw-input"
-                      name="name"
-                      defaultValue={d.name}
-                      maxLength={60}
-                      required
-                    />
-                    <Button type="submit" variant="secondary">
-                      Rename
-                    </Button>
-                  </form>
-                  <form
-                    action={setBoardTheme}
-                    className="fw-actions"
-                    aria-label={`Theme for ${d.name}`}
-                  >
-                    <input type="hidden" name="id" value={d.id} />
-                    <label className="fw-visually-hidden" htmlFor={`theme-${d.id}`}>
-                      Theme for {d.name}
-                    </label>
-                    <select
-                      id={`theme-${d.id}`}
-                      className="fw-input"
-                      name="theme"
-                      defaultValue={boardThemeSetting(d.board_config)}
-                    >
-                      {BOARD_THEMES.map((t) => (
-                        <option key={t.value} value={t.value}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
-                    <Button type="submit" variant="secondary">
-                      Set theme
-                    </Button>
-                  </form>
-                  {/* [BRD-08] The board fits its screen by itself; this makes its words smaller or
-                      larger for where it hangs (D-73). */}
-                  <form
-                    action={setBoardTextSize}
-                    className="fw-actions"
-                    aria-label={`Text size for ${d.name}`}
-                  >
-                    <input type="hidden" name="id" value={d.id} />
-                    <label className="fw-visually-hidden" htmlFor={`text-size-${d.id}`}>
-                      Text size for {d.name}
-                    </label>
-                    <select
-                      id={`text-size-${d.id}`}
-                      className="fw-input"
-                      name="text_size"
-                      defaultValue={boardTextSize(d.board_config)}
-                    >
-                      {TEXT_SIZES.map((t) => (
-                        <option key={t.value} value={t.value}>
-                          {t.value === 'standard' ? 'Standard text' : `${t.label} text`}
-                        </option>
-                      ))}
-                    </select>
-                    <Button type="submit" variant="secondary">
-                      Set text size
-                    </Button>
-                  </form>
-                </span>
-                {calendars.length > 0
-                  ? (() => {
-                      const { own, shown } = shownOn(d.id);
-                      return (
-                        <details className="fw-board-cals">
-                          <summary>
-                            Calendars on {d.name}:{' '}
-                            {calendars
-                              .filter((c) => shown.has(c.id))
-                              .map((c) => c.name)
-                              .join(', ') || 'none'}
-                          </summary>
-                          <form
-                            action={setBoardCalendars}
-                            className="fw-form"
-                            aria-label={`Calendars on ${d.name}`}
-                          >
-                            <input type="hidden" name="id" value={d.id} />
-                            <input type="hidden" name="name" value={d.name} />
-                            <p className="fw-muted">
-                              {own
-                                ? 'Chosen for this board. A calendar you connect later stays off it until you tick it here.'
-                                : 'This board shows the calendars set to show on the boards. Saving here makes it choose its own.'}
-                            </p>
-                            <fieldset className="fw-field fw-fieldset">
-                              <legend className="fw-field__label">Show on {d.name}</legend>
-                              <div className="fw-picker">
-                                {calendars.map((c) => (
-                                  <label key={c.id} className="fw-picker__item">
-                                    <input
-                                      type="checkbox"
-                                      name="calendars"
-                                      value={c.id}
-                                      defaultChecked={shown.has(c.id)}
-                                    />
-                                    <span
-                                      className="fw-swatch fw-swatch--small"
-                                      style={{ background: `var(--${c.color}-line)` }}
-                                      aria-hidden
-                                    />
-                                    {c.name}
-                                  </label>
-                                ))}
-                              </div>
-                            </fieldset>
-                            <div className="fw-actions">
-                              <Button type="submit" variant="secondary" icon="calendar">
-                                Save calendars
-                              </Button>
-                            </div>
-                          </form>
-                        </details>
-                      );
-                    })()
-                  : null}
-                {(() => {
-                  const own = readLayout((d.board_config as { layout?: unknown } | null)?.layout);
-                  return (
-                    <details
-                      id={`layout-${d.id}`}
-                      className="fw-board-cals"
-                      open={
-                        params.board === d.id &&
-                        (params.did === 'layout' || params.error === 'layout')
-                      }
-                    >
-                      <summary>
-                        Home screen on {d.name}: {own ? 'its own layout' : 'the household’s layout'}
-                      </summary>
-                      {layoutNotice(d.id)}
-                      <form
-                        action={setOwnLayout}
-                        className="fw-form"
-                        aria-label={`Layout for ${d.name}`}
-                      >
-                        <input type="hidden" name="id" value={d.id} />
-                        <input type="hidden" name="name" value={d.name} />
-                        <label className="fw-picker__item">
-                          <input type="checkbox" name="own" defaultChecked={own !== null} />
-                          Give {d.name} its own layout
-                        </label>
-                        <p className="fw-muted">
-                          {own
-                            ? 'Only this board changes here. Untick to follow the household’s layout again.'
-                            : 'This board shows the household’s layout below. Its own starts as a copy.'}
-                        </p>
-                        <div className="fw-actions">
-                          <Button type="submit" variant="secondary">
-                            Save
-                          </Button>
-                        </div>
-                      </form>
-                      {own ? <LayoutForm layout={own} device={d.id} name={d.name} /> : null}
-                    </details>
-                  );
-                })()}
-                <SleepForm
-                  device={d.id}
-                  name={d.name}
-                  sleep={readBoardSleep((d.board_config as { sleep?: unknown } | null)?.sleep)}
-                  open={
-                    params.board === d.id && (params.did === 'sleep' || params.error === 'sleep')
-                  }
-                  notice={
-                    params.board !== d.id
-                      ? null
-                      : params.error === 'sleep'
-                        ? 'error'
-                        : params.did === 'sleep'
-                          ? 'saved'
-                          : null
-                  }
-                />
-                {/* Disconnecting is for good, so it asks first (06 §6). */}
-                <details className="fw-more fw-board-cals">
-                  <summary>Disconnect {d.name}</summary>
-                  <p className="fw-muted">
-                    It stops showing FamilyWise at once and can’t sign in again. To use this screen
-                    again, pair it with a new code.
-                  </p>
-                  <form action={disconnectDevice}>
-                    <input type="hidden" name="id" value={d.id} />
-                    <Button type="submit" variant="ghost" icon="minus-circle">
-                      Yes, disconnect {d.name}
-                    </Button>
-                  </form>
-                </details>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section id="layout-household" className="fw-card" aria-labelledby="layout-heading">
-        <h2 id="layout-heading">Home screen</h2>
-        <p className="fw-muted">
-          What every board shows first: the calendar, today’s list beside it, then these cards. A
-          board with its own layout (above) keeps it.
-        </p>
-        {layoutNotice('household')}
-        <LayoutForm layout={householdLayout} device={null} name="every board" />
-      </section>
-
-      <section className="fw-card" aria-labelledby="pair-heading">
-        <h2 id="pair-heading">Add a board</h2>
-        <p className="fw-muted">
-          Open the board on the display (it starts on the pairing screen), then enter the code you
-          get here.
-        </p>
-        <PairingForm timeZone={tz} />
-      </section>
-
-      {revoked.length > 0 ? (
-        <section className="fw-card" aria-labelledby="revoked-heading">
-          <h2 id="revoked-heading">Disconnected</h2>
-          <Banner kind="info">
-            A disconnected board reads nothing and cannot sign in again. Pair it again for a new
-            code.
-          </Banner>
-          <ul className="fw-list" aria-label="Disconnected boards">
-            {revoked.map((d) => (
-              <li key={d.id} className="fw-list__row">
-                <span>{d.name}</span>
-                <span className="fw-muted">
-                  Disconnected {d.revoked_at ? dayAndTime(d.revoked_at, tz) : ''}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-    </main>
+    <BoardsView
+      header={<AdminHeader current="/admin/devices" />}
+      boards={devices
+        .filter((d) => d.status === 'active')
+        .map((d) => ({
+          id: d.id,
+          name: d.name,
+          lastSeenAt: d.last_seen_at,
+          config: d.board_config,
+          calendars: shownOn(d.id),
+        }))}
+      disconnected={devices
+        .filter((d) => d.status === 'revoked')
+        .map((d) => ({ id: d.id, name: d.name, revokedAt: d.revoked_at }))}
+      calendars={calendars}
+      householdLayout={householdLayout}
+      now={now}
+      timeZone={household.timezone}
+      school={schoolDays}
+      params={params}
+    />
   );
 }

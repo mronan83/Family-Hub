@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '../support/test';
-import { pairBoard, retireBoard } from '../support/board';
+import { boardFold, pairBoard, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 
 // [DEV-07][US-207] Sleep and wake per board on the preview (WP-34, D-116, D-117). Alex sets
@@ -52,8 +52,9 @@ test('[DEV-07][US-207] WP-34: a board set to sleep now goes black; the touch tha
   test.setTimeout(240_000);
   await test.step('Alex sets the board to sleep now, missed only while awake', async () => {
     await admin.goto('/admin/devices');
-    await admin.getByText(`Sleep and wake on ${BOARD}:`).click();
-    const form = admin.getByRole('form', { name: `Sleep and wake for ${BOARD}`, exact: true });
+    // [DEV-09][D-118] The board's fold opened (WP-91), its sleep and wake inside.
+    const fold = await boardFold(admin, BOARD);
+    const form = fold.getByRole('form', { name: `Sleep and wake for ${BOARD}`, exact: true });
     await form.getByRole('radio', { name: /^Only while awake/ }).check();
     await form.getByRole('checkbox', { name: `${BOARD} sleeps and wakes at set times` }).check();
     for (const night of ['school', 'weekend']) {
@@ -62,11 +63,9 @@ test('[DEV-07][US-207] WP-34: a board set to sleep now goes black; the touch tha
     }
     await form.getByRole('button', { name: 'Save sleep and wake' }).click();
     await expect(admin.getByText(`Saved sleep and wake for ${BOARD}.`)).toBeVisible();
-    const row = admin
-      .getByRole('list', { name: 'Paired boards', exact: true })
-      .getByRole('listitem')
-      .filter({ hasText: `Sleep and wake on ${BOARD}:` });
-    await expect(row.getByText(/^Asleep · wakes at /)).toBeVisible();
+    // Back open after the save, its header saying it is asleep now.
+    await expect(fold).toHaveAttribute('open', '');
+    await expect(fold.locator(':scope > summary')).toContainText(/Asleep · wakes at /);
     expect(
       sql(
         `select board_config -> 'sleep' ->> 'missed' from public.device where id = '${deviceId()}'`,

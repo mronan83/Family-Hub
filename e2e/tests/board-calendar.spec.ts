@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '../support/test';
 import { runCalendarSync, type Fetcher } from '../../apps/web/lib/calendar/sync';
-import { pairBoard, retireBoard } from '../support/board';
+import { boardFold, pairBoard, retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
 
@@ -246,10 +246,8 @@ test('[CAL-04][CAL-05][CAL-10][US-509] a new board shows the calendars set to sh
 test('[CAL-05][US-507] this board’s own calendars: School unticked leaves it within 3 seconds; ticked again it is back in its color; a calendar connected later stays off', async () => {
   test.setTimeout(150_000);
   await admin.goto('/admin/devices');
-  const choice = admin.locator('details', {
-    has: admin.locator('summary', { hasText: `Calendars on ${BOARD}:` }),
-  });
-  await choice.locator('summary').click();
+  // [DEV-09][D-118] The board's fold opened (WP-91), its calendars inside.
+  const choice = await boardFold(admin, BOARD);
   const form = choice.getByRole('form', { name: `Calendars on ${BOARD}` });
   const saveButton = form.getByRole('button', { name: 'Save calendars' });
 
