@@ -6,7 +6,9 @@ import { NO_SLEEP, readBoardSleep } from '@/lib/board-sleep';
 import type { BoardMealEntry, BoardMeals, MealSlot } from '@/lib/board-meals';
 import type { LunchChild, LunchDay } from '@/lib/lunch';
 import type { MenuItem } from '@/lib/menu/nutrislice';
-import type { BoardMember, BoardSnapshot, BoardWeather } from '@/lib/snapshot';
+import type { DayMark } from '@familywise/rules-engine';
+import type { GoalPeriod } from '@/lib/goal-periods';
+import type { BoardGoal, BoardMember, BoardSnapshot, BoardWeather } from '@/lib/snapshot';
 import type { BoardCalendar, BoardEvent } from '@/lib/snapshot';
 import type { TodayItem } from '@/lib/today';
 import type { PinWish } from '@/lib/wishes';
@@ -18,6 +20,9 @@ const MAYA = 'f1000000-0000-4000-8000-000000000001';
 const LEO = 'f1000000-0000-4000-8000-000000000002';
 const ALEX = 'f1000000-0000-4000-8000-000000000003';
 const SAM = 'f1000000-0000-4000-8000-000000000004';
+
+/** A goal that doesn't repeat (WP-80): no periods. */
+const ONCE = { repeat: 'none' as const, period: null, history: [] };
 
 const day = (offset: number, today: string) =>
   new Date(Date.parse(`${today}T12:00:00Z`) + offset * 86_400_000).toISOString().slice(0, 10);
@@ -424,6 +429,7 @@ export function fixtureSnapshot(
         endDate: day(3, today),
         logic: 'all',
         pct: 90,
+        ...ONCE,
         rules: [
           {
             id: 'gr-bike',
@@ -450,6 +456,7 @@ export function fixtureSnapshot(
         endDate: null,
         logic: 'all',
         pct: 100,
+        ...ONCE,
         rules: [
           {
             id: 'gr-art',
@@ -476,6 +483,7 @@ export function fixtureSnapshot(
         endDate: day(20, today),
         logic: 'all',
         pct: 50,
+        ...ONCE,
         rules: [
           {
             id: 'gr-zoo-1',
@@ -512,6 +520,7 @@ export function fixtureSnapshot(
         endDate: null,
         logic: 'all',
         pct: 90,
+        ...ONCE,
         rules: [
           {
             id: 'gr-pizza',
@@ -533,6 +542,133 @@ export function fixtureSnapshot(
 }
 
 /** [RWD-08] The same family the moment Leo reaches his goal: the board celebrates it (WP-20). */
+/**
+ * [RWD-15][RWD-16] Repeating goals (WP-80, ?repeating=going|missed|won): Maya's "Homework home every
+ * school day", each week, in the state asked for, with today the week's fourth day and its fifth a day
+ * off school; Leo's reading, with one miss allowed, missed this week. Each has its last weeks.
+ */
+export function withRepeating(
+  s: BoardSnapshot,
+  kind: 'going' | 'missed' | 'won',
+  now: Date,
+): BoardSnapshot {
+  const today = s.today;
+  const start = day(-3, today);
+  const week = (marks: DayMark[]): GoalPeriod['days'] =>
+    marks.map((mark, i) => ({
+      date: day(i - 3, today),
+      mark,
+      dayType: mark === 'none' ? (i === 4 ? 'no_school' : 'weekend') : null,
+    }));
+  const period = (marks: DayMark[], outcome: GoalPeriod['outcome'], misses = 0): GoalPeriod => {
+    const days = week(marks)!;
+    return {
+      start,
+      end: day(3, today),
+      outcome,
+      nextStart: day(4, today),
+      daysDue: days.filter((d) => d.mark !== 'none').length,
+      daysDone: days.filter((d) => d.mark === 'done').length,
+      daysMissed: days.filter((d) => d.mark === 'missed').length,
+      missesAllowed: misses,
+      days,
+    };
+  };
+  const past = (outcomes: GoalPeriod['outcome'][]) =>
+    outcomes.map((outcome, i) => ({
+      start: day(-3 - 7 * (outcomes.length - i), today),
+      end: day(3 - 7 * (outcomes.length - i), today),
+      outcome,
+    }));
+  const homework = {
+    going: period(['done', 'done', 'done', 'today', 'none', 'none', 'none'], 'open'),
+    missed: period(['done', 'missed', 'done', 'today', 'none', 'none', 'none'], 'missed'),
+    won: period(['done', 'done', 'done', 'done', 'none', 'none', 'none'], 'won'),
+  }[kind];
+  const history = {
+    going: past(['won', 'won', 'missed', 'won']),
+    missed: past(['won', 'won', 'missed', 'missed']),
+    won: past(['won', 'won', 'won', 'won']),
+  }[kind];
+  const goal = (
+    o: Partial<BoardGoal> & Pick<BoardGoal, 'id' | 'title' | 'memberId'>,
+  ): BoardGoal => ({
+    icon: 'backpack',
+    photo: null,
+    status: 'active',
+    n: 0,
+    achievedAt: null,
+    celebrate: false,
+    endDate: null,
+    logic: 'all',
+    pct: 0,
+    rules: [],
+    repeat: 'week',
+    period: null,
+    history: [],
+    pays: 10,
+    ...o,
+  });
+  const reading = period(
+    ['done', 'missed', 'missed', 'today', 'none', 'none', 'none'],
+    'missed',
+    1,
+  );
+  return {
+    ...s,
+    goals: [
+      goal({
+        id: 'g-homework',
+        memberId: MAYA,
+        title: 'Homework home',
+        n: kind === 'won' ? 4 : 3,
+        achievedAt: kind === 'won' ? now.toISOString() : null,
+        pct: kind === 'won' ? 100 : 75,
+        period: homework,
+        history: [...history, { start, end: homework.end, outcome: homework.outcome }],
+        rules: [
+          {
+            id: 'gr-homework',
+            type: 'DAYS_DUE',
+            target: 4,
+            current: homework.daysDone ?? 0,
+            pct: kind === 'won' ? 100 : 75,
+            met: kind === 'won',
+            streak: null,
+            best: null,
+          },
+        ],
+      }),
+      goal({
+        id: 'g-reading',
+        memberId: LEO,
+        title: 'Reading',
+        icon: 'book-open',
+        n: 2,
+        pct: 25,
+        period: reading,
+        history: [
+          ...past(['won', 'missed', 'neutral', 'won']),
+          { start, end: reading.end, outcome: 'missed' },
+        ],
+        rules: [
+          {
+            id: 'gr-reading',
+            type: 'DAYS_DUE',
+            target: 3,
+            current: 1,
+            pct: 33,
+            met: false,
+            streak: null,
+            best: null,
+          },
+        ],
+      }),
+      ...s.goals.filter((g) => g.memberId === null),
+    ],
+  };
+}
+
 export function reachedBike(s: BoardSnapshot, now: Date): BoardSnapshot {
   return {
     ...s,

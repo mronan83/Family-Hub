@@ -14,3 +14,12 @@ export async function unfold(details: Locator): Promise<void> {
 /** A meal day's fold on Meals, by its date. */
 export const mealDay = (scope: Page | Locator, date: string): Locator =>
   scope.locator(`.fw-meal-day[data-date="${date}"] > details`);
+
+/**
+ * [D-120] A page's fold by its heading (Goals' History, a goal's What happened or Cancel, WP-80): the
+ * `<details>` whose summary holds that heading.
+ */
+export const foldOf = (page: Page, heading: string | RegExp): Locator =>
+  page.locator('details').filter({
+    has: page.locator(':scope > summary').getByRole('heading', { name: heading, exact: true }),
+  });

@@ -1,6 +1,6 @@
 'use client';
 
-import type { RuleType } from '@familywise/rules-engine';
+import type { Repeat, RuleType } from '@familywise/rules-engine';
 import {
   Avatar,
   type AvatarKey,
@@ -13,7 +13,8 @@ import {
 } from '@familywise/ui';
 import { useState } from 'react';
 import { useFormAction } from '@/lib/forms';
-import { type GoalPayout, RULE_TYPES, RULE_WORDS, type ScopeChoice } from '@/lib/goals';
+import { periodWord, REPEAT_WORDS } from '@/lib/goal-periods';
+import { type GoalPayout, REPEATS, RULE_TYPES, RULE_WORDS, type ScopeChoice } from '@/lib/goals';
 import { type GoalFormState, type GoalPreviewView, saveGoal } from './actions';
 import { EndDateField } from './end-date-field';
 
@@ -24,6 +25,8 @@ export interface GoalFormRule {
   tagIds: string[];
   itemIds: string[];
   grace: number;
+  /** [RWD-16] Every day it's due: the days a period may miss, 0 to 3. */
+  misses?: number;
 }
 
 export interface GoalFormInitial {
@@ -34,6 +37,8 @@ export interface GoalFormInitial {
   startDate: string;
   endDate: string | null;
   logic: 'all' | 'any';
+  /** [RWD-15] How it repeats; absent for a goal that doesn't. */
+  repeat?: Repeat;
   rules: GoalFormRule[];
   payout: GoalPayout;
 }
@@ -117,6 +122,15 @@ export function GoalForm({
   const [who, setWho] = useState(
     initial ? (initial.memberId ?? 'family') : (members[0]?.id ?? 'family'),
   );
+  // [RWD-15] How it repeats: chosen until it starts, then fixed (D-123).
+  const [repeat, setRepeat] = useState<Repeat>(initial?.repeat ?? 'none');
+  const chooseRepeat = (r: Repeat) => {
+    setRepeat(r);
+    // Every day it's due is for a goal that repeats.
+    if (r === 'none') {
+      setRows((rs) => rs.map((x) => (x.type === 'DAYS_DUE' ? { ...x, type: 'COUNT' } : x)));
+    }
+  };
   const [pays, setPays] = useState<'custom' | 'points' | 'item'>(
     PAYOUT_CHOICE[initial?.payout.type ?? 'custom'],
   );
@@ -196,6 +210,37 @@ export function GoalForm({
         </fieldset>
       )}
 
+      {whoLocked ? (
+        <input type="hidden" name="repeat" value={repeat} />
+      ) : (
+        <fieldset className="fw-field fw-fieldset">
+          <legend className="fw-field__label">Repeats</legend>
+          <div className="fw-picker">
+            {REPEATS.map((r) => (
+              <label key={r} className="fw-picker__item">
+                <input
+                  type="radio"
+                  name="repeat"
+                  value={r}
+                  checked={repeat === r}
+                  onChange={() => chooseRepeat(r)}
+                />
+                {REPEAT_WORDS[r]}
+              </label>
+            ))}
+          </div>
+          <span className="fw-field__help">
+            {repeat === 'none'
+              ? 'Reached once, between its dates.'
+              : repeat === 'week'
+                ? 'Each of the family’s weeks is worked out, won and paid on its own.'
+                : repeat === 'month'
+                  ? 'Each calendar month is worked out, won and paid on its own.'
+                  : 'Each term of the school year (the child’s, or the family’s for a family goal) is worked out, won and paid on its own. Days between terms don’t count.'}
+          </span>
+        </fieldset>
+      )}
+
       <div className="fw-goal-form__dates">
         {whoLocked ? (
           <input type="hidden" name="startDate" value={initial?.startDate ?? today} />
@@ -229,6 +274,7 @@ export function GoalForm({
           n={i + 1}
           only={rows.length === 1}
           locked={rulesLocked}
+          repeat={repeat}
           tags={tags}
           items={items}
           onChange={(patch) => change(r.key, patch)}
@@ -287,6 +333,7 @@ export function GoalForm({
         points={points}
         prize={prize}
         prizes={prizes}
+        repeat={repeat}
       />
 
       <IconPicker
@@ -343,7 +390,9 @@ function PayoutField({
   points,
   prize,
   prizes,
+  repeat,
 }: {
+  repeat: Repeat;
   locked: boolean;
   family: boolean;
   pays: 'custom' | 'points' | 'item';
@@ -364,7 +413,9 @@ function PayoutField({
   const noItem = family || prizes.length === 0;
   return (
     <fieldset className="fw-field fw-fieldset">
-      <legend className="fw-field__label">What reaching it pays</legend>
+      <legend className="fw-field__label">
+        {repeat === 'none' ? 'What reaching it pays' : `What each ${periodWord(repeat)} pays`}
+      </legend>
       <div className="fw-actions">
         <label className="fw-choice">
           <input
@@ -426,15 +477,17 @@ function PayoutField({
         </label>
       ) : null}
       <span className="fw-field__help">
-        {pays === 'points'
-          ? family
-            ? 'Each child who earns rewards gets them when it’s reached. If a check-off it needed is undone, they’re taken back.'
-            : 'Paid when it’s reached. If a check-off it needed is undone, they’re taken back; reached again, paid again.'
-          : pays === 'item'
-            ? 'Approved for them as soon as it’s reached, at no cost. Mark it given in Rewards as usual.'
-            : family
-              ? 'You give the reward and mark it redeemed. A family goal can pay points to each child; a reward from the shop is for one child’s goal.'
-              : 'You give the reward and mark it redeemed.'}
+        {repeat !== 'none'
+          ? `Each ${periodWord(repeat)} won pays once${pays === 'item' ? ': its reward goes to To give once for each one' : ''}. If a check-off it needed is undone, what that ${periodWord(repeat)} paid is taken back.`
+          : pays === 'points'
+            ? family
+              ? 'Each child who earns rewards gets them when it’s reached. If a check-off it needed is undone, they’re taken back.'
+              : 'Paid when it’s reached. If a check-off it needed is undone, they’re taken back; reached again, paid again.'
+            : pays === 'item'
+              ? 'Approved for them as soon as it’s reached, at no cost. Mark it given in Rewards as usual.'
+              : family
+                ? 'You give the reward and mark it redeemed. A family goal can pay points to each child; a reward from the shop is for one child’s goal.'
+                : 'You give the reward and mark it redeemed.'}
       </span>
     </fieldset>
   );
@@ -445,6 +498,7 @@ function PreviewPanel({ preview }: { preview: GoalPreviewView }) {
   return (
     <section className="fw-goal-preview" aria-labelledby="goal-preview-heading" aria-live="polite">
       <h2 id="goal-preview-heading">Preview</h2>
+      {preview.period ? <p className="fw-goal-preview__outcome">{preview.period}</p> : null}
       <p className="fw-goal-preview__outcome">{preview.outcome}</p>
       <div className="fw-goal-preview__table">
         <table>
@@ -483,6 +537,7 @@ function RuleRow({
   n,
   only,
   locked,
+  repeat,
   tags,
   items,
   onChange,
@@ -492,6 +547,7 @@ function RuleRow({
   n: number;
   only: boolean;
   locked: boolean;
+  repeat: Repeat;
   tags: { id: string; name: string }[];
   items: { id: string; title: string }[];
   onChange: (patch: Partial<GoalFormRule>) => void;
@@ -512,9 +568,11 @@ function RuleRow({
           <input key={t} type="hidden" name={name('item')} value={t} />
         ))}
         <input type="hidden" name={name('grace')} value={row.grace} />
+        <input type="hidden" name={name('misses')} value={row.misses ?? 0} />
       </>
     );
   }
+  const daysDue = row.type === 'DAYS_DUE';
   return (
     <fieldset className="fw-field fw-fieldset fw-goal-rule">
       <legend className="fw-field__label">{only ? 'Rule' : `Rule ${n}`}</legend>
@@ -527,27 +585,51 @@ function RuleRow({
             value={row.type}
             onChange={(e) => onChange({ type: e.target.value as RuleType })}
           >
-            {RULE_TYPES.map((t) => (
+            {RULE_TYPES.filter((t) => t !== 'DAYS_DUE' || repeat !== 'none').map((t) => (
               <option key={t} value={t}>
                 {RULE_WORDS[t].label}
               </option>
             ))}
           </select>
         </label>
-        <label className="fw-field">
-          <span className="fw-field__label">Target</span>
-          <input
-            className="fw-input fw-input--short"
-            name={name('target')}
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={100000}
-            required
-            value={row.target}
-            onChange={(e) => onChange({ target: Number(e.target.value) })}
-          />
-        </label>
+        {daysDue ? (
+          <>
+            {/* [RWD-16] Its target is each period's days due: the database stores 1. */}
+            <input type="hidden" name={name('target')} value={1} />
+            <label className="fw-field">
+              <span className="fw-field__label">
+                Misses allowed each {repeat === 'none' ? 'period' : periodWord(repeat)}
+              </span>
+              <select
+                className="fw-input fw-input--short"
+                name={name('misses')}
+                value={row.misses ?? 0}
+                onChange={(e) => onChange({ misses: Number(e.target.value) })}
+              >
+                {[0, 1, 2, 3].map((g) => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        ) : (
+          <label className="fw-field">
+            <span className="fw-field__label">Target</span>
+            <input
+              className="fw-input fw-input--short"
+              name={name('target')}
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={100000}
+              required
+              value={row.target}
+              onChange={(e) => onChange({ target: Number(e.target.value) })}
+            />
+          </label>
+        )}
         {row.type === 'STREAK' ? (
           <label className="fw-field">
             <span className="fw-field__label">Misses forgiven a week</span>
@@ -566,6 +648,13 @@ function RuleRow({
           </label>
         ) : null}
       </div>
+      {daysDue ? (
+        <span className="fw-field__help">
+          A day counts when everything it counts that is due that day is done. Each{' '}
+          {repeat === 'none' ? 'period' : periodWord(repeat)} needs every day it’s due, less the
+          misses allowed: a short week needs only its days.
+        </span>
+      ) : null}
       <fieldset className="fw-fieldset">
         <legend className="fw-field__label">What counts</legend>
         <div className="fw-actions">

@@ -26,6 +26,9 @@ const rule = (o: Partial<BoardGoalRule>): BoardGoalRule => ({
   ...o,
 });
 const goal = (o: Partial<BoardGoal>): BoardGoal => ({
+  repeat: 'none',
+  period: null,
+  history: [],
   id: 'g',
   memberId: 'leo',
   title: 'Bike ride',
@@ -162,6 +165,26 @@ describe('celebrating once', () => {
     expect(celebrationLine(goal({}), name)).toBe('Leo reached Bike ride!');
     expect(celebrationLine(goal({ memberId: null, title: 'Pizza night' }), name)).toBe(
       'The family reached Pizza night!',
+    );
+  });
+
+  it('[RWD-15-i] a repeating goal is celebrated for each won week while it goes on', () => {
+    const week = goal({
+      id: 'w',
+      repeat: 'week',
+      status: 'active',
+      celebrate: true,
+      n: 3,
+      achievedAt: '2026-10-15T20:00:00Z',
+    });
+    expect(toCelebrate([week], new Set()).map((g) => g.id)).toEqual(['w']);
+    expect(toCelebrate([week], new Set([celebrationKey(week)]))).toEqual([]);
+    // The next week won is achievement 4, celebrated on its own.
+    expect(toCelebrate([{ ...week, n: 4 }], new Set([celebrationKey(week)])).length).toBe(1);
+    // A goal that doesn't repeat is celebrated only once reached.
+    expect(toCelebrate([{ ...week, repeat: 'none' }], new Set())).toEqual([]);
+    expect(celebrationLine({ ...week, title: 'Homework home' }, () => 'Maya')).toBe(
+      'Maya won this week of Homework home!',
     );
   });
 

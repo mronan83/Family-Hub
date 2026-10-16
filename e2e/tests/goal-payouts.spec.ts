@@ -2,6 +2,7 @@ import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { householdToday } from '../support/day';
+import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
 
 // [RWD-04][RWD-10][RWD-13] Goal payouts and the preview of a change on the preview (WP-39, D-75), as
@@ -77,6 +78,8 @@ test.afterAll(async () => {
       // Worked out once more (the bed undone takes back what it paid), then cancelled.
       await admin.goto('/admin/goals');
       await admin.getByRole('link', { name: `Change ${TITLE}` }).click();
+      // Cancel is set apart at the bottom, folded (D-120, WP-80).
+      await unfold(foldOf(admin, 'Cancel'));
       await admin.getByRole('button', { name: `Cancel ${TITLE}`, exact: true }).click();
       await expect(admin.getByRole('status')).toHaveText('Cancelled. It’s in the history.');
     }
@@ -185,6 +188,7 @@ test('[RWD-13][RWD-10][RWD-04][US-409][US-406] a goal that pays 10 points: set w
 
     // Its history says what it paid and took back.
     await admin.getByRole('link', { name: `Change ${TITLE}` }).click();
+    await unfold(foldOf(admin, 'What happened'));
     const history = admin.getByRole('list', { name: 'What happened' });
     await expect(history).toContainText('Achieved again (2nd time): paid 10 points');
     await expect(history).toContainText('Payout undone: 10 points taken back');

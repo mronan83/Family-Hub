@@ -420,6 +420,70 @@ describe('the shop, requests and goals (WP-20)', () => {
     });
   });
 
+  it('[RWD-15-k] reads a repeating goal’s week going now and its last weeks', () => {
+    const s = read(
+      {},
+      {
+        goals: [
+          {
+            id: 'g1',
+            member_id: 'm1',
+            title: 'Homework home',
+            status: 'active',
+            repeat: 'week',
+            pays: 10,
+            period: {
+              start: '2026-10-12',
+              end: '2026-10-18',
+              outcome: 'open',
+              next_start: '2026-10-19',
+              days_due: 4,
+              days_done: 3,
+              days_missed: 0,
+              misses_allowed: 0,
+              days: [
+                { date: '2026-10-15', mark: 'today' },
+                { date: '2026-10-16', mark: 'none', day_type: 'no_school' },
+                { date: '2026-10-17', mark: 'sleeping' },
+              ],
+            },
+            history: [
+              { start: '2026-10-05', end: '2026-10-11', outcome: 'won' },
+              { start: 'soon', end: '2026-10-11', outcome: 'won' },
+              { start: '2026-10-12', end: '2026-10-18', outcome: 'open' },
+            ],
+            rules: [{ id: 'r1', type: 'DAYS_DUE', target: 4, current: 3, pct: 75, met: false }],
+          },
+          { id: 'g2', title: 'Odd', status: 'active', repeat: 'year', period: { start: 'x' } },
+        ],
+      },
+    );
+    expect(s.goals[0]).toMatchObject({
+      repeat: 'week',
+      pays: 10,
+      period: {
+        start: '2026-10-12',
+        outcome: 'open',
+        nextStart: '2026-10-19',
+        daysDue: 4,
+        daysDone: 3,
+        missesAllowed: 0,
+        // A day it can't draw is left out.
+        days: [
+          { date: '2026-10-15', mark: 'today', dayType: null },
+          { date: '2026-10-16', mark: 'none', dayType: 'no_school' },
+        ],
+      },
+      history: [
+        { start: '2026-10-05', end: '2026-10-11', outcome: 'won' },
+        { start: '2026-10-12', end: '2026-10-18', outcome: 'open' },
+      ],
+      rules: [{ type: 'DAYS_DUE', target: 4, current: 3 }],
+    });
+    // An unknown repeat is read as none, and a period it can't read as none.
+    expect(s.goals[1]).toMatchObject({ repeat: 'none', period: null, history: [], pays: null });
+  });
+
   it('[RWD-07] reads the goals in play with each rule; leaves out what it cannot draw', () => {
     const s = read(
       {},
@@ -471,6 +535,10 @@ describe('the shop, requests and goals (WP-20)', () => {
         endDate: '2026-10-20',
         logic: 'any',
         pct: 100,
+        repeat: 'none',
+        period: null,
+        history: [],
+        pays: null,
         rules: [
           {
             id: 'r1',
@@ -497,6 +565,10 @@ describe('the shop, requests and goals (WP-20)', () => {
         endDate: null,
         logic: 'all',
         pct: 0,
+        repeat: 'none',
+        period: null,
+        history: [],
+        pays: null,
         rules: [],
       },
     ]);
@@ -519,6 +591,7 @@ describe('notify, then refetch', () => {
       { table: 'redemption', filter: 'household_id=eq.h1' },
       { table: 'reward_goal', filter: 'household_id=eq.h1' },
       { table: 'reward_goal_progress', filter: 'household_id=eq.h1' },
+      { table: 'reward_goal_period', filter: 'household_id=eq.h1' },
       { table: 'reward_rule_progress', filter: 'household_id=eq.h1' },
       { table: 'calendar_source', filter: 'household_id=eq.h1' },
       { table: 'calendar_member', filter: 'household_id=eq.h1' },

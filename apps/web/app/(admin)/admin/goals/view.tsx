@@ -1,11 +1,13 @@
-import { Banner, Button, GoalMeter, Icon, type IconName } from '@familywise/ui';
+import { Banner, Button, Fold, GoalMeter, Icon, type IconName } from '@familywise/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { day } from '@/lib/format';
+import { REPEAT_WORDS } from '@/lib/goal-periods';
 import { describeRule, OPEN_STATUSES, payoutWords, STATUS_WORDS, streakLine } from '@/lib/goals';
 import { AdminHeader } from '../header';
 import { goalAction } from './actions';
 import type { GoalRow } from './data';
+import { PeriodProgress, periodStatus } from './repeating';
 
 export interface GoalsViewProps {
   goals: GoalRow[];
@@ -17,6 +19,8 @@ export interface GoalsViewProps {
   /** The shop's rewards by id, for what a goal pays. */
   prizes: Map<string, string>;
   timezone: string;
+  /** The household's today, for a repeating goal's period going now. */
+  today: string;
   notice: string | null;
   error: string | null;
 }
@@ -56,6 +60,70 @@ function dates(g: GoalRow): string {
   return g.endDate ? `${start} · ends ${dateLabel(g.endDate)}` : `${start}, no end date`;
 }
 
+/** A goal's state; a repeating goal's says how this period stands (D-123's approved mockup). */
+function GoalStatusPill({ goal: g, today }: { goal: GoalRow; today: string }) {
+  const period =
+    g.repeat !== 'none' && g.status === 'active' ? periodStatus(g.periods, today, g.repeat) : null;
+  const status = period?.status ?? g.status;
+  return (
+    <span className="fw-goal__status" data-status={status}>
+      {status === 'achieved' ? <Icon name="trophy" size={20} /> : null}
+      {period
+        ? period.words
+        : g.status === 'achieved' && g.achievementCount > 1
+          ? 'Achieved again'
+          : STATUS_WORDS[g.status]}
+    </span>
+  );
+}
+
+/** [RWD-02] A meter per rule, with a streak's run now and best. */
+function RuleMeters({
+  goal: g,
+  names,
+}: {
+  goal: GoalRow;
+  names: { tags: Map<string, string>; items: Map<string, string> };
+}) {
+  return (
+    <div className="fw-goal__rules">
+      {g.rules.length > 1 ? (
+        <p className="fw-muted">
+          {g.logic === 'all'
+            ? 'Reached when every rule is met.'
+            : 'Reached when any one rule is met.'}
+        </p>
+      ) : null}
+      {g.rules
+        .filter((r) => r.type !== 'DAYS_DUE')
+        .map((r) => {
+          const value =
+            r.type === 'STREAK'
+              ? Math.max(r.progress?.bestStreak ?? 0, r.progress?.currentStreak ?? 0)
+              : (r.progress?.current ?? 0);
+          return (
+            <div key={r.id} className="fw-goal__rule">
+              <GoalMeter
+                label={describeRule(r, names)}
+                value={Math.min(value, r.target)}
+                target={r.target}
+              />
+              {r.type === 'STREAK' && r.progress ? (
+                <span className="fw-muted">
+                  {streakLine({
+                    current: r.progress.currentStreak ?? 0,
+                    best: r.progress.bestStreak ?? 0,
+                    met: r.progress.met,
+                  })}
+                </span>
+              ) : null}
+            </div>
+          );
+        })}
+    </div>
+  );
+}
+
 /**
  * [RWD-01][RWD-04][RWD-09] A parent's goals: those in play, each with its rules and how far along they
  * are (as the rules engine last worked them out), to mark redeemed once achieved; and the history of
@@ -68,6 +136,7 @@ export function GoalsView({
   admins,
   prizes,
   timezone,
+  today,
   notice,
   error,
 }: GoalsViewProps) {
@@ -81,6 +150,20 @@ export function GoalsView({
     .filter((g) => OPEN_STATUSES.includes(g.status))
     .sort((a, b) => OPEN_STATUSES.indexOf(a.status) - OPEN_STATUSES.indexOf(b.status));
   const history = goals.filter((g) => !OPEN_STATUSES.includes(g.status));
+  const count = (status: GoalRow['status']) => history.filter((g) => g.status === status).length;
+  const historySummary = [
+    count('redeemed') ? `${count('redeemed')} redeemed` : null,
+    count('expired') ? `${count('expired')} ended` : null,
+    count('cancelled') ? `${count('cancelled')} cancelled` : null,
+  ].filter(Boolean) as string[];
+  const toLook = history.filter((g) => g.needsReview).length;
+  /** "Maya · each week · 1 miss allowed · Pays 10 points" for a repeating goal. */
+  const repeatLine = (g: GoalRow) => {
+    const misses = g.rules.find((r) => r.type === 'DAYS_DUE')?.params.misses_allowed ?? 0;
+    return `${who(g.memberId)} · ${REPEAT_WORDS[g.repeat].toLowerCase()}${
+      misses ? ` · ${misses} miss${misses > 1 ? 'es' : ''} allowed` : ''
+    }${pays(g)}`;
+  };
 
   return (
     <main className="fw-page fw-page--wide">
@@ -114,8 +197,14 @@ export function GoalsView({
                   <span className="fw-item__body">
                     <strong id={`goal-${g.id}`}>{g.title}</strong>
                     <span className="fw-muted">
-                      {who(g.memberId)} · {dates(g)}
-                      {pays(g)}
+                      {g.repeat !== 'none' ? (
+                        repeatLine(g)
+                      ) : (
+                        <>
+                          {who(g.memberId)} · {dates(g)}
+                          {pays(g)}
+                        </>
+                      )}
                     </span>
                     {g.needsReview ? (
                       <span className="fw-goal__flag">
@@ -124,50 +213,24 @@ export function GoalsView({
                       </span>
                     ) : null}
                   </span>
-                  <span className="fw-goal__status" data-status={g.status}>
-                    {g.status === 'achieved' ? <Icon name="trophy" size={20} /> : null}
-                    {g.status === 'achieved' && g.achievementCount > 1
-                      ? 'Achieved again'
-                      : STATUS_WORDS[g.status]}
-                  </span>
+                  <GoalStatusPill goal={g} today={today} />
                 </div>
                 {g.description ? <p className="fw-goal__description">{g.description}</p> : null}
                 {g.pct === null ? (
                   <p className="fw-muted">Working out its progress…</p>
-                ) : (
-                  <div className="fw-goal__rules">
-                    {g.rules.length > 1 ? (
-                      <p className="fw-muted">
-                        {g.logic === 'all'
-                          ? 'Reached when every rule is met.'
-                          : 'Reached when any one rule is met.'}
-                      </p>
+                ) : g.repeat !== 'none' ? (
+                  <PeriodProgress
+                    repeat={g.repeat}
+                    periods={g.periods}
+                    today={today}
+                    pays={payoutWords(g.payout, g.memberId === null, (i) => prizes.get(i))}
+                  >
+                    {g.rules.some((r) => r.type !== 'DAYS_DUE') ? (
+                      <RuleMeters goal={g} names={names} />
                     ) : null}
-                    {g.rules.map((r) => {
-                      const value =
-                        r.type === 'STREAK'
-                          ? Math.max(r.progress?.bestStreak ?? 0, r.progress?.currentStreak ?? 0)
-                          : (r.progress?.current ?? 0);
-                      return (
-                        <div key={r.id} className="fw-goal__rule">
-                          <GoalMeter
-                            label={describeRule(r, names)}
-                            value={Math.min(value, r.target)}
-                            target={r.target}
-                          />
-                          {r.type === 'STREAK' && r.progress ? (
-                            <span className="fw-muted">
-                              {streakLine({
-                                current: r.progress.currentStreak ?? 0,
-                                best: r.progress.bestStreak ?? 0,
-                                met: r.progress.met,
-                              })}
-                            </span>
-                          ) : null}
-                        </div>
-                      );
-                    })}
-                  </div>
+                  </PeriodProgress>
+                ) : (
+                  <RuleMeters goal={g} names={names} />
                 )}
                 <div className="fw-actions">
                   {g.status === 'achieved' ? (
@@ -198,8 +261,16 @@ export function GoalsView({
         )}
       </section>
 
-      <section className="fw-card" aria-labelledby="history-heading">
-        <h2 id="history-heading">History</h2>
+      <Fold
+        title="History"
+        headingId="history-heading"
+        summary={
+          historySummary.length
+            ? [<b key="n">{historySummary.join(' · ')}</b>]
+            : ['Goals that are redeemed, end or are cancelled are kept here.']
+        }
+        warning={toLook ? `${toLook} ${toLook === 1 ? 'needs' : 'need'} a look` : undefined}
+      >
         {history.length === 0 ? (
           <p className="fw-muted">Goals that are redeemed, end or are cancelled are kept here.</p>
         ) : (
@@ -241,7 +312,7 @@ export function GoalsView({
             ))}
           </ul>
         )}
-      </section>
+      </Fold>
     </main>
   );
 }

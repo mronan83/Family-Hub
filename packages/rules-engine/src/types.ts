@@ -1,7 +1,10 @@
 // The rules engine's inputs and outputs (02 §5). Field names follow the database rows they come
 // from and go to (v_member_occurrence, reward_rule_progress, member_daily_summary, streak_segment).
 
-export type RuleType = 'COUNT' | 'STREAK' | 'DAILY_ALL_DONE' | 'POINTS';
+export type RuleType = 'COUNT' | 'STREAK' | 'DAILY_ALL_DONE' | 'POINTS' | 'DAYS_DUE';
+
+/** [RWD-15] How a goal repeats: not at all, each household week, each calendar month, each school term. */
+export type Repeat = 'none' | 'week' | 'month' | 'term';
 
 export type OccurrenceStatus =
   'scheduled' | 'completed' | 'pending_approval' | 'approved' | 'rejected' | 'skipped' | 'missed';
@@ -29,10 +32,18 @@ export interface StreakParams {
   qualify: Qualify;
 }
 
+/** [RWD-16] A DAYS_DUE rule's `params`: the days due in a period that may be missed (0 to 3). */
+export interface DaysDueParams {
+  misses_allowed: number;
+}
+
 export interface Rule {
   id: string;
   type: RuleType;
-  /** COUNT: items; POINTS: points; DAILY_ALL_DONE: days; STREAK: days in a row. */
+  /**
+   * COUNT: items; POINTS: points; DAILY_ALL_DONE: days; STREAK: days in a row. DAYS_DUE: unused (its
+   * target is each period's days due, less the misses allowed).
+   */
   target: number;
   scope: RuleScope;
   params: Record<string, unknown>;
@@ -68,8 +79,12 @@ export interface GoalInput {
     end_date: string | null;
     rule_logic: 'all' | 'any';
     status: GoalStatus;
+    /** [RWD-15] Absent or 'none': the goal doesn't repeat. */
+    repeat?: Repeat;
   };
   rules: Rule[];
+  /** [RWD-15] The school terms a term goal follows (the child's school year, or the family's). */
+  terms?: { start_date: string; end_date: string }[];
   occurrences: OccurrenceFact[];
   /** Today in the household (the engine never reads a clock). */
   asOf: string;
@@ -102,6 +117,31 @@ export interface GoalTransition {
   to: GoalStatus;
 }
 
+/** [RWD-15] How a period of a repeating goal stands. */
+export type PeriodOutcome = 'open' | 'won' | 'missed' | 'neutral';
+
+/** [RWD-16] A day of a week, for its mark: done, missed, still open (past, waiting), today, to come, or nothing due. */
+export type DayMark = 'done' | 'missed' | 'open' | 'today' | 'later' | 'none';
+
+/** [RWD-15][RWD-16] One period of a repeating goal, from its first day due to today or its end. */
+export interface PeriodResult {
+  /** The period's days inside the goal's dates (a part first or last period is cut to them). */
+  start: string;
+  end: string;
+  outcome: PeriodOutcome;
+  /** The first day of the period after it, inside the goal's dates; null when none follows. */
+  next_start: string | null;
+  pct: number;
+  rules: RuleProgress[];
+  /** The first DAYS_DUE rule's days: due in the period, done, missed, and the misses allowed. */
+  days_due: number | null;
+  days_done: number | null;
+  days_missed: number | null;
+  misses_allowed: number | null;
+  /** A week's days with a DAYS_DUE rule's mark each; null for months, terms and other rules. */
+  days: { date: string; mark: DayMark }[] | null;
+}
+
 export interface GoalEvaluation {
   goal_id: string;
   /** 0 to 100: the mean of the rules' progress (`all`) or the best of them (`any`). */
@@ -109,6 +149,11 @@ export interface GoalEvaluation {
   is_achieved: boolean;
   rules: RuleProgress[];
   transitions: GoalTransition[];
+  /**
+   * [RWD-15] A repeating goal's periods, first to the one going now; empty for one that doesn't
+   * repeat. Its `pct`, `rules` and `is_achieved` are then the period going now (or the last one).
+   */
+  periods: PeriodResult[];
 }
 
 export interface HistoryInput {

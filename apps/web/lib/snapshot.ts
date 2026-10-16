@@ -5,7 +5,14 @@ import {
   textSizeOf,
   type ThemeOverride,
 } from '@familywise/ui';
-import type { OccurrenceStatus, RuleType } from '@familywise/rules-engine';
+import type {
+  DayMark,
+  OccurrenceStatus,
+  PeriodOutcome,
+  Repeat,
+  RuleType,
+} from '@familywise/rules-engine';
+import type { GoalPeriod, PeriodOutline } from './goal-periods';
 import type { LedgerEntry, LedgerEntryType } from './points';
 import type { RedemptionStatus } from './rewards';
 import type { TodayItem } from './today';
@@ -160,6 +167,14 @@ export interface BoardGoal {
   logic: 'all' | 'any';
   pct: number;
   rules: BoardGoalRule[];
+  /** [RWD-15] How it repeats; 'none' for a goal reached once. */
+  repeat: Repeat;
+  /** [RWD-15][RWD-16] A repeating goal's period going now (or its last); null before its first. */
+  period: GoalPeriod | null;
+  /** [RWD-15] Its last five periods, oldest first, the one going now last. */
+  history: PeriodOutline[];
+  /** [RWD-13] The points it (or each period) pays; null when it pays something else. */
+  pays?: number | null;
 }
 
 export interface BoardGoalRule {
@@ -317,7 +332,44 @@ function readRequests(x: unknown): BoardRequest[] {
   });
 }
 
-const RULE_TYPES: readonly RuleType[] = ['COUNT', 'STREAK', 'DAILY_ALL_DONE', 'POINTS'];
+const RULE_TYPES: readonly RuleType[] = ['COUNT', 'STREAK', 'DAILY_ALL_DONE', 'POINTS', 'DAYS_DUE'];
+const REPEATS: readonly Repeat[] = ['none', 'week', 'month', 'term'];
+const OUTCOMES: readonly PeriodOutcome[] = ['open', 'won', 'missed', 'neutral'];
+const MARKS: readonly DayMark[] = ['done', 'missed', 'open', 'today', 'later', 'none'];
+const date = (x: unknown): string | null =>
+  typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) ? x : null;
+
+/** [RWD-15] A period as the snapshot has it; null when it isn't one the board can show. */
+function readPeriod(x: unknown): GoalPeriod | null {
+  if (!isObject(x)) return null;
+  const start = date(x.start);
+  const end = date(x.end);
+  if (!start || !end || !OUTCOMES.includes(x.outcome as PeriodOutcome)) return null;
+  const days = Array.isArray(x.days)
+    ? x.days.flatMap((d) =>
+        isObject(d) && date(d.date) && MARKS.includes(d.mark as DayMark)
+          ? [
+              {
+                date: d.date as string,
+                mark: d.mark as DayMark,
+                dayType: typeof d.day_type === 'string' ? d.day_type : null,
+              },
+            ]
+          : [],
+      )
+    : null;
+  return {
+    start,
+    end,
+    outcome: x.outcome as PeriodOutcome,
+    nextStart: date(x.next_start),
+    daysDue: num(x.days_due),
+    daysDone: num(x.days_done),
+    daysMissed: num(x.days_missed),
+    missesAllowed: num(x.misses_allowed),
+    days,
+  };
+}
 const num = (x: unknown): number | null => (typeof x === 'number' ? x : null);
 
 /** The goals in play (WP-20); a goal in a state the board doesn't show, or a rule it can't draw, is left out. */
@@ -340,6 +392,14 @@ function readGoals(x: unknown): BoardGoal[] {
         endDate: typeof g.end_date === 'string' ? g.end_date : null,
         logic: g.logic === 'any' ? 'any' : 'all',
         pct: Number(g.pct) || 0,
+        // A snapshot from before WP-80 has none of these: a goal that doesn't repeat.
+        repeat: REPEATS.includes(g.repeat as Repeat) ? (g.repeat as Repeat) : 'none',
+        period: readPeriod(g.period),
+        pays: num(g.pays),
+        history: (Array.isArray(g.history) ? g.history : []).flatMap((h) => {
+          const p = readPeriod(h);
+          return p ? [{ start: p.start, end: p.end, outcome: p.outcome }] : [];
+        }),
         rules: rules.flatMap((r) =>
           isObject(r) && RULE_TYPES.includes(r.type as RuleType)
             ? [

@@ -18,6 +18,7 @@ import {
   previewOutcome,
   type PreviewRead,
 } from '@/lib/goals';
+import { daysNeeded, periodWord } from '@/lib/goal-periods';
 import { log } from '@/lib/log';
 import { checkPhoto } from '@/lib/rewards';
 import { serverClient } from '@/lib/supabase/server';
@@ -43,6 +44,8 @@ export interface GoalPreviewRow {
 /** [RWD-10] What the form's Preview shows: each rule now and after, and what saving would do. */
 export interface GoalPreviewView {
   outcome: string;
+  /** [RWD-16] "This week Homework home is due 4 days for Maya, so this week needs 4." */
+  period?: string;
   before: string | null;
   after: string;
   rows: GoalPreviewRow[];
@@ -50,6 +53,34 @@ export interface GoalPreviewView {
 
 export interface GoalFormState extends FormState {
   preview?: GoalPreviewView;
+}
+
+/**
+ * [RWD-16] What an "every day it's due" rule asks of the period going now: "This week Homework home
+ * is due 4 days for Maya, so this week needs 4." Null for other rules and goals that don't repeat.
+ */
+function periodPreview(
+  v: GoalFormValue,
+  period: ReturnType<typeof previewGoal>['period'],
+  names: { tags: Map<string, string>; items: Map<string, string> },
+  family: boolean,
+): string | null {
+  const rule = v.rules.find((r) => r.type === 'DAYS_DUE');
+  if (v.repeat === 'none' || !rule || !period || period.days_due === null) return null;
+  const word = periodWord(v.repeat);
+  const scope =
+    'all' in rule.scope
+      ? 'something it counts'
+      : [
+          ...(rule.scope.chore_ids ?? []).map((i) => names.items.get(i) ?? 'an item'),
+          ...(rule.scope.tag_ids ?? []).map((t) => `${names.tags.get(t) ?? 'a tag'} items`),
+        ].join(' or ');
+  const due = period.days_due;
+  const needed = daysNeeded({ daysDue: due, missesAllowed: period.misses_allowed });
+  const who = family ? ' for the family' : '';
+  return due === 0
+    ? `This ${word} nothing it counts is due${who}, so this ${word} is neither won nor missed.`
+    : `This ${word} ${scope} is due ${due} ${due === 1 ? 'day' : 'days'}${who}, so this ${word} needs ${needed}.`;
 }
 
 const progressWords = (r: { value: number; target: number; met: boolean }) =>
@@ -74,6 +105,7 @@ async function preview(
       member_id: v.memberId,
       start_date: v.startDate,
       end_date: v.endDate,
+      repeat: v.repeat,
     },
   });
   if (read.error) {
@@ -116,8 +148,10 @@ async function preview(
         describeRule(v.rules[i]!, names)
     );
   };
+  const period = periodPreview(v, result.period, names, family);
   return {
     preview: {
+      ...(period ? { period } : {}),
       outcome: previewOutcome(result, {
         saved: facts.saved,
         pays: payoutWords(v.payout, family, prize),
@@ -246,12 +280,13 @@ export async function removeGoalPhoto(form: FormData): Promise<void> {
   redirect(`/admin/goals/${id}?photo=removed`);
 }
 
-const ACTS = ['redeem', 'cancel', 'review'] as const;
+const ACTS = ['redeem', 'cancel', 'review', 'stop'] as const;
 type Act = (typeof ACTS)[number];
 
 /**
  * [RWD-09][RWD-06] A parent marks an achieved goal redeemed (the reward was given), cancels a goal
- * (it moves to history), or clears a redeemed goal's review flag. Each is safe to send twice.
+ * (it moves to history), clears a redeemed goal's review flag, or stops a repeating goal after the
+ * period going now (RWD-15, D-123: back to its page, Stop or cancel open). Each is safe to send twice.
  */
 export async function goalAction(form: FormData): Promise<void> {
   const { db } = await context();
@@ -262,11 +297,14 @@ export async function goalAction(form: FormData): Promise<void> {
       ? await db.rpc('redeem_goal', { p_goal: id })
       : act === 'cancel'
         ? await db.rpc('cancel_goal', { p_goal: id })
-        : await db.rpc('clear_goal_review', { p_goal: id });
+        : act === 'stop'
+          ? await db.rpc('stop_goal_after_period', { p_goal: id })
+          : await db.rpc('clear_goal_review', { p_goal: id });
   if (error) {
     log('warn', 'goal not changed', { code: error.code, hint: error.hint });
     redirect(`/admin/goals?error=${encodeURIComponent(error.hint || 'invalid')}`);
   }
   revalidatePath('/admin/goals');
+  if (act === 'stop') redirect(`/admin/goals/${id}?did=stop#stop`);
   redirect(`/admin/goals?did=${act}&goal=${id}`);
 }

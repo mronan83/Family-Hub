@@ -27,6 +27,14 @@ export {
 } from './tile-states';
 export { PointsChip, type PointsChipProps } from './PointsChip';
 export { GoalMeter, type GoalMeterProps } from './GoalMeter';
+export {
+  DayMarks,
+  type DayMarksProps,
+  type DayMarkState,
+  PeriodMarks,
+  type PeriodMarksProps,
+  type PeriodMarkState,
+} from './PeriodMarks';
 export { Banner, type BannerKind } from './Banner';
 export { Fold, type FoldProps } from './Fold';
 export { Button, type ButtonProps, type ButtonVariant } from './Button';

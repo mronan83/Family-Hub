@@ -8,6 +8,7 @@ import {
   evaluateRead,
   evaluateStoredGoal,
   eventWords,
+  type GoalFormValue,
   goalPayload,
   goalRefusal,
   ordinal,
@@ -72,6 +73,7 @@ describe('the goal form', () => {
         startDate: '2026-10-03',
         endDate: '2026-10-17',
         logic: 'any',
+        repeat: 'none',
         rules: [
           { type: 'COUNT', target: 20, scope: { tag_ids: [MORNING, KITCHEN].sort() }, params: {} },
           { type: 'STREAK', target: 5, scope: { all: true }, params: { grace_per_week: 2 } },
@@ -520,6 +522,7 @@ describe('the preview of a change', () => {
     startDate: day(3),
     endDate,
     logic: 'all' as const,
+    repeat: 'none' as const,
     rules: [{ type: 'COUNT' as const, target, scope: { all: true as const }, params: {} }],
     payout: { type: 'points' as const, amount: 10 },
   });
@@ -623,5 +626,131 @@ describe('[RWD-14] the end date (D-115)', () => {
     expect(endOf([...noEnd, ['endDate', '2026-10-24']])).toBe('2026-10-24');
     expect(endOf([...noEnd, ['endDate', '']])).toBeNull();
     expect(readEndDate(form([['endDate', ' 2026-10-24 ']]))).toBe('2026-10-24');
+  });
+});
+
+describe('repeating goals (WP-80)', () => {
+  const HOMEWORK = '0de00000-0000-4000-8000-0000000c0003';
+  const daysDue = (extra: [string, string][]) =>
+    parseGoalForm(
+      form([
+        ...base,
+        ['rule-keys', 'a'],
+        ['rule-a-type', 'DAYS_DUE'],
+        ['rule-a-scope', 'items'],
+        ['rule-a-item', HOMEWORK],
+        ...extra,
+      ]),
+      ctx,
+    );
+
+  it('[RWD-15-j] reads how it repeats, "every day it’s due" and its misses allowed', () => {
+    const parsed = daysDue([
+      ['repeat', 'week'],
+      ['rule-a-misses', '1'],
+    ]);
+    expect(parsed).toMatchObject({
+      ok: true,
+      value: {
+        repeat: 'week',
+        rules: [
+          {
+            type: 'DAYS_DUE',
+            target: 1,
+            scope: { chore_ids: [HOMEWORK] },
+            params: { misses_allowed: 1 },
+          },
+        ],
+      },
+    });
+    expect(goalPayload((parsed as { value: GoalFormValue }).value, 'h1')).toMatchObject({
+      repeat: 'week',
+    });
+    // Misses allowed are 0 to 3; anything else is 0. No target is asked for.
+    expect(daysDue([['repeat', 'month'], ['rule-a-misses', '7']])).toMatchObject({
+      value: { repeat: 'month', rules: [{ params: { misses_allowed: 0 } }] },
+    });
+  });
+
+  it('[RWD-15-j] a goal without a repeat doesn’t repeat; an unknown one is read as none', () => {
+    expect(daysDue([['repeat', 'term']])).toMatchObject({ value: { repeat: 'term' } });
+    const once = parseGoalForm(
+      form([...base, ['rule-keys', 'a'], ['rule-a-type', 'COUNT'], ['rule-a-target', '3']]),
+      ctx,
+    );
+    expect(once).toMatchObject({ value: { repeat: 'none' } });
+    expect(
+      parseGoalForm(
+        form([
+          ...base,
+          ['repeat', 'year'],
+          ['rule-keys', 'a'],
+          ['rule-a-type', 'COUNT'],
+          ['rule-a-target', '3'],
+        ]),
+        ctx,
+      ),
+    ).toMatchObject({ value: { repeat: 'none' } });
+  });
+
+  it('[RWD-16-i] every day it’s due on a goal that doesn’t repeat says what to fix', () => {
+    expect(daysDue([])).toEqual({
+      ok: false,
+      message:
+        'Rule: every day it’s due is for a goal that repeats. Choose how it repeats, or another rule.',
+    });
+    expect(goalRefusal({ hint: 'rule_repeat' })).toMatch(/repeats/);
+    expect(goalRefusal({ hint: 'repeat_fixed' })).toBe(
+      'This goal has started, so how it repeats stays as it is.',
+    );
+    expect(goalRefusal({ hint: 'rule_misses' })).toBe('Misses allowed: 0 to 3.');
+    expect(goalRefusal({ hint: 'repeat' })).toMatch(/each week, month or school term/);
+    expect(goalRefusal({ hint: 'not_repeating' })).toMatch(/repeats/);
+    expect(goalRefusal({ hint: 'not_started' })).toMatch(/Cancel it instead/);
+  });
+
+  it('[RWD-16] describes the rule, and a period’s events and a stop', () => {
+    const names = { tags: new Map<string, string>(), items: new Map([[HOMEWORK, 'Homework home']]) };
+    expect(
+      describeRule(
+        { type: 'DAYS_DUE', target: 1, scope: { chore_ids: [HOMEWORK] }, params: {} },
+        names,
+      ),
+    ).toBe('Every day it’s due, from Homework home (no misses allowed)');
+    expect(
+      describeRule(
+        { type: 'DAYS_DUE', target: 1, scope: { all: true }, params: { misses_allowed: 2 } },
+        names,
+      ),
+    ).toBe('Every day it’s due (2 misses allowed)');
+    const span = { period_start: '2026-10-05', period_end: '2026-10-11' };
+    expect(
+      eventWords({
+        type: 'achieved',
+        payload: { n: 3, ...span, paid: { type: 'points', amount: 10, children: 1 } },
+      }),
+    ).toBe('Oct 5 to 11 won: paid 10 points');
+    expect(eventWords({ type: 'achieved', payload: { ...span, paid: { type: 'custom' } } })).toBe(
+      'Oct 5 to 11 won',
+    );
+    expect(
+      eventWords({ type: 'achieved', payload: { ...span, paid: { type: 'catalog_item' } } }),
+    ).toBe('Oct 5 to 11 won: its reward from the shop is approved');
+    expect(eventWords({ type: 'unachieved', payload: span })).toBe(
+      'Oct 5 to 11 no longer won: a check-off it needed was undone',
+    );
+    expect(eventWords({ type: 'payout_reversed', payload: { ...span, points: 10 } })).toBe(
+      'Oct 5 to 11: 10 points taken back',
+    );
+    expect(
+      eventWords({
+        type: 'payout_reversed',
+        payload: { period_start: '2026-09-28', period_end: '2026-10-04', item: 'called_off' },
+      }),
+    ).toBe('Sep 28 to Oct 4: its reward from the shop called off');
+    expect(eventWords({ type: 'stopped', payload: { end_date: '2026-10-18' } })).toBe(
+      'Set to stop after Oct 18',
+    );
+    expect(eventWords({ type: 'stopped', payload: {} })).toBe('Set to stop');
   });
 });

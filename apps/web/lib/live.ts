@@ -29,6 +29,7 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     { table: 'redemption', filter: `household_id=eq.${householdId}` },
     { table: 'reward_goal', filter: `household_id=eq.${householdId}` },
     { table: 'reward_goal_progress', filter: `household_id=eq.${householdId}` },
+    { table: 'reward_goal_period', filter: `household_id=eq.${householdId}` },
     { table: 'reward_rule_progress', filter: `household_id=eq.${householdId}` },
     // The calendars (WP-23): a sync updates its calendar's row last; a board's own choice; a
     // calendar's people (WP-50), for a person removed for good.

@@ -1379,6 +1379,34 @@ flowchart LR
 - **Neutral days and periods:** a period with no days due (a break) is neither won nor missed; a day a parent skipped is neutral, as today. A parent's late tick still counts, as late credit does today (D-21), even after the period has closed: the period is worked out again and can turn from missed to won, or back after a reversal (RWD-04).
 - **Not covered, as a plain fact:** goals for avoiding something (no screen time over a limit) aren't part of this; nothing in FamilyWise records them.
 - **Mockup first:** one mockup covers WP-80 to WP-82 (the goal form's repeat, rule, misses, by-a-time and tiers; the goal's period history; the board's goal card with "Missed, starts again Monday"; a family goal each child meets), on made-up demo-family data, approved by the owner before any of them is built.
+- **Mockup approved** by the owner on 16 October ([Repeating goals](https://claude.ai/artifact/QX8BdvfM6YFDg8cmX63h4R)), for WP-80 to WP-82, with their answers (D-123): "every day it's due" only on a repeating goal; each won period pays the goal's own reward (a shop reward goes to **To give** once a period), and a reward for the goal as a whole is a separate goal counting the weeks won (WP-82); **Stop after this week** beside Cancel; how a goal repeats is fixed once it starts.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| RWD-16-a | A 5-day week with everything in scope done every day is won | Unit |
+| RWD-16-b | A 4-day week (Friday a closure, nothing due) is won with 4 | Unit |
+| RWD-16-c | Tuesday missed with 0 allowed loses the week once Tuesday closes, "starts again" the next Monday; the next week starts afresh | Unit |
+| RWD-16-d | With 1 miss allowed, one miss is forgiven and two lose the week | Unit |
+| RWD-16-e | A break week (nothing due) is neither won nor missed | Unit |
+| RWD-16-f | A day a parent skipped is neutral: neither due nor missed | Unit |
+| RWD-16-g | Today is never a miss, whatever is still to do | Unit |
+| RWD-16-h | A parent's late tick after the week closed turns it from missed to won, and an uncheck turns it back | Unit |
+| RWD-16-i | "Every day it's due" is refused on a goal that doesn't repeat, and its misses allowed are 0 to 3 | Unit, DB |
+| RWD-15-a | A part first week counts only the days due inside it | Unit |
+| RWD-15-b | Each calendar month is its own period | Unit |
+| RWD-15-c | Each school term is a period, and days between terms belong to none | Unit |
+| RWD-15-d | Every rule is worked out inside each period ("20 things done each week") | Unit |
+| RWD-15-e | The repeat and the rule are saved and checked; the repeat stays once the goal has started | DB |
+| RWD-15-f | Each period's outcome and achievement are recorded once; its payout is paid once and reversed once | DB |
+| RWD-15-g | A won week keeps its outcome and what it paid when the rules change; the change counts from the next week | DB |
+| RWD-15-h | Stop after this week ends the goal on the last day of the period going now | DB |
+| RWD-15-i | Each won period is celebrated once on the board | DB |
+| RWD-15-j | The form reads the repeat, "every day it's due" and its misses | Unit |
+| RWD-15-k | The board's and the Goals card's words: the days, "Missed, starts again", the won line and the weeks | Unit |
+| RWD-15-l | The form, the Goals card and the goal's Weeks at 390 and 1280 px, and the board's card going, missed and won, in both themes | UI |
+| RWD-15-m | On the preview: Maya's weekly homework goal, Monday to Thursday done and Friday a closure, is won and pays 10 once; a missed Tuesday next week shows "Missed, starts again Monday"; Goals shows the weeks | E2E |
+
 - **Done when:** the rules engine's tests (Vitest, with named cases): a 5-day week won; a 4-day week (a closure) won with 4; Tuesday missed with 0 allowed loses the week at day close and the next Monday starts afresh; 1 allowed forgives one miss and not two; a break week neither; a skipped day neutral; today never a miss; a parent's late tick after the week turns it from missed to won, and a reversal back; a part first week; months and terms. pgTAP: the repeat and rule saved and checked, each period's outcome and achievement recorded once, its payout once and reversed once. On the preview, Alex sets Maya "Homework home every school day, each week" paying 10 points; with Monday to Thursday done and Friday a closure, the week is won and pays 10 once; next week, a missed Tuesday shows "Missed, starts again Monday <date>" on the board; Goals shows the weeks' history. The UI suite: the form, the history and the board card at the admin app's 390 and 1280 px and the board's sizes, in both themes.
 
 ### WP-81 — A goal done by a time, and goals that pay in tiers
