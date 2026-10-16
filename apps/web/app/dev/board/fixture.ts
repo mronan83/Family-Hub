@@ -2,6 +2,7 @@ import type { Answer, CompletionEvent } from '@/lib/outbox';
 import type { MarkCelebrated } from '@/lib/board-goals';
 import type { AskFor, CancelAsk } from '@/lib/shop';
 import { type BoardLayout, DEFAULT_LAYOUT } from '@/lib/board-layout';
+import { NO_SLEEP, readBoardSleep } from '@/lib/board-sleep';
 import type { BoardMealEntry, BoardMeals, MealSlot } from '@/lib/board-meals';
 import type { LunchChild, LunchDay } from '@/lib/lunch';
 import type { MenuItem } from '@/lib/menu/nutrislice';
@@ -198,7 +199,14 @@ export function fixtureSnapshot(
     today,
     range: { from: day(-1, today), to: day(21, today) },
     household: { id: 'h', name: 'Demo family', timezone: TZ, weekStart: 0, undoWindowSeconds: 120 },
-    device: { id: 'd', name: 'Kitchen', theme: 'auto', textSize: 'standard' },
+    device: {
+      id: 'd',
+      name: 'Kitchen',
+      theme: 'auto',
+      textSize: 'standard',
+      sleep: { ...NO_SLEEP },
+    },
+    schoolDays: null,
     // [BRD-05] The household's layout, the defaults unless the page says otherwise (WP-35).
     layout: { household: layout ?? structuredClone(DEFAULT_LAYOUT), board: null },
     members: [
@@ -989,3 +997,13 @@ export function withLunchItem(s: BoardSnapshot): BoardSnapshot {
     ],
   };
 }
+
+/** [DEV-07] Kitchen's sleep and wake from the mockup (WP-34, D-116): missed only while awake. */
+export const KITCHEN_SLEEP = readBoardSleep({
+  missed: 'awake',
+  schedule: {
+    school: { sleep: '21:30', wake: '06:30' },
+    weekend: { sleep: '22:30', wake: '07:30' },
+  },
+  idle_minutes: 15,
+});

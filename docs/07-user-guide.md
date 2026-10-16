@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.29: sleep and wake per board (WP-34, D-116, D-117): A16, Boards (B1.12), the board asleep (B2), the rules, troubleshooting and questions.
 > v0.28: a goal's end date that can be cleared (WP-79, D-115): **Ends on a date** with the date and **Clear**, on an iPhone too; a started goal's end date added, moved or taken off; a reached goal keeps its rules and dates (A7, B1, B3).
 > v0.27: the meal week folded (WP-75, D-114): each day of **Meals** closed at first with "2 of 4 set" or a check, then **Add to the plan**, **Copy last week** and the usual lunch week, each closed until tapped (A15, B1.15).
 > v0.26: the lunch picks one tap from Home (WP-73, D-113): **School lunches** on Home says whose days still need a choice, and **Pick lunches** opens the lunch week on the child chosen last (A2, B1.1).
@@ -67,6 +68,7 @@ Button and label names are in **bold**, exactly as the app shows them. The pictu
   - [A13 Weather on the board](#a13-weather-on-the-board)
   - [A14 Screens and text size](#a14-screens-and-text-size)
   - [A15 Planning meals](#a15-planning-meals)
+  - [A16 Sleep and wake](#a16-sleep-and-wake)
 - [Part B — User Manual](#part-b--user-manual)
   - [B1 The admin app, page by page](#b1-the-admin-app-page-by-page)
   - [B2 The board, screen by screen](#b2-the-board-screen-by-screen)
@@ -937,6 +939,24 @@ The family can pick the coming week's school lunches at the board, on a Sunday s
 
 ![School lunch on Meals on a laptop: Leo's Wednesday open, changed on the board, with his entree, fruit and milk ticked and Save Leo's picks.](guide/img/admin-lunch-laptop.jpg "School lunch on Meals, with picks")
 
+### A16 Sleep and wake
+<!-- covers: US-207 -->
+
+**What this is.** Each board can sleep at night and when nobody uses it, and you choose whether Home tells you when it hasn't been seen. **When.** When you set up a board, or when it lights up a room at night. **How.** On **Boards**, open **Sleep and wake on** (the board's name), choose, and press **Save sleep and wake**. The board follows within a minute.
+
+- **Tell me when (the board) isn't seen.** **Always**: Home's heads-up says so after a day without it, at any hour (as before). **Only while awake**: its hours asleep don't count, and Home never says so while it is asleep; for a board switched off at the wall overnight. **Never**: for a board that is often off; Home never lists it.
+- **Sleep at night.** Tick **(the board) sleeps and wakes at set times**, then give **School nights** and **Weekends and days off** a time each to sleep and to wake. A night takes its times from the day after it: Sunday to Thursday night are school nights when school is the next day; Friday and Saturday night, and any night before a day off from school, are weekend nights. School days come from **School** in Settings; without a school year, every weekday is a school day.
+- **Sleep when nobody touches it.** **Never**, or after 5, 10, 15 or 30 minutes, 1 hour or 2 hours untouched. After its wake time in the morning it stays on for at least this long.
+- **Asleep, the board is black.** A touch, a click or moving the mouse wakes it. **That first touch only wakes it**: it never checks off a chore or presses a button, so tap again for that. A touch in the night wakes it for its idle time (5 minutes if **Never**), then it sleeps again.
+- **On the board's row** Boards says "Asleep · wakes at 6:30 am" or "Awake · sleeps at 9:30 pm" while it has set times.
+- **Burn-in.** Every board moves its picture by a pixel every 5 minutes, within a 4-pixel square, too little to see, so nothing stays on the same pixels all day. There is nothing to set.
+
+![Boards on a laptop: Kitchen, last seen Thu, Oct 15 at 7:42 am, "Awake · sleeps at 9:30 pm", and its Sleep and wake open: Tell me when Kitchen isn't seen with Only while awake chosen; Sleep at night ticked, School nights 9:30 pm to 6:30 am and Weekends and days off 10:30 pm to 7:30 am; Sleep when nobody touches it, After 15 minutes; Save sleep and wake. Below, Playroom: never missed, sleeps after 10 minutes untouched.](guide/img/admin-boards-sleep-laptop.jpg "Sleep and wake on Boards, on a laptop")
+
+**Turning the screen off on the Raspberry Pi.** A web page can't turn its screen off, so on an iPad or a laptop a sleeping board is just black (an iPad's own Auto-Lock still works as usual). On the Pi, a small helper turns the monitor off when the board sleeps and back on when it wakes. Install it once: on the Pi, open a terminal, type `curl -fsSL https://family-wise-topaz.vercel.app/api/kiosk/install | bash`, then `sudo reboot`. It needs no password or key, listens only on the Pi itself, and answers only FamilyWise. Running the same command again updates it.
+
+> **Tip:** Moving the mouse wakes the Pi's monitor too. A monitor coming out of standby takes a second or two to show the picture.
+
 ## Part B — User Manual
 
 ### B1 The admin app, page by page
@@ -965,7 +985,7 @@ The admin app is for parents, on a phone or a laptop. On a laptop its menu is do
 | **Family options** | The household | The week's start day, check-offs, weather, admins and invites |
 | **School** | School years | Day types, breaks, who follows which year |
 | **Calendars** | Calendars | Connecting Apple calendars |
-| **Boards** | Boards | Pairing, themes, calendars and layout per board |
+| **Boards** | Boards | Pairing, themes, calendars, layout, and sleep and wake per board |
 | **Tags** | Tags | Labels that group chores and let goals count by kind |
 | **Reminders** | Your reminders | Devices and when to remind you |
 | **Health** | System health | Background jobs, errors, usage |
@@ -1130,7 +1150,7 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 | **Add a calendar** | **Name** (up to 40), **Public link**, **Color**, **Whose calendar (optional)**, **Show on the boards**, **Add calendar** ("Adding and syncing…"). |
 
 #### B1.12 Boards
-<!-- covers: US-201 US-202 US-507 US-1004 US-1007 -->
+<!-- covers: US-201 US-202 US-507 US-1004 US-1007 US-207 -->
 
 | Part | What it shows or does |
 |---|---|
@@ -1138,6 +1158,7 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 | **Rename** | A new name (up to 60 characters). |
 | Theme and **Set theme** | **Automatic, by time of day**, **Always Day** or **Always Evening**. |
 | Text size and **Set text size** | **Smaller text**, **Standard text**, **Larger text** or **Largest text** (see [A14](#a14-screens-and-text-size)). The board changes at once. |
+| **Sleep and wake on** (name) | How it is set ("school nights 9:30 pm to 6:30 am, weekends 10:30 pm to 7:30 am; sleeps after 15 minutes untouched"); **Tell me when** (name) **isn't seen** (**Always**, **Only while awake**, **Never**), **Sleep at night** with **School nights** and **Weekends and days off**, **Sleep when nobody touches it**, **Save sleep and wake** (see [A16](#a16-sleep-and-wake)). The board's row says "Asleep · wakes at …" or "Awake · sleeps at …". |
 | **Disconnect** (name) | Asks first: it says what will happen, and **Yes, disconnect** (name) disconnects the board for good. It reads nothing more and can't sign in again; pair it again for a new start. |
 | **Calendars on** (name) | Which calendars it shows; **Save calendars** makes it choose its own. |
 | **Home screen on** (name) | "its own layout" or "the household's layout"; **Give** (name) **its own layout**, **Save**; then its own layout form. |
@@ -1225,6 +1246,8 @@ flowchart TD
   K -. 90 seconds untouched .-> H
   F -. 90 seconds untouched .-> H
 ```
+
+Any screen can fall asleep: black, at the board's set times or when nobody touches it, then back where it was at a touch ([A16](#a16-sleep-and-wake)).
 
 #### B2.1 The rail and the bar
 <!-- covers: US-1002 US-204 US-1008 -->
@@ -1376,11 +1399,13 @@ Messages: "Sent. A parent will look at it.", "Back as it was.", "That day can't 
 | A tap's answer | At once; the board shows it before the server answers. |
 | Changes from the admin app | Within about **3 seconds** while connected. |
 | "Updated … ago" | When the board's information is over **5 minutes** old. A board reads everything again every 4 minutes. |
-| "Last seen" on **Boards** | The board reports in every 5 minutes while open. |
+| "Last seen" on **Boards** | The board reports in every 5 minutes while open, asleep or not. |
 | Sending saved check-offs | Retried after 1, 2, 5 and 10 seconds, then every 30 seconds, and at once when the network returns. |
 | Goal celebration | Once per achievement, on one board; up to 10 seconds. |
 | Goal payout | Once per achievement, when it is reached. Undone once if the goal goes back to going (points taken back, a reward not yet given called off); paid again when it is reached again. |
 | A new day | At the household's midnight, the board reads the new day by itself. |
+| Sleep and wake | A board sleeps at its set times and after its idle time untouched (5 minutes to 2 hours), and looks every 15 seconds. A touch in the night keeps it awake for its idle time, or 5 minutes. A board missed **Only while awake** is listed after 24 of its hours awake unseen. |
+| Burn-in drift | A pixel every 5 minutes, within a 4-pixel square. |
 | Weather | Read every 30 minutes; hidden once the last good reading is over 75 minutes old. Offline, the last reading stays for that day. |
 
 #### Approval
@@ -1484,6 +1509,8 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Board: points with a dashed ring | Points counting check-offs not yet saved. | Wait for the connection; the server's figure replaces it. |
 | Board: **Updated 12 minutes ago** | It couldn't read the latest for a while. | Check the wifi. If it stays, reload the board's page. |
 | Board: **Reconnecting…** | The live connection dropped. | Usually fixes itself; it reads everything again when back. |
+| Board: black | It is asleep: its set times, or nobody touched it for a while ([A16](#a16-sleep-and-wake)). | Touch it, click or move the mouse. The first touch only wakes it; tap again to check something off. |
+| The Pi's monitor stays on while the board is black | The screen helper isn't installed, or the Pi hasn't restarted since. | Install it (A16), then `sudo reboot`. |
 | Board: words too small, or too big, to read from where you stand | Its text size suits a different spot. | On **Boards**, choose a **Text size** for it and **Set text size**. |
 | Board: today's list is under the calendar | It has **Larger** or **Largest** text, which leaves no room beside the calendar. | Scroll down; or choose **Standard text** on **Boards**. |
 | Board in a laptop's browser: the browser's zoom does nothing | The board fits the window, whatever its zoom. | Use the board's **Text size** on **Boards** instead. |
@@ -1514,6 +1541,10 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 **Can my child undo something after two minutes?** Not on the board. A parent can uncheck it on **Today**.
 
 **Can I give credit for yesterday?** Yes. On **Today**, choose **Day before** and **Mark done**. It counts as done by a parent, with its points, and streaks and goals catch up.
+
+**Does a sleeping board still count as seen?** Yes. Asleep it is still on and reports in, so it never goes missing by sleeping. **Only while awake** is for a board that is switched off at the wall overnight.
+
+**Why didn't my tap check it off?** The board was asleep. The tap that wakes it only wakes it, so a child's tap in the dark never checks something off by mistake.
 
 **What happens to a chore nobody did?** At midnight a chore becomes missed. A task stays open as overdue until it's done.
 
@@ -1597,7 +1628,7 @@ These are planned but not built yet. This guide will cover each as it arrives.
 - **Export and delete** your household's data.
 - **Sign in with Apple** and passkeys.
 - **Private calendars** through a separate read-only Apple account (CalDAV), and importing days off from a school calendar.
-- **The kiosk:** the board locked full-screen on its own device, quiet hours overnight and burn-in protection.
+- **The kiosk:** the board locked full-screen on its own device (sleep and wake, with the Pi's screen turned off, are here now: [A16](#a16-sleep-and-wake)).
 - **Goal meters offline** that move with check-offs not yet saved.
 - **A meal for some of us:** **Add to the plan** for any mix of people, not just everyone or one.
 - **An alert when something waits for you:** a phone notification when a check-off needs your OK or a child asks for a reward, if you have notifications on.

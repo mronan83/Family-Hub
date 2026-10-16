@@ -121,7 +121,14 @@ describe('board snapshot', () => {
         weekStart: 0,
         undoWindowSeconds: 120,
       },
-      device: { id: 'd1', name: 'Kitchen', theme: 'auto', textSize: 'standard' },
+      device: {
+        id: 'd1',
+        name: 'Kitchen',
+        theme: 'auto',
+        textSize: 'standard',
+        sleep: { missed: 'always', schedule: null, idleMinutes: null },
+      },
+      schoolDays: null,
       layout: {
         household: {
           calendar: '7',

@@ -13,6 +13,7 @@ import {
   moveCard,
   readLayout,
 } from '@/lib/board-layout';
+import { sleepFromForm, sleepToConfig } from '@/lib/board-sleep';
 import { log } from '@/lib/log';
 import { serverClient } from '@/lib/supabase/server';
 
@@ -80,32 +81,56 @@ export async function setBoardTextSize(form: FormData): Promise<void> {
   await setBoardConfig(form, size ? { text_size: size } : null, 'board text size not set');
 }
 
+/**
+ * [DEV-07][US-207] A board's sleep and wake (WP-34, D-116): when it counts as missed, its
+ * set times and how long untouched before it sleeps. The board hears it through Realtime; Boards
+ * opens on it again, saying whether it was saved.
+ */
+export async function setBoardSleep(form: FormData): Promise<void> {
+  const id = String(form.get('id') ?? '');
+  const name = String(form.get('name') ?? '');
+  const sleep = sleepFromForm(form);
+  const saved = sleep
+    ? await saveBoardConfig(form, { sleep: sleepToConfig(sleep) }, 'board sleep not set')
+    : false;
+  revalidatePath('/admin/devices');
+  const q = new URLSearchParams({ [saved ? 'did' : 'error']: 'sleep', board: id, name });
+  redirect(`/admin/devices?${q}#sleep-${id}`);
+}
+
 /** Puts `change` into the board's settings, keeping the rest, then shows Boards again. */
 async function setBoardConfig(
   form: FormData,
   change: Record<string, string> | null,
   failure: string,
 ): Promise<void> {
-  const { db, household } = await context();
-  const id = String(form.get('id') ?? '');
-  if (change) {
-    const { data } = await db
-      .from('device')
-      .select('board_config')
-      .eq('id', id)
-      .eq('household_id', household.id)
-      .maybeSingle();
-    if (data) {
-      const { error } = await db
-        .from('device')
-        .update({ board_config: { ...(data.board_config as object), ...change } })
-        .eq('id', id)
-        .eq('household_id', household.id);
-      if (error) log('warn', failure, { code: error.code });
-    }
-  }
+  if (change) await saveBoardConfig(form, change, failure);
   revalidatePath('/admin/devices');
   redirect('/admin/devices');
+}
+
+/** Puts `change` into the board's settings, keeping the rest; false when it wasn't saved. */
+async function saveBoardConfig(
+  form: FormData,
+  change: Record<string, unknown>,
+  failure: string,
+): Promise<boolean> {
+  const { db, household } = await context();
+  const id = String(form.get('id') ?? '');
+  const { data } = await db
+    .from('device')
+    .select('board_config')
+    .eq('id', id)
+    .eq('household_id', household.id)
+    .maybeSingle();
+  if (!data) return false;
+  const { error } = await db
+    .from('device')
+    .update({ board_config: { ...(data.board_config as object), ...change } })
+    .eq('id', id)
+    .eq('household_id', household.id);
+  if (error) log('warn', failure, { code: error.code });
+  return !error;
 }
 
 /** [DEV-02][DEV-03] Disconnects a board for good: its reads stop now, and it cannot sign in again. */

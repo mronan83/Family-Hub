@@ -1322,6 +1322,25 @@ html:has(.board) {
      scrolls, never spilling into a page scroll. */
   position: relative;
 }
+/* [DEV-07] Burn-in (WP-34): the board's picture drifts a px or two (left and top, set by the board),
+   and what drifts past the screen's edge is clipped, never scrolled to. */
+.board:has(> .fw-board--drift) {
+  overflow: clip;
+}
+/* [DEV-07][US-207] A sleeping board is black over everything. The touch that wakes it lands on
+   this cover, which stays, clear, until that touch's click has passed, so waking presses nothing. */
+.fw-sleep {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  background: var(--sleep-screen);
+  cursor: none;
+  touch-action: none;
+}
+.fw-sleep[data-state='waking'] {
+  background: transparent;
+  cursor: auto;
+}
 /* The rail's column runs the full height. */
 .fw-board::before {
   content: '';
@@ -1789,6 +1808,51 @@ html:has(.board) {
 /* A board's calendars on the Boards page (WP-23): a full row under the board's own controls. */
 .fw-board-cals {
   flex-basis: 100%;
+}
+/* [DEV-07][US-207] A board's sleep and wake on Boards (WP-34): the three choices for when it is
+   missed side by side where they fit, the two nights' times, and whether it is asleep now. */
+.fw-sleep-choices,
+.fw-sleep-nights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--s-3);
+}
+.fw-sleep-choice {
+  align-items: flex-start;
+  padding: var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+}
+.fw-sleep-choice:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+}
+.fw-sleep-choice > span {
+  display: grid;
+  gap: var(--s-1);
+}
+.fw-sleep-night {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+}
+.fw-sleep-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin-left: var(--s-2);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  font-size: var(--t-small);
+  font-weight: 600;
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-sleep-status[data-asleep='true'] {
+  background: var(--missed-tint);
+  color: var(--missed-text);
 }
 
 /* The board's calendar (WP-23): Day, Week and Month, each event in its calendar's color. -------- */

@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.53: US-207 as built (WP-34, D-117): a night takes its times from the day after it; a touch in the night wakes a board for its idle time or 5 minutes; Only while awake counts a board's hours awake; the picture drifts; the Pi's screen helper.
 > v0.8.52: US-207 gains sleep and wake per board and when a board counts as missed, added at the owner's request (WP-34, D-116).
 > v0.8.51: US-401 as built for a goal's end date that can be cleared (WP-79, D-115): **Ends on a date** and **Clear**; a started goal ends today or later; a reached goal keeps its rules and dates, added at the owner's request.
 > v0.8.50: US-711 as built (WP-75, D-114): **Copy last week** also collapsed at first and moved up under **Add to the plan**, added at the owner's request; a day opens by itself after a change to it.
@@ -215,6 +216,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a board is in its scheduled sleep, when someone touches it, then it wakes for its idle time and then sleeps again.
 - Given a board set to **Never**, when it hasn't been seen for a day, then Home doesn't list it; set to **Only while awake**, Home doesn't list it while it is in its scheduled sleep; set to **Always**, Home lists it after a day unseen, as now.
 - Given a board in a browser (such as an iPad), when it sleeps, then its screen is black; on the Pi the kiosk also turns the screen off.
+- As built (WP-34, D-117): on Boards, each board's **Sleep and wake**: **Tell me when (board) isn't seen** (Always, Only while awake, Never), **Sleep at night** with a school night's and a weekend's sleep and wake times, and **Sleep when nobody touches it** (Never, or 5 minutes to 2 hours); the board's row says "Asleep · wakes at 6:30 am" or "Awake · sleeps at 9:30 pm". A night takes its times from the day after it, so Sunday night is a school night and the night before a day off a weekend night. Asleep, the board is black; the touch, click or mouse movement that wakes it presses nothing; at night it stays awake for its idle time (5 minutes if Never) after the last touch, then sleeps again. **Only while awake** counts only a board's hours awake toward the day unseen. The picture drifts a px every 5 minutes within a 4 px square; there is no separate dim. On the Pi, a helper installed once with one command turns the monitor off and on.
 
 ---
 

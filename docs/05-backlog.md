@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.126: WP-34 (quiet hours and burn-in mitigation, with sleep and wake per board) built and merged (D-116, D-117), from the mockup the owner approved on 16 October with its six recommendations; its 3 days on the owner's Pi 4 are open (Y-11).
 > v0.8.125: WP-34 gains sleep and wake per board, added at the owner's request, recorded only (D-116): when a board counts as missed (Always, Only while awake, Never), sleep and wake times for school days and weekends, an idle sleep woken by a touch, click or mouse movement that only wakes. WP-34 now depends on WP-06 and WP-47 and is Ready: the owner's Pi 4 on a 24" Dell is the board in use, so it no longer waits on WP-14 or SPIKE-03. Size S to M. A mockup comes first. "Next, in order" is the owner's to set.
 > v0.8.124: WP-79 (a goal's end date that can be cleared) done (D-115), from the mockup the owner approved with their changes; added at the owner's request with it: a started goal's end date today or later, and a reached goal that can't change (read per period for WP-80). WP-80 no longer waits on WP-79.
 > v0.8.123: WP-75 (the meal planner's days as collapsible sections, with the usual lunch week and Add to the plan folded) done (D-114), with **Copy last week** folded too and Meals reordered, added at the owner's request.
@@ -145,6 +146,7 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 |---|---|---|---|
 | Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14; launch checks L-05 and L-08 |
 | Y-10 | The repository is public now (D-48), and three things from before are visible on it. (1) Rotate the deployment-protection bypass secret: Vercel → Settings → Deployment Protection → Protection Bypass for Automation, then put the new value in GitHub → Settings → Secrets → `VERCEL_AUTOMATION_BYPASS_SECRET`. The demo sign-ins' passwords follow it on the next e2e run. (2) Delete the four `playwright-report` artifacts (Actions → the failed e2e runs of Oct 9 whose reports were saved at 10:56, 15:03, 20:20 and 20:28 UTC), which hold the old value. (3) Delete the two `setup-code` runs of Oct 9 (10:54 and 11:03 UTC), whose pages show household codes; they expire 24 hours after issue | GitHub; Vercel | R-35 |
+| Y-11 | WP-34's screen power on the Kitchen Pi 4. (1) On the Pi, open a terminal and type `curl -fsSL https://family-wise-topaz.vercel.app/api/kiosk/install \| bash`, then `sudo reboot`. (2) On Settings → Boards, open **Sleep and wake** on the Pi's board, set its times and press **Save sleep and wake**. (3) Over the next 3 days, check the monitor goes off at the sleep time and comes on at the wake time, and that moving the mouse wakes it; then tell Claude Code "WP-34 Pi check passed", or what you saw | The Pi | WP-34's last done-when line (HW) |
 | Y-8 | Not before P3 (nothing earlier waits on it): choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
 
 **Done**
@@ -213,7 +215,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-44 | Offline goal projection (board fallback) | P2 | M | WP-13, WP-15, WP-20 | Ready |
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
-| WP-34 | Quiet hours and burn-in mitigation, with sleep and wake per board | P3 | M | WP-06, WP-47 | Ready |
+| WP-34 | Quiet hours and burn-in mitigation, with sleep and wake per board | P3 | M | WP-06, WP-47 | Merged; 3 days on the owner's Pi 4 to check (Y-11) |
 | WP-35 | Family dashboard and board layout | P3 | L | WP-23 | Done (PR #44) |
 | WP-45 | Weather on the board | P3 | S | WP-35 | Done (PR #45) |
 | WP-46 | More icons, one icon picker, sixteen colors | P3 | M | WP-08, WP-22, WP-37 | Done (PR #47) |
@@ -962,6 +964,14 @@ flowchart LR
 - **Hardware (D-116):** the board in use is the owner's Raspberry Pi 4 on a 24" Dell monitor, and it stays in use. WP-34's screen power-off is built and tested on it, so WP-34 no longer waits on WP-14 or SPIKE-03. The Pi 5 and the 32" 4K touch panel come later; SPIKE-03 and WP-14 stay as they are and are not planned now.
 - **Mockup first:** the Boards settings (the new choices per board) and the sleeping board get a mockup on demo-family data, approved by the owner before WP-34 is built.
 - **Done when:** unit tests on when a board is asleep (school days, weekends, a day off, the idle time, a touch in the night, across midnight and DST) and on when Home lists a board as not seen for each of the three choices; on the preview, a board set to sleep now shows the black screen, the touch that wakes it checks nothing off, and Home doesn't list a board set to **Never** or one asleep under **Only while awake**; the UI suite shows the Boards settings and the sleeping board; on the owner's Pi 4, the screen turns off and on at its times over 3 days.
+- As built (D-116, D-117; the owner approved the mockup on 16 October, with its six recommendations):
+  - **Data:** migration `20261016002422_board_sleep.sql`: `device.board_config.sleep` (`missed`, `schedule` with `school` and `weekend` sleep and wake times, `idle_minutes` of 5, 10, 15, 30, 60 or 120), checked by `private.valid_board_sleep()`; `public.school_days()` (a day any member has school; Monday to Friday with no school year); the snapshot's `device.sleep` and `school_days` (yesterday to a week ahead). pgTAP: `460_board_sleep.test.sql`.
+  - **When a board is asleep** (`lib/board-sleep.ts`): a night takes its times from the day after it; during its set times a touch wakes it for its idle time (5 minutes without one); outside them it sleeps once untouched for its idle time since it was touched or woke; times on the household's clock across a change of clocks. Home's heads-up by each board's choice (`boardMissed()`): Always after a day; Only while awake after a day of hours awake, never while asleep; Never never.
+  - **The board** (`app/(board)/board/sleep.tsx`): a black cover over everything; the press that wakes it is caught until its click, so it presses nothing; the mouse moving wakes it; the picture drifts within a 4 px square, a px every 5 minutes. On a Pi (Chromium on Linux on ARM) it tells the screen helper on and off, again each minute.
+  - **Boards:** **Sleep and wake** per board (`devices/sleep-form.tsx`, `setBoardSleep`), its summary line, and "Asleep · wakes at …" or "Awake · sleeps at …" on the board's row.
+  - **The Pi's screen helper** (`lib/kiosk-scripts.ts`): `/api/kiosk/install` installs it (a Python helper on 127.0.0.1:8737 that answers only the board's site and turns the monitor with `wlopm` under Wayland or `xset dpms` under X11, Chromium's Local Network Access policy for the site, a login autostart).
+  - **Tests:** `lib/board-sleep.test.ts`, `lib/kiosk-screen.test.ts`, `lib/kiosk-scripts.test.ts` (the helper run in Python), `lib/home-alerts.test.ts`; the UI suite's `board-sleep.spec.ts` (asleep at its time, the touch that wakes it checks nothing off, idle, the mouse, Boards on a phone and a laptop in Day and Evening); `e2e/tests/board-sleep.spec.ts` (nightly: set on Boards, black on the board, the waking touch sends nothing, Home for each choice).
+  - **Open:** the 3 days on the owner's Pi 4 (Y-11): the helper is built and tested here in its dry mode, not yet on the Pi's own screen.
 
 ### WP-35 — Family dashboard and board layout
 **Phase:** P3 · **Size:** L · **Depends on:** WP-23 · **Reqs:** BRD-01, BRD-05, BRD-06, BRD-07
