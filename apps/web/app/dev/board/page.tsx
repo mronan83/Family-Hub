@@ -19,7 +19,8 @@ import { KITCHEN_SLEEP } from './fixture';
 // from the mockup, school nights 9:30 pm to 6:30 am and weekends 10:30 pm to 7:30 am, 15 minutes
 // untouched; ?sleep=idle, 5 minutes untouched and no set times; the school days are Monday to Friday);
 // repeating goals (WP-80: ?repeating=going|missed|won, Maya's homework this week, Leo's reading missed);
-// a goal done by a time and paid in steps (WP-81: ?steps=going|won|weighted, Maya's).
+// a goal done by a time and paid in steps (WP-81: ?steps=going|won|weighted, Maya's); a family goal
+// every child meets and Maya's perfect weeks (WP-82: ?perfect=going|missed|won).
 export const metadata: Metadata = { title: 'Board Today', robots: { index: false } };
 
 export default async function DevBoardPage({
@@ -43,6 +44,7 @@ export default async function DevBoardPage({
     sleep?: string;
     repeating?: string;
     steps?: string;
+    perfect?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -102,6 +104,11 @@ export default async function DevBoardPage({
         steps={
           params.steps === 'going' || params.steps === 'won' || params.steps === 'weighted'
             ? params.steps
+            : undefined
+        }
+        perfect={
+          params.perfect === 'going' || params.perfect === 'missed' || params.perfect === 'won'
+            ? params.perfect
             : undefined
         }
       />

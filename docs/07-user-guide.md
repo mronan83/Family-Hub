@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.36: perfect weeks, and a family goal every child meets (WP-82, D-126): **Weeks won of a repeating goal**, in total or in a row, and **Every child meets it** on a family goal, with each child's days on Goals and the board (A7c, B1.8).
 > v0.35: a goal done by a time, and goals that pay in steps (WP-81, D-124): **Counts only when done**, **Pay in steps** by days missed, by number or by weighted rules, and the board's steps (A7b, B1.8).
 > v0.34: goals that repeat each week, month or school term (WP-80, D-123): **Repeats**, **Every day it's due** and its misses, a goal's weeks, **Stop after this week**, and the board's week won or missed (A7a, B1.8); Goals' **History** and a goal's **What happened** and **Cancel** folded.
 > v0.33: the test strategy's story (US-913) left out of the guide, with its reason: it is for the people building FamilyWise (WP-85).
@@ -701,6 +702,24 @@ On the goal's page, **Weeks** is folded to "Won 3 of the last 4 weeks" and the p
 
 ![Homework before 6 pm on the board: Monday and Tuesday done, Wednesday missed, Thursday today, Friday to come; the steps All 5: 20, 4: 10 (marked) and 3: 5; Wednesday was after 6:00 pm. On course for 10 points.](guide/img/board-goal-steps.jpg "Steps, on the board")
 
+### A7c Perfect weeks, and a family goal every child meets
+<!-- covers: US-414 US-415 -->
+
+**What this is.** A goal that counts the weeks another goal was won ("3 perfect homework weeks in a row"), and a family goal each child has to meet on their own. **When.** To reward a run of good weeks with something bigger, or when one child shouldn't carry the others. **How.** In the goal form.
+
+- **Weeks won of a repeating goal**: under **Counts**, choose it, then **Which goal** (that person's goals that repeat, or the family's for a family goal), **How** (**In total** or **In a row**) and the **Target**. A week with nothing due neither counts nor breaks a run; a missed week breaks it. Only weeks that start on or after this goal's start date count, so a goal set up on a Thursday counts from the next week. What it pays is its own, apart from what each week pays: an ice cream trip for 3 in a row.
+- **Every child meets it**: on a goal for **The whole family**, under **For the whole family**. Each child who earns rewards has to meet it on their own: one child's missed Tuesday loses the week for everyone, however well the others did. A child with nothing due that week doesn't hold it back. The points go to each child who had something due, and only to them. It can't be changed once the goal starts, and it doesn't pay in steps.
+
+**On Goals,** a family goal every child meets shows each child's days this week and who missed ("Leo missed Tuesday. Starts again Monday, Oct 19."); its **Weeks** say how each child did and what each was paid. A goal counting weeks shows its run ("1 of 3 weeks in a row · best so far 1") and the counted goal's weeks.
+
+![Everyone's homework home on Goals on a phone: the whole family, every child meets it, missed this week; Leo missed Tuesday, starts again Monday, Oct 19; Maya 3 of 4 days and Leo missed Tuesday, each with their days.](guide/img/admin-goal-every-child-phone.jpg "Every child meets it")
+
+**On the board,** your children see each child's days on the family goal, and the line when it is lost or won: "Everyone made it! 20 points each." A goal counting weeks says "1 of 3 weeks in a row" with "This week makes 2 in a row."
+
+![Everyone's homework home on the board: Maya and Leo with their days this week, and Leo missed Tuesday, starts again Monday, Oct 19.](guide/img/board-goal-every-child.jpg "Every child, on the board")
+
+![3 perfect weeks in a row on the board: weeks in a row 1 of 3, the homework goal's weeks, this week makes 2 in a row.](guide/img/board-goal-perfect-weeks.jpg "Perfect weeks, on the board")
+
 ### A8 Streaks and insights
 <!-- covers: US-408 -->
 
@@ -1184,7 +1203,7 @@ A member who doesn't earn rewards can't be given points; what they earned before
 | A repeating goal | How it repeats, misses allowed and what each week pays; **Going**, **Missed this week** or **Won this week**; this week's days and a mark for each; the lost week's line; its last weeks as marks with "Won 3 of the last 4 weeks"; **Change**. See [A7a](#a7a-goals-that-repeat). |
 | **History** (folded) | Folded to how many are redeemed, ended and cancelled, and "needs a look". Open: goals **Redeemed** (when and by whom), **Ended**, or **Cancelled**; **Needs a look** if flagged; **Details**. |
 
-**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Repeats** (**Doesn't repeat**, **Each week**, **Each month**, **Each school term**; fixed once it starts), **Starts**, **Ends** (**Ends on a date**, then the date and **Clear**), one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **Every day it's due** with **Misses allowed each week** 0 to 3 for a goal that repeats, **What counts**, **Counts only when done**: **Any time that day**, **By each chore's due time** or **By a time** with **Time**; **Weight (%)** on a goal with two or more rules in steps), **Add a rule**, **It's reached when**, **What reaching it pays** (**What each week pays** for a goal that repeats) (**Just the celebration**, **Points** with **Points paid** 1 to 10,000 and **Pay in steps**, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
+**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **For the whole family** (**Every child meets it**, a family goal; fixed once it starts), **Repeats** (**Doesn't repeat**, **Each week**, **Each month**, **Each school term**; fixed once it starts), **Starts**, **Ends** (**Ends on a date**, then the date and **Clear**), one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **Every day it's due** with **Misses allowed each week** 0 to 3 for a goal that repeats, **Weeks won of a repeating goal** with **Which goal** and **How** (**In total**, **In a row**), **What counts**, **Counts only when done**: **Any time that day**, **By each chore's due time** or **By a time** with **Time**; **Weight (%)** on a goal with two or more rules in steps), **Add a rule**, **It's reached when**, **What reaching it pays** (**What each week pays** for a goal that repeats) (**Just the celebration**, **Points** with **Points paid** 1 to 10,000 and **Pay in steps**, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
 
 **A goal's page:** who, state and "% there"; **Clear** for a **Needs a look** flag; **Remove photo**; the form (locked as the goal progresses, see [A7](#change-or-cancel-a-goal)); **Weeks** for a goal that repeats (folded; each week, its days and what it paid); **What happened** (folded to its latest line: set up, started, rules or dates changed, what it pays changed, progress worked out again with the old and new %, achieved and what it paid, a week won or no longer won, back to going, payout undone, points put back, needs a look, set to stop, redeemed, ended, cancelled); **Stop or cancel** (folded: **Stop after this week** for a goal that repeats, and **Cancel**).
 

@@ -21,10 +21,13 @@ import type {
   Qualify,
   OccurrenceFact,
   OnTime,
+  PeriodsWonParams,
   Repeat,
   Rule,
   RuleProgress,
   Step,
+  ChildResult,
+  SourcePeriod,
   StepResult,
   StreakParams,
 } from './types';
@@ -65,6 +68,30 @@ export function daysDueParams(params: Record<string, unknown>): DaysDueParams {
     throw new RangeError('misses_allowed must be a whole number from 0 to 3');
   }
   return { misses_allowed: m };
+}
+
+/**
+ * [RWD-19] A PERIODS_WON rule's params: the goal it counts and in total or in a row; anything
+ * missing or malformed is refused.
+ */
+export function periodsWonParams(params: Record<string, unknown>): PeriodsWonParams {
+  const id = params.goal_id;
+  if (typeof id !== 'string' || id.length === 0) {
+    throw new RangeError('a rule counting periods won names the goal it counts');
+  }
+  const row = params.in_a_row ?? false;
+  if (typeof row !== 'boolean') throw new RangeError('in_a_row is true or false');
+  return { goal_id: id, in_a_row: row };
+}
+
+/**
+ * [RWD-19][D-103][D-126] The counted goal's periods inside a window: those that start in it, so a
+ * period begun before the counting goal's start date doesn't count. In order.
+ */
+function periodsIn(periods: SourcePeriod[], from: string, until: string): SourcePeriod[] {
+  return periods
+    .filter((p) => p.start >= from && p.start <= until)
+    .sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
 }
 
 const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -264,6 +291,7 @@ function evaluateRule(
   w: Window,
   asOf: string,
   weekStart: number,
+  sources: Record<string, SourcePeriod[]>,
 ): RuleProgress {
   if (!Number.isFinite(rule.target) || rule.target < 0) {
     throw new RangeError(`rule ${rule.id}: target must be 0 or more`);
@@ -359,6 +387,32 @@ function evaluateRule(
         needed,
       );
     }
+    case 'PERIODS_WON': {
+      // [RWD-19][D-103] The periods another goal was won: in total, or in a row. A period with nothing
+      // due (neutral) neither counts nor breaks a run, nor does one still going; a lost one breaks it.
+      // Once a run reaches the target it stays met while those periods stay won.
+      const { goal_id, in_a_row } = periodsWonParams(rule.params);
+      const periods = periodsIn(sources[goal_id] ?? [], w.from, w.until);
+      let won = 0;
+      let current = 0;
+      let best = 0;
+      let last: string | null = null;
+      for (const p of periods) {
+        if (p.outcome === 'won') {
+          won += 1;
+          current += 1;
+          best = Math.max(best, current);
+          last = p.end;
+        } else if (p.outcome === 'missed') current = 0;
+      }
+      if (!in_a_row) return progress(won, won >= rule.target, { last_qualifying_date: last });
+      const met = best >= rule.target;
+      return progress(met ? best : current, met, {
+        current_streak: current,
+        best_streak: best,
+        last_qualifying_date: last,
+      });
+    }
     default:
       throw new RangeError(`rule ${rule.id}: unknown type ${String(rule.type)}`);
   }
@@ -396,7 +450,7 @@ function evaluatePeriods(
   steps: Step[],
   mode: StepMode | null,
 ) {
-  const { goal, rules, asOf, weekStart, terms = [] } = input;
+  const { goal, rules, asOf, weekStart, terms = [], sources = {} } = input;
   if (goal.start_date > asOf) return [];
   const last = goal.end_date !== null && goal.end_date < asOf ? goal.end_date : asOf;
   return spansBetween(repeat, goal.start_date, last, weekStart, terms).map((span): PeriodResult => {
@@ -404,7 +458,7 @@ function evaluatePeriods(
     const until = goal.end_date === null ? span.to : earlier(span.to, goal.end_date);
     const to = earlier(until, asOf);
     const w: Window = { from, to, until, days: datesBetween(from, to) };
-    const progress = rules.map((r) => evaluateRule(r, units, w, asOf, weekStart));
+    const progress = rules.map((r) => evaluateRule(r, units, w, asOf, weekStart, sources));
     const { pct, isAchieved } = combine(progress, goal.rule_logic);
 
     let first: ReturnType<typeof daysDueTally> | null = null;
@@ -438,19 +492,9 @@ function evaluatePeriods(
       : goal.rule_logic === 'all'
         ? lost.some(Boolean)
         : lost.every(Boolean);
-    // Nothing in scope due in the period: no routine (skipped and covered aren't due) for any rule.
-    const nothingDue = rules.every(
-      (r) =>
-        !units.some(
-          (u) =>
-            u.fact.kind === 'chore' &&
-            u.fact.due_date >= from &&
-            u.fact.due_date <= until &&
-            u.state !== 'skipped' &&
-            u.state !== 'covered' &&
-            inScope(u.fact, r.scope),
-        ),
-    );
+    // Nothing in scope due in the period: no routine (skipped and covered aren't due) for any rule,
+    // and no period of a counted goal that was won or lost.
+    const nothingDue = rules.every((r) => !ruleHasDue(r, units, from, until, sources));
     const outcome = won
       ? 'won'
       : isLost
@@ -475,8 +519,52 @@ function evaluatePeriods(
       misses_allowed: allowed,
       days: f && repeat === 'week' ? f.marks : null,
       step,
+      children: null,
     };
   });
+}
+
+/**
+ * Whether a rule has anything due from `from` to `until`: a routine in its scope (skipped and covered
+ * aren't due), or, counting another goal's periods, one of them won or lost.
+ */
+function ruleHasDue(
+  r: Rule,
+  units: Unit[],
+  from: string,
+  until: string,
+  sources: Record<string, SourcePeriod[]>,
+): boolean {
+  if (r.type === 'PERIODS_WON') {
+    const { goal_id } = periodsWonParams(r.params);
+    return periodsIn(sources[goal_id] ?? [], from, until).some(
+      (p) => p.outcome === 'won' || p.outcome === 'missed',
+    );
+  }
+  return units.some(
+    (u) =>
+      u.fact.kind === 'chore' &&
+      u.fact.due_date >= from &&
+      u.fact.due_date <= until &&
+      u.state !== 'skipped' &&
+      u.state !== 'covered' &&
+      inScope(u.fact, r.scope),
+  );
+}
+
+/**
+ * [RWD-20] A child has something due from `from` to `until` when an item in a rule's scope is due
+ * for them there, a routine or a task, and nobody skipped it or did it for them.
+ */
+function childHasDue(rules: Rule[], units: Unit[], from: string, until: string): boolean {
+  return units.some(
+    (u) =>
+      u.fact.due_date >= from &&
+      u.fact.due_date <= until &&
+      u.state !== 'skipped' &&
+      u.state !== 'covered' &&
+      rules.some((r) => inScope(u.fact, r.scope)),
+  );
 }
 
 /** A rule's progress before its goal's first period: nothing done yet. */
@@ -554,6 +642,7 @@ export function evaluateGoal(input: GoalInput): GoalEvaluation {
 
   const repeat = goal.repeat ?? 'none';
   if (!REPEATS.includes(repeat)) throw new RangeError(`unknown repeat ${String(repeat)}`);
+  if (goal.each_child) return evaluateEachChild(input, repeat);
   const units =
     goal.member_id === null
       ? familyUnits(input.occurrences)
@@ -576,6 +665,7 @@ export function evaluateGoal(input: GoalInput): GoalEvaluation {
       transitions: transitionsFor(goal.status, false, started, ended),
       periods,
       step: null,
+      children: null,
     };
   }
   if (rules.some((r) => r.type === 'DAYS_DUE')) {
@@ -589,7 +679,9 @@ export function evaluateGoal(input: GoalInput): GoalEvaluation {
     until: goal.end_date ?? asOf,
     days: datesBetween(goal.start_date, to),
   };
-  const progress = rules.map((r) => evaluateRule(r, units, w, asOf, weekStart));
+  const progress = rules.map((r) =>
+    evaluateRule(r, units, w, asOf, weekStart, input.sources ?? {}),
+  );
   const combined = combine(progress, goal.rule_logic);
   // [RWD-18] With steps, a one-off goal is reached when its step is final: the top at once, a lower
   // step when it ends (it has an end date).
@@ -605,5 +697,113 @@ export function evaluateGoal(input: GoalInput): GoalEvaluation {
     transitions: transitionsFor(goal.status, isAchieved, started, ended),
     periods: [],
     step,
+    children: null,
+  };
+}
+
+/**
+ * [RWD-20][D-103][D-126] A family goal every child meets: each child who earns rewards is worked out
+ * as if the goal were theirs alone. A period (or a one-off goal) is won when every child with something
+ * due in it has won it, and at least one has; lost as soon as one of them loses it; neither when no
+ * child has anything due. A child with nothing due doesn't hold it back (and isn't paid). Its progress
+ * is the child furthest behind.
+ */
+function evaluateEachChild(input: GoalInput, repeat: Repeat): GoalEvaluation {
+  const { goal, rules, asOf } = input;
+  if (goal.member_id !== null) throw new RangeError('every child meets it is for a family goal');
+  if ((goal.steps ?? []).length > 0)
+    throw new RangeError('every child meets it doesn’t pay in steps');
+  if (rules.some((r) => r.type === 'PERIODS_WON')) {
+    throw new RangeError('every child meets it doesn’t count another goal’s periods');
+  }
+  const started = goal.start_date <= asOf;
+  const ended = goal.end_date !== null && goal.end_date < asOf;
+  const alone = (member_id: string) =>
+    evaluateGoal({ ...input, goal: { ...goal, member_id, each_child: false } });
+  const per = [...new Set(input.members ?? [])].sort().map((m) => ({
+    m,
+    units: memberUnits(input.occurrences, m),
+    ev: alone(m),
+  }));
+  // Nobody to work out: the goal's periods with no one in them (an id no fact has).
+  const template = per[0]?.ev ?? alone('\u0000');
+  const lowest = (kids: ChildResult[]) =>
+    kids.reduce<ChildResult | null>((lo, k) => (lo === null || k.pct < lo.pct ? k : lo), null);
+  const decide = (kids: ChildResult[], closed: boolean) => {
+    const due = kids.filter((k) => k.contributes);
+    if (due.some((k) => k.outcome === 'missed')) return 'missed' as const;
+    if (due.length > 0 && due.every((k) => k.outcome === 'won')) return 'won' as const;
+    if (!closed) return 'open' as const;
+    return due.length === 0 ? ('neutral' as const) : ('missed' as const);
+  };
+
+  if (repeat !== 'none') {
+    const periods = template.periods.map((tp, i): PeriodResult => {
+      const kids = per.map(({ m, units, ev }): ChildResult => {
+        const p = ev.periods[i]!;
+        return {
+          member_id: m,
+          // A child whose period is neutral (nothing that counts was due) doesn't hold it back.
+          contributes: p.outcome !== 'neutral' && childHasDue(rules, units, p.start, p.end),
+          outcome: p.outcome,
+          pct: p.pct,
+          days_due: p.days_due,
+          days_done: p.days_done,
+          days_missed: p.days_missed,
+          days: p.days,
+        };
+      });
+      const outcome = decide(kids, tp.end < asOf);
+      const lo = lowest(kids.filter((k) => k.contributes));
+      const loRules = lo ? per.find((x) => x.m === lo.member_id)!.ev.periods[i]!.rules : tp.rules;
+      return {
+        ...tp,
+        outcome,
+        pct: outcome === 'won' ? 100 : (lo?.pct ?? 0),
+        rules: loRules,
+        days_due: null,
+        days_done: null,
+        days_missed: null,
+        days: null,
+        step: null,
+        children: kids,
+      };
+    });
+    const current = periods.find((p) => p.start <= asOf && asOf <= p.end) ?? periods.at(-1);
+    return {
+      goal_id: goal.id,
+      pct: current?.pct ?? 0,
+      is_achieved: current?.outcome === 'won',
+      rules: current?.rules ?? rules.map(notStarted),
+      transitions: transitionsFor(goal.status, false, started, ended),
+      periods,
+      step: null,
+      children: null,
+    };
+  }
+
+  const until = goal.end_date ?? asOf;
+  const kids = per.map(({ m, units, ev }): ChildResult => ({
+    member_id: m,
+    contributes: started && childHasDue(rules, units, goal.start_date, until),
+    outcome: ev.is_achieved ? 'won' : ended ? 'missed' : 'open',
+    pct: ev.pct,
+    days_due: null,
+    days_done: null,
+    days_missed: null,
+    days: null,
+  }));
+  const achieved = decide(kids, ended) === 'won';
+  const lo = lowest(kids.filter((k) => k.contributes));
+  const pct = achieved ? 100 : (lo?.pct ?? 0);
+  return {
+    goal_id: goal.id,
+    pct,
+    is_achieved: achieved,
+    rules: lo ? per.find((x) => x.m === lo.member_id)!.ev.rules : template.rules,
+    transitions: transitionsFor(goal.status, achieved, started, ended),
+    periods: [],
+    step: null,
+    children: kids,
   };
 }

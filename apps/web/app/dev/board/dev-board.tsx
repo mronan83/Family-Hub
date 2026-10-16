@@ -30,6 +30,7 @@ import {
   fixtureWeather,
   reachedBike,
   withRepeating,
+  withPerfect,
   withSteps,
   TZ,
 } from './fixture';
@@ -61,6 +62,7 @@ export function DevBoard({
   sleep = NO_SLEEP,
   repeating,
   steps,
+  perfect,
 }: {
   theme: Theme;
   stale: boolean;
@@ -88,6 +90,8 @@ export function DevBoard({
   repeating?: 'going' | 'missed' | 'won';
   /** [RWD-18] Maya's goal done by a time, in steps (WP-81): going, won at a step, or weighted. */
   steps?: 'going' | 'won' | 'weighted';
+  /** [RWD-19][RWD-20] The family's every-child goal and Maya's perfect weeks (WP-82). */
+  perfect?: 'going' | 'missed' | 'won';
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
@@ -132,6 +136,7 @@ export function DevBoard({
     if (stale) s = { ...s, fetchedAt: new Date(opened.getTime() - 12 * 60_000).toISOString() };
     if (repeating) s = withRepeating(s, repeating, opened);
     if (steps) s = withSteps(s, steps);
+    if (perfect) s = withPerfect(s, perfect);
     return celebrate ? reachedBike(s, opened) : s;
   });
   const post = useMemo(() => fixturePost(snapshot), [snapshot]);

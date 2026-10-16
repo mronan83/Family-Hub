@@ -1321,6 +1321,7 @@ export function Today({
                     goals={goalsFor(snapshot.goals, member.id)}
                     today={today}
                     photoUrl={photoUrl}
+                    members={snapshot.members}
                   />
                 ) : null}
                 {(() => {
@@ -1489,7 +1490,12 @@ export function Today({
                 );
               })}
             </div>
-            <FamilyGoals goals={familyGoals} today={today} photoUrl={photoUrl} />
+            <FamilyGoals
+              goals={familyGoals}
+              today={today}
+              photoUrl={photoUrl}
+              members={snapshot.members}
+            />
           </>
         )}
       </div>

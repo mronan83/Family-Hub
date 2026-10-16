@@ -10,7 +10,7 @@ import { eventWords, payoutWords, STATUS_WORDS } from '@/lib/goals';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
 import { goalAction, removeGoalPhoto } from '../actions';
-import { loadGoalEvents, loadGoals } from '../data';
+import { countableGoals, loadGoalEvents, loadGoals } from '../data';
 import { GoalForm, type GoalLock } from '../goal-form';
 import { bringGoalsUpToDate, loadGoalContext } from '../load';
 import { currentPeriod, WeeksFold } from '../repeating';
@@ -34,7 +34,8 @@ export default async function GoalPage({
   const household = await adminHousehold(db!, user.userId);
   if (!household) redirect('/setup');
   await bringGoalsUpToDate(db!, household.id);
-  const goal = (await loadGoals(db!, household.id)).find((g) => g.id === id);
+  const goals = await loadGoals(db!, household.id);
+  const goal = goals.find((g) => g.id === id);
   if (!goal) notFound();
   const [events, ctx] = await Promise.all([
     loadGoalEvents(db!, id),
@@ -58,8 +59,13 @@ export default async function GoalPage({
       : 'started';
   const who =
     goal.memberId === null
-      ? 'The whole family'
+      ? `The whole family${goal.eachChild ? ' · every child meets it' : ''}`
       : (ctx.members.find((m) => m.id === goal.memberId)?.displayName ?? 'Someone');
+  // [RWD-20] The children an every-child goal's weeks name.
+  const childNames = {
+    name: (mid: string) => ctx.members.find((m) => m.id === mid)?.displayName ?? 'Someone',
+    member: (mid: string) => ctx.members.find((m) => m.id === mid),
+  };
   const pays = payoutWords(goal.payout, goal.memberId === null, (i) => ctx.prizeNames.get(i));
   const actor = (e: (typeof events)[number]) =>
     e.actorType === 'admin' && e.actorId ? ` · ${ctx.adminNames.get(e.actorId) ?? 'A parent'}` : '';
@@ -138,6 +144,7 @@ export default async function GoalPage({
             endDate: goal.endDate,
             logic: goal.logic,
             repeat: goal.repeat,
+            eachChild: goal.eachChild ?? false,
             payout: goal.payout,
             rules: goal.rules.map((r) => ({
               type: r.type,
@@ -149,6 +156,8 @@ export default async function GoalPage({
               misses: r.params.misses_allowed ?? 0,
               onTime: r.params.on_time ?? null,
               weight: r.weight,
+              source: r.params.goal_id ?? null,
+              inARow: r.params.in_a_row ?? false,
             })),
           }}
           members={ctx.earners}
@@ -158,6 +167,7 @@ export default async function GoalPage({
           today={isoDay(household.timezone)}
           lock={lock}
           hasPhoto={!!goal.imagePath}
+          countable={countableGoals(goals)}
         />
       </section>
 
@@ -169,6 +179,7 @@ export default async function GoalPage({
           points={goal.payout.type === 'points' ? goal.payout.amount : null}
           steps={goalSteps(goal.payout, goal.rules)}
           kind={stepKind(goal.rules)}
+          who={goal.eachChild ? childNames : undefined}
         />
       ) : null}
 

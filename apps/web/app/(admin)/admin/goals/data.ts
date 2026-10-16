@@ -7,7 +7,8 @@ import type {
 } from '@familywise/rules-engine';
 import type { IconName } from '@familywise/ui';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { GoalPeriod } from '@/lib/goal-periods';
+import type { ChildPeriod, GoalPeriod } from '@/lib/goal-periods';
+import { readChildren } from '@/lib/snapshot';
 import type { GoalPayout, RuleFormValue } from '@/lib/goals';
 
 // Goals (WP-19), read through RLS as the parent: each goal with its rules and what the rules engine
@@ -18,7 +19,7 @@ export interface GoalRule {
   type: RuleType;
   target: number;
   scope: RuleFormValue['scope'];
-  params: { grace_per_week?: number; misses_allowed?: number; on_time?: string };
+  params: RuleFormValue['params'];
   /** [RWD-18] Its weight in a goal with two or more rules that pays in steps. */
   weight?: number | null;
   progress: {
@@ -45,6 +46,9 @@ export interface GoalRow {
   repeat: Repeat;
   /** [RWD-15] A repeating goal's periods as last worked out, oldest first; empty otherwise. */
   periods: GoalPeriod[];
+  /** [RWD-20] A family goal every child meets, and (one that doesn't repeat) each child. */
+  eachChild?: boolean;
+  children?: ChildPeriod[] | null;
   /** What reaching it pays (RWD-13). */
   payout: GoalPayout;
   status: GoalStatus;
@@ -79,7 +83,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     db
       .from('reward_goal')
       .select(
-        'id, member_id, title, description, icon, image_path, payout, start_date, end_date, rule_logic, repeats, status, achievement_count, achieved_at, redeemed_at, redeemed_by, needs_review, archived_at, created_at',
+        'id, member_id, title, description, icon, image_path, payout, start_date, end_date, rule_logic, repeats, each_child, status, achievement_count, achieved_at, redeemed_at, redeemed_by, needs_review, archived_at, created_at',
       )
       .eq('household_id', householdId)
       .order('created_at', { ascending: false }),
@@ -90,7 +94,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
       .order('sort_order'),
     db
       .from('reward_goal_progress')
-      .select('goal_id, pct, computed_at, step, step_best')
+      .select('goal_id, pct, computed_at, step, step_best, children')
       .eq('household_id', householdId),
     db
       .from('reward_rule_progress')
@@ -99,7 +103,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     db
       .from('reward_goal_period')
       .select(
-        'goal_id, start_date, end_date, outcome, next_start, days_due, days_done, days_missed, misses_allowed, days, step, step_best',
+        'goal_id, start_date, end_date, outcome, next_start, days_due, days_done, days_missed, misses_allowed, days, step, step_best, children',
       )
       .eq('household_id', householdId)
       .order('start_date'),
@@ -115,6 +119,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
         computed_at: string | null;
         step: number | null;
         step_best: number | null;
+        children: unknown;
       }[]
     ).map((p) => [p.goal_id, p]),
   );
@@ -144,6 +149,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     days: { date: string; mark: DayMark; day_type?: string }[] | null;
     step: number | null;
     step_best: number | null;
+    children: unknown;
   }[]) {
     const list = periodsByGoal.get(p.goal_id) ?? [];
     list.push({
@@ -159,6 +165,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
         p.days?.map((d) => ({ date: d.date, mark: d.mark, dayType: d.day_type ?? null })) ?? null,
       step: p.step,
       stepBest: p.step_best,
+      children: readChildren(p.children),
     });
     periodsByGoal.set(p.goal_id, list);
   }
@@ -169,7 +176,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     rule_type: RuleType;
     target: number;
     scope: RuleFormValue['scope'];
-    params: { grace_per_week?: number; misses_allowed?: number; on_time?: string };
+    params: RuleFormValue['params'];
     weight: number | null;
   }[]) {
     const p = perRule.get(r.id);
@@ -204,6 +211,7 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
     end_date: string | null;
     rule_logic: 'all' | 'any';
     repeats: Repeat;
+    each_child: boolean;
     payout: GoalPayout;
     status: GoalStatus;
     achievement_count: number;
@@ -235,6 +243,8 @@ export async function loadGoals(db: SupabaseClient, householdId: string): Promis
       logic: g.rule_logic,
       repeat: g.repeats,
       periods: periodsByGoal.get(g.id) ?? [],
+      eachChild: g.each_child ?? false,
+      children: readChildren(p?.children),
       payout: g.payout,
       status: g.status,
       achievementCount: g.achievement_count,
@@ -279,4 +289,21 @@ export async function loadGoalEvents(db: SupabaseClient, goalId: string): Promis
     payload: e.payload ?? {},
     at: e.at,
   }));
+}
+
+/**
+ * [RWD-19] The repeating goals a rule may count: not cancelled or removed, and not one that counts
+ * another goal's weeks itself (the database checks the same, rule_source).
+ */
+export function countableGoals(goals: GoalRow[]): {
+  id: string;
+  title: string;
+  memberId: string | null;
+  repeat: Exclude<Repeat, 'none'>;
+}[] {
+  return goals.flatMap((g) =>
+    g.repeat !== 'none' && !g.archivedAt && !g.rules.some((r) => r.type === 'PERIODS_WON')
+      ? [{ id: g.id, title: g.title, memberId: g.memberId, repeat: g.repeat }]
+      : [],
+  );
 }

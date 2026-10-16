@@ -19,6 +19,20 @@ export interface GoalPeriod {
   /** [RWD-18] The step reached (0 the top) and the best still in reach; null without steps. */
   step?: number | null;
   stepBest?: number | null;
+  /** [RWD-20] An every-child goal: each child's period; null otherwise. */
+  children?: ChildPeriod[] | null;
+}
+
+/** [RWD-20] One child's period of an every-child goal (D-126: `contributes`, something due). */
+export interface ChildPeriod {
+  memberId: string;
+  contributes: boolean;
+  outcome: PeriodOutcome;
+  pct: number;
+  daysDue: number | null;
+  daysDone: number | null;
+  daysMissed: number | null;
+  days: GoalPeriod['days'];
 }
 
 export interface PeriodOutline {

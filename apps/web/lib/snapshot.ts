@@ -12,7 +12,7 @@ import type {
   Repeat,
   RuleType,
 } from '@familywise/rules-engine';
-import type { GoalPeriod, PeriodOutline } from './goal-periods';
+import type { ChildPeriod, GoalPeriod, PeriodOutline } from './goal-periods';
 import type { LedgerEntry, LedgerEntryType } from './points';
 import type { RedemptionStatus } from './rewards';
 import type { TodayItem } from './today';
@@ -180,6 +180,9 @@ export interface BoardGoal {
   /** [RWD-18] A one-off goal's step reached and the best in reach. */
   step?: number | null;
   stepBest?: number | null;
+  /** [RWD-20] A family goal every child meets, and (one that doesn't repeat) each child. */
+  eachChild?: boolean;
+  children?: ChildPeriod[] | null;
 }
 
 export interface BoardGoalRule {
@@ -196,6 +199,15 @@ export interface BoardGoalRule {
   weight?: number | null;
   /** [RWD-17] When a tick counts: 'due_time' or 'HH:MM'; null for any time. */
   onTime?: string | null;
+  /** [RWD-19] A rule counting another goal's periods: in a row, and that goal with its periods. */
+  inARow?: boolean | null;
+  source?: {
+    id: string;
+    title: string;
+    icon: string;
+    repeat: Repeat;
+    history: PeriodOutline[];
+  } | null;
 }
 
 export interface BoardMember {
@@ -341,7 +353,14 @@ function readRequests(x: unknown): BoardRequest[] {
   });
 }
 
-const RULE_TYPES: readonly RuleType[] = ['COUNT', 'STREAK', 'DAILY_ALL_DONE', 'POINTS', 'DAYS_DUE'];
+const RULE_TYPES: readonly RuleType[] = [
+  'COUNT',
+  'STREAK',
+  'DAILY_ALL_DONE',
+  'POINTS',
+  'DAYS_DUE',
+  'PERIODS_WON',
+];
 const REPEATS: readonly Repeat[] = ['none', 'week', 'month', 'term'];
 const OUTCOMES: readonly PeriodOutcome[] = ['open', 'won', 'missed', 'neutral'];
 const MARKS: readonly DayMark[] = ['done', 'missed', 'late', 'open', 'today', 'later', 'none'];
@@ -354,8 +373,26 @@ function readPeriod(x: unknown): GoalPeriod | null {
   const start = date(x.start);
   const end = date(x.end);
   if (!start || !end || !OUTCOMES.includes(x.outcome as PeriodOutcome)) return null;
-  const days = Array.isArray(x.days)
-    ? x.days.flatMap((d) =>
+  return {
+    start,
+    end,
+    outcome: x.outcome as PeriodOutcome,
+    nextStart: date(x.next_start),
+    daysDue: num(x.days_due),
+    daysDone: num(x.days_done),
+    daysMissed: num(x.days_missed),
+    missesAllowed: num(x.misses_allowed),
+    days: readDays(x.days),
+    step: num(x.step),
+    stepBest: num(x.step_best),
+    children: readChildren(x.children),
+  };
+}
+
+/** [RWD-16] A week's days as the snapshot has them; a day it can't read is left out. */
+function readDays(x: unknown): GoalPeriod['days'] {
+  return Array.isArray(x)
+    ? x.flatMap((d) =>
         isObject(d) && date(d.date) && MARKS.includes(d.mark as DayMark)
           ? [
               {
@@ -367,19 +404,27 @@ function readPeriod(x: unknown): GoalPeriod | null {
           : [],
       )
     : null;
-  return {
-    start,
-    end,
-    outcome: x.outcome as PeriodOutcome,
-    nextStart: date(x.next_start),
-    daysDue: num(x.days_due),
-    daysDone: num(x.days_done),
-    daysMissed: num(x.days_missed),
-    missesAllowed: num(x.misses_allowed),
-    days,
-    step: num(x.step),
-    stepBest: num(x.step_best),
-  };
+}
+
+/** [RWD-20] Each child of an every-child goal; null for any other goal. */
+export function readChildren(x: unknown): ChildPeriod[] | null {
+  if (!Array.isArray(x)) return null;
+  return x.flatMap((c) =>
+    isObject(c) && typeof c.member_id === 'string' && OUTCOMES.includes(c.outcome as PeriodOutcome)
+      ? [
+          {
+            memberId: c.member_id,
+            contributes: c.contributes === true,
+            outcome: c.outcome as PeriodOutcome,
+            pct: Number(c.pct) || 0,
+            daysDue: num(c.days_due),
+            daysDone: num(c.days_done),
+            daysMissed: num(c.days_missed),
+            days: readDays(c.days),
+          },
+        ]
+      : [],
+  );
 }
 const num = (x: unknown): number | null => (typeof x === 'number' ? x : null);
 
@@ -428,6 +473,8 @@ function readGoals(x: unknown): BoardGoal[] {
         steps: readSteps(g.steps),
         step: num(g.step),
         stepBest: num(g.step_best),
+        eachChild: g.each_child === true,
+        children: readChildren(g.children),
         history: (Array.isArray(g.history) ? g.history : []).flatMap((h) => {
           const p = readPeriod(h);
           return p ? [{ start: p.start, end: p.end, outcome: p.outcome, step: p.step }] : [];
@@ -446,6 +493,8 @@ function readGoals(x: unknown): BoardGoal[] {
                   best: num(r.best),
                   weight: num(r.weight),
                   onTime: typeof r.on_time === 'string' ? r.on_time : null,
+                  inARow: typeof r.in_a_row === 'boolean' ? r.in_a_row : null,
+                  source: readSource(r.source),
                 },
               ]
             : [],
@@ -453,6 +502,21 @@ function readGoals(x: unknown): BoardGoal[] {
       },
     ];
   });
+}
+
+/** [RWD-19] The goal a rule counts, with its periods since the counting goal started. */
+function readSource(x: unknown): BoardGoalRule['source'] {
+  if (!isObject(x) || typeof x.id !== 'string') return null;
+  return {
+    id: x.id,
+    title: typeof x.title === 'string' ? x.title : '',
+    icon: typeof x.icon === 'string' ? x.icon : 'trophy',
+    repeat: REPEATS.includes(x.repeat as Repeat) ? (x.repeat as Repeat) : 'week',
+    history: (Array.isArray(x.history) ? x.history : []).flatMap((h) => {
+      const p = readPeriod(h);
+      return p ? [{ start: p.start, end: p.end, outcome: p.outcome }] : [];
+    }),
+  };
 }
 
 const ids = (x: unknown): string[] =>

@@ -1,6 +1,21 @@
 import type { Repeat } from '@familywise/rules-engine';
 import type { Step } from '@familywise/rules-engine';
-import { DayMarks, Fold, Icon, PeriodMarks } from '@familywise/ui';
+import {
+  Avatar,
+  type AvatarKey,
+  DayMarks,
+  Fold,
+  Icon,
+  type MemberColor,
+  PeriodMarks,
+} from '@familywise/ui';
+import {
+  childLine,
+  familyMissedLine,
+  familyPaid,
+  familyWeekDetail,
+  familyWonLine,
+} from '@/lib/goal-perfect';
 import { lateLine, type StepKind, stepChips, stepNudge, stepWonWords } from '@/lib/goal-steps';
 import {
   daysLine,
@@ -15,6 +30,51 @@ import {
   thisPeriod,
   wonLine,
 } from '@/lib/goal-periods';
+
+/** [RWD-20] Who an every-child goal's lines name: each child's name, and their avatar. */
+export interface ChildNames {
+  name: (id: string) => string;
+  member: (id: string) => { avatarKey: AvatarKey | null; color: MemberColor } | undefined;
+}
+
+/**
+ * [RWD-20] Each child's period of an every-child goal (the approved addendum): their avatar and name,
+ * how it stands for them ("3 of 4 days", "Missed Tuesday", "Nothing due this week"), and their days.
+ */
+export function ChildRows({
+  period,
+  repeat,
+  who,
+}: {
+  period: GoalPeriod;
+  repeat: Exclude<Repeat, 'none'>;
+  who: ChildNames;
+}) {
+  return (
+    <ul className="fw-goal__kids" aria-label={`Each child ${thisPeriod(repeat).toLowerCase()}`}>
+      {(period.children ?? []).map((c) => {
+        const m = who.member(c.memberId);
+        const days = c.contributes ? shownDays(c) : [];
+        return (
+          <li key={c.memberId} className="fw-goal__kid" data-outcome={c.outcome}>
+            <Avatar
+              name={who.name(c.memberId)}
+              avatarKey={m?.avatarKey ?? null}
+              color={m?.color}
+              size={36}
+              decorative
+            />
+            <span className="fw-goal__kid-body">
+              <b>{who.name(c.memberId)}</b>
+              <span className="fw-muted">{childLine(c, period, repeat)}</span>
+            </span>
+            {days.length ? <DayMarks days={days} /> : null}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 /** The period going now (holding `today`), else the last one. */
 export function currentPeriod(periods: GoalPeriod[], today: string): GoalPeriod | null {
@@ -49,6 +109,8 @@ export function PeriodProgress({
   steps = [],
   kind = 'misses',
   onTime = null,
+  who,
+  points = null,
   children,
 }: {
   repeat: Exclude<Repeat, 'none'>;
@@ -61,12 +123,17 @@ export function PeriodProgress({
   kind?: StepKind;
   /** [RWD-17] Its first rule's time, for "Wednesday was after 6:00 pm." */
   onTime?: string | null;
+  /** [RWD-20] An every-child goal: the children's names and avatars. */
+  who?: ChildNames;
+  /** [RWD-20] The points a won period pays each child; null when it pays something else. */
+  points?: number | null;
   /** The rules' meters, for a goal without "every day it's due". */
   children?: React.ReactNode;
 }) {
   const now = currentPeriod(periods, today);
   const recent = periods.filter((p) => p.start <= today).slice(-5);
   const won = wonLine(recent, repeat);
+  const family = who && now?.children ? who : null;
   const days = now ? shownDays(now) : [];
   const line = now ? daysLine(steps.length ? { ...now, missesAllowed: 0 } : now) : null;
   const notDue = now ? notDueLine(now) : null;
@@ -88,7 +155,17 @@ export function PeriodProgress({
               <b className="fw-goal__period-head">{thisPeriod(repeat)}</b>
             </p>
           )}
-          {now.outcome === 'missed' ? (
+          {now.outcome === 'missed' && family ? (
+            <p className="fw-goal-line" data-kind="missed">
+              <Icon name="repeat" />
+              <span>{familyMissedLine(now, family.name) ?? 'Missed.'}</span>
+            </p>
+          ) : now.outcome === 'won' && family ? (
+            <p className="fw-goal-line" data-kind="won">
+              <Icon name="trophy" />
+              <span>{familyWonLine(now, family.name, points)}</span>
+            </p>
+          ) : now.outcome === 'missed' ? (
             <p className="fw-goal-line" data-kind="missed">
               <Icon name="repeat" />
               <span>
@@ -114,7 +191,11 @@ export function PeriodProgress({
               </span>
             </p>
           ) : null}
-          {days.length ? <DayMarks days={days} /> : null}
+          {family ? (
+            <ChildRows period={now} repeat={repeat} who={family} />
+          ) : days.length ? (
+            <DayMarks days={days} />
+          ) : null}
           {now.outcome === 'open' && lateLine(now.days, onTime) ? (
             <p className="fw-muted">{lateLine(now.days, onTime)}</p>
           ) : null}
@@ -164,12 +245,15 @@ export function WeeksFold({
   points,
   steps = [],
   kind = 'misses',
+  who,
 }: {
   repeat: Exclude<Repeat, 'none'>;
   periods: GoalPeriod[];
   today: string;
-  /** The points a won period pays; null when it pays something else. */
+  /** The points a won period pays (each child, on an every-child goal); null when it pays something else. */
   points: number | null;
+  /** [RWD-20] An every-child goal: the children's names, for each week's line. */
+  who?: ChildNames;
   /** [RWD-18] Its steps, highest first, when it pays in steps: each won period pays its own. */
   steps?: Step[];
   kind?: StepKind;
@@ -177,7 +261,16 @@ export function WeeksFold({
   const now = currentPeriod(periods, today);
   const shown = periods.filter((p) => p.start <= today);
   const paidFor = (p: GoalPeriod) =>
-    steps.length && p.step != null ? (steps[p.step]?.amount ?? 0) : (points ?? 0);
+    p.children && who
+      ? familyPaid(p, points)
+      : steps.length && p.step != null
+        ? (steps[p.step]?.amount ?? 0)
+        : (points ?? 0);
+  /** "+20 each" for an every-child week paying two or more children, else "+20". */
+  const paidPill = (p: GoalPeriod) => {
+    const kids = (p.children ?? []).filter((c) => c.contributes).length;
+    return p.children && who && kids > 1 ? `+${points ?? 0} each` : `+${paidFor(p)}`;
+  };
   const paid = shown.filter((p) => p.outcome === 'won').reduce((sum, p) => sum + paidFor(p), 0);
   const plural = periodWord(repeat, 2);
   const nowLine =
@@ -221,21 +314,23 @@ export function WeeksFold({
                       {spanWords(p)}
                     </strong>
                     <span className="fw-muted">
-                      {[
-                        p.outcome === 'won' && steps.length
-                          ? stepWonWords(steps, kind, p.step ?? null)
-                          : (missedDaysLine(p) ?? words),
-                        daysLine(steps.length ? { ...p, missesAllowed: 0 } : p),
-                        notDueLine(p),
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
+                      {p.children && who
+                        ? familyWeekDetail(p, who.name, repeat)
+                        : [
+                            p.outcome === 'won' && steps.length
+                              ? stepWonWords(steps, kind, p.step ?? null)
+                              : (missedDaysLine(p) ?? words),
+                            daysLine(steps.length ? { ...p, missesAllowed: 0 } : p),
+                            notDueLine(p),
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
                     </span>
                   </span>
                 </span>
                 {p.outcome === 'won' && points !== null ? (
                   <span className="fw-goal__status" data-status="achieved">
-                    +{paidFor(p)}
+                    {paidPill(p)}
                   </span>
                 ) : null}
               </li>

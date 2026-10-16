@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.62: US-414 and US-415 as built (WP-82, D-126): **Weeks won of a repeating goal**, in total or in a row, from the goal's start date; **Every child meets it** on a family goal, paying the children with something due; each child's days on Goals and the board.
 > v0.8.61: US-412 and US-413 as built (WP-81, D-124): **Counts only when done**, **Pay in steps** and rule weights, and the board's steps.
 > v0.8.60: US-410 and US-411 as built (WP-80, D-123): the goal form's **Repeats** and **Every day it's due**, a goal's **Weeks**, **Stop after this week**, and the board's card going, missed and won.
 > v0.8.59: US-508 as built (WP-50, D-122): who a calendar is for, ticked on Calendars; every face on the board's Coming up and an event's details.
@@ -542,12 +543,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P2 · **Reqs:** RWD-19
 - Given "3 perfect weeks in a row", when a week is lost, then the run starts again; when a week is a break, then the run holds.
 - Given "4 perfect weeks this term", when the fourth week is reached, then the goal is reached.
+- As built (WP-82, D-126): **Counts** offers **Weeks won of a repeating goal** with **Which goal** (the person's repeating goals) and **How** (**In total**, **In a row**); only weeks that start on or after the goal's start date count; Goals and the board show "1 of 3 weeks in a row" and the counted goal's weeks, with "This week makes 2 in a row."
 
 ### US-415 — A family goal every child meets
 **As a** parent **I want** a family goal that is reached only when each child meets it on their own **so that** one child can't carry the others (added at the owner's request).
 **Priority:** Should · **Phase:** P2 · **Reqs:** RWD-20
 - Given a family goal with "every child meets it", when Maya is done every day and Leo missed Tuesday, then the week is not reached.
 - Given a child with nothing due that week, when the others meet it, then the week is reached.
+- As built (WP-82, D-126): **For the whole family: Every child meets it**, fixed once the goal starts and without steps; a won week pays the children who had something due; Goals, a goal's **Weeks** and the board show each child's days and who missed ("Leo missed Tuesday. Starts again Monday, Oct 19.").
 
 ---
 

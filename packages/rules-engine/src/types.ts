@@ -1,7 +1,8 @@
 // The rules engine's inputs and outputs (02 §5). Field names follow the database rows they come
 // from and go to (v_member_occurrence, reward_rule_progress, member_daily_summary, streak_segment).
 
-export type RuleType = 'COUNT' | 'STREAK' | 'DAILY_ALL_DONE' | 'POINTS' | 'DAYS_DUE';
+export type RuleType =
+  'COUNT' | 'STREAK' | 'DAILY_ALL_DONE' | 'POINTS' | 'DAYS_DUE' | 'PERIODS_WON';
 
 /** [RWD-15] How a goal repeats: not at all, each household week, each calendar month, each school term. */
 export type Repeat = 'none' | 'week' | 'month' | 'term';
@@ -35,6 +36,22 @@ export interface StreakParams {
 /** [RWD-16] A DAYS_DUE rule's `params`: the days due in a period that may be missed (0 to 3). */
 export interface DaysDueParams {
   misses_allowed: number;
+}
+
+/**
+ * [RWD-19] A PERIODS_WON rule's `params`: the repeating goal whose periods it counts, and whether
+ * they count in total or in a row.
+ */
+export interface PeriodsWonParams {
+  goal_id: string;
+  in_a_row: boolean;
+}
+
+/** [RWD-19] One period of a counted (source) goal, as it was last worked out. */
+export interface SourcePeriod {
+  start: string;
+  end: string;
+  outcome: PeriodOutcome;
 }
 
 /**
@@ -76,7 +93,7 @@ export interface Rule {
   type: RuleType;
   /**
    * COUNT: items; POINTS: points; DAILY_ALL_DONE: days; STREAK: days in a row. DAYS_DUE: unused (its
-   * target is each period's days due, less the misses allowed).
+   * target is each period's days due, less the misses allowed). PERIODS_WON: periods won.
    */
   target: number;
   scope: RuleScope;
@@ -126,10 +143,19 @@ export interface GoalInput {
     repeat?: Repeat;
     /** [RWD-18] What it pays at each step, highest first; absent or empty: no steps. */
     steps?: Step[];
+    /**
+     * [RWD-20] A family goal every child meets: each member in `members` is worked out on their own,
+     * and the goal (each period) is reached when every one with something due meets it.
+     */
+    each_child?: boolean;
   };
   rules: Rule[];
   /** [RWD-15] The school terms a term goal follows (the child's school year, or the family's). */
   terms?: { start_date: string; end_date: string }[];
+  /** [RWD-19] The periods of each goal a PERIODS_WON rule counts, by goal id. */
+  sources?: Record<string, SourcePeriod[]>;
+  /** [RWD-20] The children an every-child goal is for: those who earn rewards, by id. */
+  members?: string[];
   occurrences: OccurrenceFact[];
   /** Today in the household (the engine never reads a clock). */
   asOf: string;
@@ -190,6 +216,25 @@ export interface PeriodResult {
   days: { date: string; mark: DayMark }[] | null;
   /** [RWD-18] Where its steps stand; null for a goal without steps. */
   step: StepResult | null;
+  /** [RWD-20] An every-child goal: each child's period; null otherwise. */
+  children: ChildResult[] | null;
+}
+
+/**
+ * [RWD-20] One child of an every-child goal, in a period (or a one-off goal's dates): whether they
+ * have something due there (`contributes`; a child with nothing due doesn't hold it back and isn't
+ * paid, D-126), how it stands for them, and, on a week with a DAYS_DUE rule, their days.
+ */
+export interface ChildResult {
+  member_id: string;
+  contributes: boolean;
+  /** A period's outcome for them; for a one-off goal, 'won' once met, else 'open' or 'missed' at its end. */
+  outcome: PeriodOutcome;
+  pct: number;
+  days_due: number | null;
+  days_done: number | null;
+  days_missed: number | null;
+  days: { date: string; mark: DayMark }[] | null;
 }
 
 export interface GoalEvaluation {
@@ -206,6 +251,8 @@ export interface GoalEvaluation {
   periods: PeriodResult[];
   /** [RWD-18] A goal that doesn't repeat: where its steps stand; null without steps or when it repeats. */
   step: StepResult | null;
+  /** [RWD-20] An every-child goal that doesn't repeat: each child; null otherwise. */
+  children: ChildResult[] | null;
 }
 
 export interface HistoryInput {

@@ -15,7 +15,14 @@ import { useState } from 'react';
 import { useFormAction } from '@/lib/forms';
 import { periodWord, REPEAT_WORDS } from '@/lib/goal-periods';
 import { type LowerStep, type StepKind, stepKind } from '@/lib/goal-steps';
-import { type GoalPayout, REPEATS, RULE_TYPES, RULE_WORDS, type ScopeChoice } from '@/lib/goals';
+import {
+  EACH_CHILD_FIELD,
+  type GoalPayout,
+  REPEATS,
+  RULE_TYPES,
+  RULE_WORDS,
+  type ScopeChoice,
+} from '@/lib/goals';
 import { type GoalFormState, type GoalPreviewView, saveGoal } from './actions';
 import { EndDateField } from './end-date-field';
 
@@ -32,6 +39,17 @@ export interface GoalFormRule {
   onTime?: string | null;
   /** [RWD-18] Its weight, 1 to 100, on a goal with two or more rules that pays in steps. */
   weight?: number | null;
+  /** [RWD-19] Weeks won: the repeating goal it counts, and in a row (else in total). */
+  source?: string | null;
+  inARow?: boolean;
+}
+
+/** [RWD-19] A repeating goal a rule may count: its person (null, the family's) and how it repeats. */
+export interface CountableGoal {
+  id: string;
+  title: string;
+  memberId: string | null;
+  repeat: Exclude<Repeat, 'none'>;
 }
 
 export interface GoalFormInitial {
@@ -44,6 +62,8 @@ export interface GoalFormInitial {
   logic: 'all' | 'any';
   /** [RWD-15] How it repeats; absent for a goal that doesn't. */
   repeat?: Repeat;
+  /** [RWD-20] A family goal every child meets. */
+  eachChild?: boolean;
   rules: GoalFormRule[];
   payout: GoalPayout;
 }
@@ -103,6 +123,7 @@ export function GoalForm({
   lock = 'none',
   hasPhoto = false,
   preview,
+  countable = [],
 }: {
   id: string;
   initial?: GoalFormInitial;
@@ -115,6 +136,8 @@ export function GoalForm({
   hasPhoto?: boolean;
   /** A preview to show at first (the made-up /dev/goals page). */
   preview?: GoalPreviewView;
+  /** [RWD-19] The repeating goals a rule may count (not this one, nor one that counts weeks). */
+  countable?: CountableGoal[];
 }) {
   const [state, onSubmit, pending] = useFormAction<GoalFormState>(saveGoal, { preview });
   const [rows, setRows] = useState<Row[]>(() =>
@@ -136,6 +159,20 @@ export function GoalForm({
       setRows((rs) => rs.map((x) => (x.type === 'DAYS_DUE' ? { ...x, type: 'COUNT' } : x)));
     }
   };
+  // [RWD-20] Every child meets it: a family goal's option, fixed once it starts (D-126).
+  const [eachChild, setEachChild] = useState(initial?.eachChild ?? false);
+  const family = who === 'family';
+  const each = family && eachChild;
+  // [RWD-19] The goals this person's (or the family's) rule may count.
+  const canCount = countable.filter((c) => c.memberId === (family ? null : who) && c.id !== id);
+  // A rule counting weeks counts this person's goals: with none to count, it becomes things done.
+  const chooseWho = (next: string) => {
+    setWho(next);
+    const owner = next === 'family' ? null : next;
+    if (!countable.some((c) => c.memberId === owner && c.id !== id)) {
+      setRows((rs) => rs.map((x) => (x.type === 'PERIODS_WON' ? { ...x, type: 'COUNT' } : x)));
+    }
+  };
   const [pays, setPays] = useState<'custom' | 'points' | 'item'>(
     PAYOUT_CHOICE[initial?.payout.type ?? 'custom'],
   );
@@ -143,7 +180,7 @@ export function GoalForm({
   const initialSteps = initial?.payout.type === 'points' ? (initial.payout.steps ?? []) : [];
   const [stepsOn, setStepsOn] = useState(initialSteps.length > 0);
   const kind = stepKind(rows);
-  const inSteps = pays === 'points' && stepsOn;
+  const inSteps = pays === 'points' && stepsOn && !each;
   const weighted = inSteps && rows.length > 1;
   const [lowest, setLowest] = useState<number>(
     initialSteps.at(-1)?.misses ?? (rows[0]?.misses || 1),
@@ -191,7 +228,7 @@ export function GoalForm({
                   name="member"
                   value={m.id}
                   checked={who === m.id}
-                  onChange={() => setWho(m.id)}
+                  onChange={() => chooseWho(m.id)}
                 />
                 <Avatar
                   name={m.displayName}
@@ -210,7 +247,7 @@ export function GoalForm({
                 value="family"
                 checked={who === 'family'}
                 onChange={() => {
-                  setWho('family');
+                  chooseWho('family');
                   if (pays === 'item') setPays('custom');
                 }}
               />
@@ -223,6 +260,39 @@ export function GoalForm({
           </span>
         </fieldset>
       )}
+
+      <input type="hidden" name={EACH_CHILD_FIELD} value="on" />
+      {family && whoLocked ? (
+        eachChild ? (
+          <input type="hidden" name="eachChild" value="on" />
+        ) : null
+      ) : family ? (
+        <fieldset className="fw-field fw-fieldset" aria-label="For the whole family">
+          <legend className="fw-field__label">For the whole family</legend>
+          <label className="fw-choice">
+            <input
+              type="checkbox"
+              name="eachChild"
+              value="on"
+              checked={eachChild}
+              onChange={(e) => {
+                setEachChild(e.target.checked);
+                if (e.target.checked) {
+                  setStepsOn(false);
+                  setRows((rs) =>
+                    rs.map((x) => (x.type === 'PERIODS_WON' ? { ...x, type: 'COUNT' } : x)),
+                  );
+                }
+              }}
+            />
+            Every child meets it: each child who earns rewards does it on their own
+          </label>
+          <span className="fw-field__help">
+            Each child needs it on their own. A child with nothing due doesn’t hold it back, and
+            only the children with something due are paid. Fixed once the goal starts.
+          </span>
+        </fieldset>
+      ) : null}
 
       {whoLocked ? (
         <input type="hidden" name="repeat" value={repeat} />
@@ -293,6 +363,7 @@ export function GoalForm({
           repeat={repeat}
           tags={tags}
           items={items}
+          countable={each ? [] : canCount}
           onChange={(patch) => change(r.key, patch)}
           onRemove={() => setRows((rs) => rs.filter((x) => x.key !== r.key))}
         />
@@ -367,6 +438,7 @@ export function GoalForm({
         target={rows[0]?.target ?? 1}
         oneOff={repeat === 'none'}
         onLowest={setLowest}
+        noSteps={each}
       />
 
       <IconPicker
@@ -431,7 +503,10 @@ function PayoutField({
   target,
   oneOff,
   onLowest,
+  noSteps = false,
 }: {
+  /** [RWD-20] Every child meets it: no steps (D-126). */
+  noSteps?: boolean;
   repeat: Repeat;
   stepsOn: boolean;
   onStepsOn: (on: boolean) => void;
@@ -518,7 +593,11 @@ function PayoutField({
           />
         </label>
       ) : null}
-      {pays === 'points' ? (
+      {pays === 'points' && noSteps ? (
+        <span className="fw-field__help">
+          Pay in steps isn’t offered when every child meets it.
+        </span>
+      ) : pays === 'points' ? (
         <StepsField
           on={stepsOn}
           onOn={onStepsOn}
@@ -739,9 +818,12 @@ function RuleRow({
   repeat,
   tags,
   items,
+  countable,
   onChange,
   onRemove,
 }: {
+  /** [RWD-19] The repeating goals it may count. */
+  countable: CountableGoal[];
   row: Row;
   n: number;
   /** [RWD-18] Its weight when the goal pays in steps with two or more rules; null otherwise. */
@@ -783,7 +865,21 @@ function RuleRow({
           value={row.onTime && row.onTime !== 'due_time' ? row.onTime : ''}
         />
         <input type="hidden" name={name('weight')} value={row.weight ?? ''} />
+        <input type="hidden" name={name('source')} value={row.source ?? ''} />
+        <input type="hidden" name={name('row')} value={row.inARow ? 'row' : 'total'} />
       </>
+    );
+  }
+  if (row.type === 'PERIODS_WON') {
+    return (
+      <CountedRule
+        row={row}
+        n={n}
+        only={only}
+        countable={countable}
+        onChange={onChange}
+        onRemove={onRemove}
+      />
     );
   }
   const onChoice = !row.onTime ? 'any' : row.onTime === 'due_time' ? 'due_time' : 'by';
@@ -800,7 +896,11 @@ function RuleRow({
             value={row.type}
             onChange={(e) => onChange({ type: e.target.value as RuleType })}
           >
-            {RULE_TYPES.filter((t) => t !== 'DAYS_DUE' || repeat !== 'none').map((t) => (
+            {RULE_TYPES.filter(
+              (t) =>
+                (t !== 'DAYS_DUE' || repeat !== 'none') &&
+                (t !== 'PERIODS_WON' || countable.length > 0),
+            ).map((t) => (
               <option key={t} value={t}>
                 {RULE_WORDS[t].label}
               </option>
@@ -1006,6 +1106,126 @@ function RuleRow({
             {onChoice === 'due_time' ? ' A chore without a due time counts any time that day.' : ''}
           </span>
         ) : null}
+      </fieldset>
+      {only ? null : (
+        <div className="fw-actions">
+          <Button
+            type="button"
+            variant="ghost"
+            icon="trash"
+            onClick={onRemove}
+            aria-label={`Remove rule ${n}`}
+          >
+            Remove
+          </Button>
+        </div>
+      )}
+    </fieldset>
+  );
+}
+
+/**
+ * [RWD-19] Weeks won of a repeating goal (the approved mockup and addendum): the target, which goal
+ * (this person's repeating goals, or the family's), and in total or in a row. It counts no items of
+ * its own, and only the weeks that start on or after this goal's start date (D-126).
+ */
+function CountedRule({
+  row,
+  n,
+  only,
+  countable,
+  onChange,
+  onRemove,
+}: {
+  row: Row;
+  n: number;
+  only: boolean;
+  countable: CountableGoal[];
+  onChange: (patch: Partial<GoalFormRule>) => void;
+  onRemove: () => void;
+}) {
+  const name = (field: string) => `rule-${row.key}-${field}`;
+  const source = countable.find((c) => c.id === row.source) ?? countable[0];
+  const unit = source ? periodWord(source.repeat, 2) : 'weeks';
+  return (
+    <fieldset className="fw-field fw-fieldset fw-goal-rule">
+      <legend className="fw-field__label">{only ? 'Rule' : `Rule ${n}`}</legend>
+      <div className="fw-goal-rule__head">
+        <label className="fw-field">
+          <span className="fw-field__label">Counts</span>
+          <select
+            className="fw-input"
+            name={name('type')}
+            value={row.type}
+            onChange={(e) => onChange({ type: e.target.value as RuleType })}
+          >
+            {RULE_TYPES.filter((t) => t !== 'DAYS_DUE').map((t) => (
+              <option key={t} value={t}>
+                {RULE_WORDS[t].label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="fw-field">
+          <span className="fw-field__label">Target</span>
+          <input
+            className="fw-input fw-input--short"
+            name={name('target')}
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={100000}
+            required
+            value={row.target}
+            onChange={(e) => onChange({ target: Number(e.target.value) })}
+          />
+        </label>
+      </div>
+      <label className="fw-field">
+        <span className="fw-field__label">Which goal</span>
+        <select
+          className="fw-input"
+          name={name('source')}
+          value={source?.id ?? ''}
+          required
+          onChange={(e) => onChange({ source: e.target.value })}
+        >
+          {countable.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.title} ({REPEAT_WORDS[c.repeat].toLowerCase()})
+            </option>
+          ))}
+        </select>
+      </label>
+      <fieldset className="fw-fieldset">
+        <legend className="fw-field__label">How</legend>
+        <div className="fw-actions">
+          <label className="fw-choice">
+            <input
+              type="radio"
+              name={name('row')}
+              value="total"
+              checked={!row.inARow}
+              onChange={() => onChange({ inARow: false })}
+            />
+            In total
+          </label>
+          <label className="fw-choice">
+            <input
+              type="radio"
+              name={name('row')}
+              value="row"
+              checked={!!row.inARow}
+              onChange={() => onChange({ inARow: true })}
+            />
+            In a row
+          </label>
+        </div>
+        <span className="fw-field__help">
+          A {source ? periodWord(source.repeat) : 'week'} with nothing due neither counts nor breaks
+          the run; a missed one breaks it. Only {unit} that start on or after this goal’s start date
+          count.
+        </span>
       </fieldset>
       {only ? null : (
         <div className="fw-actions">

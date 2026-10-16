@@ -258,16 +258,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2514** tests: Unit 748 · DB 1407 · UI 234 · E2E 125. 2053 name at least one ID; 461 name none.
+**2583** tests: Unit 770 · DB 1445 · UI 242 · E2E 126. 2122 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 114 of 131 |
+| Requirements built (a Done item builds them) | 116 of 131 |
 | Built requirements with no test | 0 |
-| Stories built | 101 of 117 |
+| Stories built | 103 of 117 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 56 (with a test: 56) |
+| Test cases | 77 (with a test: 77) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -283,7 +283,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 |---|---|---|---|---|---|
 | Chores | 90 | 192 | 29 | 30 | 341 |
 | Points | 38 | 92 | 17 | 12 | 159 |
-| Goals and rewards | 160 | 102 | 36 | 11 | 309 |
+| Goals and rewards | 182 | 140 | 42 | 12 | 376 |
 | Calendar | 64 | 92 | 18 | 4 | 178 |
 | School year | 10 | 43 | 1 | 4 | 58 |
 | Meals and lunch | 57 | 43 | 29 | 11 | 140 |
@@ -291,9 +291,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 7 | 15 | 135 |
-| Platform | 122 | 157 | 32 | 10 | 321 |
+| Platform | 122 | 157 | 34 | 10 | 323 |
 | Not named | 58 | 438 | 10 | 1 | 507 |
-| **Total** | **748** | **1407** | **234** | **125** | **2514** |
+| **Total** | **770** | **1445** | **242** | **126** | **2583** |
 
 ### 9.3 By requirement
 
@@ -356,8 +356,8 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | RWD-16 | S | Covered | US-410, US-411 | WP-80 | RWD-16-a, RWD-16-b, RWD-16-c, RWD-16-d, RWD-16-e, RWD-16-f, RWD-16-g, RWD-16-h, RWD-16-i | U 14 · DB 5 · UI 4 |
 | RWD-17 | S | Covered | US-412 | WP-81 | RWD-17-a, RWD-17-b, RWD-17-c, RWD-17-d, RWD-17-e, RWD-17-f, RWD-17-g, RWD-17-h | U 9 · DB 10 · UI 1 · E2E 1 |
 | RWD-18 | S | Covered | US-413 | WP-81 | RWD-18-a, RWD-18-b, RWD-18-c, RWD-18-d, RWD-18-e, RWD-18-f, RWD-18-g, RWD-18-h, RWD-18-i, RWD-18-j, RWD-18-k, RWD-18-l, RWD-18-m | U 16 · DB 19 · UI 9 · E2E 1 |
-| RWD-19 | S | Not built | US-414 | WP-82 | — | — |
-| RWD-20 | S | Not built | US-415 | WP-82 | — | — |
+| RWD-19 | S | Covered | US-414 | WP-82 | RWD-19-a, RWD-19-b, RWD-19-c, RWD-19-d, RWD-19-e, RWD-19-f, RWD-19-g, RWD-19-h, RWD-19-i, RWD-19-j | U 10 · DB 19 · UI 3 · E2E 1 |
+| RWD-20 | S | Covered | US-415 | WP-82 | RWD-20-a, RWD-20-b, RWD-20-c, RWD-20-d, RWD-20-e, RWD-20-f, RWD-20-g, RWD-20-h, RWD-20-i, RWD-20-j, RWD-20-k | U 12 · DB 19 · UI 8 · E2E 1 |
 | CAL-01 | M | Covered | US-501 | WP-22 | — | U 6 · DB 19 · UI 2 · E2E 1 |
 | CAL-02 | M | Covered | US-502 | WP-22 | — | U 5 · DB 11 · E2E 1 |
 | CAL-03 | M | Covered | US-501 | WP-22 | — | DB 3 · UI 1 |
@@ -408,7 +408,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | BRD-11 | M | Not built | US-1010 | WP-72 | — | — |
 | NFR-01 | M | Covered | US-205 | WP-13, WP-44 | — | U 11 · UI 2 · E2E 2 |
 | NFR-02 | M | Not built | US-905 | WP-14 | — | UI 1 |
-| NFR-03 | M | Covered | US-905 | WP-11 | — | UI 5 · E2E 1 |
+| NFR-03 | M | Covered | US-905 | WP-11 | — | UI 6 · E2E 1 |
 | NFR-04 | M | Covered | US-102, US-901 | WP-02, WP-03, WP-05 | — | U 1 · DB 82 |
 | NFR-05 | S | Not built | US-902 | WP-33 | — | U 1 |
 | NFR-06 | M | Covered | US-907 | WP-10 | — | U 7 · DB 20 |
@@ -416,7 +416,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-08 | S | Covered | US-909 | WP-01, WP-41, WP-42 | — | U 5 · DB 11 · E2E 1 |
 | NFR-09 | M | Covered | US-101, US-901 | WP-02 | — | DB 4 |
 | NFR-10 | M | Not built | US-903 | WP-24 | — | — |
-| NFR-11 | S | Covered | US-906 | WP-31, WP-46 | — | U 4 · UI 27 |
+| NFR-11 | S | Covered | US-906 | WP-31, WP-46 | — | U 4 · UI 28 |
 | PTS-01 | M | Covered | US-309, US-1101, US-1106 | WP-16 | — | U 10 · DB 42 · E2E 5 |
 | PTS-02 | M | Covered | US-1102 | WP-11, WP-16, WP-20 | — | U 4 · DB 11 · UI 1 · E2E 2 |
 | PTS-03 | M | Covered | US-1103 | WP-18 | — | U 5 · DB 6 · UI 4 · E2E 1 |
@@ -519,7 +519,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-79 | Done | **No cases** | — | — |
 | WP-80 | Done | RWD-16-a, RWD-16-b, RWD-16-c, RWD-16-d, RWD-16-e, RWD-16-f, RWD-16-g, RWD-16-h, RWD-16-i, RWD-15-a, RWD-15-b, RWD-15-c, RWD-15-d, RWD-15-e, RWD-15-f, RWD-15-g, RWD-15-h, RWD-15-i, RWD-15-j, RWD-15-k, RWD-15-l, RWD-15-m | 22 of 22 | U 4 |
 | WP-81 | Done | RWD-17-a, RWD-17-b, RWD-17-c, RWD-17-d, RWD-17-e, RWD-17-f, RWD-17-g, RWD-17-h, RWD-18-a, RWD-18-b, RWD-18-c, RWD-18-d, RWD-18-e, RWD-18-f, RWD-18-g, RWD-18-h, RWD-18-i, RWD-18-j, RWD-18-k, RWD-18-l, RWD-18-m | 21 of 21 | — |
-| WP-82 | Ready | — | — | — |
+| WP-82 | Done | RWD-19-a, RWD-19-b, RWD-19-c, RWD-19-d, RWD-19-e, RWD-19-f, RWD-19-g, RWD-19-h, RWD-19-i, RWD-19-j, RWD-20-a, RWD-20-b, RWD-20-c, RWD-20-d, RWD-20-e, RWD-20-f, RWD-20-g, RWD-20-h, RWD-20-i, RWD-20-j, RWD-20-k | 21 of 21 | — |
 | WP-83 | Done | **No cases** | — | — |
 | WP-85 | Done | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | 6 of 6 | — |
 | WP-86 | Ready | — | — | — |
@@ -590,6 +590,27 @@ Test cases and the tests that prove them:
 | RWD-18-k | WP-81 | The board's and the Goals page's words: the steps, a tick after the time, a week won at a step | Unit | Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the steps in words › [RWD-18-k] the steps as chips: days missed, a number, the goal’s %`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the steps in words › [RWD-18-k] what a week makes, what it was won at, and a tick after the time`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the steps in words › [RWD-18-k] the payout, a step changed, and a board goal’s steps`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l][RWD-18-k] Goals: a week’s steps and a late day; a one-off goal’s steps; each week’s step paid`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-412] going: the steps, the one in reach, and a day ticked after 6 pm`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-413] won at a step: "Won this week! 10 points." and its chip` |
 | RWD-18-l | WP-81 | The form's time, steps and weights, a goal's weeks at 390 and 1280 px, and the board's card going, won at a step and weighted, in both themes | UI | UI `e2e/ui/goal-steps.spec.ts`: `on a ${device} › [RWD-18-l][NFR-11] the time, the steps and the weights fit a ${device} in ${theme}`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l][RWD-17-g] the form: by a time, and steps by days missed that set the misses allowed`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l] the form: two rules weighted 60% and 40%, steps by %, reached at 100%`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l] the form: steps by number on a one-off goal, which needs an end date`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l][RWD-18-k] Goals: a week’s steps and a late day; a one-off goal’s steps; each week’s step paid`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app the board at ${viewport.width}×${viewport.height} › [RWD-18-l][NFR-03] Maya’s goal in steps going, won at a step and weighted, in ${theme}: 28 px…`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-412] going: the steps, the one in reach, and a day ticked after 6 pm`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-413] won at a step: "Won this week! 10 points." and its chip`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l] weighted: a meter for each rule with its weight, the week’s %, and the step reached` |
 | RWD-18-m | WP-81 | On the preview: Maya's "Homework before 6 pm" with steps 20, 10 and 5: a tick at 6:05 pm completes the chore and doesn't count; a week with 4 of 5 on time pays 10 at the week's close | E2E | E2E `e2e/tests/goal-steps.spec.ts`: `[RWD-18-m][RWD-17-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10` |
+| RWD-19-a | WP-82 | In total: won weeks count, a missed or break week doesn't; reached at the target | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-414] perfect weeks, in total or in a row › [RWD-19-a] in total: won weeks count, a missed or break week doesn’t; reached at the target` |
+| RWD-19-b | WP-82 | In a row: a break week neither counts nor breaks the run, a missed week starts it again, a week still going doesn't break it | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-414] perfect weeks, in total or in a row › [RWD-19-b] in a row: a break week neither counts nor breaks the run, a missed week starts it again, a week going…` |
+| RWD-19-c | WP-82 | In a row stays reached once a run reaches the target, while those weeks stay won | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-414] perfect weeks, in total or in a row › [RWD-19-c] in a row stays reached once a run reaches the target, while those weeks stay won` |
+| RWD-19-d | WP-82 | Only weeks that start on or after the counted goal's start date count (D-126); a counted goal that repeats counts each of its periods' weeks | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-414] perfect weeks, in total or in a row › [RWD-19-d] only weeks that start on or after the goal’s start date count; a repeating counted goal counts each p…` |
+| RWD-19-e | WP-82 | A won week undone by a parent's fix takes the counted goal below its target, and its payout is taken back once | Unit, DB | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-414] perfect weeks, in total or in a row › [RWD-19-e] a won week undone by a parent’s fix takes the counted goal back below its target`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-e] a week undone takes it below its target: its payout is taken back once` |
+| RWD-19-f | WP-82 | The counted goal is saved and checked: a repeating goal of the same person (or the family's), not itself, not one that counts weeks itself, in total or in a row; a goal another counts keeps repeating | Unit, DB | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-414] the form: perfect weeks › [RWD-19-f] names a refusal of the goal it counts`<br>Unit `packages/rules-engine/src/perfect.test.ts`: `[US-414] perfect weeks, in total or in a row › [RWD-19-f] a counted rule names its goal, in total or in a row`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] Maya's goal can count 3 weeks in a row of her weekly goal, paying a shop reward`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] the rule keeps the goal it counts and in a row; it counts no items of its own`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] a goal that doesn't repeat can't be counted`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] Leo's goal can't count Maya's weeks`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] a family goal can't count Maya's weeks`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] a goal can't count its own weeks`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] a goal can't count a goal that counts weeks itself`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] the rule names a goal by its id`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] in a row is true or false`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] another goal can count the same weeks in total`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] in total is in_a_row false`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-f] a goal another goal counts keeps repeating` |
+| RWD-19-g | WP-82 | A week of the counted goal won or lost marks the goal counting it, which is worked out after it; its facts carry the counted goal's weeks; reached, it pays its own payout once; the board has the counted goal's weeks since it started | DB | DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] the counting goal's facts carry the counted goal's weeks`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] a week of the counted goal won marks the goals counting it`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] a goal counting weeks is worked out after the goal it counts`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] reached, it pays its own 15 points once`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] the board has the goal a rule counts`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] with its weeks that started on or after this goal's start date (D-126)` |
+| RWD-19-h | WP-82 | The form reads the counted goal: which goal, in total or in a row, the target | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-414] the form: perfect weeks › [RWD-19-h] reads the goal it counts, in a row or in total, and the target`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-19-h] the form: weeks won of Maya’s goal, in a row, from this goal’s start` |
+| RWD-19-i | WP-82 | The words: "1 of 3 weeks in a row", "best so far 1", "This week makes 2 in a row.", and the rule naming the goal it counts | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-414] perfect weeks in words › [RWD-19-i] "1 of 3 weeks in a row", best so far, what this week makes`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-414] perfect weeks in words › [RWD-19-i] the rule on Goals names the goal it counts`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-19-i][US-414] perfect weeks: 1 of 3 in a row, the weeks, what this week makes` |
+| RWD-19-j | WP-82 | On the preview: Maya's "3 perfect weeks in a row" counts her won homework weeks, 2 of 3 | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
+| RWD-20-a | WP-82 | One child short loses the week at once, though the other made every day | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-415] a family goal every child meets › [RWD-20-a] one child short loses the week at once, though the other made every day` |
+| RWD-20-b | WP-82 | Every child meeting it wins the week; its progress is the child furthest behind | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-415] a family goal every child meets › [RWD-20-b] every child meeting it wins the week; its progress is the child furthest behind` |
+| RWD-20-c | WP-82 | A child with nothing due doesn't hold it back; with nobody due the week is neither won nor missed | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-415] a family goal every child meets › [RWD-20-c] a child with nothing due doesn’t hold it back; with nobody due the week is neither` |
+| RWD-20-d | WP-82 | A family goal that doesn't repeat, every child meets it: reached when each child with something due meets it | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-415] a family goal every child meets › [RWD-20-d] a family goal that doesn’t repeat is reached when each child with something due meets it` |
+| RWD-20-e | WP-82 | The option is saved and checked: a family goal only, no steps, no counted rule, fixed once the goal starts | Unit, DB | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] the form: every child meets it › [RWD-20-e] refuses steps and a counted rule with it, and names the database’s refusals`<br>Unit `packages/rules-engine/src/perfect.test.ts`: `[US-415] a family goal every child meets › [RWD-20-e] every child meets it is for a family goal, without steps or a counted rule`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-e] a family goal can need every child to meet it`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-e] it is kept`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-e] a family goal counts each check-off once unless asked`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-e] every child meets it is for a family goal`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-e] every child meets it doesn't pay in steps (D-126)`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-e] every child meets it doesn't count another goal's weeks`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-e] a started goal keeps every child meets it (D-126)`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-e] a started family goal can't take it on`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-e] the table refuses it on a goal for one person` |
+| RWD-20-f | WP-82 | A won week pays each child with something due once, and only them (D-126); a parent's fix that changes who had something due pays or takes back the difference; undone, it is taken back once | DB | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-f] What happened says when who is paid changed`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-f] a won week pays the child with something due, once; Leo had nothing due (D-126)`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-f] a parent's fix that gives Leo something due, done, pays him too`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-f] once, in What happened`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-f] undone, each child's points are taken back, once`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-f] one reversal each` |
+| RWD-20-g | WP-82 | Each child's week is kept with the period, a day with nothing due named by their day type, and is on the board; the facts carry the children | Unit, DB | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-g] reads each child from the database, leaving out what it can’t read`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-g] an every-child goal's facts carry the children who earn rewards`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-g] and the option`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-g] each child's week is kept with the period`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-g] a day with nothing due is named by the child's day type`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-20-g] the board has the option and each child's week` |
+| RWD-20-h | WP-82 | The form reads the option, and a form without it leaves the goal's own | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] the form: every child meets it › [RWD-20-h] reads the option on a family goal, and sends it`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-h] the form: every child meets it on a family goal, without steps` |
+| RWD-20-i | WP-82 | The words: each child's line, "Leo missed Tuesday. Starts again Monday, Oct 19.", "Everyone made it! 20 points each.", a week's row on Weeks | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] each child’s line, who missed it and when it starts again`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] won: everyone, or only the children with something due, as they are paid (D-126)`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] a week’s row on the goal’s Weeks`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i] a family goal’s weeks: each child, who had nothing due, and what each was paid`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-20-i][US-415] the family goal: each child’s days; missed by Leo; won by both` |
+| RWD-20-j | WP-82 | The forms, Goals' two cards and a family goal's Weeks at 390 and 1280 px, and the board's family card going, missed and won and the perfect-weeks card, in both themes | UI | UI `e2e/ui/goal-perfect.spec.ts`: `on a ${device} › [RWD-20-j][NFR-11] the forms, Goals and a family goal’s weeks fit a ${device} in ${theme}`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-h] the form: every child meets it on a family goal, without steps`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-19-h] the form: weeks won of Maya’s goal, in a row, from this goal’s start`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i] a family goal’s weeks: each child, who had nothing due, and what each was paid`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app the board at ${viewport.width}×${viewport.height} › [RWD-20-j][NFR-03] the family goal going, missed and won, and perfect weeks, in ${theme}: 28…`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-20-i][US-415] the family goal: each child’s days; missed by Leo; won by both`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-19-i][US-414] perfect weeks: 1 of 3 in a row, the weeks, what this week makes` |
+| RWD-20-k | WP-82 | On the preview: the family's "Everyone's homework home": a week both children made pays each 20 once; Leo's missed Tuesday leaves the next week unreached though Maya made every day | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
 | NFR-19-a | WP-85 | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-a][US-913] a test traces to the IDs in its name and its describe blocks, in every layer` |
 | NFR-19-b | WP-85 | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-b][US-913] a test naming an unknown requirement, story, item or test case fails the check` |
 | NFR-19-c | WP-85 | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-c][US-913] a new gap fails the check, and a known gap does not` |
@@ -657,8 +678,8 @@ Status as in §9.3, for tests that name the story itself.
 | US-411 | RWD-15, RWD-16 | Covered | UI 2 · E2E 1 |
 | US-412 | RWD-17 | Covered | U 9 · UI 1 · E2E 1 |
 | US-413 | RWD-18 | Covered | U 16 · UI 1 · E2E 1 |
-| US-414 | RWD-19 | Not built | — |
-| US-415 | RWD-20 | Not built | — |
+| US-414 | RWD-19 | Covered | U 10 · UI 1 · E2E 1 |
+| US-415 | RWD-20 | Covered | U 12 · UI 1 · E2E 1 |
 | US-501 | CAL-01, CAL-03 | Covered | E2E 1 |
 | US-502 | CAL-02, CAL-07 | Gap | — |
 | US-503 | CAL-04 | Covered | U 4 · UI 2 |
@@ -1126,6 +1147,24 @@ Unit · 6 tests
 | `isDeviceClaims › [DEV-02] tells a board session from an admin one` | DEV-02 |
 | `format › writes dates and times the brand way, in the household timezone (06 §2)` | — |
 | `board theme › [DEV-05] a board follows the time of day unless an admin holds it on Day or Evening` | DEV-05 |
+
+#### `apps/web/lib/goal-perfect.test.ts`
+
+Unit · 11 tests
+
+| Test | Names |
+|---|---|
+| `[US-414] the form: perfect weeks › [RWD-19-h] reads the goal it counts, in a row or in total, and the target` | RWD-19-h, US-414 |
+| `[US-414] the form: perfect weeks › [RWD-19-f] names a refusal of the goal it counts` | RWD-19-f, US-414 |
+| `[US-415] the form: every child meets it › [RWD-20-h] reads the option on a family goal, and sends it` | RWD-20-h, US-415 |
+| `[US-415] the form: every child meets it › [RWD-20-e] refuses steps and a counted rule with it, and names the database’s refusals` | RWD-20-e, US-415 |
+| `[US-414] perfect weeks in words › [RWD-19-i] "1 of 3 weeks in a row", best so far, what this week makes` | RWD-19-i, US-414 |
+| `[US-414] perfect weeks in words › [RWD-19-i] the rule on Goals names the goal it counts` | RWD-19-i, US-414 |
+| `[US-415] every child meets it in words › [RWD-20-i] each child’s line, who missed it and when it starts again` | RWD-20-i, US-415 |
+| `[US-415] every child meets it in words › [RWD-20-i] won: everyone, or only the children with something due, as they are paid (D-126)` | RWD-20-i, US-415 |
+| `[US-415] every child meets it in words › [RWD-20-i] a week’s row on the goal’s Weeks` | RWD-20-i, US-415 |
+| `[US-415] every child meets it in words › [RWD-20-g] reads each child from the database, leaving out what it can’t read` | RWD-20-g, US-415 |
+| `[US-415] every child meets it in words › [RWD-20-f] What happened says when who is paid changed` | RWD-20-f, US-415 |
 
 #### `apps/web/lib/goal-periods.test.ts`
 
@@ -2033,6 +2072,14 @@ E2E · 2 tests
 | `[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no network, exactly three events; a parent’s later uncheck wins` | DEV-06, NFR-01, US-205 |
 | `[NFR-01][DEV-08][US-205] opened after a day offline, the board shows its last day and says how old it is` | DEV-08, NFR-01, US-205 |
 
+#### `e2e/tests/perfect-periods.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[RWD-20-k][RWD-19-j][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` | RWD-19-j, RWD-20-k, US-414, US-415 |
+
 #### `e2e/tests/points.spec.ts`
 
 E2E · 4 tests
@@ -2328,6 +2375,21 @@ UI · 10 tests
 | `[RWD-01] the goals pages need a signed-in admin` | RWD-01 |
 | `[CHR-06][CHR-14] a parent’s day and My tasks need a signed-in admin` | CHR-06, CHR-14 |
 | `[CHR-15] the reminders page needs a signed-in admin` | CHR-15 |
+
+#### `e2e/ui/goal-perfect.spec.ts`
+
+UI · 8 tests
+
+| Test | Names |
+|---|---|
+| `on a ${device} › [RWD-20-j][NFR-11] the forms, Goals and a family goal’s weeks fit a ${device} in ${theme}` | RWD-20-j, NFR-11 |
+| `the admin app › [RWD-20-j][RWD-20-h] the form: every child meets it on a family goal, without steps` | RWD-20-h, RWD-20-j |
+| `the admin app › [RWD-20-j][RWD-19-h] the form: weeks won of Maya’s goal, in a row, from this goal’s start` | RWD-19-h, RWD-20-j |
+| `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row` | RWD-19-i, RWD-20-i, RWD-20-j |
+| `the admin app › [RWD-20-j][RWD-20-i] a family goal’s weeks: each child, who had nothing due, and what each was paid` | RWD-20-i, RWD-20-j |
+| `the admin app the board at ${viewport.width}×${viewport.height} › [RWD-20-j][NFR-03] the family goal going, missed and won, and perfect weeks, in ${theme}: 28…` | RWD-20-j, NFR-03 |
+| `the board’s cards › [RWD-20-j][RWD-20-i][US-415] the family goal: each child’s days; missed by Leo; won by both` | RWD-20-i, RWD-20-j, US-415 |
+| `the board’s cards › [RWD-20-j][RWD-19-i][US-414] perfect weeks: 1 of 3 in a row, the weeks, what this week makes` | RWD-19-i, RWD-20-j, US-414 |
 
 #### `e2e/ui/goal-steps.spec.ts`
 
@@ -2662,6 +2724,24 @@ Unit · 13 tests
 | `evaluateHistory: days and raw runs › [RWD-11] runs end when the other kind starts; only the last one is still going` | RWD-11 |
 | `evaluateHistory: days and raw runs › [RWD-11][D-30] counts only this member, and nothing after today` | RWD-11 |
 | `evaluateHistory: days and raw runs › [RWD-11] no history yet: no days, no runs` | RWD-11 |
+
+#### `packages/rules-engine/src/perfect.test.ts`
+
+Unit · 11 tests
+
+| Test | Names |
+|---|---|
+| `[US-414] perfect weeks, in total or in a row › [RWD-19-a] in total: won weeks count, a missed or break week doesn’t; reached at the target` | RWD-19-a, US-414 |
+| `[US-414] perfect weeks, in total or in a row › [RWD-19-b] in a row: a break week neither counts nor breaks the run, a missed week starts it again, a week going…` | RWD-19-b, US-414 |
+| `[US-414] perfect weeks, in total or in a row › [RWD-19-c] in a row stays reached once a run reaches the target, while those weeks stay won` | RWD-19-c, US-414 |
+| `[US-414] perfect weeks, in total or in a row › [RWD-19-d] only weeks that start on or after the goal’s start date count; a repeating counted goal counts each p…` | RWD-19-d, US-414 |
+| `[US-414] perfect weeks, in total or in a row › [RWD-19-e] a won week undone by a parent’s fix takes the counted goal back below its target` | RWD-19-e, US-414 |
+| `[US-414] perfect weeks, in total or in a row › [RWD-19-f] a counted rule names its goal, in total or in a row` | RWD-19-f, US-414 |
+| `[US-415] a family goal every child meets › [RWD-20-a] one child short loses the week at once, though the other made every day` | RWD-20-a, US-415 |
+| `[US-415] a family goal every child meets › [RWD-20-b] every child meeting it wins the week; its progress is the child furthest behind` | RWD-20-b, US-415 |
+| `[US-415] a family goal every child meets › [RWD-20-c] a child with nothing due doesn’t hold it back; with nobody due the week is neither` | RWD-20-c, US-415 |
+| `[US-415] a family goal every child meets › [RWD-20-d] a family goal that doesn’t repeat is reached when each child with something due meets it` | RWD-20-d, US-415 |
+| `[US-415] a family goal every child meets › [RWD-20-e] every child meets it is for a family goal, without steps or a counted rule` | RWD-20-e, US-415 |
 
 #### `packages/rules-engine/src/properties.test.ts`
 
@@ -4745,5 +4825,50 @@ DB · 33 tests
 | `[RWD-18-i] a won week undone takes back what its step paid, once` | RWD-18-i |
 | `[RWD-18-i] a one-off goal reached at a lower step pays that step` | RWD-18-i |
 | `[RWD-18-i] lifted to the top step, it pays the difference once` | RWD-18-i |
+
+#### `supabase/tests/520_perfect_periods.test.sql`
+
+DB · 38 tests
+
+| Test | Names |
+|---|---|
+| `[RWD-19-f] Maya's goal can count 3 weeks in a row of her weekly goal, paying a shop reward` | RWD-19-f |
+| `[RWD-19-f] the rule keeps the goal it counts and in a row; it counts no items of its own` | RWD-19-f |
+| `[RWD-19-f] a goal that doesn't repeat can't be counted` | RWD-19-f |
+| `[RWD-19-f] Leo's goal can't count Maya's weeks` | RWD-19-f |
+| `[RWD-19-f] a family goal can't count Maya's weeks` | RWD-19-f |
+| `[RWD-19-f] a goal can't count its own weeks` | RWD-19-f |
+| `[RWD-19-f] a goal can't count a goal that counts weeks itself` | RWD-19-f |
+| `[RWD-19-f] the rule names a goal by its id` | RWD-19-f |
+| `[RWD-19-f] in a row is true or false` | RWD-19-f |
+| `[RWD-19-f] another goal can count the same weeks in total` | RWD-19-f |
+| `[RWD-19-f] in total is in_a_row false` | RWD-19-f |
+| `[RWD-20-e] a family goal can need every child to meet it` | RWD-20-e |
+| `[RWD-20-e] it is kept` | RWD-20-e |
+| `[RWD-20-e] a family goal counts each check-off once unless asked` | RWD-20-e |
+| `[RWD-20-e] every child meets it is for a family goal` | RWD-20-e |
+| `[RWD-20-e] every child meets it doesn't pay in steps (D-126)` | RWD-20-e |
+| `[RWD-20-e] every child meets it doesn't count another goal's weeks` | RWD-20-e |
+| `[RWD-20-e] a started goal keeps every child meets it (D-126)` | RWD-20-e |
+| `[RWD-20-e] a started family goal can't take it on` | RWD-20-e |
+| `[RWD-20-e] the table refuses it on a goal for one person` | RWD-20-e |
+| `[RWD-19-g] the counting goal's facts carry the counted goal's weeks` | RWD-19-g |
+| `[RWD-20-g] an every-child goal's facts carry the children who earn rewards` | RWD-20-g |
+| `[RWD-20-g] and the option` | RWD-20-g |
+| `[RWD-19-g] a week of the counted goal won marks the goals counting it` | RWD-19-g |
+| `[RWD-19-g] a goal counting weeks is worked out after the goal it counts` | RWD-19-g |
+| `[RWD-19-g] reached, it pays its own 15 points once` | RWD-19-g |
+| `[RWD-19-e] a week undone takes it below its target: its payout is taken back once` | RWD-19-e |
+| `[RWD-19-f] a goal another goal counts keeps repeating` | RWD-19-f |
+| `[RWD-20-f] a won week pays the child with something due, once; Leo had nothing due (D-126)` | RWD-20-f |
+| `[RWD-20-f] a parent's fix that gives Leo something due, done, pays him too` | RWD-20-f |
+| `[RWD-20-f] once, in What happened` | RWD-20-f |
+| `[RWD-20-f] undone, each child's points are taken back, once` | RWD-20-f |
+| `[RWD-20-f] one reversal each` | RWD-20-f |
+| `[RWD-20-g] each child's week is kept with the period` | RWD-20-g |
+| `[RWD-20-g] a day with nothing due is named by the child's day type` | RWD-20-g |
+| `[RWD-20-g] the board has the option and each child's week` | RWD-20-g |
+| `[RWD-19-g] the board has the goal a rule counts` | RWD-19-g |
+| `[RWD-19-g] with its weeks that started on or after this goal's start date (D-126)` | RWD-19-g |
 
 <!-- /catalogue -->

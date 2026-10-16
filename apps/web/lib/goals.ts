@@ -10,7 +10,7 @@ import {
   type RuleType,
 } from '@familywise/rules-engine';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { monthDay, spanWords } from './goal-periods';
+import { monthDay, periodWord, spanWords } from './goal-periods';
 import { goalSteps, type LowerStep, onTimeWords, stepKind, stepsPayWords } from './goal-steps';
 
 /**
@@ -32,6 +32,10 @@ export interface GoalRead {
   terms?: GoalInput['terms'];
   rules: Rule[];
   facts: OccurrenceFact[];
+  /** [RWD-20] The children an every-child goal is for. */
+  members?: string[];
+  /** [RWD-19] The periods of each goal its rules count. */
+  sources?: GoalInput['sources'];
 }
 
 export interface GoalSave {
@@ -53,6 +57,8 @@ export function evaluateRead(read: GoalRead): GoalEvaluation {
     asOf: read.as_of,
     weekStart: read.week_start,
     terms: read.terms ?? [],
+    members: read.members ?? [],
+    sources: read.sources ?? {},
   });
 }
 
@@ -170,6 +176,7 @@ export const RULE_TYPES: readonly RuleType[] = [
   'STREAK',
   'POINTS',
   'DAYS_DUE',
+  'PERIODS_WON',
 ];
 
 /** [RWD-15] How a goal may repeat, in the form's order. */
@@ -191,6 +198,11 @@ export const RULE_WORDS: Record<RuleType, { label: string; unit: (n: number) => 
     label: 'Every day it’s due',
     unit: (n) => (n === 1 ? 'day it’s due' : 'days it’s due'),
   },
+  // [RWD-19] The unit follows the goal it counts ("weeks", "months", "terms"): countedUnit().
+  PERIODS_WON: {
+    label: 'Weeks won of a repeating goal',
+    unit: (n) => (n === 1 ? 'week won' : 'weeks won'),
+  },
 };
 
 export type ScopeChoice = 'all' | 'tags' | 'items';
@@ -199,8 +211,17 @@ export interface RuleFormValue {
   type: RuleType;
   target: number;
   scope: { all: true } | { tag_ids?: string[]; chore_ids?: string[] };
-  /** [RWD-17] `on_time`: 'due_time' or 'HH:MM'; absent, any time that day. */
-  params: { grace_per_week?: number; misses_allowed?: number; on_time?: string };
+  /**
+   * [RWD-17] `on_time`: 'due_time' or 'HH:MM'; absent, any time that day. [RWD-19] `goal_id` and
+   * `in_a_row`: the goal a PERIODS_WON rule counts, in a row or in total.
+   */
+  params: {
+    grace_per_week?: number;
+    misses_allowed?: number;
+    on_time?: string;
+    goal_id?: string;
+    in_a_row?: boolean;
+  };
   /** [RWD-18] Its share of the goal's % (1 to 100) on a goal with two or more rules paying in steps. */
   weight?: number | null;
 }
@@ -222,6 +243,11 @@ export interface GoalFormValue {
   logic: 'all' | 'any';
   /** [RWD-15] How it repeats; 'none' for a goal reached once. */
   repeat: Repeat;
+  /**
+   * [RWD-20] A family goal every child meets on their own; absent (a form loaded before it), the goal
+   * keeps its own.
+   */
+  eachChild?: boolean;
   rules: RuleFormValue[];
   payout: GoalPayout;
 }
@@ -235,6 +261,8 @@ const realDay = (s: string) =>
 
 /** The goal form's end date fields (D-115): this form has the check box, and the box itself. */
 export const END_CHOICE_FIELD = 'endChoice';
+/** [RWD-20] The goal form has the every-child box (sent whether it is ticked or not). */
+export const EACH_CHILD_FIELD = 'eachChildField';
 export const ENDS_ON_DATE_FIELD = 'endsOnDate';
 
 /**
@@ -296,6 +324,24 @@ export function parseGoalForm(
     const n = keys.length > 1 ? ` ${i + 1}` : '';
     const type = String(form.get(`rule-${k}-type`) ?? '') as RuleType;
     if (!RULE_TYPES.includes(type)) return { ok: false, message: `Choose what rule${n} counts.` };
+    if (type === 'PERIODS_WON') {
+      // [RWD-19] The repeating goal it counts, in total or in a row; it counts no items of its own.
+      const source = String(form.get(`rule-${k}-source`) ?? '');
+      if (!GUID.test(source)) {
+        return { ok: false, message: `Rule${n}: choose the repeating goal it counts.` };
+      }
+      const target = Number(String(form.get(`rule-${k}-target`) ?? '').trim());
+      if (!(Number.isInteger(target) && target >= 1 && target <= 100_000)) {
+        return { ok: false, message: `Rule${n} needs a target from 1 to 100,000.` };
+      }
+      rules.push({
+        type,
+        target,
+        scope: { all: true },
+        params: { goal_id: source, in_a_row: form.get(`rule-${k}-row`) === 'row' },
+      });
+      continue;
+    }
     if (type === 'DAYS_DUE' && repeat === 'none') {
       return {
         ok: false,
@@ -385,6 +431,19 @@ export function parseGoalForm(
     if (!GUID.test(item)) return { ok: false, message: 'Choose the reward from the shop.' };
     payout = { type: 'catalog_item', item_id: item };
   }
+  // [RWD-20] Every child meets it: a family goal's option, without steps or a counted rule (D-126).
+  const eachChild = form.has(EACH_CHILD_FIELD)
+    ? who === 'family' && form.get('eachChild') === 'on'
+    : undefined;
+  if (eachChild && payout.type === 'points' && payout.steps?.length) {
+    return { ok: false, message: 'Pay in steps isn’t offered when every child meets it.' };
+  }
+  if (eachChild && rules.some((r) => r.type === 'PERIODS_WON')) {
+    return {
+      ok: false,
+      message: 'When every child meets it, the goal can’t count another goal’s weeks.',
+    };
+  }
   // [RWD-18] Weights are for a goal with two or more rules that pays in steps; it is reached at 100%.
   const weighted = payout.type === 'points' && !!payout.steps?.length && rules.length > 1;
   if (!weighted) for (const r of rules) delete r.weight;
@@ -400,6 +459,7 @@ export function parseGoalForm(
       endDate: endRaw || null,
       logic: weighted ? 'all' : logic,
       repeat,
+      eachChild,
       rules,
       payout,
     },
@@ -483,6 +543,7 @@ export function goalPayload(
     end_date: v.endDate,
     rule_logic: v.logic,
     repeat: v.repeat,
+    ...(v.eachChild !== undefined ? { each_child: v.eachChild } : {}),
     rules: v.rules,
     payout: v.payout,
     ...(imagePath !== undefined ? { image_path: imagePath } : {}),
@@ -504,6 +565,16 @@ export function goalRefusal(error: { code?: string | null; hint?: string | null 
       return 'This goal has started, so how it repeats stays as it is.';
     case 'repeat':
       return 'Choose how it repeats: each week, month or school term, or not at all.';
+    case 'rule_source':
+      return 'A goal counts the weeks of a repeating goal for the same person (or the family’s), and not one that counts weeks itself. A goal another goal counts keeps repeating.';
+    case 'each_child_family':
+      return 'Every child meets it is for a family goal.';
+    case 'each_child_steps':
+      return 'Pay in steps isn’t offered when every child meets it.';
+    case 'each_child_counted':
+      return 'When every child meets it, the goal can’t count another goal’s weeks.';
+    case 'each_child_fixed':
+      return 'This goal has started, so every child meets it stays as it is.';
     case 'rule_repeat':
       return 'Every day it’s due is for a goal that repeats. Choose how it repeats, or another rule.';
     case 'rule_misses':
@@ -558,8 +629,22 @@ export function goalRefusal(error: { code?: string | null; hint?: string | null 
 /** "20 things done, tagged Morning or Kitchen" · "5 good days in a row (1 miss a week forgiven)". */
 export function describeRule(
   r: { type: RuleType; target: number; scope: RuleFormValue['scope']; params: Rule['params'] },
-  names: { tags: Map<string, string>; items: Map<string, string> },
+  names: {
+    tags: Map<string, string>;
+    items: Map<string, string>;
+    /** [RWD-19] The goals a rule may count, by id. */
+    goals?: Map<string, { title: string; repeat: Repeat }>;
+  },
 ): string {
+  if (r.type === 'PERIODS_WON') {
+    // [RWD-19] "3 weeks won in a row, of Homework home every school day".
+    const p = r.params as { goal_id?: string; in_a_row?: boolean };
+    const source = p.goal_id ? names.goals?.get(p.goal_id) : undefined;
+    const unit = countedUnit(source?.repeat, r.target);
+    return `${r.target.toLocaleString('en-US')} ${unit} won${p.in_a_row ? ' in a row' : ''}, of ${
+      source?.title ?? 'a removed goal'
+    }`;
+  }
   const head =
     r.type === 'DAYS_DUE'
       ? RULE_WORDS.DAYS_DUE.label
@@ -588,6 +673,11 @@ export function describeRule(
   const by = onTimeWords((r.params as { on_time?: string }).on_time);
   if (by) text += `, ${by}`;
   return text;
+}
+
+/** [RWD-19] "week" or "weeks" (or months, terms) for the goal a rule counts. */
+export function countedUnit(repeat: Repeat | undefined, n: number): string {
+  return periodWord(repeat && repeat !== 'none' ? repeat : 'week', n);
 }
 
 function orList(words: string[]): string {
@@ -652,6 +742,17 @@ export function eventWords(e: { type: string; payload: Record<string, unknown> }
         return `${span}: ${parts.join(', ') || 'payout undone'}`;
       }
     }
+  }
+  // [RWD-20] A parent's fix changed who had something due in a won week: each child's pay followed.
+  if (e.type === 'payees_changed') {
+    const head = start && end ? spanWords({ start, end, outcome: 'won' }) : 'Who it pays';
+    const moved =
+      points > 0
+        ? `${pointsWord(points)} more paid`
+        : points < 0
+          ? `${pointsWord(-points)} taken back`
+          : 'nothing moved';
+    return `${head}: who had something due changed, ${moved}`;
   }
   // [RWD-18] A parent's fix moved a reached goal or won period to another step.
   if (e.type === 'step_changed') {
@@ -753,6 +854,10 @@ export interface PreviewRead {
   status: GoalStatus;
   saved: boolean;
   facts: OccurrenceFact[];
+  /** [RWD-20] The children who earn rewards. */
+  members?: string[];
+  /** [RWD-19] The periods of each goal the form's rules count. */
+  sources?: GoalInput['sources'];
 }
 
 export interface PreviewSide {
@@ -802,12 +907,15 @@ export function previewGoal(
       status: read.status,
       repeat: v.repeat,
       steps: goalSteps(v.payout, v.rules),
+      each_child: v.eachChild ?? false,
     },
     rules: v.rules.map((r, i) => ({ id: `rule-${i + 1}`, ...r })) as Rule[],
     occurrences: read.facts,
     asOf: read.as_of,
     weekStart: read.week_start,
     terms: read.terms ?? [],
+    members: read.members ?? [],
+    sources: read.sources ?? {},
   });
   return {
     before: stored ? side(evaluateRead(stored)) : null,

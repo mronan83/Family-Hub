@@ -1,18 +1,35 @@
-import { Banner, Button, Fold, GoalMeter, Icon, type IconName } from '@familywise/ui';
+import {
+  Avatar,
+  type AvatarKey,
+  Banner,
+  Button,
+  Fold,
+  GoalMeter,
+  Icon,
+  type IconName,
+  type MemberColor,
+  PeriodMarks,
+} from '@familywise/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { day } from '@/lib/format';
-import { REPEAT_WORDS } from '@/lib/goal-periods';
+import { bestLine, type Counted, countedLine, makesLine } from '@/lib/goal-perfect';
+import { periodLabel, REPEAT_WORDS } from '@/lib/goal-periods';
 import { goalSteps, stepChips, stepKind, stepNudge } from '@/lib/goal-steps';
 import { describeRule, OPEN_STATUSES, payoutWords, STATUS_WORDS, streakLine } from '@/lib/goals';
 import { AdminHeader } from '../header';
 import { goalAction } from './actions';
 import type { GoalRow } from './data';
-import { PeriodProgress, periodStatus } from './repeating';
+import { type ChildNames, PeriodProgress, periodStatus } from './repeating';
 
 export interface GoalsViewProps {
   goals: GoalRow[];
-  members: { id: string; displayName: string }[];
+  members: {
+    id: string;
+    displayName: string;
+    avatarKey?: AvatarKey | null;
+    color?: MemberColor;
+  }[];
   /** Tag and item names, for describing what a rule counts. */
   names: { tags: Map<string, string>; items: Map<string, string> };
   /** The household's parents, for "redeemed by". */
@@ -78,13 +95,102 @@ function GoalStatusPill({ goal: g, today }: { goal: GoalRow; today: string }) {
   );
 }
 
+type Names = {
+  tags: Map<string, string>;
+  items: Map<string, string>;
+  goals?: Map<string, { title: string; repeat: GoalRow['repeat'] }>;
+};
+
+/**
+ * [RWD-19] A rule counting another goal's weeks (the approved addendum): "1 of 3 weeks in a row · best
+ * so far 1", and that goal's weeks since this one started, with what the week going now would make.
+ */
+function CountedWeeks({
+  goal: g,
+  rule: r,
+  source,
+}: {
+  goal: GoalRow;
+  rule: GoalRow['rules'][number];
+  source: GoalRow | undefined;
+}) {
+  if (!source || source.repeat === 'none') return null;
+  const c: Counted = {
+    current: r.progress?.current ?? 0,
+    target: r.target,
+    inARow: r.params.in_a_row === true,
+    best: r.params.in_a_row ? (r.progress?.bestStreak ?? 0) : null,
+    met: r.progress?.met ?? false,
+    repeat: source.repeat,
+  };
+  const weeks = source.periods
+    .filter((p) => p.start >= g.startDate)
+    .slice(-5)
+    .map((p) => ({ start: p.start, end: p.end, outcome: p.outcome }));
+  const makes = makesLine(c, weeks, 'admin');
+  return (
+    <div className="fw-goal__counted">
+      <span className="fw-muted">{[countedLine(c), bestLine(c)].filter(Boolean).join(' · ')}</span>
+      {weeks.length ? (
+        <div className="fw-goal__weeks">
+          <span className="fw-muted">{makes ?? ''}</span>
+          <PeriodMarks
+            label={`${source.title}: its last ${weeks.length}`}
+            periods={weeks.map((p) => ({
+              key: p.start,
+              outcome: p.outcome,
+              label: periodLabel(p, source.repeat as Exclude<GoalRow['repeat'], 'none'>),
+            }))}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** [RWD-20] An every-child goal that doesn't repeat: each child's progress. */
+function ChildProgress({ goal: g, who }: { goal: GoalRow; who: ChildNames }) {
+  if (!g.children?.length) return null;
+  return (
+    <ul className="fw-goal__kids" aria-label="Each child">
+      {g.children.map((c) => {
+        const m = who.member(c.memberId);
+        return (
+          <li key={c.memberId} className="fw-goal__kid" data-outcome={c.outcome}>
+            <Avatar
+              name={who.name(c.memberId)}
+              avatarKey={m?.avatarKey ?? null}
+              color={m?.color}
+              size={36}
+              decorative
+            />
+            <span className="fw-goal__kid-body">
+              <b>{who.name(c.memberId)}</b>
+              <span className="fw-muted">
+                {!c.contributes
+                  ? 'Nothing due'
+                  : c.outcome === 'won'
+                    ? 'Made it'
+                    : `${Math.round(c.pct)}% there`}
+              </span>
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 /** [RWD-02] A meter per rule, with a streak's run now and best. */
 function RuleMeters({
   goal: g,
   names,
+  goals = [],
 }: {
   goal: GoalRow;
-  names: { tags: Map<string, string>; items: Map<string, string> };
+  names: Names;
+  /** [RWD-19] The household's goals, for the weeks a rule counts. */
+  goals?: GoalRow[];
 }) {
   const steps = goalSteps(g.payout, g.rules);
   const weighted = steps.length > 0 && g.rules.length > 1;
@@ -113,6 +219,13 @@ function RuleMeters({
                 value={Math.min(value, r.target)}
                 target={r.target}
               />
+              {r.type === 'PERIODS_WON' ? (
+                <CountedWeeks
+                  goal={g}
+                  rule={r}
+                  source={goals.find((x) => x.id === r.params.goal_id)}
+                />
+              ) : null}
               {r.type === 'STREAK' && r.progress ? (
                 <span className="fw-muted">
                   {streakLine({
@@ -164,6 +277,18 @@ export function GoalsView({
   };
   const who = (id: string | null) =>
     id === null ? 'The whole family' : (members.find((m) => m.id === id)?.displayName ?? 'Someone');
+  // [RWD-20] The children an every-child goal names; [RWD-19] the goals a rule may count.
+  const childNames: ChildNames = {
+    name: (id) => who(id),
+    member: (id) => {
+      const m = members.find((x) => x.id === id);
+      return m ? { avatarKey: m.avatarKey ?? null, color: m.color ?? 'member-1' } : undefined;
+    },
+  };
+  const allNames: Names = {
+    ...names,
+    goals: new Map(goals.map((g) => [g.id, { title: g.title, repeat: g.repeat }])),
+  };
   const open = goals
     .filter((g) => OPEN_STATUSES.includes(g.status))
     .sort((a, b) => OPEN_STATUSES.indexOf(a.status) - OPEN_STATUSES.indexOf(b.status));
@@ -178,7 +303,7 @@ export function GoalsView({
   /** "Maya · each week · 1 miss allowed · Pays 10 points" for a repeating goal. */
   const repeatLine = (g: GoalRow) => {
     const misses = g.rules.find((r) => r.type === 'DAYS_DUE')?.params.misses_allowed ?? 0;
-    return `${who(g.memberId)} · ${REPEAT_WORDS[g.repeat].toLowerCase()}${
+    return `${who(g.memberId)}${g.eachChild ? ' · every child meets it' : ''} · ${REPEAT_WORDS[g.repeat].toLowerCase()}${
       misses ? ` · ${misses} miss${misses > 1 ? 'es' : ''} allowed` : ''
     }${pays(g)}`;
   };
@@ -217,9 +342,18 @@ export function GoalsView({
                     <span className="fw-muted">
                       {g.repeat !== 'none' ? (
                         repeatLine(g)
+                      ) : g.rules[0]?.type === 'PERIODS_WON' ? (
+                        // [RWD-19] "Maya · counts Homework home every school day · Pays …".
+                        <>
+                          {who(g.memberId)} · counts{' '}
+                          {goals.find((x) => x.id === g.rules[0]!.params.goal_id)?.title ??
+                            'a removed goal'}
+                          {pays(g)}
+                        </>
                       ) : (
                         <>
-                          {who(g.memberId)} · {dates(g)}
+                          {who(g.memberId)}
+                          {g.eachChild ? ' · every child meets it' : ''} · {dates(g)}
                           {pays(g)}
                         </>
                       )}
@@ -245,13 +379,18 @@ export function GoalsView({
                     steps={goalSteps(g.payout, g.rules)}
                     kind={stepKind(g.rules)}
                     onTime={g.rules[0]?.params.on_time ?? null}
+                    who={g.eachChild ? childNames : undefined}
+                    points={g.payout.type === 'points' ? g.payout.amount : null}
                   >
                     {g.rules.some((r) => r.type !== 'DAYS_DUE') ? (
-                      <RuleMeters goal={g} names={names} />
+                      <RuleMeters goal={g} names={allNames} goals={goals} />
                     ) : null}
                   </PeriodProgress>
                 ) : (
-                  <RuleMeters goal={g} names={names} />
+                  <>
+                    <RuleMeters goal={g} names={allNames} goals={goals} />
+                    {g.eachChild ? <ChildProgress goal={g} who={childNames} /> : null}
+                  </>
                 )}
                 <div className="fw-actions">
                   {g.status === 'achieved' ? (
