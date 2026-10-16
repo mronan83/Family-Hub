@@ -106,7 +106,7 @@ test('[NFR-19-a][US-913] a test traces to the IDs in its name and its describe b
 
 test('[NFR-19-b][US-913] a test naming an unknown requirement, story, item or test case fails the check', () => {
   const s = sandbox();
-  const names = [id('CHR', '99'), id('US', '9999'), id('WP', '99'), id('NFR', '19') + '-z'];
+  const names = [id('CHR', '99'), id('US', '9999'), id('WP', '00'), id('NFR', '19') + '-z'];
   s.write(
     'apps/web/lib/zz-unknown.test.ts',
     names.map((n) => `${IT}('[${n}] names it', () => {});`).join('\n') + '\n',
@@ -116,7 +116,7 @@ test('[NFR-19-b][US-913] a test naming an unknown requirement, story, item or te
   const e = errors(r);
   assert.match(e, /names unknown requirement CHR-99/);
   assert.match(e, /names unknown story US-9999/);
-  assert.match(e, /names unknown backlog item WP-99/);
+  assert.match(e, /names unknown backlog item WP-00/);
   assert.match(e, /names test case NFR-19-z, which no item's §5 table in 05 defines/);
 });
 

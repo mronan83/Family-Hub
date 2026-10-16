@@ -1,7 +1,7 @@
-// Test strategy (docs/08, NFR-18): the strategy's sections as prose, and the Test catalogue (§9),
+// Test strategy (docs/08, NFR-19): the strategy's sections as prose, and the Test catalogue (§9),
 // which check_traceability.py generates from every test's name. Test names sit in code spans, so
 // only the IDs the check has already validated become links.
-import { fullMd, md } from '../lib/md.mjs';
+import { esc, fullMd, md } from '../lib/md.mjs';
 import { latestNote, section, shell } from '../lib/ui.mjs';
 
 export function testStrategy(m, ctx) {
@@ -20,13 +20,51 @@ export function testStrategy(m, ctx) {
   const files = (catMd.match(/^#### `/gm) || []).length;
   const diagrams = (all.match(/^```mermaid/gm) || []).length;
 
+  // §9.7 lists every test (thousands): on the page each file folds to one line, and each test is its
+  // name alone (its IDs are in it), so the page stays small enough to republish. The markdown keeps
+  // the full table with each test's IDs.
+  const everyTest = (node) => {
+    const files = [
+      ...fullMd(node).matchAll(
+        /^#### `([^`]+)`\n\n([^\n]+)\n\n\| Test \| Names \|\n\|---\|---\|\n((?:\|[^\n]*\n?)*)/gm,
+      ),
+    ];
+    const intro = node.md;
+    const list = files
+      .map(([, file, meta, rows]) => {
+        const names = rows
+          .trim()
+          .split('\n')
+          .map((r) => (r.match(/^\| `(.*)` \|/) || [])[1])
+          .filter(Boolean)
+          .map((n) => `<li>${esc(n.replace(/\\\|/g, '|'))}</li>`)
+          .join('\n');
+        return `<details class="more"><summary><code>${esc(file)}</code> · ${esc(meta)}</summary><ol class="tests">${names}</ol></details>`;
+      })
+      .join('\n');
+    return `${md(intro, ctx)}${list}`;
+  };
+  const catalogue = (p) =>
+    md(p.md, ctx) +
+    p.children
+      .map((c) =>
+        c.title.startsWith('9.7')
+          ? `<h3 id="${c.anchor}">${esc(c.title)}</h3>${everyTest(c)}`
+          : md(`### ${c.title}\n\n${fullMd(c)}`, ctx),
+      )
+      .join('\n');
+
   const sections = parts.map((p) => ({
     id: p.anchor,
     label: p.title.replace(/^\d+\.\s*/, ''),
     sub: p.title.startsWith('9.')
       ? p.children.map((c) => ({ id: c.anchor, label: c.title }))
       : undefined,
-    html: section(p.anchor, p.title, `<div class="prose">${md(fullMd(p), ctx)}</div>`),
+    html: section(
+      p.anchor,
+      p.title,
+      `<div class="prose">${p.title.startsWith('9.') ? catalogue(p) : md(fullMd(p), ctx)}</div>`,
+    ),
   }));
 
   return shell({

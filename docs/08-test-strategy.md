@@ -430,7 +430,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71 | — | UI 4 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Not built | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | — | U 3 |
-| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90 | — | U 20 · DB 14 · UI 1 · E2E 2 |
+| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99 | — | U 20 · DB 14 · UI 1 · E2E 2 |
 | NFR-19 | M | Covered | US-913 | WP-85, WP-86 | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | U 6 |
 
 ### 9.4 By backlog item
@@ -533,6 +533,8 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-95 | Ready | — | — | — |
 | WP-96 | Ready | — | — | — |
 | WP-97 | Ready | — | — | — |
+| WP-98 | Ready | — | — | — |
+| WP-99 | Queued: | — | — | — |
 
 Test cases and the tests that prove them:
 
