@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.125: WP-34 gains sleep and wake per board, added at the owner's request, recorded only (D-116): when a board counts as missed (Always, Only while awake, Never), sleep and wake times for school days and weekends, an idle sleep woken by a touch, click or mouse movement that only wakes. WP-34 now depends on WP-06 and WP-47 and is Ready: the owner's Pi 4 on a 24" Dell is the board in use, so it no longer waits on WP-14 or SPIKE-03. Size S to M. A mockup comes first. "Next, in order" is the owner's to set.
 > v0.8.124: WP-79 (a goal's end date that can be cleared) done (D-115), from the mockup the owner approved with their changes; added at the owner's request with it: a started goal's end date today or later, and a reached goal that can't change (read per period for WP-80). WP-80 no longer waits on WP-79.
 > v0.8.123: WP-75 (the meal planner's days as collapsible sections, with the usual lunch week and Add to the plan folded) done (D-114), with **Copy last week** folded too and Meals reordered, added at the owner's request.
 > v0.8.122: WP-75 gains two sections that fold on Meals, added at the owner's request, recorded only (D-98): **School lunch**'s usual week and **Add to the plan**, both collapsed at first on every screen size; **Add** on a day opens **Add to the plan** with that day filled. The WP-75 worker adds both collapsed states to the mockup for the owner's approval before building.
@@ -142,7 +143,7 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 
 | Item | Action | Where | Unblocks |
 |---|---|---|---|
-| Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
+| Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14; launch checks L-05 and L-08 |
 | Y-10 | The repository is public now (D-48), and three things from before are visible on it. (1) Rotate the deployment-protection bypass secret: Vercel → Settings → Deployment Protection → Protection Bypass for Automation, then put the new value in GitHub → Settings → Secrets → `VERCEL_AUTOMATION_BYPASS_SECRET`. The demo sign-ins' passwords follow it on the next e2e run. (2) Delete the four `playwright-report` artifacts (Actions → the failed e2e runs of Oct 9 whose reports were saved at 10:56, 15:03, 20:20 and 20:28 UTC), which hold the old value. (3) Delete the two `setup-code` runs of Oct 9 (10:54 and 11:03 UTC), whose pages show household codes; they expire 24 hours after issue | GitHub; Vercel | R-35 |
 | Y-8 | Not before P3 (nothing earlier waits on it): choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
 
@@ -212,7 +213,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-44 | Offline goal projection (board fallback) | P2 | M | WP-13, WP-15, WP-20 | Ready |
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
-| WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
+| WP-34 | Quiet hours and burn-in mitigation, with sleep and wake per board | P3 | M | WP-06, WP-47 | Ready |
 | WP-35 | Family dashboard and board layout | P3 | L | WP-23 | Done (PR #44) |
 | WP-45 | Weather on the board | P3 | S | WP-35 | Done (PR #45) |
 | WP-46 | More icons, one icon picker, sixteen colors | P3 | M | WP-08, WP-22, WP-37 | Done (PR #47) |
@@ -269,7 +270,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 - **Sizes:** S ≤ 2 days · M 3–5 days · L 1–2 weeks of focused builder time. No WP above L; split it instead.
 - **Every WP ends with its tests:** pgTAP for schema, Vitest for pure logic, Playwright for flows. A WP is not done until its `Done when` list passes in CI and on its preview.
 - **No rework by sequence.** A WP starts only when everything it renders or writes against exists: the brand system before any screen, real day types before the generator, the ledger before any screen that shows points.
-- **Spikes first where they gate work.** SPIKE-01 gates WP-05 and WP-06, SPIKE-05 gates WP-07, SPIKE-02 gates WP-22, SPIKE-04 gates WP-27, SPIKE-03 gates WP-14 and WP-34.
+- **Spikes first where they gate work.** SPIKE-01 gates WP-05 and WP-06, SPIKE-05 gates WP-07, SPIKE-02 gates WP-22, SPIKE-04 gates WP-27, SPIKE-03 gates WP-14.
 - **Milestones** from `04` §E: P0, P1a … P1d, P2, P3. One launch after P3 (D-19).
 
 ### Starting an item
@@ -369,7 +370,8 @@ flowchart LR
   subgraph P3[P3 Polish]
     WP03 --> WP32[WP-32 Audit log]
     WP04 --> WP33[WP-33 Export and delete]
-    WP14 --> WP34[WP-34 Quiet hours]
+    WP06 --> WP34[WP-34 Quiet hours and sleep]
+    WP47 --> WP34
     WP23 --> WP35[WP-35 Family dashboard and layout]
     WP35 --> WP45[WP-45 Weather]
     WP08 --> WP46[WP-46 Icons and colors]
@@ -489,7 +491,7 @@ flowchart LR
 - **Done when:** the adapter choice is recorded in `01` §5.5.
 
 ### SPIKE-03 — Pi 5 and 4K panel
-**Milestone:** P1a · **Size:** S · **Gates:** WP-14, WP-34 · **Reqs:** DEV-04, DEV-07, NFR-02, NFR-03
+**Milestone:** P1a · **Size:** S · **Gates:** WP-14 · **Reqs:** DEV-04, DEV-07, NFR-02, NFR-03
 - Touch latency and calibration, Chromium kiosk flags, screen power control, and animation frame rate at 1920×1080 logical / DPR 2 versus a 1080p fallback.
 - **Done when:** the frame budget and kiosk configuration are recorded in `01` §8.
 
@@ -947,10 +949,19 @@ flowchart LR
 - JSON/CSV export of all household data; documented deletion procedure for a child profile and a household, anonymizing events.
 - **Done when:** exported data re-imports into a throwaway database in a smoke test.
 
-### WP-34 — Quiet hours and burn-in mitigation
-**Phase:** P3 · **Size:** S · **Depends on:** WP-14 · **Reqs:** DEV-07
+### WP-34 — Quiet hours and burn-in mitigation, with sleep and wake per board
+**Phase:** P3 · **Size:** M · **Depends on:** WP-06, WP-47 · **Reqs:** DEV-07
 - Scheduled dim/sleep, wake on touch, subtle pixel shifting.
-- **Done when:** the panel sleeps and wakes on schedule over a 3-day hardware test.
+- Added at the owner's request, 15 October: "Enhancement - boards. Need to be able to define a board as always on / connected or not. Certain boards may not always need to be available 24/7. So I don't constant reminders that a board hasn't been seen for those. Also, boards should have night time / sleep ability. This should be defined by a few things. Automatic sleep (off) at a time of day and automatic wake (on) at a time of day. You should also be able to set a duration for which a screen goes to sleep and is waken by a touch or mouse click / wiggle". Then: "Add to wp-34". The owner chose these details on 15 October (D-116):
+  - **When a board is missed, per board:** **Always**, **Only while awake** (never during its scheduled sleep), or **Never**. Home's heads-up "(board) hasn't been seen for …" follows it; a board set to **Never** is never listed.
+  - **Sleep and wake times, per board:** one pair for school days and one for weekends, from the school year already in the app (a day off from school counts as a weekend). The board sleeps (off) at its sleep time and wakes (on) at its wake time.
+  - **Idle sleep, per board:** after a set time untouched, the board sleeps; a touch, a click or a mouse movement wakes it.
+  - **Waking only wakes:** the touch, click or mouse movement that wakes a board never checks off a chore or presses anything.
+  - **A touch in the night:** during the scheduled sleep, a touch wakes the board for the idle time, then it sleeps again.
+- **How it sleeps:** in the browser, sleep is a black screen (an iPad can do no more; a web page can't turn its display off). On the Pi, the kiosk also turns the screen's power off and back on.
+- **Hardware (D-116):** the board in use is the owner's Raspberry Pi 4 on a 24" Dell monitor, and it stays in use. WP-34's screen power-off is built and tested on it, so WP-34 no longer waits on WP-14 or SPIKE-03. The Pi 5 and the 32" 4K touch panel come later; SPIKE-03 and WP-14 stay as they are and are not planned now.
+- **Mockup first:** the Boards settings (the new choices per board) and the sleeping board get a mockup on demo-family data, approved by the owner before WP-34 is built.
+- **Done when:** unit tests on when a board is asleep (school days, weekends, a day off, the idle time, a touch in the night, across midnight and DST) and on when Home lists a board as not seen for each of the three choices; on the preview, a board set to sleep now shows the black screen, the touch that wakes it checks nothing off, and Home doesn't list a board set to **Never** or one asleep under **Only while awake**; the UI suite shows the Boards settings and the sleeping board; on the owner's Pi 4, the screen turns off and on at its times over 3 days.
 
 ### WP-35 — Family dashboard and board layout
 **Phase:** P3 · **Size:** L · **Depends on:** WP-23 · **Reqs:** BRD-01, BRD-05, BRD-06, BRD-07

@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.52: US-207 gains sleep and wake per board and when a board counts as missed, added at the owner's request (WP-34, D-116).
 > v0.8.51: US-401 as built for a goal's end date that can be cleared (WP-79, D-115): **Ends on a date** and **Clear**; a started goal ends today or later; a reached goal keeps its rules and dates, added at the owner's request.
 > v0.8.50: US-711 as built (WP-75, D-114): **Copy last week** also collapsed at first and moved up under **Add to the plan**, added at the owner's request; a day opens by itself after a change to it.
 > v0.8.49: US-711 gains the usual lunch week and Add to the plan collapsed at first (WP-75, D-98), added at the owner's request.
@@ -204,10 +205,16 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a calendar source's last success is older than three sync intervals, when the calendar view renders, then it shows a "calendar may be out of date" badge.
 
 ### US-207 — Quiet hours and burn-in protection
-**As an** admin **I want** the display to dim or sleep overnight and avoid static pixels **so that** it's not a night light and the panel lasts.
+**As an** admin **I want** the display to dim or sleep overnight and avoid static pixels, and to choose for each board when it sleeps and whether I hear that it is missing, **so that** it's not a night light, the panel lasts, and a board that is often off doesn't keep reminding me (the per-board choices added at the owner's request, WP-34, D-116).
 **Priority:** Should · **Phase:** P3 · **Reqs:** DEV-07
 - Given quiet hours 21:00–06:30, when the time is reached, then the board dims to a minimal clock layout (or powers the screen down on the Pi) and touch wakes it.
 - Given the board is idle, when more than 10 minutes pass, then the layout drifts or dims to avoid static high-contrast elements.
+- Given a board set to sleep at 21:00 and wake at 06:30 on school days and at 22:00 and 08:00 on weekends, when each time is reached, then it sleeps or wakes by the right pair for that day; a day off from school uses the weekend pair.
+- Given a board set to sleep after 10 minutes untouched, when 10 minutes pass, then it sleeps, and a touch, a click or a mouse movement wakes it.
+- Given a board is asleep, when someone touches it, then it wakes and nothing on it is checked off or pressed.
+- Given a board is in its scheduled sleep, when someone touches it, then it wakes for its idle time and then sleeps again.
+- Given a board set to **Never**, when it hasn't been seen for a day, then Home doesn't list it; set to **Only while awake**, Home doesn't list it while it is in its scheduled sleep; set to **Always**, Home lists it after a day unseen, as now.
+- Given a board in a browser (such as an iPad), when it sleeps, then its screen is black; on the Pi the kiosk also turns the screen off.
 
 ---
 
