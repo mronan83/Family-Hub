@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.130: WP-92 (approval alerts at once, a bug) added at the owner's request and done in the same change (D-119). Found: the alerts job worked as designed, every 5 minutes; most of the child's check-offs were on items with approval off, so they never waited, and the homework check-off was approved 33 seconds after it, before the next run. At the owner's request, an approval alert now goes within seconds of something starting to wait, and counts all that waits. The read-only `reminders-report` workflow shows why an alert did or did not go, counts only.
 > v0.8.129: The fold audit of the admin app added at the owner's request, recorded only (D-120): every admin screen judged against WP-75's fold and mocked up on the demo family; five new work packages after WP-91 (WP-93 to WP-97). The owner approved the mockup on 16 October, admin only, and confirmed D-120; WP-91 is Ready and built first and on its own, with the shared fold, and WP-93 to WP-97 are Queued behind it. "Next, in order" is the owner's to set.
 > v0.8.127: WP-91 (the Boards settings as collapsible sections) added at the owner's request, recorded only (D-118): each board folded at first, showing its name and what matters about it, opening to grouped sections; the household's **Home screen** layout, **Add a board** and **Disconnected** folded too, in WP-75's fold style. Ready, mockup first. "Next, in order" is the owner's to set.
 > v0.8.126: WP-34 (quiet hours and burn-in mitigation, with sleep and wake per board) built and merged (D-116, D-117), from the mockup the owner approved on 16 October with its six recommendations; its 3 days on the owner's Pi 4 are open (Y-11).
@@ -261,6 +262,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-89 | The test database prepared for a pull request's preview | P3 | S | WP-60, WP-88 | Ready |
 | WP-90 | Nightly e2e reliability | P3 | M | WP-60, WP-88 | Done |
 | WP-91 | The Boards settings as collapsible sections | P3 | S | WP-34, WP-75, WP-35 | Ready (mockup approved) |
+| WP-92 | Approval alerts at once (a bug) | P2 | S | WP-63 | Done |
 | WP-93 | Calendars, school menus and the meal library folded | P3 | M | WP-91 | Queued: WP-91 first (mockup approved) |
 | WP-94 | The set-up pages folded | P3 | M | WP-91 | Queued: WP-91 first (mockup approved) |
 | WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Queued: WP-91 first (mockup approved) |
@@ -448,6 +450,7 @@ flowchart LR
     WP91 --> WP95[WP-95 Rewards, Goals, Members folded]
     WP91 --> WP96[WP-96 Chores and icon picker folded]
     WP91 --> WP97[WP-97 Today and Insights folded]
+    WP63 --> WP92[WP-92 Approval alerts at once]
     WP64 --> WP78
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP65 --> WP70[WP-70 Calendar refresh timing]
@@ -1426,6 +1429,17 @@ flowchart LR
 - **With the fold audit (D-120), approved by the owner with the mockup on 16 October:** WP-91 is built first and on its own, and lifts the fold out of Meals into one shared component (the fold, its summary lines and the warning on its header) that WP-75's screens and WP-93 to WP-97 use. Meals looks and works as it does now.
 - **Done when:** unit tests on a board's folded summary (awake or asleep with the next time, last seen, theme, text size, own or household layout, the not-seen warning by its **Tell me when** choice) and on the layout's one-line summary; on the preview, Alex opens Boards with every board folded, reads the Kitchen board's summary, opens it, changes its text size under **Display**, and finds the board open after the save; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, the not-seen warning shown while folded, and taps after hydration.
 
+### WP-92 — Approval alerts at once (a bug)
+**Phase:** P2 · **Size:** S · **Depends on:** WP-63 · **Reqs:** CHR-20, CHR-05
+- Added at the owner's request, 16 October: "Bug - Notifications. I'm not getting notifications from the app on my phone. My child completed a few chores today that required approval and the notifications were not delivered. I am set up to receive notifications." The owner's checks: **Approvals** is on in Reminders; **Send a test** arrives on their phone; their device is listed and on. Then, on the findings: "Homework was the 4:32 one. I prefer to have more instant notifications, that's the point of being notified", and the owner chose "Build instant alerts in WP-92, count all waiting".
+- **Found, from production, counts only:** both parents have reminders and **Approvals** on and a device each. Since the day before, the child made 20 check-offs on the board. 17 were on items left on the family setting, with the family's approval **off**: they counted at once and never waited, so no alert was due. 3 were on items that always need a parent's OK: on Thursday at 3:57 pm, one was in the alert at 4:00 pm, sent to both parents, accepted by the push service for both phones and approved by the household's owner 22 seconds after it went; at 4:32 pm the homework one was approved by the owner 33 seconds after the check-off, before the next 5-minute run, so nothing was still waiting and no alert was due; one, on Wednesday morning, was undone on the board 3 seconds after it was checked off. The job worked as D-88 designed it: the fault the owner saw was the 5-minute wait.
+- **The fix (D-119):** an approval alert goes **at once**: the database calls the reminders job for the household as a check-off starts waiting, a reward request is made or a lunch change waits, once per transaction, and a failed call never stops the change; the 5-minute run stays as the safety net, and a lock per household keeps the two from planning the same alert. Each alert **counts everything still waiting** for that parent, so the newest, which replaces the older on the lock screen, is never short. Who is told, quiet hours and the **Approvals** switch are as D-88.
+- **The owner's setting, unchanged:** with the family's approval off, only items set to **Always needs a parent's OK** wait, and so bring an alert. To be told about every check-off: **Settings** → **Family options** → **Check-offs**, choose **It waits for a parent to approve it**, then **Save**.
+- **Tooling, kept:** the read-only `reminders-report` workflow (Actions → reminders-report → Run workflow) says why each approval alert did or did not go, with households and parents numbered and nothing named.
+- **Done when:** pgTAP shows a check-off that starts waiting, a reward request and a lunch change each call the reminders job for their household at once, once per transaction, a check-off that counts at once calls nothing, a failed call leaves the check-off waiting, the plan holds the household's lock, and each alert counts all still waiting (opening Rewards when only requests wait); a check-off on a family-setting item with approval off brings no alert; Vitest shows the job endpoint runs only the household a call names; the report's test shows it runs read only, has every section and names no member, item or household; the nightly e2e counts one more check-off in the second alert.
+- **As built:** migration `20261016095117_approval_alerts_at_once.sql` (`private.alert_now()`, `private.alert_now_checkoff()`, `private.alert_now_request()` and their three triggers; `plan_reminders()` with `pg_advisory_xact_lock`; `claim_reminders()` wording all that waits); `apps/web/lib/jobs/run.ts` (`household` in the body); `.github/workflows/reminders-report.yml`, `scripts/reminders-report.sh`, `scripts/reminders-report.sql`; the user guide (A3). Tests: `supabase/tests/480_approval_alerts_at_once.test.sql` (14), `470_approval_alert_findings.test.sql` (8), `410_approval_alerts.test.sql` (its alerts now count all still waiting), `apps/web/lib/jobs/run.test.ts`, `scripts/reminders-report.test.sh` (CI `database`), `e2e/tests/reminders-job.spec.ts` (nightly).
+- **Open, the owner's to check:** after the deploy, the next check-off that waits brings an alert within seconds.
+
 ### The fold audit — every admin screen folded, one standard
 
 - Added at the owner's request, 16 October (in the planner session): "So, we may need to go through all the the pages / screens and give them the styling treatment and expandable and collapsible sections similar to the meals and school lunches. There are a lot that could benefit from that. Could you have a work go through the app and mock up what that would look like."
@@ -1490,7 +1504,7 @@ flowchart LR
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
-| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82 | Menu adapters, WP-49 and WP-80 are the Ls |
+| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82, WP-92 | Menu adapters, WP-49 and WP-80 are the Ls |
 | P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-88 – WP-91, WP-93 – WP-97 | WP-56, WP-58, WP-68 and WP-72 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

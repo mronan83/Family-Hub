@@ -27,6 +27,7 @@ const json = (status: number, body: unknown) => Response.json(body, { status });
  * one ends, SPIKE-05), then runs the job household by household after the response and records each
  * outcome. A failure in one household does not stop the others. `force_failure` in the body makes
  * the run fail on purpose (job-run workflow), to check that failures show in job health.
+ * `household` in the body runs that household only (an approval alert called at once, D-119).
  */
 export async function handleJob(request: Request, name: string, deps?: JobDeps): Promise<Response> {
   const secret = deps && 'secret' in deps ? deps.secret : process.env.JOB_SIGNING_SECRET;
@@ -46,16 +47,20 @@ export async function handleJob(request: Request, name: string, deps?: JobDeps):
   const body = (await request.json().catch(() => ({}))) as {
     scheduled_at?: unknown;
     force_failure?: unknown;
+    household?: unknown;
   };
   const scheduled =
     typeof body.scheduled_at === 'string' ? new Date(body.scheduled_at) : new Date(now());
   const scheduledAt = Number.isNaN(scheduled.getTime()) ? new Date(now()) : scheduled;
   const forceFailure = body.force_failure === true;
+  // [CHR-20] A call made at once for one household (an approval alert, D-119) runs that one only.
+  const only = typeof body.household === 'string' ? body.household : null;
   const requestId = request.headers.get('x-vercel-id') ?? undefined;
 
   let runs: { householdId: string; id: string }[];
   try {
-    runs = await store.startRuns(name, await store.households());
+    const households = await store.households();
+    runs = await store.startRuns(name, only ? households.filter((h) => h === only) : households);
   } catch (error) {
     await recordAppError({
       requestId,
