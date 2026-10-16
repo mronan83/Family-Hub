@@ -11,6 +11,8 @@ import { useMinute } from '../../(board)/board/use-minute';
 import { useOnline } from '../../(board)/board/use-online';
 import { useBoardTextSize } from '../../(board)/board/use-text-size';
 import { WeatherNow } from '../../(board)/board/weather';
+import { SleepCover, useBoardSleep } from '../../(board)/board/sleep';
+import { type BoardSleep, NO_SLEEP } from '@/lib/board-sleep';
 import { type QueueState, Today } from '../../(board)/board/today';
 import type { BoardCalendar } from '@/lib/snapshot';
 import { type BoardLayout, effectiveLayout } from '@/lib/board-layout';
@@ -54,6 +56,7 @@ export function DevBoard({
   textSize = 'standard',
   lunchItem = false,
   deploy,
+  sleep = NO_SLEEP,
 }: {
   theme: Theme;
   stale: boolean;
@@ -75,6 +78,8 @@ export function DevBoard({
   lunchItem?: boolean;
   /** [DEV-05] The commit this board runs, to watch for a new deploy (WP-78); none: not watched. */
   deploy?: string;
+  /** [DEV-07] When it sleeps and wakes (WP-34), with no school year: school Monday to Friday. */
+  sleep?: BoardSleep;
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
@@ -148,45 +153,50 @@ export function DevBoard({
     offline: !online || queue.waiting,
     jobs: behind,
   });
+  const sleeping = useBoardSleep(sleep, TZ, null);
+  const { asleep } = sleeping;
   return (
-    <main className="fw-board">
-      {deploy ? <DeployWatch version={deploy} /> : null}
-      <ThemeLock theme={theme} />
-      <header className="fw-board__bar">
-        <div className="fw-board__title">
-          <h1>{snapshot.household.name}</h1>
-          <p className="fw-board__date">
-            {day(now, TZ)}
-            <span className="fw-board__device"> · {snapshot.device.name}</span>
-          </p>
-        </div>
-        <div className="fw-board__status">
-          <div className="fw-board__now">
-            {effectiveLayout(snapshot.layout.household, snapshot.layout.board).weather ? (
-              <WeatherNow weather={snapshot.weather} today={isoDay(TZ, now)} />
-            ) : null}
-            <time className="fw-board__clock" dateTime={now.toISOString()}>
-              {time(now, TZ)}
-            </time>
+    <>
+      <main className="fw-board" data-asleep={asleep ? 'true' : 'false'}>
+        {deploy ? <DeployWatch version={deploy} /> : null}
+        <ThemeLock theme={theme} />
+        <header className="fw-board__bar">
+          <div className="fw-board__title">
+            <h1>{snapshot.household.name}</h1>
+            <p className="fw-board__date">
+              {day(now, TZ)}
+              <span className="fw-board__device"> · {snapshot.device.name}</span>
+            </p>
           </div>
-          <HealthLines offline={health.offline} stale={health.stale} />
-        </div>
-      </header>
-      <Today
-        snapshot={snapshot}
-        now={now}
-        post={post}
-        store={store}
-        onQueue={setQueue}
-        pinWish={pinWish}
-        ask={ask}
-        cancelAsk={cancelAsk}
-        markCelebrated={markCelebrated}
-        loadCalendar={loadCalendar}
-        loadLunches={lunches.load}
-        askLunch={lunches.ask}
-        seenLunch={lunches.seen}
-      />
-    </main>
+          <div className="fw-board__status">
+            <div className="fw-board__now">
+              {effectiveLayout(snapshot.layout.household, snapshot.layout.board).weather ? (
+                <WeatherNow weather={snapshot.weather} today={isoDay(TZ, now)} />
+              ) : null}
+              <time className="fw-board__clock" dateTime={now.toISOString()}>
+                {time(now, TZ)}
+              </time>
+            </div>
+            <HealthLines offline={health.offline} stale={health.stale} />
+          </div>
+        </header>
+        <Today
+          snapshot={snapshot}
+          now={now}
+          post={post}
+          store={store}
+          onQueue={setQueue}
+          pinWish={pinWish}
+          ask={ask}
+          cancelAsk={cancelAsk}
+          markCelebrated={markCelebrated}
+          loadCalendar={loadCalendar}
+          loadLunches={lunches.load}
+          askLunch={lunches.ask}
+          seenLunch={lunches.seen}
+        />
+      </main>
+      <SleepCover sleeping={sleeping} name={snapshot.device.name} />
+    </>
   );
 }

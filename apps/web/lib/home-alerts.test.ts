@@ -81,6 +81,32 @@ describe('[NFR-17][US-109] Home alerts', () => {
     expect(many).toMatchObject({ key: 'boards', text: '2 boards haven’t been seen for a day' });
   });
 
+  it('[DEV-07][US-207] WP-34: each board’s choice decides whether it is listed', () => {
+    // NOW is 10 am in New York, a Tuesday; Kitchen sleeps 9:30 pm to 6:30 am on school nights.
+    const times = {
+      school: { sleep: 21 * 60 + 30, wake: 6 * 60 + 30 },
+      weekend: { sleep: 22 * 60 + 30, wake: 7 * 60 + 30 },
+    };
+    const board = (missed: 'always' | 'awake' | 'never', lastSeenAt: string) => ({
+      name: 'Kitchen',
+      lastSeenAt,
+      revoked: false,
+      sleep: { missed, schedule: times, idleMinutes: null },
+    });
+    const at = (f: Partial<AlertFacts>) =>
+      keys({ ...f, timeZone: 'America/New_York', schoolDays: null });
+    // Unseen 25 hours: Always lists it; Only while awake counts 16 hours awake, not yet; Never doesn't.
+    const yesterday = '2026-10-12T13:00:00.000Z';
+    expect(at({ boards: [board('always', yesterday)] })).toEqual(['boards']);
+    expect(at({ boards: [board('awake', yesterday)] })).toEqual([]);
+    expect(at({ boards: [board('never', yesterday)] })).toEqual([]);
+    // Unseen a week: listed while awake (10 am), but not while asleep (11 pm), and Never never.
+    const lastWeek = '2026-10-06T13:00:00.000Z';
+    expect(at({ boards: [board('awake', lastWeek)] })).toEqual(['boards']);
+    expect(at({ boards: [board('awake', lastWeek)], now: '2026-10-14T03:00:00.000Z' })).toEqual([]);
+    expect(at({ boards: [board('never', lastWeek)] })).toEqual([]);
+  });
+
   it('names a calendar or menu that fails, and counts background jobs', () => {
     const texts = homeAlerts({
       ...quiet,

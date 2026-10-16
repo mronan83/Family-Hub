@@ -8,6 +8,8 @@ import { dayAndTime } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../header';
 import { effectiveLayout, readLayout } from '@/lib/board-layout';
+import { addDays, readBoardSleep, readSchoolDays } from '@/lib/board-sleep';
+import { isoDay } from '@/lib/format';
 import {
   disconnectDevice,
   renameDevice,
@@ -18,6 +20,7 @@ import {
 } from './actions';
 import { LayoutForm } from './layout-form';
 import { PairingForm } from './pairing-form';
+import { SleepForm, SleepStatus } from './sleep-form';
 
 export const metadata: Metadata = { title: 'Boards' };
 
@@ -43,6 +46,7 @@ interface CalendarRow {
 // [CAL-05] Each board's calendars (WP-23): the calendars' own setting until a board's choice is saved.
 // [BRD-05][US-1004] The home screen's layout (WP-35, D-67): the household's, and a board's own.
 // [BRD-08][US-1007] Each board's text size (WP-47, D-73).
+// [DEV-07][US-207] Each board's sleep and wake, and whether it is asleep now (WP-34, D-116).
 export default async function DevicesPage({
   searchParams,
 }: {
@@ -77,6 +81,17 @@ export default async function DevicesPage({
   if (cals.error) throw new Error(`calendars: ${cals.error.message}`);
   if (choices.error) throw new Error(`board calendars: ${choices.error.message}`);
   if (settings.error) throw new Error(`settings: ${settings.error.message}`);
+  // [DEV-07] Which nights are school nights, for whether each board is asleep now.
+  const today = isoDay(household.timezone);
+  const from = addDays(today, -1);
+  const to = addDays(today, 7);
+  const school = await db!.rpc('school_days', {
+    p_household_id: household.id,
+    p_from: from,
+    p_to: to,
+  });
+  const schoolDays = school.error ? null : readSchoolDays({ from, to, days: school.data ?? [] });
+  const now = new Date().getTime();
   const householdLayout = effectiveLayout(settings.data?.board_layout, null);
   const devices = (data ?? []) as DeviceRow[];
   const calendars = (cals.data ?? []) as CalendarRow[];
@@ -132,6 +147,12 @@ export default async function DevicesPage({
                       ? `Last seen ${dayAndTime(d.last_seen_at, tz)}`
                       : 'Not seen yet'}
                   </span>
+                  <SleepStatus
+                    sleep={readBoardSleep((d.board_config as { sleep?: unknown } | null)?.sleep)}
+                    now={now}
+                    timeZone={tz}
+                    school={schoolDays}
+                  />
                 </span>
                 <span className="fw-actions">
                   <form
@@ -269,7 +290,10 @@ export default async function DevicesPage({
                     <details
                       id={`layout-${d.id}`}
                       className="fw-board-cals"
-                      open={params.board === d.id}
+                      open={
+                        params.board === d.id &&
+                        (params.did === 'layout' || params.error === 'layout')
+                      }
                     >
                       <summary>
                         Home screen on {d.name}: {own ? 'its own layout' : 'the household’s layout'}
@@ -301,6 +325,23 @@ export default async function DevicesPage({
                     </details>
                   );
                 })()}
+                <SleepForm
+                  device={d.id}
+                  name={d.name}
+                  sleep={readBoardSleep((d.board_config as { sleep?: unknown } | null)?.sleep)}
+                  open={
+                    params.board === d.id && (params.did === 'sleep' || params.error === 'sleep')
+                  }
+                  notice={
+                    params.board !== d.id
+                      ? null
+                      : params.error === 'sleep'
+                        ? 'error'
+                        : params.did === 'sleep'
+                          ? 'saved'
+                          : null
+                  }
+                />
                 {/* Disconnecting is for good, so it asks first (06 §6). */}
                 <details className="fw-more fw-board-cals">
                   <summary>Disconnect {d.name}</summary>

@@ -2,6 +2,12 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
+import {
+  MISSED_LOOKBACK_DAYS,
+  readBoardSleep,
+  readSchoolDays,
+  type SchoolDays,
+} from '@/lib/board-sleep';
 import { homeAlerts } from '@/lib/home-alerts';
 import { daysToPick, lunchQuickWords, lunchWeekToOpen } from '@/lib/lunch-list';
 import { serverClient } from '@/lib/supabase/server';
@@ -77,7 +83,10 @@ export default async function AdminHome({
       .select('id', { count: 'exact', head: true })
       .eq('household_id', h.id)
       .eq('status', 'requested'),
-    db!.from('device').select('name, last_seen_at, revoked_at').eq('household_id', h.id),
+    db!
+      .from('device')
+      .select('name, last_seen_at, revoked_at, board_config')
+      .eq('household_id', h.id),
     db!.from('calendar_source').select('name, status').eq('household_id', h.id),
     db!.from('menu_source').select('name, adapter, status').eq('household_id', h.id),
     db!.rpc('job_health', { p_household_id: h.id }),
@@ -149,6 +158,21 @@ export default async function AdminHome({
         ? { state: 'weekend', yearId: current.id }
         : { state: 'school', yearId: current.id };
 
+  // [DEV-07] A board missed only while awake counts its hours awake, school nights and weekends
+  // (WP-34): the school days over the last 60 days at most, read only when a board needs them.
+  const boardRows = (boards.data ?? []) as {
+    name: string;
+    last_seen_at: string | null;
+    revoked_at: string | null;
+    board_config: { sleep?: unknown } | null;
+  }[];
+  let schoolDays: SchoolDays | null = null;
+  if (boardRows.some((b) => readBoardSleep(b.board_config?.sleep).missed === 'awake')) {
+    const from = addDays(today, -MISSED_LOOKBACK_DAYS);
+    const to = addDays(today, 1);
+    const days = await db!.rpc('school_days', { p_household_id: h.id, p_from: from, p_to: to });
+    if (!days.error) schoolDays = readSchoolDays({ from, to, days: days.data ?? [] });
+  }
   const menuRows = (menus.data ?? []) as { name: string; adapter: string; status: string }[];
   const feeds = menuRows.filter((m) => m.adapter === 'nutrislice');
   const alerts = homeAlerts({
@@ -157,13 +181,14 @@ export default async function AdminHome({
     approvals: approvals.count ?? 0,
     requests: requests.count ?? 0,
     lunches: lunchChanges.count ?? 0,
-    boards: (
-      (boards.data ?? []) as {
-        name: string;
-        last_seen_at: string | null;
-        revoked_at: string | null;
-      }[]
-    ).map((b) => ({ name: b.name, lastSeenAt: b.last_seen_at, revoked: !!b.revoked_at })),
+    boards: boardRows.map((b) => ({
+      name: b.name,
+      lastSeenAt: b.last_seen_at,
+      revoked: !!b.revoked_at,
+      sleep: readBoardSleep(b.board_config?.sleep),
+    })),
+    timeZone: h.timezone,
+    schoolDays,
     calendars: (calendars.data ?? []) as { name: string; status: string }[],
     menuFeeds: feeds,
     jobsNeedingLook: ((jobs.data ?? []) as { state: string }[]).filter(

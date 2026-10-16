@@ -1,4 +1,11 @@
 import type { IconName } from '@familywise/ui';
+import {
+  boardMissed,
+  type BoardSleep,
+  MISSED_AFTER_MINUTES,
+  NO_SLEEP,
+  type SchoolDays,
+} from './board-sleep';
 
 // [NFR-17][US-109] Home's alerts (WP-57, D-84): what a parent needs to know, each with where to deal
 // with it. An alert is shown while its cause lasts and goes when it is dealt with; none can be
@@ -23,7 +30,11 @@ export interface AlertFacts {
   requests: number;
   /** [MEAL-09] A child's lunch changes from the board, waiting for a parent (WP-49). */
   lunches?: number;
-  boards: { name: string; lastSeenAt: string | null; revoked: boolean }[];
+  /** [DEV-07] Each board, with when it counts as missed and its set times (WP-34). */
+  boards: { name: string; lastSeenAt: string | null; revoked: boolean; sleep?: BoardSleep }[];
+  /** [DEV-07] The household's time zone and recent school days, for boards' set times (WP-34). */
+  timeZone?: string;
+  schoolDays?: SchoolDays | null;
   calendars: { name: string; status: string }[];
   /** Menu feeds only (a file or typed-in menu can't fail). */
   menuFeeds: { name: string; status: string }[];
@@ -40,9 +51,10 @@ export interface AlertFacts {
 
 /**
  * A board is missed once it hasn't reported in for this long (it does every 5 minutes while it is
- * awake). A day, not minutes: an asleep or switched-off tablet is normal, and a parent can't act on it.
+ * open, asleep or not). A day, not minutes: a switched-off tablet is normal, and a parent can't act
+ * on it. Since WP-34 each board says when it counts (Always, Only while awake, Never; D-116).
  */
-export const BOARD_QUIET_MINUTES = 24 * 60;
+export const BOARD_QUIET_MINUTES = MISSED_AFTER_MINUTES;
 const SCHOOL_ENDS_SOON_DAYS = 14;
 const INVITE_SOON_HOURS = 48;
 
@@ -130,10 +142,19 @@ export function homeAlerts(f: AlertFacts): HomeAlert[] {
     });
   }
 
-  // A dark board is usually just switched off or asleep, and nothing here can wake it, so it is a
-  // single heads-up after a long silence, never a "Needs you" row per board.
+  // A dark board is usually just switched off, and nothing here can wake it, so it is a single
+  // heads-up after a long silence, never a "Needs you" row per board. [DEV-07][US-207] Each board's
+  // own choice decides whether it counts (WP-34): Always, Only while awake, or Never.
   const dark = f.boards.filter(
-    (b) => !b.revoked && b.lastSeenAt && minutesBetween(b.lastSeenAt, f.now) >= BOARD_QUIET_MINUTES,
+    (b) =>
+      !b.revoked &&
+      boardMissed(
+        b.sleep ?? NO_SLEEP,
+        b.lastSeenAt,
+        Date.parse(f.now),
+        f.timeZone ?? 'UTC',
+        f.schoolDays ?? null,
+      ),
   );
   if (dark.length) {
     note({

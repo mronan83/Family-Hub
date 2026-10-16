@@ -47,6 +47,8 @@
   --missed-text: var(--fw-plum-700);
   --info: var(--fw-sky-600);
   --focus: #0369A1;
+  /* [DEV-07] A sleeping board (WP-34): black, in either theme, so nothing is lit. */
+  --sleep-screen: #000000;
 
   /* Family member colors (assign one per person; always pair with avatar or initial). Also the
      colors for tags and calendars. Each carries white initials at 4.5:1 or better. */
