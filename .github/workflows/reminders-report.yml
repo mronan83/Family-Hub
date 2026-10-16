@@ -5,6 +5,9 @@ name: reminders-report
 
 on:
   workflow_dispatch:
+  push:
+    branches: [claude/bug-approval-alerts]
+    paths: [.github/workflows/reminders-report.yml, scripts/reminders-report.*]
 
 permissions:
   contents: read

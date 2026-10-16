@@ -114,3 +114,29 @@ select hh.h, e.event_type, e.actor_type, count(*) as events,
 \echo '## Household approval switch'
 :people
 select hh.h, s.approval_mode from hh join public.household_settings s on s.household_id = hh.id order by hh.h;
+
+\echo '## Each check-off since yesterday that waited or whose item asks for an OK, in local time: which alert, who approved and when'
+:people, k as (
+  select hh.h, hh.id as household_id, hh.timezone, e.id, e.occurrence_id, e.recorded_at, e.done_by, c.approval,
+         o.requires_approval_snapshot as needs_ok, (cardinality(e.rewarded) > 0) as earns, e.review_status
+    from hh
+    join public.chore_completion_event e on e.household_id = hh.id and e.event_type = 'complete'
+    join public.chore_occurrence o on o.id = e.occurrence_id
+    join public.chore c on c.id = o.chore_id
+   where e.recorded_at >= (hh.since_day::timestamp at time zone hh.timezone)
+     and (o.requires_approval_snapshot or c.approval = 'required' or e.review_status = 'flagged')
+)
+select k.h, to_char(k.recorded_at at time zone k.timezone, 'Dy HH24:MI:SS') as checked_off, k.approval as item_approval,
+       k.needs_ok, k.earns,
+       coalesce((select string_agg(a.event_type || ' by ' || coalesce(par.p, a.actor_type) || ' +'
+                                   || to_char(a.recorded_at - k.recorded_at, 'HH24:MI:SS'), ', ' order by a.recorded_at)
+                   from public.chore_completion_event a
+                   left join par on par.household_id = k.household_id and par.user_id = a.actor_id
+                  where a.occurrence_id = k.occurrence_id and a.recorded_at > k.recorded_at
+                    and a.event_type <> 'complete'), '-') as then,
+       coalesce((select string_agg(par.p || ' ' || r.status || coalesce(' ' || r.detail, '') || ' '
+                                   || to_char(r.scheduled_for at time zone k.timezone, 'HH24:MI'), ', ' order by par.p)
+                   from public.reminder_delivery r join par on par.member_id = r.member_id
+                  where r.household_id = k.household_id and r.kind = 'approval'
+                    and k.recorded_at > r.waiting_from and k.recorded_at <= coalesce(r.waiting_to, now())), 'in no alert') as alert
+  from k order by k.h, k.recorded_at;
