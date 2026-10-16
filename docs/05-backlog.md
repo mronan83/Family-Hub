@@ -1425,6 +1425,32 @@ flowchart LR
 - **Tiers** (D-102): a goal, or each period of a repeating one, can pay at steps (3 days = 5 points, 4 = 10, 5 = 20), so partial effort earns something without lowering the full payout's bar. The highest step reached pays, not the sum of the steps. The top step pays as soon as it is reached; a lower step pays when its period or the goal's window closes, or as soon as no higher step can still be reached.
 - Mockup first, with WP-80 and WP-82 (one mockup, approved by the owner before any is built). Approved on 16 October with WP-80's ([Repeating goals](https://claude.ai/artifact/QX8BdvfM6YFDg8cmX63h4R)): **Counts only when done** (any time that day, by each chore's due time, or by a time) under the rule, and **Pay in steps** under what each week pays; on the board, the steps as chips with the one reached in Sun.
 - **Added at the owner's request** (16 October, in WP-81's session), as the mockup didn't cover them: **steps by number** on a goal counted by number ("Read 20 books": 20 pays 20, 15 pays 10, 10 pays 5; a one-off goal with steps needs an end date), and **weights** on a goal with two or more rules, together 100%: the goal's % is each rule's % (up to 100) times its weight, steps are % of the goal, and 100% (every rule met) pays at once. Its mockup addendum: [Goal steps](https://claude.ai/artifact/Ti4opxKF9TQ6L5R1fhb4So), for the owner's approval before it is built.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| RWD-17-a | By a time on the rule: a tick a minute after it doesn't count; one at the time and one a minute before do | Unit |
+| RWD-17-b | By each chore's due time: a tick after its due time doesn't count, one before does | Unit |
+| RWD-17-c | A chore without a due time, under "its due time", counts at any time that day | Unit |
+| RWD-17-d | An offline tick counts by its own time, not when it reached the server | Unit, DB |
+| RWD-17-e | A late tick completes the chore and earns its points but doesn't count; on "every day it's due" its day is a miss once the day closes, and today is never a miss | Unit |
+| RWD-17-f | A parent's tick after the time doesn't count; a chore waiting for approval counts by the child's tick | Unit, DB |
+| RWD-17-g | The time is saved and checked: each chore's due time or a time of day, nothing else | Unit, DB |
+| RWD-17-h | The goal's facts carry each tick's time in the household's time and each chore's due time | DB |
+| RWD-18-a | A lower step pays when its period closes | Unit |
+| RWD-18-b | The top step pays at once, and only its own points, not the sum | Unit |
+| RWD-18-c | Only the highest step reached pays | Unit |
+| RWD-18-d | A lower step pays as soon as no higher step can still be reached | Unit |
+| RWD-18-e | A 4-day week reaches its top step with 4 | Unit |
+| RWD-18-f | Steps by number on a one-off goal: the top step at once, a lower step when the goal ends | Unit |
+| RWD-18-g | Two weighted rules: the goal's % is the weighted sum; 100% pays the top step at once, a lower step at the close | Unit |
+| RWD-18-h | Steps and weights are saved and checked: points only, up to 3 lower steps each paying less, misses 1 to 3 rising, a one-off goal with an end date, weights totalling 100; the lowest step sets the misses allowed | Unit, DB |
+| RWD-18-i | A step's payout is paid once and taken back once; a parent's fix that moves a won week to another step pays or takes back the difference | DB |
+| RWD-18-j | The form reads the time, the steps and the weights | Unit |
+| RWD-18-k | The board's and the Goals page's words: the steps, a tick after the time, a week won at a step | Unit |
+| RWD-18-l | The form's time, steps and weights, a goal's weeks at 390 and 1280 px, and the board's card going, won at a step and weighted, in both themes | UI |
+| RWD-18-m | On the preview: Maya's "Homework before 6 pm" with steps 20, 10 and 5: a tick at 6:05 pm completes the chore and doesn't count; a week with 4 of 5 on time pays 10 at the week's close | E2E |
+
 - **Done when:** engine tests: a check-off a minute after the time doesn't count and one a minute before does, by a chore's due time and by the rule's time, offline included; a chore without a due time under "its due time"; a tier paid at the period's close, the top tier at once, only the highest step, and a reversal taking it back once; a 4-day week reaching its top step. pgTAP: the time and the steps saved and checked; each step's payout once. On the preview, Alex sets Maya's homework goal to "by 6 pm" with steps 3 = 5, 4 = 10, 5 = 20: a tick at 6:05 pm completes the chore and doesn't count; a week with 4 on time pays 10 at the week's close. The UI suite: the form's time and steps, in both themes.
 
 ### WP-82 — Perfect periods, and a family goal every child meets

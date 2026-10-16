@@ -37,6 +37,40 @@ export interface DaysDueParams {
   misses_allowed: number;
 }
 
+/**
+ * [RWD-17] When a check-off counts toward a rule (`params.on_time`): absent, any time that day;
+ * 'due_time', by each chore's own due time (a chore without one counts any time); or a time of day,
+ * 'HH:MM', on the household's clock. A tick after it still completes the chore; the rule doesn't
+ * count it.
+ */
+export type OnTime = 'due_time' | `${number}:${number}`;
+
+/**
+ * [RWD-18] One step of a goal's (or period's) payout, highest first: the first is the goal's own
+ * target and payout. On a goal with one "every day it's due" rule a step is days missed (`misses`, the
+ * first 0); on a goal with one other rule, the number reached (`at`, the first the rule's target); on
+ * a goal with two or more rules, the goal's weighted % (`at`, the first 100).
+ */
+export interface Step {
+  misses?: number;
+  at?: number;
+  amount: number;
+}
+
+/** [RWD-18] Where a goal's (or period's) steps stand. */
+export interface StepResult {
+  /** The highest step reached (0 is the top), or null for none. */
+  reached: number | null;
+  /** The highest step still in reach (or reached), or null for none. */
+  best: number | null;
+  /** True when the step reached can no longer change but by a reversal: it is the one that pays. */
+  final: boolean;
+  /** The points the step reached pays, or null. */
+  amount: number | null;
+  /** The measure the steps read: days missed, the number reached, or the weighted %. */
+  value: number;
+}
+
 export interface Rule {
   id: string;
   type: RuleType;
@@ -47,6 +81,8 @@ export interface Rule {
   target: number;
   scope: RuleScope;
   params: Record<string, unknown>;
+  /** [RWD-18] Its share of the goal's %, 1 to 100, on a goal with two or more rules and steps. */
+  weight?: number | null;
 }
 
 /** One occurrence for one member (a row of v_member_occurrence). */
@@ -65,6 +101,13 @@ export interface OccurrenceFact {
   credited: boolean;
   /** The occurrence's points snapshot, so later edits to the item never change history. */
   points: number;
+  /** [RWD-17] The chore's due time, 'HH:MM', or null for none. */
+  due_time?: string | null;
+  /**
+   * [RWD-17] When it was ticked, on the household's clock ('YYYY-MM-DDTHH:MM'): the check-off's own
+   * time (kept by a board offline), not the approval's. Null when not ticked.
+   */
+  done_at?: string | null;
 }
 
 export type GoalStatus =
@@ -81,6 +124,8 @@ export interface GoalInput {
     status: GoalStatus;
     /** [RWD-15] Absent or 'none': the goal doesn't repeat. */
     repeat?: Repeat;
+    /** [RWD-18] What it pays at each step, highest first; absent or empty: no steps. */
+    steps?: Step[];
   };
   rules: Rule[];
   /** [RWD-15] The school terms a term goal follows (the child's school year, or the family's). */
@@ -140,6 +185,8 @@ export interface PeriodResult {
   misses_allowed: number | null;
   /** A week's days with a DAYS_DUE rule's mark each; null for months, terms and other rules. */
   days: { date: string; mark: DayMark }[] | null;
+  /** [RWD-18] Where its steps stand; null for a goal without steps. */
+  step: StepResult | null;
 }
 
 export interface GoalEvaluation {
@@ -154,6 +201,8 @@ export interface GoalEvaluation {
    * repeat. Its `pct`, `rules` and `is_achieved` are then the period going now (or the last one).
    */
   periods: PeriodResult[];
+  /** [RWD-18] A goal that doesn't repeat: where its steps stand; null without steps or when it repeats. */
+  step: StepResult | null;
 }
 
 export interface HistoryInput {

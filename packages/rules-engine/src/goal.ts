@@ -19,9 +19,13 @@ import type {
   GoalTransition,
   PeriodResult,
   Qualify,
+  OccurrenceFact,
+  OnTime,
   Repeat,
   Rule,
   RuleProgress,
+  Step,
+  StepResult,
   StreakParams,
 } from './types';
 
@@ -61,6 +65,152 @@ export function daysDueParams(params: Record<string, unknown>): DaysDueParams {
     throw new RangeError('misses_allowed must be a whole number from 0 to 3');
   }
   return { misses_allowed: m };
+}
+
+const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/**
+ * [RWD-17] A rule's `on_time` param: null (any time that day), 'due_time', or a time of day 'HH:MM';
+ * anything else is refused.
+ */
+export function onTimeParam(params: Record<string, unknown>): OnTime | null {
+  const v = params.on_time;
+  if (v === undefined || v === null) return null;
+  if (v === 'due_time' || (typeof v === 'string' && CLOCK.test(v))) return v as OnTime;
+  throw new RangeError('on_time must be due_time or a time of day, HH:MM');
+}
+
+/**
+ * [RWD-17][D-102] Ticked after the rule's time: after each chore's due time (a chore without one is
+ * never late), or after the rule's time, on the day it counts for. The tick's own time decides, to
+ * the minute: by 6:00 pm counts 6:00 pm and not 6:01 pm. A fact with no tick time isn't late.
+ */
+export function isLate(fact: OccurrenceFact, on: OnTime): boolean {
+  if (!fact.done_at) return false;
+  const limit = on === 'due_time' ? fact.due_time : on;
+  if (!limit) return false;
+  const day = fact.kind === 'chore' ? fact.due_date : (fact.credit_date ?? fact.due_date);
+  return fact.done_at.slice(0, 16) > `${day}T${limit.slice(0, 5)}`;
+}
+
+/**
+ * [CHR-10][RWD-17] The units a rule counts: those in its scope, with a tick after its time (done, or
+ * waiting for a parent) counted as a miss. The chore stays done and keeps its points; only this rule
+ * doesn't count it.
+ */
+function ruleUnits(rule: Rule, units: Unit[]): Unit[] {
+  const inRule = units.filter((u) => inScope(u.fact, rule.scope));
+  const on = onTimeParam(rule.params);
+  if (!on) return inRule;
+  return inRule.map((u) =>
+    (u.state === 'done' || u.state === 'pending') && isLate(u.fact, on)
+      ? { ...u, state: 'missed' as const }
+      : u,
+  );
+}
+
+/** [RWD-18] How a goal's steps read it: days missed, the number reached, or the weighted %. */
+type StepMode = 'misses' | 'number' | 'weighted';
+
+const stepMode = (rules: Rule[]): StepMode =>
+  rules.length > 1 ? 'weighted' : rules[0]?.type === 'DAYS_DUE' ? 'misses' : 'number';
+
+/**
+ * [RWD-18] A goal's steps, checked: highest first, at most 4 (the top and 3 lower), each paying fewer
+ * points than the one above; the top is the goal's own target (0 missed, the rule's target, or 100%);
+ * days missed rise and numbers fall; on a goal with two or more rules each rule has a whole weight
+ * and the weights total 100.
+ */
+export function checkSteps(steps: Step[], rules: Rule[]): StepMode {
+  const mode = stepMode(rules);
+  if (steps.length < 2 || steps.length > 4) {
+    throw new RangeError('steps: the top and 1 to 3 lower steps');
+  }
+  steps.forEach((st, i) => {
+    if (!Number.isInteger(st.amount) || st.amount < 1) {
+      throw new RangeError('a step pays a whole number of points, 1 or more');
+    }
+    if (i > 0 && st.amount >= steps[i - 1]!.amount) {
+      throw new RangeError('each step pays fewer points than the one above it');
+    }
+    if (mode === 'misses') {
+      const m = st.misses;
+      if (typeof m !== 'number' || !Number.isInteger(m) || m < 0 || m > 3) {
+        throw new RangeError('a step is 0 to 3 days missed');
+      }
+      if (i === 0 ? m !== 0 : m <= steps[i - 1]!.misses!) {
+        throw new RangeError('the top step is all days, and each step below misses more');
+      }
+    } else {
+      const top = mode === 'weighted' ? 100 : rules[0]!.target;
+      const at = st.at;
+      if (typeof at !== 'number' || !Number.isInteger(at) || at < 1 || at > top) {
+        throw new RangeError('a step is reached at a whole number up to the target');
+      }
+      if (i === 0 ? at !== top : at >= steps[i - 1]!.at!) {
+        throw new RangeError('the top step is the target, and each step below is less');
+      }
+    }
+  });
+  if (mode === 'weighted') {
+    let sum = 0;
+    for (const r of rules) {
+      const w = r.weight;
+      if (typeof w !== 'number' || !Number.isInteger(w) || w < 1 || w > 100) {
+        throw new RangeError(`rule ${r.id}: a weight is a whole number from 1 to 100`);
+      }
+      sum += w;
+    }
+    if (sum !== 100) throw new RangeError('the rules’ weights total 100');
+  }
+  return mode;
+}
+
+/** [RWD-18] The goal's weighted %: each rule's % (up to 100) times its weight, added up. */
+const weightedPct = (rules: Rule[], progress: RuleProgress[]) =>
+  round2(
+    progress.reduce((sum, p, i) => sum + (Math.min(100, p.pct) * (rules[i]!.weight ?? 0)) / 100, 0),
+  );
+
+/**
+ * [RWD-18][D-102] Where the steps stand in a period or a one-off goal's window. The highest step
+ * reached is the one that pays: the top at once; a lower one when the window closes, or (days
+ * missed) as soon as a miss puts every higher step out of reach.
+ */
+function stepResult(
+  steps: Step[],
+  mode: StepMode,
+  rules: Rule[],
+  progress: RuleProgress[],
+  days: { due: number; good: number; bad: number } | null,
+  closed: boolean,
+): StepResult {
+  let value: number;
+  let reached: number | null = null;
+  let best: number | null = null;
+  if (mode === 'misses') {
+    const t = days!;
+    value = t.bad;
+    if (t.due > 0) {
+      const r = steps.findIndex((st) => t.good >= Math.max(1, t.due - st.misses!));
+      const b = steps.findIndex((st) => t.bad <= st.misses!);
+      reached = r < 0 ? null : r;
+      best = b < 0 ? null : b;
+    }
+  } else {
+    value = mode === 'weighted' ? weightedPct(rules, progress) : progress[0]!.current_value;
+    const r = steps.findIndex((st) => value >= st.at!);
+    reached = r < 0 ? null : r;
+    best = closed ? reached : 0;
+  }
+  const final = reached !== null && (reached === 0 || closed || best === reached);
+  return {
+    reached,
+    best,
+    final,
+    amount: reached === null ? null : steps[reached]!.amount,
+    value,
+  };
 }
 
 interface Window {
@@ -115,7 +265,7 @@ function evaluateRule(
   if (!Number.isFinite(rule.target) || rule.target < 0) {
     throw new RangeError(`rule ${rule.id}: target must be 0 or more`);
   }
-  const units = all.filter((u) => inScope(u.fact, rule.scope));
+  const units = ruleUnits(rule, all);
   const progress = (
     current: number,
     met: boolean,
@@ -236,7 +386,13 @@ const earlier = (a: string, b: string) => (a < b ? a : b);
  *   period is lost at once, "starts again" the next period), or the period closed unmet; neutral: it
  *   closed unmet with nothing in scope due (a break); open: still going.
  */
-function evaluatePeriods(input: GoalInput, units: Unit[], repeat: Exclude<Repeat, 'none'>) {
+function evaluatePeriods(
+  input: GoalInput,
+  units: Unit[],
+  repeat: Exclude<Repeat, 'none'>,
+  steps: Step[],
+  mode: StepMode | null,
+) {
   const { goal, rules, asOf, weekStart, terms = [] } = input;
   if (goal.start_date > asOf) return [];
   const last = goal.end_date !== null && goal.end_date < asOf ? goal.end_date : asOf;
@@ -252,12 +408,7 @@ function evaluatePeriods(input: GoalInput, units: Unit[], repeat: Exclude<Repeat
     let allowed: number | null = null;
     const lost = rules.map((r) => {
       if (r.type !== 'DAYS_DUE') return false;
-      const t = daysDueTally(
-        units.filter((u) => inScope(u.fact, r.scope)),
-        from,
-        until,
-        asOf,
-      );
+      const t = daysDueTally(ruleUnits(r, units), from, until, asOf);
       const { misses_allowed } = daysDueParams(r.params);
       if (!first) {
         first = t;
@@ -265,8 +416,25 @@ function evaluatePeriods(input: GoalInput, units: Unit[], repeat: Exclude<Repeat
       }
       return t.bad > misses_allowed;
     });
-    const isLost = goal.rule_logic === 'all' ? lost.some(Boolean) : lost.every(Boolean);
     const closed = until < asOf;
+    // [RWD-18] With steps, the step reached decides: won when it is final; lost (days missed) once
+    // every step is out of reach; a weighted goal is decided at the close.
+    const step = mode
+      ? stepResult(
+          steps,
+          mode,
+          rules,
+          progress,
+          first as ReturnType<typeof daysDueTally> | null,
+          closed,
+        )
+      : null;
+    const won = step ? step.final && step.reached !== null : isAchieved;
+    const isLost = step
+      ? mode === 'misses' && step.best === null && (first as { due: number } | null)!.due > 0
+      : goal.rule_logic === 'all'
+        ? lost.some(Boolean)
+        : lost.every(Boolean);
     // Nothing in scope due in the period: no routine (skipped and covered aren't due) for any rule.
     const nothingDue = rules.every(
       (r) =>
@@ -280,7 +448,7 @@ function evaluatePeriods(input: GoalInput, units: Unit[], repeat: Exclude<Repeat
             inScope(u.fact, r.scope),
         ),
     );
-    const outcome = isAchieved
+    const outcome = won
       ? 'won'
       : isLost
         ? 'missed'
@@ -296,13 +464,14 @@ function evaluatePeriods(input: GoalInput, units: Unit[], repeat: Exclude<Repeat
       end: until,
       outcome,
       next_start: next !== null && (goal.end_date === null || next <= goal.end_date) ? next : null,
-      pct: outcome === 'won' ? 100 : pct,
+      pct: outcome === 'won' ? 100 : mode === 'weighted' ? step!.value : pct,
       rules: progress,
       days_due: f ? f.due : null,
       days_done: f ? f.good : null,
       days_missed: f ? f.bad : null,
       misses_allowed: allowed,
       days: f && repeat === 'week' ? f.marks : null,
+      step,
     };
   });
 }
@@ -388,11 +557,13 @@ export function evaluateGoal(input: GoalInput): GoalEvaluation {
       : memberUnits(input.occurrences, goal.member_id);
   const started = goal.start_date <= asOf;
   const ended = goal.end_date !== null && goal.end_date < asOf;
+  const steps = goal.steps ?? [];
+  const mode = steps.length > 0 ? checkSteps(steps, rules) : null;
 
   if (repeat !== 'none') {
     // [RWD-15] Each period is reached and pays on its own; the goal itself is never "achieved", it
     // goes on until its end date (or a parent stops it). Its progress is the period going now.
-    const periods = evaluatePeriods(input, units, repeat);
+    const periods = evaluatePeriods(input, units, repeat, steps, mode);
     const current = periods.find((p) => p.start <= asOf && asOf <= p.end) ?? periods.at(-1);
     return {
       goal_id: goal.id,
@@ -401,6 +572,7 @@ export function evaluateGoal(input: GoalInput): GoalEvaluation {
       rules: current?.rules ?? rules.map(notStarted),
       transitions: transitionsFor(goal.status, false, started, ended),
       periods,
+      step: null,
     };
   }
   if (rules.some((r) => r.type === 'DAYS_DUE')) {
@@ -415,7 +587,12 @@ export function evaluateGoal(input: GoalInput): GoalEvaluation {
     days: datesBetween(goal.start_date, to),
   };
   const progress = rules.map((r) => evaluateRule(r, units, w, asOf, weekStart));
-  const { pct, isAchieved } = combine(progress, goal.rule_logic);
+  const combined = combine(progress, goal.rule_logic);
+  // [RWD-18] With steps, a one-off goal is reached when its step is final: the top at once, a lower
+  // step when it ends (it has an end date).
+  const step = mode ? stepResult(steps, mode, rules, progress, null, ended) : null;
+  const isAchieved = step ? step.final && step.reached !== null : combined.isAchieved;
+  const pct = mode === 'weighted' ? step!.value : combined.pct;
 
   return {
     goal_id: goal.id,
@@ -424,5 +601,6 @@ export function evaluateGoal(input: GoalInput): GoalEvaluation {
     rules: progress,
     transitions: transitionsFor(goal.status, isAchieved, started, ended),
     periods: [],
+    step,
   };
 }
