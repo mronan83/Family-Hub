@@ -1,10 +1,10 @@
 -- [CAL-09][US-508] A calendar for one or more people (WP-50, D-122). A calendar's people are a list:
--- none is the whole family; a board reads them in its own order; an existing calendar keeps its one
--- person; the one-person save of the app before WP-50 still works; only the household's admins write
--- them, and only its admins and boards read them.
+-- none is the whole family; a board reads them in its own order; only the household's admins write
+-- them, and only its admins and boards read them. The contract (member_id gone, the guard before it) is
+-- in 500_calendar_people_contract.
 begin;
 set local client_min_messages = warning;
-select plan(19);
+select plan(13);
 
 -- Vault stand-in (as in 260_calendar_sync), for adding a calendar.
 create schema if not exists vault;
@@ -41,12 +41,12 @@ insert into public.member (id, household_id, display_name, role) values
 insert into public.device (id, household_id, name, auth_user_id) values
   ('49dd0000-0000-0000-0000-00000000000a', '49000000-0000-0000-0000-000000000001', 'Kitchen',
    '49d00000-0000-0000-0000-00000000000a');
--- Two calendars as they were before WP-50: Robin's (member_id) and the family's.
-insert into public.calendar_source (id, household_id, name, url_secret_id, member_id) values
-  ('49ca0000-0000-0000-0000-000000000001', '49000000-0000-0000-0000-000000000001', 'Work', gen_random_uuid(),
-   '49110000-0000-0000-0000-00000000000a'),
-  ('49ca0000-0000-0000-0000-000000000002', '49000000-0000-0000-0000-000000000001', 'Family', gen_random_uuid(),
-   null);
+-- Two calendars: Robin's and the family's.
+insert into public.calendar_source (id, household_id, name, url_secret_id) values
+  ('49ca0000-0000-0000-0000-000000000001', '49000000-0000-0000-0000-000000000001', 'Work', gen_random_uuid()),
+  ('49ca0000-0000-0000-0000-000000000002', '49000000-0000-0000-0000-000000000001', 'Family', gen_random_uuid());
+insert into public.calendar_member (household_id, calendar_id, member_id) values
+  ('49000000-0000-0000-0000-000000000001', '49ca0000-0000-0000-0000-000000000001', '49110000-0000-0000-0000-00000000000a');
 
 create function pg_temp.as_user(p_sub uuid) returns void language plpgsql as $$
 begin
@@ -68,14 +68,6 @@ create function pg_temp.board_people(p_name text) returns jsonb language sql as 
    where c ->> 'name' = p_name
 $$;
 
--- The carry-over, as the migration ran it.
-select is(private.carry_calendar_members(), 1, '[CAL-09-c] the carry-over moves each calendar''s one person');
-select is(pg_temp.people('49ca0000-0000-0000-0000-000000000001'), array['49110000-0000-0000-0000-00000000000a']::uuid[],
-  '[CAL-09-c] an existing calendar keeps its person');
-select is(pg_temp.people('49ca0000-0000-0000-0000-000000000002'), '{}'::uuid[],
-  '[CAL-09-c] the whole family''s calendar stays the whole family''s');
-select is(private.carry_calendar_members(), 0, '[CAL-09-c] carrying over again changes nothing');
-
 -- An admin gives a calendar two people, then the whole family, then one.
 select pg_temp.as_user('49100000-0000-0000-0000-000000000001');
 select is(public.save_calendar('49000000-0000-0000-0000-000000000001', '49ca0000-0000-0000-0000-000000000002',
@@ -85,8 +77,6 @@ select is(public.save_calendar('49000000-0000-0000-0000-000000000001', '49ca0000
 select is(pg_temp.people('49ca0000-0000-0000-0000-000000000002'),
   array['49110000-0000-0000-0000-00000000000b', '49110000-0000-0000-0000-00000000000c']::uuid[],
   '[CAL-09-a] both are on it');
-select is((select member_id from public.calendar_source where id = '49ca0000-0000-0000-0000-000000000002'), null,
-  '[CAL-09-a] the one-person column of the app before WP-50 says no one person');
 select ok((select public.save_calendar('49000000-0000-0000-0000-000000000001', null, 'Kids', 'https://example.com/kids.ics',
             'member-3', array['49110000-0000-0000-0000-00000000000b', '49110000-0000-0000-0000-00000000000c']::uuid[], true)
            is not null), '[CAL-09-a] a calendar added for two people');
@@ -104,7 +94,7 @@ select is(pg_temp.board_people('Family'),
   '["49110000-0000-0000-0000-00000000000c", "49110000-0000-0000-0000-00000000000b"]'::jsonb,
   '[CAL-09-b][US-508] a board reads a calendar''s two people, Ivy then Zoe');
 select is(pg_temp.board_people('Work'), '["49110000-0000-0000-0000-00000000000a"]'::jsonb,
-  '[CAL-09-b] and an existing calendar''s one person');
+  '[CAL-09-b] and a calendar''s one person');
 
 -- An archived person stays on the calendar through a save; the board leaves them out until restored.
 select pg_temp.as_owner();
@@ -126,11 +116,9 @@ select public.save_calendar('49000000-0000-0000-0000-000000000001', '49ca0000-00
 select is(pg_temp.people('49ca0000-0000-0000-0000-000000000002'), '{}'::uuid[],
   '[CAL-09-a] the whole family is no one on it');
 
--- The one-person save of the app before WP-50 sets the list to that person.
-select public.save_calendar_source('49000000-0000-0000-0000-000000000001', '49ca0000-0000-0000-0000-000000000002',
-  'Family', null, 'member-6', '49110000-0000-0000-0000-00000000000b'::uuid, true);
-select is(pg_temp.people('49ca0000-0000-0000-0000-000000000002'), array['49110000-0000-0000-0000-00000000000b']::uuid[],
-  '[CAL-09-c] the one-person save still gives a calendar its person');
+-- One person again.
+select public.save_calendar('49000000-0000-0000-0000-000000000001', '49ca0000-0000-0000-0000-000000000002',
+  'Family', null, 'member-6', array['49110000-0000-0000-0000-00000000000b']::uuid[], true);
 
 -- A person removed for good leaves it; with no one left it is the whole family's.
 select pg_temp.as_owner();
