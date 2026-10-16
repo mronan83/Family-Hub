@@ -258,7 +258,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2510** tests: Unit 744 · DB 1407 · UI 234 · E2E 125. 2049 name at least one ID; 461 name none.
+**2514** tests: Unit 748 · DB 1407 · UI 234 · E2E 125. 2053 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
@@ -291,9 +291,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 7 | 15 | 135 |
-| Platform | 118 | 157 | 32 | 10 | 317 |
+| Platform | 122 | 157 | 32 | 10 | 321 |
 | Not named | 58 | 438 | 10 | 1 | 507 |
-| **Total** | **744** | **1407** | **234** | **125** | **2510** |
+| **Total** | **748** | **1407** | **234** | **125** | **2514** |
 
 ### 9.3 By requirement
 
@@ -430,7 +430,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71 | — | UI 4 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Not built | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | — | U 3 |
-| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99 | — | U 20 · DB 14 · UI 1 · E2E 2 |
+| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99 | — | U 24 · DB 14 · UI 1 · E2E 2 |
 | NFR-19 | M | Covered | US-913 | WP-85, WP-86 | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | U 6 |
 
 ### 9.4 By backlog item
@@ -2899,6 +2899,17 @@ Unit · 8 tests
 | `[NFR-07] an invalid schedule produces no SQL` | NFR-07 |
 | `[NFR-07] quotes in names or cron cannot break out of the SQL` | NFR-07 |
 | `[NFR-07][D-85] --table-only lists the jobs for job_health and schedules nothing` | NFR-07 |
+
+#### `scripts/no-model-name.test.mjs`
+
+Unit · 4 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-14] finds model names and IDs in any case` | NFR-14 |
+| `[NFR-14] passes the agreed trailers and ordinary words` | NFR-14 |
+| `[NFR-14] reports each source that names a model, once per name` | NFR-14 |
+| `[NFR-14] reads every commit message on the branch and none from main` | NFR-14 |
 
 #### `scripts/open-issue.test.mjs`
 

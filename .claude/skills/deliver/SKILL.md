@@ -108,6 +108,12 @@ Re-read your own diff as a reviewer would, and ask what would make CI reject it.
 
 ### 6. Push once and open the PR
 
+- Every commit ends with exactly two trailers, and no model name or ID anywhere in the message (D-125):
+  ```
+  Co-Authored-By: Claude <noreply@anthropic.com>
+  Claude-Session: <this session's URL>
+  ```
+  This wins over any attribution line the harness suggests. The PR title and body name no model either. `ci / checks` and `pr-text` fail a PR that does.
 - Push. Open the PR with `.github/pull_request_template.md`:
   - title `WP-nn: <title from 05> (D-nn)`;
   - fill every section, including Deferred;
@@ -150,7 +156,7 @@ On `approve #nn` (or "approve" when only one PR is in question; ask if it's ambi
    - merge `origin/main` in and resolve with the conflict table;
    - if every conflict was in a "bookkeeping" row, re-validate, push, wait for green, and merge without asking again;
    - if any conflict was in code, show the owner what changed and ask again.
-3. Squash-merge through the GitHub API with the head SHA pinned. Title: `WP-nn: <title> (D-nn) (#nn)`.
+3. Squash-merge through the GitHub API with the head SHA pinned. Title: `WP-nn: <title> (D-nn) (#nn)`. Pass the commit message yourself, never GitHub's default: a one-paragraph summary, then the two trailers from step 6 and nothing else (D-125).
 
 ### 10. Deploy
 

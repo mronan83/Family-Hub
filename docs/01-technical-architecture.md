@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.73: no model name in commits or pull requests (D-125), at the owner's request: `ci / checks` reads the branch's commit messages and its PR's title and body, and `pr-text` reads the title and body again on an edit (§9.3).
 > v0.8.72: goals done by a time and paid in steps (WP-81, D-102, D-124): the rules engine reads each tick's time and the payout's steps (`ENGINE_VERSION` 3); the step paid is kept per period and goal (§5.2).
 > v0.8.71: WP-50's contract (D-122), added at the owner's request: `save_calendar()` is the only save of a calendar (`save_calendar_source()` dropped), and a board reads a calendar's people only as `member_ids`.
 > v0.8.71: goals that repeat each week, month or school term (WP-80, D-101, D-123): periods worked out by the rules engine (`ENGINE_VERSION` 2), stored in `reward_goal_period`, each paid once; facts read 14 days ahead for a repeating goal (§5.2).
@@ -765,10 +766,11 @@ Each item runs in its own worker session, started from the planner session (D-90
 
 | Check | What runs | Required |
 |---|---|---|
-| `ci / checks` | frozen-lockfile install, ESLint, Prettier check, typecheck, Vitest (rules engine ≥ 90% coverage), deploy gate refusals (`scripts/deploy-gate.test.mjs`), migration lint, `check_traceability.py` | yes |
+| `ci / checks` | frozen-lockfile install, ESLint, Prettier check, typecheck, Vitest (rules engine ≥ 90% coverage), deploy gate refusals (`scripts/deploy-gate.test.mjs`), migration lint, `check_traceability.py`, no model name in the branch's commit messages or its open PR's title and body (`scripts/no-model-name.mjs`, D-125) | yes |
 | `ci / database` | `scripts/db-test.sh`: throwaway database on native Postgres, compatibility bootstrap, all migrations through the deploy's runner, pgTAP via `pg_prove`; `scripts/db-migrate.test.sh`: the runner itself | yes |
 | `ci / docs` | `pnpm docs:build --check` (no broken cross-link or unknown ID in the five docs pages), then `pnpm docs:layout`: each page on 13 device profiles from a 320 px phone to a 4K monitor, failing on sideways scroll, content off screen, touch targets under 44 px, or script errors | yes |
 | `ci / build` | `next build` for `apps/web`, then the brand checks against `next start` (`pnpm test:ui`): computed-style snapshots of every tile state in Day and Evening, axe contrast on the board, admin and brand pages, both manifests, self-hosted fonts and the service-worker precache | yes |
+| `pr-text / pr-text` | `scripts/no-model-name.mjs` on the PR's title and body when the PR is opened, reopened or edited (D-125), since `ci / checks` runs only on a push | no; read before merge |
 | `e2e / nightly` | Nightly only, never on a pull request or after a deploy (D-108): build a preview of `main`, empty the test database, apply every migration, load the demo family, then Playwright against that preview (D-85). A red run opens or updates one issue per failing spec, "E2E red on main: <spec>", and does nothing else | no |
 
 The four CI checks are required in two places (D-36, D-108); e2e is required in neither:
