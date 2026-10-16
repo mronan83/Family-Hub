@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.50: a calendar for one or more people (WP-50, D-122): `calendar_member`, `save_calendar()`, `private.calendar_people()`, `private.carry_calendar_members()`, and `board_calendar()`'s `member_ids`; `calendar_source.member_id` kept until a contract migration (§3.4).
 > v0.8.49: approval alerts at once (WP-92, D-119): `private.alert_now()` and its triggers on `chore_occurrence`, `redemption` and `lunch_request`; `plan_reminders()` locks per household; `claim_reminders()` words all that waits for the parent (§3.7).
 > v0.8.48: sleep and wake per board (WP-34, D-116, D-117): `device.board_config.sleep` (`missed`, `schedule`, `idle_minutes`) checked by `private.valid_board_sleep()`; `public.school_days()`; the snapshot's `device.sleep` and `school_days` (§3.1, §4.6, §4.8).
 > v0.8.47: a goal's end date that can be cleared (WP-79, D-115): `save_goal()` keeps a reached goal's rules, dates, person and payout (`goal_achieved`), and a started goal's end date today or later (`end_in_past`); taking it off is always allowed.
@@ -260,6 +261,7 @@ erDiagram
   calendar_source ||--o{ calendar_event : "contains"
   device ||--o{ device_calendar : "selects"
   calendar_source ||--o{ device_calendar : "shown on"
+  calendar_source ||--o{ calendar_member : "for"
   calendar_event ||--o{ calendar_event_instance : "expands to"
   household ||--o{ school_year : "defines"
   school_year ||--o{ school_term : "has"
@@ -280,6 +282,10 @@ erDiagram
     uuid url_secret_id
     text status
     timestamptz last_success_at
+  }
+  calendar_member {
+    uuid calendar_id FK
+    uuid member_id FK
   }
   device_calendar {
     uuid device_id PK
@@ -496,6 +502,7 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 |---|---|---|
 | `calendar_source` | `name`, `type` (`ics`/`caldav`), `url_secret_id`, `username_secret_id?`, `color`, `member_id?`, `show_on_board`, `sync_interval_minutes` (default 15), `status` (`pending`/`ok`/`error`/`disabled`), `last_synced_at`, `last_success_at`, `last_error`, `etag?`, `content_hash?`, `sync_token?` | Secrets only by Vault ID. iCloud ignores conditional requests, so the sync compares `content_hash` itself to skip unchanged files (SPIKE-02, D-63). |
 | `calendar_event` | `source_id`, `ical_uid`, `recurrence_id?`, `title`, `location?`, `start_at`, `end_at`, `all_day`, `tz`, `rrule?`, `synced_at` | `UNIQUE (source_id, ical_uid, recurrence_id)`. Descriptions/notes and attendees are **not stored**; the place is (WP-52, D-82). |
+| `calendar_member` | `calendar_id`, `member_id`, `UNIQUE (calendar_id, member_id)` | Who a calendar is for (CAL-09): none is the whole family. As built (WP-50, D-122): `household_id`, RLS read by the household's admins and boards, written only by `save_calendar()`; a person removed for good leaves by cascade, someone archived stays; audited and in Realtime. Each calendar's one person (`calendar_source.member_id`) carried over by `private.carry_calendar_members()`; `member_id` stays, the one person or null, until a contract migration. |
 | `device_calendar` | PK `(device_id, calendar_source_id)`, `visible` | Which calendars each board shows (CAL-05). `calendar_source.show_on_board` is the default for a board with no rows. As built (WP-23, D-65): no `color_override` (a calendar has one color on every board). |
 | `calendar_event_instance` | `event_id`, `source_id`, `instance_start`, `instance_end`, `all_day`, `local_start_date`, `local_end_date`, `title`, `location?`, `changed` | Expanded window (today−7d .. today+120d). Board queries only this table. |
 

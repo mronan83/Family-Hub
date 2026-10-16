@@ -78,12 +78,16 @@ export interface BoardWeather {
   readAt: string;
 }
 
-/** [CAL-05] A calendar a board shows: its name, color and whose it is, and how its sync is going. */
+/**
+ * [CAL-05][CAL-09] A calendar a board shows: its name, color and who it's for, and how its sync is
+ * going.
+ */
 export interface BoardCalendarSource {
   id: string;
   name: string;
   color: MemberColor;
-  memberId: string | null;
+  /** Its people still in the family, in the board's order (WP-50); none is the whole family. */
+  memberIds: string[];
   status: 'pending' | 'ok' | 'error' | 'disabled';
   lastSuccessAt: string | null;
 }
@@ -405,7 +409,12 @@ export function readCalendar(x: unknown): BoardCalendar | null {
               id: c.id,
               name: c.name,
               color: (typeof c.color === 'string' ? c.color : 'member-6') as MemberColor,
-              memberId: typeof c.member_id === 'string' ? c.member_id : null,
+              // A database before WP-50 sends its one person as member_id.
+              memberIds: Array.isArray(c.member_ids)
+                ? c.member_ids.filter((id): id is string => typeof id === 'string')
+                : typeof c.member_id === 'string'
+                  ? [c.member_id]
+                  : [],
               status: CALENDAR_STATUSES.includes(c.status as BoardCalendarSource['status'])
                 ? (c.status as BoardCalendarSource['status'])
                 : 'ok',

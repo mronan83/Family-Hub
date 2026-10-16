@@ -452,8 +452,8 @@ export function Dashboard({
                 >
                   <span className="fw-dash__line-date">{dayName(u.date)}</span>
                   <span className="fw-dash__line-text">{u.event.title || 'Untitled event'}</span>
-                  {u.calendar?.memberId ? (
-                    <Who ids={[u.calendar.memberId]} people={people} />
+                  {u.calendar?.memberIds.length ? (
+                    <Who ids={u.calendar.memberIds} people={people} />
                   ) : null}
                   <span className="fw-dash__line-when">{inDays(u.days)}</span>
                   <Open

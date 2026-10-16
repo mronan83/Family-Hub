@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.59: US-508 as built (WP-50, D-122): who a calendar is for, ticked on Calendars; every face on the board's Coming up and an event's details.
 > v0.8.58: US-913 added at the owner's request (WP-85, NFR-19, D-107): every test traced to what it proves.
 > v0.8.57: US-911 gains three e2e criteria added at the owner's request (SPIKE-07, WP-98, WP-99, D-121): each spec checked at the layer it belongs in, a log of each nightly run's red tests, and a leaner nightly run.
 > v0.8.56: US-322 as changed at the owner's request (WP-92, D-119): an approvals alert comes within seconds and counts all that waits.
@@ -601,6 +602,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given I add or change a calendar, when I choose who it's for, then I can pick **The whole family** or any number of people.
 - Given a calendar for Leo and Maya, when it shows on the board, then each event has both their faces, and it is on Leo's screen and Maya's screen but not on Alex's.
 - Given a calendar that belonged to one person before, when this ships, then it still belongs to that person.
+- As built (WP-50, D-122): **Who it's for** on Calendars, **The whole family** or a tick a person; every person ticked stays those people; the faces in **Coming up** and an event's details, in the family's order, not on the calendar grid; someone archived stays on a calendar.
 
 ### US-509 — A calendar that reads like a calendar
 **As a** family member **I want** the board's calendar laid out like the calendar on my phone, all-day events apart from the rest and the hours down the side, and an event's details at a tap **so that** a busy day doesn't crowd out the week, and I can see when and where something is without opening Apple Calendar.

@@ -249,6 +249,17 @@ test('[BRD-05][US-1004] the cards show in the layout’s order, and only those s
   ]);
 });
 
+test('[CAL-09-b][US-508] Coming up shows each of an event’s calendar’s people', async ({
+  page,
+}) => {
+  await page.goto('/dev/board?cards=coming');
+  // Picture day is School's, Maya's and Leo's: both faces; the family's visit has none.
+  const picture = page.locator('.fw-dash__coming', { hasText: 'Picture day' });
+  await expect(picture.locator('.fw-dash__who > *')).toHaveCount(2);
+  const visit = page.locator('.fw-dash__coming', { hasText: 'Grandparents visit' });
+  await expect(visit.locator('.fw-dash__who')).toHaveCount(0);
+});
+
 test('[D-66] "More info" opens an item in full; Escape closes it', async ({ page }) => {
   await page.goto('/dev/board');
   await page.getByRole('button', { name: 'More info about Feed the dog', exact: true }).click();

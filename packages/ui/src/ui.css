@@ -1804,6 +1804,21 @@ html:has(.board) {
   font-size: var(--t-small);
   font-variant-numeric: tabular-nums;
 }
+/* [CAL-09] Who a calendar is for (WP-50): its people's faces, overlapping, before their names. */
+.fw-calendar__who {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.fw-calendar__faces {
+  display: inline-flex;
+}
+.fw-calendar__faces > * + * {
+  margin-left: -6px;
+}
+.fw-calendar__faces > * {
+  box-shadow: 0 0 0 2px var(--surface);
+}
 
 /* [DEV-07][US-207] A board's sleep and wake on Boards (WP-34): the three choices for when it is
    missed side by side where they fit, the two nights' times, and whether it is asleep now. */
@@ -2369,8 +2384,16 @@ div.fw-tgrid__head {
 }
 .fw-evdetails__who {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--s-3);
+}
+/* [CAL-09] Each of a calendar's people, face and name (WP-50). */
+.fw-evdetails__person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-right: var(--s-3);
 }
 
 /* System Health (WP-42) --------------------------------------------------------------------- */

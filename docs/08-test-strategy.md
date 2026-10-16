@@ -258,16 +258,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2330** tests: Unit 681 · DB 1313 · UI 214 · E2E 122. 1882 name at least one ID; 448 name none.
+**2360** tests: Unit 687 · DB 1332 · UI 218 · E2E 123. 1912 name at least one ID; 448 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 109 of 131 |
+| Requirements built (a Done item builds them) | 110 of 131 |
 | Built requirements with no test | 0 |
-| Stories built | 96 of 117 |
+| Stories built | 97 of 117 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 6 (with a test: 6) |
+| Test cases | 12 (with a test: 12) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -284,7 +284,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Chores | 90 | 192 | 29 | 30 | 341 |
 | Points | 38 | 92 | 17 | 12 | 159 |
 | Goals and rewards | 104 | 46 | 23 | 9 | 182 |
-| Calendar | 57 | 69 | 14 | 3 | 143 |
+| Calendar | 63 | 88 | 18 | 4 | 173 |
 | School year | 10 | 43 | 1 | 4 | 58 |
 | Meals and lunch | 57 | 43 | 29 | 11 | 140 |
 | School menu | 27 | 14 | 7 | 3 | 51 |
@@ -293,7 +293,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Admin and members | 26 | 87 | 7 | 15 | 135 |
 | Platform | 118 | 155 | 29 | 10 | 312 |
 | Not named | 58 | 425 | 10 | 1 | 494 |
-| **Total** | **681** | **1313** | **214** | **122** | **2330** |
+| **Total** | **687** | **1332** | **218** | **123** | **2360** |
 
 ### 9.3 By requirement
 
@@ -365,7 +365,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | CAL-05 | M | Covered | US-504, US-507 | WP-23, WP-46, WP-70 | — | U 10 · DB 11 · UI 3 · E2E 2 |
 | CAL-06 | M | Covered | US-505 | WP-22 | — | U 7 · DB 7 · UI 3 · E2E 1 |
 | CAL-07 | M | Covered | US-502 | WP-22 | — | U 17 · DB 6 · E2E 1 |
-| CAL-09 | S | Not built | US-508 | WP-50 | — | — |
+| CAL-09 | S | Covered | US-508 | WP-50 | CAL-09-a, CAL-09-b, CAL-09-c, CAL-09-d, CAL-09-e, CAL-09-f | U 6 · DB 20 · UI 4 · E2E 1 |
 | CAL-10 | S | Covered | US-509 | WP-52 | — | U 4 · DB 8 · UI 1 · E2E 1 |
 | CAL-08 | C | Not built | US-506 | WP-29 | — | — |
 | SCH-01 | M | Covered | US-601 | WP-21 | — | U 10 · DB 13 · UI 2 · E2E 5 |
@@ -488,7 +488,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-47 | Done | **No cases** | — | U 1 |
 | WP-48 | Done | **No cases** | — | — |
 | WP-49 | Done | **No cases** | — | U 1 |
-| WP-50 | Ready | — | — | — |
+| WP-50 | Done | CAL-09-a, CAL-09-b, CAL-09-c, CAL-09-d, CAL-09-e, CAL-09-f | 6 of 6 | DB 1 |
 | WP-51 | Done | **No cases** | — | — |
 | WP-52 | Done | **No cases** | — | — |
 | WP-53 | Ready | — | — | — |
@@ -540,6 +540,12 @@ Test cases and the tests that prove them:
 
 | Case | Item | Case | Layer | Tests |
 |---|---|---|---|---|
+| CAL-09-a | WP-50 | An admin gives a calendar any number of people, or none for the whole family; someone archived stays on it through a save, someone removed for good leaves it; another family's people and admins are refused | DB | DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] an admin gives a calendar two people`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] both are on it`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] the one-person column of the app before WP-50 says no one person`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] a calendar added for two people`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] and both are on the new one`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] someone from another family can't be given a calendar`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] an archived person stays on a calendar saved without them`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] the whole family is no one on it`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] a person removed for good leaves the calendar`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] another family's admin can't change it`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] another family reads none of its people` |
+| CAL-09-b | WP-50 | A board reads each calendar's people still in the family, in its order; Coming up and an event's details show each of their faces | DB, Unit, UI | Unit `apps/web/lib/board-calendar.test.ts`: `reading the board’s calendar › [CAL-09-b] a calendar’s people as the database lists them, strings only`<br>UI `e2e/ui/board-calendar.spec.ts`: `[CAL-09-b][US-508] an event of a calendar for two people shows both their faces`<br>UI `e2e/ui/dashboard.spec.ts`: `[CAL-09-b][US-508] Coming up shows each of an event’s calendar’s people`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-b][US-508] a board reads a calendar's two people, Ivy then Zoe`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-b] and an existing calendar's one person`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-b] a board leaves an archived person out` |
+| CAL-09-c | WP-50 | An existing calendar keeps its one person, and the one-person save of the app before WP-50 still gives a calendar its person | DB | DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-c] the carry-over moves each calendar's one person`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-c] an existing calendar keeps its person`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-c] the whole family's calendar stays the whole family's`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-c] carrying over again changes nothing`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-c] the one-person save still gives a calendar its person` |
+| CAL-09-d | WP-50 | On Calendars, who a calendar is for is The whole family or a tick a person (a person clears The whole family; no one ticks it); its line names them, with their faces | Unit, UI | Unit `apps/web/lib/calendars.test.ts`: `the calendar form › [CAL-09-d] any number of people, a tick each; The whole family ticked is no one`<br>Unit `apps/web/lib/calendars.test.ts`: `who a calendar is for › [CAL-09-d] the whole family, one person’s, or a list in the family’s order`<br>Unit `apps/web/lib/calendars.test.ts`: `who a calendar is for › [CAL-09-d] someone archived is named so; someone gone is left out`<br>UI `e2e/ui/calendars.spec.ts`: `[CAL-09-d][US-508] who a calendar is for: The whole family or a tick a person` |
+| CAL-09-e | WP-50 | A calendar for two people is on each one's screen and not on a third's; the whole family's is on everyone's | Unit, UI | Unit `apps/web/lib/board-calendar.test.ts`: `a person’s calendars › [CAL-09-e] a calendar for two people is on each one’s screen, and not on a third’s`<br>Unit `apps/web/lib/board-calendar.test.ts`: `a person’s calendars › [CAL-09-e] the whole family’s calendar is on everyone’s screen`<br>UI `e2e/ui/board-calendar.spec.ts`: `[CAL-09-e][US-508] a calendar for two people is on each one’s screen, not on a third’s` |
+| CAL-09-f | WP-50 | On the preview, School given Leo as well as Maya on Calendars shows both their faces on the board | E2E | E2E `e2e/tests/board-calendar.spec.ts`: `[CAL-09-f][US-508] a calendar given two people on Calendars shows both faces on the board` |
 | NFR-19-a | WP-85 | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-a][US-913] a test traces to the IDs in its name and its describe blocks, in every layer` |
 | NFR-19-b | WP-85 | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-b][US-913] a test naming an unknown requirement, story, item or test case fails the check` |
 | NFR-19-c | WP-85 | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-c][US-913] a new gap fails the check, and a known gap does not` |
@@ -616,7 +622,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-507 | CAL-05 | Covered | DB 7 · E2E 1 |
 | US-505 | CAL-06 | Covered | U 2 · DB 2 · UI 1 · E2E 1 |
 | US-506 | CAL-08 | Not built | — |
-| US-508 | CAL-09 | Not built | — |
+| US-508 | CAL-09 | Covered | DB 1 · UI 4 · E2E 1 |
 | US-509 | CAL-10 | Covered | DB 1 · UI 1 · E2E 1 |
 | US-601 | SCH-01 | Gap | — |
 | US-602 | SCH-02, SCH-03 | Gap | — |
@@ -737,7 +743,7 @@ Unit · 13 tests
 
 #### `apps/web/lib/board-calendar.test.ts`
 
-Unit · 25 tests
+Unit · 28 tests
 
 | Test | Names |
 |---|---|
@@ -759,6 +765,7 @@ Unit · 25 tests
 | `a day’s events › [CAL-07] says its time in the household’s zone; past midnight, until when` | CAL-07 |
 | `a calendar behind › [CAL-06] failing, or not synced for three of its 15-minute intervals` | CAL-06 |
 | `reading the board’s calendar › [CAL-04] calendars and events as board_calendar() returns them` | CAL-04 |
+| `reading the board’s calendar › [CAL-09-b] a calendar’s people as the database lists them, strings only` | CAL-09-b |
 | `reading the board’s calendar › [DEV-05] none from an older database or for anyone but a board` | DEV-05 |
 | `the time grid › [CAL-04] reads the wall-clock hour in the household’s zone` | CAL-04 |
 | `the time grid › [D-82] splits all-day events from timed ones; a late one is two pieces; a day-long one is a bar` | — |
@@ -766,6 +773,8 @@ Unit · 25 tests
 | `the time grid › [D-82] the home screen’s rows: an hour for each start, a day’s events together, reaching down` | — |
 | `the time grid › [D-82] Week and Day draw 8 am to 8 pm at least, stretched to the events; overlaps side by side` | — |
 | `the time grid › [CAL-10] what times and details say` | CAL-10 |
+| `a person’s calendars › [CAL-09-e] a calendar for two people is on each one’s screen, and not on a third’s` | CAL-09-e |
+| `a person’s calendars › [CAL-09-e] the whole family’s calendar is on everyone’s screen` | CAL-09-e |
 
 #### `apps/web/lib/board-facts.test.ts`
 
@@ -983,19 +992,22 @@ Unit · 19 tests
 
 #### `apps/web/lib/calendars.test.ts`
 
-Unit · 9 tests
+Unit · 12 tests
 
 | Test | Names |
 |---|---|
 | `the calendar form › [CAL-01] takes the webcal link Apple shares, as the https address to fetch` | CAL-01 |
 | `the calendar form › [CAL-01] a new calendar needs its link; an edit without one keeps the old` | CAL-01 |
 | `the calendar form › [CAL-01] refuses what isn’t a published link, a bad name, color or person` | CAL-01 |
+| `the calendar form › [CAL-09-d] any number of people, a tick each; The whole family ticked is no one` | CAL-09-d |
 | `the calendar form › says what the database refused in plain words` | — |
 | `a calendar’s sync, in words › [US-505] synced, with when` | US-505 |
 | `a calendar’s sync, in words › [CAL-06][US-505] failing: the error, and that the board keeps the last good events` | CAL-06, US-505 |
 | `a calendar’s sync, in words › [CAL-01] not synced yet` | CAL-01 |
 | `when an event is › [CAL-07] a timed event at its household-local time` | CAL-07 |
 | `when an event is › [CAL-07] an all-day event on its own dates, in any zone` | CAL-07 |
+| `who a calendar is for › [CAL-09-d] the whole family, one person’s, or a list in the family’s order` | CAL-09-d |
+| `who a calendar is for › [CAL-09-d] someone archived is named so; someone gone is left out` | CAL-09-d |
 
 #### `apps/web/lib/chores.test.ts`
 
@@ -1649,12 +1661,13 @@ E2E · 7 tests
 
 #### `e2e/tests/board-calendar.spec.ts`
 
-E2E · 2 tests
+E2E · 3 tests
 
 | Test | Names |
 |---|---|
 | `[CAL-04][CAL-05][CAL-10][US-509] a new board shows the calendars set to show on the boards; an event shows in full, with where it is` | CAL-04, CAL-05, CAL-10, US-509 |
 | `[CAL-05][US-507] this board’s own calendars: School unticked leaves it within 3 seconds; ticked again it is back in its color; a calendar connected later stays…` | CAL-05, US-507 |
+| `[CAL-09-f][US-508] a calendar given two people on Calendars shows both faces on the board` | CAL-09-f, US-508 |
 
 #### `e2e/tests/board-fit.spec.ts`
 
@@ -2046,7 +2059,7 @@ UI · 6 tests
 
 #### `e2e/ui/board-calendar.spec.ts`
 
-UI · 10 tests
+UI · 12 tests
 
 | Test | Names |
 |---|---|
@@ -2055,11 +2068,13 @@ UI · 10 tests
 | `[D-82] early in the morning the hours reach back to now, so its line is there` | — |
 | `[D-82] a day with more all-day events than lanes says how many more; overlapping events sit side by side` | — |
 | `[CAL-10][US-509] a tap on an event shows it in full: when, where, its calendar and whose it is` | CAL-10, US-509 |
+| `[CAL-09-b][US-508] an event of a calendar for two people shows both their faces` | CAL-09-b, US-508 |
 | `[CAL-04][US-503] arrows, a swipe and Today move through days, weeks and months` | CAL-04, US-503 |
 | `[US-503] 40 events in a month show at once, three a day and "+N more"; a day opens` | US-503 |
 | `[CAL-06] a calendar that can’t sync says so; its last good events stay` | CAL-06 |
 | `[CAL-04] offline, a range the board hasn’t read shows what it has, and says so` | CAL-04 |
 | `[CAL-04][CAL-05] a person’s screen lists today’s events from their calendars and the family’s` | CAL-04, CAL-05 |
+| `[CAL-09-e][US-508] a calendar for two people is on each one’s screen, not on a third’s` | CAL-09-e, US-508 |
 
 #### `e2e/ui/board-fit.spec.ts`
 
@@ -2156,18 +2171,19 @@ UI · 8 tests
 
 #### `e2e/ui/calendars.spec.ts`
 
-UI · 4 tests
+UI · 5 tests
 
 | Test | Names |
 |---|---|
 | `on ${name} › [CAL-06][NFR-11] fits ${name} in ${theme}: no sideways scroll, 44 px controls, AA contrast` | CAL-06, NFR-11 |
 | `[CAL-06][US-505] each calendar says how its sync went; a failing one keeps its last good events` | CAL-06, US-505 |
 | `[CAL-03][CAL-01] events are only read: no way to add or change one, and no link shown` | CAL-01, CAL-03 |
+| `[CAL-09-d][US-508] who a calendar is for: The whole family or a tick a person` | CAL-09-d, US-508 |
 | `[CAL-01] with none yet, the page says so and offers the form` | CAL-01 |
 
 #### `e2e/ui/dashboard.spec.ts`
 
-UI · 16 tests
+UI · 17 tests
 
 | Test | Names |
 |---|---|
@@ -2181,6 +2197,7 @@ UI · 16 tests
 | `[CAL-04][D-82] a title too long for its day ends in “…” inside its block, in five and seven days` | CAL-04 |
 | `[CAL-04][D-66] a day’s head in the columns opens that day too` | CAL-04 |
 | `[BRD-05][US-1004] the cards show in the layout’s order, and only those shown` | BRD-05, US-1004 |
+| `[CAL-09-b][US-508] Coming up shows each of an event’s calendar’s people` | CAL-09-b, US-508 |
 | `[D-66] "More info" opens an item in full; Escape closes it` | — |
 | `[D-66] every tile in a list is one height, on Chores and on a person’s screen` | — |
 | `[BRD-01][BRD-09][US-1008][D-74] one screen: the page never scrolls; the rail, the bar and every card are in sight` | BRD-01, BRD-09, US-1008 |
@@ -3795,7 +3812,7 @@ DB · 31 tests
 | `[CAL-05] a board reads its household's calendars, not another's` | CAL-05 |
 | `[CAL-04] nor the events table behind the instances` | CAL-04 |
 | `[CAL-07] an all-day event spanning days is there on its first day, with its last day` | CAL-07 |
-| `[CAL-05] each calendar with its color and whose it is` | CAL-05 |
+| `[CAL-05][CAL-09] each calendar with its color and whose it is` | CAL-05, CAL-09 |
 | `[DEV-05] the snapshot carries the calendar over its own window` | DEV-05 |
 | `[DEV-05] with the events in it` | DEV-05 |
 | `[CAL-04] a range over 62 days is refused` | CAL-04 |
@@ -4420,5 +4437,31 @@ DB · 14 tests
 | `[CHR-20] only a request waiting: the alert opens Rewards` | CHR-20 |
 | `[CHR-20] a lunch change calls at once` | CHR-20 |
 | `[CHR-20] with the call failing, the check-off still waits for a parent (the 5-minute run sends the alert)` | CHR-20 |
+
+#### `supabase/tests/490_calendar_people.test.sql`
+
+DB · 19 tests
+
+| Test | Names |
+|---|---|
+| `[CAL-09-c] the carry-over moves each calendar's one person` | CAL-09-c |
+| `[CAL-09-c] an existing calendar keeps its person` | CAL-09-c |
+| `[CAL-09-c] the whole family's calendar stays the whole family's` | CAL-09-c |
+| `[CAL-09-c] carrying over again changes nothing` | CAL-09-c |
+| `[CAL-09-a] an admin gives a calendar two people` | CAL-09-a |
+| `[CAL-09-a] both are on it` | CAL-09-a |
+| `[CAL-09-a] the one-person column of the app before WP-50 says no one person` | CAL-09-a, WP-50 |
+| `[CAL-09-a] a calendar added for two people` | CAL-09-a |
+| `[CAL-09-a] and both are on the new one` | CAL-09-a |
+| `[CAL-09-a] someone from another family can't be given a calendar` | CAL-09-a |
+| `[CAL-09-b][US-508] a board reads a calendar's two people, Ivy then Zoe` | CAL-09-b, US-508 |
+| `[CAL-09-b] and an existing calendar's one person` | CAL-09-b |
+| `[CAL-09-a] an archived person stays on a calendar saved without them` | CAL-09-a |
+| `[CAL-09-b] a board leaves an archived person out` | CAL-09-b |
+| `[CAL-09-a] the whole family is no one on it` | CAL-09-a |
+| `[CAL-09-c] the one-person save still gives a calendar its person` | CAL-09-c |
+| `[CAL-09-a] a person removed for good leaves the calendar` | CAL-09-a |
+| `[CAL-09-a] another family's admin can't change it` | CAL-09-a |
+| `[CAL-09-a] another family reads none of its people` | CAL-09-a |
 
 <!-- /catalogue -->

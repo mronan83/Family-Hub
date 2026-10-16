@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.135: WP-50 (a calendar for one or more people) done (CAL-09, US-508, D-122), from the mockup the owner approved on 16 October with its three recommendations: a calendar is the whole family's or any number of its people's, ticked on Calendars; the board shows each of its people's faces in **Coming up** and an event's details, and puts it on each of their screens. Its test cases are CAL-09-a to CAL-09-f. Deferred: dropping `calendar_source.member_id` and the one-person `save_calendar_source()`, kept for the app deployed when the migration runs.
 > v0.8.134: WP-85 (the test strategy and the Test catalogue) added at the owner's request and done in the same change (NFR-19, D-106, D-107), restarted on 16 October at the owner's request to match `main` (D-108, D-110 and everything shipped since): `08` holds the strategy, with guidance by type of change, and the catalogue generated from every test's name; CI fails a change that adds a test gap. Its test cases are the first in §5 (NFR-19-a to NFR-19-f). WP-86 (close the known test gaps) added at the owner's request with it, recorded only.
 > v0.8.133: Three e2e items added at the owner's request, recorded only (D-121): SPIKE-07 audits every e2e spec by layer and lists what to keep, move or drop, for the owner to decide; WP-98 a findings log of each nightly run's red tests; WP-99 lean e2e (data set up by SQL, a household per spec, parallel runs, unchanged nights skipped). Found: the first scheduled nightly e2e run (07:17 UTC, 16 October) never started, and `e2e.yml` has no other trigger, so it can't be run by hand. The owner chose: a manual trigger in WP-98, and with unchanged nights skipped, a run once a week regardless (WP-99). SPIKE-07 and WP-98 are Ready; WP-99 is Queued behind SPIKE-07. "Next, in order" is the owner's to set.
 > v0.8.132: WP-91 (the Boards settings as collapsible sections) done (D-118, D-120), from the fold audit's Boards page the owner approved on 16 October: each board folded to its name and facts with Home's not-seen warning on its header, opened to Display, Sleep and wake, Calendars, Home screen, then its name and Disconnect set apart; the household's Home screen, Add a board and Disconnected folded; Meals' fold made one shared component (`Fold`). WP-93 to WP-97 are Ready. "Next, in order" is the owner's to set.
@@ -230,7 +231,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-47 | The board fits its screen; text size per board | P3 | M | WP-06, WP-35 | Done (PR #50) |
 | WP-48 | The home screen on one screen, with a rail | P3 | M | WP-35, WP-47 | Done (PR #52) |
 | WP-49 | Next week's lunches picked on the board, with the day's choices | P2 | L | WP-26, WP-27, WP-28, WP-64 | Done |
-| WP-50 | A calendar for one or more people | P2 | S | WP-22, WP-23 | Ready |
+| WP-50 | A calendar for one or more people | P2 | S | WP-22, WP-23 | Done |
 | WP-51 | One admin menu, with Settings and Tags | P3 | M | WP-03, WP-08 | Done (PR #60) |
 | WP-52 | The board's calendar as a time grid | P3 | M | WP-23, WP-48 | Done (PR #61) |
 | WP-53 | Polish pass, with a layout sweep in CI | P3 | M | WP-51 | Ready |
@@ -1088,6 +1089,23 @@ flowchart LR
 **Phase:** P2 · **Size:** S · **Depends on:** WP-22, WP-23 · **Reqs:** CAL-09
 - A calendar belongs to **The whole family** or to any number of people, not just one (today: `calendar_source.member_id`). Its people move to `calendar_member`; each calendar's one person is carried over. On **Calendars**, choosing who it's for is **The whole family** or a tick per person. On the board, each event shows the faces of its calendar's people, and a person's screen shows the calendars that include them.
 - **Done when:** pgTAP: a calendar for two people shows on each one's screen and not a third's, and an existing calendar keeps its person; on the preview, a calendar given two people on Calendars shows both faces on the board.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| CAL-09-a | An admin gives a calendar any number of people, or none for the whole family; someone archived stays on it through a save, someone removed for good leaves it; another family's people and admins are refused | DB |
+| CAL-09-b | A board reads each calendar's people still in the family, in its order; Coming up and an event's details show each of their faces | DB, Unit, UI |
+| CAL-09-c | An existing calendar keeps its one person, and the one-person save of the app before WP-50 still gives a calendar its person | DB |
+| CAL-09-d | On Calendars, who a calendar is for is The whole family or a tick a person (a person clears The whole family; no one ticks it); its line names them, with their faces | Unit, UI |
+| CAL-09-e | A calendar for two people is on each one's screen and not on a third's; the whole family's is on everyone's | Unit, UI |
+| CAL-09-f | On the preview, School given Leo as well as Maya on Calendars shows both their faces on the board | E2E |
+
+- As built (D-122; the owner approved the mockup on 16 October with its three recommendations: every person ticked stays those people, not the whole family; faces in **Coming up** and an event's details, not on the calendar grid; the faces in the family's order):
+  - **Migration** `20261016130550_calendar_people.sql`: `calendar_member` (a row a calendar and person, `household_id`, RLS: read by the household's admins and boards, written only by the save; audited; in Realtime), each calendar's one person carried over by `private.carry_calendar_members()`; `save_calendar()` saves a calendar with its people as a list (none is the whole family; an archived person kept; someone from another family refused); `private.calendar_people()` a calendar's people still in the family in the board's order; `board_calendar()` gives each calendar's `member_ids`. Expand only: `calendar_source.member_id` is kept as the one person (or null) and the one-person `save_calendar_source()` now saves through `save_calendar()`, for the app deployed when the migration runs.
+  - **Admin app:** **Calendars**' form has **Who it's for**: **The whole family** and a tick a person with their face, in the family's order (an archived person has no tick and stays on the calendar). Each calendar's line names who it's for ("The whole family", "Alex's", "Maya and Leo", "Maya and Kit (archived)") with their faces, worded so WP-93 can put it on the calendar's folded header. WP-93 still folds each calendar, makes **Edit** and **Remove** folds, and folds **Add a calendar** to its button.
+  - **Board:** **Coming up** shows every face of an event's calendar; an event's details list each person with their face under **Whose**, and its name says "Maya and Leo"; a person's screen shows the calendars that include them and the whole family's (`calendarsFor()`). A board that read a database before WP-50 takes `member_id` as the one person.
+  - **Tests:** pgTAP `490_calendar_people.test.sql` (19), `270_board_calendars.test.sql`, `070_board_snapshot.test.sql`; Vitest `board-calendar.test.ts`, `calendars.test.ts`, `board.test.ts`; UI suite `calendars.spec.ts` (the ticks, 44 px), `board-calendar.spec.ts` (both faces in an event's details; each one's screen), `dashboard.spec.ts` (Coming up's faces); e2e `board-calendar.spec.ts` (**[CAL-09-f]** the done-when), `calendar.spec.ts` (adding a calendar for Alex by a tick).
+  - Deferred: dropping `calendar_source.member_id` and the one-person `save_calendar_source()` (a contract migration once the app before WP-50 is gone).
 
 ### WP-51 — One admin menu, with Settings and Tags
 **Phase:** P3 · **Size:** M · **Depends on:** WP-03, WP-08 · **Reqs:** NFR-15

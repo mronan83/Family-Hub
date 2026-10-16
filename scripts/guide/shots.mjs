@@ -149,6 +149,16 @@ const SHOTS = [
       await page.locator('.fw-tgrid__event', { hasText: 'Dentist' }).click();
     },
   },
+  // [CAL-09] A calendar for two people (WP-50): School is Maya's and Leo's, both faces in full.
+  {
+    name: 'board-event-people',
+    device: 'board',
+    url: '/dev/board',
+    act: async (page) => {
+      await person(page, 'Calendar').click();
+      await page.locator('.fw-tgrid__bar', { hasText: 'Spelling test' }).click();
+    },
+  },
   {
     name: 'board-calendar-month',
     device: 'board',
@@ -371,6 +381,16 @@ const SHOTS = [
     maxHeight: 1500,
   },
   { name: 'admin-calendars-phone', device: 'phone', url: '/dev/calendars', maxHeight: 1330 },
+  // [CAL-09] Who a calendar is for (WP-50): The whole family, or a tick a person.
+  {
+    name: 'admin-calendar-who-phone',
+    device: 'phone',
+    url: '/dev/calendars',
+    element: 'form[aria-label="Edit School"]',
+    act: async (page) => {
+      await page.locator('summary', { hasText: 'Edit School' }).click();
+    },
+  },
   {
     name: 'admin-calendar-add-phone',
     device: 'phone',

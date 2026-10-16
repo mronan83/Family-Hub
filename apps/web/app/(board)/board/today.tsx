@@ -45,7 +45,7 @@ import {
   undoUntil,
 } from '@/lib/today';
 import { type PinWish, wishLine } from '@/lib/wishes';
-import { eventsOn, eventWhen } from '@/lib/board-calendar';
+import { calendarsFor, eventsOn, eventWhen } from '@/lib/board-calendar';
 import { type CalendarSpan, effectiveLayout } from '@/lib/board-layout';
 import { calendarDay, clock, DAY_PART_LABELS, dayPart } from '@/lib/chores';
 import { type Chip, CHIP_WORDS, familyList, type ListRow } from '@/lib/dashboard';
@@ -1324,12 +1324,11 @@ export function Today({
                   />
                 ) : null}
                 {(() => {
-                  // [CAL-04] Today's events: this person's calendars and the whole family's (WP-23).
+                  // [CAL-04][CAL-09] Today's events: the calendars that include this person and
+                  // the whole family's (WP-23, WP-50).
                   const cal = snapshot.calendar;
                   const theirs = new Map(
-                    (cal?.calendars ?? [])
-                      .filter((c) => c.memberId === null || c.memberId === member.id)
-                      .map((c) => [c.id, c]),
+                    calendarsFor(cal?.calendars ?? [], member.id).map((c) => [c.id, c]),
                   );
                   const list = eventsOn(
                     (cal?.events ?? []).filter((e) => theirs.has(e.calendarId)),

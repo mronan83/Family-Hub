@@ -64,8 +64,8 @@ test('[CAL-04][CAL-05][D-82] the week: all-day events across the top, the rest b
   // Today's test is all day: across the top, not among the hours; its swim at 5 pm.
   const spelling = page.locator('.fw-tgrid__bar', { hasText: 'Spelling test' });
   await expect(spelling).toHaveAttribute('data-calendar', 'School');
-  // School is Maya's calendar: she is in its name, and in its details.
-  await expect(spelling).toHaveAccessibleName(/^Spelling test, .*, all day, Maya$/);
+  // School is Maya's and Leo's calendar (WP-50): they are in its name, and in its details.
+  await expect(spelling).toHaveAccessibleName(/^Spelling test, .*, all day, Maya and Leo$/);
   const today = page.locator('.fw-bcal__col[data-today]');
   await expect(today.locator('.fw-bcal__event')).toHaveText([/Swim/]);
   await expect(today.locator('.fw-bcal__event')).toHaveAccessibleName(
@@ -157,6 +157,26 @@ test('[CAL-10][US-509] a tap on an event shows it in full: when, where, its cale
   await expect(meeting.locator('dd').last()).toHaveText('Alex');
   await meeting.getByRole('button', { name: 'Close' }).click();
   await expect(meeting).toBeHidden();
+});
+
+test('[CAL-09-b][US-508] an event of a calendar for two people shows both their faces', async ({
+  page,
+}) => {
+  await openCalendar(page);
+  await page.locator('.fw-tgrid__bar', { hasText: 'Spelling test' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Spelling test' });
+  await expect(sheet.locator('dt')).toHaveText(['When', 'Calendar', 'Whose']);
+  await expect(sheet.locator('dd').nth(1)).toHaveText('School');
+  const whose = sheet.locator('.fw-evdetails__who .fw-evdetails__person');
+  // In the board's order: Maya, then Leo, each a face and a name.
+  await expect(whose).toHaveText(['Maya', 'Leo']);
+  await expect(whose.locator('.fw-avatar')).toHaveCount(2);
+  for (const person of await whose.all()) {
+    expect((await person.boundingBox())!.height).toBeGreaterThanOrEqual(56);
+  }
+  await contrastOk(page);
+  await sheet.getByRole('button', { name: 'Close' }).click();
+  await expect(sheet).toBeHidden();
 });
 
 test('[CAL-04][US-503] arrows, a swipe and Today move through days, weeks and months', async ({
@@ -261,6 +281,24 @@ test('[CAL-04][CAL-05] a person’s screen lists today’s events from their cal
     /^5:00 pm\s*Swim/,
   ]);
   await people(page).getByRole('button', { name: 'Alex', exact: true }).click();
-  // School is Maya's: not on Alex's screen; the family's swim is.
+  // School is Maya's and Leo's: not on Alex's screen; the family's swim is.
+  await expect(card.locator('.fw-bcal__event')).toHaveText([/^5:00 pm\s*Swim/]);
+});
+
+test('[CAL-09-e][US-508] a calendar for two people is on each one’s screen, not on a third’s', async ({
+  page,
+}) => {
+  await page.goto('/dev/board');
+  const card = page.locator('section', {
+    has: page.getByRole('heading', { name: 'Today', level: 3 }),
+  });
+  for (const name of ['Maya', 'Leo']) {
+    await people(page).getByRole('button', { name, exact: true }).click();
+    await expect(card.locator('.fw-bcal__event')).toHaveText([
+      /^All day\s*Spelling test/,
+      /^5:00 pm\s*Swim/,
+    ]);
+  }
+  await people(page).getByRole('button', { name: 'Sam', exact: true }).click();
   await expect(card.locator('.fw-bcal__event')).toHaveText([/^5:00 pm\s*Swim/]);
 });

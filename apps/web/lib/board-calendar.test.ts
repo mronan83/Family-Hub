@@ -3,6 +3,7 @@ import {
   addDays,
   allDayLanes,
   behind,
+  calendarsFor,
   eventSpan,
   gridHours,
   hourIn,
@@ -107,7 +108,7 @@ describe('[CAL-05][WP-65] a week read earlier, brought up to the snapshot', () =
     id,
     name: id,
     color: 'member-3',
-    memberId: null,
+    memberIds: [],
     status: 'ok',
     lastSuccessAt: null,
   });
@@ -263,7 +264,7 @@ describe('a calendar behind', () => {
     id: 'c',
     name: 'School',
     color: 'member-3',
-    memberId: null,
+    memberIds: [],
     status: 'ok',
     lastSuccessAt: '2026-10-20T15:00:00.000Z',
     ...over,
@@ -321,7 +322,7 @@ describe('reading the board’s calendar', () => {
           id: 'c1',
           name: 'School',
           color: 'member-3',
-          memberId: 'm1',
+          memberIds: ['m1'],
           status: 'error',
           lastSuccessAt: null,
         },
@@ -341,6 +342,28 @@ describe('reading the board’s calendar', () => {
         },
       ],
     });
+  });
+
+  it('[CAL-09-b] a calendar’s people as the database lists them, strings only', () => {
+    const read = readCalendar({
+      from: '2026-10-19',
+      to: '2026-10-19',
+      calendars: [
+        {
+          id: 'k',
+          name: 'Kids',
+          color: 'member-8',
+          member_ids: ['maya', 'leo', 7],
+          member_id: null,
+        },
+        { id: 'f', name: 'Family', color: 'member-6', member_ids: [], member_id: null },
+      ],
+      events: [],
+    });
+    expect(read!.calendars.map((c) => [c.name, c.memberIds])).toEqual([
+      ['Kids', ['maya', 'leo']],
+      ['Family', []],
+    ]);
   });
 
   it('[DEV-05] none from an older database or for anyone but a board', () => {
@@ -503,5 +526,28 @@ describe('the time grid', () => {
     expect(eventSpan(timed('Flight', '2026-10-21', '22:30', '01:00', '2026-10-22'), NY)).toBe(
       'Wed, Oct 21, 10:30 pm – Thu, Oct 22, 1:00 am',
     );
+  });
+});
+
+// [CAL-09][US-508] A calendar for one or more people (WP-50, D-122).
+describe('a person’s calendars', () => {
+  const cal = (id: string, memberIds: string[]): BoardCalendarSource => ({
+    id,
+    name: id,
+    color: 'member-6',
+    memberIds,
+    status: 'ok',
+    lastSuccessAt: null,
+  });
+  const calendars = [cal('family', []), cal('kids', ['maya', 'leo']), cal('work', ['alex'])];
+
+  it('[CAL-09-e] a calendar for two people is on each one’s screen, and not on a third’s', () => {
+    expect(calendarsFor(calendars, 'maya').map((c) => c.id)).toEqual(['family', 'kids']);
+    expect(calendarsFor(calendars, 'leo').map((c) => c.id)).toEqual(['family', 'kids']);
+    expect(calendarsFor(calendars, 'alex').map((c) => c.id)).toEqual(['family', 'work']);
+  });
+
+  it('[CAL-09-e] the whole family’s calendar is on everyone’s screen', () => {
+    expect(calendarsFor(calendars, 'sam').map((c) => c.id)).toEqual(['family']);
   });
 });

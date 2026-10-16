@@ -1,24 +1,52 @@
 import type { Metadata } from 'next';
+import type { ComponentProps } from 'react';
 import type { CalendarRow } from '@/lib/calendars';
 import { CalendarsView } from '../../(admin)/admin/calendars/view';
 
 // The household's calendars (WP-22) with made-up calendars and events and no database, for the UI
 // suite: one synced with what's coming up (an all-day trip, a moved instance), one whose link fails
 // with its last good sync kept, one not synced yet; on a phone and a laptop, in Day and Evening
-// (?theme=evening). ?state=empty for a household with none yet.
+// (?theme=evening). ?state=empty for a household with none yet. Who each is for (WP-50): the whole
+// family, two children, one adult; Kit is archived, so never a tick.
 export const metadata: Metadata = { title: 'Calendars', robots: { index: false } };
 
 const MEMBERS = [
-  { id: 'f1000000-0000-4000-8000-000000000001', displayName: 'Ava' },
-  { id: 'f1000000-0000-4000-8000-000000000003', displayName: 'Alex' },
-];
+  {
+    id: 'f1000000-0000-4000-8000-000000000001',
+    displayName: 'Ava',
+    avatarKey: 'fox',
+    color: 'member-3',
+    archived: false,
+  },
+  {
+    id: 'f1000000-0000-4000-8000-000000000002',
+    displayName: 'Ben',
+    avatarKey: 'frog',
+    color: 'member-4',
+    archived: false,
+  },
+  {
+    id: 'f1000000-0000-4000-8000-000000000003',
+    displayName: 'Alex',
+    avatarKey: 'owl',
+    color: 'member-1',
+    archived: false,
+  },
+  {
+    id: 'f1000000-0000-4000-8000-000000000004',
+    displayName: 'Kit',
+    avatarKey: null,
+    color: 'member-5',
+    archived: true,
+  },
+] satisfies ComponentProps<typeof CalendarsView>['members'];
 
 const CALENDARS: CalendarRow[] = [
   {
     id: 'c1000000-0000-4000-8000-000000000001',
     name: 'Family',
     color: 'member-6',
-    memberId: null,
+    memberIds: [],
     showOnBoard: true,
     status: 'ok',
     lastSyncedAt: '2026-10-20T16:03:00Z',
@@ -70,9 +98,9 @@ const CALENDARS: CalendarRow[] = [
   },
   {
     id: 'c1000000-0000-4000-8000-000000000002',
-    name: 'Ava’s school',
+    name: 'School',
     color: 'member-3',
-    memberId: 'f1000000-0000-4000-8000-000000000001',
+    memberIds: ['f1000000-0000-4000-8000-000000000001', 'f1000000-0000-4000-8000-000000000002'],
     showOnBoard: true,
     status: 'error',
     lastSyncedAt: '2026-10-20T16:03:00Z',
@@ -107,7 +135,7 @@ const CALENDARS: CalendarRow[] = [
     id: 'c1000000-0000-4000-8000-000000000003',
     name: 'Work',
     color: 'member-1',
-    memberId: 'f1000000-0000-4000-8000-000000000003',
+    memberIds: ['f1000000-0000-4000-8000-000000000003'],
     showOnBoard: false,
     status: 'pending',
     lastSyncedAt: null,

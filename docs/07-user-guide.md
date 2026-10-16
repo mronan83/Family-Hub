@@ -2,6 +2,7 @@
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
 > v0.33: the test strategy's story (US-913) left out of the guide, with its reason: it is for the people building FamilyWise (WP-85).
+> v0.33: a calendar for one or more people (WP-50, D-122): **Who it's for** on Calendars, and each of its people's faces on the board (A9, B1.11).
 > v0.32: the Boards settings folded (WP-91, D-118, D-120): each board folded to its name and facts, with the not-seen warning on its header, opened to **Display**, **Sleep and wake**, **Calendars**, **Home screen**, then **Name and connection** set apart; the household's **Home screen**, **Add a board** and **Disconnected** folded (A16, B1.12).
 > v0.31: the Pi's screen helper starts with the Pi on any desktop, and installs over SSH too (WP-34 follow-up): A16 and troubleshooting.
 > v0.30: approvals alerts within seconds, counting all that waits for you, and which check-offs bring one: only those that wait for you, so with approval off, only items set to **Always needs a parent's OK** (WP-92, D-119; A3).
@@ -675,7 +676,7 @@ A goal marked **Needs a look** had its reward given (redeemed, or its reward fro
 ![Insights for Maya on a laptop: streaks, 86% done, a calendar of good and bad days, missed most, by tag, and checking.](guide/img/admin-insights-laptop.jpg "Insights, on a laptop")
 
 ### A9 Calendars
-<!-- covers: US-501 US-502 US-503 US-504 US-505 US-507 US-509 -->
+<!-- covers: US-501 US-502 US-503 US-504 US-505 US-507 US-508 US-509 -->
 
 **What this is.** The family's Apple calendars on the board, read only. Events still live in Apple Calendar: add and change them there. **When.** Once per calendar. **How.** On **Calendars**, add each one by its public link.
 
@@ -683,7 +684,7 @@ A goal marked **Needs a look** had its reward given (redeemed, or its reward fro
 
 1. In Apple Calendar, open the calendar's settings, turn on **Public Calendar** and copy the link (it starts with `webcal://`).
 2. In FamilyWise, go to **Calendars**. Under **Add a calendar**, enter a **Name** and paste the **Public link**.
-3. Pick a **Color**, and choose **Whose calendar** it is (or leave **The whole family**). The board shows that person's avatar on its events.
+3. Pick a **Color**, and choose **Who it's for**: leave **The whole family** ticked, or tick each person it belongs to, as many as you like (a calendar the two kids share, say). The board shows their faces with its events, and puts it on each of their screens.
 4. Keep **Show on the boards** ticked, and choose **Add calendar**.
 
 FamilyWise syncs it straight away and says "Added Family and synced it.", then lists what's coming up. If the link doesn't work, it says what went wrong and what to do. The link is kept privately and never shown again; to change it, open **Edit** and fill in **Replace the link (optional)**.
@@ -696,7 +697,13 @@ Each calendar shows how its sync went: **Synced** (with when), **Not synced yet*
 
 **Remove** (the calendar's name) takes its events off FamilyWise and the boards. The calendar itself stays in Apple Calendar.
 
-![Calendars on a phone: Family synced with its coming events, Ava's school unable to sync with the reason, and Work not synced yet.](guide/img/admin-calendars-phone.jpg "Calendars, each with how its sync went")
+![Calendars on a phone: Family synced with its coming events, School (Ava and Ben) unable to sync with the reason, and Work (Alex's) not synced yet.](guide/img/admin-calendars-phone.jpg "Calendars, each with how its sync went")
+
+#### Who a calendar is for
+
+Open **Edit** (the calendar's name) and tick under **Who it's for**. Ticking a person clears **The whole family**; clearing every person ticks it again. Each calendar's line says who it's for: "The whole family", "Alex's" or "Ava and Ben", with their faces. Ticking everyone keeps it as those people: someone you add to the family later isn't on it until you tick them, so use **The whole family** for a calendar everyone should see. Someone archived stays on a calendar and is back on it when restored.
+
+![Editing School on a phone: under Who it's for, Ava and Ben ticked with their faces, The whole family and Alex not ticked.](guide/img/admin-calendar-who-phone.jpg "Who it's for: Ava and Ben")
 
 #### The calendar on the board
 
@@ -707,7 +714,7 @@ It reads like the calendar on your phone:
 - **All-day events** run across the top, each in its calendar's color. One that lasts several days is one bar across them. When a day has more than fit, its heading says how many more ("+1"); tap the heading to see the day, with all of them.
 - **The hours** run down the side, from 8 am to 8 pm, or earlier and later when something is on then (or when it's that early or late now). Each event sits at its time, as tall as it lasts. Two at once sit side by side.
 - **Now** is a red line across today, with the time beside it.
-- **Tap an event** to see it in full: **When**, **Where** (when it has a place in Apple Calendar), its **Calendar**, and **Whose** it is. Tap **Close** to go back. Its notes stay in Apple Calendar.
+- **Tap an event** to see it in full: **When**, **Where** (when it has a place in Apple Calendar), its **Calendar**, and **Whose** it is: each of the calendar's people with their face, or **Everyone**. Tap **Close** to go back. Its notes stay in Apple Calendar.
 
 A month's day shows three events and "+N more"; tap it to see the day.
 
@@ -716,6 +723,10 @@ A month's day shows three events and "+N more"; tap it to see the day.
 ![The board's calendar in Day view: the dentist in the morning, and the team meeting and the orthodontist side by side in the afternoon.](guide/img/board-calendar-day.jpg "Calendar: Day, with two events at once")
 
 ![An event in full on the board: the dentist, when, where, its calendar and whose it is, with Close.](guide/img/board-event-details.jpg "An event in full")
+
+![A School event in full on the board: Spelling test, all day, its calendar School, and Whose with Maya's and Leo's faces.](guide/img/board-event-people.jpg "A calendar for two people")
+
+On a person's own screen, **Today** lists the events of the calendars that include them and the whole family's. **Coming up** on the home screen shows the faces of each event's people.
 
 ![The board's calendar in Month view: each day with up to three events and "+6 more" on a busy day.](guide/img/board-calendar-month.jpg "Calendar: Month")
 
@@ -1150,10 +1161,10 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 
 | Part | What it shows or does |
 |---|---|
-| Each calendar | Its color and name, whose it is ("The whole family" or a person's), "Not on the boards" if hidden, its sync (**Synced**, **Can't sync**, **Not synced yet**) with details, and what's coming up ("· moved" for a moved event; "and N more in the next four months"). |
-| **Edit** (name) | **Name**, **Replace the link (optional)**, **Color**, **Whose calendar (optional)**, **Show on the boards**, **Save calendar**. A new link syncs at once. |
+| Each calendar | Its color and name, who it's for ("The whole family", "Alex's", "Ava and Ben", with their faces), "Not on the boards" if hidden, its sync (**Synced**, **Can't sync**, **Not synced yet**) with details, and what's coming up ("· moved" for a moved event; "and N more in the next four months"). |
+| **Edit** (name) | **Name**, **Replace the link (optional)**, **Color**, **Who it's for** (**The whole family**, or a tick a person), **Show on the boards**, **Save calendar**. A new link syncs at once. |
 | **Remove** (name) | Takes its events off FamilyWise and the boards. It stays in Apple Calendar; you can add it again. |
-| **Add a calendar** | **Name** (up to 40), **Public link**, **Color**, **Whose calendar (optional)**, **Show on the boards**, **Add calendar** ("Adding and syncing…"). |
+| **Add a calendar** | **Name** (up to 40), **Public link**, **Color**, **Who it's for**, **Show on the boards**, **Add calendar** ("Adding and syncing…"). |
 
 #### B1.12 Boards
 <!-- covers: US-201 US-202 US-507 US-1004 US-1007 US-207 US-208 -->

@@ -703,8 +703,8 @@ function nyAt(date: string, hm: string): string {
 }
 
 /**
- * [CAL-04] The made-up family's calendars around today (WP-23): Family (everyone), School (Maya's)
- * and Work (Alex's); a weekly swim at 5 pm, a three-day visit, a day's test, a late flight past
+ * [CAL-04][CAL-09] The made-up family's calendars around today (WP-23): Family (everyone), School
+ * (Maya's and Leo's, WP-50) and Work (Alex's); a weekly swim at 5 pm, a three-day visit, a day's test, a late flight past
  * midnight, a moved dentist appointment, places for some (WP-52). `busy` adds 40 more this month,
  * eight on one day, for the month view's "+N more"; `full` (WP-52) adds three more all-day events
  * today, for a day's "+N", and an appointment tomorrow beside the meeting. Only events in
@@ -724,7 +724,7 @@ export function fixtureCalendar(
       id: 'cal-family',
       name: 'Family',
       color: 'member-6',
-      memberId: null,
+      memberIds: [],
       status: 'ok',
       lastSuccessAt: synced,
     },
@@ -732,7 +732,7 @@ export function fixtureCalendar(
       id: 'cal-school',
       name: 'School',
       color: 'member-3',
-      memberId: MAYA,
+      memberIds: [MAYA, LEO],
       status: 'ok',
       lastSuccessAt: synced,
     },
@@ -740,7 +740,7 @@ export function fixtureCalendar(
       id: 'cal-work',
       name: 'Work',
       color: 'member-1',
-      memberId: ALEX,
+      memberIds: [ALEX],
       status: 'ok',
       lastSuccessAt: synced,
     },

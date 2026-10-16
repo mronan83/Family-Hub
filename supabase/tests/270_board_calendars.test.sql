@@ -43,6 +43,9 @@ insert into public.calendar_source (id, household_id, name, url_secret_id, color
    'member-1', null, false, 'ok', now()),
   ('27ca0000-0000-0000-0000-000000000004', '27000000-0000-0000-0000-000000000002', 'Theirs', gen_random_uuid(),
    'member-2', null, true, 'ok', now());
+-- School's one person, as WP-50's carry-over leaves it.
+insert into public.calendar_member (household_id, calendar_id, member_id) values
+  ('27000000-0000-0000-0000-000000000001', '27ca0000-0000-0000-0000-000000000002', '27110000-0000-0000-0000-00000000000a');
 
 create function pg_temp.today() returns date language sql as $$
   select (now() at time zone 'America/New_York')::date
@@ -113,8 +116,9 @@ select is((select e from jsonb_array_elements(public.board_calendar(pg_temp.toda
 select is((select c from jsonb_array_elements(public.board_calendar(pg_temp.today(), pg_temp.today()) -> 'calendars') c
             where c ->> 'name' = 'School') - 'last_success_at',
   jsonb_build_object('id', '27ca0000-0000-0000-0000-000000000002', 'name', 'School', 'color', 'member-3',
-                     'member_id', '27110000-0000-0000-0000-00000000000a', 'status', 'ok'),
-  '[CAL-05] each calendar with its color and whose it is');
+                     'member_id', '27110000-0000-0000-0000-00000000000a', 'status', 'ok',
+                     'member_ids', jsonb_build_array('27110000-0000-0000-0000-00000000000a')),
+  '[CAL-05][CAL-09] each calendar with its color and whose it is');
 select is((public.board_snapshot() -> 'calendar' -> 'calendars'), public.board_calendar(pg_temp.today() - 1, pg_temp.today() + 21) -> 'calendars',
   '[DEV-05] the snapshot carries the calendar over its own window');
 select is(jsonb_array_length(public.board_snapshot() -> 'calendar' -> 'events'), 3,

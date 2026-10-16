@@ -4,13 +4,14 @@ import { boardFold, pairBoard, retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
 
-// [CAL-04][CAL-05][CAL-10][US-507][US-509] Calendars on a board, on the preview at the reference panel's 3840×2160
+// [CAL-04][CAL-05][CAL-09][CAL-10][US-507][US-508][US-509] Calendars on a board, on the preview at the reference panel's 3840×2160
 // (WP-23, D-65). Two made-up calendars of the demo family (School, Maya's, and Family) are connected
 // as Alex would, and the calendar_sync job's own code fills them on the e2e runner from made-up files
 // around today (previews hold no job secret). A board paired here shows both on its calendar. The
 // done-when: Alex unticks School for this board on Boards, and its events leave the board within 3
 // seconds; ticked again, they come back in School's color. A calendar connected afterwards stays off
-// this board, which now has its own choice. Everything made here is removed at the end.
+// this board, which now has its own choice. WP-50's done-when: School given Leo as well as Maya on
+// Calendars shows both their faces on the board. Everything made here is removed at the end.
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const BOARD = 'Calendar e2e';
@@ -86,8 +87,8 @@ async function connect(
     `select user_id from public.member where household_id = '${DEMO}' and display_name = 'Alex'`,
   );
   sql(`select set_config('request.jwt.claims', '{"sub":"${alex}","role":"authenticated"}', false);
-       select public.save_calendar_source('${DEMO}', null, '${name}', '${link}', '${color}',
-         ${member ? `'${member}'` : 'null'}, true)`);
+       select public.save_calendar('${DEMO}', null, '${name}', '${link}', '${color}',
+         array[${member ? `'${member}'` : ''}]::uuid[], true)`);
   await runCalendarSync(ownCalendars as unknown as Parameters<typeof runCalendarSync>[0], DEMO, {
     fetch: serve,
   });
@@ -318,4 +319,59 @@ test('[CAL-05][US-507] this board’s own calendars: School unticked leaves it w
     await expect(week()).toContainText('Picture day e2e');
     await expect(week()).not.toContainText('Match e2e');
   });
+});
+
+// [CAL-09] WP-50's done-when, as one story: Alex gives School Leo as well as Maya on Calendars, and the
+// board shows both their faces. School is put back to Maya's alone afterwards.
+test('[CAL-09-f][US-508] a calendar given two people on Calendars shows both faces on the board', async () => {
+  const id = (name: string) =>
+    sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+  const school = sql(
+    `select id from public.calendar_source where household_id = '${DEMO}' and name = 'School e2e'`,
+  );
+  try {
+    await test.step('Alex ticks Leo for School on Calendars and saves', async () => {
+      await admin.goto('/admin/calendars');
+      await admin.locator('summary', { hasText: 'Edit School e2e' }).click();
+      const edit = admin.getByRole('form', { name: 'Edit School e2e' });
+      const who = edit.getByRole('group', { name: 'Who it’s for' });
+      await expect(who.getByRole('checkbox', { name: 'Maya', exact: true })).toBeChecked();
+      await who.getByRole('checkbox', { name: 'Leo', exact: true }).check();
+      await expect(who.getByRole('checkbox', { name: 'The whole family' })).not.toBeChecked();
+      await edit.getByRole('button', { name: 'Save calendar' }).click();
+      await expect(admin.getByText('Saved School e2e.')).toBeVisible();
+      await expect
+        .poll(() =>
+          sql(`select string_agg(m.display_name, ', ' order by m.display_name)
+                 from public.calendar_member cm join public.member m on m.id = cm.member_id
+                where cm.calendar_id = '${school}'`),
+        )
+        .toBe('Leo, Maya');
+      const line = admin
+        .getByRole('list', { name: 'Calendars', exact: true })
+        .getByRole('listitem')
+        .filter({ hasText: 'School e2e' })
+        .first()
+        .locator('.fw-calendar__who');
+      await expect(line).toHaveText(/Maya and Leo/);
+    });
+
+    await test.step('the board shows both their faces with School’s event', async () => {
+      await boardCalendar();
+      const bar = week().locator('.fw-tgrid__bar[data-calendar="School e2e"]');
+      // The board hears the save and reads the calendar again.
+      await expect(bar).toHaveAccessibleName(/^Picture day e2e, .*, all day, Maya and Leo$/);
+      await bar.tap();
+      const sheet = board.getByRole('dialog', { name: 'Picture day e2e' });
+      const people = sheet.locator('.fw-evdetails__person');
+      await expect(people).toHaveText(['Maya', 'Leo']);
+      await expect(people.locator('.fw-avatar')).toHaveCount(2);
+      await sheet.getByRole('button', { name: 'Close' }).tap();
+      await expect(sheet).toBeHidden();
+    });
+  } finally {
+    // School back to Maya's alone, as beforeAll made it.
+    sql(`delete from public.calendar_member where calendar_id = '${school}'
+           and member_id <> '${id('Maya')}'`);
+  }
 });

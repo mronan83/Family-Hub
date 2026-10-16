@@ -1,9 +1,10 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
-// [CAL-01][CAL-03][CAL-06] The household's calendars (WP-22) on /dev/calendars: made-up calendars and
-// events, no database. Each calendar's sync in words (synced, can't sync with its last good sync, not
-// synced yet), what's coming up, no way to add or change an event, and the link never shown; the
+// [CAL-01][CAL-03][CAL-06][CAL-09] The household's calendars (WP-22) on /dev/calendars: made-up
+// calendars and events, no database. Each calendar's sync in words (synced, can't sync with its last
+// good sync, not synced yet), who it's for (WP-50), what's coming up, no way to add or change an event,
+// and the link never shown; the
 // layout on a phone and a laptop, in Day and Evening. The same page runs signed in on the preview,
 // with a real sync, in e2e/tests/calendar.spec.ts.
 
@@ -64,7 +65,7 @@ test('[CAL-06][US-505] each calendar says how its sync went; a failing one keeps
     'and 19 more in the next four months',
   ]);
 
-  const school = list.getByRole('listitem').filter({ hasText: 'Ava’s school' }).first();
+  const school = list.getByRole('listitem').filter({ hasText: 'School' }).first();
   await expect(school).toContainText('Can’t sync');
   await expect(school).toContainText(
     'The link answered 404 (Not Found): the calendar may no longer be public.',
@@ -72,8 +73,8 @@ test('[CAL-06][US-505] each calendar says how its sync went; a failing one keeps
   await expect(school).toContainText(
     'Last good sync Mon, Oct 19 at 5:48 pm: the board keeps showing its events.',
   );
-  await expect(school).toContainText('Ava’s');
-  await expect(page.getByRole('list', { name: 'Coming up on Ava’s school' })).toContainText(
+  await expect(school).toContainText('Ava and Ben');
+  await expect(page.getByRole('list', { name: 'Coming up on School' })).toContainText(
     'Picture day',
   );
 
@@ -97,7 +98,7 @@ test('[CAL-03][CAL-01] events are only read: no way to add or change one, and no
   await expect(edit.getByLabel('Replace the link (optional)')).toHaveValue('');
   await expect(edit.getByText('Leave this empty to keep it.', { exact: false })).toBeVisible();
   await expect(edit.getByRole('radio', { name: 'Teal' })).toBeChecked();
-  await expect(edit.getByRole('combobox', { name: 'Whose calendar (optional)' })).toHaveValue('');
+  await expect(edit.getByRole('checkbox', { name: 'The whole family' })).toBeChecked();
   await expect(edit.getByRole('checkbox', { name: 'Show on the boards' })).toBeChecked();
 
   const add = page.getByRole('form', { name: 'Add a calendar' });
@@ -110,6 +111,55 @@ test('[CAL-03][CAL-01] events are only read: no way to add or change one, and no
   await remove.locator('summary').click();
   await expect(remove.getByRole('button', { name: 'Remove Work' })).toBeVisible();
   await expect(remove.getByText('stays in Apple Calendar', { exact: false })).toBeVisible();
+});
+
+test('[CAL-09-d][US-508] who a calendar is for: The whole family or a tick a person', async ({
+  page,
+}) => {
+  await page.goto('/dev/calendars');
+  // [D-110] React has hydrated the page: a tick now runs its handler.
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+  const school = page
+    .getByRole('list', { name: 'Calendars', exact: true })
+    .getByRole('listitem')
+    .filter({ hasText: 'School' })
+    .first();
+  // Its line: both faces before their names.
+  await expect(school.locator('.fw-calendar__who')).toHaveText('Ava and Ben');
+  await expect(school.locator('.fw-calendar__faces > *')).toHaveCount(2);
+
+  await page.locator('summary', { hasText: 'Edit School' }).click();
+  const who = page.getByRole('form', { name: 'Edit School' }).getByRole('group', {
+    name: 'Who it’s for',
+  });
+  const tick = (name: string) => who.getByRole('checkbox', { name, exact: true });
+  await expect(who.getByRole('checkbox')).toHaveCount(4); // the whole family, Ava, Ben, Alex
+  await expect(tick('Kit')).toHaveCount(0); // archived: no tick
+  await expect(tick('Ava')).toBeChecked();
+  await expect(tick('Ben')).toBeChecked();
+  await expect(tick('The whole family')).not.toBeChecked();
+
+  await test.step('clearing every person ticks The whole family', async () => {
+    await tick('Ava').click();
+    await expect(tick('The whole family')).not.toBeChecked();
+    await tick('Ben').click();
+    await expect(tick('The whole family')).toBeChecked();
+  });
+  await test.step('ticking a person clears The whole family', async () => {
+    await tick('Alex').click();
+    await expect(tick('Alex')).toBeChecked();
+    await expect(tick('The whole family')).not.toBeChecked();
+  });
+  await test.step('ticking The whole family clears the people', async () => {
+    await tick('Ben').click();
+    await tick('The whole family').click();
+    await expect(tick('The whole family')).toBeChecked();
+    for (const name of ['Ava', 'Ben', 'Alex']) await expect(tick(name)).not.toBeChecked();
+  });
+  // Each tick is a 44 px target, by touch and by mouse.
+  for (const box of await who.locator('label').all()) {
+    expect((await box.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  }
 });
 
 test('[CAL-01] with none yet, the page says so and offers the form', async ({ page }) => {
