@@ -541,10 +541,9 @@ export function fixtureSnapshot(
   };
 }
 
-/** [RWD-08] The same family the moment Leo reaches his goal: the board celebrates it (WP-20). */
 /**
  * [RWD-15][RWD-16] Repeating goals (WP-80, ?repeating=going|missed|won): Maya's "Homework home every
- * school day", each week, in the state asked for, with today the week's fourth day and its fifth a day
+ * school day", each week from its Monday, in the state asked for, today the day it is and Friday a day
  * off school; Leo's reading, with one miss allowed, missed this week. Each has its last weeks.
  */
 export function withRepeating(
@@ -553,20 +552,37 @@ export function withRepeating(
   now: Date,
 ): BoardSnapshot {
   const today = s.today;
-  const start = day(-3, today);
-  const week = (marks: DayMark[]): GoalPeriod['days'] =>
-    marks.map((mark, i) => ({
-      date: day(i - 3, today),
+  // The week from its Monday; today is the day it is, and Friday is a day off school.
+  const idx = (new Date(`${today}T12:00:00Z`).getUTCDay() + 6) % 7;
+  const start = day(-idx, today);
+  const week = (dayMarks: DayMark[]): GoalPeriod['days'] =>
+    dayMarks.map((mark, i) => ({
+      date: day(i, start),
       mark,
       dayType: mark === 'none' ? (i === 4 ? 'no_school' : 'weekend') : null,
     }));
-  const period = (marks: DayMark[], outcome: GoalPeriod['outcome'], misses = 0): GoalPeriod => {
-    const days = week(marks)!;
+  /** Each day's mark: before today done (one missed when asked), today and later as they stand. */
+  const marks = (state: 'going' | 'missed' | 'won', missedAt = Math.max(0, idx - 1)): DayMark[] =>
+    [0, 1, 2, 3, 4, 5, 6].map((i) =>
+      i >= 4
+        ? 'none'
+        : state === 'won'
+          ? 'done'
+          : state === 'missed' && i === missedAt && i <= idx
+            ? 'missed'
+            : i < idx
+              ? 'done'
+              : i === idx
+                ? 'today'
+                : 'later',
+    );
+  const period = (dayMarks: DayMark[], outcome: GoalPeriod['outcome'], misses = 0): GoalPeriod => {
+    const days = week(dayMarks)!;
     return {
       start,
-      end: day(3, today),
+      end: day(6, start),
       outcome,
-      nextStart: day(4, today),
+      nextStart: day(7, start),
       daysDue: days.filter((d) => d.mark !== 'none').length,
       daysDone: days.filter((d) => d.mark === 'done').length,
       daysMissed: days.filter((d) => d.mark === 'missed').length,
@@ -576,14 +592,14 @@ export function withRepeating(
   };
   const past = (outcomes: GoalPeriod['outcome'][]) =>
     outcomes.map((outcome, i) => ({
-      start: day(-3 - 7 * (outcomes.length - i), today),
-      end: day(3 - 7 * (outcomes.length - i), today),
+      start: day(-7 * (outcomes.length - i), start),
+      end: day(6 - 7 * (outcomes.length - i), start),
       outcome,
     }));
   const homework = {
-    going: period(['done', 'done', 'done', 'today', 'none', 'none', 'none'], 'open'),
-    missed: period(['done', 'missed', 'done', 'today', 'none', 'none', 'none'], 'missed'),
-    won: period(['done', 'done', 'done', 'done', 'none', 'none', 'none'], 'won'),
+    going: period(marks('going'), 'open'),
+    missed: period(marks('missed'), 'missed'),
+    won: period(marks('won'), 'won'),
   }[kind];
   const history = {
     going: past(['won', 'won', 'missed', 'won']),
@@ -609,11 +625,7 @@ export function withRepeating(
     pays: 10,
     ...o,
   });
-  const reading = period(
-    ['done', 'missed', 'missed', 'today', 'none', 'none', 'none'],
-    'missed',
-    1,
-  );
+  const reading = period(marks('missed', 0), 'missed', 1);
   return {
     ...s,
     goals: [
@@ -630,7 +642,7 @@ export function withRepeating(
           {
             id: 'gr-homework',
             type: 'DAYS_DUE',
-            target: 4,
+            target: homework.daysDue ?? 0,
             current: homework.daysDone ?? 0,
             pct: kind === 'won' ? 100 : 75,
             met: kind === 'won',
@@ -669,6 +681,7 @@ export function withRepeating(
   };
 }
 
+/** [RWD-08] The same family the moment Leo reaches his goal: the board celebrates it (WP-20). */
 export function reachedBike(s: BoardSnapshot, now: Date): BoardSnapshot {
   return {
     ...s,

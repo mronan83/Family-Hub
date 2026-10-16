@@ -2,6 +2,7 @@
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
 > v0.8.51: WP-50's contract (D-122), added at the owner's request: `calendar_source.member_id`, `public.save_calendar_source()` and `private.carry_calendar_members()` dropped, after `private.assert_calendar_people_carried()` refused while any calendar's person was not in `calendar_member`; `save_calendar()` and `board_calendar()` no longer write or send `member_id`; the audit trigger on `calendar_source` watches name, color and board default.
+> v0.8.51: goals that repeat (WP-80, D-101, D-123): `reward_goal.repeats` and `periods_from`, the `DAYS_DUE` rule, `reward_goal_period`, `stop_goal_after_period()`, `private.save_goal_periods()`, `private.goal_terms()`, `private.goal_day_type()`; `save_goal()`, `goal_facts()`, `goal_preview_facts()`, `save_goal_evaluation()`, `mark_goal_celebrated()` and the board snapshot's goals learn them; the engine's periods (§3.3, §4.6, §5).
 > v0.8.50: a calendar for one or more people (WP-50, D-122): `calendar_member`, `save_calendar()`, `private.calendar_people()`, `private.carry_calendar_members()`, and `board_calendar()`'s `member_ids`; `calendar_source.member_id` kept until a contract migration (§3.4).
 > v0.8.49: approval alerts at once (WP-92, D-119): `private.alert_now()` and its triggers on `chore_occurrence`, `redemption` and `lunch_request`; `plan_reminders()` locks per household; `claim_reminders()` words all that waits for the parent (§3.7).
 > v0.8.48: sleep and wake per board (WP-34, D-116, D-117): `device.board_config.sleep` (`missed`, `schedule`, `idle_minutes`) checked by `private.valid_board_sleep()`; `public.school_days()`; the snapshot's `device.sleep` and `school_days` (§3.1, §4.6, §4.8).
@@ -137,6 +138,7 @@ erDiagram
   reward_rule ||--o| reward_rule_progress : "evaluated into"
   reward_goal ||--o| reward_goal_progress : "summarized in"
   reward_goal ||--o{ reward_goal_event : "logs"
+  reward_goal ||--o{ reward_goal_period : "repeats in"
   member ||--o{ points_ledger : "earns and spends"
   chore_occurrence ||--o{ points_ledger : "earn or reversal"
   reward_catalog_item ||--o{ redemption : "redeemed as"
@@ -468,17 +470,19 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 | Table | Key columns | Notes |
 |---|---|---|
 | `reward_goal` | `member_id?` (null = family goal), `title`, `description`, `image_path`, `reward_kind` (`item`/`experience`/`privilege`/`other`), `payout jsonb` (`{type:'custom'}` \| `{type:'points', amount}` \| `{type:'catalog_item', item_id}`), `start_date`, `end_date`, `rule_logic` (`all`/`any`), `status`, `achieved_at`, `redeemed_at`, `redeemed_by`, `celebrated_at`, `rules_version`, `archived_at` | `status`: `draft`, `scheduled`, `active`, `achieved`, `redeemed`, `expired`, `cancelled`. |
-| `reward_rule` | `goal_id`, `rule_type` (`COUNT`/`STREAK`/`DAILY_ALL_DONE`/`POINTS`), `target`, `scope jsonb`, `params jsonb`, `sort_order` | `scope`: `{ "all": true }` or `{ "chore_ids": [...], "tag_ids": [...] }`. Tags by id (D-33). |
+| `reward_rule` | `goal_id`, `rule_type` (`COUNT`/`STREAK`/`DAILY_ALL_DONE`/`POINTS`/`DAYS_DUE`), `target`, `scope jsonb`, `params jsonb`, `sort_order` | `scope`: `{ "all": true }` or `{ "chore_ids": [...], "tag_ids": [...] }`. Tags by id (D-33). |
 | `reward_rule_progress` | `rule_id` PK, `goal_id`, `current_value`, `target_value`, `current_streak`, `best_streak`, `last_qualifying_date`, `is_met`, `computed_at`, `engine_version` | **Derived.** Rebuildable. |
 | `reward_goal_progress` | `goal_id` PK, `pct`, `is_achieved`, `dirty`, `computed_at`, `engine_version` | **Derived.** `dirty` set by trigger. |
 | `reward_goal_event` | `goal_id`, `type` (`created`, `activated`, `rules_changed`, `achieved`, `unachieved`, `payout_reversed`, `payout_restored`, `needs_review`, `redeemed`, `expired`, `cancelled`, `recomputed`), `actor`, `payload jsonb`, `at` | Lifecycle log; drives celebrations and history. |
+| `reward_goal_period` | `goal_id` + `start_date` PK, `end_date`, `outcome` (`open`/`won`/`missed`/`neutral`), `next_start`, `pct`, `days_due`, `days_done`, `days_missed`, `misses_allowed`, `days jsonb`, `n`, `won_at`, `celebrated_at` | **Derived** (WP-80). A repeating goal's periods, as the engine last worked them out; a won period is achievement `n` and keeps what it paid. |
 
 **As built (WP-19, D-56).** Every goal table carries `household_id`; the derived and log tables reference `reward_goal (household_id, id)` and `reward_rule (household_id, id)`.
 
 - `reward_goal`: `id` is made by the form, so a form sent twice saves one goal. `icon` (default `trophy`) and an optional photo in the shop's private `rewards` bucket (`{household}/{goal}/{file}`, D-53) say what it is, so there is no `reward_kind`. `payout` defaults to `{type: 'custom'}`. **As built (WP-39):** `save_goal()` takes `payout`: `{type: 'points', amount}` (1 to 10,000) or `{type: 'catalog_item', item_id}` (the household's, not archived unless it is already the goal's; a child's goal only); left out, a goal keeps its own. A change is logged with the edit (`payload.payout` from and to) and refused once the goal has finished. `needs_review` is raised with `payload.why`: `reward_given` (its shop reward was given, then the goal was undone) or `undone` (redeemed, then no longer met). It also has `achievement_count` (n of the latest achievement), `needs_review`, `created_by` and `updated_at`. A new goal is `scheduled`, and the engine starts it on its start date. `draft` is allowed but nothing makes one yet.
 - `reward_rule`: `target` is 1 to 100 000. `save_goal()` stores `scope` as `{all: true}` or sorted, distinct `tag_ids` and/or `chore_ids` of the household. A STREAK's `params` are `{grace_per_week}` (0 to 3, default 1), so an unchanged rule list compares equal.
 - `reward_goal_progress`: also `marked_at` (the last mark, so a save clears only marks made before its read), `rules_version` (the goal's, as computed) and `computed_at` (null until the first evaluation). `pct` is `numeric(5,2)`.
-- `reward_rule_progress`: also `pct`.
+- `reward_rule_progress`: also `pct`. For a repeating goal, the period going now (or its last).
+- **Repeating goals (WP-80, D-101, D-123).** `reward_goal.repeats` is `none`, `week` (the household's week, from `week_start`), `month` (the calendar month) or `term` (the child's school year's terms, `member_school_year()` when each term starts; the household's default year for a family goal); fixed once the goal starts (`repeat_fixed`). `periods_from`: periods starting before it keep the outcome they had when the rules last changed (the period going now, or the next when that one was won). A `DAYS_DUE` rule ("every day it's due") is only on a repeating goal (`rule_repeat`); its `target` is stored as 1 and its `params` are `{misses_allowed}` (0 to 3, default 0, `rule_misses`). `reward_goal_period` holds each period: its days cut to the goal's dates; for the first `DAYS_DUE` rule the days due, done and missed and the misses allowed; for a week, `days` (`[{date, mark, day_type}]`, `mark` one of `done`, `missed`, `open`, `today`, `later`, `none`; `day_type` for a day with nothing due); `n`, `won_at` and `celebrated_at` while won. The goal itself stays `active` until its end date (never `achieved`), and `achievement_count` counts its won periods. Parents and boards read it (RLS); only `save_goal_evaluation()` writes it; it is in the `supabase_realtime` publication.
 - `reward_goal_event`: also `edited` (name, description or picture only). `actor_type` is `admin` or `system`.
 - **Access.** Parents read all five tables. Boards read goals, rules and both progress tables (for WP-20), not the log. Only the functions in §4.7 write. Goals are never deleted (cancelled instead). A parent's goal and rule changes are audited (`audit_row`).
 
@@ -1112,6 +1116,8 @@ create policy chore_completion_event_device_insert on public.chore_completion_ev
 
 **Wishlist (WP-30, D-57):** `shop` lists the rewards offered now (active, not archived; `{id, title, icon, cost}`, in the shop's order), and each member who earns rewards has `wish {item_id, title, icon, cost}`, the reward they pinned while it is still offered, else null (null for everyone else). `wishlist_pin` is in the `supabase_realtime` publication. The board reads a snapshot without them (an older database) as no shop and no wishes.
 
+**Repeating goals (WP-80, D-123):** each goal also has `repeat`, `pays` (the points it, or each period, pays; null otherwise), `period` (the period going now, or the last started: `{start, end, outcome, next_start, days_due, days_done, days_missed, misses_allowed, days}`; null before its first) and `history` (its last five periods started, oldest first: `{start, end, outcome}`). A repeating goal's `celebrate` is a won period no board has celebrated yet, its `n` and `achieved_at` that period's.
+
 **Shop, requests and goals (WP-20, D-59):** each member who earns rewards also has `available` (their balance less the cost of their `requested` redemptions, as `request_redemption()` reckons it), `requests` (their redemptions still `requested` or `approved`, and any settled in the last two days, newest first, at most six: `{id, item_id, title, icon, cost, status, at}`, where `at` is when it last changed) and `limited` (the ids of rewards with a weekly limit they have reached this household week); for everyone else `available` is null and both lists are empty. Each `shop` item adds `photo` (its path in the `rewards` bucket, or null), `description` and `left` (stock less its requested, approved and given redemptions; null without stock). `goals` lists the goals in play, `active` or `achieved` and not archived, for the family or a member still here who earns rewards, each child's first (reached first), then the family's: `{id, member_id, title, icon, photo, status, n (achievement_count), achieved_at, celebrate (achieved and not yet celebrated), end_date, logic, pct, rules: [{id, type, target, current, pct, met, streak, best}]}`, the progress as last evaluated (0 and not met before the first). `reward_catalog_item`, `redemption`, `reward_goal`, `reward_goal_progress` and `reward_rule_progress` are in the `supabase_realtime` publication (pgTAP `070` pins it, `230_board_shop_goals` the rest).
 
 **Layout, descriptions and window (WP-35, D-66, D-67):** `layout {household, board}`: the household's layout and this board's own (`board_config.layout`, null when it has none); the board shows its own, else the household's, else the defaults. Each item in `occurrences` carries its chore's `description` (null when none) for "More info". The default window is yesterday through three weeks ahead (was two), for "Coming up".
@@ -1212,7 +1218,8 @@ All are `SECURITY DEFINER` with `search_path = ''`, and errors carry a stable co
 Pure functions, no I/O, no `Date.now()` (the clock is an input).
 
 ```ts
-type RuleType = 'COUNT' | 'STREAK' | 'DAILY_ALL_DONE' | 'POINTS';
+type RuleType = 'COUNT' | 'STREAK' | 'DAILY_ALL_DONE' | 'POINTS' | 'DAYS_DUE';
+type Repeat = 'none' | 'week' | 'month' | 'term';   // WP-80: goal.repeat (absent: none)
 type OccurrenceStatus = 'scheduled'|'completed'|'pending_approval'|'approved'
                       | 'rejected'|'skipped'|'missed';
 type MemberStatus = OccurrenceStatus | 'covered';   // per member: someone else did it (neutral)
@@ -1232,7 +1239,8 @@ type GoalStatus = 'draft'|'scheduled'|'active'|'achieved'|'redeemed'|'expired'|'
 interface GoalInput { goal: { id: string; member_id: string|null; start_date: string;
                               end_date: string|null; rule_logic: 'all'|'any'; status: GoalStatus };
                       rules: Rule[]; occurrences: OccurrenceFact[];
-                      asOf: string /* household-local date */; weekStart: number /* 0 Sunday … 6 */ }
+                      asOf: string /* household-local date */; weekStart: number /* 0 Sunday … 6 */;
+                      terms?: { start_date: string; end_date: string }[] /* a term goal's (WP-80) */ }
 interface RuleProgress { rule_id: string; type: RuleType; current_value: number; target_value: number;
                          pct: number; is_met: boolean; current_streak: number|null;
                          best_streak: number|null; last_qualifying_date: string|null }
@@ -1254,7 +1262,7 @@ function evaluateHistory(input: HistoryInput):
   { days: DailySummary[]; segments: StreakSegment[];
     current: { kind: 'good'|'bad'|null; length: number }; bestGood: number; worstBad: number };
 
-const ENGINE_VERSION = 1;   // stored on derived rows; bumping it forces a full recompute
+const ENGINE_VERSION = 2;   // stored on derived rows; bumping it forces a full recompute (2: WP-80's periods)
 ```
 
 `missed` is now an input status, not something the engine infers. The engine never reads a clock; "today" is `asOf`. Stored history (WP-17, D-55) is evaluated as of today `through` yesterday, so a miss yesterday makes it a bad day; as of yesterday itself it would be today, which is never bad. Facts are per member (D-30): a goal for a member counts only facts where that member is `credited`; a family goal (`member_id` null) counts each done occurrence once. Tasks count toward `COUNT` and `POINTS` on their `credit_date` and never make a day bad (D-31).
@@ -1312,6 +1320,7 @@ const ENGINE_VERSION = 1;   // stored on derived rows; bumping it forces a full 
   - draft and cancelled never change.
 
   The caller logs them as `reward_goal_event` rows and runs payouts (WP-19, WP-39).
+- **Repeating goals (WP-80, D-101, D-123).** With `goal.repeat` set, the goal's dates are cut into periods (each household week from `weekStart`, each calendar month, or each of `terms`; days between terms belong to none), the first and last cut to the goal's dates, up to the one holding `asOf` (or its end). Each period is worked out on its own: every rule's window is the period's days up to today. `DAYS_DUE` ("every day it's due") tallies the routines in scope on each day of the period, today and later ones included (as far as they are planned): a day is due when anything in scope counts that day (skipped and covered don't), good when all of it is done, missed once settled undone (today never). Its target is the days due less `misses_allowed`, and at least 1 when anything is due; it is met once that many days are good. A period is **won** when its rules are met (all or any), **missed** at once when a `DAYS_DUE` rule has more misses than allowed (all; any: every such rule) or when it closes unmet, **neutral** when it closes with nothing in scope due (a break), and **open** otherwise. The result's `periods` lists them, each with its rules' progress, `next_start` (the next period's first day inside the goal's dates), the first `DAYS_DUE` rule's days and, for a week, each day's mark. The goal's `pct`, `rules` and `is_achieved` are the period going now (or the last); its transitions are only `started` and `expired`. `DAYS_DUE` on a goal that doesn't repeat, or an unknown repeat, throws.
 - **Bad input.** A malformed date, week start, target or streak param throws a `RangeError` rather than guess. A stored null param is the same as unset.
 - **Tests.** 62 Vitest tests: one named test per edge case above, and nine fast-check properties. The properties check that results are deterministic and independent of the order facts arrive in and of the machine's time zone, and that settled days come out the same when replayed later. They also check runs against an independent reading of the day classes, goal streaks with no grace against the raw history, that doing more never lowers progress, and that tasks, skipped and covered routines never change a day. Coverage is 100% of lines and 96.7% of branches (the gate is 90%). Seventeen deliberate breaks of the engine are each caught.
 

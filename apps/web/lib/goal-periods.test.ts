@@ -41,9 +41,9 @@ const week = (o: Partial<GoalPeriod> = {}): GoalPeriod => ({
 
 describe('a week’s days', () => {
   it('[RWD-15-k] shows each school day and a day off with nothing due, never the weekend', () => {
-    expect(shownDays(week()).map((d) => `${d.label}:${d.mark}${d.note ? `:${d.note}` : ''}`)).toEqual(
-      ['Mon:done', 'Tue:done', 'Wed:done', 'Thu:today', 'Fri:none:no school'],
-    );
+    expect(
+      shownDays(week()).map((d) => `${d.label}:${d.mark}${d.note ? `:${d.note}` : ''}`),
+    ).toEqual(['Mon:done', 'Tue:done', 'Wed:done', 'Thu:today', 'Fri:none:no school']);
     // Without a day type, Saturday and Sunday are the weekend; a weekday with nothing due isn't.
     const plain = week({
       days: [

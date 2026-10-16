@@ -49,7 +49,7 @@ function evaluate(
 
 const LAST_WEEK = ['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09'];
 
-describe('every day it’s due, each week', () => {
+describe('[US-410] every day it’s due, each week', () => {
   it('[RWD-16-a] a 5-day week with everything done every day is won', () => {
     const [p] = evaluate([homework()], week(LAST_WEEK)).periods;
     expect(p).toMatchObject({

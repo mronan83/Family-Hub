@@ -2,14 +2,19 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 // [RWD-15][RWD-16] A repeating goal on the board (WP-80, the approved mockup) on /dev/board with the
-// made-up family: Maya's "Homework home" each week, going, missed or won (?repeating=), today the
-// week's fourth day and its fifth a day off school; Leo's reading, missed this week. At the board's
+// made-up family: Maya's "Homework home" each week, going, missed or won (?repeating=), with the
+// clock held on Thursday, Oct 15, 2026 (the week's fourth day) and Friday a day off school; Leo's
+// reading, missed this week. At the board's
 // sizes in Day and Evening: each day's mark, "3 of 4 days", "Missed, starts again", "Won this week!",
 // the last weeks, text 28 px or more and AA contrast.
 
 const people = (page: Page) => page.getByRole('list', { name: 'Family', exact: true });
 
+/** Thursday, Oct 15, 2026, 11 am in the family's zone (D-110: no real clock). */
+const THURSDAY = new Date('2026-10-15T15:00:00Z');
+
 async function open(page: Page, name: string, query: string) {
+  await page.clock.setFixedTime(THURSDAY);
   await page.goto(`/dev/board${query}`);
   await people(page).getByRole('button', { name, exact: true }).click();
   await expect(page.getByRole('heading', { name, level: 2 })).toBeVisible();
@@ -63,7 +68,7 @@ for (const viewport of [
 test.describe('the card', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
 
-  test('[RWD-15-l][RWD-16] going: a mark for each day, a day off a dash, "3 of 4 days" and what it pays', async ({
+  test('[RWD-15-l][RWD-16][US-411] going: a mark for each day, a day off a dash, "3 of 4 days" and what it pays', async ({
     page,
   }) => {
     await open(page, 'Maya', '?repeating=going');
@@ -86,17 +91,17 @@ test.describe('the card', () => {
     ).toHaveCount(5);
   });
 
-  test('[RWD-15-l][RWD-16-c] missed: "Missed, starts again" the next week’s first day, no part count', async ({
+  test('[RWD-15-l][RWD-16-c][US-411] missed: "Missed, starts again" the next week’s first day, no part count', async ({
     page,
   }) => {
     await open(page, 'Maya', '?repeating=missed');
     const card = homework(page);
     await expect(card.locator('.fw-goal-line[data-kind="missed"]')).toHaveText(
-      /^Missed, starts again \w+day, \w{3} \d{1,2}$/,
+      'Missed, starts again Monday, Oct 19',
     );
     await expect(card.getByRole('progressbar')).toHaveCount(0);
     await expect(
-      card.getByRole('list', { name: 'This week’s days' }).getByRole('listitem').nth(1),
+      card.getByRole('list', { name: 'This week’s days' }).getByRole('listitem').nth(2),
     ).toHaveAttribute('data-mark', 'missed');
     // Leo's goal, one miss allowed, is lost too; it is his, so not on Maya's screen.
     await expect(page.locator('[data-goal="g-reading"]')).toHaveCount(0);
@@ -114,7 +119,7 @@ test.describe('the card', () => {
     await expect(card.locator('.fw-goal-line[data-kind="won"]')).toHaveText(
       'Won this week! 10 points.',
     );
-    await expect(card).toContainText(/Next week starts \w+day, \w{3} \d{1,2}\./);
+    await expect(card).toContainText('Next week starts Monday, Oct 19.');
     await expect(card).toContainText('Won 4 of the last 4 weeks');
   });
 });

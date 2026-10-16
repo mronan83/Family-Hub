@@ -667,7 +667,12 @@ describe('repeating goals (WP-80)', () => {
       repeat: 'week',
     });
     // Misses allowed are 0 to 3; anything else is 0. No target is asked for.
-    expect(daysDue([['repeat', 'month'], ['rule-a-misses', '7']])).toMatchObject({
+    expect(
+      daysDue([
+        ['repeat', 'month'],
+        ['rule-a-misses', '7'],
+      ]),
+    ).toMatchObject({
       value: { repeat: 'month', rules: [{ params: { misses_allowed: 0 } }] },
     });
   });
@@ -710,7 +715,10 @@ describe('repeating goals (WP-80)', () => {
   });
 
   it('[RWD-16] describes the rule, and a period’s events and a stop', () => {
-    const names = { tags: new Map<string, string>(), items: new Map([[HOMEWORK, 'Homework home']]) };
+    const names = {
+      tags: new Map<string, string>(),
+      items: new Map([[HOMEWORK, 'Homework home']]),
+    };
     expect(
       describeRule(
         { type: 'DAYS_DUE', target: 1, scope: { chore_ids: [HOMEWORK] }, params: {} },

@@ -103,7 +103,7 @@ test.afterAll(async () => {
   }
 });
 
-test('[RWD-15-m] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board', async ({
+test('[RWD-15-m][US-410][US-411] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board', async ({
   browser,
 }) => {
   // [D-110] Six page loads, a save, and pairing a board (10 to 40 s, board.ts): about 70 s at worst

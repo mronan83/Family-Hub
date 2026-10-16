@@ -312,6 +312,31 @@ const SHOTS = [
     url: '/dev/goals?form=started',
     element: '.fw-goal-form__dates',
   },
+  // [RWD-15][RWD-16] A repeating goal (WP-80): Maya's card on Goals, and her week on the board.
+  {
+    name: 'admin-goal-repeating-phone',
+    device: 'phone',
+    url: '/dev/goals',
+    element: '.fw-goal:has(.fw-days) >> nth=0',
+  },
+  {
+    name: 'admin-goal-weeks-phone',
+    device: 'phone',
+    url: '/dev/goals?form=repeating',
+    act: async (page) => {
+      await page.locator('summary', { hasText: 'Weeks' }).click();
+    },
+    element: 'details:has(#goal-weeks-heading)',
+  },
+  {
+    name: 'board-goal-repeating',
+    device: 'board',
+    url: '/dev/board?repeating=missed',
+    act: async (page) => {
+      await person(page, 'Maya').click();
+    },
+    element: '[data-goal="g-homework"]',
+  },
   // The preview of a change (WP-39): the panel itself, under the form.
   {
     name: 'admin-goal-preview-phone',

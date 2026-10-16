@@ -311,7 +311,7 @@ test('[RWD-10][US-406] the preview: what saving would do, and each rule now and 
   ).toBeChecked();
 });
 
-test('[RWD-15-l][RWD-16] a repeating goal on Goals: this week’s days, a lost week, and the weeks', async ({
+test('[RWD-15-l][RWD-16][US-410] a repeating goal on Goals: this week’s days, a lost week, and the weeks', async ({
   page,
 }) => {
   await page.goto('/dev/goals');
