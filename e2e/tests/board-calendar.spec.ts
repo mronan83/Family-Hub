@@ -1,7 +1,8 @@
-import { expect, test, type Page } from '../support/test';
+import { expect, test, type Locator, type Page } from '../support/test';
 import { runCalendarSync, type Fetcher } from '../../apps/web/lib/calendar/sync';
-import { retireBoard } from '../support/board';
+import { boardFold, pairBoard, retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
+import { addDays, householdToday } from '../support/day';
 
 // [CAL-04][CAL-05][CAL-10][US-507][US-509] Calendars on a board, on the preview at the reference panel's 3840×2160
 // (WP-23, D-65). Two made-up calendars of the demo family (School, Maya's, and Family) are connected
@@ -15,15 +16,13 @@ const DEMO = '0de00000-0000-4000-8000-000000000001';
 const BOARD = 'Calendar e2e';
 const sql = (q: string) => query(db!, q);
 
-test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 let admin: Page;
 let board: Page;
 let today = '';
 
-const day = (n: number) =>
-  new Date(Date.parse(`${today}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
+const day = (n: number) => addDays(today, n);
 const VTIMEZONE = [
   'BEGIN:VTIMEZONE',
   'TZID:America/New_York',
@@ -89,21 +88,42 @@ async function connect(
   sql(`select set_config('request.jwt.claims', '{"sub":"${alex}","role":"authenticated"}', false);
        select public.save_calendar_source('${DEMO}', null, '${name}', '${link}', '${color}',
          ${member ? `'${member}'` : 'null'}, true)`);
-  await runCalendarSync(serviceRpc(db!) as unknown as Parameters<typeof runCalendarSync>[0], DEMO, {
+  await runCalendarSync(ownCalendars as unknown as Parameters<typeof runCalendarSync>[0], DEMO, {
     fetch: serve,
   });
 }
+/**
+ * The job's database access as the service role, syncing only this spec's calendars: another
+ * calendar of the demo family is left alone (its link is not one of these files, so a sync would
+ * mark it failing).
+ */
+const ownCalendars = {
+  rpc: async (name: string, args: Record<string, unknown>) => {
+    const answer = await serviceRpc(db!).rpc(name, args);
+    if (name === 'calendar_sources_due' && Array.isArray(answer.data)) {
+      answer.data = (answer.data as { url: string | null }[]).filter(
+        (s) => s.url !== null && s.url in FILES,
+      );
+    }
+    return answer;
+  },
+};
 
+/** The calendars this spec connects, and only these are removed. */
+const CALENDARS = ['School e2e', 'Family e2e', 'Sports e2e'];
 function cleanUp() {
   // Each calendar's link goes from Vault with it (trg_calendar_source_secrets).
-  sql(`delete from public.calendar_source where household_id = '${DEMO}' and name like '% e2e'`);
+  sql(`delete from public.calendar_source where household_id = '${DEMO}'
+         and name in (${CALENDARS.map((c) => `'${c}'`).join(', ')})`);
 }
 
 /** The week on the board's calendar: today's events in it, all day across the top or by the hour (D-82). */
 const week = () => board.locator('.fw-tgrid');
-/** The board's calendar, opened again if the board went back to Home (90 s untouched). */
+/**
+ * The board's calendar, tapped open each time: the tap also starts the board's 90 s idle again, so it
+ * does not go back to Home during a measurement that follows.
+ */
 async function boardCalendar() {
-  if (await board.locator('#cal-title').isVisible()) return;
   await board
     .getByRole('list', { name: 'Family', exact: true })
     .getByRole('button', { name: 'Calendar', exact: true })
@@ -138,10 +158,25 @@ async function untilOnBoard(selector: string, text: string, gone: boolean, saved
 }
 
 /**
+ * [CAL-05][D-110] Presses Save calendars and waits for the server's answer to the save. The 3 s
+ * budget runs from that answer (`saved`): the save's own time (`saved - pressed`) is reported apart,
+ * so a slow save reads as a slow save, not as a slow board.
+ */
+async function save(button: Locator) {
+  const answer = admin.waitForResponse(
+    (r) => r.request().method() === 'POST' && r.request().headers()['next-action'] !== undefined,
+  );
+  const pressed = Date.now();
+  await button.click();
+  await answer;
+  return { pressed, saved: Date.now() };
+}
+
+/**
  * [CAL-05][WP-70] What the board did after Save, in ms from it: the last change it heard, its last
  * read's start and return, and reads that failed; and when the database had School's choice.
  */
-async function boardStages(saved: number, heard: string | null) {
+async function boardStages(pressed: number, saved: number, heard: string | null) {
   const status = board.getByRole('status');
   const at = async (name: string) => {
     const t = Number((await status.getAttribute(name)) ?? 0);
@@ -152,7 +187,7 @@ async function boardStages(saved: number, heard: string | null) {
       from public.device_calendar dc join public.calendar_source s on s.id = dc.calendar_source_id
      where s.name = 'School e2e'`);
   return (
-    `Save pressed at ${new Date(saved).toISOString().slice(11, 23)} UTC; ` +
+    `Save pressed at ${new Date(pressed).toISOString().slice(11, 23)} UTC, the save answered ${saved - pressed} ms later (times below from then); ` +
     `changes heard ${heard} → ${await status.getAttribute('data-events')}, the last at ${await at('data-heard-at')}; ` +
     `last read from ${await at('data-read-from')} to ${await at('data-read-to')}, ` +
     `${(await status.getAttribute('data-read-failed')) ?? 0} failed; ` +
@@ -161,33 +196,17 @@ async function boardStages(saved: number, heard: string | null) {
 }
 
 test.beforeAll(async ({ browser }, testInfo) => {
-  // Signing in, connecting and pairing a board can take most of 30 s on a cold preview.
-  testInfo.setTimeout(90_000);
+  // Connecting two calendars (a psql process per call of the job's code), signing in and pairing a
+  // board take 15 to 40 s on a cold preview.
+  testInfo.setTimeout(120_000);
   cleanUp();
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
-  today = sql(`select private.household_today('${DEMO}')`);
+  today = householdToday(db!);
   const maya = sql(
     `select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`,
   );
   await connect('School e2e', 'school-e2e', 'member-3', maya, 'Picture day e2e', true);
   await connect('Family e2e', 'family-e2e', 'member-6', null, 'Swim e2e', false);
-
-  admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
-  await admin.goto('/admin/devices');
-  const form = admin.getByRole('form', { name: 'Add a board', exact: true });
-  await form.getByLabel('Board name', { exact: true }).fill(BOARD);
-  await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
-  const code = (await admin.getByTestId('pairing-code').textContent())?.replace(/\D/g, '') ?? '';
-  board = await (await browser.newContext({ hasTouch: true })).newPage();
-  await board.goto('/board');
-  await board.getByLabel('Pairing code from the admin app', { exact: true }).fill(code);
-  await board.getByRole('button', { name: 'Pair this board', exact: true }).click();
-  await expect(board).toHaveURL(/\/board$/);
-  await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
+  ({ admin, board } = await pairBoard(browser, BOARD, { board: { hasTouch: true } }));
 });
 
 test.afterAll(async () => {
@@ -222,79 +241,81 @@ test('[CAL-04][CAL-05][CAL-10][US-509] a new board shows the calendars set to sh
   await expect(sheet).toBeHidden();
 });
 
-test('[CAL-05][US-507] unticking School for this board takes its events off it within 3 seconds', async () => {
+// One story on this board's own calendar choice: School unticked, ticked again, then a calendar
+// connected later. Two measured saves, two admin page loads, a sync and a reload: 20 to 50 s.
+test('[CAL-05][US-507] this board’s own calendars: School unticked leaves it within 3 seconds; ticked again it is back in its color; a calendar connected later stays off', async () => {
+  test.setTimeout(150_000);
   await admin.goto('/admin/devices');
-  const choice = admin.locator('details', {
-    has: admin.locator('summary', { hasText: `Calendars on ${BOARD}:` }),
-  });
-  await choice.locator('summary').click();
+  // [DEV-09][D-118] The board's fold opened (WP-91), its calendars inside.
+  const choice = await boardFold(admin, BOARD);
   const form = choice.getByRole('form', { name: `Calendars on ${BOARD}` });
-  await expect(form.getByRole('checkbox', { name: 'School e2e' })).toBeChecked();
-  await form.getByRole('checkbox', { name: 'School e2e' }).uncheck();
-  await boardCalendar();
-  await expect(week()).toContainText('Picture day e2e');
-  const heard = await board.getByRole('status').getAttribute('data-events');
-  const saved = Date.now();
-  await form.getByRole('button', { name: 'Save calendars' }).click();
-  const ms = await untilOnBoard('.fw-tgrid', 'Picture day e2e', true, saved);
-  // Say what the board did (WP-65, WP-70): when it heard the change, read and drew it, so a slow
-  // save, Realtime, read or screen can be told apart.
-  const stages = await boardStages(saved, heard);
-  console.log(`[CAL-05] School left the board ${ms} ms after Save (${stages})`);
-  expect(
-    ms,
-    `[CAL-05] School left the board ${ms} ms after Save, over 3 s: ${stages}`,
-  ).toBeLessThanOrEqual(3_000);
-  await expect(week()).toContainText('Swim e2e');
-  await expect(admin.getByText(`Saved the calendars on ${BOARD}.`, { exact: false })).toBeVisible();
-});
+  const saveButton = form.getByRole('button', { name: 'Save calendars' });
 
-test('[US-507] ticked again, School is back in its own color, with its person', async () => {
-  const choice = admin.locator('details', {
-    has: admin.locator('summary', { hasText: `Calendars on ${BOARD}:` }),
+  await test.step('[CAL-05][US-507] unticking School for this board takes its events off it within 3 seconds', async () => {
+    await expect(form.getByRole('checkbox', { name: 'School e2e' })).toBeChecked();
+    await form.getByRole('checkbox', { name: 'School e2e' }).uncheck();
+    await boardCalendar();
+    await expect(week()).toContainText('Picture day e2e');
+    const heard = await board.getByRole('status').getAttribute('data-events');
+    const { pressed, saved } = await save(saveButton);
+    const ms = await untilOnBoard('.fw-tgrid', 'Picture day e2e', true, saved);
+    // Say what the board did (WP-65, WP-70): when it heard the change, read and drew it, so a slow
+    // save, Realtime, read or screen can be told apart.
+    const stages = await boardStages(pressed, saved, heard);
+    console.log(`[CAL-05] School left the board ${ms} ms after the save (${stages})`);
+    expect(
+      ms,
+      `[CAL-05] School left the board ${ms} ms after the save, over 3 s: ${stages}`,
+    ).toBeLessThanOrEqual(3_000);
+    await expect(week()).toContainText('Swim e2e');
+    await expect(
+      admin.getByText(`Saved the calendars on ${BOARD}.`, { exact: false }),
+    ).toBeVisible();
   });
-  await choice.locator('summary').click();
-  const form = choice.getByRole('form', { name: `Calendars on ${BOARD}` });
-  await form.getByRole('checkbox', { name: 'School e2e' }).check();
-  await boardCalendar();
-  const heard = await board.getByRole('status').getAttribute('data-events');
-  const saved = Date.now();
-  await form.getByRole('button', { name: 'Save calendars' }).click();
-  // [WP-70] Timed as CAL-05 is, and saying what the board did when it is late.
-  const bar = '.fw-tgrid__bar[data-calendar="School e2e"]';
-  const ms = await untilOnBoard(bar, 'Picture day e2e', false, saved);
-  const stages = await boardStages(saved, heard);
-  console.log(`[US-507] School back on the board ${ms} ms after Save (${stages})`);
-  expect(
-    ms,
-    `[US-507] School back on the board ${ms} ms after Save, over 3 s: ${stages}`,
-  ).toBeLessThanOrEqual(3_000);
-  const school = week().locator(bar);
-  await expect(school).toContainText('Picture day e2e');
-  // The browser gives a custom property's value with var() resolved: School's color is member-3's,
-  // as a line (D-70): the color itself by day, its lighter shade in the Evening theme.
-  const color = await school.evaluate((el) => {
-    const style = getComputedStyle(el);
-    return {
-      cal: style.getPropertyValue('--cal').trim(),
-      own: style.getPropertyValue('--member-3-line').trim(),
-    };
-  });
-  expect(color.cal).not.toBe('');
-  expect(color.cal).toBe(color.own);
-  await expect(school).toHaveAccessibleName(/, Maya$/);
-});
 
-test('[US-507] a calendar connected later stays off a board with its own choice', async () => {
-  await connect('Sports e2e', 'sports-e2e', 'member-5', null, 'Match e2e', true);
-  // Sports shows on the boards by default; this board chose its own, so not here.
-  expect(
-    sql(
-      `select show_on_board from public.calendar_source where household_id = '${DEMO}' and name = 'Sports e2e'`,
-    ),
-  ).toBe('t');
-  await board.reload();
-  await boardCalendar();
-  await expect(week()).toContainText('Picture day e2e');
-  await expect(week()).not.toContainText('Match e2e');
+  await test.step('[US-507] ticked again, School is back in its own color, with its person', async () => {
+    // The form stays open after its save; opened again only if it closed.
+    if ((await choice.getAttribute('open')) === null) await choice.locator('summary').click();
+    await form.getByRole('checkbox', { name: 'School e2e' }).check();
+    await boardCalendar();
+    const heard = await board.getByRole('status').getAttribute('data-events');
+    const { pressed, saved } = await save(saveButton);
+    // [WP-70] Timed as CAL-05 is, and saying what the board did when it is late.
+    const bar = '.fw-tgrid__bar[data-calendar="School e2e"]';
+    const ms = await untilOnBoard(bar, 'Picture day e2e', false, saved);
+    const stages = await boardStages(pressed, saved, heard);
+    console.log(`[US-507] School back on the board ${ms} ms after the save (${stages})`);
+    expect(
+      ms,
+      `[US-507] School back on the board ${ms} ms after the save, over 3 s: ${stages}`,
+    ).toBeLessThanOrEqual(3_000);
+    const school = week().locator(bar);
+    await expect(school).toContainText('Picture day e2e');
+    // The browser gives a custom property's value with var() resolved: School's color is member-3's,
+    // as a line (D-70): the color itself by day, its lighter shade in the Evening theme.
+    const color = await school.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return {
+        cal: style.getPropertyValue('--cal').trim(),
+        own: style.getPropertyValue('--member-3-line').trim(),
+      };
+    });
+    expect(color.cal).not.toBe('');
+    expect(color.cal).toBe(color.own);
+    await expect(school).toHaveAccessibleName(/, Maya$/);
+  });
+
+  await test.step('[US-507] a calendar connected later stays off a board with its own choice', async () => {
+    await connect('Sports e2e', 'sports-e2e', 'member-5', null, 'Match e2e', true);
+    // Sports shows on the boards by default; this board chose its own, so not here.
+    expect(
+      sql(
+        `select show_on_board from public.calendar_source where household_id = '${DEMO}' and name = 'Sports e2e'`,
+      ),
+    ).toBe('t');
+    await board.reload();
+    await boardCalendar();
+    await expect(week()).toContainText('Picture day e2e');
+    await expect(week()).not.toContainText('Match e2e');
+  });
 });

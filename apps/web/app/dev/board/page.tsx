@@ -1,7 +1,9 @@
 import { boardFitScript, textSizeOf, type Theme } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { CARD_IDS, readLayout } from '@/lib/board-layout';
+import { readBoardSleep } from '@/lib/board-sleep';
 import { DevBoard } from './dev-board';
+import { KITCHEN_SLEEP } from './fixture';
 
 // The board's Today with a made-up family and no database (WP-11), for the UI suite: the screen,
 // its taps and states, in Day or Evening (?theme=evening); old data (?stale=1) or a job behind
@@ -13,7 +15,9 @@ import { DevBoard } from './dev-board';
 // night|celsius|yesterday|none, or ?weather=off for a layout that turns it off); the board fitted to
 // the window at a text size (WP-47: ?text=smaller|larger|largest); no meals planned (WP-28: ?meals=none);
 // Leo's item that opens Lunches (WP-49: ?lunches=1); a board watching for a new deploy, running the
-// commit given (WP-78: ?deploy=<commit>).
+// commit given (WP-78: ?deploy=<commit>); asleep and woken (WP-34: ?sleep=kitchen, Kitchen's set times
+// from the mockup, school nights 9:30 pm to 6:30 am and weekends 10:30 pm to 7:30 am, 15 minutes
+// untouched; ?sleep=idle, 5 minutes untouched and no set times; the school days are Monday to Friday).
 export const metadata: Metadata = { title: 'Board Today', robots: { index: false } };
 
 export default async function DevBoardPage({
@@ -34,6 +38,7 @@ export default async function DevBoardPage({
     meals?: string;
     lunches?: string;
     deploy?: string;
+    sleep?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -76,6 +81,13 @@ export default async function DevBoardPage({
         textSize={textSizeOf(params.text)}
         lunchItem={params.lunches === '1'}
         deploy={params.deploy}
+        sleep={
+          params.sleep === 'kitchen'
+            ? KITCHEN_SLEEP
+            : params.sleep === 'idle'
+              ? readBoardSleep({ idle_minutes: 5 })
+              : undefined
+        }
       />
     </div>
   );

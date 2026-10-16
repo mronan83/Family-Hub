@@ -14,6 +14,7 @@ export const metadata: Metadata = { title: 'Sign in' };
 const NOTICES: Record<string, string> = {
   link: 'That sign-in link has expired or was already used. Ask for a new one below.',
   demo: 'Demo sign-in isn’t ready on this preview yet. It is set up each time e2e runs.',
+  auth: 'The sign-in service didn’t answer. Try again in a minute.',
 };
 
 // [ACC-02] Admin sign-in (06 §9: Paper, stacked color logo): password, or a magic link for an

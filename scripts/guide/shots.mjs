@@ -243,6 +243,16 @@ const SHOTS = [
   // The admin app -------------------------------------------------------------------------------
   // The menu and Settings (WP-51): Settings on a laptop with the menu beside it, the menu on a phone.
   { name: 'admin-settings-laptop', device: 'laptop', url: '/dev/settings' },
+  // [DEV-07] A board's Sleep and wake on Boards (WP-34): Kitchen's, open, as in the mockup.
+  {
+    name: 'admin-boards-sleep-laptop',
+    device: 'laptop',
+    url: '/dev/boards?open=kitchen',
+    // Kitchen opened (WP-91), down to Save sleep and wake: the page whole is over 120 KB.
+    maxHeight: 1080,
+  },
+  // [D-118] Boards folded (WP-91): every board to its facts, Playroom's not-seen warning.
+  { name: 'admin-boards-phone', device: 'phone', url: '/dev/boards', full: true },
   // Home at a glance and Family options (WP-57): what needs you and the quick actions; a quiet day
   // with today's snow day on a phone; the week's start day with a change waiting.
   { name: 'admin-home-laptop', device: 'laptop', url: '/dev/home', full: true },
@@ -285,6 +295,13 @@ const SHOTS = [
     // under 120 KB.
     quality: 48,
   },
+  // [RWD-14] A started goal's end date (WP-79): Ends on a date ticked, the date and Clear.
+  {
+    name: 'admin-goal-end-date-phone',
+    device: 'phone',
+    url: '/dev/goals?form=started',
+    element: '.fw-goal-form__dates',
+  },
   // The preview of a change (WP-39): the panel itself, under the form.
   {
     name: 'admin-goal-preview-phone',
@@ -293,10 +310,39 @@ const SHOTS = [
     element: '.fw-goal-preview',
   },
   // Meals (WP-25): the week on a laptop, and the library on a phone.
-  { name: 'admin-meals-laptop', device: 'laptop', url: '/dev/meals', maxHeight: 1900, quality: 62 },
-  // School lunch (WP-26): the section itself.
-  // [MEAL-11] With a child's picks and a change waiting (WP-49).
-  { name: 'admin-lunch-laptop', device: 'laptop', url: '/dev/meals?lunches=1', element: '#lunch' },
+  // [MEAL-14] The days folded, today opened (WP-75).
+  {
+    name: 'admin-meals-laptop',
+    device: 'laptop',
+    url: '/dev/meals?open=2026-10-14',
+    maxHeight: 1900,
+    quality: 62,
+  },
+  // [MEAL-15] A planned dinner opened with Edit, in place (WP-76).
+  {
+    name: 'admin-meal-edit-phone',
+    device: 'phone',
+    url: '/dev/meals?edit=f2e10000-0000-4000-8000-000000000010',
+    element: '#entry-f2e10000-0000-4000-8000-000000000010',
+  },
+  // School lunch (WP-26) as a list of days (WP-74): on a phone, Leo's week with today opened.
+  {
+    name: 'admin-lunch-phone',
+    device: 'phone',
+    url: '/dev/meals',
+    element: '#lunch',
+    // The whole section, the usual weeks too, kept under 120 KB.
+    quality: 48,
+    act: (page) => page.locator('#lunch .fw-lunchday[data-today]:visible summary').click(),
+  },
+  // [MEAL-11] On a laptop, with a child's picks (WP-49), today opened.
+  {
+    name: 'admin-lunch-laptop',
+    device: 'laptop',
+    url: '/dev/meals?lunches=1',
+    element: '#lunch',
+    act: (page) => page.locator('#lunch .fw-lunchday[data-today]:visible summary').click(),
+  },
   // [MEAL-09] The children's lunch changes waiting on Today (WP-49), on a laptop and a phone.
   {
     name: 'admin-lunch-changes-laptop',

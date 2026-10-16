@@ -41,6 +41,18 @@ The planner follows `.claude/skills/planner/SKILL.md`. A worker follows `.claude
 - Free plans only (Vercel Hobby, Supabase Free, GitHub Actions). No Docker, anywhere.
 - Board: text at least 28 px, buttons at least 56 px, works by touch and by mouse. Admin: works on a 13" laptop.
 - Validate locally and run the format check before every push. One validated push beats three speculative ones.
+- e2e runs nightly only and never blocks a PR or a deploy (D-108). A PR is ready when the fast checks are green; a red nightly run opens an issue.
+
+**Tests** (the test standard, D-110; build tests with the same care as the code, so they fail only when the app is wrong)
+- No sleeps or fixed waits. Wait on a readiness signal: a role or text, `aria-busy`, a status, a response, or `expect.poll` on the database. To show something did *not* happen, wait for a control that did. After a page load, `e2e/support/test.ts` waits until React has hydrated the page (`<html data-hydrated>`): a form used before then reloads the page and saves nothing.
+- Sign in once, not per test. `signIn(page, 'Alex')` (`e2e/support/session.ts`) signs each worker in once per demo persona and reuses that session; only `auth.spec.ts`, which tests signing in, taps the sign-in itself.
+- No dependence on the real clock. Read the household's today from the database once (`e2e/support/day.ts`) and do date maths on calendar dates. A test passes at any hour UTC, on any weekday, in any month (summer and winter break included: `e2e/support/school.ts`), and across DST. Where dates matter, cover midnight UTC, week boundaries and DST in unit tests.
+- Own data. Each test creates what it needs with unique names, or takes it from its file's `beforeAll`; it never depends on another test or on run order, and puts back what it changes in the demo family in `afterAll` or `finally`. Steps of one story are one test with `test.step`. No new `mode: 'serial'`.
+- Time limits come from measured runs on the free test database, with at least 3× headroom. The run summary lists any test that used more than a third of its limit. Latency budgets that are requirements stay exact, timed from the server's confirmation.
+- Prefer Vitest and the UI suite. e2e only for what needs the real database and a preview.
+- Test cases first (D-107). Before building, write the item's test cases in its `05` §5 section (`MEAL-11-a`: a requirement on its Reqs line plus a letter). Every case gets a test whose name carries its ID. Then regenerate the catalogue with `python3 docs/check_traceability.py --docs docs --fix`. CI fails a new test gap or a test naming an unknown ID (`08` §6). Test each change by its type (`08` §4, D-106).
+- No e2e and no burn-in on a PR (D-108). A new or changed spec runs in the next nightly run; it may be burnt in there (`node scripts/e2e-run.mjs --burn-in <spec>`, 5 runs in a row).
+- No blind retries. The nightly run re-runs a failed test once only on evidence the infrastructure failed (a statement timeout, a refused or reset connection, a Supabase or Auth 5xx, the preview not ready, the test database slow while it ran) and labels the cause. Anything else is an assertion failure: find the cause in the app or the test.
 
 **Secrets and data**
 - Never ask the owner to paste a token or key. Secrets go straight into GitHub, Vercel or Supabase settings, or are made by a workflow that never prints them.
@@ -52,7 +64,6 @@ The planner follows `.claude/skills/planner/SKILL.md`. A worker follows `.claude
 
 - Skip, disable or quarantine a test, or call a failure a flake without a cause.
 - Push an empty commit, or close and reopen a PR, to restart CI.
-- Cancel or displace another PR's e2e run (see "The e2e queue" in the deliver skill).
 - Rebase or force-push a branch that is in review. Merge `main` into it instead.
 - Put a model name or ID in a commit, PR, comment or doc.
 - Commit `.claude/worktrees/`, or the `AGENTS.md` and `CLAUDE.md` that the Next.js build writes under `apps/web/`.

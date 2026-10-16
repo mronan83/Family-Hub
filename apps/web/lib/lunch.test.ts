@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { lunchFromDb, lunchRefusal, noLunchWords, parseUsualLunch } from './lunch';
+import { lunchFromDb, lunchRefusal, noLunchWords, parseUsualLunch, usualLine } from './lunch';
 
 describe('school lunch', () => {
   it('[MEAL-04] reads lunch_week(): the usual week and each day, anything unknown dropped', () => {
@@ -90,5 +90,22 @@ describe('school lunch', () => {
     expect(lunchRefusal({ hint: 'not_school_day' })).toBe('That day has no school lunch.');
     expect(lunchRefusal({ hint: 'not_a_child' })).toBe('School lunch is for children.');
     expect(lunchRefusal({})).toBe('That didn’t save. Try again in a moment.');
+  });
+});
+
+describe('[MEAL-04][D-98] the folded usual week', () => {
+  it('[MEAL-04] one line per child, Monday to Friday, Buy or Bring', () => {
+    expect(
+      usualLine('Sam', { mon: 'buy', tue: 'bring', wed: 'buy', thu: 'buy', fri: 'bring' }),
+    ).toBe('Sam: Mon Buy · Tue Bring · Wed Buy · Thu Buy · Fri Bring');
+  });
+
+  it('[MEAL-04] a weekday without a choice reads Bring, as the form shows it', () => {
+    expect(usualLine('Maya', { fri: 'buy' })).toBe(
+      'Maya: Mon Bring · Tue Bring · Wed Bring · Thu Bring · Fri Buy',
+    );
+    expect(usualLine('Leo', {})).toBe(
+      'Leo: Mon Bring · Tue Bring · Wed Bring · Thu Bring · Fri Bring',
+    );
   });
 });

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
+import { signIn } from '../support/session';
 
 // [CHR-14][CHR-15][ACC-04] "Which one is you?" on the preview (D-61), as Alex of the demo family: a
 // sign-in linked to no one links itself in one tap from Reminders or My tasks; a parent whose own
@@ -35,11 +36,11 @@ function unlink(extra = '') {
 test.beforeAll(async ({ browser }) => {
   putBack();
   page = await browser.newPage();
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await page.waitForURL(/\/admin$/);
+  await signIn(page);
 });
 
+// After each test too, so a test that fails half-way can't leave Alex unlinked for the next one.
+test.afterEach(() => putBack());
 test.afterAll(() => putBack());
 
 for (const [path, title, done] of [

@@ -1,6 +1,11 @@
 import { expect, test, type Page } from '../support/test';
 import { runMenuImport, type Fetcher } from '../../apps/web/lib/menu/import';
+import { parseMenuCsv } from '../../apps/web/lib/menu/csv';
 import { serviceRpc, sql as query } from '../support/db';
+import { addDays, householdToday, householdWeekStart, weekStartOf, weekday } from '../support/day';
+import { withSchoolDays } from '../support/school';
+import { unfold } from '../support/fold';
+import { signIn } from '../support/session';
 
 // [MENU-01..05][MEAL-05] School menus on the preview (WP-27, D-79), as Alex of the demo family. The
 // done-when: four weeks load from a file, and a feed that fails keeps its cached menus and shows a
@@ -8,31 +13,40 @@ import { serviceRpc, sql as query } from '../support/db';
 // at first). A Nutrislice feed is added for a made-up district, and the menu_import job's own code
 // (lib/menu/import.ts) runs here on the e2e runner against the shared database, as the job does
 // (previews hold no job secret), with its fetch answering made-up weeks, then failing: the page says
-// why, and the menus stay. Last, Maya's lunch comes from the file's menu, and her buy day shows it on
-// Meals. Production's jobs leave the demo family alone (D-62). No real school's menu or identifiers.
+// why, and the menus stay. Last, Maya's lunch comes from a file's menu (one of that test's own, in a
+// school week of its own), and her buy day shows it on Meals. Each test makes its own menu, so none
+// needs another. Production's jobs leave the demo family alone (D-62). No real school's menu or
+// identifiers.
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const FILE = 'Oak e2e';
 const FEED = 'Cedar e2e';
+const BIRCH = 'Birch e2e';
 const sql = (q: string) => query(db!, q);
 
-test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
+/** The demo family's day, read once (D-110). */
 let today = '';
-const day = (n: number) =>
-  new Date(Date.parse(`${today}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
-const weekday = (date: string) => new Date(`${date}T12:00:00Z`).getUTCDay();
+const day = (n: number) => addDays(today, n);
 const maya = () =>
   sql(`select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`);
+/** A day as the pages name it: "Mon, Oct 19". */
+const dayName = (date: string) =>
+  new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${date}T12:00:00Z`));
 
-/** Four weeks of a made-up menu from today: two items each weekday, the date in the first. */
-function fourWeeks(): string {
+/** `days` days of a made-up menu from `from`: two items each weekday, the date in the first. */
+function menuCsv(name: string, from: string, days: number): string {
   const rows = ['date,item,section'];
-  for (let n = 0; n < 28; n++) {
-    const d = day(n);
+  for (let n = 0; n < days; n++) {
+    const d = addDays(from, n);
     if (weekday(d) === 0 || weekday(d) === 6) continue;
-    rows.push(`${d},Oak lunch ${d},Main Line`, `${d},"Milk, 1%",Beverages`);
+    rows.push(`${d},${name} lunch ${d},Main Line`, `${d},"Milk, 1%",Beverages`);
   }
   return `${rows.join('\n')}\n`;
 }
@@ -67,16 +81,23 @@ const answering =
       ? new Response(JSON.stringify(cedarWeek(sunday)))
       : new Response('Unavailable', { status });
   };
-/** The job's run for the demo family, `hours` ahead (so the feed is due again). */
+/**
+ * The job's run for the demo family, `hours` ahead of the database's clock (which stamped the last
+ * fetch), so the feed is due again.
+ */
 const runJob = (hours: number, fetcher: Fetcher) =>
   runMenuImport(serviceRpc(db!) as unknown as Parameters<typeof runMenuImport>[0], DEMO, {
     fetch: fetcher,
-    now: new Date(Date.now() + hours * 3_600_000),
+    now: new Date(
+      Number(sql(`select (extract(epoch from now()) * 1000)::bigint`)) + hours * 3_600_000,
+    ),
   });
 
 function cleanUp() {
-  // Days go with their menu; children who had it are unlinked (and Maya's put back below).
-  sql(`delete from public.menu_source where household_id = '${DEMO}' and name like '% e2e'`);
+  // This spec's menus only. Days go with their menu; children who had it are unlinked (and Maya's
+  // put back below).
+  sql(`delete from public.menu_source where household_id = '${DEMO}'
+         and name in ('${FILE}', '${FEED}', '${BIRCH}')`);
   sql(`update public.member_lunch set defaults = '{"fri": "buy"}',
               menu_source_id = (select id from public.menu_source
                                  where household_id = '${DEMO}' and name = 'Maple Elementary')
@@ -84,9 +105,7 @@ function cleanUp() {
 }
 
 async function asAlexOnMenus(page: Page) {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await page.waitForURL(/\/admin$/);
+  await signIn(page);
   await page.goto('/admin/meals/menus');
   await expect(page.getByRole('heading', { name: 'School menus', level: 1 })).toBeVisible();
 }
@@ -95,7 +114,7 @@ const row = (page: Page, name: string) =>
 
 test.beforeAll(() => {
   cleanUp();
-  today = sql(`select private.household_today('${DEMO}')`);
+  today = householdToday(db!);
 });
 test.afterAll(() => cleanUp());
 
@@ -116,7 +135,7 @@ test('[MENU-01][MENU-03][US-802] done-when: four weeks load from a file, looked 
   await load.getByLabel('Menu file (CSV)').setInputFiles({
     name: 'oak-e2e.csv',
     mimeType: 'text/csv',
-    buffer: Buffer.from(fourWeeks()),
+    buffer: Buffer.from(menuCsv('Oak', today, 28)),
   });
   await load.getByRole('button', { name: 'Look at the file' }).click();
   await expect(load.getByRole('region', { name: 'The file holds' })).toContainText('20 days');
@@ -147,6 +166,9 @@ test('[MENU-01][MENU-03][US-802] done-when: four weeks load from a file, looked 
 test('[MENU-02][MENU-04][MENU-05][US-803] done-when: a feed that fails keeps its menus and says why', async ({
   page,
 }) => {
+  // [D-110] Three job runs (five weekly fetches each, every one a few psql round trips), a sign-in,
+  // two page loads and a saved day: about 60 s at worst on a preview, so three times that.
+  test.setTimeout(180_000);
   sql(`insert into public.menu_source (household_id, name, adapter, config)
        values ('${DEMO}', '${FEED}', 'nutrislice',
                '{"district": "example-district", "school": "cedar-e2e", "menu_type": "lunch",
@@ -175,49 +197,67 @@ test('[MENU-02][MENU-04][MENU-05][US-803] done-when: a feed that fails keeps its
     `Cedar lunch ${first}`,
   );
 
-  // A day of the parent's own is kept through the next good fetch.
-  await page
+  // A day of the parent's own is kept through the next good fetch: a weekday two or more days on, so
+  // the next run (two days on, its four weeks from that day) fetches that day again.
+  const own = [2, 3, 4].map(day).find((d) => weekday(d) > 0 && weekday(d) < 6)!;
+  const ownDay = page
     .getByRole('list', { name: `Lunch at ${FEED}` })
-    .getByRole('listitem')
-    .first()
-    .locator('summary')
-    .click();
-  const change = page.getByRole('form', { name: /^Change / }).first();
+    .locator('li', { has: page.locator(`summary[aria-label="Change ${dayName(own)}"]`) });
+  await expect(ownDay).toContainText(`Cedar lunch ${own}`);
+  await ownDay.locator('summary').click();
+  const change = ownDay.getByRole('form', { name: `Change ${dayName(own)}` });
   await change.getByLabel('What’s for lunch').fill('Field trip: bring a packed lunch');
   await change.getByRole('button', { name: 'Save the day' }).click();
   await expect(page.getByText('Saved the day.')).toBeVisible();
   expect(await runJob(48, answering(200))).toEqual({ due: 1, fetched: 1, unchanged: 0, failed: 0 });
   await page.reload();
   await expect(row(page, FEED)).toContainText('Fetched');
-  await expect(
-    page
-      .getByRole('list', { name: `Lunch at ${FEED}` })
-      .getByRole('listitem')
-      .first(),
-  ).toContainText('Field trip: bring a packed lunch');
+  await expect(ownDay).toContainText('Field trip: bring a packed lunch');
 });
 
 test('[MEAL-05][US-704] Maya’s buy day shows the menu her lunch comes from', async ({ page }) => {
-  // The first school day of next week, as Maya's school year has it.
-  const next = day(7);
-  const school =
-    sql(`select d::date::text from generate_series('${next}'::date, '${next}'::date + 6, '1 day') d
-                       where public.resolve_day_type('${maya()}', d::date) = 'school_day' order by d limit 1`);
-  test.skip(!school, 'no school day next week in the demo family’s year');
-  const words = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][weekday(school)]!;
-  await asAlexOnMenus(page);
-  await page.goto(`/admin/meals?week=${next}`);
-  const usual = page.getByRole('form', { name: 'Maya’s usual lunches' });
-  await usual.getByRole('combobox', { name: words }).selectOption('buy');
-  await usual.getByRole('combobox', { name: 'School menu' }).selectOption({ label: FILE });
-  await usual.getByRole('button', { name: 'Save Maya’s usual lunches' }).click();
-  await expect(page.getByRole('status')).toHaveText('Usual lunches saved.');
-  const lunch = page.getByRole('region', { name: 'School lunch' });
-  await expect(
-    lunch
-      .getByRole('row', { name: /^Maya/ })
-      .getByRole('cell')
-      .filter({ hasText: `Oak lunch ${school}` })
-      .locator('.fw-menu-text__row'),
-  ).toHaveText([`Main Line: Oak lunch ${school}`, 'Beverages: Milk, 1%']);
+  // [D-110] Next week, a school week of the test's own (summer and winter break have no school day in
+  // the demo family's year), with a file's menu of its own for it.
+  const next = weekStartOf(day(7), householdWeekStart(db!));
+  const kid = maya();
+  const undo = withSchoolDays(db!, [kid], next, addDays(next, 6));
+  try {
+    const source = sql(`insert into public.menu_source (household_id, name, adapter, status)
+                        values ('${DEMO}', '${BIRCH}', 'csv', 'ok') returning id`);
+    // The week's days as a loaded file stores them (the app's own parser, then save_menu_days' insert).
+    const days = JSON.stringify(parseMenuCsv(menuCsv('Birch', next, 7)).days).replace(/'/g, "''");
+    sql(`insert into public.school_menu_day (household_id, source_id, menu_date, items, origin, is_override)
+         select '${DEMO}', '${source}', (d ->> 'date')::date, private.menu_items(d -> 'items'), 'csv', true
+           from jsonb_array_elements('${days}'::jsonb) d`);
+    // The first school day of next week, as Maya's school year has it.
+    const school =
+      sql(`select d::date::text from generate_series('${next}'::date, '${next}'::date + 6, '1 day') d
+                         where public.resolve_day_type('${kid}', d::date) = 'school_day' order by d limit 1`);
+    expect(school, `a school day for Maya in the week of ${next}`).not.toBe('');
+    const words = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][weekday(school)]!;
+    await asAlexOnMenus(page);
+    await page.goto(`/admin/meals?week=${next}`);
+    // [MEAL-04][D-98] The usual week is folded at first (WP-75).
+    await unfold(page.getByRole('region', { name: 'School lunch' }).locator('details.fw-fold'));
+    const usual = page.getByRole('form', { name: 'Maya’s usual lunches' });
+    await usual.getByRole('combobox', { name: words }).selectOption('buy');
+    await usual.getByRole('combobox', { name: 'School menu' }).selectOption({ label: BIRCH });
+    await usual.getByRole('button', { name: 'Save Maya’s usual lunches' }).click();
+    await expect(page.getByRole('status')).toHaveText('Usual lunches saved.');
+    // [MEAL-13] Her Buy day on the list of days (WP-74), opened: the menu a section each, to pick from.
+    await page
+      .getByRole('group', { name: 'Whose lunches' })
+      .getByRole('button', { name: /^Maya/ })
+      .click();
+    const theDay = page
+      .getByRole('list', { name: 'Maya’s lunch week' })
+      .locator(`.fw-lunchday[data-date="${school}"]`);
+    await theDay.locator('summary').click();
+    await expect(theDay.locator('fieldset')).toHaveText([
+      new RegExp(`^Main Line · any\\s*Birch lunch ${school}$`),
+      /^Beverages · any\s*Milk, 1%$/,
+    ]);
+  } finally {
+    undo();
+  }
 });

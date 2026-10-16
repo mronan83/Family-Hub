@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Production deploy gate (01 §9.6, D-36). GitHub Free enforces no branch protection on a private
-# repository, so this decides whether a commit may ship: only the head of main, from a merged pull
-# request, with every CI check green and e2e green on that pull request's preview. Exits non-zero to
-# refuse, writes deploy=false to skip quietly, deploy=true to ship. Tested by deploy-gate.test.mjs.
+# Production deploy gate (01 §9.6, D-36, D-108). This decides whether a commit may ship: only the
+# head of main, from a merged pull request, with the fast CI checks green on that commit and on the
+# pull request's head. It reads no e2e result: e2e runs nightly and never blocks a deploy (D-108).
+# Exits non-zero to refuse (writing the reason as reason=, for the deploy-refused issue), writes
+# deploy=false to skip quietly, deploy=true to ship. Tested by deploy-gate.test.mjs.
 #
 # Reads: SHA, CI_CONCLUSION (a ci run's conclusion, or "manual"), REPO, GITHUB_EVENT_NAME,
 # GITHUB_REF, GITHUB_OUTPUT, HAS_SUPABASE_DB_URL, VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID,
@@ -10,7 +11,11 @@
 set -euo pipefail
 
 echo "sha=$SHA" >> "$GITHUB_OUTPUT"
-fail() { echo "::error::Not deploying ${SHA:0:7}: $*"; exit 1; }
+fail() {
+  echo "::error::Not deploying ${SHA:0:7}: $*"
+  echo "reason=$*" >> "$GITHUB_OUTPUT"
+  exit 1
+}
 skip() { echo "::notice::Not deploying ${SHA:0:7}: $*"; echo "deploy=false" >> "$GITHUB_OUTPUT"; exit 0; }
 
 missing=()
@@ -35,19 +40,19 @@ head=$(gh api "repos/$REPO/commits/main" --jq .sha)
 [ "$CI_CONCLUSION" != cancelled ] || skip "its ci run was cancelled"
 [ "$CI_CONCLUSION" = success ] || [ "$CI_CONCLUSION" = manual ] || fail "ci finished '$CI_CONCLUSION'"
 
-# Every CI gate passed on this commit.
-for check in checks database docs build; do
-  c=$(gh api "repos/$REPO/commits/$SHA/check-runs?check_name=$check" --jq '.check_runs[0].conclusion // "missing"')
-  [ "$c" = success ] || fail "ci / $check is '$c'"
-done
-
-# It came from a merged pull request whose preview passed e2e.
+# It came from a merged pull request.
 pr=$(gh api "repos/$REPO/commits/$SHA/pulls" \
   --jq '[.[] | select(.merged_at != null and .base.ref == "main")][0] | "\(.number) \(.head.sha)"')
 read -r number head_sha <<< "$pr"
 [ "$number" != null ] || fail "it reached main without a merged pull request"
-e2e=$(gh api "repos/$REPO/commits/$head_sha/check-runs?check_name=preview" --jq '.check_runs[0].conclusion // "missing"')
-[ "$e2e" = success ] || fail "e2e / preview on PR #$number is '$e2e'"
+
+# The fast CI checks passed on this commit and on the pull request's head.
+for check in checks database docs build; do
+  c=$(gh api "repos/$REPO/commits/$SHA/check-runs?check_name=$check" --jq '.check_runs[0].conclusion // "missing"')
+  [ "$c" = success ] || fail "ci / $check is '$c'"
+  c=$(gh api "repos/$REPO/commits/$head_sha/check-runs?check_name=$check" --jq '.check_runs[0].conclusion // "missing"')
+  [ "$c" = success ] || fail "ci / $check on PR #$number is '$c'"
+done
 
 echo "deploy=true" >> "$GITHUB_OUTPUT"
 echo "Deploying ${SHA:0:7} from PR #$number"

@@ -733,6 +733,11 @@ body {
   font-weight: 600;
   color: var(--text-soft);
 }
+/* The lunch card's line: whose days still need a choice (WP-73). */
+.fw-quick__words {
+  grid-column: 1 / -1;
+  margin: 0;
+}
 .fw-quick__more,
 .fw-quick__link {
   grid-column: 1 / -1;
@@ -1317,6 +1322,25 @@ html:has(.board) {
      scrolls, never spilling into a page scroll. */
   position: relative;
 }
+/* [DEV-07] Burn-in (WP-34): the board's picture drifts a px or two (left and top, set by the board),
+   and what drifts past the screen's edge is clipped, never scrolled to. */
+.board:has(> .fw-board--drift) {
+  overflow: clip;
+}
+/* [DEV-07][US-207] A sleeping board is black over everything. The touch that wakes it lands on
+   this cover, which stays, clear, until that touch's click has passed, so waking presses nothing. */
+.fw-sleep {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  background: var(--sleep-screen);
+  cursor: none;
+  touch-action: none;
+}
+.fw-sleep[data-state='waking'] {
+  background: transparent;
+  cursor: auto;
+}
 /* The rail's column runs the full height. */
 .fw-board::before {
   content: '';
@@ -1781,9 +1805,50 @@ html:has(.board) {
   font-variant-numeric: tabular-nums;
 }
 
-/* A board's calendars on the Boards page (WP-23): a full row under the board's own controls. */
-.fw-board-cals {
-  flex-basis: 100%;
+/* [DEV-07][US-207] A board's sleep and wake on Boards (WP-34): the three choices for when it is
+   missed side by side where they fit, the two nights' times, and whether it is asleep now. */
+.fw-sleep-choices,
+.fw-sleep-nights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--s-3);
+}
+.fw-sleep-choice {
+  align-items: flex-start;
+  padding: var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+}
+.fw-sleep-choice:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+}
+.fw-sleep-choice > span {
+  display: grid;
+  gap: var(--s-1);
+}
+.fw-sleep-night {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+}
+.fw-sleep-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin-left: var(--s-2);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  font-size: var(--t-small);
+  font-weight: 600;
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-sleep-status[data-asleep='true'] {
+  background: var(--missed-tint);
+  color: var(--missed-text);
 }
 
 /* The board's calendar (WP-23): Day, Week and Month, each event in its calendar's color. -------- */
@@ -2637,6 +2702,23 @@ span.fw-heat__cell {
 .fw-goal-form__dates > .fw-field {
   flex: 1 1 180px;
 }
+/* [RWD-14] The end date: a check box, then the date and Clear side by side (D-115). */
+.fw-end-date {
+  display: grid;
+  gap: var(--s-2);
+  align-content: start;
+}
+.fw-end-date__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-3);
+  align-items: center;
+}
+.fw-end-date__row .fw-input {
+  box-sizing: border-box; /* its padding inside its column, so it never runs under Clear */
+  min-width: 0;
+  width: 100%;
+}
 .fw-goal-rule {
   gap: var(--s-3);
   padding: var(--s-4);
@@ -2653,31 +2735,166 @@ span.fw-heat__cell {
 }
 
 /* Meals (WP-25): the week's plan, a day per row (its four meals across on a laptop, stacked on a
-   phone), each meal's entries in order with Change and Add. ---------------------------------- */
+   phone), each meal's entries in order with Change and Add. [MEAL-14][D-98] Each day folds as the
+   lunch days do (WP-75), with their classes (.fw-lunchday…): closed at first, its weekday, date and
+   "X of Y set" or a check; today outlined, open or closed. Opened, the day's meals below. ------- */
 .fw-meal-week {
   display: grid;
-  gap: var(--s-3);
+  gap: var(--s-2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.fw-meal-day {
+.fw-meal-day__count {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.fw-meal-day__body {
   display: grid;
   gap: var(--s-3);
-  padding: var(--s-3);
-  border: var(--border-w) solid var(--line);
-  border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  border-top: var(--border-w) solid var(--line);
 }
-.fw-meal-day[data-today] {
-  border-color: var(--primary);
+
+/* [MEAL-14][D-98] A section folded at first (WP-75): Add to the plan, Copy last week, School lunch's
+   usual week. Closed, its header (and Add to the plan's button, or the usual week's line per child);
+   opened on a tap. The browser's own details, so it works before the page hydrates. */
+.fw-card.fw-fold {
+  padding: 0;
+  gap: 0;
 }
-.fw-meal-day__name {
+.fw-fold__head {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-2);
   align-items: center;
+  gap: var(--s-2) var(--s-3);
+  min-height: 64px;
+  padding: var(--s-2) var(--s-4);
+  list-style: none;
+  cursor: pointer;
+}
+.fw-fold__head::-webkit-details-marker {
+  display: none;
+}
+.fw-fold__head > :is(h2, h3) {
+  margin: 0;
+}
+details[open] > .fw-fold__head .fw-lunchday__chev {
+  transform: rotate(90deg);
+}
+.fw-fold__closed {
+  margin-left: auto;
+  pointer-events: none;
+  white-space: nowrap;
+}
+/* On a phone the header and Add a meal share one row, as in the mockup. */
+@media (max-width: 480px) {
+  .fw-fold__head:not(:has(.fw-fold__sum)) {
+    flex-wrap: nowrap;
+    padding-inline: var(--s-3);
+  }
+  .fw-fold__head > h2 {
+    font-size: var(--t-heading);
+  }
+  .fw-fold__closed.fw-btn {
+    padding-inline: var(--s-3);
+  }
+}
+details[open] > .fw-fold__head .fw-fold__closed,
+details[open] > .fw-fold__head .fw-fold__sum {
+  display: none;
+}
+.fw-fold__sum {
+  display: grid;
+  flex-basis: 100%;
+  gap: var(--s-1);
+  padding-left: calc(var(--icon-row) + var(--s-3));
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-fold__sum b {
+  color: var(--text);
+  font-weight: 600;
+}
+.fw-fold__body {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-fold--inner,
+.fw-fold--row {
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+/* [NFR-18][D-120] The shared fold (WP-91): a warning stays on the header, open or closed, in amber
+   with the sign, as the Settings tiles do. */
+.fw-fold__flag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+  font-size: var(--t-small);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.fw-fold__flag-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+/* A row of a list (a board, WP-91): its name and facts on the header, its warning at the end. */
+.fw-fold--row > .fw-fold__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.fw-fold__main {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 2px;
+  min-width: 0;
+}
+.fw-fold__name {
   margin: 0;
   font-size: var(--t-body);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.fw-fold__meta {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+/* On a phone the warning goes under the board's facts. */
+@media (max-width: 480px) {
+  .fw-fold--row .fw-fold__flag {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+}
+/* A board's groups when opened (WP-91): Display, Sleep and wake, Calendars, Home screen, then its
+   name and Disconnect set apart at the bottom. */
+.fw-fold__group {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-fold__group > h3 {
+  margin: 0;
+  font-size: var(--t-body);
+}
+.fw-fold__apart {
+  padding-top: var(--s-3);
+  border-top: var(--border-w) dashed var(--line);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fw-lunchday__chev {
+    transition: none;
+  }
 }
 .fw-meal-slot {
   display: grid;
@@ -2719,6 +2936,14 @@ span.fw-heat__cell {
   align-items: center;
   font-weight: 600;
 }
+/* [MEAL-15] An entry opened with Edit, in place under it (WP-76). */
+.fw-meal-entry__edit {
+  margin-top: var(--s-2);
+  padding: var(--s-3);
+  border: 2px solid var(--primary);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
 .fw-meal-entry__change > summary,
 .fw-meal-slot__add {
   display: inline-flex;
@@ -2729,42 +2954,20 @@ span.fw-heat__cell {
   cursor: pointer;
 }
 @media (min-width: 900px) {
-  .fw-meal-day {
-    grid-template-columns: 8rem repeat(4, minmax(0, 1fr));
+  .fw-meal-day__body {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     align-items: start;
+  }
+  /* [MEAL-15] A day with a meal open for editing stacks its meals, so the form has the width. */
+  .fw-meal-day__body:has(.fw-meal-entry__edit) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fw-meal-entry__edit {
+    max-width: 40rem;
   }
 }
 
-/* School lunch (WP-26): a child per row, the week's days across (it scrolls inside itself on a
-   phone), each school day's buy or bring a button; then each child's usual week. ------------- */
-.fw-lunch__table {
-  overflow-x: auto;
-  border: var(--border-w) solid var(--line);
-  border-radius: var(--r-sm);
-}
-.fw-lunch__table table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.fw-lunch__table :is(th, td) {
-  padding: var(--s-2);
-  text-align: left;
-  vertical-align: middle;
-  border-bottom: var(--border-w) solid var(--line);
-  white-space: nowrap;
-}
-.fw-lunch__table thead th {
-  background: var(--surface);
-  font-size: var(--t-small);
-}
-.fw-lunch__table tbody tr:last-child :is(th, td) {
-  border-bottom: 0;
-}
-.fw-lunch__table form {
-  display: grid;
-  gap: 2px;
-  justify-items: start;
-}
+/* School lunch (WP-26): the week as a list of days (WP-74), then each child's usual week. ------- */
 .fw-lunch__changed {
   color: var(--primary-text);
   font-size: var(--t-small);
@@ -2774,6 +2977,10 @@ span.fw-heat__cell {
   padding-block: var(--s-3);
   border-top: var(--border-w) solid var(--line);
 }
+.fw-fold__body > .fw-lunch__usual:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
 .fw-lunch__weekdays {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
@@ -2782,17 +2989,8 @@ span.fw-heat__cell {
 
 /* [MEAL-09][MEAL-11] A child's picks and changes in the lunch table (WP-49): the picks under the
    day, a change waiting for a parent as a link to Today, and the parent's picks form. */
-.fw-lunch__picks {
-  display: block;
-  max-width: 14rem;
-  margin-top: var(--s-1);
-  font-size: var(--t-small);
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
 .fw-lunch__flag {
-  display: inline-block;
-  margin-left: var(--s-1);
+  justify-self: start;
   padding: 0 var(--s-2);
   border-radius: var(--r-pill);
   background: var(--reward-tint);
@@ -2807,29 +3005,253 @@ span.fw-heat__cell {
   font-size: var(--t-small);
   font-weight: 600;
 }
-.fw-lunch__edit {
-  margin-top: var(--s-1);
-  max-width: 16rem;
-  white-space: normal;
-  font-size: var(--t-small);
-}
-.fw-lunch__edit summary {
-  min-height: 44px;
+/* [MEAL-13][US-710][D-98] The lunch week as a list of days (WP-74): the children's faces in a row
+   (a dot on one with a day to pick), then one child's Monday to Friday, each day closed at first
+   (weekday, date, Buy or Bring, a check when complete) and opened to Buy or Bring and the day's
+   menu, the picks highlighted. A day without school is greyed and doesn't open; today is outlined.
+   One column at every width, so nothing scrolls sideways on a phone. */
+.fw-lunchkids {
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.fw-lunchkids__kid {
+  display: inline-flex;
   align-items: center;
-  color: var(--primary-text);
+  gap: var(--s-2);
+  min-height: 56px;
+  padding: var(--s-1) var(--s-4) var(--s-1) var(--s-1);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
-.fw-lunch__section {
+.fw-lunchkids__kid[aria-pressed='true'] {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 2px var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-lunchkids__face {
+  position: relative;
+  display: inline-flex;
+}
+.fw-lunchkids__dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--reward);
+  border: 2px solid var(--surface);
+}
+.fw-lunchdays {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  gap: var(--s-1);
+  gap: var(--s-2);
+}
+.fw-lunchdays[hidden] {
+  display: none;
+}
+.fw-lunchday {
+  min-width: 0;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.fw-lunchday[data-today] {
+  border: 2px solid var(--primary);
+}
+.fw-lunchday--off {
+  background: var(--bg);
+  color: var(--text-soft);
+}
+.fw-lunchday__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  min-height: 64px;
+  padding: var(--s-2) var(--s-4);
+  list-style: none;
+  cursor: pointer;
+}
+.fw-lunchday--off .fw-lunchday__head {
+  cursor: default;
+}
+.fw-lunchday__head::-webkit-details-marker {
+  display: none;
+}
+.fw-lunchday__chev {
+  width: var(--icon-row);
+  height: var(--icon-row);
+  flex: none;
+  color: var(--text-soft);
+  transition: transform 0.2s var(--ease);
+}
+details[open] > .fw-lunchday__head .fw-lunchday__chev {
+  transform: rotate(90deg);
+}
+.fw-lunchday__when {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--s-2);
+  min-width: 0;
+}
+.fw-lunchday__name {
+  font-weight: 700;
+}
+.fw-lunchday--off .fw-lunchday__name {
+  font-weight: 600;
+}
+.fw-lunchday__date {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-lunchday__today {
+  padding: 0 var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.fw-lunchday__end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--s-2);
+  margin-left: auto;
+}
+.fw-lunchday__none {
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.fw-lunchday__mode,
+.fw-lunchday__waiting {
+  padding: 2px var(--s-2);
+  border-radius: var(--r-sm);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+  font-size: var(--t-small);
+  font-weight: 700;
+}
+.fw-lunchday__mode[data-mode='bring'] {
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-lunchday__waiting {
+  border-radius: var(--r-pill);
+  font-weight: 600;
+}
+.fw-lunchday__check,
+.fw-lunchday__todo {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+}
+.fw-lunchday__check {
+  background: var(--success);
+  color: var(--surface);
+}
+.fw-lunchday__check .fw-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 3;
+}
+.fw-lunchday__todo {
+  border: 2px dashed var(--text-soft);
+}
+.fw-lunchday__body {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-lunchday__body > :is(.fw-lunch__changed, .fw-lunch__waiting) {
+  justify-self: start;
+}
+.fw-lunchday__toggle > div {
+  display: inline-flex;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.fw-lunchday__opt-mode {
+  min-width: 6rem;
+  min-height: 48px;
+  padding: 0 var(--s-4);
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.fw-lunchday__opt-mode[aria-pressed='true'] {
+  background: var(--primary);
+  color: var(--on-primary);
+  cursor: default;
+}
+.fw-lunchday__opt-mode:disabled:not([aria-pressed='true']) {
+  cursor: wait;
+}
+.fw-lunchday__section {
+  display: grid;
+  gap: var(--s-2);
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
 }
-.fw-lunch__section legend {
-  font-weight: 600;
+.fw-lunchday__section legend {
+  margin-bottom: var(--s-2);
+  font-weight: 700;
+}
+.fw-lunchday__opts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: var(--s-2);
+}
+.fw-lunchday__opt {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 52px;
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.fw-lunchday__opt input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  margin: 0;
+  accent-color: var(--primary);
+}
+.fw-lunchday__opt:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fw-lunchday__chev {
+    transition: none;
+  }
 }
 
 /* [MEAL-09][US-707][D-95] Today's lunch changes (WP-49): a group a child, a row a day: the day and its
@@ -2922,17 +3344,6 @@ span.fw-heat__cell {
   }
 }
 
-/* School menus (WP-27): a menu's days, a line each (the date, then what's served), the parent's own
-   marked; a buy day's menu under it in the lunch table, wrapping in its cell. --------------------- */
-.fw-lunch__menu {
-  display: block;
-  max-width: 14rem;
-  margin-top: var(--s-1);
-  color: var(--text-soft);
-  font-size: var(--t-small);
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
 /* [MENU-06][D-94] A day's menu in the admin app, a line a section, its name small above (WP-64). */
 .fw-menu-text {
   position: relative; /* keeps the hidden ": " inside a table that scrolls sideways */

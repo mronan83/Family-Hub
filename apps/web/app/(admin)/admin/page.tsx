@@ -2,9 +2,17 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
+import {
+  MISSED_LOOKBACK_DAYS,
+  readBoardSleep,
+  readSchoolDays,
+  type SchoolDays,
+} from '@/lib/board-sleep';
 import { homeAlerts } from '@/lib/home-alerts';
+import { daysToPick, lunchQuickWords, lunchWeekToOpen } from '@/lib/lunch-list';
 import { serverClient } from '@/lib/supabase/server';
-import { HomeView, type SchoolToday } from './home-view';
+import { HomeView, type LunchQuick, type SchoolToday } from './home-view';
+import { loadLunch } from './meals/data';
 
 export const metadata: Metadata = { title: 'Home' };
 
@@ -46,6 +54,8 @@ export default async function AdminHome({
   const today = isoDay(h.timezone);
   const nextWeekStart = addDays(today, 7 - ((dow(today) - h.weekStart + 7) % 7));
   const nextWeekEnd = addDays(nextWeekStart, 6);
+  // [MEAL-12] The lunch week the quick action opens: this one Monday to Friday, else the coming one.
+  const lunchMonday = lunchWeekToOpen(today);
 
   const [
     approvals,
@@ -60,6 +70,8 @@ export default async function AdminHome({
     invites,
     nextMenus,
     lunchChanges,
+    lunchWeek,
+    names,
   ] = await Promise.all([
     db!
       .from('chore_occurrence')
@@ -71,7 +83,10 @@ export default async function AdminHome({
       .select('id', { count: 'exact', head: true })
       .eq('household_id', h.id)
       .eq('status', 'requested'),
-    db!.from('device').select('name, last_seen_at, revoked_at').eq('household_id', h.id),
+    db!
+      .from('device')
+      .select('name, last_seen_at, revoked_at, board_config')
+      .eq('household_id', h.id),
     db!.from('calendar_source').select('name, status').eq('household_id', h.id),
     db!.from('menu_source').select('name, adapter, status').eq('household_id', h.id),
     db!.rpc('job_health', { p_household_id: h.id }),
@@ -110,8 +125,10 @@ export default async function AdminHome({
       .eq('household_id', h.id)
       .eq('status', 'waiting')
       .gt('open_until', new Date().toISOString()),
+    loadLunch(db!, h.id, lunchMonday),
+    db!.from('member').select('id, display_name').eq('household_id', h.id),
   ]);
-  for (const r of [approvals, requests, boards, calendars, menus, jobs, years, closures]) {
+  for (const r of [approvals, requests, boards, calendars, menus, jobs, years, closures, names]) {
     if (r.error) throw new Error(`home: ${r.error.message}`);
   }
 
@@ -141,6 +158,21 @@ export default async function AdminHome({
         ? { state: 'weekend', yearId: current.id }
         : { state: 'school', yearId: current.id };
 
+  // [DEV-07] A board missed only while awake counts its hours awake, school nights and weekends
+  // (WP-34): the school days over the last 60 days at most, read only when a board needs them.
+  const boardRows = (boards.data ?? []) as {
+    name: string;
+    last_seen_at: string | null;
+    revoked_at: string | null;
+    board_config: { sleep?: unknown } | null;
+  }[];
+  let schoolDays: SchoolDays | null = null;
+  if (boardRows.some((b) => readBoardSleep(b.board_config?.sleep).missed === 'awake')) {
+    const from = addDays(today, -MISSED_LOOKBACK_DAYS);
+    const to = addDays(today, 1);
+    const days = await db!.rpc('school_days', { p_household_id: h.id, p_from: from, p_to: to });
+    if (!days.error) schoolDays = readSchoolDays({ from, to, days: days.data ?? [] });
+  }
   const menuRows = (menus.data ?? []) as { name: string; adapter: string; status: string }[];
   const feeds = menuRows.filter((m) => m.adapter === 'nutrislice');
   const alerts = homeAlerts({
@@ -149,13 +181,14 @@ export default async function AdminHome({
     approvals: approvals.count ?? 0,
     requests: requests.count ?? 0,
     lunches: lunchChanges.count ?? 0,
-    boards: (
-      (boards.data ?? []) as {
-        name: string;
-        last_seen_at: string | null;
-        revoked_at: string | null;
-      }[]
-    ).map((b) => ({ name: b.name, lastSeenAt: b.last_seen_at, revoked: !!b.revoked_at })),
+    boards: boardRows.map((b) => ({
+      name: b.name,
+      lastSeenAt: b.last_seen_at,
+      revoked: !!b.revoked_at,
+      sleep: readBoardSleep(b.board_config?.sleep),
+    })),
+    timeZone: h.timezone,
+    schoolDays,
     calendars: (calendars.data ?? []) as { name: string; status: string }[],
     menuFeeds: feeds,
     jobsNeedingLook: ((jobs.data ?? []) as { state: string }[]).filter(
@@ -176,6 +209,25 @@ export default async function AdminHome({
     invites: (invites.data ?? []).map((i) => ({ email: i.email, expiresAt: i.expires_at })),
   });
 
+  const nameOf = new Map(
+    ((names.data ?? []) as { id: string; display_name: string }[]).map((m) => [
+      m.id,
+      m.display_name,
+    ]),
+  );
+  const lunch: LunchQuick | null = lunchWeek.length
+    ? {
+        href: `/admin/meals?week=${lunchMonday}#lunch`,
+        words: lunchQuickWords(
+          lunchWeek.map((c) => ({
+            name: nameOf.get(c.memberId) ?? 'A child',
+            toPick: daysToPick(c, today),
+          })),
+          lunchMonday > today,
+        ),
+      }
+    : null;
+
   return (
     <HomeView
       name={h.name}
@@ -183,6 +235,7 @@ export default async function AdminHome({
       alerts={alerts}
       school={school}
       menuFeeds={feeds.length}
+      lunch={lunch}
       notice={
         Object.keys(params).find((k) => k === 'welcome' || k === 'joined' || k === 'password') ??
         params.done ??

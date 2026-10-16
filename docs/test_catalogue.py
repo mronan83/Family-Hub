@@ -1,4 +1,4 @@
-"""test_catalogue.py — read every test's name and trace it to the docs (NFR-18, `08` §9).
+"""test_catalogue.py — read every test's name and trace it to the docs (NFR-19, `08` §9).
 
 Used by check_traceability.py. Reads the tests in four layers:
   Unit  Vitest and node:test (`*.test.ts`, `*.test.tsx`, `*.test.mjs`) outside `e2e/`

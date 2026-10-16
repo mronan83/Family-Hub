@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '../support/test';
-import { retireBoard } from '../support/board';
+import { pairBoard, retireBoard } from '../support/board';
+import { householdToday } from '../support/day';
 
 // [BRD-01][BRD-03][BRD-07][CHR-04][NFR-03][US-305] The board's Today on the preview (WP-11, D-50): a
 // board paired to the demo family opens on the family dashboard (WP-35, D-66), shows everyone's day
@@ -15,7 +16,8 @@ const BOARD = 'Hall e2e';
 const MAKE_BED = '0de00000-0000-4000-8000-0000000c0001';
 const BRUSH_TEETH = '0de00000-0000-4000-8000-0000000c0002';
 const FEED_THE_DOG = '0de00000-0000-4000-8000-0000000c0003';
-const TODAY = `(now() at time zone 'America/New_York')::date`;
+// [D-110] The household's today, read once in beforeAll (the board's snapshot is fixed at its load).
+let TODAY = '';
 
 function sql(query: string): string {
   return execFileSync('psql', [db!, '-X', '-A', '-t', '-q', '-v', 'ON_ERROR_STOP=1', '-c', query], {
@@ -58,7 +60,6 @@ function putBack() {
           and o.chore_id in ('${MAKE_BED}', '${BRUSH_TEETH}', '${FEED_THE_DOG}')`);
 }
 
-test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 let board: Page;
@@ -77,33 +78,15 @@ async function nextRead(fetchedAt: string | null) {
 const fetchedAt = () => board.locator('main').getAttribute('data-fetched-at');
 
 test.beforeAll(async ({ browser }, testInfo) => {
-  // Signing in and pairing a board can take most of 30 s on a cold preview.
-  testInfo.setTimeout(90_000);
-  // A retry starts from today as the seed left it, with no board of this name.
+  // Signing in and pairing a board takes 10 to 40 s on a cold preview (pairBoard).
+  testInfo.setTimeout(120_000);
+  TODAY = `'${householdToday(db!)}'::date`;
+  // A run starts from today as the seed left it, with no board of this name.
   putBack();
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
-  const admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
-  await admin.goto('/admin/devices');
-  const form = admin.getByRole('form', { name: 'Add a board', exact: true });
-  await form.getByLabel('Board name', { exact: true }).fill(BOARD);
-  await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
-  const code = (await admin.getByTestId('pairing-code').textContent())?.replace(/\D/g, '') ?? '';
-  expect(code).toMatch(/^\d{8}$/);
-  await admin.close();
-
   // A touch panel that also takes clicks, like the kitchen board.
-  board = await (await browser.newContext({ hasTouch: true })).newPage();
-  await board.goto('/board');
-  await board.getByLabel('Pairing code from the admin app', { exact: true }).fill(code);
-  await board.getByRole('button', { name: 'Pair this board', exact: true }).click();
-  await expect(board).toHaveURL(/\/board$/);
-  // Changes stream before the tests rely on the board reading again (see devices.spec: up to about
-  // 20 seconds after a quiet spell).
-  await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
+  const paired = await pairBoard(browser, BOARD, { board: { hasTouch: true } });
+  await paired.admin.close();
+  board = paired.board;
 });
 
 test.afterAll(async () => {
@@ -152,88 +135,95 @@ test("[BRD-01][BRD-07][D-66] the board opens on the family dashboard; Chores has
   await expect(tile(column('Leo'), 'Make bed')).toBeVisible();
   await expect(tile(column('Leo'), 'Feed the dog')).toHaveCount(0);
   await expect(tile(column('Alex'), 'Feed the dog')).toBeVisible();
-  // [PTS-02] Each child's balance is the database's.
-  expect(await chipValue(maya)).toBe(
-    Number(
-      sql(
-        `select coalesce(sum(amount), 0) from public.points_ledger where member_id = '${memberId('Maya')}'`,
-      ),
+  // [PTS-02] Each child's balance is the database's (retried: the board may still be hearing a
+  // ledger row written since it loaded).
+  const ledger = Number(
+    sql(
+      `select coalesce(sum(amount), 0) from public.points_ledger where member_id = '${memberId('Maya')}'`,
     ),
   );
+  await expect(
+    chip(maya),
+    `Maya's balance on the board, the database has ${ledger}`,
+  ).toHaveAttribute('data-balance', String(ledger));
 });
 
-test('[CHR-04][PTS-01] a click checks off Maya’s own Make bed: Done! at once, one event from this board, 5 points once', async () => {
+// One story on Maya's own two items: checked off (by click, then by a double tap), then undone, each
+// undo inside the undo window (household_settings.undo_window_seconds, 120 s by default) that starts
+// at its check-off.
+test('[CHR-04][PTS-01][NFR-03][US-305] Maya’s own items: a click checks off at once; a rapid double tap is one check-off; undo needs a second tap and gives the points back', async () => {
   await people().getByRole('button', { name: 'Maya', exact: true }).click();
   const me = board.getByRole('region', { name: 'Maya', exact: true });
   await expect(me.getByRole('heading', { name: 'Maya', level: 2 })).toBeVisible();
   const maya = memberId('Maya');
   const bed = todayOf(MAKE_BED, maya);
-  const before = await chipValue(me);
-  const read = await fetchedAt();
-
-  await me.getByRole('button', { name: 'Check off Make bed', exact: true }).click();
-  await expect(tile(me, 'Make bed')).toContainText('Done!', { timeout: 1_000 });
-  await expect(chip(me)).toHaveAttribute('data-balance', String(before + 5), { timeout: 1_000 });
-
-  await expect.poll(() => boardEvents(bed)).toBe('complete');
-  expect(status(bed)).toBe('completed');
-  expect(held(bed, maya)).toBe(5);
-  // The board reads again when Realtime brings its own change back; the balance stays where it is.
-  await nextRead(read);
-  await expect(chip(me)).toHaveAttribute('data-balance', String(before + 5));
-  await expect(tile(me, 'Make bed')).toContainText('Done!');
-});
-
-test('[CHR-04][NFR-03] a rapid double tap by touch is one check-off, and the balance moves once', async () => {
-  const me = board.getByRole('region', { name: 'Maya', exact: true });
-  const maya = memberId('Maya');
   const teeth = todayOf(BRUSH_TEETH, maya);
-  const before = await chipValue(me);
+  const start = await chipValue(me);
+
+  await test.step('[CHR-04][PTS-01] a click checks off Make bed: Done! at once, one event from this board, 5 points once', async () => {
+    const read = await fetchedAt();
+    await me.getByRole('button', { name: 'Check off Make bed', exact: true }).click();
+    await expect(tile(me, 'Make bed')).toContainText('Done!', { timeout: 1_000 });
+    await expect(chip(me)).toHaveAttribute('data-balance', String(start + 5), { timeout: 1_000 });
+
+    await expect.poll(() => boardEvents(bed)).toBe('complete');
+    expect(status(bed)).toBe('completed');
+    expect(held(bed, maya)).toBe(5);
+    // The board reads again when Realtime brings its own change back; the balance stays where it is.
+    await nextRead(read);
+    await expect(chip(me)).toHaveAttribute('data-balance', String(start + 5));
+    await expect(tile(me, 'Make bed')).toContainText('Done!');
+  });
+
   const earnedBefore = earns(teeth, maya);
-  const read = await fetchedAt();
+  await test.step('[CHR-04][NFR-03] a rapid double tap by touch on Brush teeth is one check-off', async () => {
+    const box = (await me
+      .getByRole('button', { name: 'Check off Brush teeth', exact: true })
+      .boundingBox())!;
+    const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+    await board.touchscreen.tap(x, y);
+    await board.touchscreen.tap(x, y);
+    await expect(tile(me, 'Brush teeth')).toContainText('Done!', { timeout: 1_000 });
+    await expect(chip(me)).toHaveAttribute('data-balance', String(start + 5 + 2));
+    await expect.poll(() => boardEvents(teeth)).toBe('complete');
+    // That no second check-off follows is proved by the next step's first undo (its control).
+  });
 
-  const box = (await me
-    .getByRole('button', { name: 'Check off Brush teeth', exact: true })
-    .boundingBox())!;
-  const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
-  await board.touchscreen.tap(x, y);
-  await board.touchscreen.tap(x, y);
-  await expect(tile(me, 'Brush teeth')).toContainText('Done!', { timeout: 1_000 });
-
-  await expect.poll(() => boardEvents(teeth)).toBe('complete');
-  await nextRead(read);
-  // Given time to arrive, still one event, one earn, and the balance moved by 2 once.
-  await board.waitForTimeout(2_000);
-  expect(boardEvents(teeth)).toBe('complete');
-  expect(earns(teeth, maya)).toBe(earnedBefore + 1);
-  expect(held(teeth, maya)).toBe(2);
-  await expect(chip(me)).toHaveAttribute('data-balance', String(before + 2));
-});
-
-test('[US-305][PTS-01] undo needs a second tap, then puts each back and gives its points back', async () => {
-  const me = board.getByRole('region', { name: 'Maya', exact: true });
-  const maya = memberId('Maya');
-  const before = await chipValue(me);
-  for (const [chore, title] of [
-    [MAKE_BED, 'Make bed'],
-    [BRUSH_TEETH, 'Brush teeth'],
-  ] as const) {
-    const occurrence = todayOf(chore, maya);
-    await me.getByRole('button', { name: `Undo ${title}`, exact: true }).click();
-    // One tap only arms it: nothing is sent.
-    await expect(
-      me.getByRole('button', { name: `Tap again to undo ${title}`, exact: true }),
-    ).toBeVisible();
-    expect(boardEvents(occurrence)).toBe('complete');
-    await me.getByRole('button', { name: `Tap again to undo ${title}`, exact: true }).click();
-    await expect(me.getByRole('button', { name: `Check off ${title}`, exact: true })).toBeVisible({
-      timeout: 1_000,
-    });
-    await expect.poll(() => boardEvents(occurrence)).toBe('complete,undo');
-    expect(status(occurrence)).toBe('scheduled');
-    expect(held(occurrence, maya)).toBe(0);
-  }
-  await expect(chip(me)).toHaveAttribute('data-balance', String(before - 7));
+  await test.step('[US-305][PTS-01] undo needs a second tap, then puts each back and gives its points back', async () => {
+    for (const [occurrence, title] of [
+      [bed, 'Make bed'],
+      [teeth, 'Brush teeth'],
+    ] as const) {
+      await me.getByRole('button', { name: `Undo ${title}`, exact: true }).click();
+      // One tap only arms it: nothing is sent.
+      await expect(
+        me.getByRole('button', { name: `Tap again to undo ${title}`, exact: true }),
+      ).toBeVisible();
+      expect(boardEvents(occurrence)).toBe('complete');
+      await me.getByRole('button', { name: `Tap again to undo ${title}`, exact: true }).click();
+      await expect(me.getByRole('button', { name: `Check off ${title}`, exact: true })).toBeVisible(
+        { timeout: 1_000 },
+      );
+      await expect.poll(() => boardEvents(occurrence)).toBe('complete,undo');
+      expect(status(occurrence)).toBe('scheduled');
+      expect(held(occurrence, maya)).toBe(0);
+      if (occurrence === bed) {
+        // [CHR-04][NFR-03] The double tap's control: the board's outbox sends in order, one batch at
+        // a time, so with this undo (sent after the double tap) recorded, a second check-off from the
+        // double tap would be recorded too. There is none: one event, one earn, 2 points held, and
+        // the balance moved by the bed's 5 and back and the teeth's 2 once.
+        expect(boardEvents(teeth), 'Brush teeth: this board’s events after the double tap').toBe(
+          'complete',
+        );
+        expect(earns(teeth, maya), 'Brush teeth: earn entries after the double tap').toBe(
+          earnedBefore + 1,
+        );
+        expect(held(teeth, maya)).toBe(2);
+        await expect(chip(me)).toHaveAttribute('data-balance', String(start + 2));
+      }
+    }
+    await expect(chip(me)).toHaveAttribute('data-balance', String(start));
+  });
 });
 
 test('[BRD-07][US-1006][CHR-09] who did it: the shared Feed the dog asks; Maya and Alex are both credited, only Maya earns', async () => {
@@ -280,6 +270,7 @@ test('[BRD-07][US-1006][CHR-09] who did it: the shared Feed the dog asks; Maya a
 });
 
 test('[DEV-05][BRD-01] a check-off made elsewhere reaches the board live, with its points', async () => {
+  await people().getByRole('button', { name: 'Chores', exact: true }).click();
   await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
   const leo = memberId('Leo');
   const bed = todayOf(MAKE_BED, leo);

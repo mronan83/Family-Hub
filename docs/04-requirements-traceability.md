@@ -28,8 +28,9 @@
 | DEV-04 | The kiosk shall be locked to `/board` with no accessible browser UI or admin routes. | M | P1 | User |
 | DEV-05 | Admin changes shall appear on online boards within 3 seconds (p95). | M | P0 | User |
 | DEV-06 | The board shall accept check-offs while offline, queue them, and replay them idempotently and in order. | M | P1 | Design |
-| DEV-07 | The board shall support quiet hours and burn-in mitigation. | S | P3 | Design |
+| DEV-07 | The board shall support quiet hours and burn-in mitigation; each board shall have its own sleep and wake times for school days and weekends, an idle sleep woken by a touch, click or mouse movement that does nothing else, and its own choice of when it counts as missed (always, only while awake, or never). | S | P3 | User |
 | DEV-08 | The board shall indicate when its data is stale. | S | P1 | Design |
+| DEV-09 | Boards in the admin app shall be collapsible sections, folded at first: each board shows its name, awake or asleep with its next time, last seen, theme, text size, own or household layout and a not-seen warning, and opens to grouped sections (Display, Sleep and wake, Calendars, Home screen, then Rename and Disconnect); the household's home screen layout folds to a one-line summary, and Add a board and Disconnected fold too, in the meal planner's fold style (D-118). | S | P3 | User |
 | CHR-01 | Admins shall create, edit, and archive chores (routines) and tasks (to-dos, one-off or repeating) with title, icon, assignees (any family members), points, approval flag, household tags, optional due time, and visibility. | M | P1 | User |
 | CHR-02 | Chores shall support recurrence (daily, weekly by weekday, monthly, once) and day-type filters. | M | P1 | User |
 | CHR-03 | The system shall materialize one occurrence per item per due date for a rolling window, snapshot its assignees, and on edit re-plan only occurrences nothing has happened to, never past ones (D-45). | M | P1 | Design |
@@ -49,7 +50,7 @@
 | CHR-17 | A person may turn on a daily digest at a chosen time listing their overdue and today's items, and set quiet hours that hold reminders until they end; notifications for private items hide the title on the lock screen. | M | P2 | User |
 | CHR-18 | An item with several assignees shall be either shared (one occurrence per due date, done by whoever gets to it) or each person's own (one occurrence per assignee per due date, each with its own status and credit, due by that person's own day type). New chores default to each person's own, new tasks to shared. | M | P1 | User |
 | CHR-19 | An item each person does on their own may follow each child's school lunch: due for a person only on their bring days, or only on their buy days (MEAL-04), so never for an adult or on a day without school. A change to a child's lunch, for one day or their usual week, shall re-plan their items at once, today included, keeping any already acted on. | M | P2 | User |
-| CHR-20 | A parent with notifications on shall be alerted when a check-off waits for a parent's OK or a child asks for a reward: at most one alert per reminders run, grouping what became waiting since the last, held in quiet hours, opening where it is cleared, and switchable per parent (on by default). | S | P2 | User |
+| CHR-20 | A parent with notifications on shall be alerted when a check-off waits for a parent's OK or a child asks for a reward: within seconds of it starting to wait (D-119), counting all that waits for that parent by child, held in quiet hours, opening where it is cleared, and switchable per parent (on by default). | S | P2 | User |
 | RWD-01 | Admins shall create, edit, and archive reward goals with title, image, assignee, start date, and end date. | M | P1 | User |
 | RWD-02 | Goals shall support rule types COUNT, STREAK, DAILY_ALL_DONE, and POINTS, scoped to all items, household tags (by id), or specific items. | M | P1 | User |
 | RWD-03 | A goal shall combine its rules with ALL or ANY logic. | M | P1 | Derived |
@@ -63,6 +64,13 @@
 | RWD-11 | Daily outcomes and runs of good and bad days (including missed days) shall be persisted per member so streak history can be shown over time. | M | P1 | User |
 | RWD-12 | Admins shall view insights: current and best good streak, longest bad streak, completion rate over a range, a day heatmap, most-missed chores, completion by tag, and trust metrics (reversal and rejection rate, time to verify) to inform the approval setting. | S | P1 | Derived |
 | RWD-13 | A goal shall define a payout on achievement: custom reward, a number of points, or a catalog item. | S | P1 | User |
+| RWD-14 | A goal's end date shall be clearable on every device, an iPhone included: an "Ends on a date" check box and a Clear control on the goal form. A started goal's end date shall be today or later, and a reached goal's rules and dates shall not change (D-115). | S | P2 | User |
+| RWD-15 | A goal may repeat each week (the household's week), month or school term, from its start date to its end date or, with no end date, until stopped; a part-period counts only the days due inside it; each period is worked out, reached and paid on its own; the goal keeps a history of its periods (D-101). | S | P2 | User |
+| RWD-16 | A rule "every day it's due, each period" shall take as its target the days in the period when a chore in its scope is due for the member, with 0 to N misses allowed (default 0); a miss beyond the allowance ends that period ("Missed, starts again" the next period's first day); a period with no days due is neutral, a skipped day is neutral, and a parent's late credit counts (D-101). | S | P2 | User |
+| RWD-17 | A rule may count only check-offs made by a set time, each chore's due time or a time on the rule; a later check-off completes the chore but doesn't count toward the rule (D-102). | S | P2 | User |
+| RWD-18 | A goal, or each period of a repeating goal, may pay points at steps; the highest step reached pays, the top step at once and a lower step when its period or window closes (D-102). | S | P2 | User |
+| RWD-19 | A goal may count the periods a repeating goal was reached, in total or in a row; a period with no days due neither counts nor breaks a run (D-103). | S | P2 | User |
+| RWD-20 | A family goal may require every child who earns rewards to meet its rules on their own, each period for a repeating goal (D-103). | S | P2 | User |
 | CAL-01 | Admins shall connect calendars by ICS URL, with the URL stored only in Vault. | M | P1 | User |
 | CAL-02 | Calendars shall sync at least every 15 minutes and expand recurring events across a rolling window. | M | P1 | User |
 | CAL-03 | Synced calendars shall be read-only; Apple Calendar remains the system of record for events. | M | P1 | User |
@@ -92,7 +100,7 @@
 | MEAL-11 | On a buy day of the coming week, a child shall pick from the day's menu on the board: one option in each section whose title says "Choice of" (the entree, the milk) and any number in the others (fruits and vegetables), each section's options as MENU-06 reads them; the board then shows the picks, and a parent sees and can change them on Meals. | S | P2 | User |
 | MEAL-12 | The admin app's Home shall have a quick action that opens the school lunch picks in one tap: the current week Monday to Friday, the coming week on Saturday and Sunday, on the child last chosen (D-98). | S | P3 | User |
 | MEAL-13 | The school lunch week in the admin app shall be a stacked list of Monday to Friday, on every screen size with no sideways scroll: each day collapsed to its weekday, date, Buy or Bring and a checkmark when its selection is complete, and expanded to change Buy or Bring and pick from the day's menu sections, picks checked and highlighted; a day without school greyed as "No school"; today outlined (D-98). | M | P2 | User |
-| MEAL-14 | The meal planner's days shall be collapsible sections, all collapsed at first: each shows its weekday, date and "X of Y set" (a checkmark when all are set), and expands to the day's meals with Add and Change as before; today outlined (D-98). | S | P2 | User |
+| MEAL-14 | The meal planner's days shall be collapsible sections, all collapsed at first: each shows its weekday, date and "X of Y set" (a checkmark when all are set), and expands to the day's meals with Add and Change as before; today outlined. School lunch's usual week (a line per child when collapsed), Add to the plan and Copy last week shall also start collapsed on every screen size, each opening on tap, Add to the plan and Copy last week following the days, and Add on a day shall open Add to the plan with that day filled (D-98, D-114). | S | P2 | User |
 | MEAL-15 | A planned meal shall be editable: Change offers Edit, which opens the meal's form filled with what was saved, and Remove. | S | P2 | User |
 | MENU-01 | Admins shall configure a menu source and link it to a child's school profile. | M | P2 | User |
 | MENU-02 | Menu import shall use a pluggable adapter interface (Nutrislice, SchoolCafe, Linq Connect, CSV, manual). | M | P2 | Design |
@@ -134,8 +142,9 @@
 | NFR-15 | The admin app's pages shall be grouped in one menu (the day, the family's set-up, and settings), tidy on a phone and a laptop, with every settings page (school, calendars, boards, tags, reminders, health) reachable from it. | S | P3 | User |
 | NFR-16 | Every screen of the admin app and the board shall lay out cleanly on a phone, a tablet and a laptop in both themes: no control overlaps another, is clipped, or sits out of line with its neighbours; an automated layout sweep in CI keeps it so. | S | P3 | User |
 | NFR-17 | The admin app's Home shall be a glance: what needs a parent now and heads-ups for soon, each with where to deal with it and shown only while its cause lasts; and quick actions to add a chore, task, reward, goal or meal, to call off school today or add a day off, and to fetch the school menus. | S | P3 | User |
-| NFR-18 | Every requirement, user story and backlog item's Done when shall trace to the tests that prove it, in a Test catalogue generated from the tests' names (`08` §9); CI shall fail a change that adds a built requirement or story with no test, a Done item with no test cases, a test case with no test, or a test naming an unknown ID. | M | P3 | User |
-| NFR-14 | Every change shall reach production only through a pull request that passes CI gates (lint, typecheck, unit, pgTAP, traceability, build) and e2e on its preview deployment, which runs as the demo family on the test database, rebuilt from the PR's migrations for each run (D-85), and that the owner has approved after viewing its preview; merging applies migrations before deploying the app. No Docker and no staging environment. | M | P0 | User |
+| NFR-18 | Every admin page shall fold its set-up and reference sections in the meal planner's fold: forms that add something to their button, archived lists, history and logs, settings set once to what they are set to, each calendar, school menu and board to its facts, and Archive, Remove, Cancel and Disconnect set apart; each folded header shall show any warning or count waiting for a parent; what waits for a parent, a page's main list and an edit page's form stay open; a fold opens again after a save, an add or an error inside it (D-120). | S | P3 | User |
+| NFR-14 | Every change shall reach production only through a pull request that passes CI gates (lint, typecheck, unit, pgTAP, traceability, docs, build and brand checks) on its head and on the merge commit, and that the owner has approved after viewing its preview; merging applies migrations before deploying the app. e2e runs nightly on a preview of `main`, as the demo family on the test database rebuilt from `main`'s migrations for each run (D-85), and never blocks a pull request or a deploy (D-108). No Docker and no staging environment. | M | P0 | User |
+| NFR-19 | Every requirement, user story and backlog item's Done when shall trace to the tests that prove it, in a Test catalogue generated from the tests' names (`08` §9); CI shall fail a change that adds a built requirement or story with no test, a Done item with no test cases, a test case with no test, or a test naming an unknown ID. | M | P3 | User |
 
 ---
 
@@ -146,31 +155,32 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | Req | Stories | Work packages | Components | Data entities | Verification | Tests |
 |---|---|---|---|---|---|---|
 | ACC-01 | US-101 | WP-02, WP-03 | ADM, DB | household, household_settings | DB, E2E | DB 14 · E2E 1 |
-| ACC-02 | US-102 | WP-03 | ADM, SAUTH | household_user | E2E, U | U 17 · DB 5 · UI 1 · E2E 4 |
+| ACC-02 | US-102 | WP-03 | ADM, SAUTH | household_user | E2E, U | U 18 · DB 5 · UI 1 · E2E 4 |
 | ACC-03 | US-103 | WP-03 | ADM, API, SAUTH | invite, household_user | E2E, DB | U 1 · DB 19 · E2E 2 |
 | ACC-04 | US-104 | WP-04, WP-46 | ADM, DB | member | E2E, DB, U | U 5 · DB 16 · UI 3 · E2E 7 |
 | ACC-05 | US-105 | WP-03, WP-32 | DB, ADM | audit_log | DB, E2E | DB 20 |
 | ACC-06 | US-106 | WP-38 | ADM, SAUTH | household_user | E2E | — |
 | ACC-07 | US-108 | WP-55 | ADM, API, VAULT | household_settings | U, DB, E2E | — |
 | ACC-08 | US-110 | WP-57 | ADM, DB, SCHED | household, household_settings | DB, U, E2E | U 2 · DB 13 · UI 3 · E2E 1 |
-| DEV-01 | US-201 | WP-05 | ADM, API, AUTH, BRD, SAUTH | device_pairing, device | E2E, DB | U 1 · DB 13 · UI 1 · E2E 3 |
+| DEV-01 | US-201 | WP-05 | ADM, API, AUTH, BRD, SAUTH | device_pairing, device | E2E, DB | U 1 · DB 13 · UI 1 · E2E 2 |
 | DEV-02 | US-201, US-202 | WP-05, WP-59 | AUTH, DB, SAUTH | device | DB | U 4 · DB 26 · E2E 3 |
-| DEV-03 | US-202 | WP-05 | ADM, AUTH | device | E2E | DB 7 · E2E 1 |
+| DEV-03 | US-202 | WP-05 | ADM, AUTH | device | E2E | U 2 · DB 7 · UI 1 · E2E 1 |
 | DEV-04 | US-203 | WP-14 | PI, BRD | — | HW, E2E | U 1 |
-| DEV-05 | US-204 | WP-06, WP-70, WP-78 | RT, BRD, DB | board_snapshot, all board-readable tables | U, DB, E2E | U 11 · DB 21 · UI 3 · E2E 6 |
+| DEV-05 | US-204 | WP-06, WP-70, WP-78 | RT, BRD, DB | board_snapshot, all board-readable tables | U, DB, E2E | U 12 · DB 21 · UI 3 · E2E 6 |
 | DEV-06 | US-205 | WP-13 | OUTBOX, BRD, API | chore_completion_event | E2E, U | U 5 · UI 1 · E2E 1 |
-| DEV-07 | US-207 | WP-34 | PI, BRD | household_settings | HW | — |
+| DEV-07 | US-207 | WP-34 | PI, BRD, ADM | device | U, E2E, HW | U 41 · DB 17 · UI 4 · E2E 1 |
 | DEV-08 | US-206 | WP-13 | BRD, OBS | job_run | E2E, U, DB | U 3 · UI 3 · E2E 1 |
-| CHR-01 | US-301 | WP-08, WP-46 | ADM, API | chore, chore_assignee | U, DB, E2E | U 16 · DB 9 · UI 4 · E2E 4 |
+| DEV-09 | US-208 | WP-91 | ADM | device, household_settings | U, E2E | U 3 · UI 2 |
+| CHR-01 | US-301 | WP-08, WP-46, WP-83 | ADM, API | chore, chore_assignee | U, DB, E2E | U 16 · DB 9 · UI 4 · E2E 4 |
 | CHR-02 | US-302 | WP-09 | OCCGEN, DB | chore, school_closure | U, DB, E2E | DB 4 |
 | CHR-03 | US-303, US-308, US-311 | WP-09 | OCCGEN, SCHED, DB | chore_occurrence | DB, U, E2E | U 4 · DB 18 · E2E 1 |
-| CHR-04 | US-304, US-305, US-1006 | WP-10, WP-11 | BRD, OUTBOX, API, DB | chore_completion_event, chore_occurrence | E2E, DB, U | U 11 · DB 9 · UI 4 · E2E 4 |
-| CHR-05 | US-306, US-310 | WP-12 | ADM, API | chore_completion_event | E2E | U 4 · DB 5 · UI 3 · E2E 1 |
+| CHR-04 | US-304, US-305, US-1006 | WP-10, WP-11 | BRD, OUTBOX, API, DB | chore_completion_event, chore_occurrence | E2E, DB, U | U 11 · DB 9 · UI 4 · E2E 3 |
+| CHR-05 | US-306, US-310 | WP-12, WP-92 | ADM, API | chore_completion_event | E2E | U 4 · DB 8 · UI 3 · E2E 1 |
 | CHR-06 | US-307, US-309 | WP-12 | ADM, API | chore_completion_event | E2E | U 5 · DB 3 · UI 3 · E2E 2 |
 | CHR-07 | US-307, US-314 | WP-10 | DB, SCHED, BRD, ADM | chore_occurrence, chore_completion_event | DB, U, E2E | U 5 · DB 15 · E2E 1 |
 | CHR-08 | US-309 | WP-12 | ADM, API, DB | chore_completion_event, points_ledger | E2E, DB | U 2 · DB 1 · UI 2 · E2E 1 |
-| CHR-09 | US-304, US-311, US-316, US-320 | WP-08, WP-09, WP-10, WP-43 | ADM, BRD, API, OCCGEN, DB | chore_assignee, chore_occurrence_assignee, chore_completion_event | DB, E2E | U 8 · DB 15 · UI 1 · E2E 4 |
-| CHR-10 | US-312 | WP-08, WP-15, WP-19, WP-46 | ADM, RULES, DB | tag, chore_tag, reward_rule | DB, U, E2E | U 9 · DB 8 · UI 2 · E2E 2 |
+| CHR-09 | US-304, US-311, US-316, US-320 | WP-08, WP-09, WP-10, WP-43 | ADM, BRD, API, OCCGEN, DB | chore_assignee, chore_occurrence_assignee, chore_completion_event | DB, E2E | U 8 · DB 15 · UI 1 · E2E 3 |
+| CHR-10 | US-312 | WP-08, WP-15, WP-19, WP-46, WP-83 | ADM, RULES, DB | tag, chore_tag, reward_rule | DB, U, E2E | U 9 · DB 8 · UI 2 · E2E 2 |
 | CHR-11 | US-313 | WP-08, WP-09, WP-11 | ADM, BRD, OCCGEN | chore, chore_occurrence | E2E, U | U 9 · DB 5 · UI 1 · E2E 2 |
 | CHR-12 | US-303, US-314 | WP-09, WP-10, WP-11 | OCCGEN, SCHED, DB, BRD | chore_occurrence | DB, INT, E2E | U 5 · DB 9 · UI 2 · E2E 1 |
 | CHR-13 | US-315 | WP-08 | ADM, BRD, API, DB | chore, chore_assignee, chore_tag, audit_log | U, DB, E2E | U 4 · DB 28 · E2E 3 |
@@ -180,21 +190,28 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CHR-17 | US-319 | WP-40 | NOTIFY, ADM, DB | reminder_preference, reminder_delivery | DB, INT, E2E, U | U 2 · DB 2 · UI 1 · E2E 2 |
 | CHR-18 | US-320 | WP-43 | ADM, OCCGEN, DB | chore, chore_occurrence | DB, U, E2E | U 5 · DB 21 · E2E 2 |
 | CHR-19 | US-321 | WP-61 | ADM, OCCGEN, DB | chore, chore_occurrence, lunch_override, member_lunch | DB, U, E2E | U 2 · DB 14 · UI 1 · E2E 1 |
-| CHR-20 | US-322 | WP-63 | NOTIFY, SCHED, ADM, DB | reminder_preference, reminder_delivery, chore_occurrence, redemption | DB, U, E2E | U 1 · DB 10 · UI 1 · E2E 1 |
+| CHR-20 | US-322 | WP-63, WP-92 | NOTIFY, SCHED, ADM, DB | reminder_preference, reminder_delivery, chore_occurrence, redemption | DB, U, E2E | U 3 · DB 22 · UI 1 · E2E 1 |
 | RWD-01 | US-401 | WP-19 | ADM, API | reward_goal | E2E | U 5 · DB 1 · UI 2 · E2E 1 |
 | RWD-02 | US-312, US-401 | WP-15 | RULES, DB | reward_rule, tag | U | U 16 · UI 1 |
 | RWD-03 | US-401 | WP-15 | RULES | reward_goal | U | U 5 · UI 1 |
-| RWD-04 | US-406, US-407 | WP-19, WP-39 | RULES, API, SCHED, DB | reward_rule_progress, reward_goal_progress, points_ledger | U, INT, DB, E2E | U 13 · DB 7 · UI 1 · E2E 4 |
+| RWD-04 | US-406, US-407 | WP-19, WP-39 | RULES, API, SCHED, DB | reward_rule_progress, reward_goal_progress, points_ledger | U, INT, DB, E2E | U 13 · DB 7 · UI 1 · E2E 2 |
 | RWD-05 | US-402 | WP-15 | RULES | reward_rule | U | U 31 · DB 2 · UI 3 · E2E 1 |
 | RWD-06 | US-405 | WP-19 | RULES, SCHED, API | reward_goal, reward_goal_event | U, INT | DB 2 · UI 1 · E2E 1 |
 | RWD-07 | US-403 | WP-20, WP-44 | BRD | reward_goal_progress | E2E | U 9 · DB 3 · UI 3 · E2E 1 |
 | RWD-08 | US-404 | WP-11, WP-20 | BRD | reward_goal | E2E | U 3 · DB 9 · UI 5 · E2E 1 |
 | RWD-09 | US-405 | WP-19 | ADM, API | reward_goal, reward_goal_event | E2E | U 1 · DB 2 · UI 1 · E2E 1 |
-| RWD-10 | US-406 | WP-39 | ADM, RULES | reward_goal, reward_rule | U, E2E | U 3 · DB 2 · UI 1 · E2E 2 |
+| RWD-10 | US-406 | WP-39 | ADM, RULES | reward_goal, reward_rule | U, E2E | U 3 · DB 2 · UI 1 · E2E 1 |
 | RWD-11 | US-408 | WP-15, WP-17 | DB, SCHED, RULES | member_daily_summary, streak_segment | U, DB, INT, E2E | U 21 · DB 3 · E2E 2 |
 | RWD-12 | US-408 | WP-17 | ADM, RULES | member_daily_summary, streak_segment | E2E, U, DB | U 1 · DB 6 · UI 1 · E2E 1 |
-| RWD-13 | US-409 | WP-39 | RULES, API, DB | reward_goal, points_ledger, redemption | U, INT, DB, E2E | U 3 · DB 4 · UI 3 · E2E 2 |
-| CAL-01 | US-501 | WP-22 | ADM, CALSYNC, VAULT | calendar_source | INT, E2E | U 6 · DB 19 · UI 2 · E2E 2 |
+| RWD-13 | US-409 | WP-39 | RULES, API, DB | reward_goal, points_ledger, redemption | U, INT, DB, E2E | U 3 · DB 4 · UI 3 · E2E 1 |
+| RWD-14 | US-401 | WP-79 | ADM | reward_goal | U, E2E | U 5 · DB 5 · UI 3 · E2E 1 |
+| RWD-15 | US-410, US-411 | WP-80 | RULES, ADM, BRD, DB, SCHED | reward_goal, reward_rule, reward_goal_event, points_ledger | U, DB, E2E | — |
+| RWD-16 | US-410, US-411 | WP-80 | RULES, ADM, BRD, DB | reward_rule, chore_occurrence, reward_rule_progress | U, DB, E2E | — |
+| RWD-17 | US-412 | WP-81 | RULES, ADM, DB | reward_rule, chore_completion_event | U, DB, E2E | — |
+| RWD-18 | US-413 | WP-81 | RULES, ADM, DB | reward_goal, points_ledger | U, DB, E2E | — |
+| RWD-19 | US-414 | WP-82 | RULES, ADM, DB | reward_goal, reward_rule | U, DB, E2E | — |
+| RWD-20 | US-415 | WP-82 | RULES, ADM, BRD, DB | reward_goal, reward_goal_progress, points_ledger | U, DB, E2E | — |
+| CAL-01 | US-501 | WP-22 | ADM, CALSYNC, VAULT | calendar_source | INT, E2E | U 6 · DB 19 · UI 2 · E2E 1 |
 | CAL-02 | US-502 | WP-22 | CALSYNC, SCHED | calendar_event, calendar_event_instance | U, INT | U 5 · DB 11 · E2E 1 |
 | CAL-03 | US-501 | WP-22 | CALSYNC, ADM, BRD | — | REV | DB 3 · UI 1 |
 | CAL-04 | US-503, US-1008 | WP-23 | BRD | calendar_event_instance | E2E | U 8 · DB 4 · UI 11 · E2E 1 |
@@ -211,20 +228,20 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | SCH-05 | US-604 | WP-54 | ADM, BRD, DB | school_year, school_day_change | U, DB, E2E | — |
 | SCH-06 | US-605 | WP-56 | ADM, API | school_year, school_closure, school_day_change | U, INT, E2E | — |
 | MEAL-01 | US-701 | WP-25 | ADM, BRD | meal_plan_entry | U, DB, E2E | U 4 · DB 1 · UI 3 · E2E 1 |
-| MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | U, DB, E2E | U 3 · DB 1 · UI 2 · E2E 1 |
+| MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | U, DB, E2E | U 3 · DB 2 · UI 2 · E2E 1 |
 | MEAL-03 | US-702 | WP-25 | ADM, API | meal_plan_entry | DB, E2E, INT | U 1 · DB 3 · UI 1 · E2E 1 |
-| MEAL-04 | US-703 | WP-26 | ADM, DB | lunch_override, member_lunch | U, DB, E2E | U 3 · DB 4 · UI 1 · E2E 1 |
+| MEAL-04 | US-703 | WP-26 | ADM, DB | lunch_override, member_lunch | U, DB, E2E | U 5 · DB 4 · UI 1 · E2E 1 |
 | MEAL-05 | US-704 | WP-27 | MENUIMP, BRD, ADM | school_menu_day, member_lunch | U, DB, E2E | U 3 · DB 2 · E2E 1 |
 | MEAL-06 | US-705 | WP-28 | BRD | meal_plan_entry, lunch_override, member_lunch, school_menu_day | U, DB, E2E | U 6 · DB 3 · UI 4 · E2E 3 |
 | MEAL-07 | US-706 | WP-36 | ADM | meal | U | — |
 | MEAL-08 | US-701 | WP-25 | ADM | meal_plan_entry | U, DB, E2E | U 2 · DB 1 · UI 2 · E2E 1 |
-| MEAL-09 | US-707 | WP-49, WP-77 | BRD, API, DB, ADM | lunch_override, member_lunch, school_menu_day, chore, lunch_request, household_settings | U, DB, E2E | U 9 · DB 13 · UI 5 · E2E 3 |
-| MEAL-10 | US-708 | WP-62 | ADM, BRD, DB | meal_plan_entry, meal_plan_entry_member | U, DB, E2E | U 3 · DB 4 · UI 2 · E2E 1 |
-| MEAL-11 | US-707 | WP-49, WP-77, WP-78 | BRD, ADM, DB | school_menu_day, lunch_choice, lunch_request | U, DB, E2E | U 7 · DB 6 · UI 2 · E2E 4 |
-| MEAL-12 | US-709 | WP-73 | ADM | lunch_override, member_lunch, lunch_choice | U, E2E | — |
-| MEAL-13 | US-710 | WP-74 | ADM | lunch_override, member_lunch, lunch_choice, school_menu_day | U, E2E | — |
-| MEAL-14 | US-711 | WP-75 | ADM | meal_plan_entry | U, E2E | — |
-| MEAL-15 | US-701 | WP-76 | ADM, DB | meal_plan_entry, meal_plan_entry_member | U, DB, E2E | — |
+| MEAL-09 | US-707 | WP-49, WP-77 | BRD, API, DB, ADM | lunch_override, member_lunch, school_menu_day, chore, lunch_request, household_settings | U, DB, E2E | U 9 · DB 13 · UI 6 · E2E 1 |
+| MEAL-10 | US-708 | WP-62 | ADM, BRD, DB | meal_plan_entry, meal_plan_entry_member | U, DB, E2E | U 3 · DB 5 · UI 2 · E2E 1 |
+| MEAL-11 | US-707 | WP-49, WP-77, WP-78 | BRD, ADM, DB | school_menu_day, lunch_choice, lunch_request | U, DB, E2E | U 7 · DB 6 · UI 1 · E2E 1 |
+| MEAL-12 | US-709 | WP-73 | ADM | lunch_override, member_lunch, lunch_choice | U, E2E | U 4 · UI 1 · E2E 1 |
+| MEAL-13 | US-710 | WP-74 | ADM | lunch_override, member_lunch, lunch_choice, school_menu_day | U, UI, E2E | U 9 · UI 4 · E2E 1 |
+| MEAL-14 | US-711 | WP-75 | ADM | meal_plan_entry | U, E2E | U 4 · UI 4 · E2E 1 |
+| MEAL-15 | US-701 | WP-76 | ADM, DB | meal_plan_entry, meal_plan_entry_member | U, DB, E2E | DB 4 · UI 3 · E2E 1 |
 | MENU-01 | US-801 | WP-27 | ADM, MENUIMP | menu_source, member_lunch | U, DB, E2E | U 2 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | US-801 | WP-27 | MENUIMP | menu_source | U, DB, E2E | U 4 · DB 2 · UI 2 · E2E 1 |
 | MENU-03 | US-802 | WP-27 | ADM, MENUIMP | school_menu_day | U, DB, E2E | U 5 · DB 3 · UI 2 · E2E 1 |
@@ -235,38 +252,39 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | BRD-02 | US-1002 | WP-11 | BRD | member | E2E | U 1 |
 | BRD-03 | US-905 | WP-11 | BRD | — | E2E, HW, REV | UI 10 |
 | BRD-04 | US-1003 | WP-45 | BRD, API | household_settings, weather_reading | E2E | U 13 · DB 33 · UI 7 · E2E 3 |
-| BRD-05 | US-1004 | WP-35 | ADM, BRD | household_settings, device | E2E | U 6 · DB 22 · UI 2 · E2E 3 |
+| BRD-05 | US-1004 | WP-35 | ADM, BRD | household_settings, device | E2E | U 8 · DB 22 · UI 2 · E2E 3 |
 | BRD-06 | US-1005 | WP-14, WP-35 | BRD | — | E2E | UI 2 |
 | BRD-07 | US-1006 | WP-11, WP-35 | BRD, API | chore_occurrence, chore_occurrence_assignee | E2E | U 3 · DB 1 · UI 4 · E2E 2 |
-| BRD-08 | US-1007 | WP-47, WP-58, WP-71 | BRD, ADM | device | E2E, U | U 4 · DB 11 · UI 8 · E2E 2 |
+| BRD-08 | US-1007 | WP-47, WP-58, WP-71 | BRD, ADM | device | E2E, U | U 5 · DB 11 · UI 8 · E2E 1 |
 | BRD-09 | US-1008 | WP-48, WP-71 | BRD | — | E2E | UI 5 · E2E 1 |
 | BRD-10 | US-1009 | WP-68 | BRD, ADM, DB | device | U, DB, E2E | — |
 | BRD-11 | US-1010 | WP-72 | BRD | — | U, E2E | — |
 | NFR-01 | US-205 | WP-13, WP-44 | OUTBOX, BRD | — | E2E, U, HW | U 11 · UI 2 · E2E 2 |
 | NFR-02 | US-905 | WP-14 | BRD, PI | — | HW, E2E | UI 1 |
 | NFR-03 | US-905 | WP-11 | BRD | — | HW, E2E | UI 3 · E2E 1 |
-| NFR-04 | US-102, US-901 | WP-02, WP-03, WP-05 | DB, VAULT, SAUTH, API | all tables | DB, REV | U 1 · DB 76 |
+| NFR-04 | US-102, US-901 | WP-02, WP-03, WP-05 | DB, VAULT, SAUTH, API | all tables | DB, REV | U 1 · DB 80 |
 | NFR-05 | US-902 | WP-33 | ADM, API, DB | household, member | E2E, INT | U 1 |
 | NFR-06 | US-907 | WP-10 | DB, API | chore_completion_event | DB, U, E2E | U 7 · DB 20 |
-| NFR-07 | US-904 | WP-07, WP-42 | OBS, API, SCHED | job_run, private.job_schedule, private.app_error | U, DB, E2E, REV | U 41 · DB 28 · UI 1 · E2E 4 |
+| NFR-07 | US-904 | WP-07, WP-42 | OBS, API, SCHED | job_run, private.job_schedule, private.app_error | U, DB, E2E, REV | U 43 · DB 28 · UI 1 · E2E 4 |
 | NFR-08 | US-909 | WP-01, WP-41, WP-42 | CICD, OBS | private.usage_sample | U, DB, E2E, REV | U 5 · DB 11 · E2E 1 |
 | NFR-09 | US-101, US-901 | WP-02 | DB | all tables | DB | DB 4 |
 | NFR-10 | US-903 | WP-24 | DB | — | REV | — |
-| NFR-11 | US-906 | WP-31, WP-46 | BRD, ADM, UI | — | E2E, REV | U 4 · UI 24 |
-| PTS-01 | US-309, US-1101, US-1106 | WP-16 | DB, API, ADM | points_ledger, chore_occurrence | DB, U, E2E | U 10 · DB 42 · E2E 6 |
+| NFR-11 | US-906 | WP-31, WP-46 | BRD, ADM, UI | — | E2E, REV | U 4 · UI 26 |
+| PTS-01 | US-309, US-1101, US-1106 | WP-16 | DB, API, ADM | points_ledger, chore_occurrence | DB, U, E2E | U 10 · DB 42 · E2E 5 |
 | PTS-02 | US-1102 | WP-11, WP-16, WP-20 | BRD, DB | v_points_balance, points_ledger | E2E | U 4 · DB 11 · UI 1 · E2E 2 |
-| PTS-03 | US-1103 | WP-18 | ADM, API, BRD | reward_catalog_item | E2E, DB | U 5 · DB 6 · UI 4 · E2E 2 |
-| PTS-04 | US-1104, US-1105 | WP-18, WP-20 | BRD, ADM, API, DB, OUTBOX | redemption, points_ledger, reward_catalog_item | E2E, DB, INT | U 10 · DB 17 · UI 10 · E2E 4 |
-| PTS-05 | US-1107 | WP-30 | SCHED, RULES, ADM, DB | points_rule, points_ledger, streak_segment, member_daily_summary | U, DB, E2E | U 7 · DB 4 · UI 2 · E2E 2 |
+| PTS-03 | US-1103 | WP-18 | ADM, API, BRD | reward_catalog_item | E2E, DB | U 5 · DB 6 · UI 4 · E2E 1 |
+| PTS-04 | US-1104, US-1105 | WP-18, WP-20 | BRD, ADM, API, DB, OUTBOX | redemption, points_ledger, reward_catalog_item | E2E, DB, INT | U 10 · DB 17 · UI 10 · E2E 3 |
+| PTS-05 | US-1107 | WP-30 | SCHED, RULES, ADM, DB | points_rule, points_ledger, streak_segment, member_daily_summary | U, DB, E2E | U 7 · DB 4 · UI 2 · E2E 1 |
 | PTS-06 | US-1108 | WP-30 | BRD, API, ADM, DB | wishlist_pin, reward_catalog_item, v_points_balance | U, DB, E2E | U 5 · DB 2 · UI 7 · E2E 2 |
 | PTS-07 | US-1109 | WP-02, WP-04, WP-16 | ADM, DB, RULES | member, points_ledger | DB, E2E | U 2 · DB 15 · E2E 3 |
-| NFR-12 | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-87 | all | — | CI | U 2 |
+| NFR-12 | US-908, US-911 | WP-01, WP-02, WP-15, WP-85 | all | — | CI | U 2 |
 | NFR-13 | US-910 | WP-37, WP-46 | BRD, ADM, UI | — | E2E, REV | U 21 · UI 7 |
-| NFR-14 | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-85, WP-87 | CICD | — | CI, REV | U 12 · DB 14 · E2E 2 |
+| NFR-14 | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90 | CICD | — | CI, REV | U 20 · DB 14 · UI 1 · E2E 2 |
 | NFR-15 | US-107 | WP-51 | ADM, UI | chore_occurrence, tag, calendar_source, device, reminder_preference | U, E2E | U 2 · UI 6 · E2E 1 |
 | NFR-16 | US-912 | WP-53, WP-71 | ADM, BRD, UI | — | E2E, CI | UI 4 |
-| NFR-17 | US-109 | WP-57 | ADM, DB, UI | chore_occurrence, redemption, device, calendar_source, menu_source, school_closure | U, DB, E2E | U 10 · DB 2 · UI 4 · E2E 2 |
-| NFR-18 | US-913 | WP-85, WP-86 | CICD | — | CI, U | U 6 |
+| NFR-17 | US-109 | WP-57 | ADM, DB, UI | chore_occurrence, redemption, device, calendar_source, menu_source, school_closure | U, DB, E2E | U 11 · DB 2 · UI 4 · E2E 2 |
+| NFR-18 | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | ADM, UI | — | U, E2E | U 3 |
+| NFR-19 | US-913 | WP-85, WP-86 | CICD | — | CI, U | U 6 |
 
 ---
 
@@ -276,13 +294,13 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 |---|---|---|---|---|
 | P0 | 13 | 1 | 0 | 14 |
 | P1 | 52 | 5 | 0 | 57 |
-| P2 | 15 | 14 | 1 | 30 |
-| P3 | 2 | 15 | 4 | 21 |
-| **Total** | **82** | **35** | **5** | **122** |
+| P2 | 15 | 21 | 1 | 37 |
+| P3 | 2 | 17 | 4 | 23 |
+| **Total** | **82** | **44** | **5** | **131** |
 
-- Requirements: **122** · with at least one story: **122** · stories: **109** (P0: 12 · P1: 52 · P2: 24 · P3: 21).
-- With at least one work package: **122** · work packages: **80**.
-- Tests: **2174** (1706 name a requirement) · built requirements with a test: **103 of 103** · known test gaps: **93** (`08` §9.6).
+- Requirements: **131** · with at least one story: **131** · stories: **117** (P0: 12 · P1: 52 · P2: 30 · P3: 23).
+- With at least one work package: **131** · work packages: **94**.
+- Tests: **2330** (1836 name a requirement) · built requirements with a test: **109 of 109** · known test gaps: **104** (`08` §9.6).
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -291,25 +309,25 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 
 | Component | Requirements |
 |---|---|
-| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, BRD-08, BRD-09, BRD-10, BRD-11, CAL-03, CAL-04, CAL-05, CAL-09, CAL-10, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, MEAL-09, MEAL-10, MEAL-11, MENU-06, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, NFR-16, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08, SCH-05 |
-| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, ACC-07, ACC-08, BRD-05, BRD-08, BRD-10, CAL-01, CAL-03, CAL-05, CAL-06, CAL-09, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-01, DEV-03, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MEAL-09, MEAL-10, MEAL-11, MEAL-12, MEAL-13, MEAL-14, MEAL-15, MENU-01, MENU-03, MENU-04, MENU-06, NFR-05, NFR-11, NFR-13, NFR-15, NFR-16, NFR-17, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, SCH-01, SCH-04, SCH-05, SCH-06 |
+| `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, BRD-08, BRD-09, BRD-10, BRD-11, CAL-03, CAL-04, CAL-05, CAL-09, CAL-10, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, MEAL-09, MEAL-10, MEAL-11, MENU-06, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, NFR-16, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08, RWD-15, RWD-16, RWD-20, SCH-05 |
+| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, ACC-07, ACC-08, BRD-05, BRD-08, BRD-10, CAL-01, CAL-03, CAL-05, CAL-06, CAL-09, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-01, DEV-03, DEV-07, DEV-09, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MEAL-09, MEAL-10, MEAL-11, MEAL-12, MEAL-13, MEAL-14, MEAL-15, MENU-01, MENU-03, MENU-04, MENU-06, NFR-05, NFR-11, NFR-13, NFR-15, NFR-16, NFR-17, NFR-18, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, RWD-14, RWD-15, RWD-16, RWD-17, RWD-18, RWD-19, RWD-20, SCH-01, SCH-04, SCH-05, SCH-06 |
 | `API` | ACC-03, ACC-07, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, DEV-01, DEV-06, MEAL-03, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, PTS-06, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13, SCH-06 |
 | `AUTH` | DEV-01, DEV-02, DEV-03 |
-| `RULES` | CHR-10, PTS-05, PTS-07, RWD-02, RWD-03, RWD-04, RWD-05, RWD-06, RWD-10, RWD-11, RWD-12, RWD-13 |
+| `RULES` | CHR-10, PTS-05, PTS-07, RWD-02, RWD-03, RWD-04, RWD-05, RWD-06, RWD-10, RWD-11, RWD-12, RWD-13, RWD-15, RWD-16, RWD-17, RWD-18, RWD-19, RWD-20 |
 | `OCCGEN` | CHR-02, CHR-03, CHR-09, CHR-11, CHR-12, CHR-18, CHR-19, SCH-03 |
 | `CALSYNC` | CAL-01, CAL-02, CAL-03, CAL-06, CAL-07, CAL-08, CAL-10, SCH-04 |
 | `MENUIMP` | MEAL-05, MENU-01, MENU-02, MENU-03, MENU-04, MENU-05, MENU-06 |
 | `NOTIFY` | CHR-15, CHR-16, CHR-17, CHR-20 |
 | `OUTBOX` | CHR-04, DEV-06, NFR-01, PTS-04 |
-| `SCHED` | ACC-08, CAL-02, CHR-03, CHR-07, CHR-12, CHR-16, CHR-20, MENU-05, NFR-07, PTS-05, RWD-04, RWD-06, RWD-11 |
-| `DB` | ACC-01, ACC-04, ACC-05, ACC-08, BRD-10, CAL-05, CAL-09, CAL-10, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-02, DEV-05, MEAL-04, MEAL-09, MEAL-10, MEAL-11, MEAL-15, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, NFR-17, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, SCH-01, SCH-02, SCH-03, SCH-05 |
+| `SCHED` | ACC-08, CAL-02, CHR-03, CHR-07, CHR-12, CHR-16, CHR-20, MENU-05, NFR-07, PTS-05, RWD-04, RWD-06, RWD-11, RWD-15 |
+| `DB` | ACC-01, ACC-04, ACC-05, ACC-08, BRD-10, CAL-05, CAL-09, CAL-10, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-02, DEV-05, MEAL-04, MEAL-09, MEAL-10, MEAL-11, MEAL-15, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, NFR-17, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, RWD-15, RWD-16, RWD-17, RWD-18, RWD-19, RWD-20, SCH-01, SCH-02, SCH-03, SCH-05 |
 | `RT` | DEV-05 |
 | `VAULT` | ACC-07, CAL-01, CAL-08, NFR-04 |
 | `SAUTH` | ACC-02, ACC-03, ACC-06, DEV-01, DEV-02, NFR-04 |
 | `PI` | DEV-04, DEV-07, NFR-02 |
 | `OBS` | CAL-06, DEV-08, MENU-04, NFR-07, NFR-08 |
-| `UI` | NFR-11, NFR-13, NFR-15, NFR-16, NFR-17 |
-| `CICD` | NFR-08, NFR-14, NFR-18 |
+| `UI` | NFR-11, NFR-13, NFR-15, NFR-16, NFR-17, NFR-18 |
+| `CICD` | NFR-08, NFR-14, NFR-19 |
 
 `all` (NFR-12) applies to every component. Generated by `check_traceability.py --fix`.
 
@@ -445,7 +463,25 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
-| 0.8.117 | WP-85 The test strategy and the Test catalogue (NFR-18, US-913, D-106, D-107), added at the owner's request: `08-test-strategy.md` (the strategy, from the draft the owner reviewed, and the generated Test catalogue, §9) and its docs page; `docs/test_catalogue.py` reads every Vitest, node:test, UI suite, e2e and pgTAP test by name and traces it to requirements, stories, items and test cases; `check_traceability.py` generates the catalogue, §B's Tests column and §C's Tests line, and fails a new test gap or a test naming an unknown ID; `docs/known-test-gaps.txt` holds the gaps that existed (WP-86 closes them). Tests: node:test `scripts/trace-catalogue.test.mjs` (NFR-18-a to NFR-18-f). The deliver and planner skills gain the test cases, the catalogue diff and the coverage. WP-86 (close the known test gaps) and WP-87 (smoke on the core loop, nightly speed checks and the weekly failure report) added, recorded only. |
+| 0.8.137 | WP-85 The test strategy and the Test catalogue (NFR-19, US-913, D-106, D-107), added at the owner's request: `08-test-strategy.md` (the strategy, from the draft the owner reviewed, and the generated Test catalogue, §9) and its docs page; `docs/test_catalogue.py` reads every Vitest, node:test, UI suite, e2e and pgTAP test by name and traces it to requirements, stories, items and test cases; `check_traceability.py` generates the catalogue, §B's Tests column and §C's Tests line, and fails a new test gap or a test naming an unknown ID; `docs/known-test-gaps.txt` holds the gaps that existed (WP-86 closes them). Tests: node:test `scripts/trace-catalogue.test.mjs` (NFR-19-a to NFR-19-f). The deliver and planner skills gain the test cases, the catalogue diff and the coverage. WP-86 (close the known test gaps) added, recorded only. Within D-108 and D-110; SPIKE-07, WP-98 and WP-99 referenced as planned. |
+| 0.8.135 | WP-91 The Boards settings as collapsible sections (DEV-09, NFR-18, US-208, D-118, D-120), from the fold audit's Boards page the owner approved on 16 October. No migration. Meals' fold made one shared component, `Fold` (`packages/ui`), which Meals now uses; Boards as `BoardsView`: each board folded to `boardFacts()` (awake or asleep and the next time, last seen, theme, text size, layout) with Home's not-seen warning on its header, opened to Display, Sleep and wake, Calendars, Home screen, then its name and Disconnect set apart; the household's Home screen folded to `layoutSummary()`, Add a board to its button, Disconnected to a count; a board open again after a save in it. Tests: `board-facts.test.ts`, `board-layout.test.ts`, `components.test.tsx`, UI suite `boards.spec.ts`, e2e `board-fit.spec.ts`. |
+| 0.8.134 | WP-34 follow-up: the Pi's screen helper runs as a systemd user service (DEV-07, US-207, D-117), at the owner's request after the helper didn't start on their Pi 4 (labwc, Debian 13). `lib/kiosk-scripts.ts`: the installer writes `~/.config/systemd/user/familywise-screen.service` with the desktop's display (Wayland socket or X11), enables and restarts it, and removes the first version's start-up file; the helper falls back to `xset` when `wlopm` fails. Tests: `lib/kiosk-scripts.test.ts` runs the installer in a made-up home for Wayland and X11. |
+| 0.8.133 | WP-92 Approval alerts at once, a bug, added at the owner's request and done in the same change (CHR-20, CHR-05, US-322, D-119): the job worked as designed every 5 minutes; most check-offs were on items with approval off, and the one that waited was approved before the next run. Migration `20261016095117_approval_alerts_at_once.sql`: `private.alert_now()` and triggers on `chore_occurrence`, `redemption` and `lunch_request` call the reminders job for the household at once; `plan_reminders()` locks per household; `claim_reminders()` words all that waits. `lib/jobs/run.ts` runs the household a call names. Read-only `reminders-report` workflow. Tests: `480_approval_alerts_at_once.test.sql`, `470_approval_alert_findings.test.sql`, `410_approval_alerts.test.sql`, `lib/jobs/run.test.ts`, `scripts/reminders-report.test.sh`, `e2e/tests/reminders-job.spec.ts`. |
+| 0.8.132 | The fold audit of the admin app added at the owner's request, recorded only (NFR-18, US-111, D-120): every admin screen judged against WP-75's fold and mocked up on the demo family; WP-91 built first with the shared fold, then WP-93 to WP-97 (Calendars, school menus and the meal library; the set-up pages; Rewards, Goals and Members; Chores, an item's page and the icon picker; Today, My tasks and Insights). Mockup approved by the owner, admin only; WP-91 Ready, WP-93 to WP-97 Queued behind it. |
+| 0.8.130 | WP-91 The Boards settings as collapsible sections added at the owner's request, recorded only (DEV-09, US-208, D-118): each board folded at first with its name and what matters about it, opening to grouped sections; the household's **Home screen** layout, **Add a board** and **Disconnected** folded too, in WP-75's fold style. Ready, mockup first. |
+| 0.8.129 | WP-34 Quiet hours and burn-in mitigation, with sleep and wake per board (DEV-07, US-207, D-116, D-117), from the mockup the owner approved on 16 October. Migration `20261016002422_board_sleep.sql`: `device.board_config.sleep` checked by `private.valid_board_sleep()`; `public.school_days()`; the snapshot's `device.sleep` and `school_days`. App: `lib/board-sleep.ts` (when a board is asleep, school and weekend nights, idle, a touch in the night, across midnight and a change of clocks; when Home lists a board; the drift), the board's black cover that only wakes (`app/(board)/board/sleep.tsx`), Boards' **Sleep and wake** (`devices/sleep-form.tsx`, `setBoardSleep`), Home's heads-up by each board's choice, and the Pi's screen helper (`lib/kiosk-scripts.ts`, `/api/kiosk/install`, `/api/kiosk/screen-helper`). Tests: `supabase/tests/460_board_sleep.test.sql`, `lib/board-sleep.test.ts`, `lib/kiosk-screen.test.ts`, `lib/kiosk-scripts.test.ts`, `lib/home-alerts.test.ts`, `e2e/ui/board-sleep.spec.ts`, `e2e/tests/board-sleep.spec.ts` (nightly). The 3 days on the owner's Pi 4 are open (HW). |
+| 0.8.128 | WP-34 gains sleep and wake per board, added at the owner's request, recorded only (DEV-07, US-207, D-116): when a board counts as missed (Always, Only while awake, Never), sleep and wake times for school days and weekends, an idle sleep, and a wake that only wakes. WP-34 depends on WP-06 and WP-47 and is Ready: built and tested on the owner's Pi 4 with a 24" Dell, no longer waiting on WP-14 or SPIKE-03. |
+| 0.8.127 | WP-79 A goal's end date that can be cleared (RWD-14, US-401, D-115), from the mockup the owner approved on 15 October with their changes. Migration `20261015232202_goal_end_date.sql`: `save_goal()` refuses to change a reached goal's rules, dates, person or payout (`goal_achieved`), and a started goal's end date added or moved to before today (`end_in_past`). The goal form's **Ends on a date** check box with the date and **Clear** (`EndDateField`, `app/(admin)/admin/goals/end-date-field.tsx`), the saved date the field's value and never its default (an iPhone's picker resets to the default); `readEndDate()` in `lib/goals.ts`; a reached goal's form locked as a finished one. Tests: Vitest `lib/goals.test.ts` (unticked, cleared, ticked, an old form), rules-engine `goal.test.ts` (no end date never expires); pgTAP `450_goal_end_date.test.sql`, `200_goals.test.sql` (a reached goal keeps its rules); UI suite `e2e/ui/goals.spec.ts` (390 and 1280 px in both themes, with and without an end date); e2e `e2e/tests/goal-end-date.spec.ts` (the done-when, nightly, D-108) and `goal-payouts.spec.ts` (a reached goal's form offers no target, end date or preview). |
+| 0.8.126 | WP-75 The meal planner's days as collapsible sections, with the usual lunch week and Add to the plan folded (MEAL-14, US-711, D-98, D-114), from the mockup the owner approved on 15 October. No migration. Each day of **Meals** folds (closed at first: weekday, date and "X of Y set", or a check when every meal of the day has something; today outlined, open or closed), and opens to its meals with **Add** and **Change** as before; a day opens by itself when one of its meals is edited, added, saved, moved or removed. **Add to the plan** (its header and **Add a meal**), **Copy last week** and **School lunch**'s usual week (a line per child) are folded at first; a day's **Add** opens **Add to the plan** with the day and meal filled. Added at the owner's request with the mockup: Meals reads the days, **Add to the plan**, **Copy last week**, then **School lunch**. `daySet()` and `daySetWords()` in `lib/meals.ts`, `usualLine()` in `lib/lunch.ts`, `?open=<day>` on Meals; tests: Vitest `lib/meals.test.ts`, `lib/lunch.test.ts`; UI suite `e2e/ui/meals.spec.ts` (390 and 1280 px in both themes); e2e `e2e/tests/meal-days.spec.ts` (the done-when, nightly, D-108), and `meals.spec.ts`, `meal-edit.spec.ts` and `menus.spec.ts` opening what they use. |
+| 0.8.125 | WP-75 gains, at the owner's request, recorded only (MEAL-14, US-711, D-98): on Meals, **School lunch**'s usual week (one line per child when collapsed) and **Add to the plan** collapsed at first on every screen size, opening on tap; **Add** on a day opens **Add to the plan** with the day filled. Their collapsed states join the mockup for the owner's approval before WP-75 is built. |
+| 0.8.124 | WP-73 The lunch picks one tap from the admin app's Home (MEAL-12, US-709, D-98, D-113), from the one mockup for WP-73 to WP-76 the owner approved on 15 October. No migration. Home's **School lunches** card, beside **Add a meal**, says whose days still need a choice and **Pick lunches** opens School lunch on Meals: this week Monday to Friday, the coming week on Saturday and Sunday, on the child chosen last on the device; shown when a child has school lunch. `lib/lunch-list.ts` (`lunchWeekToOpen()`, `daysToPick()`, `lunchQuickWords()`), `home-view.tsx`, `page.tsx`, `ui.css`. Tests: Vitest `lunch-list.test.ts`; UI suite `home.spec.ts`; e2e `lunch-quick.spec.ts` (nightly). |
+| 0.8.123 | WP-74 The lunch week as a list of days (MEAL-13, US-710, D-98, D-112), from the one mockup for WP-73 to WP-76 the owner approved on 15 October. No migration. **School lunch** on Meals is one child's Monday to Friday as a list of days in place of the table: the children's faces in a row (none for one child), opening on the child chosen last on the device, a dot on a child with a day still to pick from today on; each day closed at first with its weekday, date, Buy or Bring and a check once complete, opened to Buy or Bring and the day's menu a section each, the picks checked and highlighted; a day without school greyed as **No school**; today outlined. Buy or Bring and **Save** (name)**'s picks** work only once the page has hydrated. `lib/lunch-list.ts`, `lunch-week.tsx`, `lunch-section.tsx`, `ui.css`. Tests: Vitest `lunch-list.test.ts`; UI suite `lunch-week.spec.ts`; e2e `lunch-week.spec.ts` (nightly), with `meals.spec.ts`, `lunches.spec.ts` and `menus.spec.ts` moved to the list. |
+| 0.8.122 | WP-76 Edit on a planned meal (MEAL-15, US-701, D-111), added at the owner's request as a bug, from the one mockup for WP-73 to WP-76 the owner approved on 15 October. Migration `20261015193825_meal_entry_edit.sql`: `update_meal_entry()` changes an entry in place (its id, and in the same day and slot its order, kept; moved, it goes last; its people replaced; a meal or person archived since may stay). Meals: **Change** offers **Edit** and **Remove** (with **Earlier** and **Later** as before); **Edit** opens the entry's form in place, filled with what was saved, and **Save changes** works only once the page has hydrated (`updateMealEntry`, `entry-form.tsx`, `view.tsx`). Tests: `supabase/tests/440_meal_edit.test.sql`, `e2e/ui/meals.spec.ts`, `e2e/tests/meal-edit.spec.ts` (nightly). |
+| 0.8.121 | WP-90 Nightly e2e reliability (NFR-14, US-911, D-110), added at the owner's request, harvested from the closed e2e speed-up work (branches `claude/e2e-speed-up` and `claude/e2e-tooling`). `scripts/e2e-run.mjs` runs the nightly suite with no Playwright retry: it probes the test database and the preview while it runs, classifies each failure (`scripts/e2e-infra.mjs`), re-runs an infrastructure failure once and never an assertion failure, and writes each red spec's tests with kind and cause for the "E2E red on main: <spec>" issue (`e2e.yml`, which now waits for the preview with `scripts/e2e-ready.sh`). `e2e/support/session.ts` signs each worker in once per persona; `e2e/support/test.ts` waits for hydration after each page load (`apps/web/app/hydrated.tsx`) and records infrastructure evidence; the demo sign-in asks Auth once more on 5xx. `scripts/preview-db.sh` logs blockers, ends sessions idle in a transaction and sets a 60 s limit, on the test database only. Specs in the household's zone, with their own data and measured limits (`e2e/support/day.ts`, `school.ts`). The test standard in `CLAUDE.md` and the deliver skill. Tests: `scripts/e2e-infra.test.mjs`, `scripts/e2e-run.selftest.mjs` (CI `build`), `scripts/preview-db.test.sh`, `e2e/ui/hydrated.spec.ts`, the sign-in's unit test. |
+| 0.8.120 | WP-89 The test database prepared for a pull request's preview (NFR-14, US-911), added at the owner's request and recorded only: a job that empties the test database, applies the pull request's migrations and loads the demo family through `scripts/preview-db.sh`, so a preview of a pull request with a migration works before merge. It runs no tests and is never a required check or deploy input (D-108). Open for the owner when built: the shared test database means the last job to prepare it wins. |
+| 0.8.119 | WP-88 Fast deploy gate; e2e nightly only (NFR-14, US-911, D-108), added at the owner's request. `scripts/deploy-gate.sh` ships the head of `main` from a merged pull request when `checks`, `database`, `docs` and `build` passed on it and on the pull request's head, and reads no e2e result; it writes its reason for a refusal. `deploy.yml`'s new `report` job opens or updates "Deploy refused: <commit>" (`scripts/open-issue.sh`). `e2e.yml` runs nightly only: it builds a preview of `main`, resets the test database and runs every spec unchanged; a red run opens or updates "E2E red on main: <spec>" (the failing specs from Playwright's JSON report, `E2E_JSON`). Tests: `scripts/deploy-gate.test.mjs` (a red or missing check on the pull request's head; no e2e read), `scripts/open-issue.test.mjs`. `CLAUDE.md` and the deliver, steward and planner skills drop the e2e wait and queue. |
+| 0.8.118 | WP-83 chore saves timed in the chores tests (CHR-01, CHR-10, NFR-14, US-301, US-312), added at the owner's request and done in the same change as WP-79 to WP-82. In e2e runs 232 and 233, a chore save's banner didn't show within 15 s four times, in WP-08's family-list test and CHR-10's tag test. The tests' 30 s limit was not the cause, and why the saves stalled is not known. `save()` in e2e `chores.spec.ts` now checks and times each save's server action before its banner, and reports every save. Each test has its own limit (330 s and 120 s, D-92). The cause stays open. |
+| 0.8.117 | Four items added at the owner's request, recorded only (D-101 to D-103): WP-79 a goal's end date that can be cleared (RWD-14, US-401), a bug, on its own; WP-80 goals that repeat each week, month or school term, with the rule "every day it's due, each period" and misses allowed, each period won or missed and paid on its own, with a history (RWD-15, RWD-16, US-410, US-411, D-101), L; WP-81 done by a time, and tiers (RWD-17, RWD-18, US-412, US-413, D-102); WP-82 perfect periods, and a family goal every child meets (RWD-19, RWD-20, US-414, US-415, D-103). One mockup for WP-80 to WP-82. Avoidance goals are not covered: nothing records them. |
 | 0.8.116 | WP-71 The board home on an iPad: badges over chores, the rail clipped (BRD-08, BRD-09, NFR-16, D-100), a bug added at the owner's request, with the kitchen board's 1920×1080 at Larger and Largest added at the owner's request: in `packages/ui/src/ui.css`, a chore's row (`.fw-dash__row`) grows with its title and points chip (a 96 px minimum, 4 px above and below, still 104 px) instead of a fixed 104 px with 2 px to spare; the rail's Home, Chores, Calendar and Meals keep their icon and word inside the button (4 px side padding, an 8 px gap, the word under the icon when it doesn't fit). Tests: UI suite `board-fit.spec.ts`, the home screen at 1180×820 and 820×1180 at every text size and at 1920×1080 at Larger and Largest, in Day and Evening: chips clear of their row's edge and the next title, the rail's icons and words inside their buttons, no sideways scroll; all fail on `main`. WP-78's UI test "never with a dialog open" no longer races its own reload check at 5:00 (Leo touches the board at 4 minutes; `board-update.spec.ts`). |
 | 0.8.115 | WP-78 a lunch pick taken off by another (MEAL-11, US-707), a bug added at the owner's request and done in the same change: on Meals in the admin app, each section's picks have a name of their own (`pickName()`, read by `parsePicksForm()` in `lib/lunch-picks.ts`, used by `lunch-section.tsx`), so a milk no longer takes off the entree (Vitest `lunch-picks.test.ts`; UI suite and e2e `lunches.spec.ts`, on the board and on Meals). Added to it at the owner's request: "and" in a school menu joins a side like "with" (MENU-06; `withOptions()` and `sidesWords()` in `lib/menu/sections.ts`; Vitest `sections.test.ts`); the board picks up a new deploy by itself, once idle with no dialog open (DEV-05, D-99; `DeployWatch`, `lib/board-update.ts`; Vitest `board-update.test.ts`, UI suite `board-update.spec.ts`). |
 | 0.8.114 | WP-77 WP-49's lunch test, root cause (MEAL-09, MEAL-11, US-707), added at the owner's request and done in the same change: in the test, its own 90 s limit (D-92), each `/api/lunches` POST checked for 200 and timed (`lunchPost()`), and each reload's time kept in the 3 s check on Meals (e2e `lunches.spec.ts`); in the app, the board's lunch week read again after a failed read, up to three (`readWeek()` in `lib/lunch-picks.ts`, used by the board's `lunches-ui.tsx`; Vitest `lunch-picks.test.ts`). |

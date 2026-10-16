@@ -1,11 +1,14 @@
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '../support/test';
-import { retireBoard } from '../support/board';
+import { addBoardForm, pairingCode, retireBoard } from '../support/board';
+import { addDays } from '../support/day';
+import { signIn } from '../support/session';
 
 // [PTS-05][PTS-06] Bonus rules and the wishlist on the preview (WP-30, D-57), as Alex of the demo
 // family with a paired board. Leo's seeded last week (see insights.spec.ts) has runs good 2, bad 1,
 // good 3, bad 1: a "3 good days in a row" bonus counting from a week ago pays him once, for the run
-// that began 4 days ago, and paying again pays nothing. On the board Leo chooses a wish and changes
+// that began 4 days ago, and paying again pays nothing. Those days count from the day the demo family
+// was loaded (its history is seeded from that day), not from today. On the board Leo chooses a wish and changes
 // his mind; Maya's seeded wish shows her balance against its cost. The rule is archived and the
 // board removed at the end; the bonus stays in the ledger (it never changes) until the next reseed.
 const db = process.env.SUPABASE_DB_URL;
@@ -33,15 +36,21 @@ const spendable = (member: string) =>
     sql(`select coalesce(sum(cost_snapshot), 0) from public.redemption
           where member_id = '${member}' and status = 'requested'`),
   );
-/** The household's date `days` from today, as YYYY-MM-DD. */
-const householdDay = (days: number) =>
-  sql(`select to_char((now() at time zone timezone)::date + ${days}, 'YYYY-MM-DD')
+/** The household's today, as YYYY-MM-DD. */
+const householdToday = () =>
+  sql(`select to_char((now() at time zone timezone)::date, 'YYYY-MM-DD')
+         from public.household where id = '${DEMO}'`);
+/**
+ * [D-110] The day the demo family was loaded, which its seeded history counts from: Leo's runs are
+ * that many days before it, whatever day it is now.
+ */
+const seededDay = () =>
+  sql(`select to_char((created_at at time zone timezone)::date, 'YYYY-MM-DD')
          from public.household where id = '${DEMO}'`);
 const pin = (member: string) =>
   sql(`select coalesce((select catalog_item_id || ':' || pinned_by_type from public.wishlist_pin
                          where member_id = '${member}'), 'none')`);
 
-test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 let admin: Page;
@@ -58,14 +67,12 @@ test.beforeAll(async ({ browser }, testInfo) => {
        update public.points_rule set active = false, archived_at = now()
         where household_id = '${DEMO}' and archived_at is null and streak_days = 3 and bonus_points = 7;`);
   admin = await browser.newPage();
-  await admin.goto('/sign-in');
-  await admin.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await admin.waitForURL(/\/admin$/);
+  await signIn(admin);
   await admin.goto('/admin/devices');
-  const form = admin.getByRole('form', { name: 'Add a board', exact: true });
+  const form = await addBoardForm(admin);
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);
   await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
-  const code = (await admin.getByTestId('pairing-code').textContent())?.replace(/\D/g, '') ?? '';
+  const code = await pairingCode(admin);
   board = await (await browser.newContext()).newPage();
   await board.goto('/board');
   await board.getByLabel('Pairing code from the admin app', { exact: true }).fill(code);
@@ -81,7 +88,10 @@ test.beforeAll(async ({ browser }, testInfo) => {
  */
 async function payBonuses(): Promise<{ to: string; posted: number | null }> {
   const answer = admin.waitForResponse(
-    (r) => r.request().method() === 'POST' && r.request().headers()['next-action'] !== undefined,
+    (r) =>
+      r.request().method() === 'POST' &&
+      r.request().headers()['next-action'] !== undefined &&
+      new URL(r.url()).pathname === '/admin/rewards',
   );
   await admin.getByRole('button', { name: 'Pay bonuses now', exact: true }).click();
   const to = (await (await answer).headerValue('x-action-redirect')) ?? '';
@@ -90,103 +100,120 @@ async function payBonuses(): Promise<{ to: string; posted: number | null }> {
 }
 
 test.afterAll(async () => {
-  // Leave nothing pinned for Leo and no board behind; the archived rule pays nothing more.
+  // Leave nothing pinned for Leo and no board behind, and the rule archived (also when the test that
+  // archives it failed first), so it pays nothing more.
   sql(`delete from public.wishlist_pin where member_id = '${memberId('Leo')}';`);
+  if (ruleId)
+    sql(`update public.points_rule set active = false, archived_at = now()
+          where id = '${ruleId}' and archived_at is null`);
   await retireBoard(board, BOARD);
 });
 
-test('[PTS-05][US-1107] a streak bonus pays once for a run that reaches it; paying again pays nothing', async () => {
+test('[PTS-05][US-1107] a streak bonus pays once for a run that reaches it, paying again pays nothing; turned off it pays nothing, back on it counts from today, archived its bonuses stay', async () => {
+  // [D-110] One story in two steps (the second needs the rule the first adds): four page loads, an
+  // add, two payments and three switches, each a server action, and about 15 SQL reads. About 50 s
+  // at worst on a preview, so three times that.
+  test.setTimeout(150_000);
   const leo = memberId('Leo');
-  // His history as the seed left it (opening Insights brings it up to date).
-  await admin.goto(`/admin/insights?member=${leo}&days=7`);
-  await expect(admin.getByRole('region', { name: 'Streaks' })).toContainText('Best good run3 days');
-  const before = balance(leo);
-
-  await admin.goto('/admin/rewards');
-  await admin.getByText('Add a bonus', { exact: true }).click();
-  const form = admin.getByRole('form', { name: 'Add a bonus', exact: true });
-  await form.getByRole('radio', { name: 'A streak', exact: true }).check();
-  await form.getByLabel('Good days in a row', { exact: true }).fill('3');
-  await form.getByLabel('Bonus points', { exact: true }).fill('7');
-  // (Its label also holds the help line.)
-  await form.getByLabel('Counts from').fill(householdDay(-7));
-  await form.getByRole('button', { name: 'Add bonus', exact: true }).click();
-  await expect(admin.getByRole('status')).toHaveText(
-    'Bonus added. It pays overnight, once a day is over.',
-  );
+  const seeded = seededDay();
+  // Counting from a week before the seeded day.
+  const countsFrom = addDays(seeded, -7);
   const rules = admin.getByRole('list', { name: 'Bonus points', exact: true });
-  await expect(rules.getByRole('listitem').filter({ hasText: RULE })).toContainText('counts from');
-  ruleId = sql(`select id from public.points_rule where household_id = '${DEMO}'
-                  and archived_at is null and streak_days = 3 and bonus_points = 7`);
-  expect(sql(`select created_by is not null from public.points_rule where id = '${ruleId}'`)).toBe(
-    't',
-  );
+  await test.step('[PTS-05][US-1107] a streak bonus pays once for a run that reaches it; paying again pays nothing', async () => {
+    // His history as the seed left it (opening Insights brings it up to date).
+    await admin.goto(`/admin/insights?member=${leo}&days=7`);
+    await expect(admin.getByRole('region', { name: 'Streaks' })).toContainText(
+      'Best good run3 days',
+    );
+    const before = balance(leo);
 
-  // Paying brings each child's history up to date first, then pays every earner's good runs of 3
-  // or more that reached 3 on or after the date: Leo's among them.
-  const first = await payBonuses();
-  await expect(admin.getByRole('status')).toHaveText(/^Paid (one bonus|\d+ bonuses)\.$/);
-  const expected = Number(
-    sql(`select count(*) from public.streak_segment s
-           join public.member m on m.id = s.member_id and m.earns_rewards and m.archived_at is null
-          where s.household_id = '${DEMO}' and s.kind = 'good' and s.length_days >= 3
-            and s.start_date + 2 >= '${householdDay(-7)}'::date`),
-  );
-  await expect(admin.getByRole('status')).toHaveText(
-    expected === 1 ? 'Paid one bonus.' : `Paid ${expected} bonuses.`,
-  );
-  // Leo's: one, for the run that began 4 days ago, posted by the system and naming the rule.
-  expect(
-    sql(`select string_agg(amount || ':' || reason || ':' || created_by_type || ':' || dedupe_key, ',')
-           from public.points_ledger where member_id = '${leo}' and points_rule_id = '${ruleId}'`),
-  ).toBe(`7:3 good days in a row:system:rule:${ruleId}:${leo}:${householdDay(-4)}`);
-  expect(balance(leo)).toBe(before + 7);
+    await admin.goto('/admin/rewards');
+    await admin.getByText('Add a bonus', { exact: true }).click();
+    const form = admin.getByRole('form', { name: 'Add a bonus', exact: true });
+    await form.getByRole('radio', { name: 'A streak', exact: true }).check();
+    await form.getByLabel('Good days in a row', { exact: true }).fill('3');
+    await form.getByLabel('Bonus points', { exact: true }).fill('7');
+    // (Its label also holds the help line.)
+    await form.getByLabel('Counts from').fill(countsFrom);
+    await form.getByRole('button', { name: 'Add bonus', exact: true }).click();
+    await expect(admin.getByRole('status')).toHaveText(
+      'Bonus added. It pays overnight, once a day is over.',
+    );
+    await expect(rules.getByRole('listitem').filter({ hasText: RULE })).toContainText(
+      'counts from',
+    );
+    ruleId = sql(`select id from public.points_rule where household_id = '${DEMO}'
+                    and archived_at is null and streak_days = 3 and bonus_points = 7`);
+    expect(
+      sql(`select created_by is not null from public.points_rule where id = '${ruleId}'`),
+    ).toBe('t');
 
-  if (first.posted !== null) expect(first.posted).toBe(expected);
+    // Paying brings each child's history up to date first, then pays every earner's good runs of 3
+    // or more that reached 3 on or after the date: Leo's among them.
+    const first = await payBonuses();
+    await expect(admin.getByRole('status')).toHaveText(/^Paid (one bonus|\d+ bonuses)\.$/);
+    const expected = Number(
+      sql(`select count(*) from public.streak_segment s
+             join public.member m on m.id = s.member_id and m.earns_rewards and m.archived_at is null
+            where s.household_id = '${DEMO}' and s.kind = 'good' and s.length_days >= 3
+              and s.start_date + 2 >= '${countsFrom}'::date`),
+    );
+    await expect(admin.getByRole('status')).toHaveText(
+      expected === 1 ? 'Paid one bonus.' : `Paid ${expected} bonuses.`,
+    );
+    // Leo's: one, for the run that began 4 days before the seeded day, posted by the system and naming the rule.
+    expect(
+      sql(`select string_agg(amount || ':' || reason || ':' || created_by_type || ':' || dedupe_key, ',')
+             from public.points_ledger where member_id = '${leo}' and points_rule_id = '${ruleId}'`),
+    ).toBe(`7:3 good days in a row:system:rule:${ruleId}:${leo}:${addDays(seeded, -4)}`);
+    expect(balance(leo)).toBe(before + 7);
 
-  // The done-when: paying again pays nothing. The ledger first, once the action has answered, then
-  // what the page says: a second payment and a page still showing the first tap's words look alike.
-  const again = await payBonuses();
-  expect(
-    sql(`select count(*) from public.points_ledger where points_rule_id = '${ruleId}'`),
-    `bonuses in the ledger after paying again (the action sent the page to ${again.to || 'nowhere'})`,
-  ).toBe(String(expected));
-  expect(balance(leo)).toBe(before + 7);
-  if (again.posted !== null) expect(again.posted, 'bonuses the second payment posted').toBe(0);
-  await expect(
-    admin.getByRole('status'),
-    `the page after paying again (the action sent it to ${again.to || 'nowhere'})`,
-  ).toHaveText('No new bonuses to pay.');
-});
+    if (first.posted !== null) expect(first.posted).toBe(expected);
 
-test('[PTS-05] a bonus turned off pays nothing; back on it counts from today; archived, its bonuses stay', async () => {
-  const leo = memberId('Leo');
-  const paid = balance(leo);
-  const rules = admin.getByRole('list', { name: 'Bonus points', exact: true });
-  await rules.getByRole('button', { name: `Turn off: ${RULE}`, exact: true }).click();
-  await expect(admin.getByRole('status')).toHaveText(
-    'Turned off. It pays nothing until it’s back on.',
-  );
-  await expect(rules.getByRole('listitem').filter({ hasText: RULE })).toContainText('· off');
-  await expect(admin.getByRole('button', { name: 'Pay bonuses now' })).toHaveCount(0);
+    // The done-when: paying again pays nothing. The ledger first, once the action has answered, then
+    // what the page says: a second payment and a page still showing the first tap's words look alike.
+    const again = await payBonuses();
+    expect(
+      sql(`select count(*) from public.points_ledger where points_rule_id = '${ruleId}'`),
+      `bonuses in the ledger after paying again (the action sent the page to ${again.to || 'nowhere'})`,
+    ).toBe(String(expected));
+    expect(balance(leo)).toBe(before + 7);
+    if (again.posted !== null) expect(again.posted, 'bonuses the second payment posted').toBe(0);
+    await expect(
+      admin.getByRole('status'),
+      `the page after paying again (the action sent it to ${again.to || 'nowhere'})`,
+    ).toHaveText('No new bonuses to pay.');
+  });
 
-  await rules.getByRole('button', { name: `Turn on: ${RULE}`, exact: true }).click();
-  await expect(admin.getByRole('status')).toHaveText('Turned on. It counts from today.');
-  expect(sql(`select counts_from from public.points_rule where id = '${ruleId}'`)).toBe(
-    householdDay(0),
-  );
+  await test.step('[PTS-05] a bonus turned off pays nothing; back on it counts from today; archived, its bonuses stay', async () => {
+    const paid = balance(leo);
+    await rules.getByRole('button', { name: `Turn off: ${RULE}`, exact: true }).click();
+    await expect(admin.getByRole('status')).toHaveText(
+      'Turned off. It pays nothing until it’s back on.',
+    );
+    await expect(rules.getByRole('listitem').filter({ hasText: RULE })).toContainText('· off');
+    await expect(admin.getByRole('button', { name: 'Pay bonuses now' })).toHaveCount(0);
 
-  await rules.getByRole('button', { name: `Archive: ${RULE}`, exact: true }).click();
-  await expect(admin.getByRole('status')).toHaveText('Archived. Bonuses it paid stay.');
-  // Archived ones are folded away under their own disclosure.
-  await admin.getByText(/^Archived bonuses \(\d+\)$/).click();
-  await expect(admin.getByRole('list', { name: 'Archived bonuses', exact: true })).toContainText(
-    RULE,
-  );
-  expect(sql(`select archived_at is not null from public.points_rule where id = '${ruleId}'`)).toBe(
-    't',
-  );
-  expect(balance(leo)).toBe(paid);
+    // "Today" is the app's at the tap: the household's day just before or just after it.
+    const before = householdToday();
+    await rules.getByRole('button', { name: `Turn on: ${RULE}`, exact: true }).click();
+    await expect(admin.getByRole('status')).toHaveText('Turned on. It counts from today.');
+    expect([before, householdToday()]).toContain(
+      sql(`select counts_from from public.points_rule where id = '${ruleId}'`),
+    );
+
+    await rules.getByRole('button', { name: `Archive: ${RULE}`, exact: true }).click();
+    await expect(admin.getByRole('status')).toHaveText('Archived. Bonuses it paid stay.');
+    // Archived ones are folded away under their own disclosure.
+    await admin.getByText(/^Archived bonuses \(\d+\)$/).click();
+    await expect(admin.getByRole('list', { name: 'Archived bonuses', exact: true })).toContainText(
+      RULE,
+    );
+    expect(
+      sql(`select archived_at is not null from public.points_rule where id = '${ruleId}'`),
+    ).toBe('t');
+    expect(balance(leo)).toBe(paid);
+  });
 });
 
 test('[PTS-06][US-1108] on the board Leo chooses a wish, sees how far he is, and changes his mind', async () => {
@@ -226,7 +253,9 @@ test('[PTS-06][US-1108] on the board Leo chooses a wish, sees how far he is, and
     'Maya is saving for it',
   );
 
-  // He changes his mind: no wish.
+  // He changes his mind: no wish. (Leo's page again: the parent's look above may have taken the
+  // board past its idle return to Home.)
+  await people.getByRole('button', { name: 'Leo', exact: true }).click();
   await card.getByRole('button', { name: 'Change', exact: true }).click();
   await picker.getByRole('button', { name: 'No wish', exact: true }).click();
   await expect(card).toContainText('Pick a reward from the shop to save up for.');

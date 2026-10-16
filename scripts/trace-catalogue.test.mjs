@@ -1,4 +1,4 @@
-// The Test catalogue and its CI check (NFR-18, 08 §6, D-106). Each test copies the docs and every
+// The Test catalogue and its CI check (NFR-19, 08 §6, D-106). Each test copies the docs and every
 // test file into a temporary folder, changes something there, and runs check_traceability.py on it.
 // IDs in the fixtures are built from parts, so this file's own text names no fixture ID: the check
 // reads this file too.
@@ -68,7 +68,7 @@ const known = (s) =>
     .split('\n')
     .filter((l) => l && !l.startsWith('#'));
 
-test('[NFR-18-a][US-913] a test traces to the IDs in its name and its describe blocks, in every layer', () => {
+test('[NFR-19-a][US-913] a test traces to the IDs in its name and its describe blocks, in every layer', () => {
   const s = sandbox();
   const req = id('CHR', '04');
   s.write(
@@ -104,9 +104,9 @@ test('[NFR-18-a][US-913] a test traces to the IDs in its name and its describe b
   assert.equal(errors(r), '', r.stdout);
 });
 
-test('[NFR-18-b][US-913] a test naming an unknown requirement, story, item or test case fails the check', () => {
+test('[NFR-19-b][US-913] a test naming an unknown requirement, story, item or test case fails the check', () => {
   const s = sandbox();
-  const names = [id('CHR', '99'), id('US', '9999'), id('WP', '99'), id('NFR', '18') + '-z'];
+  const names = [id('CHR', '99'), id('US', '9999'), id('WP', '99'), id('NFR', '19') + '-z'];
   s.write(
     'apps/web/lib/zz-unknown.test.ts',
     names.map((n) => `${IT}('[${n}] names it', () => {});`).join('\n') + '\n',
@@ -117,10 +117,10 @@ test('[NFR-18-b][US-913] a test naming an unknown requirement, story, item or te
   assert.match(e, /names unknown requirement CHR-99/);
   assert.match(e, /names unknown story US-9999/);
   assert.match(e, /names unknown backlog item WP-99/);
-  assert.match(e, /names test case NFR-18-z, which no item's §5 table in 05 defines/);
+  assert.match(e, /names test case NFR-19-z, which no item's §5 table in 05 defines/);
 });
 
-test('[NFR-18-c][US-913] a new gap fails the check, and a known gap does not', () => {
+test('[NFR-19-c][US-913] a new gap fails the check, and a known gap does not', () => {
   const s = sandbox();
   const before = errors(s.run());
   assert.equal(before, '', 'the copied docs pass');
@@ -133,12 +133,12 @@ test('[NFR-18-c][US-913] a new gap fails the check, and a known gap does not', (
     '| WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |',
     '| WP-86 | Close the known test gaps | P3 | L | WP-85 | Done |',
   );
-  // A built story no test names: a new story on NFR-18, which WP-85 (Done) builds.
+  // A built story no test names: a new story on NFR-19, which WP-85 (Done) builds.
   const story = id('US', '914');
   s.edit(
     'docs/03-user-stories.md',
     '\n### US-913 —',
-    `\n### ${story} — A fixture story\n**As a** parent **I want** a thing **so that** it works.\n**Priority:** Must · **Phase:** P3 · **Reqs:** NFR-18\n- Given a, when b, then c.\n\n### US-913 —`,
+    `\n### ${story} — A fixture story\n**As a** parent **I want** a thing **so that** it works.\n**Priority:** Must · **Phase:** P3 · **Reqs:** NFR-19\n- Given a, when b, then c.\n\n### US-913 —`,
   );
   const e = errors(s.run());
   assert.match(e, /test gap: done-when WP-86 has no test/);
@@ -146,10 +146,10 @@ test('[NFR-18-c][US-913] a new gap fails the check, and a known gap does not', (
   for (const g of gaps) assert.ok(!e.includes(`test gap: ${g} `), `known gap ${g} passes`);
 });
 
-test("[NFR-18-d][US-913] a Done item's test case with no test fails; a case of an item not built yet may wait", () => {
+test("[NFR-19-d][US-913] a Done item's test case with no test fails; a case of an item not built yet may wait", () => {
   const s = sandbox();
-  const done = id('NFR', '18') + '-y';
-  const later = id('NFR', '18') + '-x';
+  const done = id('NFR', '19') + '-y';
+  const later = id('NFR', '19') + '-x';
   s.edit(
     'docs/05-backlog.md',
     '\n- **Done when:** `08` is in the docs index',
@@ -165,15 +165,15 @@ test("[NFR-18-d][US-913] a Done item's test case with no test fails; a case of a
   assert.ok(!e.includes(later), e);
 });
 
-test("[NFR-18-e][US-913] --fix writes the catalogue and 04's Tests column and line; the check fails while they are out of date", () => {
+test("[NFR-19-e][US-913] --fix writes the catalogue and 04's Tests column and line; the check fails while they are out of date", () => {
   const s = sandbox();
   assert.equal(errors(s.run()), '');
   s.write(
     'apps/web/lib/zz-count.test.ts',
-    `${IT}('[${id('NFR', '18')}] one more test', () => {});\n`,
+    `${IT}('[${id('NFR', '19')}] one more test', () => {});\n`,
   );
   const e = errors(s.run());
-  assert.match(e, /NFR-18: Tests column out of date/);
+  assert.match(e, /NFR-19: Tests column out of date/);
   assert.match(e, /04 §C: the Tests coverage line is out of date/);
   assert.match(e, /08: the Test catalogue is out of date/);
   assert.equal(errors(s.run('--fix')), '');
@@ -181,12 +181,12 @@ test("[NFR-18-e][US-913] --fix writes the catalogue and 04's Tests column and li
   const row = s
     .read('docs/04-requirements-traceability.md')
     .split('\n')
-    .find((l) => l.startsWith('| NFR-18 | US-913'));
+    .find((l) => l.startsWith('| NFR-19 | US-913'));
   assert.match(row, /\| U \d+ \|$/);
   assert.equal(errors(s.run()), '');
 });
 
-test('[NFR-18-f][US-913] --fix takes a closed gap off the known gaps, and never adds one', () => {
+test('[NFR-19-f][US-913] --fix takes a closed gap off the known gaps, and never adds one', () => {
   const s = sandbox();
   const gap = known(s).find((g) => g.startsWith('story '));
   assert.ok(gap, 'a known story gap');

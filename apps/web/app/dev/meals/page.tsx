@@ -6,8 +6,10 @@ import { type MealRow, type PlanEntry, type Slot, weekDays } from '@/lib/meals';
 
 // The admin Meals pages (WP-25) with a made-up family and no database, for the UI suite and the
 // guide's pictures: the week in Day or Evening (?theme=evening), opened to add a Wednesday snack
-// (?add=1), and the meal library (?page=library). School lunch (WP-26): Thursday is a day off, Leo's
-// Tuesday is changed to buy. School menus (WP-27): both have Maple Elementary's; a buy day shows it.
+// (?add=1), an entry opened for editing (?edit=<its id>, WP-76), a day opened (?open=<day>, WP-75),
+// and the meal library (?page=library). School lunch (WP-26): Thursday is a day off, Leo's Tuesday is changed to buy.
+// School menus (WP-27): both have Maple Elementary's; a buy day shows it. The lunch week is a list of
+// days (WP-74): Leo's Wednesday (today) has nothing picked yet, so his face has a dot.
 export const metadata: Metadata = { title: 'Meals', robots: { index: false } };
 
 const MAYA = 'f2000000-0000-4000-8000-000000000001';
@@ -77,6 +79,10 @@ const ENTRIES: PlanEntry[] = [
   entry(4, 'dinner', { text: 'Out for Grandma’s birthday' }),
   entry(5, 'dinner', { text: 'Pizza and a movie' }),
   entry(6, 'breakfast', { meal: 4 }),
+  // [MEAL-14] Saturday has every meal set, so its folded day shows the check (WP-75).
+  entry(6, 'snack', { meal: 7 }),
+  entry(6, 'lunch', { text: 'Picnic in the park' }),
+  entry(6, 'dinner', { meal: 6 }),
 ];
 
 // Sun … Sat: weekends and Thursday's day off have no school lunch.
@@ -169,7 +175,14 @@ const LUNCH_PICKED: LunchChild[] = LUNCH.map((c) => ({
 export default async function DevMealsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; page?: string; add?: string; lunches?: string }>;
+  searchParams: Promise<{
+    theme?: string;
+    page?: string;
+    add?: string;
+    edit?: string;
+    open?: string;
+    lunches?: string;
+  }>;
 }) {
   const p = await searchParams;
   const theme = p.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -185,11 +198,13 @@ export default async function DevMealsPage({
           entries={ENTRIES}
           meals={MEALS}
           members={[
-            { id: MAYA, displayName: 'Maya' },
-            { id: LEO, displayName: 'Leo' },
+            { id: MAYA, displayName: 'Maya', avatarKey: 'fox', color: 'member-3' },
+            { id: LEO, displayName: 'Leo', avatarKey: null, color: 'member-4' },
             { id: 'f2000000-0000-4000-8000-0000000000a1', displayName: 'Alex' },
           ]}
           addAt={p.add ? { day: TODAY, slot: 'snack' } : null}
+          editId={p.edit ?? null}
+          openDay={p.open ?? null}
           newId="f2e10000-0000-4000-8000-0000000000ff"
           lunch={p.lunches === '1' ? LUNCH_PICKED : LUNCH}
           menus={[{ id: MAPLE, name: 'Maple Elementary' }]}

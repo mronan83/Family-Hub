@@ -25,7 +25,7 @@ Checks (errors fail the run):
     the section's heading) or listed, with a reason, in 07's exclusion table (between
     `<!-- guide-exclusions -->` and `<!-- /guide-exclusions -->`); covered and excluded IDs exist,
     each exclusion gives a reason, and no story is both covered and excluded
-  * tests (NFR-18, `08`): no test names an unknown requirement, story, backlog item or test case; every
+  * tests (NFR-19, `08`): no test names an unknown requirement, story, backlog item or test case; every
     test case in 05 is for a requirement on its item's Reqs line; no gap that isn't a known gap
     (a built requirement or story with no test, a Done item whose Done when has no test cases, a Done
     item's test case with no test); 04 §B's Tests column and 08's Test catalogue are up to date
@@ -423,7 +423,7 @@ def main() -> int:
         for g in gaps:
             if g not in known:
                 errors.append(
-                    f"test gap: {g} has no test (NFR-18). Write the test, naming the ID, or for a Done item, "
+                    f"test gap: {g} has no test (NFR-19). Write the test, naming the ID, or for a Done item, "
                     "its test cases in its §5 section of 05 (see 08 §6)"
                 )
         known = [k for k in known if k in gaps]
@@ -498,7 +498,7 @@ def main() -> int:
 
     tests_path = docs / FILES["tests"]
     if not tests_path.exists():
-        errors.append(f"{FILES['tests']} is missing: it holds the test strategy and the Test catalogue (NFR-18)")
+        errors.append(f"{FILES['tests']} is missing: it holds the test strategy and the Test catalogue (NFR-19)")
     else:
         tests_doc = tests_path.read_text(encoding="utf-8")
         block = CATALOGUE_RE.search(tests_doc)
@@ -514,7 +514,7 @@ def main() -> int:
                 errors.append("08: the Test catalogue is out of date — run check_traceability.py --docs docs --fix")
     if args.fix or args.baseline_gaps:
         header = [
-            "# Known test gaps (NFR-18, `08` §9.6): gaps that existed when the catalogue was first made (WP-85).",
+            "# Known test gaps (NFR-19, `08` §9.6): gaps that existed when the catalogue was first made (WP-85).",
             "# check_traceability.py --fix takes a gap off once it is closed; a new gap fails CI instead of coming here.",
             "# Closing them all is WP-86.",
         ]

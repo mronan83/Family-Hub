@@ -1,7 +1,24 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.115: WP-85 (the test strategy and the Test catalogue) added at the owner's request and done in the same change (NFR-18, D-106, D-107): `08` holds the strategy, and the catalogue generated from every test's name; CI fails a change that adds a test gap. Its test cases are the first in §5 (NFR-18-a to NFR-18-f). WP-86 (close the known test gaps) and WP-87 (smoke on the core loop, nightly speed checks and the weekly failure report: the parts of `08` neither WP-84 nor WP-85 builds) added at the owner's request with it, recorded only.
+> v0.8.134: WP-85 (the test strategy and the Test catalogue) added at the owner's request and done in the same change (NFR-19, D-106, D-107), restarted on 16 October at the owner's request to match `main` (D-108, D-110 and everything shipped since): `08` holds the strategy, with guidance by type of change, and the catalogue generated from every test's name; CI fails a change that adds a test gap. Its test cases are the first in §5 (NFR-19-a to NFR-19-f). WP-86 (close the known test gaps) added at the owner's request with it, recorded only.
+> v0.8.132: WP-91 (the Boards settings as collapsible sections) done (D-118, D-120), from the fold audit's Boards page the owner approved on 16 October: each board folded to its name and facts with Home's not-seen warning on its header, opened to Display, Sleep and wake, Calendars, Home screen, then its name and Disconnect set apart; the household's Home screen, Add a board and Disconnected folded; Meals' fold made one shared component (`Fold`). WP-93 to WP-97 are Ready. "Next, in order" is the owner's to set.
+> v0.8.131: WP-34 follow-up: the Pi's screen helper runs as a systemd user service, so it starts with the Pi on any desktop (labwc on Debian 13 doesn't read the start-up folder the first installer used); found on the owner's Pi 4, at the owner's request.
+> v0.8.130: WP-92 (approval alerts at once, a bug) added at the owner's request and done in the same change (D-119). Found: the alerts job worked as designed, every 5 minutes; most of the child's check-offs were on items with approval off, so they never waited, and the homework check-off was approved 33 seconds after it, before the next run. At the owner's request, an approval alert now goes within seconds of something starting to wait, and counts all that waits. The read-only `reminders-report` workflow shows why an alert did or did not go, counts only.
+> v0.8.129: The fold audit of the admin app added at the owner's request, recorded only (D-120): every admin screen judged against WP-75's fold and mocked up on the demo family; five new work packages after WP-91 (WP-93 to WP-97). The owner approved the mockup on 16 October, admin only, and confirmed D-120; WP-91 is Ready and built first and on its own, with the shared fold, and WP-93 to WP-97 are Queued behind it. "Next, in order" is the owner's to set.
+> v0.8.127: WP-91 (the Boards settings as collapsible sections) added at the owner's request, recorded only (D-118): each board folded at first, showing its name and what matters about it, opening to grouped sections; the household's **Home screen** layout, **Add a board** and **Disconnected** folded too, in WP-75's fold style. Ready, mockup first. "Next, in order" is the owner's to set.
+> v0.8.126: WP-34 (quiet hours and burn-in mitigation, with sleep and wake per board) built and merged (D-116, D-117), from the mockup the owner approved on 16 October with its six recommendations; its 3 days on the owner's Pi 4 are open (Y-11).
+> v0.8.125: WP-34 gains sleep and wake per board, added at the owner's request, recorded only (D-116): when a board counts as missed (Always, Only while awake, Never), sleep and wake times for school days and weekends, an idle sleep woken by a touch, click or mouse movement that only wakes. WP-34 now depends on WP-06 and WP-47 and is Ready: the owner's Pi 4 on a 24" Dell is the board in use, so it no longer waits on WP-14 or SPIKE-03. Size S to M. A mockup comes first. "Next, in order" is the owner's to set.
+> v0.8.124: WP-79 (a goal's end date that can be cleared) done (D-115), from the mockup the owner approved with their changes; added at the owner's request with it: a started goal's end date today or later, and a reached goal that can't change (read per period for WP-80). WP-80 no longer waits on WP-79.
+> v0.8.123: WP-75 (the meal planner's days as collapsible sections, with the usual lunch week and Add to the plan folded) done (D-114), with **Copy last week** folded too and Meals reordered, added at the owner's request.
+> v0.8.122: WP-75 gains two sections that fold on Meals, added at the owner's request, recorded only (D-98): **School lunch**'s usual week and **Add to the plan**, both collapsed at first on every screen size; **Add** on a day opens **Add to the plan** with that day filled. The WP-75 worker adds both collapsed states to the mockup for the owner's approval before building.
+> v0.8.121: WP-73 (the lunch picks one tap from Home) done (D-113).
+> v0.8.120: WP-74 (the lunch week as a list of days) done (D-112), so WP-73 is Ready.
+> v0.8.119: WP-76 (Edit on a planned meal) done (D-111). The one mockup for WP-73 to WP-76 was approved by the owner on 15 October, so WP-73 to WP-75 no longer wait on it.
+> v0.8.118: WP-90 (nightly e2e reliability) added at the owner's request and done in the same change (D-110), harvested from the closed e2e speed-up work (branches `claude/e2e-speed-up` and `claude/e2e-tooling`): sign in once per persona per worker; a page used only once hydrated; the test database's reset ends sessions stuck in a transaction; an infrastructure failure re-runs once and is labelled, an assertion failure never re-runs; the specs' clock in the household's zone, their own data and measured limits; the test standard in `CLAUDE.md`. WP-89 no longer carries the stuck-transaction fix.
+> v0.8.117: WP-89 (the test database prepared for a pull request's preview) added at the owner's request, recorded only: a job that resets the test database, applies the pull request's migrations and loads the demo family, so a preview of a pull request with a migration works before merge. It runs no tests and never blocks anything (D-108). "Next, in order" is the owner's to set.
+> v0.8.116: WP-88 (fast deploy gate; e2e nightly only) added at the owner's request and done in the same change (D-108): the deploy gate reads only the fast CI checks, e2e runs nightly and never blocks a pull request or a deploy, and a refused deploy or a red nightly run opens an issue.
+> v0.8.115: WP-79 to WP-82 added at the owner's request, recorded only (D-101 to D-103): a goal's end date that can be cleared (a bug, on its own so it waits on nothing else); goals that repeat each week, month or school term, with "every day it's due" and misses allowed, each period won or missed on its own; done by a time, and tiers; perfect periods, and "every child meets it". WP-80 to WP-82 wait on one mockup. Avoidance goals (no screen time over a limit) are not covered: nothing records them.  WP-83 added at the owner's request and done in the same change: chore saves that stalled 15 s or more in two e2e runs are now checked and timed in both chores tests; their cause is open. "Next, in order" is the owner's to set.
 > v0.8.114: WP-71 done (D-100): the board home on an iPad, fixed at the cause: a chore's row grows with its title and points chip, and a word in the rail goes under its icon when it doesn't fit beside it. The board's fit checks gain the iPad shapes, and, added at the owner's request, the kitchen board's 1920×1080 at Larger and Largest.
 > v0.8.113: WP-78 (a lunch pick taken off by another, a bug) added at the owner's request and done in the same change: on Meals in the admin app, every "Choice of" section's radios were one group, so ticking a milk took off the entree. Two more added to it at the owner's request and done with it: "and" in a school menu joins a side like "with" (a WP-64 gap); the board picks up a new deploy by itself (D-99).
 > v0.8.112: WP-71 to WP-76 added at the owner's request, recorded only (D-97, D-98), and WP-77 (WP-49's lunch test, root cause) added and done in the same change: the board home on an iPad (a bug); board layouts that adapt to the screen's shape, which WP-58 and WP-68 now build on, so WP-58 waits on it; the lunch picks one tap from Home; the lunch week as a list of days; the meal planner's days folded; Edit on a planned meal (a bug). WP-73 to WP-76 wait on one mockup. "Next, in order" is the owner's to set.
@@ -133,8 +150,9 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 
 | Item | Action | Where | Unblocks |
 |---|---|---|---|
-| Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14 and WP-34; launch checks L-05 and L-08 |
+| Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14; launch checks L-05 and L-08 |
 | Y-10 | The repository is public now (D-48), and three things from before are visible on it. (1) Rotate the deployment-protection bypass secret: Vercel → Settings → Deployment Protection → Protection Bypass for Automation, then put the new value in GitHub → Settings → Secrets → `VERCEL_AUTOMATION_BYPASS_SECRET`. The demo sign-ins' passwords follow it on the next e2e run. (2) Delete the four `playwright-report` artifacts (Actions → the failed e2e runs of Oct 9 whose reports were saved at 10:56, 15:03, 20:20 and 20:28 UTC), which hold the old value. (3) Delete the two `setup-code` runs of Oct 9 (10:54 and 11:03 UTC), whose pages show household codes; they expire 24 hours after issue | GitHub; Vercel | R-35 |
+| Y-11 | WP-34's screen power on the Kitchen Pi 4. (1) On the Pi, in a terminal or over SSH as the user the board runs as, type `curl -fsSL https://family-wise-topaz.vercel.app/api/kiosk/install \| bash` (again, if you installed it before the follow-up), then `sudo reboot`; after the restart, `curl -s http://127.0.0.1:8737/status` answers `{"on": true}` or `{"on": false}`. (2) On Settings → Boards, open **Sleep and wake** on the Pi's board, set its times and press **Save sleep and wake**. (3) Over the next 3 days, check the monitor goes off at the sleep time and comes on at the wake time, and that moving the mouse wakes it; then tell Claude Code "WP-34 Pi check passed", or what you saw | The Pi | WP-34's last done-when line (HW) |
 | Y-8 | Not before P3 (nothing earlier waits on it): choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
 
 **Done**
@@ -203,7 +221,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-44 | Offline goal projection (board fallback) | P2 | M | WP-13, WP-15, WP-20 | Ready |
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
-| WP-34 | Quiet hours and burn-in mitigation | P3 | S | WP-14 | Blocked: hardware |
+| WP-34 | Quiet hours and burn-in mitigation, with sleep and wake per board | P3 | M | WP-06, WP-47 | Merged; 3 days on the owner's Pi 4 to check (Y-11) |
 | WP-35 | Family dashboard and board layout | P3 | L | WP-23 | Done (PR #44) |
 | WP-45 | Weather on the board | P3 | S | WP-35 | Done (PR #45) |
 | WP-46 | More icons, one icon picker, sixteen colors | P3 | M | WP-08, WP-22, WP-37 | Done (PR #47) |
@@ -232,15 +250,29 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-70 | The board calendar's refresh timing, root cause | P3 | S | WP-65, WP-23 | Done |
 | WP-71 | The board home on an iPad: badges over chores, the rail clipped | P3 | S | WP-47, WP-48 | Done |
 | WP-72 | Board layouts that adapt to the screen's width and shape | P3 | L | WP-71, WP-53, WP-52 | Queued (mockup first) |
-| WP-73 | The lunch picks one tap from the admin app's Home | P3 | S | WP-57, WP-74 | Queued (mockup first, with WP-74 to WP-76) |
-| WP-74 | The lunch week as a list of days | P2 | M | WP-49, WP-64 | Ready (mockup first, with WP-73, WP-75 and WP-76) |
-| WP-75 | The meal planner's days as collapsible sections | P2 | S | WP-25, WP-62, WP-76 | Queued (mockup first, with WP-73, WP-74 and WP-76) |
-| WP-76 | Edit on a planned meal | P2 | S | WP-25, WP-62 | Ready (mockup first, with WP-73 to WP-75) |
+| WP-73 | The lunch picks one tap from the admin app's Home | P3 | S | WP-57, WP-74 | Done |
+| WP-74 | The lunch week as a list of days | P2 | M | WP-49, WP-64 | Done |
+| WP-75 | The meal planner's days as collapsible sections, with the usual lunch week and Add to the plan folded | P2 | S | WP-25, WP-62, WP-76 | Done |
+| WP-76 | Edit on a planned meal | P2 | S | WP-25, WP-62 | Done |
 | WP-77 | WP-49's lunch test, root cause: its time limit, and the board's lunch week read again | P2 | S | WP-49 | Done |
 | WP-78 | A lunch pick taken off by another; "and" in a menu; the board picks up a new deploy | P2 | S | WP-49, WP-64 | Done |
+| WP-79 | A goal's end date that can be cleared | P2 | S | WP-19 | Done |
+| WP-80 | Goals that repeat each week, month or school term | P2 | L | WP-79, WP-19, WP-39, WP-20, WP-21 | Ready (mockup first, one for WP-80 to WP-82) |
+| WP-81 | A goal done by a time, and goals that pay in tiers | P2 | M | WP-80 | Queued (mockup first, with WP-80 and WP-82) |
+| WP-82 | Perfect periods, and a family goal every child meets | P2 | M | WP-80 | Queued (mockup first, with WP-80 and WP-81) |
+| WP-83 | Chore saves timed in the chores tests, root cause open | P3 | S | WP-08 | Done (timing); the stall's cause open |
+| WP-88 | Fast deploy gate; e2e nightly only | P3 | S | WP-41, WP-60 | Done |
+| WP-89 | The test database prepared for a pull request's preview | P3 | S | WP-60, WP-88 | Ready |
+| WP-90 | Nightly e2e reliability | P3 | M | WP-60, WP-88 | Done |
+| WP-91 | The Boards settings as collapsible sections | P3 | S | WP-34, WP-75, WP-35 | Done |
+| WP-92 | Approval alerts at once (a bug) | P2 | S | WP-63 | Done |
+| WP-93 | Calendars, school menus and the meal library folded | P3 | M | WP-91 | Ready (mockup approved) |
+| WP-94 | The set-up pages folded | P3 | M | WP-91 | Ready (mockup approved) |
+| WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Ready (mockup approved) |
+| WP-96 | Chores, an item's page and the icon picker folded | P3 | M | WP-91 | Ready (mockup approved) |
+| WP-97 | Today, My tasks and Insights folded | P3 | S | WP-91 | Ready (mockup approved) |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
-| WP-87 | Smoke on the core loop, nightly speed checks, and the weekly failure report | P3 | M | WP-85 | Ready |
 | WP-36 | Closure import and grocery-ready ingredients | P3 | M | WP-22, WP-25 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
@@ -255,7 +287,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 - **Sizes:** S ≤ 2 days · M 3–5 days · L 1–2 weeks of focused builder time. No WP above L; split it instead.
 - **Every WP ends with its tests:** pgTAP for schema, Vitest for pure logic, Playwright for flows. A WP is not done until its `Done when` list passes in CI and on its preview.
 - **No rework by sequence.** A WP starts only when everything it renders or writes against exists: the brand system before any screen, real day types before the generator, the ledger before any screen that shows points.
-- **Spikes first where they gate work.** SPIKE-01 gates WP-05 and WP-06, SPIKE-05 gates WP-07, SPIKE-02 gates WP-22, SPIKE-04 gates WP-27, SPIKE-03 gates WP-14 and WP-34.
+- **Spikes first where they gate work.** SPIKE-01 gates WP-05 and WP-06, SPIKE-05 gates WP-07, SPIKE-02 gates WP-22, SPIKE-04 gates WP-27, SPIKE-03 gates WP-14.
 - **Milestones** from `04` §E: P0, P1a … P1d, P2, P3. One launch after P3 (D-19).
 
 ### Starting an item
@@ -355,7 +387,8 @@ flowchart LR
   subgraph P3[P3 Polish]
     WP03 --> WP32[WP-32 Audit log]
     WP04 --> WP33[WP-33 Export and delete]
-    WP14 --> WP34[WP-34 Quiet hours]
+    WP06 --> WP34[WP-34 Quiet hours and sleep]
+    WP47 --> WP34
     WP23 --> WP35[WP-35 Family dashboard and layout]
     WP35 --> WP45[WP-45 Weather]
     WP08 --> WP46[WP-46 Icons and colors]
@@ -399,6 +432,30 @@ flowchart LR
     WP76 --> WP75
     WP49 --> WP77[WP-77 Lunch test, root cause]
     WP49 --> WP78[WP-78 A pick taken off by another]
+    WP19 --> WP79[WP-79 A goal's end date cleared]
+    WP79 --> WP80[WP-80 Repeating goals]
+    WP19 --> WP80
+    WP39 --> WP80
+    WP20 --> WP80
+    WP21 --> WP80
+    WP80 --> WP81[WP-81 Done by a time, and tiers]
+    WP80 --> WP82[WP-82 Perfect periods, every child]
+    WP08 --> WP83[WP-83 Chore saves timed]
+    WP41 --> WP88[WP-88 Fast deploy gate]
+    WP60 --> WP88
+    WP60 --> WP89[WP-89 Test database for a preview]
+    WP88 --> WP89
+    WP60 --> WP90[WP-90 Nightly e2e reliability]
+    WP88 --> WP90
+    WP34 --> WP91[WP-91 Boards settings folded]
+    WP75 --> WP91
+    WP35 --> WP91
+    WP91 --> WP93[WP-93 Calendars and menus folded]
+    WP91 --> WP94[WP-94 Set-up pages folded]
+    WP91 --> WP95[WP-95 Rewards, Goals, Members folded]
+    WP91 --> WP96[WP-96 Chores and icon picker folded]
+    WP91 --> WP97[WP-97 Today and Insights folded]
+    WP63 --> WP92[WP-92 Approval alerts at once]
     WP64 --> WP78
     WP60 --> WP65[WP-65 First-attempt e2e passes]
     WP65 --> WP70[WP-70 Calendar refresh timing]
@@ -427,7 +484,6 @@ flowchart LR
     WP25 --> WP36
     WP03 --> WP38[WP-38 Apple sign-in and passkeys]
     WP85[WP-85 Test strategy and catalogue] --> WP86[WP-86 Close the known test gaps]
-    WP85 --> WP87[WP-87 Smoke, nightly speed, weekly report]
   end
 ```
 
@@ -462,7 +518,7 @@ flowchart LR
 - **Done when:** the adapter choice is recorded in `01` §5.5.
 
 ### SPIKE-03 — Pi 5 and 4K panel
-**Milestone:** P1a · **Size:** S · **Gates:** WP-14, WP-34 · **Reqs:** DEV-04, DEV-07, NFR-02, NFR-03
+**Milestone:** P1a · **Size:** S · **Gates:** WP-14 · **Reqs:** DEV-04, DEV-07, NFR-02, NFR-03
 - Touch latency and calibration, Chromium kiosk flags, screen power control, and animation frame rate at 1920×1080 logical / DPR 2 versus a 1080p fallback.
 - **Done when:** the frame budget and kiosk configuration are recorded in `01` §8.
 
@@ -920,10 +976,27 @@ flowchart LR
 - JSON/CSV export of all household data; documented deletion procedure for a child profile and a household, anonymizing events.
 - **Done when:** exported data re-imports into a throwaway database in a smoke test.
 
-### WP-34 — Quiet hours and burn-in mitigation
-**Phase:** P3 · **Size:** S · **Depends on:** WP-14 · **Reqs:** DEV-07
+### WP-34 — Quiet hours and burn-in mitigation, with sleep and wake per board
+**Phase:** P3 · **Size:** M · **Depends on:** WP-06, WP-47 · **Reqs:** DEV-07
 - Scheduled dim/sleep, wake on touch, subtle pixel shifting.
-- **Done when:** the panel sleeps and wakes on schedule over a 3-day hardware test.
+- Added at the owner's request, 15 October: "Enhancement - boards. Need to be able to define a board as always on / connected or not. Certain boards may not always need to be available 24/7. So I don't constant reminders that a board hasn't been seen for those. Also, boards should have night time / sleep ability. This should be defined by a few things. Automatic sleep (off) at a time of day and automatic wake (on) at a time of day. You should also be able to set a duration for which a screen goes to sleep and is waken by a touch or mouse click / wiggle". Then: "Add to wp-34". The owner chose these details on 15 October (D-116):
+  - **When a board is missed, per board:** **Always**, **Only while awake** (never during its scheduled sleep), or **Never**. Home's heads-up "(board) hasn't been seen for …" follows it; a board set to **Never** is never listed.
+  - **Sleep and wake times, per board:** one pair for school days and one for weekends, from the school year already in the app (a day off from school counts as a weekend). The board sleeps (off) at its sleep time and wakes (on) at its wake time.
+  - **Idle sleep, per board:** after a set time untouched, the board sleeps; a touch, a click or a mouse movement wakes it.
+  - **Waking only wakes:** the touch, click or mouse movement that wakes a board never checks off a chore or presses anything.
+  - **A touch in the night:** during the scheduled sleep, a touch wakes the board for the idle time, then it sleeps again.
+- **How it sleeps:** in the browser, sleep is a black screen (an iPad can do no more; a web page can't turn its display off). On the Pi, the kiosk also turns the screen's power off and back on.
+- **Hardware (D-116):** the board in use is the owner's Raspberry Pi 4 on a 24" Dell monitor, and it stays in use. WP-34's screen power-off is built and tested on it, so WP-34 no longer waits on WP-14 or SPIKE-03. The Pi 5 and the 32" 4K touch panel come later; SPIKE-03 and WP-14 stay as they are and are not planned now.
+- **Mockup first:** the Boards settings (the new choices per board) and the sleeping board get a mockup on demo-family data, approved by the owner before WP-34 is built.
+- **Done when:** unit tests on when a board is asleep (school days, weekends, a day off, the idle time, a touch in the night, across midnight and DST) and on when Home lists a board as not seen for each of the three choices; on the preview, a board set to sleep now shows the black screen, the touch that wakes it checks nothing off, and Home doesn't list a board set to **Never** or one asleep under **Only while awake**; the UI suite shows the Boards settings and the sleeping board; on the owner's Pi 4, the screen turns off and on at its times over 3 days.
+- As built (D-116, D-117; the owner approved the mockup on 16 October, with its six recommendations):
+  - **Data:** migration `20261016002422_board_sleep.sql`: `device.board_config.sleep` (`missed`, `schedule` with `school` and `weekend` sleep and wake times, `idle_minutes` of 5, 10, 15, 30, 60 or 120), checked by `private.valid_board_sleep()`; `public.school_days()` (a day any member has school; Monday to Friday with no school year); the snapshot's `device.sleep` and `school_days` (yesterday to a week ahead). pgTAP: `460_board_sleep.test.sql`.
+  - **When a board is asleep** (`lib/board-sleep.ts`): a night takes its times from the day after it; during its set times a touch wakes it for its idle time (5 minutes without one); outside them it sleeps once untouched for its idle time since it was touched or woke; times on the household's clock across a change of clocks. Home's heads-up by each board's choice (`boardMissed()`): Always after a day; Only while awake after a day of hours awake, never while asleep; Never never.
+  - **The board** (`app/(board)/board/sleep.tsx`): a black cover over everything; the press that wakes it is caught until its click, so it presses nothing; the mouse moving wakes it; the picture drifts within a 4 px square, a px every 5 minutes. On a Pi (Chromium on Linux on ARM) it tells the screen helper on and off, again each minute.
+  - **Boards:** **Sleep and wake** per board (`devices/sleep-form.tsx`, `setBoardSleep`), its summary line, and "Asleep · wakes at …" or "Awake · sleeps at …" on the board's row.
+  - **The Pi's screen helper** (`lib/kiosk-scripts.ts`): `/api/kiosk/install` installs it (a Python helper on 127.0.0.1:8737 that answers only the board's site and turns the monitor with `wlopm` under Wayland or `xset dpms` under X11, Chromium's Local Network Access policy for the site, and a systemd user service, `familywise-screen.service`, that starts it with the Pi and again if it stops). Follow-up, at the owner's request: the first installer used the desktop's start-up folder, which labwc on the owner's Pi (Debian 13) doesn't read, so the helper didn't start after a restart; on the Pi, started by hand, the board turned the Dell off through it. The installer now finds the desktop's display itself (Wayland or X11), so it also works over SSH, and replaces the old start-up file.
+  - **Tests:** `lib/board-sleep.test.ts`, `lib/kiosk-screen.test.ts`, `lib/kiosk-scripts.test.ts` (the helper run in Python), `lib/home-alerts.test.ts`; the UI suite's `board-sleep.spec.ts` (asleep at its time, the touch that wakes it checks nothing off, idle, the mouse, Boards on a phone and a laptop in Day and Evening); `e2e/tests/board-sleep.spec.ts` (nightly: set on Boards, black on the board, the waking touch sends nothing, Home for each choice).
+  - **Open:** the 3 days on the owner's Pi 4 (Y-11): the helper is built and tested here in its dry mode, not yet on the Pi's own screen.
 
 ### WP-35 — Family dashboard and board layout
 **Phase:** P3 · **Size:** L · **Depends on:** WP-23 · **Reqs:** BRD-01, BRD-05, BRD-06, BRD-07
@@ -1205,30 +1278,38 @@ flowchart LR
 **Phase:** P3 · **Size:** S · **Depends on:** WP-57, WP-74 · **Reqs:** MEAL-12
 - Added at the owner's request: "We need a quick actions on the Home Screen in the admin portal that goes straight to the school lunch menu selections where we can select lunches. It's too buried in the admin portal and cumbersome to get to."
 - A quick action on Home (beside Add a meal) opens the lunch week (WP-74): the current week if today is Monday to Friday, the coming week on Saturday and Sunday. It opens on the child chosen last (kept on the device); WP-74's row of children switches, with a dot on a child who still has days without a choice. With one child, there is no switcher (D-98).
-- Admin app only, not the board. One mockup covers WP-73 to WP-76 (and WP-76's Edit and Remove), on the demo family, approved by the owner before any of them is built.
+- Admin app only, not the board. One mockup covers WP-73 to WP-76 (and WP-76's Edit and Remove), on the demo family; the owner approved it on 15 October.
 - **Done when:** unit tests on the week opened for each day of the week; on the preview, Alex taps the quick action on a weekday and lands on this week's lunches, and on a Saturday (the clock set in the test) on next week's, on the child they chose last; the UI suite shows Home with the quick action at 390 and 1280 px in both themes.
+- **As built:** no migration. `lunchWeekToOpen()`, `daysToPick()` and `lunchQuickWords()` in `apps/web/lib/lunch-list.ts`; the **School lunches** card beside **Add a meal** in `apps/web/app/(admin)/admin/home-view.tsx`, with **Pick lunches** to `/admin/meals?week=<Monday>#lunch` and a line saying whose days still need a choice (as in the mockup), read in `page.tsx` through `lunch_week()`; it shows when a child has school lunch. The child chosen last is WP-74's (`fw-lunch-child` on the device). **Pick lunches** is a link, so a tap before hydration still opens the week. D-113: the Saturday case is proved by the unit tests, since the server's clock can't be set from a test. Tests: Vitest `lib/lunch-list.test.ts` (each day of the week, month, year and DST changes, the card's words); UI suite `e2e/ui/home.spec.ts` (390 and 1280 px in both themes, the card beside Add a meal, its link, none without a child); e2e `e2e/tests/lunch-quick.spec.ts` (the done-when on the preview on the day it runs, nightly, D-108).
 
 ### WP-74 — The lunch week as a list of days
 **Phase:** P2 · **Size:** M · **Depends on:** WP-49, WP-64 · **Reqs:** MEAL-13
 - Added at the owner's request: "We need a better way for the lunch menu week to be displayed. Currently when viewing it on an iPhone it's a section that you have to scroll horizontally. I'm thinking we should have a stacked list with the days of the week (not including Saturday or Sunday because there is never school on those days). Each day will be expandable. Each expandable day section will show what day of the week it is, the date (the date will dynamically change based on the week), buy vs bring, and a checkmark if a lunch selection has been chosen or not. When expanded, there will be the lunch menu sections and the available selections within each section. If selections have been made, they will be shown as checked and highlighted."
 - Today **School lunch** on Meals is a table, a row a child and a column a day (`lunch-section.tsx`), which scrolls sideways on a phone. It becomes a stacked list, on every screen size, of one child's Monday to Friday, with the children's faces and names in a row at the top (none for a single child), opening on the child chosen last, a dot on a child with days still without a choice (D-98).
 - **All days start collapsed.** Collapsed, a day shows its weekday, its date (following the week shown), **Buy** or **Bring**, and a checkmark when its selection is complete: on a Buy day when every "Choice of" section (the entree, the milk) has a pick; on a Bring day as soon as Bring is set. Expanded: **Buy** or **Bring** can be changed at the top, and the day's menu sections are listed with their options (MENU-06); chosen options are checked and highlighted. A school closure stays in the list, greyed, says **No school**, and doesn't expand. Today stays highlighted or outlined, collapsed or expanded. Picks and changes save as they do now (WP-49), and a child's change waiting for a parent still shows as waiting.
-- Admin app only, not the board. One mockup covers WP-73 to WP-76, on the demo family, approved by the owner before any of them is built.
+- Admin app only, not the board. One mockup covers WP-73 to WP-76, on the demo family; the owner approved it on 15 October.
 - **Done when:** unit tests on a day's completeness (Buy with and without each "Choice of" pick, Bring, no school); on the preview, Alex opens the lunch week on a 390 px phone with nothing scrolling sideways, every day collapsed, expands a Buy day, picks an entree and a milk and sees its checkmark, sets a day to Bring and sees its checkmark, and finds a closure greyed as "No school"; the UI suite at 390, 768 and 1280 px in both themes, collapsed and expanded, today outlined.
-
+- **As built:** no migration. `apps/web/lib/lunch-list.ts` (`lunchDayStatus()`, `schoolWeek()`, `hasDaysToPick()`, `openOn()`); the list in `apps/web/app/(admin)/admin/meals/lunch-week.tsx` (the children's row, the child chosen last kept on the device under `fw-lunch-child`, each day a `<details>` closed at first, Buy or Bring and **Save** (name)**'s picks** enabled only once hydrated), used by `lunch-section.tsx` in place of the table; styles `.fw-lunchkids`, `.fw-lunchdays`, `.fw-lunchday` in `packages/ui/src/ui.css`. D-112: a Buy day with no "Choice of" section (or no menu) is complete; the dot counts today and the days after it; picks still save with **Save**, since the database refuses an entree without its milk. Tests: Vitest `lib/lunch-list.test.ts`; UI suite `e2e/ui/lunch-week.spec.ts` (390, 768 and 1280 px in both themes, closed and opened, today outlined; the days and checks; the picks and a change waiting; nothing saves before hydration); e2e `e2e/tests/lunch-week.spec.ts` (the done-when on the preview, nightly, D-108), and `meals.spec.ts`, `lunches.spec.ts` and `menus.spec.ts` moved from the table to the list.
 ### WP-75 — The meal planner's days as collapsible sections
 **Phase:** P2 · **Size:** S · **Depends on:** WP-25, WP-62, WP-76 · **Reqs:** MEAL-14
 - Added at the owner's request: "The meal planner also needs to be updates to save real estate. each day section should be expandable section. The expandable section will show what day of the week it is, the date (the date will dynamically changed based on the week), and a dynamic count of meals set (example, if there are 4 meals for a day and only 2 are set, it will show 2 of 4 set. If all meals are set, a checkmark is shown. When expanded, it will show the meal types like it does currently and what the set meals are like it does currently. There will also be an add ability like there is now. You should still be able to change a meal as well. The current day should still be highlighted/outlined like it currently is, expanded or collapsed."
 - **All days start collapsed.** Collapsed, a day shows its weekday, its date (following the week), and "X of Y set", where Y is the meal types shown for that day and X how many have a meal; when all are set, a checkmark instead (D-98). Expanded: the meal types and their meals as today, **Add** as today, and every meal can still be changed (**Change**, with WP-76's **Edit** and **Remove**). Today stays highlighted or outlined as it is now, collapsed or expanded.
-- Admin app only, not the board. One mockup covers WP-73 to WP-76, on the demo family, approved by the owner before any of them is built.
-- **Done when:** unit tests on "X of Y set" and the checkmark; on the preview, Alex opens Meals with every day collapsed, sees "2 of 4 set" on a day with two meals, adds the other two from the expanded day and sees the checkmark, and edits a meal there; the UI suite at 390 and 1280 px in both themes, collapsed and expanded, today outlined.
+- Admin app only, not the board. One mockup covers WP-73 to WP-76, on the demo family; the owner approved it on 15 October.
+- Added at the owner's request, 15 October: "Enhancement - Meals. Expandable and collapsible sections for: School lunch 'usual week' - it shouldn't always be expanded. It rarely changes. Add to plan - this should be collapsed by default especially on the phone view." Then: "add to WP-75".
+  - **School lunch's usual week:** collapsed at first on every screen size. Collapsed, it shows one line per child ("Sam: Mon Buy · Tue Bring · …"); it opens on tap.
+  - **Add to the plan:** collapsed at first on every screen size, showing only its header and button. It opens on tap, or when **Add** is tapped on a day, which opens it with that day filled in.
+  - The approved mockup for WP-73 to WP-76 doesn't show these two collapsed states. Before building, the WP-75 worker adds them to the mockup, on the demo family, for the owner's approval.
+- Added at the owner's request, 15 October, while approving the mockup: "Copy last weeks should also move up under weekly meals directly under add to plan. And it should default to collapsed." Meals reads the days, **Add to the plan**, **Copy last week** (collapsed at first), then **School lunch** (D-114). The owner approved the mockup with these on 15 October.
+- **Done when:** unit tests on "X of Y set" and the checkmark, and on the usual week's one-line summary; on the preview, Alex opens Meals with every day collapsed, sees "2 of 4 set" on a day with two meals, adds the other two from the expanded day and sees the checkmark, and edits a meal there; the UI suite at 390 and 1280 px in both themes, collapsed and expanded, today outlined, and the usual lunch week and **Add to the plan** collapsed at first, expanded on tap, and **Add** on a day opening **Add to the plan** with the day filled.
+- **As built:** no migration. `daySet()` and `daySetWords()` in `apps/web/lib/meals.ts` ("X of Y set" of the four meals the planner shows, the check when all are set); `usualLine()` in `apps/web/lib/lunch.ts` (a weekday without a choice reads Bring). In `apps/web/app/(admin)/admin/meals/view.tsx` each day is a `<details>` closed at first, with the lunch days' look (`.fw-lunchday`), opened by itself for the entry being edited or by `?open=<day>`, which `addMealEntry`, `updateMealEntry`, `changeMealEntry` and Edit's **Cancel** now send; **Add to the plan** and **Copy last week** follow the days, each a folded card (`.fw-fold`), **Add to the plan** opened by a day's **Add** (`?day=&slot=`); the usual week folded in `lunch-section.tsx`. Folding is the browser's own, so it works before hydration. D-114: the new order and **Copy last week** folded, added at the owner's request; the day opened after a change, proposed by Claude Code. Tests: Vitest `lib/meals.test.ts`, `lib/lunch.test.ts`; UI suite `e2e/ui/meals.spec.ts` (390 and 1280 px in both themes: the days closed and opened, today outlined; the three sections closed, then opened on a tap; a day's **Add**; taps after hydration); e2e `e2e/tests/meal-days.spec.ts` (the done-when on the preview, nightly, D-108), and `meals.spec.ts`, `meal-edit.spec.ts` and `menus.spec.ts` opening the folds they use (`e2e/support/fold.ts`). Not in scope, as before: **Add to the plan** and the other admin forms still lose a submit made before the page hydrates (recorded in WP-76).
 
 ### WP-76 — Edit on a planned meal
 **Phase:** P2 · **Size:** S · **Depends on:** WP-25, WP-62 · **Reqs:** MEAL-15
 - Added at the owner's request, as a bug: "Also fix the "change" feature on an existing meal that is entered. Right now all that does is allow me to "remove". There should be an edit capability that opens the set meal allowing me to make changes. Right now I have to delete and re-add… it's a pain in the ass."
 - Today **Change** on a planned meal offers **Earlier** and **Later** (only when its meal has more than one entry) and **Remove**, and nothing edits an entry: the database has `add_meal_entry()`, `move_meal_entry()` and `copy_meal_week()`, and removing is a delete. **Change** offers two options, **Edit** and **Remove** (Earlier and Later stay where a meal has more than one entry). **Edit** opens the meal's form filled in with what was saved (the day, the meal, the library meal or what was written, the people, the note); saving updates the entry in place, keeping its place in order, and opening it again shows the last saved values.
-- Recorded as its own small item, so it can ship ahead of WP-75. Its Edit and Remove choice is in the one mockup for WP-73 to WP-76, approved by the owner before it is built.
+- Recorded as its own small item, so it can ship ahead of WP-75. Its Edit and Remove choice is in the one mockup for WP-73 to WP-76, which the owner approved on 15 October.
 - **Done when:** pgTAP: an entry's update keeps its id and order and replaces its people, and another household can't update it; on the preview, Alex taps **Change** on a planned dinner, chooses **Edit**, finds the form filled in, changes the meal, the people and the note, saves, sees the change on the plan, and opens **Edit** again to find the saved values; the UI suite shows Change's two options and the filled form.
+- **As built:** migration `20261015193825_meal_entry_edit.sql` (`update_meal_entry()`, D-111); `updateMealEntry` in `apps/web/app/(admin)/admin/meals/actions.ts`; **Edit** in Change and the form in place (`view.tsx`, `entry-form.tsx`, `?edit=<entry>`), **Save changes** enabled only once hydrated; tests `supabase/tests/440_meal_edit.test.sql`, `e2e/ui/meals.spec.ts` (Change's options, the filled form), `e2e/tests/meal-edit.spec.ts` (the done-when on the preview, nightly, D-108). Not in scope, recorded: **Add to the plan** and the other admin forms still lose a submit made before the page hydrates.
 ### WP-77 — WP-49's lunch test, root cause: its time limit, and the board's lunch week read again
 **Phase:** P2 · **Size:** S · **Depends on:** WP-49 · **Reqs:** MEAL-09, MEAL-11
 - Added at the owner's request (15 October: "fix in #80"), and done in the same change as WP-71 to WP-76, whose e2e run it held up. In e2e run 224 (15 October, about 00:42 UTC), WP-49's done-when test in `lunches.spec.ts` failed twice. On the first attempt, Meals in the admin app didn't show Maya's waiting change within 3 s. On the retry, the board stayed on "Pick your lunch" for 15 s after Save. The run before it (223, the same code) also failed this test's first attempt, on Playwright's 30 s test limit, and passed its retry. Every attempt since 00:00 UTC had been slow; earlier first-try passes took 1.1 to 1.5 s. Nothing in the dates was wrong: the admin page, `lunch_week()` and `request_lunch()` all use the household's time zone.
@@ -1249,10 +1330,179 @@ flowchart LR
 - As built, **the board picks up a new deploy (D-99):** `DeployWatch` (`app/(board)/board/deploy-watch.tsx`, on the board) asks `/api/health` every 5 minutes which commit is deployed and, when it isn't the one the board runs (`isNewDeploy()` in `apps/web/lib/board-update.ts`), reloads once no dialog is open and nobody has touched the board for 2 minutes (`mayReload()`); a local or dev build never reloads. Vitest `lib/board-update.test.ts`; UI suite `e2e/ui/board-update.spec.ts` (on `/dev/board?deploy=…`, with Playwright's clock): an idle board reloads; it doesn't while Leo is picking, nor however long a dialog stays open; nor while someone is tapping, nor when the version is the same.
 
 
+### WP-79 — A goal's end date that can be cleared
+**Phase:** P2 · **Size:** S · **Depends on:** WP-19 · **Reqs:** RWD-14
+- Added at the owner's request, as a bug: once an end date is chosen on a goal, it can't be taken off. The goal form's **Ends (optional)** is a plain date field (`apps/web/app/(admin)/admin/goals/goal-form.tsx`), and an iPhone's date field has no way to clear it, so a goal meant to run with no end date keeps the one picked by mistake.
+- The fix: beside the end date, a **No end date** choice, and a **Clear** control on the date. Choosing No end date (or Clear) saves the goal with no end date; choosing a date again brings the field back. Where the form already locks the dates (a finished goal), this changes nothing.
+- Recorded as its own small item, so it ships ahead of WP-80 and waits on nothing else. Its mockup (the end date with No end date and Clear, on the demo family) is its own, approved by the owner before it is built.
+- **Done when:** unit test on the form's reading of No end date and of a cleared date (both save no end date); on the preview, Alex opens a goal of Maya's with an end date on a 390 px phone, chooses **No end date**, saves, and the goal shows no end date and stays active past the old date; opening it again shows No end date chosen; the UI suite shows the dates with and without an end date, at 390 and 1280 px in both themes.
+- As built, from the mockup the owner approved on 15 October with their changes (D-115): **Ends on a date** is a check box. Ticked, the date shows, with **Clear** once a date is chosen, and a tap on the date opens the picker to choose another; unticked, the date is hidden and cleared. Saved unticked, or ticked with the date cleared, the goal has no end date and opens unticked. The iPhone's cause: its picker puts a date field back to the date it was first given, so a field given the saved date could never be emptied; the saved date is now the field's value, never that first date (`EndDateField`, `app/(admin)/admin/goals/end-date-field.tsx`; `readEndDate()` in `lib/goals.ts`, which also reads a form loaded before the change).
+- As built, **added at the owner's request with the mockup** (D-115): a started goal's end date can be added, moved or taken off until it finishes, and added or moved it is today or later; a **reached** goal keeps its rules, dates, person and payout as a finished one does, its name, description and picture still editable. Migration `20261015232202_goal_end_date.sql` (`save_goal()`: `goal_achieved`, `end_in_past`); the goal's page says why a reached goal's rules are locked. This replaces WP-39's preview of a change to a reached goal: the form no longer offers it.
+- As built, tests: Vitest `lib/goals.test.ts` (the box unticked with or without a date, a cleared date, a ticked date, a form without the box: the done-when's two cases save no end date) and rules-engine `goal.test.ts` (a goal whose end date was taken off stays active past the old date); pgTAP `450_goal_end_date.test.sql` (taken off, added, today or later, a goal not yet started, a reached goal locked and renamed) and `200_goals.test.sql` (a reached goal keeps its rules); UI suite `e2e/ui/goals.spec.ts` (the dates with and without an end date at 390 and 1280 px in both themes; Clear, untick, tick again; the field has no default once hydrated; a reached goal's form); e2e `e2e/tests/goal-end-date.spec.ts` (the done-when on a 390 px phone, nightly, D-108) and `goal-payouts.spec.ts` (a reached goal's form offers no target, end date or preview).
+
+### WP-80 — Goals that repeat each week, month or school term
+**Phase:** P2 · **Size:** L · **Depends on:** WP-79, WP-19, WP-39, WP-20, WP-21 · **Reqs:** RWD-15, RWD-16
+- Added at the owner's request. The owner's case: a child must bring their homework home every school day of a week. If they miss Tuesday, that week is lost and the goal starts again next Monday; it is not a streak that restarts the day after the miss. A short school week (a closure, a holiday) needs only the days the chore is due. The goal can also follow chosen weekdays, whatever the school calendar.
+- **What exists today:** chores follow school days through day types (closures and breaks drop them, SCH-03), and a schedule can pick weekdays. A goal has one start and end date, a fixed target (COUNT, STREAK with misses forgiven, DAILY_ALL_DONE, POINTS) and is reached once (RWD-02, RWD-06). It doesn't repeat, size itself to a short week, or say "missed, starts again Monday".
+- **Repeats** (D-101): a goal can repeat **each week** (the household's week, from its week start), **each month**, or **each school term** (the child's school year's terms; a family goal uses the household's school year). It repeats from its start date to its end date, or, with no end date (WP-79), until a parent stops it. A first or last part-period counts only the days due inside it. Every rule is worked out inside each period, so "20 things done each week" works too.
+- **A new rule, "every day it's due, each period"** (D-101): its target is the number of days in the period when a chore in its scope is due for the child, as school days and chosen weekdays decide, so a 4-day week needs 4. A day counts when everything in scope due that day is done.
+- **Misses allowed per period:** 0 to N, default 0 ("4 of 5 school days" is 1 allowed). Today is never a miss (RWD-05); a day is missed once it closes with a chore in scope missed.
+- **A won period can't change** (D-115, added at the owner's request with WP-79): a reached goal keeps its rules and dates, read per period for a repeating goal, so a period that was won keeps what it paid, and the goal stays editable for the periods ahead.
+- **A miss beyond the allowance ends that period:** the goal shows "Missed, starts again <the next period's first day>", with no part count and no restart mid-period.
+- **Each period is reached and pays on its own** (an achievement each, D-75's payout and its reversal), and the goal keeps a history of its periods ("3 of the last 4 weeks"), on Goals in the admin app and on the child's screen on the board.
+- **Neutral days and periods:** a period with no days due (a break) is neither won nor missed; a day a parent skipped is neutral, as today. A parent's late tick still counts, as late credit does today (D-21), even after the period has closed: the period is worked out again and can turn from missed to won, or back after a reversal (RWD-04).
+- **Not covered, as a plain fact:** goals for avoiding something (no screen time over a limit) aren't part of this; nothing in FamilyWise records them.
+- **Mockup first:** one mockup covers WP-80 to WP-82 (the goal form's repeat, rule, misses, by-a-time and tiers; the goal's period history; the board's goal card with "Missed, starts again Monday"; a family goal each child meets), on made-up demo-family data, approved by the owner before any of them is built.
+- **Done when:** the rules engine's tests (Vitest, with named cases): a 5-day week won; a 4-day week (a closure) won with 4; Tuesday missed with 0 allowed loses the week at day close and the next Monday starts afresh; 1 allowed forgives one miss and not two; a break week neither; a skipped day neutral; today never a miss; a parent's late tick after the week turns it from missed to won, and a reversal back; a part first week; months and terms. pgTAP: the repeat and rule saved and checked, each period's outcome and achievement recorded once, its payout once and reversed once. On the preview, Alex sets Maya "Homework home every school day, each week" paying 10 points; with Monday to Thursday done and Friday a closure, the week is won and pays 10 once; next week, a missed Tuesday shows "Missed, starts again Monday <date>" on the board; Goals shows the weeks' history. The UI suite: the form, the history and the board card at the admin app's 390 and 1280 px and the board's sizes, in both themes.
+
+### WP-81 — A goal done by a time, and goals that pay in tiers
+**Phase:** P2 · **Size:** M · **Depends on:** WP-80 · **Reqs:** RWD-17, RWD-18
+- Added at the owner's request.
+- **Done by a time** (D-102): a rule can count only check-offs made by a set time (homework before 6 pm, bed made before school): **by each chore's due time** (chores already have `due_time`) or **by a time** set on the rule. A tick after the time still completes the chore and earns its points, but doesn't count toward the rule. The time is the check-off's own time, kept by the board when offline (DEV-06).
+- **Tiers** (D-102): a goal, or each period of a repeating one, can pay at steps (3 days = 5 points, 4 = 10, 5 = 20), so partial effort earns something without lowering the full payout's bar. The highest step reached pays, not the sum of the steps. The top step pays as soon as it is reached; a lower step pays when its period or the goal's window closes, or as soon as no higher step can still be reached.
+- Mockup first, with WP-80 and WP-82 (one mockup, approved by the owner before any is built).
+- **Done when:** engine tests: a check-off a minute after the time doesn't count and one a minute before does, by a chore's due time and by the rule's time, offline included; a chore without a due time under "its due time"; a tier paid at the period's close, the top tier at once, only the highest step, and a reversal taking it back once; a 4-day week reaching its top step. pgTAP: the time and the steps saved and checked; each step's payout once. On the preview, Alex sets Maya's homework goal to "by 6 pm" with steps 3 = 5, 4 = 10, 5 = 20: a tick at 6:05 pm completes the chore and doesn't count; a week with 4 on time pays 10 at the week's close. The UI suite: the form's time and steps, in both themes.
+
+### WP-82 — Perfect periods, and a family goal every child meets
+**Phase:** P2 · **Size:** M · **Depends on:** WP-80 · **Reqs:** RWD-19, RWD-20
+- Added at the owner's request.
+- **Perfect periods** (D-103): a goal can count the periods a repeating goal (WP-80) was reached, either **in total** ("4 perfect weeks this term") or **in a row** ("3 perfect weeks in a row"); the parent chooses. A period with no days due neither counts nor breaks a run; a lost period breaks a run.
+- **Every child meets it** (D-103): a family goal option, reached (each period, for a repeating goal) only when each child who earns rewards meets the rule on their own. Today a family goal counts each check-off once, whoever did it, so one child can carry the others. A child with nothing due in the period doesn't hold it back; progress shows each child's.
+- Mockup first, with WP-80 and WP-81 (one mockup, approved by the owner before any is built).
+- **Done when:** engine tests: in total and in a row, with a break week and a lost week; every child meets it with one child short, with all met, and with a child who has nothing due. pgTAP: the counted goal and the option saved and checked; a family goal that every child meets pays each child once. On the preview, Alex sets the family "Everyone's homework home, each week" with every child meets it: Leo's missed Tuesday leaves the week unreached though Maya made every day; and Maya's "3 perfect weeks in a row" counts her won weeks. The UI suite: the counted goal and each child's progress, in both themes.
+
+### WP-83 — Chore saves timed in the chores tests, root cause open
+**Phase:** P3 · **Size:** S · **Depends on:** WP-08 · **Reqs:** CHR-01, CHR-10, NFR-14
+- Added at the owner's request (15 October: "fix in #83"), and done in the same change as WP-79 to WP-82, whose e2e runs it held up. The pull request changes only docs and tests.
+- **What failed:** in e2e runs 232 and 233 (15 October, about 11:15 and 11:35 UTC), a chore save's "Saved" banner didn't show within 15 s four times: three in WP-08's test "a parent enters the family's list on a phone in under five minutes" and once in CHR-10's tag test, both in `e2e/tests/chores.spec.ts`. Otherwise, WP-08's test enters the whole list in about 16 s.
+- **Not the cause:** the test's 30 s limit. The first reading blamed it, because WP-08's test saves eight items under Playwright's 30 s default against its own 300 s target (D-92). But run 233 passed the test in 16 s and then stalled on one save, so the limit only decided where it stopped.
+- **Not known:** whether those saves were slow or never answered, and why. The tests didn't time a save, and the preview's server logs record nothing for them.
+- **Done:** both tests time each save:
+  - `save()` waits for the save's server action, checks it answered under 400 and reports its time before waiting for the banner;
+  - the run's report lists every save (`WP-08 saves: …`, `CHR-10 saves: …`);
+  - each test has its own limit (330 s and 120 s, D-92).
+  WP-08's 300 s target and e2e's `retries` are unchanged; the app is unchanged.
+- **Done when:** this pull request's e2e run passes both tests, and a slow or refused save says which item and how long it took.
+- **Open:** the cause. The next run whose save stalls will report which save, its status and its time. That is where the root cause starts.
+
+### WP-88 — Fast deploy gate; e2e nightly only
+**Phase:** P3 · **Size:** S · **Depends on:** WP-41, WP-60 · **Reqs:** NFR-14
+- Added at the owner's request (15 October: "reset fast gate only. E2E better not fuck with anything, ever."; then "nightly only", not after deploys), and done in the same change (D-108).
+- **Deploy gate:** ships the head of `main` from a merged pull request when `checks`, `database`, `docs` and `build` passed on it and on the pull request's head. It reads no e2e result. A refused or failed deploy opens or updates one issue, "Deploy refused: <commit>", with the reason.
+- **e2e:** runs nightly only, on a preview of `main` that the run builds, against the test database. Never on a pull request or after a deploy, never a required check or a deploy input; it never cancels, delays or rolls back anything. A red run opens or updates one issue per failing spec, "E2E red on main: <spec>", and does nothing else. The specs are unchanged, and none is skipped.
+- **Rules:** a pull request is ready when the four checks are green and the owner approves; workers no longer wait on, queue for or re-run e2e (`CLAUDE.md`, the deliver, steward and planner skills).
+- **Done when:** `scripts/deploy-gate.test.mjs` shows the gate ships with the fast checks green, refuses a red or missing check on the merge commit or the pull request's head, writes its reason, and reads no e2e result; `scripts/open-issue.test.mjs` shows one issue per title.
+- **As built:** `scripts/deploy-gate.sh`, `.github/workflows/deploy.yml` (`report` job), `scripts/open-issue.sh`, `.github/workflows/e2e.yml` (`schedule` only), `e2e/playwright.config.ts` (a JSON report when `E2E_JSON` is set); tests `scripts/deploy-gate.test.mjs`, `scripts/open-issue.test.mjs`.
+- **Deferred:** a pull request's preview gets no fresh test database: nothing applies its new migrations there, so a preview of a pull request with a migration can fail until the next nightly run after merge; recorded as WP-89. Open issues are not closed by a green run.
+
+### WP-89 — The test database prepared for a pull request's preview
+**Phase:** P3 · **Size:** S · **Depends on:** WP-60, WP-88 · **Reqs:** NFR-14
+- Added at the owner's request (15 October: "Add to the backlog: prepare the test database for a PR's preview"). Recorded only; not built.
+- **Why:** since D-108, nothing applies a pull request's new migrations to the test database. A preview of a pull request that adds a migration can show errors until the nightly run after merge (WP-88's Deferred line).
+- **The item:** a job that only prepares the test database for a pull request's preview: it empties it, applies the pull request's migrations and loads the demo family, all through `scripts/preview-db.sh`, which refuses production.
+- **Never:** it runs no tests, is never a required check or a deploy input, and never blocks, cancels or delays a pull request, a deploy or the nightly run. A failed job says why on its own run and nothing else.
+- **Related work:** the stuck-transaction fix (`scripts/preview-db.sh` ends sessions idle in a transaction before a reset) shipped with WP-90; this job gets it by running that script.
+- **Open question for the owner, when it is built:** the test database is shared with the nightly e2e run and every other pull request's preview, so the last one to prepare it wins: a preview can lose its schema when another pull request's job or the nightly run resets it.
+- **Done when:**
+  - on a pull request that adds a migration, the job's run shows the reset, the pull request's migrations and the demo family loaded, and its preview signs in as the demo family and shows the new schema's screen without errors;
+  - `scripts/preview-db.test.sh` shows the job's path still refuses production's database;
+  - the job is in no branch protection rule and no deploy gate input: `scripts/deploy-gate.test.mjs` shows the gate ships with the job red or missing;
+  - a failed job leaves the pull request's four checks and its deploy unchanged.
+
+### WP-90 — Nightly e2e reliability
+**Phase:** P3 · **Size:** M · **Depends on:** WP-60, WP-88 · **Reqs:** NFR-14
+- Added at the owner's request (15 October), and done in the same change (D-110). The closed e2e speed-up work (branches `claude/e2e-speed-up` and `claude/e2e-tooling`) was built for e2e on every pull request; this takes from it only what still applies to the nightly run under D-108.
+- **Sign in once:** each Playwright worker signs in once per demo persona and reuses the session (`e2e/support/session.ts`, `pairBoard()` in `e2e/support/board.ts`): about 500 Auth sign-ins a run become a handful. `auth.spec.ts` still signs in itself.
+- **Hydrated first:** after every page load, e2e waits until React has hydrated the page (`<html data-hydrated>`), so no admin form is submitted as a plain browser form (the cause of WP-83's stalled saves).
+- **Stuck transactions:** `scripts/preview-db.sh` logs who waits on whom, ends sessions idle in a transaction for 30 s, and sets a 60 s idle-in-transaction limit on the test database, after its guard, so production is never touched.
+- **Infrastructure faults labelled:** a statement timeout, a connection reset, a Supabase or Auth 5xx, or the preview not being ready re-runs that test once and labels the cause in the run summary and in the "E2E red on main: <spec>" issue. An assertion failure never re-runs. Playwright's own retry is off.
+- **Specs:** browsers in the household's zone and locale, dates from the household's today (`e2e/support/day.ts`), school days a spec owns (`e2e/support/school.ts`), each test's own data, and time limits from measured runs.
+- **Test standard:** in `CLAUDE.md` ("Tests") and the deliver skill's definition of done; no e2e and no burn-in on a pull request (D-108).
+- **Done when:** `scripts/e2e-infra.test.mjs` tells infrastructure from assertion failures; `scripts/e2e-run.selftest.mjs` (CI `build`) shows an injected statement timeout, Supabase 5xx and Auth failure each re-run once, labelled, and pass, a second infrastructure failure red with its cause in the issue's list, and an assertion failure red and never re-run; `scripts/preview-db.test.sh` shows a session idle in a transaction ended, the waiter logged and the 60 s limit set; `e2e/ui/hydrated.spec.ts` shows pages marked hydrated; the sign-in's unit test shows Auth asked once more on 5xx and never after a refusal; the next nightly run is the proof on the real preview.
+- **As built:** `scripts/e2e-run.mjs`, `scripts/e2e-infra.mjs`, `scripts/e2e-ready.sh`, `.github/workflows/e2e.yml` (the run through `e2e-run.mjs`, the preview waited for, one issue per red spec with each test's kind and cause), `e2e/playwright.config.ts` (no retries, a 90 s limit, the household's zone), `e2e/support/session.ts`, `day.ts`, `school.ts`, `board.ts`, `test.ts`, the specs in `e2e/tests/`, `apps/web/app/hydrated.tsx`, the demo sign-in's second ask (`apps/web/app/(admin)/sign-in/actions.ts`), `scripts/preview-db.sh`; tests `scripts/e2e-infra.test.mjs`, `scripts/e2e-run.selftest.mjs`, `scripts/preview-db.test.sh`, `e2e/ui/hydrated.spec.ts`, `apps/web/app/(admin)/sign-in/actions.test.ts`. The UI suite's reminders layout check now waits for hydration and for the "Turn on reminders" button's fade-in before axe reads its contrast (it read 2.13:1 mid-fade, about 1 run in 40).
+- **Deferred:** the nightly run burns in no spec by itself: `scripts/e2e-run.mjs --burn-in` runs one five times, but nothing picks the changed specs for it. The idle-in-transaction limit is set on the test database, not on a role. Left out as moot since D-108: the scope classifier, the PR e2e queue and lock, any deploy-gate change and per-PR burn-in.
+### WP-91 — The Boards settings as collapsible sections
+**Phase:** P3 · **Size:** S · **Depends on:** WP-34, WP-75, WP-35 · **Reqs:** DEV-09
+- Added at the owner's request, 16 October: "Enhancement - boards settings. Similar to what we did with the meals and school lunch day selection sections, we need to make some of these sections expandable and collapsible. Each configured board should default collapsed. With the name and important meta data in the collapsed view. Once expanded there are neater sections with the settings and configurations for each board. Home Screen sections needs the same treatment and styling." Then, on 16 October: "add to the backlog as a new WP, yes the Home Screen setting sections within the boards settings". "Home Screen" is the household's home screen layout on **Boards** (`07` A11, B1.12), not the admin app's Home.
+- The scope the mockup shows (D-118), proposed by Claude Code; the owner confirms its details when they approve the mockup:
+  - **The fold:** WP-75's on Meals (`.fw-fold`, the browser's own `<details>`), so the two screens match.
+  - **Each board folded at first**, showing its name; **Awake** or **Asleep** with its next sleep or wake time; last seen; its theme and text size; its own layout or the household's; and, when Home would list it as not seen, that warning, visible while folded.
+  - **Opened, a board's grouped sections:** **Display** (theme, text size), **Sleep and wake**, **Calendars**, **Home screen**, and **Rename** and **Disconnect** set apart at the bottom (Disconnect is permanent, and still asks first).
+  - **The household's Home screen layout** folded to a one-line summary (for example "5 days · meals on · Goals, Waiting, Coming up · weather on"), opening to its form as now.
+  - **Add a board** folded to one button that opens the name and pairing code form; **Disconnected** folded to a count that opens the list.
+- Admin app only, not the board. Nothing is removed: every setting on Boards today stays, inside a fold.
+- **Mockup first:** Boards, folded and opened, on the demo family at 390 and 1280 px, approved by the owner before WP-91 is built. The fold audit's **Boards** page is that mockup, approved by the owner on 16 October ([Boards in the fold audit](https://claude.ai/artifact/XmqoDeW6RNFbov3dntr5F4#boards)).
+- **With the fold audit (D-120), approved by the owner with the mockup on 16 October:** WP-91 is built first and on its own, and lifts the fold out of Meals into one shared component (the fold, its summary lines and the warning on its header) that WP-75's screens and WP-93 to WP-97 use. Meals looks and works as it does now.
+- **Done when:** unit tests on a board's folded summary (awake or asleep with the next time, last seen, theme, text size, own or household layout, the not-seen warning by its **Tell me when** choice) and on the layout's one-line summary; on the preview, Alex opens Boards with every board folded, reads the Kitchen board's summary, opens it, changes its text size under **Display**, and finds the board open after the save; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, the not-seen warning shown while folded, and taps after hydration.
+- **As built:** no migration. **The shared fold:** `Fold` in `packages/ui/src/Fold.tsx` (exported from `@familywise/ui`): a card, an inner fold or a row, its header the chevron, the title, then its button or summary lines while closed, a row's facts, and a warning in amber with the sign that stays open or closed (`.fw-fold--row`, `.fw-fold__flag`, `.fw-fold__group`, `.fw-fold__apart` in `ui.css`); Meals' **Add to the plan**, **Copy last week** and the usual lunch week now use it, looking and working as before. **Boards:** `BoardsView` in `apps/web/app/(admin)/admin/devices/view.tsx`, used by the page and by `/dev/boards` (the mockup's made-up Kitchen, Hallway tablet and Playroom, two boards disconnected). `boardFacts()` and `seenWords()` in `apps/web/lib/board-facts.ts` (Awake or Asleep with the next time, or "Awake · no set times"; "seen 5 min ago", "seen 7 h ago", then the day and time; theme; text size; own or household layout; "Not seen for 2 days" by `boardMissed()`), `layoutSummary()` in `apps/web/lib/board-layout.ts`. Sleep and wake is a group in the board's fold (`sleep-form.tsx`). Every save on a board (theme, text size, sleep, calendars, layout, rename) sends Boards back with that board open (`backToBoard()` in `actions.ts`); a layout saved for every board opens **Home screen**; a disconnect opens **Disconnected**; the calendars notice shows in the board's fold. **Add a board** is open at first while there is no board. Tests: `apps/web/lib/board-facts.test.ts` (with midnight UTC and the end of daylight saving), `layoutSummary` in `board-layout.test.ts`, `Fold` in `packages/ui/src/components.test.tsx`; UI suite `e2e/ui/boards.spec.ts` (390 and 1280 px, Day and Evening: every fold closed then each opened by a tap after hydration, the warning while folded, no sideways scroll, 44 px targets, AA contrast; a board open after a save) and `e2e/ui/board-sleep.spec.ts`; e2e (nightly): `e2e/tests/board-fit.spec.ts` opens Boards with every board folded, reads the board's header, opens it, changes its text size under **Display** and finds it open after the save; `addBoardForm()` and `boardFold()` in `e2e/support/board.ts` open the folds for the specs that pair or set a board.
+
+### WP-92 — Approval alerts at once (a bug)
+**Phase:** P2 · **Size:** S · **Depends on:** WP-63 · **Reqs:** CHR-20, CHR-05
+- Added at the owner's request, 16 October: "Bug - Notifications. I'm not getting notifications from the app on my phone. My child completed a few chores today that required approval and the notifications were not delivered. I am set up to receive notifications." The owner's checks: **Approvals** is on in Reminders; **Send a test** arrives on their phone; their device is listed and on. Then, on the findings: "Homework was the 4:32 one. I prefer to have more instant notifications, that's the point of being notified", and the owner chose "Build instant alerts in WP-92, count all waiting".
+- **Found, from production, counts only:** both parents have reminders and **Approvals** on and a device each. Since the day before, the child made 20 check-offs on the board. 17 were on items left on the family setting, with the family's approval **off**: they counted at once and never waited, so no alert was due. 3 were on items that always need a parent's OK: on Thursday at 3:57 pm, one was in the alert at 4:00 pm, sent to both parents, accepted by the push service for both phones and approved by the household's owner 22 seconds after it went; at 4:32 pm the homework one was approved by the owner 33 seconds after the check-off, before the next 5-minute run, so nothing was still waiting and no alert was due; one, on Wednesday morning, was undone on the board 3 seconds after it was checked off. The job worked as D-88 designed it: the fault the owner saw was the 5-minute wait.
+- **The fix (D-119):** an approval alert goes **at once**: the database calls the reminders job for the household as a check-off starts waiting, a reward request is made or a lunch change waits, once per transaction, and a failed call never stops the change; the 5-minute run stays as the safety net, and a lock per household keeps the two from planning the same alert. Each alert **counts everything still waiting** for that parent, so the newest, which replaces the older on the lock screen, is never short. Who is told, quiet hours and the **Approvals** switch are as D-88.
+- **The owner's setting, unchanged:** with the family's approval off, only items set to **Always needs a parent's OK** wait, and so bring an alert. To be told about every check-off: **Settings** → **Family options** → **Check-offs**, choose **It waits for a parent to approve it**, then **Save**.
+- **Tooling, kept:** the read-only `reminders-report` workflow (Actions → reminders-report → Run workflow) says why each approval alert did or did not go, with households and parents numbered and nothing named.
+- **Done when:** pgTAP shows a check-off that starts waiting, a reward request and a lunch change each call the reminders job for their household at once, once per transaction, a check-off that counts at once calls nothing, a failed call leaves the check-off waiting, the plan holds the household's lock, and each alert counts all still waiting (opening Rewards when only requests wait); a check-off on a family-setting item with approval off brings no alert; Vitest shows the job endpoint runs only the household a call names; the report's test shows it runs read only, has every section and names no member, item or household; the nightly e2e counts one more check-off in the second alert.
+- **As built:** migration `20261016095117_approval_alerts_at_once.sql` (`private.alert_now()`, `private.alert_now_checkoff()`, `private.alert_now_request()` and their three triggers; `plan_reminders()` with `pg_advisory_xact_lock`; `claim_reminders()` wording all that waits); `apps/web/lib/jobs/run.ts` (`household` in the body); `.github/workflows/reminders-report.yml`, `scripts/reminders-report.sh`, `scripts/reminders-report.sql`; the user guide (A3). Tests: `supabase/tests/480_approval_alerts_at_once.test.sql` (14), `470_approval_alert_findings.test.sql` (8), `410_approval_alerts.test.sql` (its alerts now count all still waiting), `apps/web/lib/jobs/run.test.ts`, `scripts/reminders-report.test.sh` (CI `database`), `e2e/tests/reminders-job.spec.ts` (nightly).
+- **Open, the owner's to check:** after the deploy, the next check-off that waits brings an alert within seconds.
+
+### The fold audit — every admin screen folded, one standard
+
+- Added at the owner's request, 16 October (in the planner session): "So, we may need to go through all the the pages / screens and give them the styling treatment and expandable and collapsible sections similar to the meals and school lunches. There are a lot that could benefit from that. Could you have a work go through the app and mock up what that would look like."
+- **The mockup:** [the fold audit](https://claude.ai/artifact/XmqoDeW6RNFbov3dntr5F4). Every admin screen (`07` B1.1 to B1.16, and the item, member, goal and school year pages) on the made-up demo family, at 390 and 1280 px, Day and Evening, before and after, with a table per screen of each section: folded at first or open, what its folded header shows, and why. Admin app only.
+- **The standard (D-120):** WP-75's fold, made one shared component in WP-91. Folded: forms that add something (to their button), archived lists, history and logs, settings set once (to what they are set to), each calendar, school menu and board (to its facts), and Archive, Remove, Cancel and Disconnect set apart at the bottom. Open: what waits for a parent, a page's main list, an edit page's form, and short pages. A warning or a count waiting for a parent shows on the folded header. A fold comes back open after a save, an add or an error inside it. The older plain disclosures become the same fold.
+- **No change:** Home (it is the glance: **Needs you**, **Heads-up** and **Quick actions** stay open), **Settings** (its tiles already summarise), and the sign-in, setup and invite pages.
+- **The board (a separate note):** no board screen is folded. Its Home never scrolls (D-74) and is read from 2 m away. If one ever is, **Lunches** (B2.10) and a person's screen (B2.3) at Larger and Largest text come first, each with 56 px headers and its own mockup.
+- **The build, in this order:** WP-91 (Boards, with the shared fold), WP-93, WP-94, WP-95, WP-96, WP-97. The owner approved the mockup on 16 October, admin only, and confirmed D-120. It is each one's mockup, so none needs another unless the owner asks for a change; each is Queued until WP-91 is done, then Ready. "Next, in order" is the owner's to set.
+- **Nothing is removed:** every control on every page today stays, inside a fold or in the open.
+
+### WP-93 — Calendars, school menus and the meal library folded
+**Phase:** P3 · **Size:** M · **Depends on:** WP-91 · **Reqs:** NFR-18
+- Added at the owner's request with the fold audit (D-120). The two longest pages in the admin app first.
+- **Calendars:** each calendar folded to its colour, name, whose it is, "Not on the boards" if hidden, its sync and how many events are coming up; **Can't sync** on the header while folded. Opened: what's coming up, then **Edit** (name) and **Remove** (name) as folds. **Add a calendar** folded to its button.
+- **School menus:** each menu folded to its name, where it comes from, whose lunch it is, **Fetched** (or **Can't fetch** on the header) and the days it has in the next four weeks. Opened: its weeks, then **Load a file into** (name) and **Add a day to** (name) as folds, and **Fetch now**, **Rename** and **Remove** set apart. **Add a school menu** folded to its button.
+- **The meal library:** **Add a meal** folded to its button; **Our meals** open; **Archived** folded to its count.
+- **Done when:** unit tests on each folded header (a calendar's sync and count, a menu's source, fetch and days, the warnings); on the preview, Alex opens Calendars with every calendar folded, reads the Family calendar's header, opens it and saves an edit, and finds it open after the save; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, the warnings shown while folded, taps after hydration.
+
+### WP-94 — The set-up pages folded
+**Phase:** P3 · **Size:** M · **Depends on:** WP-91 · **Reqs:** NFR-18
+- Added at the owner's request with the fold audit (D-120). Pages set once and left alone: each section folds to what it is set to.
+- **Family options:** **The week** (the start day, and a change waiting to start), **Check-offs** (the choice in words), **Weather on the boards** (the place, unit and last reading; a failed read on the header), **Admins** (names and roles), **Invite an admin** (to its button, with the invites waiting on the header).
+- **School:** today's day types and **School years** open; **Lunch changes** (the cut-off), **Add a school year** (to its button) and **Archived** (its count) folded. **A school year's page:** its timeline open; **Breaks and days off** (how many and the next), **Terms**, **Who follows it**, **Dates and name** folded; **Archive** set apart.
+- **Tags:** **Add a tag** folded to its button; **Our tags** open; **Archived** folded.
+- **Reminders:** the state line and its buttons open; **My devices** (how many, on or off, last reached; a removed device on the header) and **When to remind me** (each setting in one line) folded.
+- **Health:** the verdict open; **Background jobs** (how many fine, any failing or late by name on the header), **Server errors** (how many in 30 days, the latest) and **Usage** (the highest share of a free plan; near a limit on the header) folded.
+- Home's **Add a day off…** takes the fold's look.
+- **Done when:** unit tests on each folded header; on the preview, Alex changes the check-offs choice on Family options and finds **Check-offs** open after the save, and opens Health with a failing job named on the folded header; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, the warnings shown while folded, taps after hydration.
+
+### WP-95 — Rewards, Goals and Members folded
+**Phase:** P3 · **Size:** M · **Depends on:** WP-91 · **Reqs:** NFR-18
+- Added at the owner's request with the fold audit (D-120).
+- **Rewards:** **Asked for**, **To give** and **The shop** open; the shop's **Archived** folded to its count; **Bonus points** folded (how many on and off, their names and points), with **Add a bonus** and **Archived bonuses** as folds inside; **Lately** folded (the latest settled request, how many).
+- **Goals:** goals in play open; **History** folded (redeemed, ended, cancelled), "Needs a look" on the header. **A goal's page:** the form open; **What happened** folded to its latest line; **Cancel** set apart.
+- **Members:** the list open; **Archived** folded. **A member's page:** the form open; **Points** folded to the balance and the last change, opening to **Change points** and the history; **Archive** set apart.
+- **Done when:** unit tests on each folded header; on the preview, Alex changes Maya's points and finds **Points** open after the save, and sees "Needs a look" on Goals' folded **History**; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
+
+### WP-96 — Chores, an item's page and the icon picker folded
+**Phase:** P3 · **Size:** M · **Depends on:** WP-91 · **Reqs:** NFR-18
+- Added at the owner's request with the fold audit (D-120).
+- **Chores:** the list open; **Filters** folded to what they are set to and how many items show, so a filtered list reads as filtered while folded.
+- **An item's page and the item form:** the main fields open; **More options** folded to how it is set (approval, days, lunch); **Coming up** (the next one and how many in two weeks), **Last 7 days** (done, missed, skipped) folded; **Archive** set apart.
+- **The icon picker,** in every form that has one (chores and tasks, rewards, goals, meals, tags): folded to **Chosen:** and the icon, opening to **Find an icon** and the groups.
+- **Done when:** unit tests on the filter summary and each folded header; on the preview, Alex filters Chores by Maya and reads it on the folded header, then changes an item's icon and saves; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
+
+### WP-97 — Today, My tasks and Insights folded
+**Phase:** P3 · **Size:** S · **Depends on:** WP-91 · **Reqs:** NFR-18
+- Added at the owner's request with the fold audit (D-120). Last, because it changes the pages used most.
+- **Today:** **Waiting for you** open. A part of the day (**Morning**, **After school**, **Evening**, **Anytime**) folds by itself to "6 of 6 done" and the first names once every item in it is done or skipped, and stays open while anything in it is still to do; **Overdue** stays open while it has anything in it. A done part opens for **Uncheck**.
+- **My tasks:** **Coming up** folded (how many in the next seven days, and the next one).
+- **Insights:** **Streaks** and **Done** open; **Day by day**, **Missed most**, **By tag** and **Checking** folded to their one-line finding; **History** folded.
+- **Done when:** unit tests on a part's done count and when it folds (done, skipped, sent back, waiting for a parent); on the preview, Alex marks the last open item of a part done and finds that part folded with its count, then opens it and unchecks one; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
 ### WP-85 — The test strategy and the Test catalogue
-**Phase:** P3 · **Size:** M · **Depends on:** — · **Reqs:** NFR-18, NFR-12, NFR-14
+**Phase:** P3 · **Size:** M · **Depends on:** — · **Reqs:** NFR-19, NFR-12, NFR-14
 - Added at the owner's request (15 October): "I think we need to develop an entire test strategy complete with documented rules and test cases. The strategy needs to think through what requires full e2e, what test cases are applicable for what changes, and the rules for that." And on the draft: "It also needs to contain all the tests and test cases and their relationship to items in the other documents. I want traceability back to requirements, user stories, backlog items, etc. This creates accountability and responsibility on your behalf to ensure we are testing the right things at the right time."
-- `08-test-strategy.md`, styled like `00`–`07`, from the draft the owner reviewed: the layers, the test types, the change classes and what each runs, the rules by class, what earns an e2e test, test cases, how tests are written, and what happens when one fails. A docs page of its own, **Test strategy**, republished with the others.
+- `08-test-strategy.md`, styled like `00`–`07`, from the draft the owner reviewed, brought up to date at the owner's request on 16 October ("Make sure this is up to date with the most recent strategy, plan, and information"): the layers, the test types, what runs when under D-108 (the fast checks gate every PR and deploy; e2e nightly only), the rules by type of change (docs only, test only, bug fix, small feature, large feature across capabilities, shared code), what earns an e2e test, test cases, how tests are written (D-110), and what happens when one fails. A docs page of its own, **Test strategy**, republished with the others. SPIKE-07, WP-98 and WP-99 (D-121) and WP-89 are referenced as planned, not duplicated.
 - The Test catalogue (`08` §9), generated, not hand-written: every test in the Vitest, node:test, UI suite, e2e and pgTAP layers, traced to the requirements, stories, backlog items and test cases it names; per requirement, item and story; a coverage summary; counts by layer and area. `04` §B gains a generated Tests column and §C a Tests line.
 - CI fails a change that adds a test gap, or a test naming an unknown ID (`08` §6.2). The gaps that exist today are known gaps; closing them is WP-86.
 - The deliver skill's definition of done gains the item's test cases and the regenerated catalogue; a PR lists the cases it adds and the catalogue's diff. The planner's status reports include the coverage.
@@ -1260,31 +1510,22 @@ flowchart LR
 
 | Case | Test case | Layer |
 |---|---|---|
-| NFR-18-a | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit |
-| NFR-18-b | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit |
-| NFR-18-c | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit |
-| NFR-18-d | A Done item's test case with no test fails the check; a case of an item not yet built may wait for its test | Unit |
-| NFR-18-e | `--fix` writes the catalogue to `08` and the Tests column and line to `04`, and the check fails while they are out of date | Unit |
-| NFR-18-f | `--fix` takes a closed gap off the known gaps and never adds one | Unit |
+| NFR-19-a | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit |
+| NFR-19-b | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit |
+| NFR-19-c | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit |
+| NFR-19-d | A Done item's test case with no test fails the check; a case of an item not yet built may wait for its test | Unit |
+| NFR-19-e | `--fix` writes the catalogue to `08` and the Tests column and line to `04`, and the check fails while they are out of date | Unit |
+| NFR-19-f | `--fix` takes a closed gap off the known gaps and never adds one | Unit |
 
-- **Done when:** `08` is in the docs index and on the docs site; each of NFR-18-a to NFR-18-f has a test (node:test `scripts/trace-catalogue.test.mjs`); `pnpm trace` fails on a new gap and on an unknown ID; the catalogue, `04` §B's Tests column and §C's Tests line are generated; the skills say who answers for it; and the PR's e2e is green.
-- As built: `docs/test_catalogue.py` reads every test by name: Vitest and node:test (`it`, `test`, an `.each` table once, with the titles of the `describe` blocks around it), the UI suite and e2e (`test`), and pgTAP (each assertion's description); counted as written, so a test in a loop counts once. `check_traceability.py` builds a `Catalogue` from it: unknown IDs and new gaps are errors, `--fix` writes `08` §9 between `<!-- catalogue -->` markers, `04` §B's Tests column (counts by layer) and §C's Tests line, and takes closed gaps off `docs/known-test-gaps.txt`; `--baseline-gaps` wrote the 93 known gaps once. The docs site gains the **Test strategy** page (`scripts/docs-site/pages/test-strategy.mjs`; `08` § references link across pages). node:test `scripts/trace-catalogue.test.mjs` runs the check on a copy of the docs and tests for each of NFR-18-a to NFR-18-f. Deliver skill: definition of done line 13, test cases first (step 3), `08` in the docs table, the PR's test cases and catalogue diff, and the catalogue in the conflict table; planner skill: the coverage line; the PR template's Test cases and catalogue section.
+- **Done when:** `08` is in the docs index and on the docs site; each of NFR-19-a to NFR-19-f has a test (node:test `scripts/trace-catalogue.test.mjs`); `pnpm trace` fails on a new gap and on an unknown ID; the catalogue, `04` §B's Tests column and §C's Tests line are generated; the skills say who answers for it; and the four fast checks are green on the PR.
+- As built: `docs/test_catalogue.py` reads every test by name: Vitest and node:test (`it`, `test`, an `.each` table once, with the titles of the `describe` blocks around it), the UI suite and e2e (`test`), and pgTAP (each assertion's description); counted as written, so a test in a loop counts once. `check_traceability.py` builds a `Catalogue` from it: unknown IDs and new gaps are errors, `--fix` writes `08` §9 between `<!-- catalogue -->` markers, `04` §B's Tests column (counts by layer) and §C's Tests line, and takes closed gaps off `docs/known-test-gaps.txt`; `--baseline-gaps` wrote the 104 known gaps once, on 16 October. The docs site gains the **Test strategy** page (`scripts/docs-site/pages/test-strategy.mjs`; `08` § references link across pages). node:test `scripts/trace-catalogue.test.mjs` runs the check on a copy of the docs and tests for each of NFR-19-a to NFR-19-f. Deliver skill: definition of done line 12, test cases first (step 3), `08` in the docs table, the PR's test cases and catalogue diff, and the catalogue in the conflict table; planner skill: the coverage line; the PR template's Test cases and catalogue section.
 
 ### WP-86 — Close the known test gaps
-**Phase:** P3 · **Size:** L · **Depends on:** WP-85 · **Reqs:** NFR-18
-- Added at the owner's request with WP-85: close every known test gap in `docs/known-test-gaps.txt` (`08` §9.6). When WP-85 was made there were 93 known gaps: 41 built stories no test names, and 52 Done items whose Done when has no test cases. Every built requirement had at least one test.
-- Also a plain fact when WP-85 was made: 419 of 2,174 tests named no ID, so they trace to nothing; each gets the ID of what it proves.
+**Phase:** P3 · **Size:** L · **Depends on:** WP-85 · **Reqs:** NFR-19
+- Added at the owner's request with WP-85: close every known test gap in `docs/known-test-gaps.txt` (`08` §9.6). When WP-85 was made (16 October) there were 104 known gaps: 42 built stories no test names, and 62 Done items whose Done when has no test cases. Every built requirement had at least one test.
+- Also a plain fact when WP-85 was made: 448 of 2,330 tests named no ID, so they trace to nothing; each gets the ID of what it proves.
 - A story's gap closes with a test that names it, at the lowest layer that shows it (`08` §1). A Done item's closes with its test cases in its §5 section, each proved by a test.
 - **Done when:** `docs/known-test-gaps.txt` lists no gap, `08` §9.1 shows none, and every test names at least one ID.
-
-### WP-87 — Smoke on the core loop, nightly speed checks, and the weekly failure report
-**Phase:** P3 · **Size:** M · **Depends on:** WP-85 · **Reqs:** NFR-14, NFR-12
-- Added at the owner's request with WP-85: the parts of the test strategy (`08`) that neither WP-84 nor WP-85 builds, recorded only. WP-84 builds e2e by area, burn-in, the full suite on `main` and nightly, and re-running only infrastructure faults (D-104, D-105).
-- Smoke after a deploy grows from the health check to the core loop, as the demo family on production: the board loads, a check-off lands, the admin app shows it (`08` §2).
-- Speed nightly: DEV-05's and the WP-08 list entry's measurements gathered from the nightly run, with their trend (`08` §2).
-- Run summaries list failures by class (assertion or infrastructure), with a weekly count of red runs by class, and push to green for a small change measured before and after (`08` §8).
-- A test with two infrastructure faults in two weeks is named in the weekly report, for a robustness fix (`08` §8).
-- **Done when:** the smoke check runs the core loop after a deploy and fails the deploy run when it breaks; the nightly run reports DEV-05's and the list entry's times; the weekly report lists red runs by class and the tests with two infrastructure faults in two weeks; each with a test.
 
 ---
 
@@ -1297,7 +1538,7 @@ flowchart LR
 | P1b | WP-15, WP-17, WP-18 | Rules engine is the long pole |
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
-| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-78 | Menu adapters and WP-49 are the Ls |
-| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-85 – WP-87 | WP-56, WP-58, WP-68, WP-72 and WP-86 are the Ls |
+| P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82, WP-92 | Menu adapters, WP-49 and WP-80 are the Ls |
+| P3 | SPIKE-06, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-85, WP-86, WP-88 – WP-91, WP-93 – WP-97 | WP-56, WP-58, WP-68, WP-72 and WP-86 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

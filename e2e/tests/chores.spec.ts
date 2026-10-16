@@ -3,6 +3,9 @@ import { appendFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '../support/test';
 import { openFromMenu } from '../support/settings';
+import { addDays, householdToday } from '../support/day';
+import { withSchoolDays } from '../support/school';
+import { signIn as signInAs } from '../support/session';
 
 // [CHR-01][CHR-09][CHR-10][CHR-11][CHR-13] The family list on the preview, as the demo family
 // (D-37): the seeded list, entering a family's list on a phone, tags, time of day, archive, and
@@ -19,14 +22,72 @@ function sql(query: string): string {
   }).trim();
 }
 
+// [D-110] The demo family's today, read once from the database in beforeAll (never the runner's
+// clock), and every date of the file counted from it.
+let today = '';
+let TODAY = '';
 /** A date in the demo family's time zone, `days` from today, as "YYYY-MM-DD". */
-function demoDate(days: number): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(
-    new Date(Date.now() + days * 86_400_000),
-  );
+const demoDate = (days: number) => addDays(today, days);
+
+// [D-110] Each test makes its own items and takes them away after itself, pass or fail (afterEach):
+// the ones it entered in the app (by title, made since it began) and any tag it added. Items a test
+// needs but doesn't test entering are put straight into the database, with a suffix of this run.
+const ALEX_USER = '0de00000-0000-4000-8000-0000000000a1';
+const RUN = Math.random().toString(36).slice(2, 6);
+let since = '';
+const made: string[] = [];
+const quoted = (s: string) => `'${s.replace(/'/g, "''")}'`;
+
+function removeMade() {
+  const titles = made.map(quoted).join(', ');
+  made.length = 0;
+  // An item with history is never deleted (D-46): it is archived, out of the lists.
+  if (titles)
+    sql(`delete from public.chore c where c.household_id = '${DEMO}' and c.title in (${titles})
+            and c.created_at >= '${since}' and c.id::text not like '${SEEDED_CHORES}'
+            and not exists (select from public.chore_occurrence o
+                              join public.chore_completion_event e on e.occurrence_id = o.id
+                             where o.chore_id = c.id);
+         update public.chore set archived_at = now()
+          where household_id = '${DEMO}' and title in (${titles}) and created_at >= '${since}'
+            and id::text not like '${SEEDED_CHORES}' and archived_at is null;`);
+  sql(`delete from public.tag where household_id = '${DEMO}' and created_at >= '${since}'
+         and id::text not like '${SEEDED_TAGS}'`);
 }
 
-const TODAY = `(now() at time zone 'America/New_York')::date`;
+interface Fixture {
+  title: string;
+  people: string[];
+  icon: string;
+  kind?: 'chore' | 'task';
+  time?: string;
+  weekdays?: number[];
+  onDate?: string;
+  assignment?: 'each' | 'shared';
+}
+
+/** An item as the app saves it (Alex made it, starting today), straight into the database. */
+function fixture(f: Fixture): string {
+  made.push(f.title);
+  const schedule = f.onDate
+    ? { freq: 'once', on_date: f.onDate }
+    : f.weekdays
+      ? { freq: 'weekly', by_weekday: f.weekdays }
+      : { freq: 'daily' };
+  const kind = f.kind ?? 'chore';
+  return sql(`with c as (
+                insert into public.chore (household_id, title, icon, kind, points, schedule, due_time,
+                                          created_by, start_date, assignment)
+                values ('${DEMO}', ${quoted(f.title)}, '${f.icon}', '${kind}', ${kind === 'task' ? 0 : 5},
+                        '${JSON.stringify(schedule)}'::jsonb, ${f.time ? `'${f.time}'` : 'null'},
+                        '${ALEX_USER}', ${TODAY}, '${f.assignment ?? (kind === 'task' ? 'shared' : 'each')}')
+                returning id),
+              a as (
+                insert into public.chore_assignee (household_id, chore_id, member_id)
+                select '${DEMO}', c.id, m.id from c join public.member m
+                    on m.household_id = '${DEMO}' and m.display_name in (${f.people.map(quoted).join(', ')}))
+              select id from c`);
+}
 
 function report(line: string) {
   console.log(line);
@@ -41,9 +102,7 @@ async function expectContrastOk(page: Page) {
 }
 
 async function signIn(page: Page, who: 'Alex' | 'Sam') {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: `Sign in as ${who}` }).click();
-  await page.waitForURL(/\/admin/);
+  await signInAs(page, who);
   await openFromMenu(page, 'Chores');
   await expect(page.getByRole('heading', { name: 'Chores and tasks', level: 1 })).toBeVisible();
 }
@@ -84,10 +143,31 @@ async function enter(form: Locator, e: Entry) {
   await pick(form, e.icon);
 }
 
-test.describe.configure({ mode: 'serial' });
+/**
+ * Saves the form and waits for its banner, timing the save (WP-83): the click's server action, its
+ * status and time, then the banner. A slow or refused save says which item and how long it took.
+ */
+async function save(page: Page, button: Locator, title: string, banner: string, times: string[]) {
+  const started = Date.now();
+  const answer = page.waitForResponse(
+    (r) => r.request().method() === 'POST' && !!r.request().headers()['next-action'],
+    { timeout: 30_000 },
+  );
+  await button.click();
+  const res = await answer;
+  const ms = Date.now() - started;
+  times.push(`${title} ${res.status()} in ${ms} ms`);
+  expect(res.status(), `saving ${title}: answered ${res.status()} in ${ms} ms`).toBeLessThan(400);
+  await expect(page.getByRole('status'), `saving ${title}: answered in ${ms} ms`).toHaveText(
+    banner,
+    { timeout: 15_000 },
+  );
+}
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 test.beforeAll(() => {
+  today = householdToday(db!);
+  TODAY = `'${today}'::date`;
   // A retry starts from the seeded list (supabase/seed.sql). An item another spec made and checked
   // off has history, which is never deleted (D-46): it stays archived, out of the lists.
   sql(`delete from public.chore c where c.household_id = '${DEMO}' and c.id::text not like '${SEEDED_CHORES}'
@@ -106,6 +186,13 @@ test.beforeAll(() => {
        update public.chore set archived_at = null
         where household_id = '${DEMO}' and id::text like '${SEEDED_CHORES}';`);
 });
+
+test.beforeEach(() => {
+  since = sql('select now()');
+  made.length = 0;
+});
+
+test.afterEach(() => removeMade());
 
 test('[CHR-01][CHR-13] Alex sees the family list, but not Sam’s private gift', async ({ page }) => {
   await signIn(page, 'Alex');
@@ -142,9 +229,13 @@ test('[CHR-13] Sam sees the gift they’re responsible for, marked private', asy
   await expectContrastOk(page);
 });
 
-test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in under five minutes', async ({
+test('[CHR-01][CHR-03][CHR-09][CHR-11] a parent enters the family’s list on a phone in under five minutes; each new item has its next two weeks planned', async ({
   page,
 }) => {
+  // [D-110] The 300 s entry budget is a requirement, so the limit sits above it (and the planning
+  // checks after it): a slow entry is reported by the budget, not by the test running out.
+  test.setTimeout(360_000);
+  const times: string[] = [];
   await page.setViewportSize({ width: 390, height: 844 });
   const started = Date.now();
   await signIn(page, 'Alex');
@@ -166,10 +257,16 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
     { title: 'Practice piano', people: ['Maya'], icon: 'music', time: '16:30' },
     { title: 'Put shoes away', people: ['Maya', 'Leo'], icon: 'shoes' },
   ];
+  made.push(...chores.map((c) => c.title), 'Renew car insurance', 'Order school uniform');
   for (const c of chores) {
     await enter(form, c);
-    await form.getByRole('button', { name: 'Save and add another' }).click();
-    await expect(page.getByRole('status')).toHaveText(`Saved ${c.title}. Add the next one.`);
+    await save(
+      page,
+      form.getByRole('button', { name: 'Save and add another' }),
+      c.title,
+      `Saved ${c.title}. Add the next one.`,
+      times,
+    );
     form = page.getByRole('form', { name: 'Add an item' });
   }
 
@@ -182,8 +279,13 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
     icon: 'calendar',
     onDate: demoDate(5),
   });
-  await form.getByRole('button', { name: 'Save and add another' }).click();
-  await expect(page.getByRole('status')).toHaveText('Saved Renew car insurance. Add the next one.');
+  await save(
+    page,
+    form.getByRole('button', { name: 'Save and add another' }),
+    'Renew car insurance',
+    'Saved Renew car insurance. Add the next one.',
+    times,
+  );
   form = page.getByRole('form', { name: 'Add an item' });
   await expect(form.getByLabel('Task', { exact: true })).toBeChecked();
   await enter(form, {
@@ -192,13 +294,19 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
     icon: 'backpack',
     onDate: demoDate(2),
   });
-  await form.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('Saved Order school uniform.');
+  await save(
+    page,
+    form.getByRole('button', { name: 'Save', exact: true }),
+    'Order school uniform',
+    'Saved Order school uniform.',
+    times,
+  );
 
   const seconds = Math.round((Date.now() - started) / 1000);
   report(
     `WP-08: the family list (six chores and two adult tasks) entered on a 390 px phone screen in ${seconds} s (target under 300 s).`,
   );
+  report(`WP-08 saves: ${times.join(', ')}`);
   expect(seconds).toBeLessThan(300);
 
   expect(
@@ -209,7 +317,7 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
                                 where a.chore_id = c.id), ',' order by c.title)
            from public.chore c
           where c.household_id = '${DEMO}' and c.id::text not like '${SEEDED_CHORES}'
-            and c.archived_at is null`),
+            and c.archived_at is null and c.created_at >= '${since}'`),
   ).toBe(
     [
       'Order school uniform:task:0:-:once:backpack:shared:Sam',
@@ -224,50 +332,49 @@ test('[CHR-01][CHR-09][CHR-11] a parent enters the family’s list on a phone in
   );
   expect(
     sql(
-      `select schedule::text from public.chore where household_id = '${DEMO}' and title = 'Pack school bag'`,
+      `select schedule::text from public.chore where household_id = '${DEMO}' and title = 'Pack school bag' and archived_at is null`,
     ),
   ).toBe('{"freq": "weekly", "by_weekday": [1, 2, 3, 4, 5]}');
   expect(
     sql(
-      `select schedule ->> 'on_date' from public.chore where household_id = '${DEMO}' and title = 'Order school uniform'`,
+      `select schedule ->> 'on_date' from public.chore where household_id = '${DEMO}' and title = 'Order school uniform' and archived_at is null`,
     ),
   ).toBe(demoDate(2));
-});
 
-test('[CHR-03][CHR-09] a new item has its next two weeks planned, for the people it’s for', async ({
-  page,
-}) => {
-  await signIn(page, 'Alex');
-  await expect(list(page).getByRole('listitem').filter({ hasText: 'Tidy toys' })).toContainText(
-    'Next: Today',
-  );
-  await page.getByRole('link', { name: 'Edit Tidy toys' }).click();
-  const comingUp = page.getByRole('list', { name: 'Coming up' });
-  await expect(comingUp.getByRole('listitem')).toHaveCount(15);
-  await expect(comingUp.getByRole('listitem').first()).toContainText('Today');
-  await expect(comingUp.getByRole('listitem').nth(1)).toContainText('Tomorrow');
-  await expect(comingUp.getByRole('listitem').first()).toContainText('Leo');
-  expect(
-    sql(`select count(*) || ':' || count(distinct o.due_date) || ':' || bool_or(o.due_date = ${TODAY}::date)::text
+  await test.step('[CHR-03][CHR-09] a new item has its next two weeks planned, for the people it’s for', async () => {
+    await page.goto('/admin/chores');
+    await expect(list(page).getByRole('listitem').filter({ hasText: 'Tidy toys' })).toContainText(
+      'Next: Today',
+    );
+    await page.getByRole('link', { name: 'Edit Tidy toys' }).click();
+    const comingUp = page.getByRole('list', { name: 'Coming up' });
+    await expect(comingUp.getByRole('listitem')).toHaveCount(15);
+    await expect(comingUp.getByRole('listitem').first()).toContainText('Today');
+    await expect(comingUp.getByRole('listitem').nth(1)).toContainText('Tomorrow');
+    await expect(comingUp.getByRole('listitem').first()).toContainText('Leo');
+    expect(
+      sql(`select count(*) || ':' || count(distinct o.due_date) || ':' || bool_or(o.due_date = ${TODAY}::date)::text
            from public.chore_occurrence o join public.chore c on c.id = o.chore_id
-          where c.household_id = '${DEMO}' and c.title = 'Tidy toys'
+          where c.household_id = '${DEMO}' and c.title = 'Tidy toys' and c.archived_at is null
             and o.due_date between ${TODAY} and ${TODAY} + 14`),
-  ).toBe('15:15:true');
+    ).toBe('15:15:true');
 
-  // Saturdays only: the plan follows the schedule.
-  await page.goto('/admin/chores');
-  await page.getByRole('link', { name: 'Edit Water the plants' }).click();
-  const saturdays = Number(
-    sql(
-      `select count(*) from generate_series(${TODAY}, ${TODAY} + 14, interval '1 day') d where extract(isodow from d) = 6`,
-    ),
-  );
-  await expect(page.getByRole('list', { name: 'Coming up' }).getByRole('listitem')).toHaveCount(
-    saturdays,
-  );
+    // Saturdays only: the plan follows the schedule.
+    await page.goto('/admin/chores');
+    await page.getByRole('link', { name: 'Edit Water the plants' }).click();
+    const saturdays = Number(
+      sql(
+        `select count(*) from generate_series(${TODAY}, ${TODAY} + 14, interval '1 day') d where extract(isodow from d) = 6`,
+      ),
+    );
+    await expect(page.getByRole('list', { name: 'Coming up' }).getByRole('listitem')).toHaveCount(
+      saturdays,
+    );
+  });
 });
 
 test('[CHR-12] a task entered after its date is open and shows as overdue', async ({ page }) => {
+  made.push('Return the library books');
   await signIn(page, 'Alex');
   await page.getByRole('link', { name: 'Add a task' }).click();
   const form = page.getByRole('form', { name: 'Add an item' });
@@ -289,6 +396,20 @@ test('[CHR-12] a task entered after its date is open and shows as overdue', asyn
 });
 
 test('[CHR-11] the list filters by time of day, person and kind', async ({ page }) => {
+  fixture({
+    title: `Pack school bag ${RUN}`,
+    people: ['Maya'],
+    icon: 'chore-pack',
+    time: '07:15',
+    weekdays: [1, 2, 3, 4, 5],
+  });
+  fixture({
+    title: `Order school uniform ${RUN}`,
+    people: ['Sam'],
+    icon: 'backpack',
+    kind: 'task',
+    onDate: demoDate(2),
+  });
   await signIn(page, 'Alex');
   const filters = page.getByRole('form', { name: 'Filter the list' });
   await filters.getByLabel('Time of day').selectOption('Morning');
@@ -312,6 +433,14 @@ test('[CHR-11] the list filters by time of day, person and kind', async ({ page 
 });
 
 test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', async ({ page }) => {
+  // About 15 server round trips (a tag, three saves, a rename, an archive, six page loads): up to
+  // about 40 s on a slow preview, so 3x that.
+  test.setTimeout(120_000);
+  const tidy = `Tidy toys ${RUN}`;
+  const shoes = `Put shoes away ${RUN}`;
+  fixture({ title: tidy, people: ['Leo'], icon: 'chore-toys', time: '19:00' });
+  fixture({ title: shoes, people: ['Maya', 'Leo'], icon: 'chore-shoes' });
+  const times: string[] = [];
   await signIn(page, 'Alex');
   await page.getByRole('link', { name: 'Tags', exact: true }).click();
   const add = page.getByRole('form', { name: 'Add a tag' });
@@ -322,14 +451,20 @@ test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', asy
   await expect(page.getByRole('status')).toHaveText('Saved Tidy-up.');
   await expectContrastOk(page);
 
-  for (const title of ['Tidy toys', 'Put shoes away', 'Make bed']) {
+  for (const title of [tidy, shoes, 'Make bed']) {
     await page.goto('/admin/chores');
     await page.getByRole('link', { name: `Edit ${title}` }).click();
     const form = page.getByRole('form', { name: 'Edit item' });
     await form.getByRole('checkbox', { name: 'Tidy-up' }).check();
-    await form.getByRole('button', { name: 'Save changes' }).click();
-    await expect(page.getByRole('status')).toHaveText(`Saved ${title}.`);
+    await save(
+      page,
+      form.getByRole('button', { name: 'Save changes' }),
+      title,
+      `Saved ${title}.`,
+      times,
+    );
   }
+  report(`CHR-10 saves: ${times.join(', ')}`);
 
   const filters = page.getByRole('form', { name: 'Filter the list' });
   await filters.getByLabel('Tag').selectOption('Tidy-up');
@@ -370,7 +505,7 @@ test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', asy
   await renamed.getByRole('button', { name: 'Archive Tidy-up time' }).click();
   await expect(page.getByRole('list', { name: 'Archived tags' })).toContainText('Tidy-up time');
   await page.goto('/admin/chores');
-  await page.getByRole('link', { name: 'Edit Tidy toys' }).click();
+  await page.getByRole('link', { name: `Edit ${tidy}` }).click();
   await expect(
     page.getByRole('form', { name: 'Edit item' }).getByRole('checkbox', { name: 'Tidy-up time' }),
   ).toHaveCount(0);
@@ -384,65 +519,71 @@ test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', asy
 test('[CHR-13] a private task stays with its creator, and reaches the other parent only if it’s theirs', async ({
   browser,
 }) => {
+  made.push('Plan the birthday surprise', 'Pick up the cake');
   const alex = await (await browser.newContext()).newPage();
-  await signIn(alex, 'Alex');
-  for (const [title, who] of [
-    ['Plan the birthday surprise', 'Alex'],
-    ['Pick up the cake', 'Sam'],
-  ] as const) {
-    await alex.getByRole('link', { name: 'Add a task' }).click();
-    const form = alex.getByRole('form', { name: 'Add an item' });
-    await enter(form, { title, people: [who], icon: 'gift', onDate: demoDate(4) });
-    await form.getByRole('switch', { name: 'Private' }).check();
-    await form.getByRole('button', { name: 'Save', exact: true }).click();
-    await expect(alex.getByRole('status')).toHaveText(`Saved ${title}.`);
-    await expect(list(alex).getByRole('listitem').filter({ hasText: title })).toContainText(
-      'Private',
-    );
-  }
-
   const sam = await (await browser.newContext()).newPage();
-  await signIn(sam, 'Sam');
-  await expect(list(sam)).toContainText('Pick up the cake');
-  await expect(list(sam)).not.toContainText('Plan the birthday surprise');
-  const surprise = sql(
-    `select id from public.chore where household_id = '${DEMO}' and title = 'Plan the birthday surprise'`,
-  );
-  expect((await sam.goto(`/admin/chores/${surprise}`))?.status()).toBe(404);
+  try {
+    await signIn(alex, 'Alex');
+    for (const [title, who] of [
+      ['Plan the birthday surprise', 'Alex'],
+      ['Pick up the cake', 'Sam'],
+    ] as const) {
+      await alex.getByRole('link', { name: 'Add a task' }).click();
+      const form = alex.getByRole('form', { name: 'Add an item' });
+      await enter(form, { title, people: [who], icon: 'gift', onDate: demoDate(4) });
+      await form.getByRole('switch', { name: 'Private' }).check();
+      await form.getByRole('button', { name: 'Save', exact: true }).click();
+      await expect(alex.getByRole('status')).toHaveText(`Saved ${title}.`);
+      await expect(list(alex).getByRole('listitem').filter({ hasText: title })).toContainText(
+        'Private',
+      );
+    }
 
-  // Sam can't make a family item private: only its creator (Alex) is offered the switch.
-  await sam.goto('/admin/chores');
-  await sam.getByRole('link', { name: 'Edit Make bed' }).click();
-  await expect(sam.getByRole('switch', { name: 'Private' })).toHaveCount(0);
-  await expect(
-    sam.getByText('Only the person who created this item can make it private.'),
-  ).toBeVisible();
+    await signIn(sam, 'Sam');
+    await expect(list(sam)).toContainText('Pick up the cake');
+    await expect(list(sam)).not.toContainText('Plan the birthday surprise');
+    const surprise = sql(
+      `select id from public.chore where household_id = '${DEMO}' and title = 'Plan the birthday surprise'
+          and created_at >= '${since}'`,
+    );
+    expect((await sam.goto(`/admin/chores/${surprise}`))?.status()).toBe(404);
+
+    // Sam can't make a family item private: only its creator (Alex) is offered the switch.
+    await sam.goto('/admin/chores');
+    await sam.getByRole('link', { name: 'Edit Make bed' }).click();
+    await expect(sam.getByRole('switch', { name: 'Private' })).toHaveCount(0);
+    await expect(
+      sam.getByText('Only the person who created this item can make it private.'),
+    ).toBeVisible();
+  } finally {
+    await alex.context().close();
+    await sam.context().close();
+  }
 });
 
 test('[CHR-01] an item is archived and restored, never deleted', async ({ page }) => {
+  const piano = `Practice piano ${RUN}`;
+  const id = fixture({ title: piano, people: ['Maya'], icon: 'chore-music', time: '16:30' });
   await signIn(page, 'Alex');
-  await page.getByRole('link', { name: 'Edit Practice piano' }).click();
-  await page.getByRole('button', { name: 'Archive Practice piano' }).click();
+  await page.getByRole('link', { name: `Edit ${piano}` }).click();
+  await page.getByRole('button', { name: `Archive ${piano}` }).click();
   // Each action redirects when it has saved; wait for that before reading or moving on.
   await page.waitForURL(/\/admin\/chores$/);
-  await expect(list(page)).not.toContainText('Practice piano');
+  await expect(list(page)).not.toContainText(piano);
 
   const filters = page.getByRole('form', { name: 'Filter the list' });
   await filters.getByLabel('Show').selectOption('Archived');
   await filters.getByRole('button', { name: 'Filter' }).click();
-  // Only the seeded items are restored before this spec; another spec's item with history stays here.
-  await expect(list(page).getByRole('listitem').filter({ hasText: 'Practice piano' })).toHaveCount(
-    1,
-  );
-  await page.getByRole('link', { name: 'Edit Practice piano' }).click();
-  await page.getByRole('button', { name: 'Restore Practice piano' }).click();
+  await expect(list(page).getByRole('listitem').filter({ hasText: piano })).toHaveCount(1);
+  await page.getByRole('link', { name: `Edit ${piano}` }).click();
+  await page.getByRole('button', { name: `Restore ${piano}` }).click();
   await page.waitForURL(/\/admin\/chores\?status=archived$/);
-  await expect(page.getByRole('link', { name: 'Edit Practice piano' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: `Edit ${piano}` })).toHaveCount(0);
   await page.goto('/admin/chores');
-  await expect(list(page)).toContainText('Practice piano');
+  await expect(list(page)).toContainText(piano);
   expect(
     sql(`select count(*) from public.audit_log where household_id = '${DEMO}' and entity_type = 'chore' and action = 'update'
-          and diff ? 'archived_at' and chore_id = (select id from public.chore where household_id = '${DEMO}' and title = 'Practice piano')`),
+          and diff ? 'archived_at' and chore_id = '${id}'`),
   ).toBe('2');
 });
 
@@ -472,16 +613,21 @@ test('[CHR-07][CHR-18] an item’s page shows its last seven days: each child’
 test('[CHR-18] several people: everyone does their own by default for a chore; switching to any one of them makes one a day', async ({
   page,
 }) => {
-  // Put shoes away (Maya and Leo) was entered above, as a chore: each their own.
+  // A chore for Maya and Leo, each their own (as the app saves it by default: the WP-08 test above
+  // checks that default), and one for Leo alone.
+  const shoes = `Put shoes away ${RUN}`;
+  const tidy = `Tidy toys ${RUN}`;
+  const id = fixture({ title: shoes, people: ['Maya', 'Leo'], icon: 'chore-shoes' });
+  fixture({ title: tidy, people: ['Leo'], icon: 'chore-toys', time: '19:00' });
   const perDay = () =>
-    sql(`select count(*) || ':' || count(distinct o.due_date) from public.chore_occurrence o join public.chore c on c.id = o.chore_id
-          where c.household_id = '${DEMO}' and c.title = 'Put shoes away' and o.due_date between ${TODAY} and ${TODAY} + 14`);
+    sql(`select count(*) || ':' || count(distinct o.due_date) from public.chore_occurrence o
+          where o.chore_id = '${id}' and o.due_date between ${TODAY} and ${TODAY} + 14`);
   expect(perDay()).toBe('30:15');
   await signIn(page, 'Alex');
-  await expect(
-    list(page).getByRole('listitem').filter({ hasText: 'Put shoes away' }),
-  ).toContainText('each their own');
-  await page.getByRole('link', { name: 'Edit Put shoes away' }).click();
+  await expect(list(page).getByRole('listitem').filter({ hasText: shoes })).toContainText(
+    'each their own',
+  );
+  await page.getByRole('link', { name: `Edit ${shoes}` }).click();
   await expect(
     page.getByRole('list', { name: 'Coming up' }).getByRole('listitem').first(),
   ).toContainText('each their own');
@@ -489,14 +635,14 @@ test('[CHR-18] several people: everyone does their own by default for a chore; s
   await expect(form.getByRole('radio', { name: 'Everyone does their own' })).toBeChecked();
   await form.getByRole('radio', { name: 'Any one of them' }).check();
   await form.getByRole('button', { name: 'Save changes' }).click();
-  await expect(page.getByRole('status')).toHaveText('Saved Put shoes away.');
+  await expect(page.getByRole('status')).toHaveText(`Saved ${shoes}.`);
   expect(perDay()).toBe('15:15');
-  await expect(
-    list(page).getByRole('listitem').filter({ hasText: 'Put shoes away' }),
-  ).not.toContainText('each their own');
+  await expect(list(page).getByRole('listitem').filter({ hasText: shoes })).not.toContainText(
+    'each their own',
+  );
 
   // With one person the question is not asked.
-  await page.getByRole('link', { name: 'Edit Tidy toys' }).click();
+  await page.getByRole('link', { name: `Edit ${tidy}` }).click();
   await expect(
     page.getByRole('form', { name: 'Edit item' }).getByRole('radio', { name: 'Any one of them' }),
   ).toHaveCount(0);
@@ -506,60 +652,69 @@ test('[CHR-19][US-321] a lunch-day item follows each child’s school lunch, and
   page,
 }) => {
   const title = 'Pack lunch e2e';
-  await signIn(page, 'Alex');
-  await page.getByRole('link', { name: 'Add a chore' }).click();
-  const form = page.getByRole('form', { name: 'Add an item' });
-  await enter(form, { title, people: ['Maya', 'Leo'], icon: 'backpack', time: '07:00' });
-  // Private, so it stays off the board other specs read.
-  await form.getByRole('switch', { name: 'Private' }).check();
-  await form.getByRole('radio', { name: 'Any one of them' }).check();
-  await form.getByText('More options').click();
-  await form.getByRole('combobox', { name: 'School lunch' }).selectOption('bring');
-  // Each child has their own lunch: choosing lunch days makes it everyone's own.
-  await expect(form.getByRole('radio', { name: 'Everyone does their own' })).toBeChecked();
-  await expect(form.getByRole('radio', { name: 'Any one of them' })).toBeDisabled();
-  await form.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText(`Saved ${title}.`);
-  await expect(list(page).getByRole('listitem').filter({ hasText: title })).toContainText(
-    'on days they bring lunch',
-  );
+  made.push(title);
+  const [maya, leo] = ['Maya', 'Leo'].map((name) =>
+    sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`),
+  ) as [string, string];
+  // [D-110] School days of its own over the two weeks, so there are lunch days in summer and over
+  // winter break too; taken away in the finally below, with Leo's lunch change.
+  const noSchoolDays = withSchoolDays(db!, [maya, leo], today, demoDate(14));
+  let day = '';
+  try {
+    await signIn(page, 'Alex');
+    await page.getByRole('link', { name: 'Add a chore' }).click();
+    const form = page.getByRole('form', { name: 'Add an item' });
+    await enter(form, { title, people: ['Maya', 'Leo'], icon: 'backpack', time: '07:00' });
+    // Private, so it stays off the board other specs read.
+    await form.getByRole('switch', { name: 'Private' }).check();
+    await form.getByRole('radio', { name: 'Any one of them' }).check();
+    await form.getByText('More options').click();
+    await form.getByRole('combobox', { name: 'School lunch' }).selectOption('bring');
+    // Each child has their own lunch: choosing lunch days makes it everyone's own.
+    await expect(form.getByRole('radio', { name: 'Everyone does their own' })).toBeChecked();
+    await expect(form.getByRole('radio', { name: 'Any one of them' })).toBeDisabled();
+    await form.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.getByRole('status')).toHaveText(`Saved ${title}.`);
+    await expect(list(page).getByRole('listitem').filter({ hasText: title })).toContainText(
+      'on days they bring lunch',
+    );
 
-  const chore = sql(
-    `select id from public.chore where household_id = '${DEMO}' and title = '${title}'`,
-  );
-  expect(
-    sql(`select assignment || ':' || lunch_days from public.chore where id = '${chore}'`),
-  ).toBe('each:bring');
-  // Over the next two weeks (to the 13th day, which a run just after midnight already has), for each
-  // child and day: planned exactly when they bring lunch. In one statement, so it holds whatever
-  // another spec does to the demo family's lunches meanwhile.
-  const mismatches = () =>
-    sql(`select count(*) from public.member m
+    const chore = sql(
+      `select id from public.chore where household_id = '${DEMO}' and title = '${title}' and created_at >= '${since}'`,
+    );
+    expect(
+      sql(`select assignment || ':' || lunch_days from public.chore where id = '${chore}'`),
+    ).toBe('each:bring');
+    // Over the next two weeks (to the 13th day, which a run just after midnight already has), for each
+    // child and day: planned exactly when they bring lunch. In one statement, so it holds whatever
+    // another spec does to the demo family's lunches meanwhile.
+    const mismatches = () =>
+      sql(`select count(*) from public.member m
            cross join generate_series(${TODAY}, ${TODAY} + 13, interval '1 day') d
           where m.household_id = '${DEMO}' and m.display_name in ('Maya', 'Leo')
             and (public.lunch_mode(m.id, d::date) is not distinct from 'bring')
                 <> exists (select from public.chore_occurrence o
                             where o.chore_id = '${chore}' and o.member_id = m.id and o.due_date = d::date)`);
-  expect(mismatches()).toBe('0');
-  expect(
-    Number(sql(`select count(*) from public.chore_occurrence where chore_id = '${chore}'`)),
-  ).toBeGreaterThan(0);
+    expect(mismatches()).toBe('0');
+    expect(
+      Number(sql(`select count(*) from public.chore_occurrence where chore_id = '${chore}'`)),
+    ).toBeGreaterThan(0);
 
-  // Leo's next school day changed to the other lunch: his plan follows at once.
-  const leo = sql(
-    `select id from public.member where household_id = '${DEMO}' and display_name = 'Leo'`,
-  );
-  const day =
-    sql(`select d::date from generate_series(${TODAY} + 1, ${TODAY} + 13, interval '1 day') d
+    // Leo's next school day changed to the other lunch: his plan follows at once.
+    day = sql(`select d::date from generate_series(${TODAY} + 1, ${TODAY} + 13, interval '1 day') d
                     where public.lunch_mode('${leo}', d::date) is not null order by d limit 1`);
-  expect(day).not.toBe('');
-  const was = sql(`select public.lunch_mode('${leo}', '${day}')`);
-  sql(`insert into public.lunch_override (household_id, member_id, lunch_date, mode)
+    expect(day, 'a school day for Leo in the next two weeks').not.toBe('');
+    const was = sql(`select public.lunch_mode('${leo}', '${day}')`);
+    sql(`insert into public.lunch_override (household_id, member_id, lunch_date, mode)
        values ('${DEMO}', '${leo}', '${day}', '${was === 'bring' ? 'buy' : 'bring'}')
        on conflict (member_id, lunch_date) do update set mode = excluded.mode`);
-  expect(mismatches()).toBe('0');
-  sql(`delete from public.lunch_override where member_id = '${leo}' and lunch_date = '${day}'`);
-  expect(mismatches()).toBe('0');
-
-  sql(`update public.chore set archived_at = now() where id = '${chore}'`);
+    expect(mismatches()).toBe('0');
+    sql(`delete from public.lunch_override where member_id = '${leo}' and lunch_date = '${day}'`);
+    expect(mismatches()).toBe('0');
+  } finally {
+    if (day)
+      sql(`delete from public.lunch_override where member_id = '${leo}' and lunch_date = '${day}'`);
+    // The item itself goes in afterEach.
+    noSchoolDays();
+  }
 });

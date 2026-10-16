@@ -83,6 +83,23 @@ export function planByDay(
   return out;
 }
 
+/**
+ * [MEAL-14][D-98] How full a day is, for its folded header (WP-75): `of` the meal types the day
+ * shows, `set` those with a meal, `complete` when every one has.
+ */
+export function daySet(
+  slots: Record<Slot, PlanEntry[]>,
+  shown: readonly Slot[] = SLOTS,
+): { set: number; of: number; complete: boolean } {
+  const set = shown.filter((s) => slots[s].length > 0).length;
+  return { set, of: shown.length, complete: shown.length > 0 && set === shown.length };
+}
+
+/** [MEAL-14] "2 of 4 set". */
+export function daySetWords(d: { set: number; of: number }): string {
+  return `${d.set} of ${d.of} set`;
+}
+
 /** What an entry says: the meal's name (a removed meal keeps it), or what was written in. */
 export function entryName(e: PlanEntry, meals: Map<string, MealRow>): string {
   return e.mealId ? (meals.get(e.mealId)?.name ?? 'A meal') : (e.freeText ?? '');
@@ -238,6 +255,8 @@ export function mealRefusal(error: { code?: string | null; hint?: string | null 
       return 'That’s the same week.';
     case 'not_allowed':
       return 'Only a parent of this family can do that.';
+    case 'not_found':
+      return 'That meal isn’t on the plan any more. Reload the page.';
     default:
       return 'That didn’t save. Try again in a moment.';
   }

@@ -6,6 +6,23 @@ import { expect, test, type Page } from '@playwright/test';
 // Change menu, "Add to the plan" (the library's meals for the chosen meal first, or something
 // written in), copying last week, the library, and the layout on a phone and a laptop in Day and
 // Evening. The same pages run signed in against the database in e2e/tests/meals.spec.ts.
+// [MEAL-14][D-98] The days, Add to the plan, Copy last week and the usual lunch week fold (WP-75):
+// all closed at first, opened on a tap, today outlined; a day's Add opens Add to the plan with the
+// day filled in. Taps wait for React to take the page over (D-110).
+
+// Entries of /dev/meals's week, by their ids there.
+const TACOS = 'f2e10000-0000-4000-8000-000000000003';
+const CHICKEN_SOUP = 'f2e10000-0000-4000-8000-000000000009';
+const FISH_FINGERS = 'f2e10000-0000-4000-8000-000000000010';
+const WED = '2026-10-14';
+
+/** Opens a page and waits for React to take it over (D-110). */
+async function open(page: Page, url: string) {
+  await page.goto(url);
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+}
+const week = (page: Page) => page.getByRole('list', { name: 'Week of Sun, Oct 11' });
+const day = (page: Page, date: string) => page.locator(`.fw-meal-day[data-date="${date}"]`);
 
 async function contrastOk(page: Page) {
   const { violations } = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze();
@@ -45,12 +62,22 @@ for (const [device, viewport] of [
       test(`[MEAL-01][NFR-11] the week and the library fit a ${device} in ${theme}: no sideways scroll, 44 px targets, AA contrast`, async ({
         page,
       }) => {
-        await page.goto(`/dev/meals?theme=${theme}`);
+        await open(page, `/dev/meals?theme=${theme}&open=${WED}`);
         await page
           .getByRole('group', { name: 'Wed, Oct 14 snack' })
           .locator('summary')
           .first()
           .click();
+        await fits(page, viewport.width);
+        await contrastOk(page);
+        // [MEAL-15] An entry opened for editing, in place (WP-76).
+        await page.goto(`/dev/meals?theme=${theme}&edit=${FISH_FINGERS}`);
+        const edit = page.getByRole('form', { name: 'Edit Fish fingers' });
+        await expect(edit).toBeVisible();
+        // On a laptop its day stacks its meals, so the form isn't squeezed into one meal's column.
+        expect((await edit.boundingBox())!.width).toBeGreaterThan(
+          Math.min(400, viewport.width * 0.7),
+        );
         await fits(page, viewport.width);
         await contrastOk(page);
         await page.goto(`/dev/meals?page=library&theme=${theme}`);
@@ -64,21 +91,23 @@ for (const [device, viewport] of [
 test('[MEAL-01][MEAL-08][US-701] the week: seven days of four meals, each in order, for everyone or one person', async ({
   page,
 }) => {
-  await page.goto('/dev/meals');
+  await page.goto(`/dev/meals?open=${WED}`);
   await expect(page.getByRole('heading', { name: 'Week of Sun, Oct 11' })).toBeVisible();
-  const week = page.getByRole('list', { name: 'Week of Sun, Oct 11' });
-  await expect(
-    week.getByRole('listitem').filter({ has: page.getByRole('heading', { level: 3 }) }),
-  ).toHaveCount(7);
-  await expect(week.getByRole('heading', { level: 3 })).toHaveText([
-    'Sun, Oct 11',
-    'Mon, Oct 12',
-    'Tue, Oct 13',
-    'Wed, Oct 14Today',
-    'Thu, Oct 15',
-    'Fri, Oct 16',
-    'Sat, Oct 17',
+  const days = week(page).locator(':scope > li');
+  await expect(days).toHaveCount(7);
+  await expect(days.locator(':scope > details > summary')).toHaveText([
+    'SundayOct 111 of 4 set',
+    'MondayOct 122 of 4 set',
+    'TuesdayOct 132 of 4 set',
+    'WednesdayOct 14Today3 of 4 set',
+    'ThursdayOct 151 of 4 set',
+    'FridayOct 161 of 4 set',
+    'SaturdayOct 17',
   ]);
+  // [MEAL-14] Every meal of Saturday set: a check instead of the count.
+  await expect(day(page, '2026-10-17').getByRole('img', { name: 'All set' })).toBeVisible();
+  for (const d of ['2026-10-12', '2026-10-13'])
+    await day(page, d).locator(':scope > details > summary').click();
   const snack = page.getByRole('group', { name: 'Wed, Oct 14 snack' });
   await expect(snack.getByRole('listitem')).toHaveCount(2);
   await expect(snack.getByRole('listitem').first()).toContainText('Apple slicesMaya');
@@ -94,7 +123,8 @@ test('[MEAL-01][MEAL-08][US-701] the week: seven days of four meals, each in ord
     page.getByRole('group', { name: 'Wed, Oct 14 dinner' }).getByRole('listitem').last(),
   ).toContainText('Fish fingersMayaLeo');
   // Each meal of each day can be added to.
-  await expect(page.getByRole('link', { name: /^Add to / })).toHaveCount(28);
+  await expect(page.locator('a.fw-meal-slot__add')).toHaveCount(28);
+  await day(page, '2026-10-15').locator(':scope > details > summary').click();
   await expect(page.getByRole('link', { name: 'Add to Thu, Oct 15 breakfast' })).toHaveAttribute(
     'href',
     '/admin/meals?week=2026-10-11&day=2026-10-15&slot=breakfast#add',
@@ -109,10 +139,10 @@ test('[MEAL-01][MEAL-08][US-701] the week: seven days of four meals, each in ord
   );
 });
 
-test('[MEAL-08] Change: earlier, later or remove, as the entry’s place allows', async ({
+test('[MEAL-08][MEAL-15] Change: earlier and later as the entry’s place allows, then Edit and Remove', async ({
   page,
 }) => {
-  await page.goto('/dev/meals');
+  await open(page, `/dev/meals?open=${WED}`);
   const snack = page.getByRole('group', { name: 'Wed, Oct 14 snack' });
   await snack.getByText('Change', { exact: true }).first().click();
   await expect(snack.getByRole('button', { name: 'Move Apple slices later' })).toBeVisible();
@@ -123,10 +153,74 @@ test('[MEAL-08] Change: earlier, later or remove, as the entry’s place allows'
   await snack.getByText('Change', { exact: true }).nth(1).click();
   await expect(snack.getByRole('button', { name: 'Move Crackers earlier' })).toBeVisible();
   await expect(snack.getByRole('button', { name: 'Move Crackers later' })).toHaveCount(0);
-  // A meal alone in its slot is only removed.
-  const dinner = page.getByRole('group', { name: 'Sun, Oct 11 dinner' });
-  await dinner.getByText('Change', { exact: true }).click();
-  await expect(dinner.getByRole('button')).toHaveText(['Remove']);
+  // [MEAL-15] Each entry's Change offers Edit, which opens it in place, and Remove (WP-76).
+  const dinner = page.getByRole('group', { name: 'Wed, Oct 14 dinner' });
+  await dinner.getByText('Change', { exact: true }).first().click();
+  await expect(
+    dinner.locator('details[open]').getByRole('link').or(dinner.locator('details[open] button')),
+  ).toHaveText(['Later', 'Edit', 'Remove']);
+  await expect(
+    dinner.getByRole('link', { name: 'Edit Chicken soup, Wed, Oct 14 dinner' }),
+  ).toHaveAttribute(
+    'href',
+    `/admin/meals?week=2026-10-11&edit=${CHICKEN_SOUP}#entry-${CHICKEN_SOUP}`,
+  );
+  // A meal alone in its slot has the two: Edit and Remove.
+  await day(page, '2026-10-11').locator(':scope > details > summary').click();
+  const sunday = page.getByRole('group', { name: 'Sun, Oct 11 dinner' });
+  await sunday.getByText('Change', { exact: true }).click();
+  await expect(
+    sunday.locator('details[open]').getByRole('link').or(sunday.locator('details[open] button')),
+  ).toHaveText(['Edit', 'Remove']);
+  await expect(page.getByRole('form', { name: /^Edit / })).toHaveCount(0);
+});
+
+test('[MEAL-15][US-701] Edit opens the entry’s form filled with what was saved: written in, for two', async ({
+  page,
+}) => {
+  await page.goto(`/dev/meals?edit=${FISH_FINGERS}`);
+  const form = page
+    .getByRole('group', { name: 'Wed, Oct 14 dinner' })
+    .getByRole('form', { name: 'Edit Fish fingers' });
+  await expect(form.getByRole('combobox', { name: 'Day' })).toHaveValue('2026-10-14');
+  await expect(form.getByRole('combobox', { name: 'Meal' })).toHaveValue('dinner');
+  await expect(form.getByRole('radio', { name: 'Something else' })).toBeChecked();
+  await expect(form.getByRole('textbox', { name: 'Something else' })).toHaveValue('Fish fingers');
+  const who = form.getByRole('group', { name: 'For' });
+  await expect(who.getByRole('checkbox', { checked: true })).toHaveCount(2);
+  await expect(who.getByRole('checkbox', { name: 'Maya' })).toBeChecked();
+  await expect(who.getByRole('checkbox', { name: 'Leo' })).toBeChecked();
+  await expect(who).toContainText('For Maya and Leo.');
+  await expect(form.getByRole('textbox', { name: 'Note (optional)' })).toHaveValue('');
+  await expect(form.locator('input[name=id]')).toHaveValue(FISH_FINGERS);
+  // Save works once the page is hydrated; Cancel goes back to the slot.
+  await expect(form.getByRole('button', { name: 'Save changes' })).toBeEnabled();
+  await expect(form.getByRole('link', { name: 'Cancel' })).toHaveAttribute(
+    'href',
+    '/admin/meals?week=2026-10-11&open=2026-10-14#2026-10-14-dinner',
+  );
+  // [MEAL-14] The entry's day opened by itself; the page's own "Add to the plan" is still there,
+  // folded and empty.
+  await expect(day(page, WED).locator(':scope > details')).toHaveAttribute('open', '');
+  await expect(page.locator('#add details')).not.toHaveAttribute('open');
+  await expect(page.locator('#add input[name=member][value=everyone]')).toBeChecked();
+});
+
+test('[MEAL-15][US-701] Edit opens the entry’s form filled with what was saved: a library meal for everyone, with a note', async ({
+  page,
+}) => {
+  await page.goto(`/dev/meals?edit=${TACOS}`);
+  const form = page.getByRole('form', { name: 'Edit Tacos' });
+  await expect(form.getByRole('combobox', { name: 'Day' })).toHaveValue('2026-10-12');
+  await expect(form.getByRole('combobox', { name: 'Meal' })).toHaveValue('dinner');
+  await expect(form.getByRole('radio', { name: 'From the library' })).toBeChecked();
+  await expect(form.getByRole('combobox', { name: 'From the library' })).toHaveValue(
+    'f2d00000-0000-4000-8000-000000000001',
+  );
+  await expect(form.getByRole('checkbox', { name: 'Everyone' })).toBeChecked();
+  await expect(form.getByRole('textbox', { name: 'Note (optional)' })).toHaveValue(
+    'Make extra for lunch',
+  );
 });
 
 test('[MEAL-01][MEAL-02] Add to the plan: the library’s meals for the meal chosen first, or something written in', async ({
@@ -189,11 +283,123 @@ test('[MEAL-10][US-708] Add to the plan: Everyone, or a tick per person; every o
 test('[MEAL-03][US-702] copy last week: keep or replace what this week already has', async ({
   page,
 }) => {
-  await page.goto('/dev/meals');
+  await open(page, '/dev/meals');
+  await page.getByRole('region', { name: 'Copy last week' }).locator('summary').click();
   const copy = page.getByRole('form', { name: 'Copy last week' });
   await expect(copy.getByRole('radio', { name: 'Keep it' })).toBeChecked();
   await expect(copy.getByRole('radio', { name: 'Replace it with last week’s' })).not.toBeChecked();
   await expect(copy.getByRole('button', { name: 'Copy last week here' })).toBeVisible();
+});
+
+for (const width of [390, 1280]) {
+  for (const theme of ['day', 'evening'] as const) {
+    test(`[MEAL-14][NFR-11] the days fold at ${width} px, ${theme}: all closed, then today opened; outlined either way, nothing sideways, 44 px targets, AA contrast`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await open(page, `/dev/meals?theme=${theme}`);
+      await expect(week(page).locator(':scope > li > details')).toHaveCount(7);
+      await expect(week(page).locator(':scope > li > details[open]')).toHaveCount(0);
+      // Closed, a day shows its weekday, date and X of Y set; nothing of its meals.
+      await expect(day(page, '2026-10-12').locator(':scope > details > summary')).toHaveText(
+        'MondayOct 122 of 4 set',
+      );
+      await expect(page.getByRole('group', { name: 'Mon, Oct 12 dinner' })).toBeHidden();
+      const today = day(page, WED);
+      await expect(today).toHaveAttribute('data-today', 'true');
+      const outlined = () =>
+        today.evaluate((el) => {
+          const s = getComputedStyle(el);
+          return `${s.borderTopWidth} ${s.borderTopStyle} ${s.borderTopColor}`;
+        });
+      const closed = await outlined();
+      expect(closed, 'today outlined, closed').toMatch(/^2px solid /);
+      await fits(page, width);
+      await contrastOk(page);
+      await today.locator(':scope > details > summary').click();
+      const dinner = page.getByRole('group', { name: 'Wed, Oct 14 dinner' });
+      await expect(dinner).toContainText('Chicken soup');
+      await expect(dinner.getByRole('link', { name: 'Add to Wed, Oct 14 dinner' })).toBeVisible();
+      await expect(dinner.getByText('Change', { exact: true }).first()).toBeVisible();
+      expect(await outlined(), 'today outlined, open').toBe(closed);
+      await fits(page, width);
+      await contrastOk(page);
+    });
+
+    test(`[MEAL-14][MEAL-04] Add to the plan, Copy last week and the usual week at ${width} px, ${theme}: closed at first, opened on a tap`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await open(page, `/dev/meals?theme=${theme}`);
+      const add = page.getByRole('region', { name: 'Add to the plan' });
+      const copy = page.getByRole('region', { name: 'Copy last week' });
+      const usual = page.getByRole('region', { name: 'School lunch' }).locator('details.fw-fold');
+      // In order: the days, Add to the plan, Copy last week, then School lunch.
+      const order = await page
+        .locator('main > section')
+        .evaluateAll((s) => s.map((x) => x.querySelector('h1, h2')?.textContent ?? ''));
+      expect(order).toEqual(['Meals', 'Add to the plan', 'Copy last week', 'School lunch']);
+      // Closed: Add to the plan its header and Add a meal, Copy last week its header, the usual
+      // week a line per child.
+      await expect(add.locator('details')).not.toHaveAttribute('open');
+      await expect(add.locator('summary')).toHaveText('Add to the planAdd a meal');
+      await expect(add.getByRole('form', { name: 'Add to the plan' })).toBeHidden();
+      await expect(copy.locator('details')).not.toHaveAttribute('open');
+      await expect(copy.getByRole('form', { name: 'Copy last week' })).toBeHidden();
+      await expect(usual).not.toHaveAttribute('open');
+      await expect(usual.locator('.fw-fold__sum > span')).toHaveText([
+        'Leo: Mon Bring · Tue Bring · Wed Buy · Thu Bring · Fri Bring',
+        'Maya: Mon Bring · Tue Bring · Wed Bring · Thu Bring · Fri Buy',
+      ]);
+      await expect(page.getByRole('form', { name: 'Leo’s usual lunches' })).toBeHidden();
+      await fits(page, width);
+      await contrastOk(page);
+      // Each opens on a tap.
+      await add.locator('summary').click();
+      await expect(add.getByRole('form', { name: 'Add to the plan' })).toBeVisible();
+      await expect(add.getByText('Add a meal')).toBeHidden();
+      await copy.locator('summary').click();
+      await expect(copy.getByRole('button', { name: 'Copy last week here' })).toBeVisible();
+      await usual.locator('summary').click();
+      await expect(page.getByRole('form', { name: 'Leo’s usual lunches' })).toBeVisible();
+      await expect(usual.locator('.fw-fold__sum')).toBeHidden();
+      await fits(page, width);
+      await contrastOk(page);
+    });
+  }
+}
+
+test('[MEAL-14][US-711] Add on a day opens Add to the plan with that day and meal filled in', async ({
+  page,
+}) => {
+  await open(page, '/dev/meals');
+  await day(page, '2026-10-15').locator(':scope > details > summary').click();
+  const link = page.getByRole('link', { name: 'Add to Thu, Oct 15 lunch' });
+  await expect(link).toHaveAttribute(
+    'href',
+    '/admin/meals?week=2026-10-11&day=2026-10-15&slot=lunch#add',
+  );
+  // /dev/meals stands in for /admin/meals with the same day and meal (?add=1 is Wednesday's snack).
+  await open(page, '/dev/meals?add=1');
+  const add = page.getByRole('region', { name: 'Add to the plan' });
+  await expect(add.locator('details')).toHaveAttribute('open', '');
+  const form = add.getByRole('form', { name: 'Add to the plan' });
+  await expect(form.getByRole('combobox', { name: 'Day' })).toHaveValue(WED);
+  await expect(form.getByRole('combobox', { name: 'Meal' })).toHaveValue('snack');
+  // The days stay folded.
+  await expect(week(page).locator(':scope > li > details[open]')).toHaveCount(0);
+});
+
+test('[MEAL-14] a day opened by the page: the one just added to or changed', async ({ page }) => {
+  await open(page, `/dev/meals?open=2026-10-13`);
+  await expect(week(page).locator(':scope > li > details[open]')).toHaveCount(1);
+  await expect(day(page, '2026-10-13').locator(':scope > details')).toHaveAttribute('open', '');
+  await expect(page.getByRole('group', { name: 'Tue, Oct 13 lunch' })).toContainText(
+    'Leftover tacos',
+  );
+  // A day that isn't this week's opens nothing.
+  await open(page, `/dev/meals?open=2026-11-13`);
+  await expect(week(page).locator(':scope > li > details[open]')).toHaveCount(0);
 });
 
 test('[MEAL-02] the library: each meal, what it’s good for and its recipe; archived ones aside', async ({
@@ -216,41 +422,4 @@ test('[MEAL-02] the library: each meal, what it’s good for and its recipe; arc
   await expect(
     page.getByRole('form', { name: 'Edit Tacos' }).getByRole('checkbox', { name: 'Dinner' }),
   ).toBeChecked();
-});
-
-test('[MEAL-04][US-703] school lunch: each child’s school days, buy or bring, a changed day marked; no lunch on a day off or the weekend', async ({
-  page,
-}) => {
-  await page.goto('/dev/meals');
-  const lunch = page.getByRole('region', { name: 'School lunch' });
-  const leo = lunch.getByRole('row', { name: /^Leo/ });
-  await expect(leo.getByRole('cell')).toHaveText([
-    'Weekend',
-    'Bring',
-    // [MEAL-11] Then, closed, the form a parent picks the day's lunch with (WP-49).
-    /^BuyChangedChicken Nuggets, Carrot Sticks, ApplePick/,
-    // [MENU-06] A line a section, the section's name first (WP-64).
-    /^BuyEntree: Cheese Pizza or Turkey sandwich with PretzelsFruits & Vegetables: Green Beans, OrangeMilk: 1% milk or Chocolate milkPick/,
-    'No school',
-    'Bring',
-    'Weekend',
-  ]);
-  await expect(
-    leo.getByRole('button', { name: 'Leo, Tue, Oct 13: buy (changed). Change to bring' }),
-  ).toHaveAttribute('value', 'f2000000-0000-4000-8000-000000000002:2026-10-13:bring');
-  await expect(lunch.getByRole('row', { name: /^Maya/ }).getByRole('button')).toHaveCount(4);
-  const usual = lunch.getByRole('form', { name: 'Maya’s usual lunches' });
-  await expect(usual.getByRole('combobox', { name: 'Friday' })).toHaveValue('buy');
-  await expect(usual.getByRole('combobox', { name: 'Monday' })).toHaveValue('bring');
-  // [MEAL-05][MENU-01] Her school menu, and what it serves on her buy day (WP-27).
-  await expect(usual.getByRole('combobox', { name: 'School menu' })).toHaveValue(
-    'f2f00000-0000-4000-8000-000000000001',
-  );
-  await expect(lunch.getByRole('row', { name: /^Maya/ }).getByRole('cell').nth(5)).toHaveText(
-    /^BuyFish Tacos, Corn, OrangePick/,
-  );
-  await expect(lunch.getByRole('link', { name: 'School menus' })).toHaveAttribute(
-    'href',
-    '/admin/meals/menus',
-  );
 });

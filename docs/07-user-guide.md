@@ -1,7 +1,16 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
-> v0.24: the test strategy's story (US-913) left out of the guide, with its reason: it is for the people building FamilyWise (WP-85).
+> v0.33: the test strategy's story (US-913) left out of the guide, with its reason: it is for the people building FamilyWise (WP-85).
+> v0.32: the Boards settings folded (WP-91, D-118, D-120): each board folded to its name and facts, with the not-seen warning on its header, opened to **Display**, **Sleep and wake**, **Calendars**, **Home screen**, then **Name and connection** set apart; the household's **Home screen**, **Add a board** and **Disconnected** folded (A16, B1.12).
+> v0.31: the Pi's screen helper starts with the Pi on any desktop, and installs over SSH too (WP-34 follow-up): A16 and troubleshooting.
+> v0.30: approvals alerts within seconds, counting all that waits for you, and which check-offs bring one: only those that wait for you, so with approval off, only items set to **Always needs a parent's OK** (WP-92, D-119; A3).
+> v0.29: sleep and wake per board (WP-34, D-116, D-117): A16, Boards (B1.12), the board asleep (B2), the rules, troubleshooting and questions.
+> v0.28: a goal's end date that can be cleared (WP-79, D-115): **Ends on a date** with the date and **Clear**, on an iPhone too; a started goal's end date added, moved or taken off; a reached goal keeps its rules and dates (A7, B1, B3).
+> v0.27: the meal week folded (WP-75, D-114): each day of **Meals** closed at first with "2 of 4 set" or a check, then **Add to the plan**, **Copy last week** and the usual lunch week, each closed until tapped (A15, B1.15).
+> v0.26: the lunch picks one tap from Home (WP-73, D-113): **School lunches** on Home says whose days still need a choice, and **Pick lunches** opens the lunch week on the child chosen last (A2, B1.1).
+> v0.25: the lunch week as a list of days (WP-74, D-112): **School lunch** on **Meals** shows one child's Monday to Friday, each day closed at first with a check once it's set, opened to Buy or Bring and the day's menu (A15, B1).
+> v0.24: Edit on a planned meal (WP-76, D-111): **Change** offers **Edit**, which opens the meal filled in, and **Remove**.
 > v0.23: the board on a tablet such as an iPad, and at **Larger** or **Largest**: each chore's points under its own title, and the whole of every word in the rail (A14).
 > v0.22: a menu's "and" joins a side like "with" ("Fish sticks with Fries and Coleslaw"); a parent's lunch picks on **Meals** keep the entree when a milk is ticked; the board picks up a new version by itself when nobody is using it (WP-78, D-99).
 > v0.21: next week's lunches picked at the board (WP-49, D-95): **Lunches** on the board, a child's changes waiting on **Today**, picks on **Meals**, the cut-off on **School**, an item that opens Lunches (A2, A15, B1.2, B1.5, B1.10, B1.15, B2.9, B2.10).
@@ -63,6 +72,7 @@ Button and label names are in **bold**, exactly as the app shows them. The pictu
   - [A13 Weather on the board](#a13-weather-on-the-board)
   - [A14 Screens and text size](#a14-screens-and-text-size)
   - [A15 Planning meals](#a15-planning-meals)
+  - [A16 Sleep and wake](#a16-sleep-and-wake)
 - [Part B — User Manual](#part-b--user-manual)
   - [B1 The admin app, page by page](#b1-the-admin-app-page-by-page)
   - [B2 The board, screen by screen](#b2-the-board-screen-by-screen)
@@ -159,7 +169,7 @@ Only an adult can have a sign-in. If your record says Child, open it on **Member
 A board is any screen showing FamilyWise's board page: normally the wall touchscreen. It doesn't sign in like a parent. Instead, you pair it once with a code.
 
 1. On the board's screen, open FamilyWise's board page (the address ending in `/board`). It starts on **Pair this board**, with a keypad.
-2. On your phone, go to **Boards**. Under **Add a board**, enter a **Board name** (for example "Kitchen") and choose **Get a pairing code**.
+2. On your phone, go to **Boards**. Tap **Add a board** to open it, enter a **Board name** (for example "Kitchen") and choose **Get a pairing code**.
 3. The code has 8 digits, shown as two groups of four. It works once, for 10 minutes.
 4. Type the code on the board's keypad and choose **Pair this board**.
 
@@ -168,7 +178,7 @@ The board shows the family's day at once. From then on it keeps itself signed in
 > **Note:** If the board is a browser where a parent is signed in to the admin app, pairing signs that browser out of the admin app.
 
 ### A2 A parent's day
-<!-- covers: US-109 US-306 US-307 US-309 US-310 US-316 -->
+<!-- covers: US-109 US-306 US-307 US-309 US-310 US-316 US-709 -->
 
 **What this is.** The admin app's **Today** and **My tasks** pages. **When.** Whenever you want to see how the day is going, settle what's waiting for you, or put something right. **How.** Open **Today** from the menu.
 
@@ -178,7 +188,7 @@ The board shows the family's day at once. From then on it keeps itself signed in
 
 **Home** is the first page you see. It shows what needs you, then the things you do most, a tap away.
 
-![Home on a laptop: Needs you lists 2 check-offs wait for you (Review), 1 reward request waits for you (Decide), and School can't sync (Calendars); Heads-up says Den hasn't been seen for 3 days (Boards) and No school menu for next week yet (School menus). Below, Quick actions: Add a chore, Add a task, Add a reward and Add a goal, then Add a meal (Plan a meal, New in the library), School today (No school today, Add a day off…) and School menu (Refresh school menu).](guide/img/admin-home-laptop.jpg "Home, on a laptop")
+![Home on a laptop: Needs you lists 2 check-offs wait for you (Review), 1 reward request waits for you (Decide), and School can't sync (Calendars); Heads-up says Den hasn't been seen for 3 days (Boards) and No school menu for next week yet (School menus). Below, Quick actions: Add a chore, Add a task, Add a reward and Add a goal, then Add a meal (Plan a meal, New in the library), School lunches (This week: Maya has 1 day to pick; Leo is all set. Pick lunches), School today (No school today, Add a day off…) and School menu (Refresh school menu).](guide/img/admin-home-laptop.jpg "Home, on a laptop")
 
 - **Needs you** lists what needs you now, each with a button to where you deal with it: check-offs and reward requests waiting for you, a calendar that can't sync, a school menu that can't be read, and a background job that needs a look.
 - **Heads-up** lists what to know soon: no school menu for next week yet, no school year set up (or this one ending within two weeks), weather that hasn't updated, an invite about to run out, and a board that hasn't been seen for a day (switched off, or off the Wi-Fi; a board asleep overnight doesn't count).
@@ -188,10 +198,11 @@ The board shows the family's day at once. From then on it keeps itself signed in
 
 - **Add a chore**, **Add a task**, **Add a reward** and **Add a goal** open the page that adds one.
 - **Add a meal**: **Plan a meal** puts a meal on a day of the week; **New in the library** adds a meal you make again.
+- **School lunches** says whose days still need a lunch choice ("This week: Maya has 1 day to pick; Leo is all set."). **Pick lunches** opens **School lunch** on **Meals** in one tap: this week from Monday to Friday, next week on Saturday and Sunday, on the child you chose last on this phone or computer. Tap another child's face there to switch. It shows when a child has school lunch.
 - **School today**: **No school today** makes today a snow day in one tap. Today's school-day items (like homework) go at once; anything already checked off stays; the board shows a day off school. **Undo** makes it a school day again. **Add a day off…** adds a day off or a break on another date, without leaving Home.
 - **Refresh school menu** reads your school menu feeds now, rather than waiting for the morning.
 
-![Home on a phone in Evening, on a quiet day: Nothing needs you right now; the four add tiles two by two; School today says No school today: Snow day with Undo.](guide/img/admin-home-phone.jpg "Home on a phone, on a snow day")
+![Home on a phone in Evening, on a quiet day: Nothing needs you right now; the four add tiles two by two; Add a meal; School lunches with Pick lunches; School today says No school today: Snow day with Undo.](guide/img/admin-home-phone.jpg "Home on a phone, on a snow day")
 
 #### Check the day on Today
 
@@ -298,7 +309,9 @@ A reminder shows the item's name and when it is due ("Due at 3:00 pm", "Due toda
 
 **Choosing which items remind you.** In **My tasks**, each open item has a bell: **Bell on** or **Bell off**. Tap it to switch that item for you only. On an item's page, **Reminders** sets how early that item reminds everyone ("As each person chose", or a fixed time).
 
-**Told when something waits for you.** With **Approvals** on, you get an alert when a child checks off something that needs your OK, or asks for a reward. It comes within 5 minutes and counts everything new since your last one, by child: "Maya: 3 check-offs and 1 reward request waiting". A newer alert replaces the older one on your lock screen. Tapping it opens **Today**, where they wait under **Waiting for you**, or **Rewards** when only reward requests wait. Quiet hours hold it, and if the other parent has dealt with everything by then, nothing comes. You aren't told about a reward you asked for yourself, or a private item you can't see, and the alert never shows an item's name. When you turn it on, it counts what becomes waiting from then.
+**Told when something waits for you.** With **Approvals** on, you get an alert when a child checks off something that needs your OK, or asks for a reward. It comes within seconds, each time something new waits, and counts everything still waiting for you, by child: "Maya: 3 check-offs and 1 reward request waiting". A newer alert replaces the older one on your lock screen. Tapping it opens **Today**, where they wait under **Waiting for you**, or **Rewards** when only reward requests wait. Quiet hours hold it, and if the other parent has dealt with everything by then, nothing comes. You aren't told about a reward you asked for yourself, or a private item you can't see, and the alert never shows an item's name. When you turn it on, the first alert comes when something new waits from then.
+
+The alert is only for a check-off that waits for you. With approval off in **Family options** (the default), a child's check-off counts straight away and brings no alert, unless its item is set to **Always needs a parent's OK**. To hear about every check-off, turn approval on: see [Approval: on or off](#approval-on-or-off).
 
 Reminders come only for items you are on, at most once each, and never after the item is done. **Turn off reminders** stops them all; your devices stay listed for when you **Turn reminders back on**.
 
@@ -581,7 +594,7 @@ On **Rewards**, a reward someone is saving for says so ("Maya is saving for it")
 
 1. Enter a **Name** and, optionally, a **Description**.
 2. Choose **Who it's for**: someone who earns rewards, or **The whole family** (which counts what everyone does).
-3. Set when it **Starts** and, optionally, when it **Ends**.
+3. Set when it **Starts**. To give it an end date, tick **Ends on a date** and choose the day. Left unticked, it has no end date and keeps going until it's reached or you end it.
 4. Set the **Rule**: what it **Counts** and its **Target**:
    - **Things done**: items done within the goal's dates.
    - **Days with everything done**: days when every routine was done.
@@ -619,14 +632,20 @@ A child's own check-offs celebrate too, in a small way: when a check-off earns p
 
 #### Change or cancel a goal
 
-Choose **Change** to open a goal. Before it starts, everything can change. Once it has started, who it's for and its start date stay as they are; changing its rules or end date works its progress out again from every check-off. What it pays can change until it finishes, and applies the next time it is reached. Once it is redeemed, ended or cancelled, its rules, dates and payout stay as they are.
+Choose **Change** to open a goal. Before it starts, everything can change. Once it has started, who it's for and its start date stay as they are; changing its rules or end date works its progress out again from every check-off. What it pays can change, and applies the next time it is reached.
+
+To take an end date off, untick **Ends on a date**, or choose **Clear** beside the date, and save: the goal has no end date and keeps going. To change the date, tap it and choose another day; a goal that has started ends today or later. A goal with no end date can be given one the same way: tick **Ends on a date** and choose the day. This works on an iPhone too.
+
+![A started goal's end date on a phone: Ends on a date ticked, the date, and Clear beside it.](guide/img/admin-goal-end-date-phone.jpg "Changing or clearing the end date")
+
+Once a goal is reached, its rules, dates and payout stay as they are, so a change can't take back what reaching it unlocked; its name, description and picture can still change. If a check-off it needed is undone, it is going again and can change. Once it is redeemed, ended or cancelled, its rules, dates and payout stay as they are.
 
 Before you save a change, choose **Preview**. It works the goal out from every check-off as the form has it, and nothing is saved:
 
-- a line saying what saving would do: reach it now (and what it pays), take it back to going (and take back what it paid), end it, or how its progress moves;
+- a line saying what saving would do: reach it now (and what it pays), end it, or how its progress moves;
 - a table with each rule's progress **Now** and **After saving** (a rule you changed shows **New or changed**), and the goal's.
 
-![The preview of a change on a phone: "Saving takes it back to going: 88% there, and Ice cream from the shop is called off", then each rule now and after saving.](guide/img/admin-goal-preview-phone.jpg "Preview before saving a change")
+![The preview of a change on a phone: "Its progress goes from 96% to 88%.", then each rule now and after saving.](guide/img/admin-goal-preview-phone.jpg "Preview before saving a change")
 
 The goal's page lists **What happened** to it, with when and who. **Cancel** (the goal's name) stops it counting and moves it to **History**. Goals are never deleted.
 
@@ -702,7 +721,7 @@ A month's day shows three events and "+N more"; tap it to see the day.
 
 #### Choose the calendars for each board
 
-By default, every board shows the calendars with **Show on the boards** ticked. To choose for one board, go to **Boards**, open **Calendars on** (the board's name), tick the ones it should show, and choose **Save calendars**. From then on that board shows exactly those: a calendar you connect later stays off it until you tick it there. Other boards are not affected. The board changes within seconds.
+By default, every board shows the calendars with **Show on the boards** ticked. To choose for one board, go to **Boards**, tap the board to open it, tick under **Calendars** the ones it should show, and choose **Save calendars**. From then on that board shows exactly those: a calendar you connect later stays off it until you tick it there. Other boards are not affected. The board changes within seconds.
 
 ### A10 School year and day types
 <!-- covers: US-601 US-602 -->
@@ -751,7 +770,7 @@ Changes to the school year start tomorrow: today stays as it was planned. Days a
 
 The boards change within seconds.
 
-**A board's own layout.** A board can have its own layout instead, for example a month on the kitchen board and three days in the hall. On **Boards**, open **Home screen on** (the board's name), tick **Give** (the board) **its own layout** and choose **Save**. It starts as a copy of the household's; then change it in the form that appears. Untick and **Save** to follow the household's layout again.
+**A board's own layout.** A board can have its own layout instead, for example a month on the kitchen board and three days in the hall. On **Boards**, tap the board to open it, then under **Home screen** tick **Give** (the board) **its own layout** and choose **Save**. It starts as a copy of the household's; then change it in the form that appears. Untick and **Save** to follow the household's layout again.
 
 > **Tip:** To change a board's own layout, use the form under it and **Save layout**. Choosing **Save** again with **Give … its own layout** still ticked keeps the layout it has.
 
@@ -762,7 +781,7 @@ The boards change within seconds.
 
 **What this is.** Two looks: **Day** (light) and **Evening** (dark, easier on the eyes at night). **When.** Automatic. **How.**
 
-- **The board** follows the household's clock: Day from 6:30 am, Evening from 7:00 pm. To hold a board on one, go to **Boards**, choose **Always Day** or **Always Evening** for it, and choose **Set theme**. **Automatic, by time of day** goes back to the clock. The board switches at once.
+- **The board** follows the household's clock: Day from 6:30 am, Evening from 7:00 pm. To hold a board on one, go to **Boards**, tap the board to open it, choose **Always Day** or **Always Evening** under **Display**, and choose **Set theme**. **Automatic, by time of day** goes back to the clock. The board switches at once.
 - **The admin app** follows your phone's or computer's dark mode: Evening when dark mode is on.
 
 Both looks use the same colors for the same things, never color alone: every state also has an icon and a word.
@@ -802,7 +821,7 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credi
 **What this is.** The board fills whatever screen it is on, and you choose how big its words are. **When.** When you set up a board, or when someone finds it hard to read from where they stand. **How.** The fit is automatic; the size is on **Boards**.
 
 - **Any screen.** The board is designed for a 1920 by 1080 screen and grows or shrinks to fit yours. A 4K panel shows exactly the same board twice as large, drawn with all its pixels, so it is sharper, not more crowded. A laptop shows it smaller, and it fits again when you change the window's size. A screen wider or taller than usual gives the board more room.
-- **Text size.** On **Boards**, choose **Smaller text**, **Standard text**, **Larger text** or **Largest text** for a board, and choose **Set text size**. The board changes at once and keeps its size, even after a restart without the internet.
+- **Text size.** On **Boards**, tap the board to open it and, under **Display**, choose **Smaller text**, **Standard text**, **Larger text** or **Largest text** for a board, and choose **Set text size**. The board changes at once and keeps its size, even after a restart without the internet.
 - **What larger text changes.** Larger words take more room. With **Larger** or **Largest**, today's list moves under the calendar instead of beside it, and the people at the top may take two rows. Scroll down for the rest.
 - **On a tablet.** A board on an iPad or another tablet works the same way, in landscape or portrait: the board fits the screen, and each chore's points stay under its own title at every text size. If a word in the rail is too long to sit beside its icon, it goes under it.
 
@@ -827,34 +846,52 @@ Choose **Edit** (the meal's name) to change one. **Archive** takes a meal out of
 ![The meal library on a phone: the Add a meal form, then Our meals with what each is good for and a recipe link.](guide/img/admin-meal-library-phone.jpg "The meal library, on a phone")
 
 #### Plan the week
+<!-- covers: US-711 -->
 
-**Meals** shows the week, each day with its **Breakfast**, **Snack**, **Lunch** and **Dinner**. **Last week** and **Next week** move between weeks; **This week** comes back. Today is marked.
+**Meals** shows the week, a day under the other. **Last week** and **Next week** move between weeks; **This week** comes back.
 
-1. Choose **Add** beside a meal of a day (or go to **Add to the plan**): the **Day** and **Meal** are filled in.
+- **Each day, closed:** the weekday, the date and how many of its four meals (**Breakfast**, **Snack**, **Lunch**, **Dinner**) have something planned, like "2 of 4 set", or a check once all four have. Today is outlined, open or closed.
+- **Open a day:** tap it to see its meals, each with what's planned, **Add** and **Change**. Tap it again to close it. After you add, edit, move or remove one of its meals, the day stays open.
+- Under the days come **Add to the plan**, **Copy last week** and **School lunch**. **Add to the plan**, **Copy last week** and the lunch **Usual week** are closed until you tap them.
+
+1. Open a day and choose **Add** beside one of its meals: **Add to the plan** opens with the **Day** and **Meal** filled in. (Or tap **Add to the plan** and choose them.)
 2. Under **What**, choose **From the library** and pick a meal (those good for that meal of the day come first), or **Something else** and write it in ("Leftovers", "Out for Grandma's birthday").
 3. Under **For**, leave **Everyone** ticked, or tick each person it's for: one (a snack after school) or any mix (fish fingers for the children, sandwiches for Maya and Sam). Ticking a person unticks **Everyone**; ticking everyone, or nobody, is **Everyone**.
 4. Add a **Note** if you like ("Make extra for lunch"), then choose **Add to the plan**.
 
-Each thing planned names who it's for, unless it's for everyone. A meal of the day can hold several things, like two snacks. They show in the order you added them; **Change** on one offers **Earlier** and **Later** to reorder it, and **Remove**.
+Each thing planned names who it's for, unless it's for everyone. A meal of the day can hold several things, like two snacks. They show in the order you added them.
 
-![The week's meals on a laptop: each day across, with its breakfast, snack, lunch and dinner; Wednesday marked today with two snacks.](guide/img/admin-meals-laptop.jpg "The week's meals, on a laptop")
+![The week's meals on a laptop: Sunday to Saturday a row each with "1 of 4 set" or a check, Wednesday, today, outlined and open with its breakfast, snack, lunch and dinner and two snacks; then Add to the plan, Copy last week and School lunch, closed.](guide/img/admin-meals-laptop.jpg "The week's meals, on a laptop")
+
+#### Change a planned meal
+
+Choose **Change** on a planned meal:
+
+- **Edit** opens it in place, filled in with what you saved: the **Day**, the **Meal**, the library meal or what you wrote, who it's for and the note. Change what you like, then choose **Save changes**; **Cancel** leaves it as it was. It keeps its place among that meal's other things; moved to another day or meal, it goes last there.
+- **Earlier** and **Later** reorder it, when that meal of the day has more than one thing.
+- **Remove** takes it off the plan.
+
+![A planned dinner opened with Edit on a phone: the day, the meal, what it is, who it's for and the note, with Save changes and Cancel.](guide/img/admin-meal-edit-phone.jpg "Edit on a planned meal, on a phone")
 
 #### Copy last week
 
-Under **Copy last week**, choose what happens where this week already has something planned for a meal of a day: **Keep it**, or **Replace it with last week's**. Then choose **Copy last week here**. Everything planned last week is copied to the same days this week; meals last week left empty stay as they are this week. Each copy is for the same people, and is its own, so changing one doesn't change last week.
+Tap **Copy last week** to open it, then choose what happens where this week already has something planned for a meal of a day: **Keep it**, or **Replace it with last week's**. Then choose **Copy last week here**. Everything planned last week is copied to the same days this week; meals last week left empty stay as they are this week. Each copy is for the same people, and is its own, so changing one doesn't change last week.
 
 > **Tip:** Plan a good week once, then copy it forward and change only what's different.
 
 #### School lunch: buy or bring
+<!-- covers: US-710 -->
 
-**School lunch** on **Meals** shows each child's week: on a school day, **Buy** (school lunch) or **Bring** (a packed lunch). Days without school say why: **Weekend**, **Break** or **No school**. Each child follows their own school year (see [A10](#a10-school-year-and-day-types)), so a child at another school can have lunch on a day the others are off.
+**School lunch** on **Meals** shows one child's school week, Monday to Friday, a day under the other. With more than one child, their faces are in a row at the top: tap one to see their week. It opens on the child you chose last on that phone or computer, and a dot on a face means that child still has a day to pick, today or later. Each child follows their own school year (see [A10](#a10-school-year-and-day-types)), so a child at another school can have lunch on a day the others are off.
 
-- **Change one day:** tap it. **Buy** becomes **Bring** and the other way round, and the day says **Changed**. Tap it again to put it back to the usual.
-- **The usual week:** under **Usual week**, choose **Buy** or **Bring** for each weekday for a child, then **Save** (their name)**'s usual lunches**. A day you had changed to what is now the usual stops being a change.
+- **Each day, closed:** the weekday, the date, **Buy** (school lunch) or **Bring** (a packed lunch), and a check once the day is set. A Bring day is set as it is; a Buy day once there is a pick in every "Choice of" section of the day's menu (the entree, the milk). Today is outlined. A day without school is greyed and says **No school**; it doesn't open.
+- **Change one day:** tap it to open it, then tap **Buy** or **Bring** at its top. A day not as the usual says **Changed from the usual**; tap the other one to put it back.
+- **Pick a Buy day's lunch:** open the day. Its menu is listed a section at a time: one in a section that says **pick one**, any number in one that says **any**. What is picked is ticked and highlighted. Tap **Save** (their name)**'s picks**.
+- **The usual week:** closed, **Usual week** shows a line per child ("Maya: Mon Bring · Tue Bring · Wed Bring · Thu Bring · Fri Buy"). Tap it, choose **Buy** or **Bring** for each weekday for a child, then **Save** (their name)**'s usual lunches**. A day you had changed to what is now the usual stops being a change.
 
 A chore can follow these days, like "Pack lunch" only when a child brings: see [Chores on lunch days](#chores-on-lunch-days).
 
-![School lunch on a laptop: Leo and Maya across the week, Buy or Bring on school days, Leo's Tuesday changed, Thursday no school, a buy day's menu or picks; then each child's usual week.](guide/img/admin-lunch-laptop.jpg "School lunch, on a laptop")
+![School lunch on a phone: Leo and Maya's faces, a dot on Leo; Leo's Monday to Friday, Monday and Friday Bring with a check, Tuesday Buy with a check, Wednesday (today, outlined) open with Buy and Bring at its top and the Entree, Fruits & Vegetables and Milk to pick from, Thursday greyed, No school.](guide/img/admin-lunch-phone.jpg "School lunch, on a phone")
 
 #### School menus: what the school serves
 
@@ -864,7 +901,7 @@ A day a child buys can show what the school serves that day. Open **School menus
 - **From a file**, for a school whose menu comes another way: a spreadsheet saved as CSV with a row for each item, and the columns **date** (like 2027-02-01, or 2/1/2027), **item** and, if you like, **section** (Choice of Entree, Choice of Milk). An item can hold choices: "Beef tacos or Chicken wrap with tortilla chips" is two options, the wrap with its chips. A date with no item means no lunch that day, and its section says why (Presidents' Day). **Look at the file** shows how many days it holds and the first few; **Load** stores them.
 - **Typed in**, a day at a time with **Add a day**.
 
-Then, under **Usual week** on **Meals**, choose each child's **School menu**. A day they buy shows what's served, a line a section (**Entree**: Beef tacos or Chicken wrap with tortilla chips; **Fruits & Vegetables**: Corn, Orange; **Milk**: 1% milk or Chocolate milk), or **No menu yet**.
+Then, under **Usual week** on **Meals** (tap it to open it), choose each child's **School menu**. A day they buy shows what's served, a line a section (**Entree**: Beef tacos or Chicken wrap with tortilla chips; **Fruits & Vegetables**: Corn, Orange; **Milk**: 1% milk or Chocolate milk), or **No menu yet**.
 
 FamilyWise reads a menu as the school writes it: each section's options, "or" between them, and "with" (or "and" after it) for what comes with one: "Fish sticks with Fries and Coleslaw" is one option with two sides. A section's name is shortened to show it ("Choice of Entree" shows as **Entree**, "Fruits & Vegetables offered" as **Fruits & Vegetables**), and the **Entree** is the section whose name says entree or main (else the first). A menu with no sections lists what's served with commas, as before.
 
@@ -900,13 +937,31 @@ The family can pick the coming week's school lunches at the board, on a Sunday s
 - **A parent says yes:** every change, Buy or Bring and the picks, says **Waiting for a parent** until you approve it on **Today** (see [Lunch changes from the board](#lunch-changes-from-the-board)). If you keep the day as it was, the board says so ("Sam kept Buy") until the child taps **Done**. The board can't tell who is tapping, so a change made there waits even when it's yours; on **Meals** in the admin app your change is made at once.
 - **The cut-off:** a day can change until 8:00 am that morning (set another time on **School**, under **Lunch changes**). After it, the day is **Locked**, and a change still waiting is dropped: the day stays as it was.
 - **On the boards:** once approved, a buy day shows what the child picked instead of every option: their entree on the home screen, all of it on the **Meals** screen. If the school changes the menu afterwards, the pick stays and says **Menu changed**. A day changed to **Bring** drops its picks.
-- **On Meals in the admin app:** each buy day shows the picks (**Changed on the board** when a child's change was approved there), a change waiting links to **Today**, and **Pick** or **Change picks** lets you set them yourself.
+- **On Meals in the admin app:** each Buy day opened shows the picks ticked (**Changed on the board** when a child's change was approved there), and you can change them yourself; a change waiting says **Waiting** on the day, and opened, links to **Today**.
 
 ![Leo's lunches on the board: Monday Buy with his picks, Tuesday waiting for a parent, Wednesday Buy with Pick your lunch, Thursday "Sam kept Buy", Friday Bring, and Done.](guide/img/board-lunches-week.jpg "Lunches on the board: a child's week")
 
 ![Leo's lunch on a Wednesday: Entree (pick one) with the chicken wrap picked, Fruits & Vegetables (pick any) with apple slices and grapes, Milk (pick one), Save and Cancel.](guide/img/board-lunches-choices.jpg "Lunches on the board: a day's choices")
 
-![School lunch on Meals with picks: Leo's Wednesday changed on the board with his picks and Change picks; Maya's Tuesday with Buy? waiting.](guide/img/admin-lunch-laptop.jpg "School lunch on Meals, with picks and a change waiting")
+![School lunch on Meals on a laptop: Leo's Wednesday open, changed on the board, with his entree, fruit and milk ticked and Save Leo's picks.](guide/img/admin-lunch-laptop.jpg "School lunch on Meals, with picks")
+
+### A16 Sleep and wake
+<!-- covers: US-207 -->
+
+**What this is.** Each board can sleep at night and when nobody uses it, and you choose whether Home tells you when it hasn't been seen. **When.** When you set up a board, or when it lights up a room at night. **How.** On **Boards**, tap the board to open it, choose under **Sleep and wake**, and press **Save sleep and wake**. The board follows within a minute.
+
+- **Tell me when (the board) isn't seen.** **Always**: Home's heads-up says so after a day without it, at any hour (as before). **Only while awake**: its hours asleep don't count, and Home never says so while it is asleep; for a board switched off at the wall overnight. **Never**: for a board that is often off; Home never lists it.
+- **Sleep at night.** Tick **(the board) sleeps and wakes at set times**, then give **School nights** and **Weekends and days off** a time each to sleep and to wake. A night takes its times from the day after it: Sunday to Thursday night are school nights when school is the next day; Friday and Saturday night, and any night before a day off from school, are weekend nights. School days come from **School** in Settings; without a school year, every weekday is a school day.
+- **Sleep when nobody touches it.** **Never**, or after 5, 10, 15 or 30 minutes, 1 hour or 2 hours untouched. After its wake time in the morning it stays on for at least this long.
+- **Asleep, the board is black.** A touch, a click or moving the mouse wakes it. **That first touch only wakes it**: it never checks off a chore or presses a button, so tap again for that. A touch in the night wakes it for its idle time (5 minutes if **Never**), then it sleeps again.
+- **On the board's folded header** Boards says "Asleep · wakes at 6:30 am" or "Awake · sleeps at 9:30 pm" while it has set times, or "Awake · no set times".
+- **Burn-in.** Every board moves its picture by a pixel every 5 minutes, within a 4-pixel square, too little to see, so nothing stays on the same pixels all day. There is nothing to set.
+
+![Boards on a laptop with Kitchen open: its header "Awake · sleeps at 9:30 pm · seen 1 min ago · Automatic · Standard text · household layout"; Display; Sleep and wake, "School nights 9:30 pm to 6:30 am, weekends 10:30 pm to 7:30 am; sleeps after 15 minutes untouched; missed only while awake.", Tell me when Kitchen isn't seen with Only while awake chosen, Sleep at night ticked with its times, Sleep when nobody touches it, After 15 minutes, Save sleep and wake.](guide/img/admin-boards-sleep-laptop.jpg "Sleep and wake on Boards, on a laptop")
+
+**Turning the screen off on the Raspberry Pi.** A web page can't turn its screen off, so on an iPad or a laptop a sleeping board is just black (an iPad's own Auto-Lock still works as usual). On the Pi, a small helper turns the monitor off when the board sleeps and back on when it wakes. The Dell isn't switched off at its button: the Pi stops sending a picture, and the monitor goes into its own standby until the picture comes back. Install the helper once: on the Pi, in a terminal (or over SSH as the user the board runs as), type `curl -fsSL https://family-wise-topaz.vercel.app/api/kiosk/install | bash`, then `sudo reboot`. It needs no password or key, listens only on the Pi itself, and answers only FamilyWise; it starts with the Pi and again if it stops. Running the same command again updates it.
+
+> **Tip:** Moving the mouse wakes the Pi's monitor too. A monitor coming out of standby takes a second or two to show the picture.
 
 ## Part B — User Manual
 
@@ -936,7 +991,7 @@ The admin app is for parents, on a phone or a laptop. On a laptop its menu is do
 | **Family options** | The household | The week's start day, check-offs, weather, admins and invites |
 | **School** | School years | Day types, breaks, who follows which year |
 | **Calendars** | Calendars | Connecting Apple calendars |
-| **Boards** | Boards | Pairing, themes, calendars and layout per board |
+| **Boards** | Boards | Pairing, themes, calendars, layout, and sleep and wake per board |
 | **Tags** | Tags | Labels that group chores and let goals count by kind |
 | **Reminders** | Your reminders | Devices and when to remind you |
 | **Health** | System health | Background jobs, errors, usage |
@@ -946,14 +1001,14 @@ The admin app is for parents, on a phone or a laptop. On a laptop its menu is do
 ![The menu open on a phone: Your day, The family two to a row, Set-up with Settings, then Help and Sign out.](guide/img/admin-menu-phone.jpg "The menu, on a phone")
 
 #### B1.1 Home
-<!-- covers: US-109 -->
+<!-- covers: US-109 US-709 -->
 
 | Part | What it shows or does |
 |---|---|
 | The household | Its name and today's date. |
 | **Needs you** | Check-offs and reward requests waiting for you, calendars that can't sync, school menus that can't be read and background jobs that need a look, each with a button to where you deal with it (**Review**, **Decide**, **Calendars**, **School menus**, **Health**). "Nothing needs you right now." when there's none. |
 | **Heads-up** | No school menu for next week, no school year (or one ending within two weeks), weather that hasn't updated, an invite about to run out. Shown only when there is one. |
-| **Quick actions** | **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**. **Add a meal**: **Plan a meal**, **New in the library**. **School today**: **No school today** (then "No school today: Snow day" and **Undo**), or "No school today: the weekend" or the day off's name; **Add a day off…** opens **Name**, **Kind**, **From**, **To (optional)** and **Add day off**. **School menu**: **Refresh school menu**, or **Set up school menus** when there's no feed. |
+| **Quick actions** | **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**. **Add a meal**: **Plan a meal**, **New in the library**. **School lunches**: whose days still need a choice this week (next week at the weekend), and **Pick lunches**, which opens the lunch week on the child chosen last. **School today**: **No school today** (then "No school today: Snow day" and **Undo**), or "No school today: the weekend" or the day off's name; **Add a day off…** opens **Name**, **Kind**, **From**, **To (optional)** and **Add day off**. **School menu**: **Refresh school menu**, or **Set up school menus** when there's no feed. |
 
 Messages: "No school today. Today's chores follow a day off school.", "Today is a school day again.", "Day off saved.", "School menus fetched.", "A school menu couldn't be fetched. School menus says why."
 
@@ -1068,7 +1123,7 @@ A member who doesn't earn rewards can't be given points; what they earned before
 | Goals in play | Each goal: picture, name, who and dates, what it pays ("Pays 10 points", "Pays Ice cream from the shop"), **Needs a look** if flagged, state (**Starts later**, **Going**, **Achieved**, **Achieved again**), a meter per rule, **Mark redeemed** when achieved, **Change**. "Working out its progress…" before its first evaluation. |
 | **History** | Goals **Redeemed** (when and by whom), **Ended**, or **Cancelled**; **Needs a look** if flagged; **Details**. |
 
-**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Starts**, **Ends (optional)**, one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **What counts**), **Add a rule**, **It's reached when**, **What reaching it pays** (**Just the celebration**, **Points** with **Points paid** 1 to 10,000, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
+**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **Starts**, **Ends** (**Ends on a date**, then the date and **Clear**), one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **What counts**), **Add a rule**, **It's reached when**, **What reaching it pays** (**Just the celebration**, **Points** with **Points paid** 1 to 10,000, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
 
 **A goal's page:** who, state and "% there"; **Clear** for a **Needs a look** flag; **Remove photo**; the form (locked as the goal progresses, see [A7](#change-or-cancel-a-goal)); **What happened** (set up, started, rules or dates changed, what it pays changed, progress worked out again with the old and new %, achieved and what it paid, back to going, payout undone, points put back, needs a look, redeemed, ended, cancelled); **Cancel**.
 
@@ -1101,20 +1156,23 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 | **Add a calendar** | **Name** (up to 40), **Public link**, **Color**, **Whose calendar (optional)**, **Show on the boards**, **Add calendar** ("Adding and syncing…"). |
 
 #### B1.12 Boards
-<!-- covers: US-201 US-202 US-507 US-1004 US-1007 -->
+<!-- covers: US-201 US-202 US-507 US-1004 US-1007 US-207 US-208 -->
+
+Every section starts folded: tap its header to open it, tap again to fold it. After you save something, the board (or the section) you were in comes back open.
 
 | Part | What it shows or does |
 |---|---|
-| Each board | Name and "Last seen" (or "Not seen yet"). |
-| **Rename** | A new name (up to 60 characters). |
-| Theme and **Set theme** | **Automatic, by time of day**, **Always Day** or **Always Evening**. |
-| Text size and **Set text size** | **Smaller text**, **Standard text**, **Larger text** or **Largest text** (see [A14](#a14-screens-and-text-size)). The board changes at once. |
-| **Disconnect** (name) | Asks first: it says what will happen, and **Yes, disconnect** (name) disconnects the board for good. It reads nothing more and can't sign in again; pair it again for a new start. |
-| **Calendars on** (name) | Which calendars it shows; **Save calendars** makes it choose its own. |
-| **Home screen on** (name) | "its own layout" or "the household's layout"; **Give** (name) **its own layout**, **Save**; then its own layout form. |
-| **Home screen** | The household's layout: **The calendar shows**, **Show the weather beside the clock**, **Show today's meals**, **Under the calendar, in this order** with **Up** / **Down**, **Save layout**. |
-| **Add a board** | **Board name**, **Get a pairing code**: 8 digits, once, for 10 minutes. |
-| **Disconnected** | Boards disconnected, with when. |
+| Each board, folded | Its name, then "Awake · sleeps at 9:30 pm" or "Asleep · wakes at 6:30 am" (or "Awake · no set times"), when it was last seen ("seen 1 min ago", "seen 7 h ago", then the day and time, or "not seen yet"), its theme, its text size, and "household layout" or "its own layout". When Home lists it as not seen (by its **Tell me when** choice), "Not seen for 2 days" in amber, open or folded. |
+| **Display** | Theme and **Set theme**: **Automatic, by time of day**, **Always Day** or **Always Evening**. Text size and **Set text size**: **Smaller text**, **Standard text**, **Larger text** or **Largest text** (see [A14](#a14-screens-and-text-size)). The board changes at once. |
+| **Sleep and wake** | How it is set ("School nights 9:30 pm to 6:30 am, weekends 10:30 pm to 7:30 am; sleeps after 15 minutes untouched"); **Tell me when** (name) **isn't seen** (**Always**, **Only while awake**, **Never**), **Sleep at night** with **School nights** and **Weekends and days off**, **Sleep when nobody touches it**, **Save sleep and wake** (see [A16](#a16-sleep-and-wake)). |
+| **Calendars** | Which calendars it shows; **Save calendars** makes it choose its own. |
+| **Home screen** (a board's) | **Give** (name) **its own layout**, **Save**; then its own layout form. Without its own, it shows the household's. |
+| **Name and connection** | Set apart at the bottom. **Rename**: a new name (up to 60 characters). **Disconnect** (name): asks first, says what will happen, and **Yes, disconnect** (name) disconnects the board for good. It reads nothing more and can't sign in again; pair it again for a new start. |
+| **Home screen** | The household's layout, folded to one line ("5 days · meals on · Goals, Waiting, Coming up · weather on"). Opened: **The calendar shows**, **Show the weather beside the clock**, **Show today's meals**, **Under the calendar, in this order** with **Up** / **Down**, **Save layout**. |
+| **Add a board** | Folded to its **Add a board** button (open at first while there is no board). Opened: **Board name**, **Get a pairing code**: 8 digits, once, for 10 minutes. |
+| **Disconnected** | Folded to "2 disconnected". Opened: the boards disconnected, with when. |
+
+![Boards on a phone, every section folded: Kitchen "Awake · sleeps at 9:30 pm · seen 1 min ago · Automatic · Standard text · household layout"; Hallway tablet "Asleep · wakes at 8:00 am · seen 7 h ago · Always Day · Larger text · its own layout"; Playroom "Awake · no set times · seen Tue, Oct 13 at 7:12 am", with "Not seen for 2 days" in amber; then Home screen "5 days · meals on · Goals, Waiting, Coming up · weather on", Add a board with its button, and Disconnected, "2 disconnected".](guide/img/admin-boards-phone.jpg "Boards, folded, on a phone")
 
 #### B1.13 Health
 <!-- covers: US-904 US-909 -->
@@ -1140,17 +1198,17 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | Invite | **Join** (household): **Join household**, or **Create account and join**, or **Sign out** to switch account. |
 
 #### B1.15 Meals
-<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-708 US-804 -->
+<!-- covers: US-701 US-702 US-703 US-704 US-801 US-802 US-803 US-708 US-804 US-711 -->
 
 | Part | What it shows or does |
 |---|---|
 | **Meal library** | Opens the library. |
 | **Last week** · **This week** · **Next week** | Move between weeks. |
-| The week | Each day (today marked) with **Breakfast**, **Snack**, **Lunch** and **Dinner**: what is planned in order, with each person it's for and its note; **Change** (**Earlier**, **Later**, **Remove**); **Add**. |
-| **Add to the plan** | **Day**, **Meal**, **What** (**From the library** or **Something else**), **For** (**Everyone**, or a tick per person; "For Maya and Leo." under it), **Note (optional)**, **Add to the plan**. |
-| **Copy last week** | **Keep it** or **Replace it with last week's**, **Copy last week here**. |
-| **School lunch** | **School menus**. Each child's week: **Buy** or **Bring** on school days (a tap changes it; **Changed** marks a change; a buy day shows what the school serves, a line a section, or **No menu yet**), **Weekend**, **Break** or **No school** otherwise; **Usual week**, Monday to Friday, and **School menu**, **Save** (name)**'s usual lunches**. |
-| Picks | On a buy day: **Picked:** and what the child picked (**Menu changed** if the menu no longer has it), **Changed on the board** for a change you approved, **Buy? waiting** (or **New picks waiting**) linking to **Today**, and **Pick** / **Change picks**: a section each, one where it says pick one, **Save** (name)**'s picks**. |
+| The week | Each day closed at first: weekday, date, **Today** (outlined), and "X of 4 set" or a check. Opened: **Breakfast**, **Snack**, **Lunch** and **Dinner**, what is planned in order, with each person it's for and its note; **Change** (**Earlier**, **Later**, **Edit**, **Remove**); **Add**, which opens **Add to the plan** filled in. |
+| **Add to the plan** | Closed at first: its header and **Add a meal**. Opened: **Day**, **Meal**, **What** (**From the library** or **Something else**), **For** (**Everyone**, or a tick per person; "For Maya and Leo." under it), **Note (optional)**, **Add to the plan**. |
+| **Copy last week** | Closed at first. Opened: **Keep it** or **Replace it with last week's**, **Copy last week here**. |
+| **School lunch** | **School menus**. The children's faces (a dot: a day still to pick), then one child's Monday to Friday, each day closed: weekday, date, **Buy** or **Bring**, a check once set, **Today**, **Waiting** for a child's change; **No school**, greyed, on a day without. Opened: **Buy** · **Bring**, **Changed from the usual** or **Changed on the board**, **Buy? waiting** (or **New picks waiting**) linking to **Today**. **Usual week**, closed at first with a line per child ("Maya: Mon Bring · …"); opened, Monday to Friday and **School menu**, **Save** (name)**'s usual lunches**. |
+| Picks | A Buy day opened: its menu a section each (**pick one** or **any**), the picks ticked and highlighted (**Menu changed: look again** if the menu no longer has one), **Save** (name)**'s picks**; **No menu yet**, or the menu as text when it has nothing to pick. |
 
 **The meal library:** **Add a meal** (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe link (optional)**, **Icon**, **Add meal**); **Our meals**, each with what it's good for and its recipe, **Edit** and **Archive**; **Archived**, with **Restore**.
 
@@ -1196,6 +1254,8 @@ flowchart TD
   K -. 90 seconds untouched .-> H
   F -. 90 seconds untouched .-> H
 ```
+
+Any screen can fall asleep: black, at the board's set times or when nobody touches it, then back where it was at a touch ([A16](#a16-sleep-and-wake)).
 
 #### B2.1 The rail and the bar
 <!-- covers: US-1002 US-204 US-1008 -->
@@ -1347,11 +1407,13 @@ Messages: "Sent. A parent will look at it.", "Back as it was.", "That day can't 
 | A tap's answer | At once; the board shows it before the server answers. |
 | Changes from the admin app | Within about **3 seconds** while connected. |
 | "Updated … ago" | When the board's information is over **5 minutes** old. A board reads everything again every 4 minutes. |
-| "Last seen" on **Boards** | The board reports in every 5 minutes while open. |
+| "seen …" on a board's header on **Boards** | The board reports in every 5 minutes while open, asleep or not. |
 | Sending saved check-offs | Retried after 1, 2, 5 and 10 seconds, then every 30 seconds, and at once when the network returns. |
 | Goal celebration | Once per achievement, on one board; up to 10 seconds. |
 | Goal payout | Once per achievement, when it is reached. Undone once if the goal goes back to going (points taken back, a reward not yet given called off); paid again when it is reached again. |
 | A new day | At the household's midnight, the board reads the new day by itself. |
+| Sleep and wake | A board sleeps at its set times and after its idle time untouched (5 minutes to 2 hours), and looks every 15 seconds. A touch in the night keeps it awake for its idle time, or 5 minutes. A board missed **Only while awake** is listed after 24 of its hours awake unseen. |
+| Burn-in drift | A pixel every 5 minutes, within a 4-pixel square. |
 | Weather | Read every 30 minutes; hidden once the last good reading is over 75 minutes old. Offline, the last reading stays for that day. |
 
 #### Approval
@@ -1433,7 +1495,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Lunch | Buy or bring, on a child's school days only; a usual for each weekday, Monday to Friday |
 | School menu | A name up to 40 characters; up to 60 items a day, each up to 120 characters; a file up to 512 KB and 120 days; Nutrislice fetched each morning for the next four weeks |
 | Meals | Something written in up to 80 characters, a note up to 200; any number in a meal of a day; one library meal of a name at a time |
-| Goal | 1 to 5 rules; target 1 to 100,000; 0 to 3 misses forgiven a week; pays 1 to 10,000 points, or one reward from the shop (a child's goal) |
+| Goal | 1 to 5 rules; target 1 to 100,000; 0 to 3 misses forgiven a week; pays 1 to 10,000 points, or one reward from the shop (a child's goal); an end date or none, and once started it ends today or later; once reached, only its name, description and picture change |
 | Photos | JPEG, PNG or WebP, up to 2 MB |
 | Password | At least 8 characters |
 | Setup code · invite link · pairing code | Once, for 24 hours · once, for 7 days · once, for 10 minutes |
@@ -1455,7 +1517,9 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Board: points with a dashed ring | Points counting check-offs not yet saved. | Wait for the connection; the server's figure replaces it. |
 | Board: **Updated 12 minutes ago** | It couldn't read the latest for a while. | Check the wifi. If it stays, reload the board's page. |
 | Board: **Reconnecting…** | The live connection dropped. | Usually fixes itself; it reads everything again when back. |
-| Board: words too small, or too big, to read from where you stand | Its text size suits a different spot. | On **Boards**, choose a **Text size** for it and **Set text size**. |
+| Board: black | It is asleep: its set times, or nobody touched it for a while ([A16](#a16-sleep-and-wake)). | Touch it, click or move the mouse. The first touch only wakes it; tap again to check something off. |
+| The Pi's monitor stays on while the board is black | The screen helper isn't installed or isn't running, or the Pi hasn't restarted since it was installed. | On the Pi, type `curl -s http://127.0.0.1:8737/status`: no answer means it isn't running, and `systemctl --user status familywise-screen` says why. Install it again (A16), then `sudo reboot`. |
+| Board: words too small, or too big, to read from where you stand | Its text size suits a different spot. | On **Boards**, tap the board to open it, choose a text size under **Display** and **Set text size**. |
 | Board: today's list is under the calendar | It has **Larger** or **Largest** text, which leaves no room beside the calendar. | Scroll down; or choose **Standard text** on **Boards**. |
 | Board in a laptop's browser: the browser's zoom does nothing | The board fits the window, whatever its zoom. | Use the board's **Text size** on **Boards** instead. |
 | Board: **Today's list may be out of date** | Planning or day closing is late or failing. | Open **Health** in the admin app. |
@@ -1468,7 +1532,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 | Calendars: **Can't sync**, "may no longer be public" | The link stopped working. | In Apple Calendar, share it publicly again; **Edit** and **Replace the link**. |
 | Calendars: "didn't return a calendar" | The link isn't a public calendar link. | Copy the public link (it starts with `webcal://`). |
 | Calendars: "took more than 15 seconds" | The calendar's server was slow. | Nothing: it tries again in 15 minutes. |
-| An event isn't on the board yet | Calendars sync every 15 minutes. | Wait up to 15 minutes. Check **Show on the boards** and the board's **Calendars on**. |
+| An event isn't on the board yet | Calendars sync every 15 minutes. | Wait up to 15 minutes. Check **Show on the boards** and the board's **Calendars** on **Boards**. |
 | Reminders: none arrive | Reminders are off, no device is switched on, the bell is off, quiet hours hold them, or the item is done or not yours. | On **Reminders**: check the state, **Send a test**. In **My tasks**: check the item's bell. |
 | Reminders: "On an iPhone or iPad, add FamilyWise to your Home Screen first" | iPhone notifications need the Home Screen app. | **Share**, **Add to Home Screen**, open it from there, then **Turn on reminders**. |
 | Reminders: "Notifications are blocked" | The browser was told not to allow them. | Allow notifications for FamilyWise in the browser's or phone's settings. |
@@ -1485,6 +1549,10 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 **Can my child undo something after two minutes?** Not on the board. A parent can uncheck it on **Today**.
 
 **Can I give credit for yesterday?** Yes. On **Today**, choose **Day before** and **Mark done**. It counts as done by a parent, with its points, and streaks and goals catch up.
+
+**Does a sleeping board still count as seen?** Yes. Asleep it is still on and reports in, so it never goes missing by sleeping. **Only while awake** is for a board that is switched off at the wall overnight.
+
+**Why didn't my tap check it off?** The board was asleep. The tap that wakes it only wakes it, so a child's tap in the dark never checks something off by mistake.
 
 **What happens to a chore nobody did?** At midnight a chore becomes missed. A task stays open as overdue until it's done.
 
@@ -1568,7 +1636,7 @@ These are planned but not built yet. This guide will cover each as it arrives.
 - **Export and delete** your household's data.
 - **Sign in with Apple** and passkeys.
 - **Private calendars** through a separate read-only Apple account (CalDAV), and importing days off from a school calendar.
-- **The kiosk:** the board locked full-screen on its own device, quiet hours overnight and burn-in protection.
+- **The kiosk:** the board locked full-screen on its own device (sleep and wake, with the Pi's screen turned off, are here now: [A16](#a16-sleep-and-wake)).
 - **Goal meters offline** that move with check-offs not yet saved.
 - **A meal for some of us:** **Add to the plan** for any mix of people, not just everyone or one.
 - **An alert when something waits for you:** a phone notification when a check-off needs your OK or a child asks for a reward, if you have notifications on.

@@ -11,6 +11,7 @@ import type { RedemptionStatus } from './rewards';
 import type { TodayItem } from './today';
 import { type BoardLayout, DEFAULT_LAYOUT, readLayout } from './board-layout';
 import { type BoardMeals, readMeals } from './board-meals';
+import { type BoardSleep, readBoardSleep, readSchoolDays, type SchoolDays } from './board-sleep';
 
 /**
  * [DEV-05] What `public.board_snapshot()` returns (02 §4.6): the one read a paired board makes, and
@@ -32,7 +33,16 @@ export interface BoardSnapshot {
     undoWindowSeconds: number;
   };
   /** The board itself: its name, theme, and text size (BRD-08; Standard before WP-47). */
-  device: { id: string; name: string; theme: ThemeOverride; textSize: TextSize };
+  device: {
+    id: string;
+    name: string;
+    theme: ThemeOverride;
+    textSize: TextSize;
+    /** [DEV-07] When it sleeps and wakes (WP-34): none set before it. */
+    sleep: BoardSleep;
+  };
+  /** [DEV-07] The household's school days from yesterday to a week ahead (WP-34); null before it. */
+  schoolDays: SchoolDays | null;
   /** [BRD-05] The home screen's layout: the household's, and this board's own if it has one (D-67). */
   layout: { household: BoardLayout; board: BoardLayout | null };
   members: BoardMember[];
@@ -481,7 +491,9 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
       name: str(d, 'name'),
       theme: theme === 'day' || theme === 'evening' ? theme : 'auto',
       textSize: textSizeOf(d.text_size),
+      sleep: readBoardSleep(d.sleep),
     },
+    schoolDays: readSchoolDays(data.school_days),
     // A snapshot from before WP-35 has no layout: the defaults.
     layout: isObject(data.layout)
       ? {

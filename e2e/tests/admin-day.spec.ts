@@ -1,6 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '../support/test';
-import { retireBoard } from '../support/board';
+import { addBoardForm, pairingCode, retireBoard } from '../support/board';
+import { addDays, householdToday } from '../support/day';
+import { signIn } from '../support/session';
 
 // [CHR-05][CHR-06][CHR-08][CHR-14] A parent's day on the preview (WP-12, D-52), as Alex of the demo
 // family: "Not actually done" on four of five check-offs is one batch, the board shows them open again
@@ -14,7 +16,8 @@ const MAKE_BED = '0de00000-0000-4000-8000-0000000c0001';
 const BRUSH_TEETH = '0de00000-0000-4000-8000-0000000c0002';
 const FEED_THE_DOG = '0de00000-0000-4000-8000-0000000c0003';
 const SET_THE_TABLE = '0de00000-0000-4000-8000-0000000c0004';
-const TODAY = `(now() at time zone 'America/New_York')::date`;
+// [D-110] The demo family's today, read once from the database in beforeAll.
+let today = '';
 
 function sql(query: string): string {
   return execFileSync('psql', [db!, '-X', '-A', '-t', '-q', '-v', 'ON_ERROR_STOP=1', '-c', query], {
@@ -24,8 +27,8 @@ function sql(query: string): string {
 
 const memberId = (name: string) =>
   sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
-const occ = (chore: string, member: string | null, day = TODAY) =>
-  sql(`select id from public.chore_occurrence where chore_id = '${chore}' and due_date = ${day}
+const occ = (chore: string, member: string | null, day = today) =>
+  sql(`select id from public.chore_occurrence where chore_id = '${chore}' and due_date = '${day}'
          and ${member ? `member_id = '${member}'` : 'member_id is null'}`);
 const status = (id: string) => sql(`select status from public.chore_occurrence where id = '${id}'`);
 /** As the database itself (the seed's way): a child's check-off, or a parent's uncheck. */
@@ -36,7 +39,8 @@ const systemEvent = (id: string, type: string, doneBy: string[] = []) =>
 const ITEMS = `('${MAKE_BED}', '${BRUSH_TEETH}', '${FEED_THE_DOG}', '${SET_THE_TABLE}')`;
 
 /**
- * Today's and tomorrow's items this spec touches, put back as the seed left them, approval off:
+ * Today's and tomorrow's items this spec touches, put back as the seed left them, approval off
+ * (before the file, after each test, pass or fail, and after the file):
  * open again, then each one's approval flag as the switch now has it (one that waited for a parent
  * keeps its flag when the switch goes off, D-22, so a failed run can't leave the next spec's
  * check-offs waiting).
@@ -45,11 +49,11 @@ function putBack() {
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
        select gen_random_uuid(), o.id, 'admin_uncomplete', now()
          from public.chore_occurrence o
-        where o.household_id = '${DEMO}' and o.due_date between ${TODAY} and ${TODAY} + 1
+        where o.household_id = '${DEMO}' and o.due_date between '${today}' and '${addDays(today, 1)}'
           and o.status <> 'scheduled' and o.chore_id in ${ITEMS};
        update public.household_settings set approval_mode = 'off' where household_id = '${DEMO}';
        update public.chore_occurrence o set requires_approval_snapshot = private.chore_requires_approval(o.chore_id)
-        where o.household_id = '${DEMO}' and o.due_date between ${TODAY} and ${TODAY} + 1
+        where o.household_id = '${DEMO}' and o.due_date between '${today}' and '${addDays(today, 1)}'
           and o.chore_id in ${ITEMS}
           and o.requires_approval_snapshot is distinct from private.chore_requires_approval(o.chore_id);
        update public.chore set archived_at = now()
@@ -57,13 +61,10 @@ function putBack() {
 }
 
 async function asAlex(page: Page, path: string) {
-  await page.goto('/sign-in');
-  await page.getByRole('button', { name: 'Sign in as Alex', exact: true }).click();
-  await page.waitForURL(/\/admin$/);
+  await signIn(page);
   await page.goto(path);
 }
 
-test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 let admin: Page;
@@ -73,16 +74,17 @@ let started = '';
 test.beforeAll(async ({ browser }, testInfo) => {
   // Signing in and pairing a board can take most of 30 s on a cold preview.
   testInfo.setTimeout(90_000);
+  today = householdToday(db!);
   putBack();
   started = sql(`select now()`);
   sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
        delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
   admin = await browser.newPage();
   await asAlex(admin, '/admin/devices');
-  const form = admin.getByRole('form', { name: 'Add a board', exact: true });
+  const form = await addBoardForm(admin);
   await form.getByLabel('Board name', { exact: true }).fill(BOARD);
   await form.getByRole('button', { name: 'Get a pairing code', exact: true }).click();
-  const code = (await admin.getByTestId('pairing-code').textContent())?.replace(/\D/g, '') ?? '';
+  const code = await pairingCode(admin);
   board = await (await browser.newContext()).newPage();
   await board.goto('/board');
   await board.getByLabel('Pairing code from the admin app', { exact: true }).fill(code);
@@ -91,9 +93,15 @@ test.beforeAll(async ({ browser }, testInfo) => {
   await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
 });
 
+test.afterEach(() => putBack());
+
 test.afterAll(async () => {
-  putBack();
-  await retireBoard(board, BOARD);
+  try {
+    putBack();
+  } finally {
+    await admin?.context().close();
+    await retireBoard(board, BOARD);
+  }
 });
 
 const everyone = () => board.getByRole('region', { name: 'Everyone today' });
@@ -102,12 +110,12 @@ const column = (name: string) =>
 /** The board's Chores screen (a column each), opened again if the board went back to Home (90 s
  * untouched, D-66). */
 async function chores() {
-  if (await everyone().isVisible()) return;
-  await board
-    .getByRole('list', { name: 'Family', exact: true })
-    .getByRole('button', { name: 'Chores', exact: true })
-    .click();
-  await expect(everyone()).toBeVisible();
+  if (!(await everyone().isVisible()))
+    await board
+      .getByRole('list', { name: 'Family', exact: true })
+      .getByRole('button', { name: 'Chores', exact: true })
+      .click();
+  await expect(everyone(), "the board's Chores screen").toBeVisible();
 }
 
 test('[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batch, open again on the board, four reversals; Undo puts them back', async () => {
@@ -180,9 +188,12 @@ test('[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batc
 });
 
 test('[CHR-06] late credit for yesterday, then unchecked again; a day ahead skipped and put back', async () => {
+  // [D-110] About 8 server round trips (two page loads, two day links, four saves): up to about
+  // 40 s on a slow preview, so 3x that.
+  test.setTimeout(120_000);
   const leo = memberId('Leo');
   // The seed's Leo missed his bed yesterday.
-  const yesterday = occ(MAKE_BED, leo, `${TODAY} - 1`);
+  const yesterday = occ(MAKE_BED, leo, addDays(today, -1));
   expect(status(yesterday)).toBe('missed');
   await admin.goto('/admin/today');
   await admin.getByRole('link', { name: 'Day before', exact: true }).click();
@@ -195,7 +206,7 @@ test('[CHR-06] late credit for yesterday, then unchecked again; a day ahead skip
   // Its day is closed, so it is missed again, as the seed had it.
   expect(status(yesterday)).toBe('missed');
 
-  const tomorrow = occ(SET_THE_TABLE, null, `${TODAY} + 1`);
+  const tomorrow = occ(SET_THE_TABLE, null, addDays(today, 1));
   await admin.goto('/admin/today');
   await admin.getByRole('link', { name: 'Day after', exact: true }).click();
   await expect(admin.getByRole('heading', { name: 'Tomorrow', level: 1 })).toBeVisible();
@@ -210,11 +221,15 @@ test('[CHR-06] late credit for yesterday, then unchecked again; a day ahead skip
 });
 
 test('[CHR-05][D-22] with approval on, a child’s check-off waits for a parent: approved, or sent back to try again', async () => {
+  // [D-110] About 9 server round trips (three page loads, four saves, the board twice): up to about
+  // 40 s on a slow preview, so 3x that.
+  test.setTimeout(120_000);
   const [maya, leo] = [memberId('Maya'), memberId('Leo')];
   const dog = occ(FEED_THE_DOG, null);
   const table = occ(SET_THE_TABLE, null);
-  // Open again before switching: switching changes only what's still to do (D-22).
-  systemEvent(table, 'admin_uncomplete');
+  // Open before switching: switching changes only what's still to do (D-22). putBack opens it after
+  // each test; this is for a table left done some other way.
+  if (status(table) !== 'scheduled') systemEvent(table, 'admin_uncomplete');
 
   // [D-84] The switch is in Settings, Family options (WP-57).
   await admin.goto('/admin/settings/family');
@@ -274,11 +289,11 @@ test('[CHR-14][US-316] My tasks: quick add makes a task for me today, on the boa
            join public.chore_occurrence_assignee a on a.occurrence_id = o.id
           where c.household_id = '${DEMO}' and c.title = '${title}'
           group by c.kind, c.visibility, o.due_date`),
-  ).toBe(`task:family:${sql(`select ${TODAY}`)}:${alex}`);
+  ).toBe(`task:family:${today}:${alex}`);
   await chores();
   await expect(
     column('Alex').getByRole('button', { name: `Check off ${title}`, exact: true }),
-  ).toBeVisible({ timeout: 15_000 });
+  ).toBeVisible();
 
   await admin.getByRole('button', { name: `Mark ${title} done`, exact: true }).click();
   await expect(admin.getByRole('status')).toHaveText(`Marked ${title} done.`);

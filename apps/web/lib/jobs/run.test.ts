@@ -75,6 +75,31 @@ describe('[NFR-07] job endpoint', () => {
     ]);
   });
 
+  it('[CHR-20] runs one household only when the call names it (an alert at once, D-119)', async () => {
+    const job = vi.fn<Job>(async () => ({ status: 'ok' }));
+    const { deps, finished, runDeferred } = setup({ sample: job });
+    const res = await handleJob(call({ household: 'h2' }), 'sample', deps);
+    expect(await res.json()).toEqual({ job: 'sample', runs: 1 });
+    await runDeferred();
+    expect(job.mock.calls.map((c) => c[0].householdId)).toEqual(['h2']);
+    expect(finished.map((f) => f.id)).toEqual(['run-h2']);
+  });
+
+  it('[CHR-20] runs no household for a household it does not know, nor for a name that is not text', async () => {
+    const job = vi.fn<Job>(async () => ({ status: 'ok' }));
+    const { deps, runDeferred } = setup({ sample: job });
+    expect(await (await handleJob(call({ household: 'h9' }), 'sample', deps)).json()).toEqual({
+      job: 'sample',
+      runs: 0,
+    });
+    expect(await (await handleJob(call({ household: 7 }), 'sample', deps)).json()).toEqual({
+      job: 'sample',
+      runs: 2,
+    });
+    await runDeferred();
+    expect(job).toHaveBeenCalledTimes(2);
+  });
+
   it('passes the last successful run so the job can catch up', async () => {
     const last = new Date('2026-10-08T23:17:00Z');
     const { store } = fakeStore(['h1'], last);

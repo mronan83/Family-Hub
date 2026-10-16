@@ -1,7 +1,18 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.46: US-913 added at the owner's request (WP-85, NFR-18, D-107): every test traced to what it proves.
+> v0.8.58: US-913 added at the owner's request (WP-85, NFR-19, D-107): every test traced to what it proves.
+> v0.8.56: US-322 as changed at the owner's request (WP-92, D-119): an approvals alert comes within seconds and counts all that waits.
+> v0.8.55: US-111 Admin pages that fold to what matters, added at the owner's request (WP-93 to WP-97, D-120).
+> v0.8.54: US-208 Boards that fit on one screen, added at the owner's request (WP-91, D-118).
+> v0.8.53: US-207 as built (WP-34, D-117): a night takes its times from the day after it; a touch in the night wakes a board for its idle time or 5 minutes; Only while awake counts a board's hours awake; the picture drifts; the Pi's screen helper.
+> v0.8.52: US-207 gains sleep and wake per board and when a board counts as missed, added at the owner's request (WP-34, D-116).
+> v0.8.51: US-401 as built for a goal's end date that can be cleared (WP-79, D-115): **Ends on a date** and **Clear**; a started goal ends today or later; a reached goal keeps its rules and dates, added at the owner's request.
+> v0.8.50: US-711 as built (WP-75, D-114): **Copy last week** also collapsed at first and moved up under **Add to the plan**, added at the owner's request; a day opens by itself after a change to it.
+> v0.8.49: US-711 gains the usual lunch week and Add to the plan collapsed at first (WP-75, D-98), added at the owner's request.
+> v0.8.48: US-701 as built for Edit on a planned meal (WP-76, D-111).
+> v0.8.47: US-911 gains a pull request's preview on a test database prepared with its own migrations (WP-89, added at the owner's request); its e2e criterion now reads as D-108 built it (WP-88).
+> v0.8.46: US-410 to US-415 added at the owner's request (WP-80 to WP-82, D-101 to D-103): goals that repeat each week, month or term, with "every day it's due" and misses allowed; the child's week won or missed; done by a time; tiers; perfect periods; a family goal every child meets. US-401 gains a goal's end date that can be cleared (WP-79, RWD-14).
 > v0.8.45: US-709, US-710, US-711 and US-1010 added at the owner's request (WP-72 to WP-75, D-97, D-98): the lunch picks one tap from Home; the lunch week as a list of days; the meal planner's days folded; a board laid out for its screen's shape. US-701 gains Edit on a planned meal (WP-76, MEAL-15).
 > v0.8.44: US-707 as built (WP-49, D-95): a child's change waits for a parent on Today, picks included; the cut-off; Done; the picks in place of the options.
 > v0.8.43: US-804 as built (WP-64, D-94): the home screen's entree options with their sides, on one line, a tap opening the whole menu; the Meals screen's menu a row a section. US-707 gains the owner's answers at WP-64's mockup (D-94): pick one where a section says "Choice of"; Monday to Friday after a Sunday; today until a morning cut-off; a parent approves a change.
@@ -149,6 +160,17 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given **Settings → Family options**, when I open it, then I find the day the week starts on, check-offs, the weather on the boards, the admins and invites.
 - Given I choose a new start day, when I save, then the week now running keeps its days and the new day starts from the next week, as the page says; **Keep** cancels it.
 
+### US-111 — Admin pages that fold to what matters
+**As an** admin **I want** each admin page's set-up and reference sections to fold to a line that says what matters, the way Meals does **so that** a page fits my phone's screen and I open only what I'm changing (added at the owner's request, WP-93 to WP-97, D-120).
+**Priority:** Should · **Phase:** P3 · **Reqs:** NFR-18
+- Given an admin page with a form that adds something, an archived list, a history or a log, or a setting set once, when it opens, then that section is folded, its header showing its button or what it is set to.
+- Given **Calendars**, **School menus** or **Boards**, when it opens, then each calendar, menu or board is folded to its facts and opens to its settings.
+- Given something waiting for a parent, a page's main list or an edit page's form, when the page opens, then it is open.
+- Given a folded section with a warning ("Can't sync", "Can't fetch", a failing job, weather not updated, a removed device) or something waiting, when it is folded, then that shows on its header.
+- Given I save, add or get an error inside a fold, when the page comes back, then that section is open.
+- Given **Today**, when every item in a part of the day is done or skipped, then that part is folded to "6 of 6 done" and opens for **Uncheck**; **Overdue** stays open while it has anything in it.
+- Given a form with an icon, when it opens, then the icon picker is folded to the icon chosen.
+
 ---
 
 ## E2 — Device and board shell
@@ -199,10 +221,27 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a calendar source's last success is older than three sync intervals, when the calendar view renders, then it shows a "calendar may be out of date" badge.
 
 ### US-207 — Quiet hours and burn-in protection
-**As an** admin **I want** the display to dim or sleep overnight and avoid static pixels **so that** it's not a night light and the panel lasts.
+**As an** admin **I want** the display to dim or sleep overnight and avoid static pixels, and to choose for each board when it sleeps and whether I hear that it is missing, **so that** it's not a night light, the panel lasts, and a board that is often off doesn't keep reminding me (the per-board choices added at the owner's request, WP-34, D-116).
 **Priority:** Should · **Phase:** P3 · **Reqs:** DEV-07
 - Given quiet hours 21:00–06:30, when the time is reached, then the board dims to a minimal clock layout (or powers the screen down on the Pi) and touch wakes it.
 - Given the board is idle, when more than 10 minutes pass, then the layout drifts or dims to avoid static high-contrast elements.
+- Given a board set to sleep at 21:00 and wake at 06:30 on school days and at 22:00 and 08:00 on weekends, when each time is reached, then it sleeps or wakes by the right pair for that day; a day off from school uses the weekend pair.
+- Given a board set to sleep after 10 minutes untouched, when 10 minutes pass, then it sleeps, and a touch, a click or a mouse movement wakes it.
+- Given a board is asleep, when someone touches it, then it wakes and nothing on it is checked off or pressed.
+- Given a board is in its scheduled sleep, when someone touches it, then it wakes for its idle time and then sleeps again.
+- Given a board set to **Never**, when it hasn't been seen for a day, then Home doesn't list it; set to **Only while awake**, Home doesn't list it while it is in its scheduled sleep; set to **Always**, Home lists it after a day unseen, as now.
+- Given a board in a browser (such as an iPad), when it sleeps, then its screen is black; on the Pi the kiosk also turns the screen off.
+- As built (WP-34, D-117): on Boards, each board's **Sleep and wake**: **Tell me when (board) isn't seen** (Always, Only while awake, Never), **Sleep at night** with a school night's and a weekend's sleep and wake times, and **Sleep when nobody touches it** (Never, or 5 minutes to 2 hours); the board's row says "Asleep · wakes at 6:30 am" or "Awake · sleeps at 9:30 pm". A night takes its times from the day after it, so Sunday night is a school night and the night before a day off a weekend night. Asleep, the board is black; the touch, click or mouse movement that wakes it presses nothing; at night it stays awake for its idle time (5 minutes if Never) after the last touch, then sleeps again. **Only while awake** counts only a board's hours awake toward the day unseen. The picture drifts a px every 5 minutes within a 4 px square; there is no separate dim. On the Pi, a helper installed once with one command turns the monitor off and on.
+
+### US-208 — Boards that fit on one screen
+**As an** admin **I want** each board and the home screen layout on **Boards** to fold away **so that** I see every board at a glance and open only the one I'm changing (added at the owner's request, WP-91, D-118).
+**Priority:** Should · **Phase:** P3 · **Reqs:** DEV-09
+- Given Boards, when it opens, then every board is folded, showing its name, "Awake · sleeps at 9:30 pm" or "Asleep · wakes at 6:30 am", when it was last seen, its theme and text size, and whether it has its own layout or the household's.
+- Given a board Home would list as not seen, when it is folded, then the warning shows on its folded row.
+- Given I open a board, when it expands, then I see its settings in groups: **Display** (theme, text size), **Sleep and wake**, **Calendars**, **Home screen**, and, set apart at the bottom, **Rename** and **Disconnect**, which still asks first.
+- Given Boards, when it opens, then the household's **Home screen** layout is folded to one line ("5 days · meals on · Goals, Waiting, Coming up · weather on"), and opens to its form on tap.
+- Given Boards, when it opens, then **Add a board** is one button that opens the name and pairing code form, and **Disconnected** shows a count that opens the list.
+- Given I save a change inside a board, when the page comes back, then that board is open.
 
 ---
 
@@ -320,8 +359,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-322 — Told when something waits for me
 **As a** parent with notifications on **I want** an alert on my phone when a check-off or a reward request waits for me **so that** the kids aren't kept waiting until I next open the app.
 **Priority:** Should · **Phase:** P2 · **Reqs:** CHR-20
-- Given approval is on and Maya checks off "Make bed" on the board, when the reminders job next runs, then I get one alert, "Maya: 1 check-off waiting", and tapping it opens **Today** with it there.
-- Given Maya checks off three things and asks for a reward within a few minutes, when the alert comes, then it is one alert for all four, and it replaces any earlier one still on my lock screen.
+- Given approval is on and Maya checks off "Make bed" on the board, within seconds I get one alert, "Maya: 1 check-off waiting", and tapping it opens **Today** with it there.
+- Given Maya checks off three things and asks for a reward, when each starts waiting, then an alert comes at once, each replacing the one before on my lock screen and counting everything still waiting: the last says "Maya: 3 check-offs and 1 reward request waiting".
 - Given it is within my quiet hours, when something becomes waiting, then the alert waits until they end, and is not sent if another parent has cleared everything by then.
 - Given I switch **Approvals** off in Reminders, when something becomes waiting, then I get no alert, and the other parent still does if theirs is on.
 
@@ -394,9 +433,11 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 
 ### US-401 — Create a reward goal
 **As an** admin **I want** to define a reward with start and end dates and rules **so that** my child works toward something specific.
-**Priority:** Must · **Phase:** P1 · **Reqs:** RWD-01, RWD-02, RWD-03
+**Priority:** Must · **Phase:** P1 · **Reqs:** RWD-01, RWD-02, RWD-03, RWD-14
 - Given I create a goal "Movie night" with a 14-day window and rules (COUNT ≥ 20 chores tagged Morning) AND (STREAK ≥ 5), when I save, then its status is `scheduled` or `active` depending on the start date.
 - Given the rule logic is `any`, when only one rule is met, then the goal is achieved.
+- Given a goal with an end date, when I untick **Ends on a date** or choose **Clear** on any device, an iPhone included, and save, then the goal has no end date and opens with the box unticked (added at the owner's request, WP-79, RWD-14, D-115).
+- Given a started goal, when I add an end date or move it, then it is today or later; given a reached goal, when I open it, then its rules and dates can't change, only its name, description and picture (added at the owner's request, D-115).
 
 ### US-402 — Streaks that forgive
 **As an** admin **I want** streaks to tolerate a limited number of misses and ignore non-chore days **so that** one bad day doesn't crush motivation.
@@ -457,6 +498,48 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Must · **Phase:** P1 · **Reqs:** RWD-04
 - Given a completion was stored but evaluation failed, when the reconcile job runs, then the dirty goal is recomputed within 5 minutes.
 - Given the same event is replayed, when evaluated, then progress is unchanged.
+
+### US-410 — A goal that repeats each week
+**As a** parent **I want** a goal that repeats each week, month or school term and asks for every day its chore is due **so that** "homework home every school day" is won or lost one week at a time (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-15, RWD-16
+- Given a goal "Homework home, every day it's due, each week" with 0 misses allowed, when a week has 5 school days and all 5 are done, then that week is reached and pays.
+- Given a week with a closure on Friday, when Monday to Thursday are done, then the week is reached: it needs 4.
+- Given Tuesday is missed with 0 allowed, when Tuesday closes, then the week is lost, and the goal shows "Missed, starts again Monday <date>" with no part count.
+- Given 1 miss allowed, when one day is missed, then the week can still be reached; when a second is missed, then it is lost.
+- Given a week of school break, when it ends, then it is neither won nor missed.
+- Given a day I skipped, when the week is worked out, then that day is neutral.
+- Given I tick Tuesday's homework late for my child, after the week has ended, when the goal is worked out again, then the week is reached.
+- Given a repeating goal with no end date, when I look at it, then it keeps repeating until I stop it, and Goals shows its history ("3 of the last 4 weeks").
+
+### US-411 — My week, won or missed
+**As a** kid **I want** to see this week's goal and whether it is still on **so that** I know a missed day ended the week and when it starts again (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-15, RWD-16
+- Given my repeating goal, when I open my screen on the board, then I see this week's days done of those due, and my last weeks won.
+- Given I missed Tuesday, when I look at the goal, then it says "Missed, starts again Monday <date>".
+
+### US-412 — Done by a time
+**As a** parent **I want** a goal to count only check-offs made by a set time **so that** "homework before 6 pm" and "bed made before school" mean what they say (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-17
+- Given a rule set to count by 6 pm, when my child ticks at 6:05 pm, then the chore is done and earns its points, but doesn't count toward the goal.
+- Given a rule set to each chore's due time, when a chore is ticked before its due time, then it counts.
+
+### US-413 — Goals that pay in tiers
+**As a** parent **I want** a goal or a week to pay at steps **so that** partial effort earns something without lowering the bar for the full payout (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-18
+- Given steps 3 days = 5 points, 4 = 10, 5 = 20, when the week closes with 4 done, then 10 points are paid, once.
+- Given all 5 are done, when the fifth is ticked, then 20 points are paid at once, not 35.
+
+### US-414 — Perfect weeks
+**As a** parent **I want** a goal that counts the weeks a repeating goal was reached, in total or in a row **so that** "4 perfect weeks this term" or "3 in a row" earns something bigger (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-19
+- Given "3 perfect weeks in a row", when a week is lost, then the run starts again; when a week is a break, then the run holds.
+- Given "4 perfect weeks this term", when the fourth week is reached, then the goal is reached.
+
+### US-415 — A family goal every child meets
+**As a** parent **I want** a family goal that is reached only when each child meets it on their own **so that** one child can't carry the others (added at the owner's request).
+**Priority:** Should · **Phase:** P2 · **Reqs:** RWD-20
+- Given a family goal with "every child meets it", when Maya is done every day and Leo missed Tuesday, then the week is not reached.
+- Given a child with nothing due that week, when the others meet it, then the week is reached.
 
 ---
 
@@ -582,6 +665,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a family dinner vs a per-child lunch, when I add entries, then I can scope each to the household or one member.
 - Given a planned meal, when I tap **Change**, then I can choose **Edit** or **Remove**; **Edit** opens the meal's form filled in with what was saved, and after I save, the plan shows my changes and opening it again shows them too (added at the owner's request, WP-76, MEAL-15).
 - As built (WP-25, D-77): **Meals** shows a week (**Last week**, **Next week**), each day's four meals with **Add** and **Change** (**Earlier**, **Later**, **Remove**); **Add to the plan** takes a meal from the library (those good for that meal first) or something written in, for **Everyone** or one person, with a note. The **Meal library** keeps each meal's name, what it's good for, a recipe link and an icon; archived meals keep their place in old plans.
+- As built (WP-76, D-111): **Change** offers **Edit** and **Remove** (with **Earlier** and **Later** where the meal of the day has more than one entry); **Edit** opens the meal's form in place, under it, filled with what was saved; **Save changes** updates that entry, keeping its place in the order, and **Edit** again shows what was saved.
 
 ### US-702 — Copy last week
 **As an** admin **I want** to copy a previous week or reuse meals **so that** planning takes minutes.
@@ -662,6 +746,10 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given the meal planner, when it opens, then every day is closed, showing its weekday, its date for the week shown, and "2 of 4 set" (the meals that day has a meal for, of the meals it shows), or a checkmark when all are set.
 - Given I open a day, when it expands, then I see its meals and what is planned as today, with **Add** and **Change**.
 - Given today is in the week, when its day is open or closed, then it is outlined as it is now.
+- Given Meals on any screen size, when it opens, then **School lunch**'s usual week is collapsed, showing one line per child ("Sam: Mon Buy · Tue Bring · …"), and **Add to the plan** is collapsed to its header and button; each opens on tap (added at the owner's request).
+- Given a day of the meal week, when I tap **Add**, then **Add to the plan** opens with that day filled in.
+- Given Meals, when it opens, then the week's days come first, then **Add to the plan**, then **Copy last week** (collapsed at first, opening on tap), then **School lunch** (added at the owner's request, D-114).
+- Given I add, edit, move or remove a meal of a day, when the page comes back, then that day is open.
 
 ---
 
@@ -765,7 +853,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As an** admin **I want** every change to pass automated checks and a preview before it reaches production **so that** a mistake never breaks the family's board.
 **Priority:** Must · **Phase:** P0 · **Reqs:** NFR-14, NFR-12
 - Given a pull request, when it is opened, then lint, typecheck, unit tests, database tests, traceability and build run without Docker, and the PR cannot merge until they pass.
-- Given a pull request, when Vercel finishes its preview, then the PR's new migrations are applied (unless one removes or renames something), the demo family is reset, and the e2e suite runs against the preview; two PRs never test at the same time.
+- Given a pull request, when Vercel finishes its preview, then a job empties the test database, applies the PR's migrations and loads the demo family, so the preview shows the PR's schema; the job runs no tests and never blocks the PR or a deploy (WP-89).
+- Given `main`, when the nightly e2e run starts, then it runs the suite on a preview of `main` against the test database, and a red run opens an issue without blocking a PR or a deploy (D-108).
 - Given a pull request with every check green, when I open its preview, then I see the demo family, and nothing I do there changes my family's data.
 - Given a pull request, when I have not approved it, then it is not merged or deployed.
 - Given a merge to `main`, when the deploy runs, then migrations are applied to production before the app is deployed, and a failed migration stops the app deploy.
@@ -789,7 +878,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 
 ### US-913 — Every test traced to what it proves
 **As the** owner **I want** every requirement, story and backlog item traced to the tests that prove it **so that** I can see what is tested, what isn't, and that nothing new ships untested.
-**Priority:** Must · **Phase:** P3 · **Reqs:** NFR-18
+**Priority:** Must · **Phase:** P3 · **Reqs:** NFR-19
 - Given the tests in every layer, when the docs are regenerated, then the Test catalogue (`08` §9) lists each requirement, story and backlog item with its tests (file, name, layer) and test cases, and whether it is covered or a gap.
 - Given a PR that adds a built requirement or story with no test, a Done item with no test cases, a test case with no test, or a test naming an unknown ID, when CI runs, then the traceability check fails and says which.
 - Given a gap that existed when the catalogue was made, when CI runs, then it is listed as a known gap and doesn't fail the build; once a test closes it, it comes off the list.

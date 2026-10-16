@@ -18,6 +18,7 @@ import type { LoadLunches } from './lunches-ui';
 import { effectiveLayout } from '@/lib/board-layout';
 import { DeployWatch } from './deploy-watch';
 import { HealthLines } from './health-lines';
+import { driftStyle, SleepCover, useBoardSleep, useScreenPower } from './sleep';
 import type { PhotoUrl } from './picture';
 import { type QueueState, Today } from './today';
 import { useMinute } from './use-minute';
@@ -309,6 +310,10 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
   });
   const { household, device } = snapshot;
   const tz = household.timezone;
+  // [DEV-07] Asleep at its set times or when untouched (WP-34); on a Pi the screen goes off too.
+  const sleeping = useBoardSleep(device.sleep, tz, snapshot.schoolDays);
+  const { asleep } = sleeping;
+  useScreenPower(asleep);
   // A new day in the household: read today's items (nothing changed in the database to say so).
   // Checked each minute, so a read that reached the server a moment before its midnight tries again.
   const localDay = isoDay(tz, now);
@@ -317,49 +322,61 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
   }, [now, localDay, snapshot.today, refresh]);
 
   return (
-    <main className="fw-board" data-fetched-at={snapshot.fetchedAt}>
-      <DeployWatch version={appVersion} />
-      <BoardThemeController timeZone={tz} override={device.theme} />
-      <header className="fw-board__bar">
-        <div className="fw-board__title">
-          <h1>{household.name}</h1>
-          <p className="fw-board__date" suppressHydrationWarning>
-            {day(now, tz)}
-            {/* Which board this is, beside the date (D-74). */}
-            <span className="fw-board__device"> · {device.name}</span>
-          </p>
-        </div>
-        <div className="fw-board__status">
-          <div className="fw-board__now">
-            {/* [BRD-04] The weather beside the clock (WP-45), unless the layout turns it off. */}
-            {hydrated &&
-            effectiveLayout(snapshot.layout.household, snapshot.layout.board).weather ? (
-              <WeatherNow weather={snapshot.weather} today={localDay} />
-            ) : null}
-            <time className="fw-board__clock" dateTime={now.toISOString()} suppressHydrationWarning>
-              {time(now, tz)}
-            </time>
+    <>
+      <main
+        className="fw-board fw-board--drift"
+        data-fetched-at={snapshot.fetchedAt}
+        data-asleep={asleep ? 'true' : 'false'}
+        style={hydrated ? driftStyle(now) : undefined}
+      >
+        <DeployWatch version={appVersion} />
+        <BoardThemeController timeZone={tz} override={device.theme} />
+        <header className="fw-board__bar">
+          <div className="fw-board__title">
+            <h1>{household.name}</h1>
+            <p className="fw-board__date" suppressHydrationWarning>
+              {day(now, tz)}
+              {/* Which board this is, beside the date (D-74). */}
+              <span className="fw-board__device"> · {device.name}</span>
+            </p>
           </div>
-          <LiveStatus link={link} events={events} status={status} />
-          {hydrated ? <HealthLines offline={health.offline} stale={health.stale} /> : null}
-        </div>
-      </header>
-      <Today
-        snapshot={snapshot}
-        now={now}
-        post={postCompletions}
-        store={store}
-        onQueue={setQueue}
-        pinWish={postWish}
-        ask={postAsk}
-        cancelAsk={postCancelAsk}
-        markCelebrated={postCelebrated}
-        photoUrl={photoUrl}
-        loadCalendar={loadCalendar}
-        loadLunches={loadLunches}
-        askLunch={postLunch}
-        seenLunch={postLunchSeen}
-      />
-    </main>
+          <div className="fw-board__status">
+            <div className="fw-board__now">
+              {/* [BRD-04] The weather beside the clock (WP-45), unless the layout turns it off. */}
+              {hydrated &&
+              effectiveLayout(snapshot.layout.household, snapshot.layout.board).weather ? (
+                <WeatherNow weather={snapshot.weather} today={localDay} />
+              ) : null}
+              <time
+                className="fw-board__clock"
+                dateTime={now.toISOString()}
+                suppressHydrationWarning
+              >
+                {time(now, tz)}
+              </time>
+            </div>
+            <LiveStatus link={link} events={events} status={status} />
+            {hydrated ? <HealthLines offline={health.offline} stale={health.stale} /> : null}
+          </div>
+        </header>
+        <Today
+          snapshot={snapshot}
+          now={now}
+          post={postCompletions}
+          store={store}
+          onQueue={setQueue}
+          pinWish={postWish}
+          ask={postAsk}
+          cancelAsk={postCancelAsk}
+          markCelebrated={postCelebrated}
+          photoUrl={photoUrl}
+          loadCalendar={loadCalendar}
+          loadLunches={loadLunches}
+          askLunch={postLunch}
+          seenLunch={postLunchSeen}
+        />
+      </main>
+      <SleepCover sleeping={sleeping} name={device.name} />
+    </>
   );
 }

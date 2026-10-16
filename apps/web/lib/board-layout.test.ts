@@ -3,6 +3,7 @@ import {
   DEFAULT_LAYOUT,
   effectiveLayout,
   layoutFromForm,
+  layoutSummary,
   moveCard,
   readLayout,
 } from './board-layout';
@@ -114,5 +115,25 @@ describe('changing a layout', () => {
     });
     expect(layoutFromForm('2', [], []).calendar).toBe('5');
     expect(layoutFromForm('5', [], [], null).weather).toBe(false);
+  });
+});
+
+describe('the layout in one line', () => {
+  it('[BRD-05][DEV-09][D-118] the days, meals, the cards shown in order, and the weather (WP-91)', () => {
+    expect(layoutSummary(DEFAULT_LAYOUT)).toBe(
+      '5 days · meals on · Goals, Waiting, Coming up · weather on',
+    );
+    // Coming up moved above Goals, past Waiting (hidden).
+    const hidden = layoutFromForm(
+      'month',
+      ['meals', 'goals', 'waiting', 'coming'],
+      ['goals', 'coming'],
+      null,
+    );
+    const mine = moveCard(moveCard(hidden, 'coming', -1), 'coming', -1);
+    expect(layoutSummary(mine)).toBe('Month · meals off · Coming up, Goals · weather off');
+    expect(layoutSummary(layoutFromForm('3', [], ['meals']))).toBe(
+      '3 days · meals on · no cards · weather on',
+    );
   });
 });

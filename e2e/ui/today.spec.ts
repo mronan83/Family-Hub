@@ -23,12 +23,16 @@ const balance = async (page: Page, scope = page.locator('body')) =>
 /** [D-66] Everyone's day in a column each: the Chores screen (the home screen is the dashboard). */
 async function chores(page: Page) {
   await page.goto('/dev/board');
+  // [D-110] React has hydrated the page (apps/web/app/hydrated.tsx): its timers and handlers are live.
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
   await people(page).getByRole('button', { name: 'Chores', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Everyone today' })).toBeVisible();
 }
 
 async function asMaya(page: Page) {
   await page.goto('/dev/board');
+  // [D-110] React has hydrated the page (apps/web/app/hydrated.tsx): its timers and handlers are live.
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
   await people(page).getByRole('button', { name: 'Maya', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Maya', level: 2 })).toBeVisible();
 }

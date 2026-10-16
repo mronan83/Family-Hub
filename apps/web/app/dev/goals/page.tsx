@@ -170,7 +170,9 @@ export default async function DevGoalsPage({
 }) {
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
-  if (params.form === 'new' || params.form === 'started' || params.form === 'preview') {
+  // [RWD-14] no-end: a started goal with no end date (WP-79); reached: an achieved goal, locked (D-115).
+  const forms = ['new', 'started', 'preview', 'no-end', 'reached'];
+  if (params.form && forms.includes(params.form)) {
     const started = params.form !== 'new';
     return (
       <div className={`admin ${theme}`}>
@@ -185,13 +187,13 @@ export default async function DevGoalsPage({
               items={ITEMS}
               prizes={PRIZES}
               today="2026-10-10"
-              lock={started ? 'started' : 'none'}
+              lock={params.form === 'reached' ? 'finished' : started ? 'started' : 'none'}
               preview={
                 params.form === 'preview'
                   ? {
-                      outcome:
-                        'Saving takes it back to going: 88% there, and Ice cream from the shop is called off (if it was already given, the goal is flagged for a look).',
-                      before: 'Reached',
+                      // A going goal: a reached one keeps its rules, so has no preview (D-115).
+                      outcome: 'Its progress goes from 96% to 88%.',
+                      before: '96% there',
                       after: '88% there',
                       rows: [
                         {
@@ -218,7 +220,7 @@ export default async function DevGoalsPage({
                       icon: 'sun',
                       memberId: MAYA,
                       startDate: '2026-10-03',
-                      endDate: '2026-10-24',
+                      endDate: params.form === 'no-end' ? null : '2026-10-24',
                       logic: 'any',
                       payout: { type: 'catalog_item', item_id: ICE_CREAM },
                       rules: [

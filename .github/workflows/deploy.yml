@@ -1,9 +1,9 @@
 # Ordered production deploy (01 §9.6): gate, then migrations, then the app, then a smoke check.
-# GitHub Free does not enforce branch protection or environment secrets on a private repository
-# (D-36), so the PR gates are enforced here instead: only the head of main deploys, and only if it
-# came from a merged pull request, passed every CI check, and its pull request passed e2e on its
-# preview. Migrations go through the Supabase session pooler (IPv4; the Free plan's direct
-# connection is IPv6-only). Enabled once the secrets in 01 §9.8 exist: set the repository variable
+# The PR gates are enforced here (D-36): only the head of main deploys, and only if it came from a
+# merged pull request and the fast CI checks passed on it and on its pull request's head. No e2e
+# result is read: e2e runs nightly and never blocks a deploy (D-108). A refused or failed deploy
+# opens or updates the issue "Deploy refused: <commit>". Migrations go through the Supabase session
+# pooler (IPv4; the Free plan's direct connection is IPv6-only). Enabled once the secrets in 01 §9.8 exist: set the repository variable
 # DEPLOY_ENABLED=true.
 name: deploy
 
@@ -30,6 +30,7 @@ jobs:
     outputs:
       sha: ${{ steps.check.outputs.sha }}
       deploy: ${{ steps.check.outputs.deploy }}
+      reason: ${{ steps.check.outputs.reason }}
     env:
       GH_TOKEN: ${{ github.token }}
       REPO: ${{ github.repository }}
@@ -112,3 +113,34 @@ jobs:
           node-version-file: .nvmrc
       - name: Sync job schedules
         run: node scripts/job-schedules.mjs | psql "$SUPABASE_DB_URL" -X -q -v ON_ERROR_STOP=1 --single-transaction
+
+  # A refused or failed deploy opens or updates one issue saying why (D-108). A skip is not a refusal.
+  report:
+    needs: [gate, migrate, app, smoke, schedule]
+    if: always() && contains(needs.*.result, 'failure')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      SHA: ${{ needs.gate.outputs.sha || github.event.workflow_run.head_sha || github.sha }}
+      REASON: ${{ needs.gate.outputs.reason }}
+      RESULTS: >-
+        gate ${{ needs.gate.result }}, migrate ${{ needs.migrate.result }}, app ${{ needs.app.result }},
+        smoke ${{ needs.smoke.result }}, schedule ${{ needs.schedule.result }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: scripts/open-issue.sh
+          sparse-checkout-cone-mode: false
+      - name: Open or update "Deploy refused"
+        run: |
+          body="Commit $SHA was not deployed.
+
+          Reason: ${REASON:-a deploy job failed; see the run}
+          Jobs: $RESULTS
+          Run: $RUN_URL"
+          bash scripts/open-issue.sh "Deploy refused: ${SHA:0:7}" "$body"

@@ -1,4 +1,4 @@
-# Known test gaps (NFR-18, `08` §9.6): gaps that existed when the catalogue was first made (WP-85).
+# Known test gaps (NFR-19, `08` §9.6): gaps that existed when the catalogue was first made (WP-85).
 # check_traceability.py --fix takes a gap off once it is closed; a new gap fails CI instead of coming here.
 # Closing them all is WP-86.
 story US-101
@@ -9,6 +9,7 @@ story US-105
 story US-201
 story US-202
 story US-204
+story US-208
 story US-301
 story US-302
 story US-310
@@ -92,5 +93,15 @@ done-when WP-66
 done-when WP-67
 done-when WP-70
 done-when WP-71
+done-when WP-73
+done-when WP-74
+done-when WP-75
+done-when WP-76
 done-when WP-77
 done-when WP-78
+done-when WP-79
+done-when WP-83
+done-when WP-88
+done-when WP-90
+done-when WP-91
+done-when WP-92
