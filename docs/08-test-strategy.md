@@ -271,9 +271,9 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 117 of 131 |
+| Requirements built (a Done item builds them) | 117 of 134 |
 | Built requirements with no test | 0 |
-| Stories built | 104 of 117 |
+| Stories built | 104 of 120 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
 | Test cases | 118 (with a test: 118) |
@@ -347,6 +347,9 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | CHR-18 | M | Covered | US-320 | WP-43 | — | U 5 · DB 21 · E2E 2 |
 | CHR-19 | M | Covered | US-321 | WP-61 | — | U 2 · DB 14 · UI 1 · E2E 1 |
 | CHR-20 | S | Covered | US-322 | WP-63, WP-92 | — | U 3 · DB 22 · UI 1 · E2E 1 |
+| CHR-21 | S | Not built | US-323 | WP-96 | — | — |
+| CHR-22 | S | Not built | US-324 | WP-96 | — | — |
+| CHR-23 | S | Not built | US-325 | WP-96 | — | — |
 | RWD-01 | M | Covered | US-401 | WP-19 | — | U 5 · DB 1 · UI 2 · E2E 1 |
 | RWD-02 | M | Covered | US-312, US-401 | WP-15 | — | U 16 · UI 1 |
 | RWD-03 | M | Covered | US-401 | WP-15 | — | U 5 · UI 1 |
@@ -710,6 +713,9 @@ Status as in §9.3, for tests that name the story itself.
 | US-320 | CHR-18, CHR-09 | Gap | — |
 | US-321 | CHR-19 | Covered | E2E 1 |
 | US-322 | CHR-20 | Covered | DB 1 · UI 1 · E2E 1 |
+| US-323 | CHR-21 | Not built | — |
+| US-324 | CHR-22 | Not built | — |
+| US-325 | CHR-23 | Not built | — |
 | US-312 | CHR-10, RWD-02 | Covered | E2E 1 |
 | US-313 | CHR-11 | Gap | — |
 | US-314 | CHR-12, CHR-07 | Gap | — |
