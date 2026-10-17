@@ -104,7 +104,10 @@ export function fixtureMeals(kind: string | undefined, today: string): BoardMeal
       .map((d, i) => entry(d, 'dinner', dinners[i]!, { icon: i === 2 ? 'pizza' : null })),
     entry(today, 'dinner', 'Spaghetti', { icon: 'cooking-pot', notes: 'Make extra' }),
     entry(today, 'dinner', 'Fish fingers', { memberIds: [LEO, MAYA] }),
-    entry(dates[6]!, 'lunch', 'Grilled cheese', { icon: 'sandwich' }),
+    // Saturday's lunch, but never today's: on a Saturday it would be a fourth lunch today (D-110).
+    ...(dates[6] !== today
+      ? [entry(dates[6]!, 'lunch', 'Grilled cheese', { icon: 'sandwich' })]
+      : []),
   ].sort((a, b) => a.date.localeCompare(b.date));
   const diff = (d: string) => (Date.parse(d) - Date.parse(today)) / 86_400_000;
   const type = (d: string) =>

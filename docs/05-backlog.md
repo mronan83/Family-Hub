@@ -1670,6 +1670,7 @@ flowchart LR
 - **3. Item pictures** in a rule's item choices and in its summary.
 - **Found while building it, and fixed:** a rule's fields were named from a counter shared by every form the server drew, so once the server had drawn one form, the fields it sent kept other names than the browser's list of rules, and the rules could not be read when saved. A rule's name is now its place in the form (r1, r2…), the same on both.
 - **4. Dates and times written as the frames write them:** "Mon, Oct 12, 2026" on **Starts**, **Ends**, a started goal's start, Goals and a goal's page; "6:00 pm" on **By**. Each stays a real date or time picker: the written date is shown and a tap opens the phone's picker.
+- **Two tests that read the real clock, fixed at the owner's request on 17 October (D-110):** `160_admin_operations.test.sql` stamped its check-offs 3 hours before now, so between 05:00 and 08:00 UTC (00:00 to 03:00 in its household's Chicago) they fell on the day before and waited for a parent; each event is now after the household's midnight. `board-meals.spec.ts` failed on any Saturday, because the made-up week (`fixtureMeals()`) put Saturday's lunch on today; it no longer does. Both were red on `main` too.
 - Test cases:
 
 | Case | Test case | Layer |
