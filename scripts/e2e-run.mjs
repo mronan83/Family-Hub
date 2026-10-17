@@ -36,7 +36,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { classify, errorText, failureOf, redact } from './e2e-infra.mjs';
+import { classify, errorText, failureOf, healthReading, redact } from './e2e-infra.mjs';
 import { entriesOf } from './e2e-findings.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -117,11 +117,14 @@ export function startProbe({
     timers.push(
       setInterval(async () => {
         try {
+          const at = Date.now();
           const r = await fetch(new URL('/api/health', base), {
             headers,
             signal: AbortSignal.timeout(10_000),
           });
-          if (r.status >= 500) bad(`the preview answered /api/health with ${r.status}`);
+          await r.arrayBuffer();
+          const reading = healthReading(r.status, Date.now() - at);
+          if (reading) bad(reading);
         } catch (e) {
           bad(
             `the preview did not answer /api/health (${e.name === 'TimeoutError' ? 'in 10 s' : e.message})`,

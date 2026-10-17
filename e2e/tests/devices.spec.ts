@@ -6,6 +6,7 @@ import { addBoardForm, boardFold, pairingCode, retireBoard } from '../support/bo
 import { householdToday } from '../support/day';
 import { networkSwitch, type NetworkSwitch } from '../support/network';
 import { signIn } from '../support/session';
+import { slowReads } from '../../scripts/e2e-infra.mjs';
 
 // [DEV-01][DEV-02][DEV-03][DEV-05] A board on the preview (WP-05, WP-06, SPIKE-01, D-40): Alex gets
 // a code, a second browser pairs with it and reads the demo family, admin changes reach it within
@@ -297,7 +298,7 @@ test('[DEV-05] a change in the household reaches the board live (Realtime under 
   await expect(board.getByRole('list', { name: 'Family', exact: true })).toContainText('Maya R');
 });
 
-test('[DEV-05] a rename in the admin app reaches the board within 3 seconds (p95 of 20)', async () => {
+test('[DEV-05][NFR-14-p] a rename in the admin app reaches the board within 3 seconds (p95 of 20)', async () => {
   // [D-110] A sample takes about 5 s (a page load, a save, the board); the worst that still reports
   // is about 30 s (a 20 s miss after about 10 s of slow page load and save): 20 of them is 600 s.
   test.setTimeout(600_000);
@@ -311,6 +312,22 @@ test('[DEV-05] a rename in the admin app reaches the board within 3 seconds (p95
   sql(`update public.member set display_name = 'Leo 0' where id = '${leo}'`);
   await expect(family).toContainText('Leo 0');
   const samples: number[] = [];
+  const reads: (number | null)[] = [];
+  // When an attribute of the board's status was marked, from the save; "never" if not since it.
+  const sinceSave = async (name: string, from: number) => {
+    const t = Number((await live.getAttribute(name)) ?? 0);
+    return t >= from ? `+${t - from} ms` : 'never';
+  };
+  // The board's read still out when a wait ended, timed so far; else the last one back since the
+  // save; else null.
+  const stillOut = async (from: number) => {
+    const n = async (name: string) => Number((await live.getAttribute(name)) ?? 0);
+    const since = await n('data-reading-since');
+    if (since > 0) return Date.now() - since;
+    return (await n('data-read-from')) >= from
+      ? (await n('data-read-to')) - (await n('data-read-from'))
+      : null;
+  };
   for (let i = 1; i <= 20; i++) {
     const name = `Leo ${i}`;
     const opened = Date.now();
@@ -324,35 +341,54 @@ test('[DEV-05] a rename in the admin app reaches the board within 3 seconds (p95
     await form.getByRole('button', { name: 'Save changes', exact: true }).click();
     // Timed in the board's own page, checked every 50 ms, from the moment the server confirmed the
     // save (D-110), so a slow save is reported as a slow save, not as a slow board. A sample that
-    // never shows counts as 15 s, and measuring goes on, so a slow run still reports.
+    // never shows counts as 15 s, and measuring goes on, so a slow run still reports. With it, the
+    // board's read of its snapshot that drew the name (or the one still out when the wait ended),
+    // the evidence D-129 reads for a late change.
     const seen = board
       .waitForFunction(
-        (want) =>
-          [...document.querySelectorAll('[aria-label="Family"] .fw-today__person-name')].some(
-            (el) => el.textContent === want,
-          ) && Date.now(),
+        (want) => {
+          const shown = [
+            ...document.querySelectorAll('[aria-label="Family"] .fw-today__person-name'),
+          ].some((el) => el.textContent === want);
+          const live = document.querySelector('.fw-live');
+          const n = (name: string) => Number(live?.getAttribute(name) ?? 0);
+          return shown && { at: Date.now(), read: n('data-read-to') - n('data-read-from') || null };
+        },
         name,
         { polling: 50, timeout: 20_000 },
       )
       .then(
-        async (handle) => (await handle.jsonValue()) as number,
+        async (handle) => (await handle.jsonValue()) as { at: number; read: number | null },
         () => null,
       );
     const saved = await confirmed;
-    const at = await seen;
+    const got = await seen;
     const from = saved ?? clicked;
-    const shown = at === null ? 15_000 : Math.max(0, at - from);
+    const shown = got === null ? 15_000 : Math.max(0, got.at - from);
     samples.push(shown);
+    // Never shown: the read still out, timed so far; else the last read back since the save; else
+    // none of its own to time.
+    const read = got ? got.read : await stillOut(from);
+    reads.push(read);
     await admin.waitForURL(/\/admin\/members\?saved=/);
     report(
-      `[DEV-05] #${i}: board ${at === null ? 'never (counted 15000)' : shown} ms after the save was confirmed (admin page ${clicked - opened} ms, save ${saved === null ? 'not seen, timed from the click' : `${saved - clicked} ms`}, changes heard ${heard} → ${await live.getAttribute('data-events')})`,
+      `[DEV-05] #${i}: board ${got === null ? 'never (counted 15000)' : shown} ms after the save was confirmed (admin page ${clicked - opened} ms, save ${saved === null ? 'not seen, timed from the click' : `${saved - clicked} ms`}, changes heard ${heard} → ${await live.getAttribute('data-events')}, the last at ${await sinceSave('data-heard-at', from)}, the board's read ${read === null ? 'not timed' : `${read} ms`})`,
     );
   }
   const p95 = percentile(samples, 95);
   const summary = `p50 ${percentile(samples, 50)} ms, p95 ${p95} ms, max ${Math.max(...samples)} ms; samples ${samples.join(', ')}`;
   test.info().annotations.push({ type: 'DEV-05 latency', description: summary });
   report(`[DEV-05] admin rename to board: ${summary}`);
-  expect(p95).toBeLessThan(3_000);
+  // [NFR-14-p][D-129] A miss while the board's read of every late change took over 2 s is the test
+  // database slow, and re-runs once (scripts/e2e-run.mjs); the budget stays 3 s.
+  if (p95 >= 3_000) {
+    const evidence = slowReads(
+      reads.filter((_, i) => samples[i]! >= 3_000),
+      "board's reads of its late changes",
+    );
+    if (evidence) test.info().annotations.push({ type: 'infra', description: evidence });
+  }
+  expect(p95, `p95 of 20; the board's reads ${reads.join(', ')} ms`).toBeLessThan(3_000);
 });
 
 test('[DEV-05] after the network drops and comes back, the board catches up on its own', async () => {

@@ -136,7 +136,7 @@ async function setWeekly(title: string, who: 'Maya' | 'The whole family', itemsC
   return form;
 }
 
-test('[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row', async () => {
+test('[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row', async () => {
   // [D-110] Six page loads and three saves: about 40 s at worst on the preview, so 3x that.
   test.setTimeout(120_000);
 
@@ -191,7 +191,9 @@ test('[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meet
       .getByRole('combobox', { name: 'Which goal' })
       .selectOption({ label: `${MAYAS} (each week)` });
     await perfect.getByRole('radio', { name: 'In a row' }).check();
-    await perfect.getByLabel('Target').fill('3');
+    // [NFR-14-o] The number field by its role: a label match also finds the icon picker's "target"
+    // icon, whose radio stays in the form while the picker is folded (WP-100).
+    await perfect.getByRole('spinbutton', { name: 'Target' }).fill('3');
     await perfect.getByRole('button', { name: 'Set the goal' }).click();
     await expect(admin.getByRole('status')).toHaveText(`Saved ${PERFECT}.`);
     await expect

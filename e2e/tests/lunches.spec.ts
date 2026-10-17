@@ -6,6 +6,7 @@ import { sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
 import { withSchoolDays } from '../support/school';
 import { signIn } from '../support/session';
+import { loadWords, slowReads } from '../../scripts/e2e-infra.mjs';
 
 // [MEAL-09][MEAL-11][US-707][D-95] Next week's lunches picked on the board, on the preview (WP-49).
 // The done-when: a weekly item opens Maya's coming week on a paired board; a day changed there shows
@@ -187,7 +188,7 @@ async function lunchPost(act: () => Promise<void>, what: string) {
   expect(res.status(), `${what}: /api/lunches answered ${res.status()} in ${ms} ms`).toBe(200);
 }
 
-test('[MEAL-09][MEAL-11][US-707] done-when: the item opens Maya’s week; she picks a buy day; Meals shows it within 3 s; a parent approves it; Done checks it off; her entree shows; a parent changes the picks', async () => {
+test('[MEAL-09][MEAL-11][US-707][NFR-14-q] done-when: the item opens Maya’s week; she picks a buy day; Meals shows it within 3 s; a parent approves it; Done checks it off; her entree shows; a parent changes the picks', async () => {
   // [D-110] One story of five steps, about 20 server round trips (page loads, saves and the board
   // hearing them): up to about 80 s on a slow preview, so 3x that. Each step is named, so a slow
   // preview says which step was slow (WP-77).
@@ -234,24 +235,35 @@ test('[MEAL-09][MEAL-11][US-707] done-when: the item opens Maya’s week; she pi
     const waiting = admin
       .locator(`.fw-lunchdays[aria-label="Maya’s lunch week"] .fw-lunchday[data-date="${day}"]`)
       .locator('a.fw-lunch__waiting', { hasText: 'Buy? waiting' });
-    // Each reload's time is kept, so a miss says whether the page itself took the 3 s (WP-77).
+    // Each reload's time is kept, so a miss says whether the page itself took the 3 s (WP-77), the
+    // one still loading when the wait ended included, timed so far (NFR-14-q).
     const reloads: number[] = [];
+    let loading = 0;
     try {
       await expect
         .poll(
           async () => {
-            const at = Date.now();
+            loading = Date.now();
             await admin.reload();
-            reloads.push(Date.now() - at);
+            reloads.push(Date.now() - loading);
+            loading = 0;
             return waiting.count();
           },
           { timeout: 3_000, intervals: [0] },
         )
         .toBe(1);
     } catch (e) {
+      const out = loading ? Date.now() - loading : null;
+      const loads = out === null ? reloads : [...reloads, out];
+      // [NFR-14-q][D-135] Every load of the page slower than the probe's 2 s: the test database slow
+      // while the test ran; the budget stays 3 s, and the test re-runs once (scripts/e2e-run.mjs).
+      const evidence = slowReads(loads, 'loads of Meals in the admin app');
+      if (evidence) test.info().annotations.push({ type: 'infra', description: evidence });
       throw new Error(
-        `Meals in the admin app didn't show it within 3 s; its reloads took ${reloads.join(', ')} ms`,
-        { cause: e },
+        `Meals in the admin app didn't show it within 3 s; ${loadWords(reloads, out)}`,
+        {
+          cause: e,
+        },
       );
     }
     report(
