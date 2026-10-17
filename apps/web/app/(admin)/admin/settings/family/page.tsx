@@ -5,7 +5,8 @@ import { day } from '@/lib/format';
 import { serverClient } from '@/lib/supabase/server';
 import { searchPlaces } from '@/lib/weather';
 import { loadApprovalMode } from '../../chores/data';
-import { FamilyView } from './view';
+import { loadMembers } from '../../members/data';
+import { familyOpen, FamilyView } from './view';
 
 export const metadata: Metadata = { title: 'Family options' };
 
@@ -15,7 +16,7 @@ export const metadata: Metadata = { title: 'Family options' };
 export default async function FamilyOptionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ done?: string; place?: string; weather?: string }>;
+  searchParams: Promise<{ done?: string; place?: string; weather?: string; open?: string }>;
 }) {
   const db = await serverClient();
   const user = await requireSignedIn(db, '/admin/settings/family');
@@ -26,7 +27,7 @@ export default async function FamilyOptionsPage({
   }
 
   const params = await searchParams;
-  const [admins, invites, approvalMode, settings, lastRead, found] = await Promise.all([
+  const [admins, invites, approvalMode, settings, lastRead, found, members] = await Promise.all([
     db!.rpc('household_admins', { p_household_id: household.id }),
     db!
       .from('invite')
@@ -48,7 +49,10 @@ export default async function FamilyOptionsPage({
       .eq('household_id', household.id)
       .maybeSingle(),
     params.place ? searchPlaces(params.place) : Promise.resolve(null),
+    loadMembers(db!, household.id),
   ]);
+  // [NFR-18] Each admin by the member that is theirs (WP-94), else their email.
+  const nameOf = new Map(members.filter((m) => m.userId).map((m) => [m.userId, m.displayName]));
   const s = settings.data;
   const w = lastRead.data;
   const weatherNotice = (['saved', 'cleared', 'unit', 'failed'] as const).find(
@@ -58,6 +62,7 @@ export default async function FamilyOptionsPage({
   return (
     <FamilyView
       notice={params.done ?? null}
+      open={familyOpen(params)}
       facts={{
         name: household.name,
         timezone: household.timezone,
@@ -69,12 +74,18 @@ export default async function FamilyOptionsPage({
             : null,
         approvalMode,
         admins: ((admins.data ?? []) as { user_id: string; email: string; role: string }[]).map(
-          (a) => ({ userId: a.user_id, email: a.email, role: a.role }),
+          (a) => ({
+            userId: a.user_id,
+            email: a.email,
+            name: nameOf.get(a.user_id) ?? a.email,
+            role: a.role,
+          }),
         ),
         invites: (invites.data ?? []).map((i) => ({
           id: i.id,
           email: i.email,
           expires: day(i.expires_at, household.timezone),
+          expiresAt: i.expires_at,
         })),
       }}
       weather={{

@@ -267,7 +267,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2648** tests: Unit 805 · DB 1455 · UI 261 · E2E 127. 2187 name at least one ID; 461 name none.
+**2677** tests: Unit 825 · DB 1455 · UI 270 · E2E 127. 2216 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
@@ -276,7 +276,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 104 of 120 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 118 (with a test: 118) |
+| Test cases | 132 (with a test: 132) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -290,7 +290,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
-| Chores | 90 | 192 | 29 | 30 | 341 |
+| Chores | 90 | 192 | 31 | 30 | 343 |
 | Points | 38 | 92 | 17 | 12 | 159 |
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
@@ -299,10 +299,10 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
-| Admin and members | 26 | 87 | 7 | 15 | 135 |
-| Platform | 151 | 167 | 50 | 14 | 382 |
+| Admin and members | 26 | 87 | 8 | 15 | 136 |
+| Platform | 171 | 167 | 56 | 14 | 408 |
 | Not named | 58 | 438 | 10 | 1 | 507 |
-| **Total** | **805** | **1455** | **261** | **127** | **2648** |
+| **Total** | **825** | **1455** | **270** | **127** | **2677** |
 
 ### 9.3 By requirement
 
@@ -317,7 +317,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | ACC-05 | S | Covered | US-105 | WP-03, WP-32 | — | DB 20 |
 | ACC-06 | S | Not built | US-106 | WP-38 | — | — |
 | ACC-07 | S | Not built | US-108 | WP-55 | — | — |
-| ACC-08 | S | Covered | US-110 | WP-57 | — | U 2 · DB 13 · UI 3 · E2E 1 |
+| ACC-08 | S | Covered | US-110 | WP-57 | — | U 2 · DB 13 · UI 4 · E2E 1 |
 | DEV-01 | M | Covered | US-201 | WP-05 | — | U 1 · DB 13 · UI 1 · E2E 2 |
 | DEV-02 | M | Covered | US-201, US-202 | WP-05, WP-59 | — | U 4 · DB 26 · E2E 3 |
 | DEV-03 | M | Covered | US-202 | WP-05 | — | U 2 · DB 7 · UI 1 · E2E 1 |
@@ -336,12 +336,12 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | CHR-07 | M | Covered | US-307, US-314 | WP-10 | — | U 5 · DB 15 · E2E 1 |
 | CHR-08 | M | Covered | US-309 | WP-12 | — | U 2 · DB 1 · UI 2 · E2E 1 |
 | CHR-09 | M | Covered | US-304, US-311, US-316, US-320 | WP-08, WP-09, WP-10, WP-43 | — | U 8 · DB 15 · UI 1 · E2E 3 |
-| CHR-10 | M | Covered | US-312 | WP-08, WP-15, WP-19, WP-46, WP-83 | — | U 9 · DB 8 · UI 2 · E2E 2 |
+| CHR-10 | M | Covered | US-312 | WP-08, WP-15, WP-19, WP-46, WP-83 | — | U 9 · DB 8 · UI 3 · E2E 2 |
 | CHR-11 | M | Covered | US-313 | WP-08, WP-09, WP-11 | — | U 9 · DB 5 · UI 1 · E2E 2 |
 | CHR-12 | M | Covered | US-303, US-314 | WP-09, WP-10, WP-11 | — | U 5 · DB 9 · UI 2 · E2E 1 |
 | CHR-13 | M | Covered | US-315 | WP-08 | — | U 4 · DB 28 · E2E 3 |
 | CHR-14 | M | Covered | US-316 | WP-12 | — | U 4 · DB 7 · UI 6 · E2E 2 |
-| CHR-15 | M | Covered | US-317 | WP-40 | — | U 8 · DB 3 · UI 4 · E2E 4 |
+| CHR-15 | M | Covered | US-317 | WP-40 | — | U 8 · DB 3 · UI 5 · E2E 4 |
 | CHR-16 | M | Covered | US-318 | WP-40 | — | U 5 · DB 6 · UI 2 · E2E 6 |
 | CHR-17 | M | Covered | US-319 | WP-40 | — | U 2 · DB 2 · UI 1 · E2E 2 |
 | CHR-18 | M | Covered | US-320 | WP-43 | — | U 5 · DB 21 · E2E 2 |
@@ -380,8 +380,8 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | CAL-09 | S | Covered | US-508 | WP-50 | CAL-09-a, CAL-09-b, CAL-09-c, CAL-09-d, CAL-09-e, CAL-09-f, CAL-09-g | U 8 · DB 24 · UI 4 · E2E 1 |
 | CAL-10 | S | Covered | US-509 | WP-52 | — | U 4 · DB 8 · UI 1 · E2E 1 |
 | CAL-08 | C | Not built | US-506 | WP-29 | — | — |
-| SCH-01 | M | Covered | US-601 | WP-21 | — | U 10 · DB 13 · UI 2 · E2E 5 |
-| SCH-02 | M | Covered | US-602 | WP-21 | — | DB 14 · E2E 3 |
+| SCH-01 | M | Covered | US-601 | WP-21 | — | U 10 · DB 13 · UI 4 · E2E 5 |
+| SCH-02 | M | Covered | US-602 | WP-21 | — | DB 14 · UI 1 · E2E 3 |
 | SCH-03 | M | Covered | US-302, US-602 | WP-09, WP-21 | — | DB 17 · E2E 1 |
 | SCH-04 | C | Not built | US-603 | WP-36 | — | — |
 | SCH-05 | S | Not built | US-604 | WP-54 | — | — |
@@ -424,11 +424,11 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-04 | M | Covered | US-102, US-901 | WP-02, WP-03, WP-05 | — | U 1 · DB 82 |
 | NFR-05 | S | Not built | US-902 | WP-33 | — | U 1 |
 | NFR-06 | M | Covered | US-907 | WP-10 | — | U 7 · DB 20 |
-| NFR-07 | S | Covered | US-904 | WP-07, WP-42 | — | U 43 · DB 28 · UI 1 · E2E 4 |
-| NFR-08 | S | Covered | US-909 | WP-01, WP-41, WP-42 | — | U 5 · DB 11 · E2E 1 |
+| NFR-07 | S | Covered | US-904 | WP-07, WP-42 | — | U 43 · DB 28 · UI 2 · E2E 4 |
+| NFR-08 | S | Covered | US-909 | WP-01, WP-41, WP-42 | — | U 5 · DB 11 · UI 1 · E2E 1 |
 | NFR-09 | M | Covered | US-101, US-901 | WP-02 | — | DB 4 |
 | NFR-10 | M | Not built | US-903 | WP-24 | — | — |
-| NFR-11 | S | Covered | US-906 | WP-31, WP-46 | — | U 4 · UI 28 |
+| NFR-11 | S | Covered | US-906 | WP-31, WP-46 | — | U 4 · UI 29 |
 | PTS-01 | M | Covered | US-309, US-1101, US-1106 | WP-16 | — | U 10 · DB 42 · E2E 5 |
 | PTS-02 | M | Covered | US-1102 | WP-11, WP-16, WP-20 | — | U 4 · DB 11 · UI 1 · E2E 2 |
 | PTS-03 | M | Covered | US-1103 | WP-18 | — | U 5 · DB 6 · UI 4 · E2E 1 |
@@ -441,7 +441,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | U 17 · DB 10 · UI 17 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
-| NFR-18 | S | Covered | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j | U 11 · UI 6 · E2E 1 |
+| NFR-18 | S | Covered | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j, NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x | U 31 · UI 15 · E2E 3 |
 | NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 34 · DB 14 · UI 1 · E2E 15 |
 | NFR-19 | M | Covered | US-913 | WP-85, WP-86 | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | U 6 |
 
@@ -541,7 +541,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-91 | Done | **No cases** | — | U 1 |
 | WP-92 | Done | **No cases** | — | — |
 | WP-93 | Done | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j | 10 of 10 | — |
-| WP-94 | Ready | — | — | — |
+| WP-94 | Done | NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x | 14 of 14 | — |
 | WP-95 | Ready | — | — | — |
 | WP-96 | Ready | — | — | — |
 | WP-97 | Ready | — | — | — |
@@ -636,6 +636,20 @@ Test cases and the tests that prove them:
 | NFR-18-h | WP-93 | The meal library at 390 and 1280 px, Day and Evening: **Add a meal** folded to its button, **Our meals** open, **Archived** folded to its count; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/meals.spec.ts`: `The meal library folded on a ${device} › [NFR-18-h][US-111][MEAL-02][D-120] Add a meal and Archived folded, Our meals open, each opened by a tap, in ${theme}` |
 | NFR-18-i | WP-93 | A calendar or a menu just saved in comes back open and the others stay folded; **Archived** comes back open after an archive; with none yet, **Add a calendar**, **Add a school menu** and **Add a meal** are open | UI | UI `e2e/ui/calendars.spec.ts`: `[NFR-18-i][D-120] a calendar just saved in comes back open, the others folded; with none, Add a calendar is open`<br>UI `e2e/ui/meals.spec.ts`: `[NFR-18-i][D-120] Archived comes back open after an archive; with no meal yet, Add a meal is open`<br>UI `e2e/ui/menus.spec.ts`: `[NFR-18-i][D-120] a menu just saved in comes back open, the others folded; with none, Add a school menu is open` |
 | NFR-18-j | WP-93 | On the preview, Alex opens Calendars with every calendar folded, reads the Family calendar's header, opens it, saves an edit under **Edit**, and finds it open after the save | E2E | E2E `e2e/tests/calendar-fold.spec.ts`: `[NFR-18-j][CAL-06][D-120] Alex opens Calendars folded, reads the Family calendar’s header, saves an edit and finds it open` |
+| NFR-18-k | WP-94 | Family options' folded headers: the week's start day, and a change waiting with the day it starts; check-offs in words, either way; the admins by name (their email when they have no member) and role; the invites waiting and when the soonest runs out ("runs out today", "tomorrow", "in 6 days"), or none | Unit | Unit `apps/web/lib/setup-facts.test.ts`: `Family options › [NFR-18-k] the week: its start day, and a change waiting with the day it starts`<br>Unit `apps/web/lib/setup-facts.test.ts`: `Family options › [NFR-18-k] check-offs in words, either way`<br>Unit `apps/web/lib/setup-facts.test.ts`: `Family options › [NFR-18-k] the admins by name and role; one with no member by their email`<br>Unit `apps/web/lib/setup-facts.test.ts`: `Family options › [NFR-18-k] the invites waiting and when the soonest runs out, or none`<br>Unit `packages/ui/src/components.test.tsx`: `Fold › [NFR-18-k][D-120] a count waiting for a parent sits on the header in amber, without the sign` |
+| NFR-18-l | WP-94 | Weather's folded header: the place, the unit and the last reading; a failed read is the warning "Not updated since" the last good read's time today, "yesterday", or its day and time before; with no place, "Not shown on the boards"; a place not read yet says so | Unit | Unit `apps/web/lib/setup-facts.test.ts`: `Family options › [NFR-18-l] the weather: the place, the unit and the last reading`<br>Unit `apps/web/lib/setup-facts.test.ts`: `Family options › [NFR-18-l] a failed read is the warning, with when it last read well`<br>Unit `apps/web/lib/setup-facts.test.ts`: `Family options › [NFR-18-l] with no place, not shown on the boards; a place not read yet says so` |
+| NFR-18-m | WP-94 | School's folded headers: the lunch cut-off; Archived's count and names. A school year's: how many days off and the next from the household's today (or none still to come), its terms by name, who follows it (a default year with nobody ticked: "Everyone not given another year"), its dates and school, and what archiving does | Unit | Unit `apps/web/lib/setup-facts.test.ts`: `School › [NFR-18-m] the lunch cut-off, and Archived by count and name`<br>Unit `apps/web/lib/setup-facts.test.ts`: `School › [NFR-18-m] a year’s days off: how many, and the next from today, or none still to come`<br>Unit `apps/web/lib/setup-facts.test.ts`: `School › [NFR-18-m] terms, who follows it, its dates and school, and what archiving does` |
+| NFR-18-n | WP-94 | Reminders' folded headers: how many devices, on or off ("both on", "1 on, 1 off"), when one was last reached, or none yet; a device removed shows as the warning; When to remind me as set, in one line, a digest, quiet hours and approvals said either way | Unit | Unit `apps/web/lib/setup-facts.test.ts`: `Reminders › [NFR-18-n] devices: how many, on or off, and when one was last reached`<br>Unit `apps/web/lib/setup-facts.test.ts`: `Reminders › [NFR-18-n] a device just removed is the warning`<br>Unit `apps/web/lib/setup-facts.test.ts`: `Reminders › [NFR-18-n] when to remind me, each setting in one line, either way` |
+| NFR-18-o | WP-94 | Health's folded headers: how many jobs run fine and how many fail or are late, each failing or late job by name as the warning; server errors in 30 days and the latest, or none; usage's highest share of a free plan, a limit near as the warning | Unit | Unit `apps/web/lib/setup-facts.test.ts`: `Health › [NFR-18-o] jobs: how many run fine and fail, each failing or late job by name`<br>Unit `apps/web/lib/setup-facts.test.ts`: `Health › [NFR-18-o] server errors in 30 days and the latest, or none`<br>Unit `apps/web/lib/setup-facts.test.ts`: `Health › [NFR-18-o] usage: the highest share of a free plan; a limit near is the warning` |
+| NFR-18-p | WP-94 | The headers' days hold across midnight UTC and the end of daylight saving: an invite's days left, a device reached today or before, a server error's day and the next day off count the household's days | Unit | Unit `apps/web/lib/setup-facts.test.ts`: `the household’s days › [NFR-18-p] an invite’s days left count the household’s days, across midnight UTC`<br>Unit `apps/web/lib/setup-facts.test.ts`: `the household’s days › [NFR-18-p] across the end of daylight saving, a day is still a day`<br>Unit `apps/web/lib/setup-facts.test.ts`: `the household’s days › [NFR-18-p] a server error’s day is the household’s, not UTC’s` |
+| NFR-18-q | WP-94 | Family options at 390 and 1280 px, Day and Evening: every section folded to its header, the weather's warning and the invites waiting on their headers while folded; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/setup-folds.spec.ts`: `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-q][ACC-08] Family options: every section folded to what it is set to, the weather’s warning and the invites waiting on their headers` |
+| NFR-18-r | WP-94 | School and a school year's page at 390 and 1280 px, Day and Evening: today and School years open, **Lunch changes**, **Add a school year** (to its button) and **Archived** (its count) folded; a year's timeline open, **Breaks and days off** (with **Add a day off** and **Add a term** inner folds), **Terms**, **Who follows it**, **Dates and name** folded and **Archive** set apart at the bottom; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/setup-folds.spec.ts`: `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-r][SCH-01] School: today and the years open, the cut-off, Add a school year and Archived folded`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-r][SCH-01][SCH-02] a school year: the timeline open, its set-up folded to its facts, Archive set apart at the bottom` |
+| NFR-18-s | WP-94 | Tags at 390 and 1280 px, Day and Evening: **Add a tag** folded to its button, **Our tags** open with each tag's **Edit** in the fold's look, **Archived** folded to its count; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/setup-folds.spec.ts`: `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-s][CHR-10] Tags: Add a tag folded to its button, Our tags open, each Edit a fold, Archived folded to its count` |
+| NFR-18-t | WP-94 | Reminders at 390 and 1280 px, Day and Evening: the state line and its buttons open, **My devices** and **When to remind me** folded to their headers, a removed device on the header while folded; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/setup-folds.spec.ts`: `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-t][CHR-15] Reminders: the state open, My devices and When to remind me folded, a removed device on the header` |
+| NFR-18-u | WP-94 | Health at 390 and 1280 px, Day and Evening: the verdict open, **Background jobs**, **Server errors** and **Usage** folded, a failing job and a limit near on their headers while folded; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/setup-folds.spec.ts`: `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-u][NFR-07][NFR-08] Health: the verdict open, jobs, errors and usage folded, a failing job and a limit near on their headers` |
+| NFR-18-v | WP-94 | A section saved in comes back open and the others stay folded (Check-offs, The week, Weather, a school year's sections, Lunch changes, a tag's Edit, When to remind me, My devices); **Archived** comes back open after an archive; with none yet, **Add a tag** and **Add a school year** are open; Home's **Add a day off** is an inner fold | UI | UI `e2e/ui/setup-folds.spec.ts`: `open again › [NFR-18-v][D-120] the section saved in comes back open and the others stay folded`<br>UI `e2e/ui/setup-folds.spec.ts`: `open again › [NFR-18-v] with none yet, Add a tag and Add a school year are open; Home’s Add a day off is an inner fold` |
+| NFR-18-w | WP-94 | On the preview, Alex changes the check-offs choice on Family options and finds **Check-offs** open after the save, the other sections folded | E2E | E2E `e2e/tests/admin-day.spec.ts`: `[CHR-05][D-22][NFR-18-w] with approval on, a child’s check-off waits for a parent: approved, or sent back to try again` |
+| NFR-18-x | WP-94 | On the preview, Alex opens Health with a failing job named on **Background jobs**' folded header | E2E | E2E `e2e/tests/health.spec.ts`: `[NFR-18-x][NFR-07] a failing job is named on the folded header, shows with its message, and the household’s server errors are listed` |
 | NFR-16-a | WP-100 | Every admin page's fields, lists, dates and times are the app's on Chrome and iPhone WebKit, in Day and Evening: no browser look, 44 px or taller, 10 px round, 16 px text; a field is filled with the page's background and shows the focus ring | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}`<br>UI `e2e/ui/controls.spec.ts`: `[NFR-16-a] a field is filled, 10 px round, with a 3:1 edge and the focus ring` |
 | NFR-16-b | WP-100 | Every radio and check box is the app's: 20 px, a soft edge, the primary colour when chosen, on both engines | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}` |
 | NFR-16-c | WP-100 | A photo is chosen with **Choose a photo**; the file's name shows; the browser's own file picker never shows | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-c] a photo is chosen with the app’s button, and its name shows` |
@@ -1743,6 +1757,32 @@ Unit · 6 tests
 | `Settings, how each part stands › [DEV-04][CHR-10][CHR-15][NFR-07] boards, tags, reminders and health` | CHR-10, CHR-15, DEV-04, NFR-07 |
 | `[ACC-08] Family options, how it stands › says the start day (and a change waiting) and how check-offs count` | ACC-08 |
 
+#### `apps/web/lib/setup-facts.test.ts`
+
+Unit · 19 tests
+
+| Test | Names |
+|---|---|
+| `Family options › [NFR-18-k] the week: its start day, and a change waiting with the day it starts` | NFR-18-k |
+| `Family options › [NFR-18-k] check-offs in words, either way` | NFR-18-k |
+| `Family options › [NFR-18-k] the admins by name and role; one with no member by their email` | NFR-18-k |
+| `Family options › [NFR-18-k] the invites waiting and when the soonest runs out, or none` | NFR-18-k |
+| `Family options › [NFR-18-l] the weather: the place, the unit and the last reading` | NFR-18-l |
+| `Family options › [NFR-18-l] a failed read is the warning, with when it last read well` | NFR-18-l |
+| `Family options › [NFR-18-l] with no place, not shown on the boards; a place not read yet says so` | NFR-18-l |
+| `School › [NFR-18-m] the lunch cut-off, and Archived by count and name` | NFR-18-m |
+| `School › [NFR-18-m] a year’s days off: how many, and the next from today, or none still to come` | NFR-18-m |
+| `School › [NFR-18-m] terms, who follows it, its dates and school, and what archiving does` | NFR-18-m |
+| `Reminders › [NFR-18-n] devices: how many, on or off, and when one was last reached` | NFR-18-n |
+| `Reminders › [NFR-18-n] a device just removed is the warning` | NFR-18-n |
+| `Reminders › [NFR-18-n] when to remind me, each setting in one line, either way` | NFR-18-n |
+| `Health › [NFR-18-o] jobs: how many run fine and fail, each failing or late job by name` | NFR-18-o |
+| `Health › [NFR-18-o] server errors in 30 days and the latest, or none` | NFR-18-o |
+| `Health › [NFR-18-o] usage: the highest share of a free plan; a limit near is the warning` | NFR-18-o |
+| `the household’s days › [NFR-18-p] an invite’s days left count the household’s days, across midnight UTC` | NFR-18-p |
+| `the household’s days › [NFR-18-p] across the end of daylight saving, a day is still a day` | NFR-18-p |
+| `the household’s days › [NFR-18-p] a server error’s day is the household’s, not UTC’s` | NFR-18-p |
+
 #### `apps/web/lib/shop.test.ts`
 
 Unit · 7 tests
@@ -1842,7 +1882,7 @@ E2E · 4 tests
 |---|---|
 | `[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batch, open again on the board, four reversals; Undo puts them back` | CHR-08, PTS-01 |
 | `[CHR-06] late credit for yesterday, then unchecked again; a day ahead skipped and put back` | CHR-06 |
-| `[CHR-05][D-22] with approval on, a child’s check-off waits for a parent: approved, or sent back to try again` | CHR-05 |
+| `[CHR-05][D-22][NFR-18-w] with approval on, a child’s check-off waits for a parent: approved, or sent back to try again` | NFR-18-w, CHR-05 |
 | `[CHR-14][US-316] My tasks: quick add makes a task for me today, on the board at once; done credits me` | CHR-14, US-316 |
 
 #### `e2e/tests/admin-menu.spec.ts`
@@ -2036,7 +2076,7 @@ E2E · 3 tests
 
 | Test | Names |
 |---|---|
-| `[NFR-07] a failing job shows with its message, and the household’s server errors are listed` | NFR-07 |
+| `[NFR-18-x][NFR-07] a failing job is named on the folded header, shows with its message, and the household’s server errors are listed` | NFR-18-x, NFR-07 |
 | `[NFR-07] after a good run the job is fine again` | NFR-07 |
 | `[NFR-08] usage is listed against the Free-plan limits, the database size read live` | NFR-08 |
 
@@ -2731,6 +2771,22 @@ UI · 8 tests
 | `[PTS-05][US-1107] bonus points: each rule in words, from when it counts, on or off; archived ones aside` | PTS-05, US-1107 |
 | `[PTS-05] adding a bonus: a streak asks how long; a perfect day doesn’t` | PTS-05 |
 
+#### `e2e/ui/setup-folds.spec.ts`
+
+UI · 9 tests
+
+| Test | Names |
+|---|---|
+| `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened` | NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-11 |
+| `folded › [NFR-18-q][ACC-08] Family options: every section folded to what it is set to, the weather’s warning and the invites waiting on their headers` | NFR-18-q, ACC-08 |
+| `folded › [NFR-18-r][SCH-01] School: today and the years open, the cut-off, Add a school year and Archived folded` | NFR-18-r, SCH-01 |
+| `folded › [NFR-18-r][SCH-01][SCH-02] a school year: the timeline open, its set-up folded to its facts, Archive set apart at the bottom` | NFR-18-r, SCH-01, SCH-02 |
+| `folded › [NFR-18-s][CHR-10] Tags: Add a tag folded to its button, Our tags open, each Edit a fold, Archived folded to its count` | NFR-18-s, CHR-10 |
+| `folded › [NFR-18-t][CHR-15] Reminders: the state open, My devices and When to remind me folded, a removed device on the header` | NFR-18-t, CHR-15 |
+| `folded › [NFR-18-u][NFR-07][NFR-08] Health: the verdict open, jobs, errors and usage folded, a failing job and a limit near on their headers` | NFR-18-u, NFR-07, NFR-08 |
+| `open again › [NFR-18-v][D-120] the section saved in comes back open and the others stay folded` | NFR-18-v |
+| `open again › [NFR-18-v] with none yet, Add a tag and Add a school year are open; Home’s Add a day off is an inner fold` | NFR-18-v |
+
 #### `e2e/ui/streak.spec.ts`
 
 UI · 4 tests
@@ -2960,7 +3016,7 @@ Unit · 3 tests
 
 #### `packages/ui/src/components.test.tsx`
 
-Unit · 14 tests
+Unit · 15 tests
 
 | Test | Names |
 |---|---|
@@ -2978,6 +3034,7 @@ Unit · 14 tests
 | `Fold › [NFR-18][D-120] a card folds to its title and its button, closed at first` | NFR-18 |
 | `Fold › [NFR-18][D-120] opens after a save in it; an inner fold has an h3 and its summary lines` | NFR-18 |
 | `Fold › [NFR-18][DEV-09][D-118] a row shows its name, its facts and its warning on the header` | DEV-09, NFR-18 |
+| `Fold › [NFR-18-k][D-120] a count waiting for a parent sits on the header in amber, without the sign` | NFR-18-k |
 
 #### `packages/ui/src/contrast.test.ts`
 

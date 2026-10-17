@@ -1,7 +1,7 @@
 // [NFR-18][D-120] The fold (WP-75's on Meals, made one component in WP-91): a section folded at first,
 // the browser's own <details>, so it opens before the page hydrates. Its header: the chevron, the
 // title, then what it shows while closed (its button, or its summary lines). A warning stays on the
-// header, open or closed, so a fold never hides a problem.
+// header, open or closed, so a fold never hides a problem; so does a count waiting for a parent.
 import type { ReactNode } from 'react';
 import { Icon } from './Icon';
 import type { IconName } from './generated/icons';
@@ -30,6 +30,8 @@ export interface FoldProps {
   meta?: ReactNode;
   /** A warning on the header, in amber with the sign, open or closed. */
   warning?: ReactNode;
+  /** A count waiting for a parent on the header (invites waiting), in amber without the sign. */
+  waiting?: ReactNode;
   children: ReactNode;
 }
 
@@ -44,6 +46,7 @@ export function Fold({
   summary,
   meta,
   warning,
+  waiting,
   children,
 }: FoldProps) {
   const H = `h${level ?? (variant === 'inner' ? 3 : 2)}` as 'h2' | 'h3';
@@ -72,6 +75,7 @@ export function Fold({
           <H id={headingId}>{title}</H>
         )}
         {flag}
+        {waiting ? <span className="fw-fold__wait">{waiting}</span> : null}
         {button ? (
           <span className="fw-btn fw-btn--secondary fw-fold__closed" aria-hidden="true">
             {button.icon ? <Icon name={button.icon} className="fw-btn__icon" /> : null}

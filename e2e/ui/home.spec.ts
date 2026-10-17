@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { foldOf, unfold } from '../support/fold';
 
 // [NFR-17][US-109][ACC-08][US-110] Home at a glance and Family options (WP-57, D-84), on /dev/home and
 // /dev/family with the made-up family and no database: what needs a parent first, each with where to
@@ -151,8 +152,8 @@ test.describe('what Home says', () => {
       'href',
       '/admin/meals?week=2026-10-12#lunch',
     );
-    // A day off ahead: the form opens in place, a day off to start with.
-    await more.getByText('Add a day off…').click();
+    // A day off ahead: the form opens in place, a day off to start with, in the fold's look (WP-94).
+    await unfold(foldOf(page, 'Add a day off'));
     const dayOff = more.getByRole('form', { name: 'Add a day off' });
     await expect(dayOff.getByLabel('Kind')).toHaveValue('other');
     const f = await fit(page);
@@ -204,9 +205,11 @@ test.describe('Family options', () => {
   }) => {
     await page.goto('/dev/family');
     const week = page.getByRole('region', { name: 'The week' });
+    await unfold(foldOf(page, 'The week'));
     await expect(week).toContainText('The week starts on Sunday.');
     await expect(week.getByRole('button', { name: /^Keep/ })).toHaveCount(0);
     await page.goto('/dev/family?state=pending');
+    await unfold(foldOf(page, 'The week'));
     await expect(week).toContainText(
       'The week starts on Sunday. From Monday, Oct 19, it starts on Monday.',
     );
@@ -216,6 +219,7 @@ test.describe('Family options', () => {
 
   test('[CHR-05][NFR-16] check-offs: each choice on a line of its own', async ({ page }) => {
     await page.goto('/dev/family');
+    await unfold(foldOf(page, 'Check-offs'));
     const form = page.getByRole('form', { name: 'Check-offs', exact: true });
     const [a, b] = await Promise.all([
       form.getByText('It counts straight away').boundingBox(),

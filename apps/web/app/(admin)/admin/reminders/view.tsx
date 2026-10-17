@@ -1,7 +1,9 @@
-import { Banner, Button, Icon } from '@familywise/ui';
+import { Banner, Button, Fold, Icon } from '@familywise/ui';
 import Link from 'next/link';
 import { dayAndTime } from '@/lib/format';
-import { settingsSummary, type ReminderSettings } from '@/lib/reminder-settings';
+import type { ReminderSettings } from '@/lib/reminder-settings';
+import { devicesFacts, remindLine } from '@/lib/setup-facts';
+import { Line } from '../fold-line';
 import { AdminHeader } from '../header';
 import { type LinkCandidate, LinkMe } from '../link-me';
 import { deviceAction, setReminders } from './actions';
@@ -20,11 +22,19 @@ export interface RemindersViewProps {
   timezone: string;
   notice: string | null;
   error: string | null;
+  /** [NFR-18] The fold saved in, open again (WP-94). */
+  open?: 'devices' | 'when' | null;
+  /** A device was just removed: it could no longer get notifications. */
+  removed?: boolean;
+  /** For when a device was last reached; a dev page fixes it. */
+  now?: Date;
 }
 
 /**
  * [CHR-15][CHR-16][CHR-17][US-317][US-318][US-319] A person's own reminders: on or off, the devices
- * they go to (test, switch off, remove), and when to remind. Nobody else sees these.
+ * they go to (test, switch off, remove), and when to remind. Nobody else sees these. [NFR-18][D-120]
+ * The state line and its buttons stay open; My devices and When to remind me fold to how they stand,
+ * a device just removed on its header (WP-94).
  */
 export function RemindersView({
   me,
@@ -35,6 +45,9 @@ export function RemindersView({
   timezone,
   notice,
   error,
+  open = null,
+  removed = false,
+  now = new Date(),
 }: RemindersViewProps) {
   const header = (
     <>
@@ -59,6 +72,7 @@ export function RemindersView({
     );
   }
   const on = settings.enabled;
+  const facts = devicesFacts(devices, removed, now, timezone);
   return (
     <main className="fw-page">
       {header}
@@ -74,7 +88,6 @@ export function RemindersView({
               : 'Off. Nothing is sent to you.'}
           </span>
         </p>
-        {on ? <p className="fw-muted">{settingsSummary(settings)}.</p> : null}
         <div className="fw-actions">
           {!on && devices.length > 0 ? (
             <form action={setReminders}>
@@ -99,8 +112,14 @@ export function RemindersView({
         </div>
       </section>
 
-      <section className="fw-card" aria-labelledby="devices-heading">
-        <h2 id="devices-heading">My devices</h2>
+      <Fold
+        id="devices"
+        title="My devices"
+        headingId="devices-heading"
+        open={open === 'devices'}
+        summary={[<Line key="d" line={facts.line} />]}
+        warning={facts.warning}
+      >
         {devices.length === 0 ? (
           <p className="fw-muted">
             None yet. Turn on reminders on each phone or computer you want them on.
@@ -162,16 +181,21 @@ export function RemindersView({
             </ul>
           </form>
         )}
-      </section>
+      </Fold>
 
-      <section className="fw-card" aria-labelledby="when-heading">
-        <h2 id="when-heading">When to remind me</h2>
+      <Fold
+        id="when"
+        title="When to remind me"
+        headingId="when-heading"
+        open={open === 'when'}
+        summary={[remindLine(settings)]}
+      >
         <SettingsForm initial={settings} />
         <p className="fw-muted">
           Each item in <Link href="/admin/my">My tasks</Link> has a bell, to switch its reminders on
           or off for you. Nothing comes for an item once it’s done.
         </p>
-      </section>
+      </Fold>
     </main>
   );
 }

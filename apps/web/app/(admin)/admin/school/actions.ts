@@ -22,13 +22,11 @@ const idOf = (form: FormData, key: string) => {
   return UUID.test(v) ? v : null;
 };
 
-function done(yearId: string | null, saved: string): never {
+/** Back to the page saved on, with the section saved in open again (D-120, WP-94). */
+function done(yearId: string | null, saved: string, open?: string): never {
   revalidatePath('/admin/school');
-  redirect(
-    yearId
-      ? `/admin/school/${yearId}?saved=${encodeURIComponent(saved)}`
-      : `/admin/school?saved=${encodeURIComponent(saved)}`,
-  );
+  const q = `saved=${encodeURIComponent(saved)}${open ? `&open=${open}` : ''}`;
+  redirect(yearId ? `/admin/school/${yearId}?${q}` : `/admin/school?${q}`);
 }
 
 /**
@@ -65,7 +63,7 @@ export async function saveSchoolYear(_prev: FormState, form: FormData): Promise<
     log('warn', 'school year not saved', { code: error.code, hint: error.hint });
     return { message: schoolSaveMessage(error) };
   }
-  done(data.id as string, v.name);
+  done(data.id as string, v.name, id ? 'dates' : undefined);
 }
 
 /** [SCH-01] Archive (no longer applies; its history stays) or restore a school year. */
@@ -80,7 +78,7 @@ export async function setSchoolYearArchived(form: FormData): Promise<void> {
     .eq('household_id', household.id);
   if (error) log('warn', 'school year archive not saved', { code: error.code, hint: error.hint });
   revalidatePath('/admin/school');
-  redirect(archive ? '/admin/school' : `/admin/school/${id}`);
+  redirect(archive ? '/admin/school?open=archived' : `/admin/school/${id}`);
 }
 
 /** [SCH-01] Adds a break or day off to a school year. */
@@ -106,7 +104,7 @@ export async function saveClosure(_prev: FormState, form: FormData): Promise<For
     revalidatePath('/admin');
     redirect(`/admin?done=dayoff&name=${encodeURIComponent(parsed.value.name)}`);
   }
-  done(yearId, parsed.value.name);
+  done(yearId, parsed.value.name, 'closures');
 }
 
 /** [SCH-01] Adds a term to a school year. */
@@ -126,7 +124,7 @@ export async function saveTerm(_prev: FormState, form: FormData): Promise<FormSt
     log('warn', 'term not saved', { code: error.code, hint: error.hint });
     return { message: schoolSaveMessage(error) };
   }
-  done(yearId, parsed.value.name);
+  done(yearId, parsed.value.name, 'terms');
 }
 
 /** [SCH-01] Removes a day off or a term (a mistake, or a snow day that didn't happen). */
@@ -141,7 +139,7 @@ export async function removeSchoolDate(form: FormData): Promise<void> {
     .eq('household_id', household.id);
   if (error) log('warn', 'school date not removed', { code: error.code });
   revalidatePath('/admin/school');
-  redirect(`/admin/school/${yearId}`);
+  redirect(`/admin/school/${yearId}?open=${table === 'school_term' ? 'terms' : 'closures'}`);
 }
 
 /**
@@ -183,7 +181,7 @@ export async function saveFollowers(_prev: FormState, form: FormData): Promise<F
       return { message: schoolSaveMessage(error) };
     }
   }
-  done(yearId, 'who follows this school year');
+  done(yearId, 'who follows this school year', 'followers');
 }
 
 /**
@@ -193,14 +191,14 @@ export async function saveFollowers(_prev: FormState, form: FormData): Promise<F
 export async function saveLunchCutoff(form: FormData): Promise<void> {
   const { db, household } = await context();
   const cutoff = String(form.get('cutoff') ?? '');
-  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(cutoff)) done(null, 'nothing: choose a time');
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(cutoff)) done(null, 'nothing: choose a time', 'lunch');
   const { error } = await db.rpc('set_lunch_cutoff', {
     p_household: household.id,
     p_cutoff: cutoff,
   });
   if (error) {
     log('warn', 'lunch cut-off not saved', { code: error.code, hint: error.hint });
-    done(null, 'nothing: try again in a moment');
+    done(null, 'nothing: try again in a moment', 'lunch');
   }
-  done(null, 'the lunch cut-off');
+  done(null, 'the lunch cut-off', 'lunch');
 }

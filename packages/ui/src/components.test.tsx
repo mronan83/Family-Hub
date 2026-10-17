@@ -162,4 +162,22 @@ describe('Fold', () => {
     expect(head).toContain('Not seen for 2 days');
     expect(head).toContain('data-icon="warning"');
   });
+
+  it('[NFR-18-k][D-120] a count waiting for a parent sits on the header in amber, without the sign', () => {
+    const out = html(
+      <Fold
+        title="Invite an admin"
+        headingId="invite"
+        waiting="1 waiting · runs out in 2 days"
+        button={{ label: 'Invite', icon: 'plus' }}
+      >
+        x
+      </Fold>,
+    );
+    const head = out.slice(0, out.indexOf('</summary>'));
+    expect(head).toContain('<span class="fw-fold__wait">1 waiting · runs out in 2 days</span>');
+    expect(head).not.toContain('data-icon="warning"');
+    // Before the button, as the fold audit draws it.
+    expect(head.indexOf('fw-fold__wait')).toBeLessThan(head.indexOf('fw-fold__closed'));
+  });
 });

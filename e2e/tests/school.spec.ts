@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { householdToday } from '../support/day';
+import { foldOf, unfold } from '../support/fold';
 import { openSetting } from '../support/settings';
 import { signIn as signInAs } from '../support/session';
 
@@ -114,6 +115,8 @@ test('[SCH-01] a school year’s timeline counts its school days, breaks and day
   );
   await expect(page.getByTestId('day-counts')).toContainText(`${counts.school_day} school days`);
   await expect(page.getByTestId('day-counts')).toContainText(`${counts.break} break days`);
+  // [NFR-18] Folded to how many and the next (WP-94).
+  await unfold(foldOf(page, 'Breaks and days off'));
   const closures = page.getByRole('list', { name: 'Breaks and days off' });
   for (const name of [
     'Teacher planning day',
@@ -147,6 +150,8 @@ test('[SCH-01][SCH-02][SCH-03] a snow day added for a coming school day makes it
   if (planned) expect(homework()).toBe('1');
   await signIn(page);
   await page.goto(`/admin/school/${yearId}`);
+  await unfold(foldOf(page, 'Breaks and days off'));
+  await unfold(foldOf(page, 'Add a day off'));
   const form = page.getByRole('form', { name: 'Add a day off' });
   await form.getByLabel('Name').fill(SNOW);
   await form.getByLabel('Kind').selectOption('Snow day');
@@ -183,6 +188,7 @@ test('[SCH-01][SCH-02] two default school years may not overlap; one that isn’
   await test.step('two default school years may not overlap; one that isn’t the default may', async () => {
     const before = years();
     await signIn(page);
+    await unfold(foldOf(page, 'Add a school year'));
     const form = page.getByRole('form', { name: 'Add a school year' });
     await form.getByLabel('Name', { exact: true }).fill(CAMP);
     await form.getByLabel('First day').fill(date);
@@ -207,6 +213,8 @@ test('[SCH-01][SCH-02] two default school years may not overlap; one that isn’
     );
     // Still signed in from the step before: /sign-in would send a signed-in parent on to Home.
     await page.goto(`/admin/school/${camp}`);
+    await unfold(foldOf(page, 'Breaks and days off'));
+    await unfold(foldOf(page, 'Add a day off'));
     const closure = page.getByRole('form', { name: 'Add a day off' });
     await closure.getByLabel('Name').fill('Camp break');
     await closure.getByLabel('Kind').selectOption('Break');
@@ -214,6 +222,9 @@ test('[SCH-01][SCH-02] two default school years may not overlap; one that isn’
     await closure.getByRole('button', { name: 'Add day off' }).click();
     await expect(page.getByRole('status')).toHaveText('Saved Camp break.');
 
+    // Breaks and days off comes back open after the save; Who follows it is folded.
+    await expect(foldOf(page, 'Breaks and days off')).toHaveAttribute('open', '');
+    await unfold(foldOf(page, 'Who follows it'));
     const who = page.getByRole('form', { name: 'Who follows this school year' });
     await who.getByRole('checkbox', { name: 'Leo', exact: true }).check();
     await who.getByRole('button', { name: 'Save who follows it' }).click();
@@ -221,8 +232,10 @@ test('[SCH-01][SCH-02] two default school years may not overlap; one that isn’
     expect(dayType('Leo', date)).toBe('break');
     expect(dayType('Maya', date)).toBe('school_day');
 
+    await unfold(foldOf(page, 'Archive'));
     await page.getByRole('button', { name: `Archive ${CAMP}` }).click();
-    await page.waitForURL(/\/admin\/school$/);
+    // Back on School with Archived open (WP-94).
+    await page.waitForURL(/\/admin\/school\?open=archived$/);
     await expect(page.getByRole('list', { name: 'Archived school years' })).toContainText(CAMP);
     expect(dayType('Leo', date)).toBe('school_day');
   });

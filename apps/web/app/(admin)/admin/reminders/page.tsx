@@ -29,6 +29,15 @@ const ERRORS: Record<string, string> = {
   ...LINK_ERRORS,
 };
 
+/** [NFR-18] The fold a redirect back opens (WP-94): When to remind me after a save, My devices after a device's action. */
+function remindersOpen(p: { did?: string; error?: string }): 'devices' | 'when' | null {
+  if (p.did === 'saved') return 'when';
+  if (['device', 'test', 'off_device', 'on_device', 'remove'].includes(p.did ?? ''))
+    return 'devices';
+  if (['no_keys', 'gone', 'test_failed'].includes(p.error ?? '')) return 'devices';
+  return null;
+}
+
 /** [CHR-15][CHR-16][CHR-17] The signed-in person's own reminders, read through RLS. */
 export default async function RemindersPage({
   searchParams,
@@ -55,6 +64,8 @@ export default async function RemindersPage({
       timezone={household.timezone}
       notice={params.did ? (DID[params.did] ?? null) : null}
       error={params.error ? (ERRORS[params.error] ?? ERRORS.failed!) : null}
+      open={remindersOpen(params)}
+      removed={params.error === 'gone'}
     />
   );
 }

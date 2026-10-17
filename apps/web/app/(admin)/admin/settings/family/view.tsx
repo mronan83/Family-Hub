@@ -1,29 +1,21 @@
-import { Banner, Button } from '@familywise/ui';
+import { Banner, Button, Fold } from '@familywise/ui';
 import type { ComponentProps } from 'react';
+import {
+  adminsLine,
+  checkOffsLine,
+  invitesWaiting,
+  switchDay,
+  WEEK_DAYS,
+  weekLine,
+} from '@/lib/setup-facts';
 import { revokeInvite, setApprovalMode, setWeekStart } from '../../actions';
+import { Line } from '../../fold-line';
 import { AdminHeader } from '../../header';
 import { InviteForm } from '../../invite-form';
 import type { NavWho } from '../../nav';
 import { WeatherSection } from '../../weather-section';
 
-export const WEEK_DAYS = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-] as const;
-
-const SHORT = new Intl.DateTimeFormat('en-US', {
-  weekday: 'long',
-  month: 'short',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
-/** "Monday, Oct 19" for a YYYY-MM-DD. */
-export const switchDay = (d: string) => SHORT.format(new Date(`${d}T12:00:00Z`));
+export { WEEK_DAYS, switchDay };
 
 export const FAMILY_NOTICES: Record<string, { kind: 'info' | 'notice'; text: string }> = {
   'approval-on': {
@@ -47,24 +39,51 @@ export interface FamilyFacts {
   /** A change waiting for the next week. */
   weekStartNext: { day: number; on: string } | null;
   approvalMode: 'on' | 'off';
-  admins: { userId: string; email: string; role: string }[];
-  invites: { id: string; email: string; expires: string }[];
+  /** Each admin by the name of the member that is theirs, else their email. */
+  admins: { userId: string; email: string; name: string; role: string }[];
+  /** `expiresAt` is when it runs out; `expires` says it in words. */
+  invites: { id: string; email: string; expires: string; expiresAt: string }[];
+}
+
+/** [NFR-18] Which section comes back open after a save in it (WP-94). */
+export type FamilySection = 'week' | 'check-offs' | 'weather' | 'invite';
+
+/** The section a redirect back to Family options opens: the one saved in, or its failure. */
+export function familyOpen(params: {
+  done?: string;
+  weather?: string;
+  place?: string;
+  open?: string;
+}): FamilySection | null {
+  if (params.open === 'week' || params.open === 'check-offs') return params.open;
+  if (params.done?.startsWith('approval-')) return 'check-offs';
+  if (params.done?.startsWith('week-')) return 'week';
+  if (params.weather || params.place) return 'weather';
+  return null;
 }
 
 /**
  * [ACC-08][US-110] Family options (WP-57, D-84): the household's options in one place in Settings —
  * the week's start day, how check-offs count, the weather on the boards, and who manages the family.
+ * [NFR-18][D-120] Set once and left alone, so each section folds to what it is set to (WP-94): a
+ * change waiting to start, a failing weather read and the invites waiting show on its header.
  */
 export function FamilyView({
   facts,
   weather,
   notice,
+  open = null,
+  now = new Date(),
   waiting,
   who,
 }: {
   facts: FamilyFacts;
   weather: ComponentProps<typeof WeatherSection>;
   notice?: string | null;
+  /** The section saved in, open again. */
+  open?: FamilySection | null;
+  /** For the invites' days left; a dev page fixes it. */
+  now?: Date;
   /** For a dev page; the live page leaves them to the header. */
   waiting?: number;
   who?: NavWho | null;
@@ -83,8 +102,13 @@ export function FamilyView({
         </p>
       </section>
 
-      <section className="fw-card" id="week" aria-labelledby="week-heading">
-        <h2 id="week-heading">The week</h2>
+      <Fold
+        id="week"
+        title="The week"
+        headingId="week-heading"
+        open={open === 'week'}
+        summary={[<Line key="w" line={weekLine(facts.weekStart, next)} />]}
+      >
         <p>
           The week starts on <strong>{WEEK_DAYS[facts.weekStart]}</strong>.
           {next ? (
@@ -125,10 +149,15 @@ export function FamilyView({
             ) : null}
           </div>
         </form>
-      </section>
+      </Fold>
 
-      <section className="fw-card" id="check-offs" aria-labelledby="approval-heading">
-        <h2 id="approval-heading">Check-offs</h2>
+      <Fold
+        id="check-offs"
+        title="Check-offs"
+        headingId="approval-heading"
+        open={open === 'check-offs'}
+        summary={[<Line key="c" line={checkOffsLine(facts.approvalMode)} />]}
+      >
         <form action={setApprovalMode} className="fw-form" aria-label="Check-offs">
           <fieldset className="fw-field fw-fieldset">
             <legend className="fw-field__label">When a child checks something off</legend>
@@ -161,24 +190,41 @@ export function FamilyView({
             </Button>
           </div>
         </form>
-      </section>
+      </Fold>
 
-      <WeatherSection {...weather} />
+      <WeatherSection {...weather} open={open === 'weather'} now={now} />
 
-      <section className="fw-card" id="admins" aria-labelledby="admins-heading">
-        <h2 id="admins-heading">Admins</h2>
-        <ul className="fw-list">
+      <Fold
+        id="admins"
+        title="Admins"
+        headingId="admins-heading"
+        summary={[<Line key="a" line={adminsLine(facts.admins)} />]}
+      >
+        <ul className="fw-list" aria-label="Admins">
           {facts.admins.map((a) => (
             <li key={a.userId} className="fw-list__row">
-              <span>{a.email}</span>
+              <span>
+                {a.name}
+                {a.name !== a.email ? <span className="fw-muted"> · {a.email}</span> : null}
+              </span>
               <span className="fw-muted">{a.role === 'owner' ? 'Owner' : 'Admin'}</span>
             </li>
           ))}
         </ul>
-      </section>
+      </Fold>
 
-      <section className="fw-card" id="invite" aria-labelledby="invite-heading">
-        <h2 id="invite-heading">Invite an admin</h2>
+      <Fold
+        id="invite"
+        title="Invite an admin"
+        headingId="invite-heading"
+        open={open === 'invite'}
+        button={{ label: 'Invite', icon: 'plus' }}
+        waiting={invitesWaiting(
+          facts.invites.map((i) => i.expiresAt),
+          now,
+          facts.timezone,
+        )}
+      >
         <InviteForm />
         {facts.invites.length > 0 ? (
           <>
@@ -201,7 +247,7 @@ export function FamilyView({
             </ul>
           </>
         ) : null}
-      </section>
+      </Fold>
     </main>
   );
 }

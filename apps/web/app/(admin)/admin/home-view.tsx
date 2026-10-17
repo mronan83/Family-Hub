@@ -1,4 +1,4 @@
-import { Banner, Button, Icon, type IconName } from '@familywise/ui';
+import { Banner, Button, Fold, Icon, type IconName } from '@familywise/ui';
 import Link from 'next/link';
 import type { HomeAlert } from '@/lib/home-alerts';
 import { AdminHeader } from './header';
@@ -215,10 +215,10 @@ export function HomeView({
               )}
             </div>
             {school.yearId ? (
-              <details className="fw-quick__more">
-                <summary>Add a day off…</summary>
+              // [NFR-18] The fold's look, as a school year's Add a day off (WP-94).
+              <Fold variant="inner" id="home-day-off" title="Add a day off">
                 <ClosureForm schoolYearId={school.yearId} fromHome />
-              </details>
+              </Fold>
             ) : (
               <Link href="/admin/school" className="fw-quick__link">
                 Set up the school year

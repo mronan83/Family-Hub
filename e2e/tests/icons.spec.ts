@@ -1,5 +1,6 @@
 import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
+import { foldOf, unfold } from '../support/fold';
 import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 import { signIn } from '../support/session';
@@ -110,6 +111,8 @@ test('[CHR-01][D-70] done-when: a chore saved with an icon found by search shows
 
 test('[CHR-10][D-70] a tag takes a new color and a Lucide icon', async () => {
   await admin.goto('/admin/tags');
+  // [NFR-18] Folded to its button (WP-94).
+  await unfold(foldOf(admin, 'Add a tag'));
   const form = admin.getByRole('form', { name: 'Add a tag' });
   await form.getByLabel('Name', { exact: true }).fill(TAG);
   await form
