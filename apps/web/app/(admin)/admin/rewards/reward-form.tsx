@@ -1,6 +1,6 @@
 'use client';
 
-import { Banner, Button, IconPicker, type IconName } from '@familywise/ui';
+import { Banner, Button, FileField, IconPicker, type IconName } from '@familywise/ui';
 import type { FormState } from '@/lib/auth/messages';
 import { useFormAction } from '@/lib/forms';
 import { saveReward } from './actions';
@@ -73,18 +73,14 @@ export function RewardForm({
         selected={initial?.icon ?? 'gift'}
         start="rewards"
       />
-      <label className="fw-field">
-        <span className="fw-field__label">
-          {hasPhoto ? 'A new photo (optional)' : 'Photo (optional)'}
-        </span>
-        <input
-          className="fw-input"
-          name="photo"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-        />
-        <span className="fw-field__help">JPEG, PNG or WebP, up to 2 MB.</span>
-      </label>
+      <FileField
+        label={hasPhoto ? 'A new photo (optional)' : 'Photo (optional)'}
+        name="photo"
+        accept="image/jpeg,image/png,image/webp"
+        button="Choose a photo"
+        empty="No photo chosen"
+        help="JPEG, PNG or WebP, up to 2 MB."
+      />
       <label className="fw-field">
         <span className="fw-field__label">How many there are (optional)</span>
         <input

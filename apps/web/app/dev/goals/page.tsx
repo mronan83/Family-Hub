@@ -1,3 +1,4 @@
+import { Button, Fold } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { AdminHeader } from '../../(admin)/admin/header';
 import type { DayMark } from '@familywise/rules-engine';
@@ -5,7 +6,7 @@ import type { GoalPeriod } from '@/lib/goal-periods';
 import type { GoalRow } from '../../(admin)/admin/goals/data';
 import { GoalForm } from '../../(admin)/admin/goals/goal-form';
 import { WeeksFold } from '../../(admin)/admin/goals/repeating';
-import { GoalsView } from '../../(admin)/admin/goals/view';
+import { GoalHead, GoalStatusPill, GoalsView } from '../../(admin)/admin/goals/view';
 import { goalSteps } from '@/lib/goal-steps';
 
 // The admin Goals page and goal form (WP-19, WP-39) with a made-up family and no database, for the UI
@@ -486,7 +487,7 @@ const ITEMS = [
 export default async function DevGoalsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; form?: string; list?: string }>;
+  searchParams: Promise<{ theme?: string; form?: string; list?: string; open?: string }>;
 }) {
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -523,8 +524,16 @@ export default async function DevGoalsPage({
       <div className={`admin ${theme}`}>
         <main className="fw-page">
           <AdminHeader current="/admin/goals" />
+          {params.form === 'family-weeks' ? (
+            <GoalHead
+              title={family.title}
+              pill={<GoalStatusPill goal={family} today={TODAY} />}
+              line="The whole family · every child meets it · each week · 20 points each"
+            />
+          ) : (
+            <GoalHead title="Set a goal" />
+          )}
           <section className="fw-card">
-            <h1>{params.form === 'family-weeks' ? family.title : 'Set a goal'}</h1>
             <GoalForm
               id={
                 counted
@@ -725,8 +734,8 @@ export default async function DevGoalsPage({
       <div className={`admin ${theme}`}>
         <main className="fw-page">
           <AdminHeader current="/admin/goals" />
+          <GoalHead title={params.form === 'weighted' ? 'Set a goal' : initial.title} />
           <section className="fw-card">
-            <h1>{params.form === 'weighted' ? 'Set a goal' : initial.title}</h1>
             <GoalForm
               id="f2e00000-0000-4000-8000-000000000010"
               members={MEMBERS}
@@ -759,8 +768,12 @@ export default async function DevGoalsPage({
       <div className={`admin ${theme}`}>
         <main className="fw-page">
           <AdminHeader current="/admin/goals" />
+          <GoalHead
+            title={homework.title}
+            pill={<GoalStatusPill goal={homework} today={TODAY} />}
+            line="Maya · each week · this week 3 of 4 days · Pays 10 points"
+          />
           <section className="fw-card">
-            <h1>{homework.title}</h1>
             <GoalForm
               id="f2e00000-0000-4000-8000-000000000008"
               members={MEMBERS}
@@ -807,7 +820,37 @@ export default async function DevGoalsPage({
               }}
             />
           </section>
-          <WeeksFold repeat="week" periods={homework.periods} today={TODAY} points={10} />
+          <WeeksFold
+            repeat="week"
+            periods={homework.periods}
+            today={TODAY}
+            points={10}
+            open={params.open === 'weeks'}
+          />
+          <Fold
+            title="What happened"
+            summary={[
+              <span key="latest">
+                <b>Latest:</b> week of Oct 5 won, 10 points paid, Friday · 9 events
+              </span>,
+            ]}
+          >
+            <p className="fw-muted">Week of Oct 5 won: 10 points paid · Friday, Oct 9</p>
+          </Fold>
+          <Fold title="Stop or cancel" summary={['Stop it after this week, or cancel it now']}>
+            <p className="fw-muted">
+              <b>Stop after this week</b> ends it on the last day of this week: it still counts and
+              pays. <b>Cancel</b> stops it now; nothing more is paid.
+            </p>
+            <div className="fw-actions">
+              <Button variant="secondary" icon="calendar-check">
+                Stop after this week
+              </Button>
+              <Button variant="danger" icon="minus-circle">
+                {`Cancel ${homework.title}`}
+              </Button>
+            </div>
+          </Fold>
         </main>
       </div>
     );
@@ -818,8 +861,8 @@ export default async function DevGoalsPage({
       <div className={`admin ${theme}`}>
         <main className="fw-page">
           <AdminHeader current="/admin/goals" />
+          <GoalHead title={started ? 'Trip to the park' : 'Set a goal'} />
           <section className="fw-card">
-            <h1>{started ? 'Trip to the park' : 'Set a goal'}</h1>
             <GoalForm
               id="f2e00000-0000-4000-8000-000000000001"
               members={MEMBERS}

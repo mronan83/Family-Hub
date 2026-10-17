@@ -246,7 +246,10 @@ export function WeeksFold({
   steps = [],
   kind = 'misses',
   who,
+  open,
 }: {
+  /** Open at first (the side-by-side's screenshot of a goal's weeks). */
+  open?: boolean;
   repeat: Exclude<Repeat, 'none'>;
   periods: GoalPeriod[];
   today: string;
@@ -279,6 +282,7 @@ export function WeeksFold({
     <Fold
       title={`${plural[0]!.toUpperCase()}${plural.slice(1)}`}
       headingId="goal-weeks-heading"
+      open={open}
       summary={[
         <b key="won">{wonLine(shown, repeat) ?? `Its first ${periodWord(repeat)}`}</b>,
         [

@@ -23,9 +23,9 @@ REQ = r"(?:ACC|DEV|CHR|RWD|CAL|SCH|MEAL|MENU|BRD|PTS|NFR)-\d{2}"
 CASE_RE = re.compile(r"\b(" + REQ + r")-([a-z])\b")
 REQ_ONLY_RE = re.compile(r"\b(" + REQ + r")\b(?!-[a-z]\b)")
 STORY_RE = re.compile(r"\bUS-\d{3,4}\b")
-ITEM_RE = re.compile(r"\b(?:WP|SPIKE)-\d{2}\b")
+ITEM_RE = re.compile(r"\b(?:WP|SPIKE)-\d{2,3}\b")
 CASE_FULL = re.compile(r"^" + REQ + r"-[a-z]$")
-WP_HEAD = re.compile(r"^###\s+((?:WP|SPIKE)-\d{2})\s+—\s+(.*)$")
+WP_HEAD = re.compile(r"^###\s+((?:WP|SPIKE)-\d{2,3})\s+—\s+(.*)$")
 
 LAYERS = ("Unit", "DB", "UI", "E2E")
 LAYER_SHORT = {"Unit": "U", "DB": "DB", "UI": "UI", "E2E": "E2E"}

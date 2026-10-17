@@ -206,6 +206,13 @@ body {
 }
 
 /* Goal meter -------------------------------------------------------------------------------- */
+.fw-meter__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-4);
+  margin-top: var(--s-2);
+  font-weight: 600;
+}
 .fw-meter__head {
   display: flex;
   justify-content: space-between;
@@ -307,6 +314,35 @@ body {
   background: transparent;
   border-color: var(--line);
   color: var(--text);
+}
+/* [NFR-16][D-127] The admin app's buttons, as the approved mockups draw them (WP-100): a 12 px radius,
+   the body font at 600; secondary on the card with a primary edge; ghost as primary words alone. The
+   board keeps its pill buttons. */
+.admin .fw-btn {
+  padding: 0 var(--s-4);
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.admin .fw-btn:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.admin .fw-btn--secondary {
+  border-color: var(--primary);
+  background: var(--surface);
+}
+.admin .fw-btn--ghost {
+  padding: 0 10px;
+  border-color: transparent;
+  color: var(--primary-text);
+}
+/* Something that can't be undone (Cancel the goal, Archive, Disconnect): plum words and edge. */
+.admin .fw-btn--danger {
+  border-color: var(--missed);
+  background: var(--surface);
+  color: var(--missed-text);
 }
 
 /* [NFR-15] The admin menu (WP-51, D-81) --------------------------------------------------------
@@ -759,6 +795,10 @@ body {
   margin: 0 auto;
   padding: var(--s-8) var(--s-4) var(--s-12);
 }
+/* The mockups' 14 px between a page's parts (WP-100). */
+.admin .fw-page {
+  gap: 14px;
+}
 .fw-page--wide {
   max-width: 880px;
 }
@@ -775,6 +815,27 @@ body {
 .fw-card > h1 {
   margin: 0;
 }
+/* [NFR-16][D-127] The admin app's card and choices as the approved mockups draw them (WP-100): a
+   16 px card padding on a phone, a choice's words at 15 px. */
+@media (max-width: 480px) {
+  .admin .fw-card:not(.fw-fold) {
+    padding: var(--s-4);
+  }
+}
+.admin .fw-choice {
+  font-size: 15px;
+}
+/* A goal page's head (GoalHead): its title with the goal's state beside it, then its line. */
+.fw-goal-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-3);
+}
+.fw-goal-head > h1 {
+  margin: 0;
+}
 .fw-form {
   display: grid;
   gap: var(--s-4);
@@ -786,34 +847,209 @@ body {
 .fw-field__label {
   font-weight: 600;
 }
+/* The mockups' field label: 14 px over its field (WP-100). */
+.admin .fw-field__label {
+  font-size: var(--t-small);
+}
 .fw-field__help,
 .fw-muted {
   margin: 0;
   font-size: var(--t-small);
   color: var(--text-soft);
 }
-/* The field edge uses --text-soft (4.5:1 on the surface), above the 3:1 a control boundary needs. */
+/* [NFR-16][D-127] A form field drawn by the app on every engine (WP-100): iPhone Safari draws its own
+   field, list, date and time, check box and radio unless `appearance` is none, so each is drawn here
+   to the approved mockups: 44 px tall, a 10 px radius, filled with the page's background inside a
+   card, a 3:1 edge (--field-edge), the focus ring, and 16 px text so an iPhone doesn't zoom in. */
 .fw-input {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
   min-height: var(--touch);
   padding: 0 var(--s-3);
-  border: var(--border-w) solid var(--text-soft);
-  border-radius: var(--r-sm);
-  background: var(--surface);
+  border: var(--border-w) solid var(--field-edge);
+  border-radius: 10px;
+  background-color: var(--bg);
   color: var(--text);
   font: inherit;
+  font-size: 16px;
+  line-height: 1.25;
+}
+.fw-input::placeholder {
+  color: var(--text-soft);
+  opacity: 1;
+}
+.fw-input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-input:disabled {
+  opacity: 0.55;
+}
+textarea.fw-input {
+  min-height: 88px;
+  padding: var(--s-2) var(--s-3);
+}
+/* A number without the browser's arrows, as the mockups draw it (WebKit shows them always). */
+.fw-input[type='number'] {
+  -moz-appearance: textfield;
+}
+.fw-input[type='number']::-webkit-inner-spin-button,
+.fw-input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.fw-input[type='search']::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+/* A date or time: as tall as a field, its words on the left (Safari centres them), and wide enough
+   for the whole date; the theme's color scheme draws its picker button in the theme. */
+.fw-input:is([type='date'], [type='time']) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  line-height: calc(var(--touch) - 2 * var(--border-w));
+}
+.fw-input::-webkit-date-and-time-value {
+  margin: 0;
+  text-align: left;
+}
+.fw-input::-webkit-datetime-edit {
+  padding: 0;
+}
+/* A list: its chevron drawn with the theme's soft text, room kept for it on the right. */
+select.fw-input {
+  min-width: 0;
+  max-width: 100%;
+  padding-right: calc(var(--s-3) + 24px);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-soft) 50%),
+    linear-gradient(135deg, var(--text-soft) 50%, transparent 50%);
+  background-position:
+    right 18px center,
+    right 13px center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  /* WebKit lets a list's words run past its edge, widening the page, unless it clips them. */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* Each theme's own color scheme, so a list's options and a date's picker open in the theme. */
+:root,
+.theme-day {
+  color-scheme: light;
+}
+:root[data-theme='evening'],
+.theme-evening {
+  color-scheme: dark;
 }
 /* A file picker's built-in width ("Choose File · No file chosen") would push a phone's column wider
-   than the screen; it shrinks with the column instead (WP-19; the shop's photo field too). */
+   than the screen; it shrinks with the column instead (WP-19). FileField draws its own button. */
 .fw-input[type='file'] {
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
 }
-/* A list whose longest choice is wider than a phone (a goal's reward from the shop, WP-39) shrinks
-   with the column too; the open list still shows each choice in full. */
-select.fw-input {
+/* [NFR-16][D-127] Segmented chips (WP-100, the mockups' Repeats): one choice of a few, each a chip
+   with its radio hidden; chosen, tinted with a primary edge. */
+.fw-seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.fw-seg__item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  padding: 0 14px;
+  border: var(--border-w) solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  font-weight: 600;
+  cursor: pointer;
+}
+.fw-seg__item > .fw-seg__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: inherit;
+  opacity: 0;
+  cursor: pointer;
+}
+.fw-seg__item:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-seg__item:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+/* A group of fields in a box of its own (the mockups' Rule, Repeats, What it pays): a bold title,
+   then its fields. The legend is placed inside the box, above its fields: Safari keeps a legend on the
+   box's edge even when floated, so it is taken out of the edge by position, and still names the group. */
+.fw-box {
+  position: relative;
+  display: grid;
+  gap: var(--s-3);
   min-width: 0;
-  max-width: 100%;
+  min-inline-size: 0;
+  margin: 0;
+  padding: calc(var(--s-3) + 20px + var(--s-3)) var(--s-3) var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: 12px;
+}
+.fw-box > legend {
+  position: absolute;
+  top: var(--s-3);
+  left: var(--s-3);
+  right: var(--s-3);
+  margin: 0;
+  padding: 0;
+  font-size: var(--t-small);
+  font-weight: 700;
+  line-height: 20px;
+}
+/* Two or more fields side by side where they fit (each at least 160 px), stacked on a phone. */
+.fw-fgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--s-3);
+  align-items: start;
+}
+/* Choices in a row, wrapping as words do: each keeps its 44 px row, with no gap added between rows,
+   so a wrapped choice sits as close as the mockups draw it. */
+.fw-choices,
+.fw-actions:has(> .fw-choice),
+.fw-picker:has(> .fw-picker__item > input:not(.fw-visually-hidden)) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--s-3);
+}
+/* [NFR-16][D-127] A file picker drawn by the app (FileField): a button and the file's name. */
+.fw-file__pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  min-width: 0;
+  cursor: pointer;
+}
+.fw-file__pick:has(input:focus-visible) .fw-btn {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-file__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-soft);
+  font-size: var(--t-small);
 }
 .fw-actions {
   display: flex;
@@ -872,6 +1108,9 @@ select.fw-input {
   padding: 0;
   border: 0;
 }
+.fw-fieldset > legend {
+  padding: 0;
+}
 .fw-choice {
   display: inline-flex;
   align-items: center;
@@ -879,43 +1118,111 @@ select.fw-input {
   min-height: var(--touch);
   cursor: pointer;
 }
-.fw-choice input {
+/* [NFR-16][D-127] A radio and a check box drawn by the app (WP-100): 20 px, a 2 px soft edge; chosen,
+   a radio is a thick ring and a check box is filled with a tick, both in the primary color. */
+.fw-choice input,
+.admin input:is([type='radio'], [type='checkbox']):not(.fw-visually-hidden):not(.fw-seg__input) {
+  -webkit-appearance: none;
+  appearance: none;
   flex: none; /* a label that wraps never shrinks its box */
+  display: inline-grid;
+  place-content: center;
+  box-sizing: border-box;
   width: 20px;
   height: 20px;
   margin: 0;
-  accent-color: var(--primary);
+  border: 2px solid var(--text-soft);
+  background: var(--surface);
+  color: var(--on-primary);
+  cursor: pointer;
+}
+.fw-choice input[type='radio'],
+.admin input[type='radio']:not(.fw-visually-hidden) {
+  border-radius: 50%;
+}
+.fw-choice input[type='radio']:checked,
+.admin input[type='radio']:not(.fw-visually-hidden):checked {
+  border: 6px solid var(--primary);
+}
+.fw-choice input[type='checkbox'],
+.admin input[type='checkbox']:not(.fw-visually-hidden) {
+  border-radius: 5px;
+}
+.fw-choice input[type='checkbox']:checked,
+.admin input[type='checkbox']:not(.fw-visually-hidden):checked {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+.fw-choice input[type='checkbox']::before,
+.admin input[type='checkbox']:not(.fw-visually-hidden)::before {
+  content: '';
+  width: 9px;
+  height: 5px;
+  border-left: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
+  transform: rotate(-45deg) translate(1px, -1px);
+  opacity: 0;
+}
+.fw-choice input[type='checkbox']:checked::before,
+.admin input[type='checkbox']:not(.fw-visually-hidden):checked::before {
+  opacity: 1;
+}
+.fw-choice input:focus-visible,
+.admin input:is([type='radio'], [type='checkbox']):not(.fw-visually-hidden):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-choice input:disabled,
+.admin input:is([type='radio'], [type='checkbox']):not(.fw-visually-hidden):disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.fw-choice:has(input:disabled) {
+  color: var(--text-soft);
+  cursor: default;
 }
 .fw-picker {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-2);
 }
+/* A chip: an icon, a color or a face, its radio hidden. Chosen, it is tinted with a primary edge, as
+   the mockups' chips are (no ring). */
 .fw-picker__item {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
   min-height: var(--touch);
-  padding: var(--s-1) var(--s-2);
+  padding: var(--s-1) var(--s-3);
   border: var(--border-w) solid var(--line);
-  border-radius: var(--r-pill);
+  border-radius: 12px;
+  background: var(--bg);
   cursor: pointer;
 }
 .fw-picker__item:has(input:checked) {
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
 }
 .fw-picker__item:has(input:focus-visible) {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
+}
+/* A chip whose radio or check box shows is a choice row instead: its box and its words, no chip. */
+.fw-picker__item:has(> input:not(.fw-visually-hidden)) {
+  padding-inline: 0 var(--s-2);
+  border-color: transparent;
+  background: transparent;
+  color: inherit;
 }
 .fw-swatch {
   width: 28px;
   height: 28px;
   border-radius: 50%;
 }
-.fw-input--short {
-  max-width: 8ch;
+.fw-input--short,
+select.fw-input.fw-input--short {
+  max-width: 96px;
 }
 /* A time field wide enough for "12:30 PM" and its picker (WP-40). */
 .fw-input--time {
@@ -952,6 +1259,14 @@ select.fw-input {
   display: grid;
   gap: var(--s-2);
   min-width: 0;
+}
+.fw-iconpick__sum {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.fw-iconpick__sum b {
+  margin-left: var(--s-1);
 }
 .fw-iconpick [hidden] {
   display: none !important;
@@ -2652,8 +2967,8 @@ span.fw-heat__cell {
 }
 .fw-goals {
   display: grid;
-  gap: var(--s-4);
-  margin: var(--s-4) 0 0;
+  gap: 10px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -2664,17 +2979,46 @@ span.fw-heat__cell {
   border: var(--border-w) solid var(--line);
   border-radius: var(--r-md);
 }
+/* [NFR-16][D-127] As the approved mockups draw a goal's card (WP-100): a 12 px card, the icon in a
+   36 px teal tile, and the goal's state on the title's row. */
+.admin .fw-goal {
+  border-radius: 12px;
+}
+.admin .fw-goal__status {
+  font-size: 12px;
+}
 .fw-goal > .fw-item {
-  flex-wrap: wrap;
+  align-items: center;
 }
 .fw-goal > .fw-item > .fw-item__body {
-  flex: 1 1 200px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.fw-goal > .fw-item > .fw-goal__status {
+  flex: none;
+  white-space: nowrap;
+}
+.admin .fw-goal > .fw-item > .fw-reward__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.admin .fw-goal > .fw-item > .fw-reward__icon svg {
+  width: 20px;
+  height: 20px;
+}
+.admin .fw-goal > .fw-item > .fw-reward__photo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
 }
 .fw-goal__status {
   display: inline-flex;
   align-items: center;
   gap: var(--s-1);
-  padding: var(--s-1) var(--s-3);
+  padding: 1px var(--s-2);
   border-radius: var(--r-pill);
   background: var(--primary-tint);
   color: var(--primary-text);
@@ -2742,11 +3086,13 @@ span.fw-heat__cell {
   min-width: 0;
   width: 100%;
 }
-.fw-goal-rule {
-  gap: var(--s-3);
-  padding: var(--s-4);
-  border: var(--border-w) solid var(--line);
-  border-radius: var(--r-md);
+/* [NFR-16][D-127] A rule's time, a period's points and a step's amount sit in their row (WP-100). */
+.fw-input--points {
+  width: 96px;
+}
+.fw-input.fw-input--clock {
+  display: inline-block;
+  width: 9em;
 }
 .fw-goal-rule__head {
   display: flex;
@@ -2826,6 +3172,12 @@ span.fw-heat__cell {
 }
 .fw-fold__head > :is(h2, h3) {
   margin: 0;
+}
+/* A long title shares the chevron's line and wraps beside it (the icon picker's, on a phone). */
+.fw-fold--inner > .fw-fold__head > h3 {
+  flex: 1 1 0%;
+  min-width: 0;
+  font-size: 17px;
 }
 details[open] > .fw-fold__head .fw-lunchday__chev {
   transform: rotate(90deg);
@@ -3605,6 +3957,14 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   align-items: center;
   gap: var(--s-3);
   margin: 0;
+}
+/* [NFR-16][D-127] A goal's icon in a teal tile, as the approved goal mockups draw it (WP-100). */
+.board .fw-today__goal-head > svg.fw-icon {
+  box-sizing: content-box;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--primary-tint);
+  color: var(--primary-text);
 }
 .fw-today__goal-title {
   flex: 1;

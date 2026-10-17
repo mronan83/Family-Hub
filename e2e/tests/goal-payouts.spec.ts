@@ -133,7 +133,7 @@ test('[RWD-13][RWD-10][RWD-04][US-409][US-406] a goal that pays 10 points: set w
     );
     expect(goalId()).toBe('');
 
-    await form.getByRole('button', { name: 'Set goal' }).click();
+    await form.getByRole('button', { name: 'Set the goal' }).click();
     await expect(admin.getByRole('status')).toHaveText(`Saved ${TITLE}.`);
     await expect(goal()).toContainText('Maya · Started');
     await expect(goal()).toContainText('Pays 10 points');

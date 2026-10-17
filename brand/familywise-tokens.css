@@ -47,6 +47,9 @@
   --missed-text: var(--fw-plum-700);
   --info: var(--fw-sky-600);
   --focus: #0369A1;
+  /* [NFR-11][D-127] An admin form field's edge: 3:1 on the card and the field's fill, softer than
+     Text-soft, as the approved mockups draw a field (WP-100). */
+  --field-edge: #8C8577;
   /* [DEV-07] A sleeping board (WP-34): black, in either theme, so nothing is lit. */
   --sleep-screen: #000000;
 
@@ -107,6 +110,7 @@
   --missed-text: #E2C9EA;
   --info: #7DD3FC;
   --focus: #7DD3FC;
+  --field-edge: #647A76;
   --member-1-line: #38BDF8;  --member-2-line: #FB7194;  --member-3-line: #FB923C;
   --member-4-line: #A79BF5;  --member-5-line: #6CC17A;  --member-6-line: #2DD4BF;
   --member-7-line: #F87171;  --member-8-line: #FACC15;  --member-9-line: #A3E635;

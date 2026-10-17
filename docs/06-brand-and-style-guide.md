@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
 > Version 1.18 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-45, WP-46, WP-47, WP-48, WP-28, WP-51, WP-52)
+> v1.27: the admin app's form controls drawn by the app on every engine (WP-100, D-127): fields 44 px, 10 px round, filled with the background, with `--field-edge` (3:1) and the focus ring, 16 px text; radios and check boxes 20 px in Teal; segmented chips (`.fw-seg`), boxes (`.fw-box`), the app's file picker; admin buttons 12 px round in Inter 600, secondary on the card with a Teal edge, ghost as Teal words, danger in Plum.
 > v1.26: a family goal every child meets (WP-82, D-126): a row per child (`.fw-goal__kids`), their avatar and name with how it stands for them and their days; a goal counting weeks won shows the counted goal's weeks as period marks (`.fw-goal__counted`).
 > v1.25: a goal's steps (WP-81, D-124): chips (`.fw-steps`), the one in reach or won at in Sun with a heavier border and `aria-current`; a day missed by a late tick marked as missed (`late`, the same Plum cross, its words "missed, ticked after the time").
 > v1.24: a repeating goal (WP-80, D-123): its days as marks (`DayMarks`: done a filled Leaf check, missed a Plum cross, today a Teal ring, a day off school a dash) and its periods as marks (`PeriodMarks`: won a Sun trophy, missed a Plum cross, a break a dash, the one going now a dashed Teal square); "Missed, starts again" in the missed tint with `repeat`, "Won this week!" in the Sun tint with `trophy` (§7.2, §7.3).
@@ -184,7 +185,7 @@ Why the board is large: one logical pixel is about 0.37 mm on the 32" 4K panel, 
 
 **Grid and spacing.** 8 px base unit (`--s-1..12`). Board safe margin 48 px; no essential control within 24 px of the screen edge. Admin uses a 4-column phone, 12-column desktop grid, max content width 1180 px.
 
-**Shape.** Cards `--r-lg` 24 px, controls `--r-md` 16 px, chips and primary buttons `--r-pill`. Borders 2 px on the board, 1 px in admin. Shadows are soft and used only to separate layers (`--shadow-1`, `--shadow-2`).
+**Shape.** Cards `--r-lg` 24 px, controls `--r-md` 16 px, chips and primary buttons `--r-pill`. Borders 2 px on the board, 1 px in admin. In admin, as the approved mockups draw them (D-127): fields 10 px round, filled with the background, edged with `--field-edge` (3:1 on the card and the fill), 44 px tall with 16 px text (so an iPhone doesn't zoom in); radios and check boxes 20 px, Teal when chosen; segmented chips and buttons 12 px round, buttons in Inter 600; a group of fields in a 12 px box with its title in bold. Every control is drawn by the app (`appearance: none`), never by the browser. Shadows are soft and used only to separate layers (`--shadow-1`, `--shadow-2`).
 
 **Touch (board).** Minimum target 56 logical px (about 21 mm); primary actions 96 px tall. 16 px minimum gap between targets. Debounce taps; destructive actions need a confirm step. No hover-only behavior anywhere on the board. Every action is a real button: it works by touch, mouse click and keyboard (Enter or Space) alike, and no gesture (long-press, swipe, pinch) is the only way to do anything. Those gestures are blocked on the kiosk (US-203); the Pi hides the cursor.
 

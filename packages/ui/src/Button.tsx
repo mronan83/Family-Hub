@@ -1,10 +1,11 @@
-// Buttons (06 §7.2): primary (teal), secondary (teal tint), ghost (line border). On the board a
+// Buttons (06 §7.2): primary (teal), secondary (teal tint; in admin, the card with a teal edge), ghost
+// (line border; in admin, teal words alone), danger (admin: plum words and edge, D-127). On the board a
 // button always pairs an icon with a word; touch height comes from the surface (56 board, 44 admin).
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Icon } from './Icon';
 import type { IconName } from './generated/icons';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;

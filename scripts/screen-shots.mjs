@@ -1,0 +1,124 @@
+// [NFR-16][D-127] Screenshots of the made-up family's screens for a side-by-side with their mockups
+// (WP-100): the admin app as an iPhone (390 px, WebKit, Safari's engine) and a laptop (1280 px), the
+// board at 1920 px, in Day and Evening. CI's build job runs it with WebKit after the UI suite and
+// keeps the pictures as the `screen-shots` artifact; locally, BROWSER=chromium runs it with the
+// container's Chromium. It reads /dev pages only: no database, no sign-in, no real family's data.
+//
+//   node scripts/screen-shots.mjs [--base=http://localhost:3100] [--out=test-results/screens]
+import { mkdir } from 'node:fs/promises';
+import { chromium, devices, webkit } from '@playwright/test';
+
+const arg = (name, fallback) =>
+  process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3) ?? fallback;
+const base = arg('base', 'http://localhost:3100');
+const out = arg('out', 'test-results/screens');
+const engine = process.env.BROWSER === 'chromium' ? chromium : webkit;
+const executablePath = process.env.CHROMIUM_PATH;
+
+/** Thursday, Oct 15, 2026, 11 am in the family's zone: the board's goal cards are drawn for it. */
+const THURSDAY = new Date('2026-10-15T15:00:00Z');
+
+/** [name, path] per admin screen: the goal screens of the WP-80 to WP-82 mockups, then the rest. */
+export const ADMIN = [
+  ['goals', '/dev/goals'],
+  ['goals-steps', '/dev/goals?list=steps'],
+  ['goals-perfect', '/dev/goals?list=perfect'],
+  ['goal-new', '/dev/goals?form=new'],
+  ['goal-repeating', '/dev/goals?form=repeating&open=weeks'],
+  ['goal-steps', '/dev/goals?form=steps'],
+  ['goal-count-steps', '/dev/goals?form=count-steps'],
+  ['goal-weighted', '/dev/goals?form=weighted'],
+  ['goal-family', '/dev/goals?form=family'],
+  ['goal-perfect', '/dev/goals?form=perfect'],
+  ['goal-family-weeks', '/dev/goals?form=family-weeks'],
+  ['admin-home', '/dev/admin'],
+  ['admin-today', '/dev/admin?view=today'],
+  ['admin-my', '/dev/admin?view=my'],
+  ['forms', '/dev/forms'],
+  ['family', '/dev/family'],
+  ['rewards', '/dev/rewards'],
+  ['meals', '/dev/meals'],
+  ['meals-library', '/dev/meals?page=library'],
+  ['menus', '/dev/menus'],
+  ['calendars', '/dev/calendars'],
+  ['boards', '/dev/boards'],
+  ['reminders', '/dev/reminders'],
+  ['settings', '/dev/settings'],
+  ['insights', '/dev/insights'],
+];
+/** [name, query, person] per board screen: Maya's goal cards. */
+export const BOARD = [
+  ['board-going', '?repeating=going', 'Maya'],
+  ['board-missed', '?repeating=missed', 'Maya'],
+  ['board-won', '?repeating=won', 'Maya'],
+  ['board-steps', '?steps=going', 'Maya'],
+  ['board-weighted', '?steps=weighted', 'Maya'],
+  ['board-family', '?perfect=missed', 'Maya'],
+];
+
+const only = arg('only', '');
+const wanted = (name) => !only || only.split(',').some((o) => name.startsWith(o));
+
+async function shoot(context, url, file, person) {
+  const page = await context.newPage();
+  await page.clock.setFixedTime(THURSDAY);
+  await page.goto(url);
+  // The page is ready once React has hydrated it (D-110) and its fonts have loaded.
+  await page.locator('html[data-hydrated]').waitFor();
+  if (person) {
+    await page
+      .getByRole('list', { name: 'Family', exact: true })
+      .getByRole('button', { name: person, exact: true })
+      .click();
+    await page.getByRole('heading', { name: person, level: 2 }).waitFor();
+  }
+  await page.evaluate(() => document.fonts.ready);
+  if (person) {
+    // The board is one screen that scrolls inside; the goal cards are its Goals section, drawn
+    // whole by letting the parts around it grow.
+    const goals = page.getByRole('region', { name: 'Goals' });
+    await goals.evaluate((el) => {
+      for (let n = el.parentElement; n; n = n.parentElement) {
+        n.style.overflow = 'visible';
+        n.style.maxHeight = 'none';
+        n.style.height = 'auto';
+      }
+    });
+    await goals.screenshot({ path: file });
+  } else {
+    await page.screenshot({ path: file, fullPage: true });
+  }
+  await page.close();
+}
+
+const browser = await engine.launch(
+  executablePath && engine === chromium ? { executablePath } : {},
+);
+await mkdir(out, { recursive: true });
+const shapes = [
+  ['iphone', { ...devices['iPhone 13'], deviceScaleFactor: 2 }],
+  ['laptop', { viewport: { width: 1280, height: 800 } }],
+];
+let n = 0;
+for (const theme of ['day', 'evening']) {
+  for (const [shape, options] of shapes) {
+    const context = await browser.newContext(
+      engine === chromium ? { ...options, isMobile: false, hasTouch: false } : options,
+    );
+    for (const [name, path] of ADMIN.filter(([name]) => wanted(name))) {
+      const url = `${base}${path}${path.includes('?') ? '&' : '?'}theme=${theme}`;
+      await shoot(context, url, `${out}/${name}-${shape}-${theme}.png`);
+      n += 1;
+    }
+    await context.close();
+  }
+  const board = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  for (const [name, query, person] of BOARD.filter(([name]) => wanted(name))) {
+    const url = `${base}/dev/board${query}&theme=${theme}`;
+    await shoot(board, url, `${out}/${name}-${theme}.png`, person);
+    n += 1;
+  }
+  await board.close();
+}
+await browser.close();
+console.log(`${n} screenshots in ${out} (${engine.name()})`);

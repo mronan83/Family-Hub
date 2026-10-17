@@ -37,6 +37,7 @@ export {
 } from './PeriodMarks';
 export { Banner, type BannerKind } from './Banner';
 export { Fold, type FoldProps } from './Fold';
+export { FileField, type FileFieldProps } from './FileField';
 export { Button, type ButtonProps, type ButtonVariant } from './Button';
 export {
   applyBoardTextSize,

@@ -16,7 +16,29 @@ async function contrastOk(page: Page) {
 }
 /** No sideways scroll, and every control at least 44 px tall (NFR-11). */
 async function fits(page: Page, width: number) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+  // Says what sticks out past the screen when anything does (WebKit draws a list's words its own way).
+  const wide = await page.evaluate(
+    (w) =>
+      document.documentElement.scrollWidth === w
+        ? []
+        : [...document.querySelectorAll('main *')]
+            .filter(
+              (el) => el.getBoundingClientRect().right > w || el.scrollWidth > el.clientWidth + 1,
+            )
+            .filter(
+              (el) =>
+                getComputedStyle(el).overflow === 'visible' || el.getBoundingClientRect().right > w,
+            )
+            .slice(-8)
+            .map(
+              (el) =>
+                `${el.tagName.toLowerCase()}.${el.className}: right ${Math.round(el.getBoundingClientRect().right)}, scroll ${el.scrollWidth}/${el.clientWidth}`,
+            ),
+    width,
+  );
+  expect(await page.evaluate(() => document.documentElement.scrollWidth), wide.join('\n')).toBe(
+    width,
+  );
   const small = await page.evaluate(() =>
     [
       ...document.querySelectorAll(

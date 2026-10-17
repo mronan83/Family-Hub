@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.37: the admin app's form controls drawn the same on an iPhone and a computer (WP-100, D-127): fields, lists, dates, radios and check boxes in the app's own look; **Repeats** as chips; the goal form's parts in boxes; **Something else** and **Set the goal**; the icon picker folded to the icon chosen in every form; **Choose a photo** for a photo (A7, B1).
 > v0.36: perfect weeks, and a family goal every child meets (WP-82, D-126): **Weeks won of a repeating goal**, in total or in a row, and **Every child meets it** on a family goal, with each child's days on Goals and the board (A7c, B1.8).
 > v0.35: a goal done by a time, and goals that pay in steps (WP-81, D-124): **Counts only when done**, **Pay in steps** by days missed, by number or by weighted rules, and the board's steps (A7b, B1.8).
 > v0.34: goals that repeat each week, month or school term (WP-80, D-123): **Repeats**, **Every day it's due** and its misses, a goal's weeks, **Stop after this week**, and the board's week won or missed (A7a, B1.8); Goals' **History** and a goal's **What happened** and **Cancel** folded.
@@ -341,7 +342,7 @@ Reminders come only for items you are on, at most once each, and never after the
    - **Any one of them**: done once, by whoever gets to it, like feeding the dog. New tasks start like this.
 5. Choose **How often**: **Every day**, **Some days** (tick the days), **Monthly** (a **Day of the month**; the 31st falls on the last day of a shorter month) or **Once** (a date).
 6. Optionally, a **Due time**. It orders the day into Morning (before noon), After school (noon to 5 pm) and Evening (from 5 pm); items without one are **Anytime**. It never changes points.
-7. Pick an **Icon**. Type a word in **Find an icon** (like *fish*, *laundry* or *piano*), or choose a group such as **Home** or **Pets and garden**. **Chosen:** under the picker names the one you picked.
+7. Pick an **Icon**: open **Icon** (closed, it names the one chosen), then type a word in **Find an icon** (like *fish*, *laundry* or *piano*), or choose a group such as **Home** or **Pets and garden**. **Chosen:** under the picker names the one you picked.
 8. Set **Points**: 5 for a new chore and 0 for a new task, until you change it. Only members who earn rewards collect points.
 9. Optionally, tick **Tags** (see below).
 10. Optionally, switch on **Private** (see below).
@@ -607,12 +608,12 @@ On **Rewards**, a reward someone is saving for says so ("Maya is saving for it")
 5. Choose **What counts**: **Everything**, **Some tags** or **Some items**.
 6. Optionally, **Add a rule** (up to 5), and choose whether **It's reached when** **Every rule is met** or **Any one rule is met**.
 7. Choose **What reaching it pays**:
-   - **Just the celebration**: you give the reward yourself and mark it redeemed.
-   - **Points**: **Points paid** (1 to 10,000) go to the child when it's reached. A family goal pays them to each child who earns rewards.
+   - **Points**: type the points (1 to 10,000) in the box beside it. They go to the child when it's reached. A family goal pays them to each child who earns rewards.
    - **A reward from the shop** (a child's goal only): choose the **Reward**. It is approved for them at once and costs them nothing; you mark it given on **Rewards** as usual. A reward taken out of the shop can still be a goal's prize.
-8. Pick an **Icon**, or add a **Photo**. To see where it would start from what's already done, choose **Preview**. Then choose **Set goal**.
+   - **Something else**: you give the reward yourself and mark it redeemed.
+8. Open **Icon, shown when there's no photo** to pick another icon (it shows the one chosen while it's closed), or choose **Choose a photo**. To see where it would start from what's already done, choose **Preview**. Then choose **Set the goal**, or **Cancel** to go back to Goals.
 
-![The goal form on a phone: Name, Description, Who it's for (Maya, Leo or The whole family), Starts, Ends, a rule with Counts, Target and What counts, Add a rule, the icon picker (Chosen: trophy, Find an icon, the groups and their icons), Photo and Set goal.](guide/img/admin-goal-form-phone.jpg "Setting a goal, on a phone")
+![The goal form on a phone: Name, Description, Who it's for (Maya, Leo or The whole family), Starts, Ends, a rule with Counts, Target and What counts, Add a rule, What reaching it pays in its own box, the icon picker folded to Chosen: trophy, Choose a photo, Set the goal, Preview and Cancel.](guide/img/admin-goal-form-phone.jpg "Setting a goal, on a phone")
 
 #### Follow a goal
 
@@ -689,7 +690,7 @@ On the goal's page, **Weeks** is folded to "Won 3 of the last 4 weeks" and the p
 
 **What this is.** A goal that counts only what is done by a set time ("homework before 6 pm"), and a goal that pays less for less instead of nothing. **When.** When on time matters, or when nearly there should still earn something. **How.** In the goal form, under each rule, and under what it pays.
 
-- **Counts only when done**: **Any time that day** (as before), **By each chore's due time**, or **By a time** you set. A tick after the time still completes the chore and earns its points; it just doesn't count for this goal. A chore without a due time, under **By each chore's due time**, counts any time that day. The tick's own time decides, even when the board was offline. Your own tick after the time doesn't count either.
+- **Counts only when done**: **Any time that day** (as before), **By each chore's due time**, or **By** a time you set. A tick after the time still completes the chore and earns its points; it just doesn't count for this goal. A chore without a due time, under **By each chore's due time**, counts any time that day. The tick's own time decides, even when the board was offline. Your own tick after the time doesn't count either.
 - **Pay in steps** (when it pays points): the points you set are the top step. On **Every day it's due**, the steps are days missed: "All days 20, 1 missed 10, 2 missed 5", so a short week's top step is still all its days, and the lowest step sets the misses allowed. On a goal counted by number, a step is a number reached: "20 pays 20, 15 pays 10, 10 pays 5"; a goal like that that doesn't repeat needs an end date.
 - **Two or more rules in steps**: each rule gets a **Weight (%)**, together 100%. The goal's % is each rule's % times its weight ("homework 75% × 60% + reading 80% × 40% = 77%"), the steps are % of the goal, and it is reached at 100%, every rule met.
 - **The highest step reached pays, not the sum.** The top step pays the moment it's reached. A lower step pays when the week (or the goal) ends, or as soon as nothing higher can be reached. If you fix a tick later and the week moves to another step, the difference is paid or taken back.
@@ -1203,7 +1204,7 @@ A member who doesn't earn rewards can't be given points; what they earned before
 | A repeating goal | How it repeats, misses allowed and what each week pays; **Going**, **Missed this week** or **Won this week**; this week's days and a mark for each; the lost week's line; its last weeks as marks with "Won 3 of the last 4 weeks"; **Change**. See [A7a](#a7a-goals-that-repeat). |
 | **History** (folded) | Folded to how many are redeemed, ended and cancelled, and "needs a look". Open: goals **Redeemed** (when and by whom), **Ended**, or **Cancelled**; **Needs a look** if flagged; **Details**. |
 
-**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **For the whole family** (**Every child meets it**, a family goal; fixed once it starts), **Repeats** (**Doesn't repeat**, **Each week**, **Each month**, **Each school term**; fixed once it starts), **Starts**, **Ends** (**Ends on a date**, then the date and **Clear**), one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **Every day it's due** with **Misses allowed each week** 0 to 3 for a goal that repeats, **Weeks won of a repeating goal** with **Which goal** and **How** (**In total**, **In a row**), **What counts**, **Counts only when done**: **Any time that day**, **By each chore's due time** or **By a time** with **Time**; **Weight (%)** on a goal with two or more rules in steps), **Add a rule**, **It's reached when**, **What reaching it pays** (**What each week pays** for a goal that repeats) (**Just the celebration**, **Points** with **Points paid** 1 to 10,000 and **Pay in steps**, or **A reward from the shop** with **Reward**), an icon, **Photo (optional)**. **Set goal** or **Save changes**; **Preview** shows what saving would do, and saves nothing.
+**The goal form:** **Name** (up to 80), **Description (optional)** (up to 300), **Who it's for**, **For the whole family** (**Every child meets it**, a family goal; fixed once it starts), **Repeats** (**Doesn't repeat**, **Each week**, **Each month**, **Each school term**; fixed once it starts), **Starts**, **Ends** (**Ends on a date**, then the date and **Clear**), one to five rules (**Counts**, **Target** 1 to 100,000, **Misses forgiven a week** for a streak, **Every day it's due** with **Misses allowed each week** 0 to 3 for a goal that repeats, **Weeks won of a repeating goal** with **Which goal** and **How** (**In total**, **In a row**), **What counts**, **Counts only when done**: **Any time that day**, **By each chore's due time** or **By** with its time; **Weight (%)** on a goal with two or more rules in steps), **Add a rule**, **It's reached when**, **What reaching it pays** (**What each week pays** for a goal that repeats) (**Points** with its points 1 to 10,000 and **Pay in steps**, **A reward from the shop** with **Reward**, or **Something else**), the icon (folded to the one chosen), **Photo (optional)** with **Choose a photo**. **Set the goal** (with **Cancel**) or **Save changes**; **Preview** shows what saving would do, and saves nothing.
 
 **A goal's page:** who, state and "% there"; **Clear** for a **Needs a look** flag; **Remove photo**; the form (locked as the goal progresses, see [A7](#change-or-cancel-a-goal)); **Weeks** for a goal that repeats (folded; each week, its days and what it paid); **What happened** (folded to its latest line: set up, started, rules or dates changed, what it pays changed, progress worked out again with the old and new %, achieved and what it paid, a week won or no longer won, back to going, payout undone, points put back, needs a look, set to stop, redeemed, ended, cancelled); **Stop or cancel** (folded: **Stop after this week** for a goal that repeats, and **Cancel**).
 
@@ -1650,7 +1651,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 
 **We have two boards. Do they differ?** Each board can have its own calendars, its own home screen layout and its own theme. A reached goal is celebrated on one board only.
 
-**A goal was reached. Where's the reward?** If it pays points, they are already in the child's points. If it pays a reward from the shop, it is on **Rewards** under **To give**. Either way, or if it pays just the celebration, you give the reward in real life, then choose **Mark redeemed** on **Goals**.
+**A goal was reached. Where's the reward?** If it pays points, they are already in the child's points. If it pays a reward from the shop, it is on **Rewards** under **To give**. Either way, or if it pays something else, you give the reward in real life, then choose **Mark redeemed** on **Goals**.
 
 **Points from a goal disappeared.** A check-off the goal needed was undone, so the goal went back to going and its points were taken back. Check the item off again and the goal is reached again, and pays again. The goal's **What happened** says when.
 
