@@ -51,6 +51,9 @@
 | CHR-18 | An item with several assignees shall be either shared (one occurrence per due date, done by whoever gets to it) or each person's own (one occurrence per assignee per due date, each with its own status and credit, due by that person's own day type). New chores default to each person's own, new tasks to shared. | M | P1 | User |
 | CHR-19 | An item each person does on their own may follow each child's school lunch: due for a person only on their bring days, or only on their buy days (MEAL-04), so never for an adult or on a day without school. A change to a child's lunch, for one day or their usual week, shall re-plan their items at once, today included, keeping any already acted on. | M | P2 | User |
 | CHR-20 | A parent with notifications on shall be alerted when a check-off waits for a parent's OK or a child asks for a reward: within seconds of it starting to wait (D-119), counting all that waits for that parent by child, held in quiet hours, opening where it is cleared, and switchable per parent (on by default). | S | P2 | User |
+| CHR-21 | The admin app's Chores page shall list items in four sections: Scheduled (one-time items not done, under Overdue, Today, This week and Later), Recurring (every repeating item), Completed (one-time items done, folded to a count, the newest 20 then older on request) and Archived (folded); a recurring item is never completed. Person chips shall filter every section at once, and each row shall be two lines with its actions in a ⋯ menu. | S | P3 | User |
+| CHR-22 | An admin shall be able to duplicate a chore or task: the item form opens filled in from the original, its name marked "(copy)", and nothing is saved until they save it. | S | P3 | User |
+| CHR-23 | An admin shall be able to do a completed one-time item again: a new one-time item on a date they pick, while the original keeps its completion, points and goal credit and is not reopened. | S | P3 | User |
 | RWD-01 | Admins shall create, edit, and archive reward goals with title, image, assignee, start date, and end date. | M | P1 | User |
 | RWD-02 | Goals shall support rule types COUNT, STREAK, DAILY_ALL_DONE, and POINTS, scoped to all items, household tags (by id), or specific items. | M | P1 | User |
 | RWD-03 | A goal shall combine its rules with ALL or ANY logic. | M | P1 | Derived |
@@ -191,6 +194,9 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CHR-18 | US-320 | WP-43 | ADM, OCCGEN, DB | chore, chore_occurrence | DB, U, E2E | U 5 · DB 21 · E2E 2 |
 | CHR-19 | US-321 | WP-61 | ADM, OCCGEN, DB | chore, chore_occurrence, lunch_override, member_lunch | DB, U, E2E | U 2 · DB 14 · UI 1 · E2E 1 |
 | CHR-20 | US-322 | WP-63, WP-92 | NOTIFY, SCHED, ADM, DB | reminder_preference, reminder_delivery, chore_occurrence, redemption | DB, U, E2E | U 3 · DB 22 · UI 1 · E2E 1 |
+| CHR-21 | US-323 | WP-96 | ADM | chore, chore_occurrence | U, E2E | — |
+| CHR-22 | US-324 | WP-96 | ADM | chore, chore_assignee, chore_tag | U, E2E | — |
+| CHR-23 | US-325 | WP-96 | ADM, API, DB | chore, chore_occurrence, chore_completion_event | U, DB, E2E | — |
 | RWD-01 | US-401 | WP-19 | ADM, API | reward_goal | E2E | U 5 · DB 1 · UI 2 · E2E 1 |
 | RWD-02 | US-312, US-401 | WP-15 | RULES, DB | reward_rule, tag | U | U 16 · UI 1 |
 | RWD-03 | US-401 | WP-15 | RULES | reward_goal | U | U 5 · UI 1 |
@@ -283,7 +289,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-15 | US-107 | WP-51 | ADM, UI | chore_occurrence, tag, calendar_source, device, reminder_preference | U, E2E | U 2 · UI 6 · E2E 1 |
 | NFR-16 | US-912 | WP-53, WP-71, WP-100, WP-101 | ADM, BRD, UI | — | E2E, CI | U 17 · DB 10 · UI 17 |
 | NFR-17 | US-109 | WP-57 | ADM, DB, UI | chore_occurrence, redemption, device, calendar_source, menu_source, school_closure | U, DB, E2E | U 11 · DB 2 · UI 4 · E2E 2 |
-| NFR-18 | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | ADM, UI | — | U, E2E | U 3 |
+| NFR-18 | US-111, US-323 | WP-93, WP-94, WP-95, WP-96, WP-97 | ADM, UI | — | U, E2E | U 3 |
 | NFR-19 | US-913 | WP-85, WP-86 | CICD | — | CI, U | U 6 |
 
 ---
@@ -295,11 +301,11 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | P0 | 13 | 1 | 0 | 14 |
 | P1 | 52 | 5 | 0 | 57 |
 | P2 | 15 | 21 | 1 | 37 |
-| P3 | 2 | 17 | 4 | 23 |
-| **Total** | **82** | **44** | **5** | **131** |
+| P3 | 2 | 20 | 4 | 26 |
+| **Total** | **82** | **47** | **5** | **134** |
 
-- Requirements: **131** · with at least one story: **131** · stories: **117** (P0: 12 · P1: 52 · P2: 30 · P3: 23).
-- With at least one work package: **131** · work packages: **99**.
+- Requirements: **134** · with at least one story: **134** · stories: **120** (P0: 12 · P1: 52 · P2: 30 · P3: 26).
+- With at least one work package: **134** · work packages: **99**.
 - Tests: **2633** (2126 name a requirement) · built requirements with a test: **116 of 116** · known test gaps: **104** (`08` §9.6).
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
@@ -310,8 +316,8 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | Component | Requirements |
 |---|---|
 | `BRD` | BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07, BRD-08, BRD-09, BRD-10, BRD-11, CAL-03, CAL-04, CAL-05, CAL-09, CAL-10, CHR-04, CHR-07, CHR-09, CHR-11, CHR-12, CHR-13, DEV-01, DEV-04, DEV-05, DEV-06, DEV-07, DEV-08, MEAL-01, MEAL-05, MEAL-06, MEAL-09, MEAL-10, MEAL-11, MENU-06, NFR-01, NFR-02, NFR-03, NFR-11, NFR-13, NFR-16, PTS-02, PTS-03, PTS-04, PTS-06, RWD-07, RWD-08, RWD-15, RWD-16, RWD-20, SCH-05 |
-| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, ACC-07, ACC-08, BRD-05, BRD-08, BRD-10, CAL-01, CAL-03, CAL-05, CAL-06, CAL-09, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-01, DEV-03, DEV-07, DEV-09, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MEAL-09, MEAL-10, MEAL-11, MEAL-12, MEAL-13, MEAL-14, MEAL-15, MENU-01, MENU-03, MENU-04, MENU-06, NFR-05, NFR-11, NFR-13, NFR-15, NFR-16, NFR-17, NFR-18, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, RWD-14, RWD-15, RWD-16, RWD-17, RWD-18, RWD-19, RWD-20, SCH-01, SCH-04, SCH-05, SCH-06 |
-| `API` | ACC-03, ACC-07, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, DEV-01, DEV-06, MEAL-03, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, PTS-06, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13, SCH-06 |
+| `ADM` | ACC-01, ACC-02, ACC-03, ACC-04, ACC-05, ACC-06, ACC-07, ACC-08, BRD-05, BRD-08, BRD-10, CAL-01, CAL-03, CAL-05, CAL-06, CAL-09, CHR-01, CHR-05, CHR-06, CHR-07, CHR-08, CHR-09, CHR-10, CHR-11, CHR-13, CHR-14, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, CHR-21, CHR-22, CHR-23, DEV-01, DEV-03, DEV-07, DEV-09, MEAL-01, MEAL-02, MEAL-03, MEAL-04, MEAL-05, MEAL-07, MEAL-08, MEAL-09, MEAL-10, MEAL-11, MEAL-12, MEAL-13, MEAL-14, MEAL-15, MENU-01, MENU-03, MENU-04, MENU-06, NFR-05, NFR-11, NFR-13, NFR-15, NFR-16, NFR-17, NFR-18, PTS-01, PTS-03, PTS-04, PTS-05, PTS-06, PTS-07, RWD-01, RWD-09, RWD-10, RWD-12, RWD-14, RWD-15, RWD-16, RWD-17, RWD-18, RWD-19, RWD-20, SCH-01, SCH-04, SCH-05, SCH-06 |
+| `API` | ACC-03, ACC-07, BRD-04, BRD-07, CHR-01, CHR-04, CHR-05, CHR-06, CHR-08, CHR-09, CHR-13, CHR-23, DEV-01, DEV-06, MEAL-03, MEAL-09, NFR-04, NFR-05, NFR-06, NFR-07, PTS-01, PTS-03, PTS-04, PTS-06, RWD-01, RWD-04, RWD-06, RWD-09, RWD-13, SCH-06 |
 | `AUTH` | DEV-01, DEV-02, DEV-03 |
 | `RULES` | CHR-10, PTS-05, PTS-07, RWD-02, RWD-03, RWD-04, RWD-05, RWD-06, RWD-10, RWD-11, RWD-12, RWD-13, RWD-15, RWD-16, RWD-17, RWD-18, RWD-19, RWD-20 |
 | `OCCGEN` | CHR-02, CHR-03, CHR-09, CHR-11, CHR-12, CHR-18, CHR-19, SCH-03 |
@@ -320,7 +326,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | `NOTIFY` | CHR-15, CHR-16, CHR-17, CHR-20 |
 | `OUTBOX` | CHR-04, DEV-06, NFR-01, PTS-04 |
 | `SCHED` | ACC-08, CAL-02, CHR-03, CHR-07, CHR-12, CHR-16, CHR-20, MENU-05, NFR-07, PTS-05, RWD-04, RWD-06, RWD-11, RWD-15 |
-| `DB` | ACC-01, ACC-04, ACC-05, ACC-08, BRD-10, CAL-05, CAL-09, CAL-10, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, DEV-02, DEV-05, MEAL-04, MEAL-09, MEAL-10, MEAL-11, MEAL-15, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, NFR-17, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, RWD-15, RWD-16, RWD-17, RWD-18, RWD-19, RWD-20, SCH-01, SCH-02, SCH-03, SCH-05 |
+| `DB` | ACC-01, ACC-04, ACC-05, ACC-08, BRD-10, CAL-05, CAL-09, CAL-10, CHR-02, CHR-03, CHR-04, CHR-07, CHR-08, CHR-09, CHR-10, CHR-12, CHR-13, CHR-15, CHR-16, CHR-17, CHR-18, CHR-19, CHR-20, CHR-23, DEV-02, DEV-05, MEAL-04, MEAL-09, MEAL-10, MEAL-11, MEAL-15, NFR-04, NFR-05, NFR-06, NFR-09, NFR-10, NFR-17, PTS-01, PTS-02, PTS-04, PTS-05, PTS-06, PTS-07, RWD-02, RWD-04, RWD-11, RWD-13, RWD-15, RWD-16, RWD-17, RWD-18, RWD-19, RWD-20, SCH-01, SCH-02, SCH-03, SCH-05 |
 | `RT` | DEV-05 |
 | `VAULT` | ACC-07, CAL-01, CAL-08, NFR-04 |
 | `SAUTH` | ACC-02, ACC-03, ACC-06, DEV-01, DEV-02, NFR-04 |
@@ -463,6 +469,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.149 | WP-96 widened at the owner's request, recorded only (CHR-21, CHR-22, CHR-23, NFR-18, US-323, US-324, US-325, D-132): Chores in four sections (Scheduled, Recurring, Completed, Archived), person chips, two-line rows with a ⋯ menu, Duplicate and Do again, and the same ⋯ row on the Meal library; its mockup waits for the owner's approval. No code. |
 | 0.8.147 | WP-98 The e2e findings log (NFR-14, D-121, D-130): `scripts/e2e-findings.mjs` writes one comment per e2e run with a failed test to the issue "E2E findings log" (re-runs included, counts over the last 30 runs, redacted), and lists repeats in the run summary; `scripts/e2e-run.mjs --findings`; `e2e.yml` gains `workflow_dispatch` and a `guard` job (`scripts/e2e-guard.mjs`: `main` only, never while another e2e run is queued or going); tests: node:test `scripts/e2e-findings.test.mjs` (NFR-14-i to NFR-14-m), `scripts/e2e-guard.test.mjs` (NFR-14-n), and the run script's self-test |
 | 0.8.146 | WP-102 The nightly e2e run green on main, the e2e red triage added at the owner's request (NFR-14, D-110, D-129): the 12 "E2E red on main" issues of 16 and 17 October, each with its cause and fix (ten in the specs, one an app bug WP-101 had fixed, one the test database slow under a board's read); the run hides connection strings (`redact()` in `scripts/e2e-infra.mjs`); the board marks its read's start when the read returns; tests: node:test `scripts/e2e-infra.test.mjs` (NFR-14-a), e2e board-calendar, board-home, board-layout, board-meals, chores, lunch-quick, meal-edit, goal-steps, repeating-goals, perfect-periods, insights (NFR-14-b to NFR-14-h) |
 | 0.8.145 | WP-101 The goal form's last four differences from its mockups, WP-100's follow-up added at the owner's request (NFR-16, D-128): a rule folded to its summary line with its weight, the live summaries from Preview's own code (`apps/web/lib/goal-summaries.ts`, `goal-preview.ts`, `liveGoal`), item pictures, dates and times written as the frames write them over real pickers (`DatePick`, `dateWords`, `timeWords` in `@familywise/ui`); migration `20261017042418_goal_form_closures.sql` (`goal_preview_facts()` gains `closures`, `private.goal_closures()`); a rule's field names now the same on the server and in the browser. Tests: `goal-summaries.test.ts`, `530_goal_form_closures.test.sql`, UI `goal-form-summary.spec.ts` (NFR-16-i to NFR-16-q). |

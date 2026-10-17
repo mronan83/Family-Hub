@@ -270,9 +270,9 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 116 of 131 |
+| Requirements built (a Done item builds them) | 116 of 134 |
 | Built requirements with no test | 0 |
-| Stories built | 103 of 117 |
+| Stories built | 103 of 120 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
 | Test cases | 108 (with a test: 108) |
@@ -346,6 +346,9 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | CHR-18 | M | Covered | US-320 | WP-43 | — | U 5 · DB 21 · E2E 2 |
 | CHR-19 | M | Covered | US-321 | WP-61 | — | U 2 · DB 14 · UI 1 · E2E 1 |
 | CHR-20 | S | Covered | US-322 | WP-63, WP-92 | — | U 3 · DB 22 · UI 1 · E2E 1 |
+| CHR-21 | S | Not built | US-323 | WP-96 | — | — |
+| CHR-22 | S | Not built | US-324 | WP-96 | — | — |
+| CHR-23 | S | Not built | US-325 | WP-96 | — | — |
 | RWD-01 | M | Covered | US-401 | WP-19 | — | U 5 · DB 1 · UI 2 · E2E 1 |
 | RWD-02 | M | Covered | US-312, US-401 | WP-15 | — | U 16 · UI 1 |
 | RWD-03 | M | Covered | US-401 | WP-15 | — | U 5 · UI 1 |
@@ -437,7 +440,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | U 17 · DB 10 · UI 17 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
-| NFR-18 | S | Not built | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | — | U 3 |
+| NFR-18 | S | Not built | US-111, US-323 | WP-93, WP-94, WP-95, WP-96, WP-97 | — | U 3 |
 | NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 34 · DB 14 · UI 1 · E2E 15 |
 | NFR-19 | M | Covered | US-913 | WP-85, WP-86 | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | U 6 |
 
@@ -539,7 +542,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-93 | Ready | — | — | — |
 | WP-94 | Ready | — | — | — |
 | WP-95 | Ready | — | — | — |
-| WP-96 | Ready | — | — | — |
+| WP-96 | Mockup | — | — | — |
 | WP-97 | Ready | — | — | — |
 | WP-98 | Done | NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | 6 of 6 | — |
 | WP-99 | Queued: | — | — | — |
@@ -699,6 +702,9 @@ Status as in §9.3, for tests that name the story itself.
 | US-320 | CHR-18, CHR-09 | Gap | — |
 | US-321 | CHR-19 | Covered | E2E 1 |
 | US-322 | CHR-20 | Covered | DB 1 · UI 1 · E2E 1 |
+| US-323 | CHR-21, NFR-18 | Not built | — |
+| US-324 | CHR-22 | Not built | — |
+| US-325 | CHR-23 | Not built | — |
 | US-312 | CHR-10, RWD-02 | Covered | E2E 1 |
 | US-313 | CHR-11 | Gap | — |
 | US-314 | CHR-12, CHR-07 | Gap | — |

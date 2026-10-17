@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.145: WP-96 widened at the owner's request, recorded only (CHR-21, CHR-22, CHR-23, NFR-18, D-132): Chores in four sections (Scheduled, Recurring, Completed, Archived), person chips in place of WP-96's folded Filters, two-line rows with a ⋯ menu, **Duplicate** and **Do again**, and the same ⋯ row on the Meal library, which changes WP-93's meal rows. Its own mockup ([WP-96 Chores sections](https://claude.ai/artifact/QsGhSPWkeq1uqMg65d4T8d)) waits for the owner's approval; WP-96 is not built in this change.
 > v0.8.143: WP-98 (the e2e findings log) done (NFR-14, D-121, D-130): each e2e run with a failed test adds one comment to the issue "E2E findings log", infrastructure re-runs that passed included, with how many of the last 30 runs each test failed in; the run summary lists the tests that failed in more than one; `e2e.yml` can be started by hand on `main`, and only when no other e2e run is queued or going. Its test cases are NFR-14-i to NFR-14-n.
 > v0.8.142: WP-102 (the nightly e2e run green on main, the e2e red triage) added at the owner's request and done in the same change (NFR-14, D-110, D-129): the 12 "E2E red on main" issues of 16 and 17 October, each with its cause. Ten were the specs' own bugs (behind WP-34's drift, WP-75's folds and WP-100's folded icon picker; a real-clock weekday; another test's leftovers; a clean-up refused by append-only check-offs; out-of-date expectations), one an app bug WP-101 had already fixed, and one the test database slow while a board's read ran, which the probe missed. Found with it: the run quoted a failed psql command, password included, into an issue; the run now hides every connection string. The owner chose not to rotate the password (Y-12, closed). Its test cases are NFR-14-a to NFR-14-h.
 > v0.8.141: WP-101 (the goal form's last four differences from its mockups, WP-100's follow-up) added at the owner's request and done in the same change (NFR-16, D-128): a rule as one summary line with its weight, the live summaries where the frames place them (worked out by Preview's own code), item pictures, and dates and times written "Mon, Oct 12, 2026" and "6:00 pm" over real pickers. Found and fixed with it: a rule's field names differed between the server and the browser. Its test cases are NFR-16-i to NFR-16-q.
@@ -284,7 +285,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-93 | Calendars, school menus and the meal library folded | P3 | M | WP-91 | Ready (mockup approved) |
 | WP-94 | The set-up pages folded | P3 | M | WP-91 | Ready (mockup approved) |
 | WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Ready (mockup approved) |
-| WP-96 | Chores, an item's page and the icon picker folded | P3 | M | WP-91 | Ready (mockup approved) |
+| WP-96 | Chores in four sections, an item's page and the icon picker folded | P3 | M | WP-91 | Mockup waiting for the owner's approval |
 | WP-97 | Today, My tasks and Insights folded | P3 | S | WP-91 | Ready (mockup approved) |
 | WP-98 | The e2e findings log | P3 | S | WP-90 | Done |
 | WP-99 | Lean e2e: SQL set-up, a household per spec, parallel runs, unchanged nights skipped | P3 | L | SPIKE-07, WP-90 | Queued: SPIKE-07 first |
@@ -470,7 +471,7 @@ flowchart LR
     WP91 --> WP93[WP-93 Calendars and menus folded]
     WP91 --> WP94[WP-94 Set-up pages folded]
     WP91 --> WP95[WP-95 Rewards, Goals, Members folded]
-    WP91 --> WP96[WP-96 Chores and icon picker folded]
+    WP91 --> WP96[WP-96 Chores sections and icon picker folded]
     WP91 --> WP97[WP-97 Today and Insights folded]
     WP63 --> WP92[WP-92 Approval alerts at once]
     WP80 --> WP100[WP-100 iPhone mockup fidelity]
@@ -1627,13 +1628,20 @@ flowchart LR
 - **Members:** the list open; **Archived** folded. **A member's page:** the form open; **Points** folded to the balance and the last change, opening to **Change points** and the history; **Archive** set apart.
 - **Done when:** unit tests on each folded header; on the preview, Alex changes Maya's points and finds **Points** open after the save, and sees "Needs a look" on Goals' folded **History**; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
 
-### WP-96 — Chores, an item's page and the icon picker folded
-**Phase:** P3 · **Size:** M · **Depends on:** WP-91 · **Reqs:** NFR-18
-- Added at the owner's request with the fold audit (D-120).
-- **Chores:** the list open; **Filters** folded to what they are set to and how many items show, so a filtered list reads as filtered while folded.
+### WP-96 — Chores in four sections, an item's page and the icon picker folded
+**Phase:** P3 · **Size:** M · **Depends on:** WP-91 · **Reqs:** NFR-18, CHR-21, CHR-22, CHR-23
+- Added at the owner's request with the fold audit (D-120). Widened at the owner's request on 17 October (in the planner session): "Enhancement – Chores and Tasks admin. We need a better way to present this. It's kind of cluttered. One-time tasks that are completed remain in the list; they shouldn't. They should be moved to a Completed section that is collapsed. Organised by: Scheduled, Recurring, Completed, Archived. I should be able to duplicate a task/chore. I should be able to reschedule a single-instance completed task/chore." Then: "add to WP-96: Chores sections, person chips, ⋯ menu, Duplicate and Do again, as the planner recommends; and use the same ⋯ row on the meal library" (D-132).
+- **The mockup:** [WP-96 Chores sections](https://claude.ai/artifact/QsGhSPWkeq1uqMg65d4T8d), on the made-up demo family at 390 and 1280 px, Day and Evening, in the app's current tokens and controls (D-127, D-128): each section busy and empty, Maya's chip chosen, More filters, an open ⋯ menu, Duplicate's form, Do again's date step, Completed with **Show older**, and the Meal library's rows, with eleven questions for the owner. It is WP-96's mockup from now on, in place of the fold audit's Chores frame; the item's page and the item form keep the fold audit's frames.
+- **Chores in four sections** (CHR-21): **Scheduled**, the one-time items (How often: Once) not done yet, open, under the headings Overdue, Today, This week and Later, Overdue first in the missed colour. **Recurring**, everything that repeats, open. **Completed**, the one-time items that are done, folded to its count ("12 done"), opening to the newest 20 and then **Show older**. **Archived**, anything archived, folded. A recurring item is never completed. Chores and tasks mix in every section, each row tagged Chore or Task.
+- **Person chips** at the top of the page: tapping faces filters every section at once, with no Filter button. They replace WP-96's folded **Filters**. Of today's other filters, the mockup recommends Tag, Kind and Time of day in a folded **More filters** that reads what is set and how many show while folded, and Show (Active or Archived) dropped because the Archived section does it; the owner decides (the mockup's Q1).
+- **Two-line rows with a ⋯ menu:** line 1 the icon and name; line 2 how often, the time, who and the points ("Every school day · 4:00 pm · Maya, Leo · +10"). **Edit**, **Duplicate** and **Archive** (or **Restore**) are in ⋯, not buttons on the row.
+- **Duplicate** (CHR-22) opens the item form filled in from the original, its name marked "(copy)". Nothing is saved until **Save**.
+- **Do again** (CHR-23), on a completed one-time item, makes a **new** one-time item on a date the parent picks. The original keeps its completion, points and goal credit; it is not reopened.
+- **The Meal library, the same ⋯ row** (NFR-18): each meal on one row with ⋯ (Edit, Duplicate, Archive), as the fold audit's frame drew it. This changes WP-93's meal rows, which give each meal its own "Edit <meal>" line under it and so double the list on a phone.
+- **Other admin lists built the same way,** for the owner to decide, none added without them: **Tags** has the same "Edit <tag>" line and "Archive <tag>" button under each tag as the meal library; **Calendars** has its Edit and Remove inside each calendar's fold (WP-93); the **Rewards** shop, **Members** and **Goals** have one row each with a link to its page, so they don't double.
 - **An item's page and the item form:** the main fields open; **More options** folded to how it is set (approval, days, lunch); **Coming up** (the next one and how many in two weeks), **Last 7 days** (done, missed, skipped) folded; **Archive** set apart.
 - **The icon picker,** in every form that has one (chores and tasks, rewards, goals, meals, tags): folded to **Chosen:** and the icon, opening to **Find an icon** and the groups. Done with WP-100, which needed it for the goal form's height on a phone; the rest of WP-96 is as written.
-- **Done when:** unit tests on the filter summary and each folded header; on the preview, Alex filters Chores by Maya and reads it on the folded header, then changes an item's icon and saves; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
+- **Done when:** unit tests on which section an item is in (a one-time item not done, done, missed and each-their-own part done; a recurring item; archived), the date headings across midnight, a week's end and DST, the person chips across every section, More filters' summary, Duplicate's filled form and Do again's new item; pgTAP that Do again adds a new item and leaves the original's completion, points and goal credit unchanged; on the preview, Alex taps Maya's chip and every section shows only Maya's, opens Completed and taps **Show older**, duplicates an item and saves the copy, uses **Do again** on a completed one-time item and finds the new one under its date in Scheduled, then changes an item's icon and saves; on the Meal library, Alex edits, duplicates and archives a meal from ⋯; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, a ⋯ menu opened, taps after hydration; the side-by-side with the mockup (D-127).
 
 ### WP-97 — Today, My tasks and Insights folded
 **Phase:** P3 · **Size:** S · **Depends on:** WP-91 · **Reqs:** NFR-18

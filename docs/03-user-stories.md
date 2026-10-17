@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.63: US-323, US-324 and US-325 added at the owner's request (WP-96, D-132): Chores in four sections with person chips, Duplicate, and Do again.
 > v0.8.62: US-414 and US-415 as built (WP-82, D-126): **Weeks won of a repeating goal**, in total or in a row, from the goal's start date; **Every child meets it** on a family goal, paying the children with something due; each child's days on Goals and the board.
 > v0.8.61: US-412 and US-413 as built (WP-81, D-124): **Counts only when done**, **Pay in steps** and rule weights, and the board's steps.
 > v0.8.60: US-410 and US-411 as built (WP-80, D-123): the goal form's **Repeats** and **Every day it's due**, a goal's **Weeks**, **Stop after this week**, and the board's card going, missed and won.
@@ -368,6 +369,28 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given Maya checks off three things and asks for a reward, when each starts waiting, then an alert comes at once, each replacing the one before on my lock screen and counting everything still waiting: the last says "Maya: 3 check-offs and 1 reward request waiting".
 - Given it is within my quiet hours, when something becomes waiting, then the alert waits until they end, and is not sent if another parent has cleared everything by then.
 - Given I switch **Approvals** off in Reminders, when something becomes waiting, then I get no alert, and the other parent still does if theirs is on.
+
+### US-323 — Chores sorted into four sections
+**As an** admin **I want** the chores and tasks list sorted into Scheduled, Recurring, Completed and Archived **so that** a one-time job that is done stops cluttering the list, and I can see what is coming up at a glance.
+**Priority:** Should · **Phase:** P3 · **Reqs:** CHR-21, NFR-18
+- Given "Book the dentist" is a one-time task due last Monday and not done, when I open Chores, then it is in **Scheduled** under **Overdue**, first, in the missed colour.
+- Given "Clean out the garage" was a one-time chore and Maya and Leo did it, when I open Chores, then it is not in Scheduled; it is in **Completed**, which is folded to "12 done" until I open it.
+- Given "Make bed" repeats every day, when it is done today, then it stays in **Recurring**; a repeating item is never completed.
+- Given Completed holds 26 items, when I open it, then it shows the newest 20, and **Show older** brings the rest.
+- Given I tap Maya's face at the top, when the page updates, then every section shows only what is Maya's, with no Filter button to press.
+- Given an item's row, when I tap ⋯, then **Edit**, **Duplicate** and **Archive** are there (**Restore** on an archived one, **Do again** on a completed one).
+
+### US-324 — Duplicate a chore or task
+**As an** admin **I want** to copy a chore or task **so that** setting up a similar one doesn't mean typing it all again.
+**Priority:** Should · **Phase:** P3 · **Reqs:** CHR-22
+- Given "Homework" for Maya and Leo, when I choose ⋯ then **Duplicate**, then the item form opens filled in from it, named "Homework (copy)".
+- Given the filled form, when I tap **Cancel**, then nothing is added; when I change the name and tap **Save**, then a new item is added and "Homework" is unchanged, with its history.
+
+### US-325 — Do a one-time job again
+**As an** admin **I want** to do a finished one-time chore or task again on a new day **so that** "Clean out the garage" can come round again without setting it up from scratch.
+**Priority:** Should · **Phase:** P3 · **Reqs:** CHR-23
+- Given "Clean out the garage" was done on Sunday for 20 points, when I choose ⋯ then **Do again** and pick Saturday, then a new one-time "Clean out the garage" is in Scheduled for Saturday, for the same people and points.
+- Given the first one, when the new one is added, then the first stays in Completed, done on Sunday, and Maya and Leo keep its 20 points and its goal credit.
 
 ### US-312 — Define household tags
 **As an** admin **I want** to define our own tags with a name, color, and icon **so that** we can filter the list and set measurable goals by category.
