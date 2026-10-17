@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { householdToday } from '../support/day';
+import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
 
 // [NFR-17][US-109][ACC-08][US-110] Home at a glance and Family options on the preview (WP-57, D-84),
@@ -14,6 +15,7 @@ const DEMO = '0de00000-0000-4000-8000-000000000001';
 const sql = (q: string) => query(db!, q);
 /** The demo family's today, read once for the file ([D-110]), as an SQL date. */
 let TODAY = '';
+const WEEK_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
@@ -105,7 +107,7 @@ test('[NFR-17][SCH-01] the done-when: no school today in one tap, then Undo', as
   await expect(more.getByRole('button', { name: 'No school today' })).toBeVisible();
 });
 
-test('[ACC-08][US-110] the done-when: a new start day waits for the next week, and Keep cancels it', async () => {
+test('[NFR-14-s][ACC-08][US-110] the done-when: a new start day waits for the next week, and Keep cancels it', async () => {
   const start = Number(sql(`select week_start from public.household where id = '${DEMO}'`));
   const next = (start + 1) % 7;
   await admin.goto('/admin/settings');
@@ -116,6 +118,10 @@ test('[ACC-08][US-110] the done-when: a new start day waits for the next week, a
   await expect(admin.getByRole('heading', { name: 'Family options', level: 1 })).toBeVisible();
 
   const week = admin.getByRole('region', { name: 'The week' });
+  // [NFR-14-s] Folded to its start day (WP-94): opened before its form is used. A save or Keep sends
+  // the page back with it open.
+  await expect(week).toContainText(`Starts on ${WEEK_DAYS[start]}`);
+  await unfold(foldOf(admin, 'The week'));
   await week.getByLabel('Start the week on').selectOption(String(next));
   await week.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(admin.getByRole('status').first()).toContainText(

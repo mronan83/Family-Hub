@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.149: WP-109 (the two e2e reds of 17 October evening: Family options' week and the streak bonus) added at the owner's request and done in the same change (NFR-14, D-110): both were the specs' own bugs. Home's start-day test (#134) used The week's form while WP-94 had folded it; the streak bonus (#135) read Leo's history as the seed left it, but `perfect-periods.spec.ts`, green for the first time on `d2b0aa4`, had left its check-offs in Maya's and Leo's runs. Its clean-up, and the two other specs' that tick a child's own homework, now skip each check-off they made, and the spec checks the runs are as before. No app change. Its test cases are NFR-14-s and NFR-14-t.
 > v0.8.148: WP-108 (the three e2e reds of 17 October: DEV-05, lunches and perfect periods) added at the owner's request and done in the same change (NFR-14, D-110, D-129, D-135): perfect periods (#127) was the spec's own bug, a label match that also found the icon picker's "target" icon; DEV-05 (#126) and lunches were one shared delay, every request from the preview to the test project slow for minutes while the database probe answered in time, so the run had no evidence to say so. The board's read and each page load are now timed, so a late change says which; the 3 s budgets are unchanged. Its test cases are NFR-14-o to NFR-14-r.
 > v0.8.147: The smart grocery list added at the owner's request, recorded only (MEAL-07, MEAL-16 to MEAL-22, D-134): Apple Reminders stays the family's grocery list, and a sync program on the owner's Mac Studio keeps one shared list in two-way sync with Supabase. SPIKE-08 (the Mac sync: two-way, through a restart, change latency in seconds, whether the Groceries list's sections reach it) is Ready; WP-103 (the sync, the Mac on Health) is Queued behind it; WP-104 (groceries on the board and in the admin app, mockup first) behind WP-103; then the smart part, each mockup first: WP-105 (meals → groceries, meals gain ingredients, duplicates merged), WP-106 (staples by how often they run out) and WP-107 (children asking from the board, with an optional parent OK). Structured ingredients (MEAL-07) move from WP-36 to WP-105, so WP-36 is the closure import alone and no longer waits on WP-25. An iPhone app was considered and is not chosen now. Nothing is built in this change.
 > v0.8.146: WP-94 (the set-up pages folded) done (NFR-18, D-120, D-133), from the fold audit the owner approved on 16 October: Family options, School and a school year's page, Tags, Reminders and Health fold each section set once to what it is set to; a failing weather read, the invites waiting, a device removed, a failing job and a limit near show on the folded header; the section saved in comes back open; Home's **Add a day off** takes the fold's look. Its test cases are NFR-18-k to NFR-18-x.
@@ -288,6 +289,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-101 | The goal form's last four differences from its mockups (WP-100's follow-up) | P3 | M | WP-100 | Done |
 | WP-102 | The nightly e2e run green on main (the e2e red triage) | P3 | M | WP-90, WP-101 | Done |
 | WP-108 | The three e2e reds of 17 October: DEV-05, lunches and perfect periods | P3 | S | WP-98, WP-102 | Done |
+| WP-109 | The two e2e reds of 17 October evening: Family options' week and the streak bonus | P3 | S | WP-94, WP-108 | Done |
 | WP-93 | Calendars, school menus and the meal library folded | P3 | M | WP-91 | Done |
 | WP-94 | The set-up pages folded | P3 | M | WP-91 | Done |
 | WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Ready (mockup approved) |
@@ -494,6 +496,8 @@ flowchart LR
     WP101 --> WP102
     WP98 --> WP108[WP-108 Three e2e reds of 17 October]
     WP102 --> WP108
+    WP94 --> WP109[WP-109 Two e2e reds of 17 October evening]
+    WP108 --> WP109
     WP90 --> SP07[SPIKE-07 e2e specs audited by layer]
     WP90 --> WP98[WP-98 e2e findings log]
     SP07 --> WP99[WP-99 Lean e2e]
@@ -1834,6 +1838,29 @@ flowchart LR
 - **As built:** `scripts/e2e-infra.mjs` (`SLOW_READ_MS`, `slowReads()`, `loadWords()`, `healthReading()`; types for the specs in `scripts/e2e-infra.d.mts`); `scripts/e2e-run.mjs` (the preview's `/api/health` timed); `apps/web/app/(board)/board/board.tsx` (`data-reading-since`). Specs: `devices.spec.ts` (DEV-05: each sample's heard time and the board's read, `stillOut()`, the evidence), `lunches.spec.ts` (each load timed, the one still out included, the evidence), `perfect-periods.spec.ts` (Target by its role). Tests: node:test `scripts/e2e-infra.test.mjs` (NFR-14-p, NFR-14-q, NFR-14-r); e2e, nightly: the three tests above, each named with its case.
 - **Proving it:** e2e doesn't run on a pull request (D-108): a run by hand on `main` after the merge. A test still red opens or updates its issue, and the findings log counts it.
 - **Deferred, as plain facts:** which part was slow on 17 October, the preview's functions or Supabase's API: the runtime logs that would say were gone, and the run kept no timings of either. A probe through Supabase's API from the run itself needs the test project's publishable key in the e2e workflow, which it doesn't have; the timed `/api/health` and the specs' own read times are the evidence until then.
+
+### WP-109 — The two e2e reds of 17 October evening: Family options' week and the streak bonus
+**Phase:** P3 · **Size:** S · **Depends on:** WP-94, WP-108 · **Reqs:** NFR-14
+- Added at the owner's request on 17 October, in WP-108's worker session: "start the e2e fix for #134 and #135". The run by hand on `main` at `d2b0aa4` (21:48 to 22:13 UTC, a Saturday evening in the demo family's zone) was red in two tests, both labelled assertion failures (the probe saw nothing slow), each in the findings log (#128). The goal: each with its cause, fixed where the cause is, and no test skipped, disabled, quarantined or loosened (D-110).
+- **The causes** (from the run's log, and #135 reproduced on a local copy of the demo family with the rules engine):
+
+| Test | Issue | Cause | Fix | Layer |
+|---|---|---|---|---|
+| home, a new start day waits for the next week | #134 | The spec's bug, from WP-94: Family options' **The week** folds to its start day, and its select stays in the page, hidden, while the fold is closed. The spec used it without opening the fold, so Playwright waited 90 s for it to be visible ("element is not visible", 182 tries). WP-94 updated the specs of the sections it folded but missed this one; e2e doesn't run on a PR (D-108), so `d2b0aa4`'s run was the first to try it. Every other spec on a page WP-94 folded was checked: each opens its fold | Checks the fold's header says the start day, then opens it (`unfold`) before the form; a save or **Keep** sends the page back with it open, as before (NFR-14-s) | Spec |
+| wishlist, a streak bonus pays once | #135 | Another spec's leftovers. `perfect-periods.spec.ts` gives Maya's and Leo's own homework items check-offs two weeks and one week back; its clean-up can't delete them (check-offs are append-only) and only removed the days without one, so they stayed in both children's history. With the clean-up's own undo (Leo's first day missed), Leo's runs became bad 1, good 8 (28 September to 11 October, the days with nothing due passed over), bad 1, good 3, bad 1, and Insights said "Best good run 8 days", not the seed's 3 (Maya's best went from 4 to 12). The spec had failed on every run before WP-108 fixed it, and after a failure the next file starts from a freshly loaded demo family, so `d2b0aa4` was the first run where its leftovers reached `wishlist.spec.ts`. Not the weekday: on any day the ticks join the seed's week through the days with nothing due. `goal-steps.spec.ts` and `repeating-goals.spec.ts` leave Maya's own ticks the same way; no spec reads her runs as seeded, so neither was red | The clean-up skips each day an item checked off, after the spec's goals are cancelled: a skipped routine makes a day neither good nor bad and posts nothing (0 points), so the runs are as before; the spec reads both children's runs before it starts and checks them after the put-back (NFR-14-t). `goal-steps.spec.ts` and `repeating-goals.spec.ts` use the same clean-up (`retireItems`). `wishlist.spec.ts` is unchanged: its check was right | Spec |
+
+- **No app change, and no new decision.** The rule for writing specs is updated in `08` §7 (rules 10 and 11).
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| NFR-14-s | Family options' The week, folded to its start day, is opened before its form is used; a new start day waits for the next week and Keep cancels it | E2E |
+| NFR-14-t | A spec whose items check off a child's days puts their history back: after its clean-up, Maya's and Leo's stored good and bad runs are as they were before it started | E2E |
+
+- **Done when:** each red test has its cause above, with its fix; every case above has a test; the fast checks are green; `08` §7 says to open a fold in every spec that uses it and to skip a spec's check-offs in its clean-up; each test's findings-log entry names this change's PR in **Done**; a run by hand on `main` after the merge.
+- **As built:** `e2e/support/history.ts` (`retireItems()`: each check-off skipped, the days without one removed, the items archived; `storedRuns()`). Specs: `home.spec.ts` (The week opened, its folded header checked), `perfect-periods.spec.ts` (each child's runs read before, the put-back as the test's last step and checked, the clean-up only when a step before failed), `goal-steps.spec.ts` and `repeating-goals.spec.ts` (`retireItems`). Tests: e2e, nightly: `home.spec.ts` (NFR-14-s), `perfect-periods.spec.ts` (NFR-14-t).
+- **Proving it:** e2e doesn't run on a pull request (D-108): a run by hand on `main` after the merge. A test still red opens or updates its issue, and the findings log counts it.
+- **Deferred, as plain facts:** `goal-steps.spec.ts` and `repeating-goals.spec.ts` get the put-back but no check of their own that Maya's runs are as before; `perfect-periods.spec.ts`' check covers the clean-up they share. `insights.spec.ts` adds a child of its own whose check-offs stay too; no spec reads that child.
 
 ### WP-85 — The test strategy and the Test catalogue
 **Phase:** P3 · **Size:** M · **Depends on:** — · **Reqs:** NFR-19, NFR-12, NFR-14
