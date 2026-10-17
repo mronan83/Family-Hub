@@ -3,7 +3,7 @@ import { expect, test, type Locator, type Page } from '../support/test';
 import { runMenuImport, type Fetcher } from '../../apps/web/lib/menu/import';
 import { pairBoard, retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
-import { addDays, householdToday, householdWeekStart, weekStartOf, weekday } from '../support/day';
+import { addDays, householdToday, householdWeekStart, weekStartOf } from '../support/day';
 import { withSchoolDays } from '../support/school';
 
 // [MEAL-06][US-705] Meals on a board, on the preview (WP-28, D-80). The spec plans today's breakfast,
@@ -34,6 +34,8 @@ function report(line: string) {
 let today = '';
 let TODAY = '';
 let WEEK = '';
+/** The board's week's first day, 'YYYY-MM-DD'. */
+let weekFrom = '';
 /** The meals this spec plans; only these are removed. */
 const MEALS = [
   'Waffles e2e',
@@ -86,7 +88,8 @@ test.beforeAll(async ({ browser }, testInfo) => {
   testInfo.setTimeout(120_000);
   today = householdToday(db!);
   TODAY = `'${today}'::date`;
-  WEEK = `'${weekStartOf(today, householdWeekStart(db!))}'::date`;
+  weekFrom = weekStartOf(today, householdWeekStart(db!));
+  WEEK = `'${weekFrom}'::date`;
   clear();
   // Planned before the board opens: its first snapshot has them.
   plan('breakfast', 'Waffles e2e');
@@ -224,7 +227,7 @@ const answering: Fetcher = async (url) => {
   return new Response(JSON.stringify(sectionsWeek(sunday)));
 };
 
-test('[MENU-06][US-804] done-when: a feed’s day shows its entree options at home and three sections on Meals', async () => {
+test('[MENU-06][US-804][NFR-14-g] done-when: a feed’s day shows its entree options at home and three sections on Meals', async () => {
   // The menu import over psql (a process per call, five weeks stored), about ten SQL calls and up to
   // four board waits: 15 to 40 s; 3× the slow end.
   test.setTimeout(120_000);
@@ -243,16 +246,18 @@ test('[MENU-06][US-804] done-when: a feed’s day shows its entree options at ho
   sql(`insert into public.menu_source (household_id, name, adapter, config)
        values ('${DEMO}', '${FEED}', 'nutrislice',
                '{"district": "example-district", "school": "sections-e2e", "menu_type": "lunch"}')`);
-  // [D-110] Today a school day of Leo's own on a weekday, whatever the school calendar says (summer,
-  // winter break), so the home screen's half is shown Monday to Friday.
-  const undoSchool = [1, 2, 3, 4, 5].includes(weekday(today))
-    ? withSchoolDays(db!, [leo], today, today)
-    : () => {};
+  // [D-110] Every weekday of the board's week a school day of Leo's own, whatever the school calendar
+  // says (summer, winter break): the home screen's half on a weekday, and the Meals screen's menu rows
+  // on any day, a Saturday or Sunday included.
+  const undoSchool = withSchoolDays(db!, [leo], weekFrom, addDays(weekFrom, 6));
   try {
     const run = await runMenuImport(
       serviceRpc(db!) as unknown as Parameters<typeof runMenuImport>[0],
       DEMO,
-      { fetch: answering },
+      // From the board's week's first day: an import stores days from its today on, so one run on a
+      // Saturday would store none of the week's school days and the Meals screen would show no menu.
+      // Noon UTC is the same date in the family's zone.
+      { fetch: answering, now: new Date(`${weekFrom}T12:00:00Z`) },
     );
     expect(run.failed).toBe(0);
     expect(run.fetched).toBeGreaterThanOrEqual(1);

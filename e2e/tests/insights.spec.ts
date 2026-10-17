@@ -4,6 +4,7 @@ import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
 import { signIn } from '../support/session';
+import { ENGINE_VERSION } from '../../packages/rules-engine/src/index';
 
 // [RWD-11][RWD-12][US-408] Streak history and Insights on the preview (WP-17, D-55), as Alex of the
 // demo family. The first two tests read a child this file adds, with a last week of its own, so no
@@ -109,7 +110,7 @@ test.afterAll(async () => {
   removeChild();
 });
 
-test('[RWD-11][RWD-12][US-408] a child’s last week, as hand-computed', async () => {
+test('[RWD-11][RWD-12][US-408][NFR-14-h] a child’s last week, as hand-computed', async () => {
   await admin.goto(`/admin/insights?member=${KID}&days=7`);
   await expect(admin.getByRole('heading', { name: 'Insights', level: 1 })).toBeVisible();
   const streaks = admin.getByRole('region', { name: 'Streaks' });
@@ -144,7 +145,7 @@ test('[RWD-11][RWD-12][US-408] a child’s last week, as hand-computed', async (
   ).toBe('good2,bad1,good3,bad1+');
   expect(
     sql(`select count(*) from public.member_daily_summary
-          where member_id = '${KID}' and engine_version <> 1`),
+          where member_id = '${KID}' and engine_version <> ${ENGINE_VERSION}`),
   ).toBe('0');
 });
 

@@ -102,7 +102,7 @@ test('[NFR-14][D-110] the code frame in an error never counts, only its own word
   assert.equal(classify(failureOf(result, { annotations: [] })).kind, 'assertion');
 });
 
-test('[NFR-14][D-110] a failed psql call never puts the database URL or its password in the summary or an issue', () => {
+test('[NFR-14-a][D-110] a failed psql call never puts the database URL or its password in the summary or an issue', () => {
   const message =
     "Command failed: psql postgresql://postgres.ref:pa55-w0rd@pooler.example.com:5432/postgres -X -A -t -q -c delete from public.chore where id = 'x'\nERROR:  completion events are append-only";
   const text = errorText({ message });

@@ -57,18 +57,21 @@ test.afterAll(async () => {
   await admin?.close();
 });
 
-test('[MEAL-15][US-701] done-when: Alex edits a planned dinner in place, and Edit again shows what was saved', async () => {
+test('[MEAL-15][US-701][NFR-14-f] done-when: Alex edits a planned dinner in place, and Edit again shows what was saved', async () => {
   // [D-110] Three page loads and one save (a save is 3 to 8 s on a preview, as meals.spec.ts
   // measures), about 20 s at worst: three times that.
   test.setTimeout(60_000);
   const slot = admin.locator(`[id="${day}-dinner"]`);
+  // The second dinner's Change menu. It stays open across Edit and the save (the save's redirect is
+  // a client-side navigation, which keeps a <details> open), and a tap on an open one closes it.
+  const change = admin.locator(`[id="entry-${PASTA}"] > details.fw-meal-entry__change`);
   const form = admin.getByRole('form', { name: 'Edit Pasta e2e-edit' });
 
   await test.step('Change on the second dinner offers Edit, which opens the form filled in', async () => {
     await admin.goto(`/admin/meals?week=${week}`);
     // [MEAL-14] The day is folded at first (WP-75); after the save it comes back open.
     await unfold(mealDay(admin, day));
-    await slot.getByText('Change', { exact: true }).nth(1).click();
+    await unfold(change);
     await slot.getByRole('link', { name: /^Edit Pasta e2e-edit/ }).click();
     await expect(form.getByRole('textbox', { name: 'Something else' })).toHaveValue(
       'Pasta e2e-edit',
@@ -98,7 +101,7 @@ test('[MEAL-15][US-701] done-when: Alex edits a planned dinner in place, and Edi
   });
 
   await test.step('Edit again shows the saved values', async () => {
-    await slot.getByText('Change', { exact: true }).nth(1).click();
+    await unfold(change);
     await slot.getByRole('link', { name: new RegExp(`^Edit ${MEAL}`) }).click();
     const again = admin.getByRole('form', { name: `Edit ${MEAL}` });
     await expect(again.getByRole('radio', { name: 'From the library' })).toBeChecked();

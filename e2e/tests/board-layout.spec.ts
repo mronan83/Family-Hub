@@ -145,7 +145,10 @@ test('[BRD-05][US-1004] the done-when: Alex moves a card on Boards, and the boar
   ).toBe('coming');
 });
 
-test('[BRD-05][D-67] a board with its own layout: the month and no Goals here; every other board keeps the household’s', async () => {
+test('[BRD-05][D-67][NFR-14-d] a board with its own layout: the month and no Goals here; every other board keeps the household’s', async () => {
+  // [D-110] Own data: the household's default layout, whatever the test before left (its odd number of
+  // moves when it passed, the seed's order when it failed and a new worker loaded the demo family).
+  putBack();
   // The household's layout as it is before this board gets its own.
   const household = () =>
     sql(
@@ -175,7 +178,8 @@ test('[BRD-05][D-67] a board with its own layout: the month and no Goals here; e
 
   await home();
   await expect(board.locator('.fw-dash')).toHaveAttribute('data-span', 'month');
-  await expect(cards()).toHaveText(['Coming up', 'Waiting for a parent']);
+  // The default's cards less Goals, in the default's order.
+  await expect(cards()).toHaveText(['Waiting for a parent', 'Coming up']);
   expect(
     sql(`select board_config -> 'layout' ->> 'calendar' from public.device
           where household_id = '${DEMO}' and name = '${BOARD}'`),

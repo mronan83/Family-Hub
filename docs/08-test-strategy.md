@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.3: the e2e red triage (WP-102, NFR-14, D-129): the run hides every connection string from its summary and issues; a board's own read over 2 s is evidence the test database was slow; three more rules for writing specs (§7).
 > v0.8.2: the UI suite runs as an iPhone in WebKit too, and an item built from a mockup shows a side-by-side before approval (WP-100, NFR-16, D-127).
 > v0.8.1: added at the owner's request (WP-85, NFR-19, D-106, D-107), within D-108 (e2e nightly only, the deploy gate on the fast checks) and D-110 (the test standard): the test strategy, guidance by change type, and the Test catalogue (§9), generated from every test's name, which traces each test to the requirements, stories, backlog items and test cases it proves. CI fails a change that adds a test gap.
 
@@ -232,6 +233,9 @@ The test standard is in `CLAUDE.md` ("Tests", D-110). In short:
 7. **One reason to fail, named:** `[MEAL-11] a milk keeps the entree`. A test that fails says what it saw.
 8. **Made-up data only.** Never the real family's calendar, school identifiers or menu responses.
 9. **No live third parties.** Fixtures in tests; live checks only at night.
+10. **Follow the screen as it is drawn now.** A fold is opened only if it is closed (`unfold`, `e2e/support/fold.ts`): a tap on an open one closes it. A locator names the list it reads from, not a class another part of the page shares. The board drifts up to 2 px against burn-in, so where a part sits is judged against the board's own box (WP-102).
+11. **History is never deleted.** Check-offs are append-only: a clean-up removes an item's days with no check-off and archives the item (WP-102).
+12. **Any day of the week.** A spec that reads a week's data sets it up for the whole week, so it passes on a Saturday and a Sunday too (WP-102).
 
 ---
 
@@ -241,10 +245,11 @@ The test standard is in `CLAUDE.md` ("Tests", D-110). In short:
 |---|---|
 | A fast check | Red on the PR: the PR waits until it is fixed, and the deploy gate won't ship it |
 | A wrong result in the nightly run | Red, never re-run; the issue "E2E red on main: <spec>" opens or gains the run, with the test's kind and cause; it blocks nothing and is fixed as the next item (D-108) |
-| Infrastructure in the nightly run: a statement timeout, a refused or reset connection, a Supabase or Auth 5xx, the preview not answering, the test database or preview slow or down, the demo family's day turned since its load | That test re-runs once by itself, on that evidence only, and its cause is labelled in the run summary; a second fault is red, with its cause (D-110) |
+| Infrastructure in the nightly run: a statement timeout, a refused or reset connection, a Supabase or Auth 5xx, the preview not answering, the test database or preview slow or down (the probe, or a board's own read of a late change taking over 2 s, D-129), the demo family's day turned since its load | That test re-runs once by itself, on that evidence only, and its cause is labelled in the run summary; a second fault is red, with its cause (D-110) |
 | A refused or failed deploy | The issue "Deploy refused: <commit>" opens or gains the run (D-108) |
 
 - Never skip, disable or quarantine a test, and never call a failure a flake without a cause.
+- The run summary and an issue never quote a database connection string: the run hides each one (`postgresql://***`) first, since GitHub masks secrets in a log but not in an issue the run opens (D-129).
 - A test with two infrastructure faults in two weeks gets a robustness fix. WP-98's findings log keeps the record that shows it: an entry per red test per nightly run, and the tests red in 2 of the last 30 runs.
 
 **Measured before and after:** push to green for a small change, and red nightly runs per week by kind (assertion or infrastructure).
@@ -259,7 +264,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2623** tests: Unit 787 · DB 1455 · UI 255 · E2E 126. 2162 name at least one ID; 461 name none.
+**2624** tests: Unit 788 · DB 1455 · UI 255 · E2E 126. 2163 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
@@ -268,7 +273,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 103 of 117 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 94 (with a test: 94) |
+| Test cases | 102 (with a test: 102) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -284,7 +289,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 |---|---|---|---|---|---|
 | Chores | 90 | 192 | 29 | 30 | 341 |
 | Points | 38 | 92 | 17 | 12 | 159 |
-| Goals and rewards | 182 | 140 | 42 | 12 | 376 |
+| Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 64 | 92 | 18 | 4 | 178 |
 | School year | 10 | 43 | 1 | 4 | 58 |
 | Meals and lunch | 57 | 43 | 29 | 11 | 140 |
@@ -292,9 +297,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 7 | 15 | 135 |
-| Platform | 139 | 167 | 47 | 10 | 363 |
+| Platform | 140 | 167 | 47 | 14 | 368 |
 | Not named | 58 | 438 | 10 | 1 | 507 |
-| **Total** | **787** | **1455** | **255** | **126** | **2623** |
+| **Total** | **788** | **1455** | **255** | **126** | **2624** |
 
 ### 9.3 By requirement
 
@@ -431,7 +436,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | U 17 · DB 10 · UI 17 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Not built | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | — | U 3 |
-| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99 | — | U 24 · DB 14 · UI 1 · E2E 2 |
+| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | U 25 · DB 14 · UI 1 · E2E 15 |
 | NFR-19 | M | Covered | US-913 | WP-85, WP-86 | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | U 6 |
 
 ### 9.4 By backlog item
@@ -538,6 +543,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-99 | Queued: | — | — | — |
 | WP-100 | Done | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h | 8 of 8 | — |
 | WP-101 | Done | NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | 9 of 9 | — |
+| WP-102 | Done | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | 8 of 8 | — |
 
 Test cases and the tests that prove them:
 
@@ -548,7 +554,7 @@ Test cases and the tests that prove them:
 | CAL-09-c | WP-50 | An existing calendar keeps its one person: the contract drops `calendar_source.member_id` only once every calendar's person is in `calendar_member`, and refuses while one isn't | DB | DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-c] with member_id gone, the guard is quiet`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-c] the guard refuses while a calendar's person (archived, here) is not in calendar_member`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-c] and lets the drop go on once every calendar's person is in calendar_member`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-c] the whole family's calendar needs no one`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-c] someone else on the calendar is not its person carried over` |
 | CAL-09-d | WP-50 | On Calendars, who a calendar is for is The whole family or a tick a person (a person clears The whole family; no one ticks it); its line names them, with their faces | Unit, UI | Unit `apps/web/lib/calendars.test.ts`: `the calendar form › [CAL-09-d] any number of people, a tick each; The whole family ticked is no one`<br>Unit `apps/web/lib/calendars.test.ts`: `who a calendar is for › [CAL-09-d] the whole family, one person’s, or a list in the family’s order`<br>Unit `apps/web/lib/calendars.test.ts`: `who a calendar is for › [CAL-09-d] someone archived is named so; someone gone is left out`<br>UI `e2e/ui/calendars.spec.ts`: `[CAL-09-d][US-508] who a calendar is for: The whole family or a tick a person` |
 | CAL-09-e | WP-50 | A calendar for two people is on each one's screen and not on a third's; the whole family's is on everyone's | Unit, UI | Unit `apps/web/lib/board-calendar.test.ts`: `a person’s calendars › [CAL-09-e] a calendar for two people is on each one’s screen, and not on a third’s`<br>Unit `apps/web/lib/board-calendar.test.ts`: `a person’s calendars › [CAL-09-e] the whole family’s calendar is on everyone’s screen`<br>UI `e2e/ui/board-calendar.spec.ts`: `[CAL-09-e][US-508] a calendar for two people is on each one’s screen, not on a third’s` |
-| CAL-09-f | WP-50 | On the preview, School given Leo as well as Maya on Calendars shows both their faces on the board | E2E | E2E `e2e/tests/board-calendar.spec.ts`: `[CAL-09-f][US-508] a calendar given two people on Calendars shows both faces on the board` |
+| CAL-09-f | WP-50 | On the preview, School given Leo as well as Maya on Calendars shows both their faces on the board | E2E | E2E `e2e/tests/board-calendar.spec.ts`: `[CAL-09-f][US-508][NFR-14-h] a calendar given two people on Calendars shows both faces on the board` |
 | CAL-09-g | WP-50 | After the contract, `calendar_source` has no `member_id`, the one-person save and the carry-over are gone, the audit trigger doesn't name it, and a board reads a calendar's people only from `member_ids` | DB, Unit | Unit `apps/web/lib/board-calendar.test.ts`: `reading the board’s calendar › [CAL-09-g] a calendar’s people come only from member_ids, not the one-person member_id`<br>DB `supabase/tests/270_board_calendars.test.sql`: `[CAL-05][CAL-09][CAL-09-g] each calendar with its color and whose it is, as member_ids only`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-g] calendar_source has no member_id`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-g] the one-person save is gone`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-g] and so is WP-50's carry-over`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-g] the save of a calendar with its people stays`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-g] the audit trigger watches name, color and show_on_board` |
 | RWD-16-a | WP-80 | A 5-day week with everything in scope done every day is won | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-a] a 5-day week with everything done every day is won` |
 | RWD-16-b | WP-80 | A 4-day week (Friday a closure, nothing due) is won with 4 | Unit | Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-b] a 4-day week (Friday a closure, nothing due) is won with 4`<br>Unit `packages/rules-engine/src/repeat.test.ts`: `[US-410] every day it’s due, each week › [RWD-16-b] the week is not won while a day due is still to come` |
@@ -571,12 +577,12 @@ Test cases and the tests that prove them:
 | RWD-15-j | WP-80 | The form reads the repeat, "every day it's due" and its misses | Unit | Unit `apps/web/lib/goals.test.ts`: `repeating goals (WP-80) › [RWD-15-j] reads how it repeats, "every day it’s due" and its misses allowed`<br>Unit `apps/web/lib/goals.test.ts`: `repeating goals (WP-80) › [RWD-15-j] a goal without a repeat doesn’t repeat; an unknown one is read as none` |
 | RWD-15-k | WP-80 | The board's and the Goals card's words: the days, "Missed, starts again", the won line and the weeks | Unit | Unit `apps/web/lib/board.test.ts`: `the shop, requests and goals (WP-20) › [RWD-15-k] reads a repeating goal’s week going now and its last weeks`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a week’s days › [RWD-15-k] shows each school day and a day off with nothing due, never the weekend`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a week’s days › [RWD-15-k] says "3 of 4 days · Friday no school", and what is left`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a lost or won week › [RWD-15-k] lost: "Missed, starts again Monday, Oct 19", and which days`<br>Unit `apps/web/lib/goal-periods.test.ts`: `a lost or won week › [RWD-15-k] the weeks: "Won 3 of the last 4 weeks", a break week left out` |
 | RWD-15-l | WP-80 | The form, the Goals card and the goal's Weeks at 390 and 1280 px, and the board's card going, missed and won, in both themes | UI | UI `e2e/ui/board-repeating.spec.ts`: `at ${viewport.width}×${viewport.height} › [RWD-15-l][NFR-03] Maya’s goal going, missed and won, in ${theme}: 28 px text, AA contrast`<br>UI `e2e/ui/board-repeating.spec.ts`: `the card › [RWD-15-l][RWD-16][US-411] going: a mark for each day, a day off a dash, "3 of 4 days" and what it pays`<br>UI `e2e/ui/board-repeating.spec.ts`: `the card › [RWD-15-l][RWD-16-c][US-411] missed: "Missed, starts again" the next week’s first day, no part count`<br>UI `e2e/ui/board-repeating.spec.ts`: `the card › [RWD-15-l] won: "Won this week! 10 points." and when the next week starts`<br>UI `e2e/ui/goals.spec.ts`: `[RWD-15-l][RWD-16][US-410] a repeating goal on Goals: this week’s days, a lost week, and the weeks`<br>UI `e2e/ui/goals.spec.ts`: `[RWD-15-l][RWD-15-e] a repeating goal’s page: how it repeats stays, its rule and its weeks`<br>UI `e2e/ui/goals.spec.ts`: `[RWD-15-l][RWD-16-i] a new goal: choosing how it repeats offers "every day it’s due" and its misses` |
-| RWD-15-m | WP-80 | On the preview: Maya's weekly homework goal, Monday to Thursday done and Friday a closure, is won and pays 10 once; a missed Tuesday next week shows "Missed, starts again Monday"; Goals shows the weeks | E2E | E2E `e2e/tests/repeating-goals.spec.ts`: `[RWD-15-m][US-410][US-411] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board` |
+| RWD-15-m | WP-80 | On the preview: Maya's weekly homework goal, Monday to Thursday done and Friday a closure, is won and pays 10 once; a missed Tuesday next week shows "Missed, starts again Monday"; Goals shows the weeks | E2E | E2E `e2e/tests/repeating-goals.spec.ts`: `[RWD-15-m][US-410][US-411][NFR-14-e] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board` |
 | RWD-17-a | WP-81 | By a time on the rule: a tick a minute after it doesn't count; one at the time and one a minute before do | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-a] by a time on the rule: a minute after doesn’t count; at the time and a minute before do` |
 | RWD-17-b | WP-81 | By each chore's due time: a tick after its due time doesn't count, one before does | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-b] by each chore’s due time: after it doesn’t count, before it does` |
 | RWD-17-c | WP-81 | A chore without a due time, under "its due time", counts at any time that day | Unit | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-c] a chore without a due time, under “its due time”, counts at any time that day` |
 | RWD-17-d | WP-81 | An offline tick counts by its own time, not when it reached the server | Unit, DB | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-d] an offline tick counts by its own time, not when it reached the server`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-h][RWD-17-d] and its tick's own time on the household's clock, though it reached the server later` |
-| RWD-17-e | WP-81 | A late tick completes the chore and earns its points but doesn't count; on "every day it's due" its day is a miss once the day closes, and today is never a miss | Unit | E2E `e2e/tests/goal-steps.spec.ts`: `[RWD-18-m][RWD-17-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10`<br>Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-e] a late tick doesn’t count; its day is a miss once the day closes, and today is never a miss` |
+| RWD-17-e | WP-81 | A late tick completes the chore and earns its points but doesn't count; on "every day it's due" its day is a miss once the day closes, and today is never a miss | Unit | E2E `e2e/tests/goal-steps.spec.ts`: `[RWD-18-m][RWD-17-e][NFR-14-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10`<br>Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-e] a late tick doesn’t count; its day is a miss once the day closes, and today is never a miss` |
 | RWD-17-f | WP-81 | A parent's tick after the time doesn't count; a chore waiting for approval counts by the child's tick | Unit, DB | Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-f] a parent’s tick after the time doesn’t count; a chore waiting for approval counts by the child’s tick`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-f] an approved chore keeps the child's tick, not the approval's time`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-f] a parent's tick carries its own time` |
 | RWD-17-g | WP-81 | The time is saved and checked: each chore's due time or a time of day, nothing else | Unit, DB | Unit `apps/web/lib/goal-steps.test.ts`: `[US-412] the form: done by a time › [RWD-17-g] reads by a time, by each chore’s due time, or any time; nothing else`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-412] the form: done by a time › [RWD-17-g] says a rule’s time in its line`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l][RWD-17-g] the form: by a time, and steps by days missed that set the misses allowed`<br>Unit `packages/rules-engine/src/tiers.test.ts`: `[US-412] done by a time › [RWD-17-g] the time is each chore’s due time or a time of day, nothing else`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-g] a time of day is stored on the rule`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-g] so is each chore's due time`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-g] anything else is refused`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-g] ... a time that isn't one too` |
 | RWD-17-h | WP-81 | The goal's facts carry each tick's time in the household's time and each chore's due time | DB | DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-h] a fact carries its chore's due time`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-h][RWD-17-d] and its tick's own time on the household's clock, though it reached the server later`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-h] a chore without a due time has none`<br>DB `supabase/tests/510_goal_times_and_steps.test.sql`: `[RWD-17-h] a chore not ticked has no time` |
@@ -592,7 +598,7 @@ Test cases and the tests that prove them:
 | RWD-18-j | WP-81 | The form reads the time, the steps and the weights | Unit | Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the form: steps and weights › [RWD-18-j] reads steps by days missed, and the lowest sets the misses allowed`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the form: steps and weights › [RWD-18-j] reads steps by number on a one-off goal with an end date`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the form: steps and weights › [RWD-18-j] reads each rule’s weight on a goal with two rules in steps; reached at 100%`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the form: steps and weights › [RWD-18-j] gives the engine the goal’s steps from its payout` |
 | RWD-18-k | WP-81 | The board's and the Goals page's words: the steps, a tick after the time, a week won at a step | Unit | Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the steps in words › [RWD-18-k] the steps as chips: days missed, a number, the goal’s %`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the steps in words › [RWD-18-k] what a week makes, what it was won at, and a tick after the time`<br>Unit `apps/web/lib/goal-steps.test.ts`: `[US-413] the steps in words › [RWD-18-k] the payout, a step changed, and a board goal’s steps`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l][RWD-18-k] Goals: a week’s steps and a late day; a one-off goal’s steps; each week’s step paid`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-412] going: the steps, the one in reach, and a day ticked after 6 pm`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-413] won at a step: "Won this week! 10 points." and its chip` |
 | RWD-18-l | WP-81 | The form's time, steps and weights, a goal's weeks at 390 and 1280 px, and the board's card going, won at a step and weighted, in both themes | UI | UI `e2e/ui/goal-steps.spec.ts`: `on a ${device} › [RWD-18-l][NFR-11] the time, the steps and the weights fit a ${device} in ${theme}`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l][RWD-17-g] the form: by a time, and steps by days missed that set the misses allowed`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l] the form: two rules weighted 60% and 40%, steps by %, reached at 100%`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l] the form: steps by number on a one-off goal, which needs an end date`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app › [RWD-18-l][RWD-18-k] Goals: a week’s steps and a late day; a one-off goal’s steps; each week’s step paid`<br>UI `e2e/ui/goal-steps.spec.ts`: `the admin app the board at ${viewport.width}×${viewport.height} › [RWD-18-l][NFR-03] Maya’s goal in steps going, won at a step and weighted, in ${theme}: 28 px…`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-412] going: the steps, the one in reach, and a day ticked after 6 pm`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l][RWD-18-k][US-413] won at a step: "Won this week! 10 points." and its chip`<br>UI `e2e/ui/goal-steps.spec.ts`: `the board’s card › [RWD-18-l] weighted: a meter for each rule with its weight, the week’s %, and the step reached` |
-| RWD-18-m | WP-81 | On the preview: Maya's "Homework before 6 pm" with steps 20, 10 and 5: a tick at 6:05 pm completes the chore and doesn't count; a week with 4 of 5 on time pays 10 at the week's close | E2E | E2E `e2e/tests/goal-steps.spec.ts`: `[RWD-18-m][RWD-17-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10` |
+| RWD-18-m | WP-81 | On the preview: Maya's "Homework before 6 pm" with steps 20, 10 and 5: a tick at 6:05 pm completes the chore and doesn't count; a week with 4 of 5 on time pays 10 at the week's close | E2E | E2E `e2e/tests/goal-steps.spec.ts`: `[RWD-18-m][RWD-17-e][NFR-14-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10` |
 | RWD-19-a | WP-82 | In total: won weeks count, a missed or break week doesn't; reached at the target | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-414] perfect weeks, in total or in a row › [RWD-19-a] in total: won weeks count, a missed or break week doesn’t; reached at the target` |
 | RWD-19-b | WP-82 | In a row: a break week neither counts nor breaks the run, a missed week starts it again, a week still going doesn't break it | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-414] perfect weeks, in total or in a row › [RWD-19-b] in a row: a break week neither counts nor breaks the run, a missed week starts it again, a week going…` |
 | RWD-19-c | WP-82 | In a row stays reached once a run reaches the target, while those weeks stay won | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-414] perfect weeks, in total or in a row › [RWD-19-c] in a row stays reached once a run reaches the target, while those weeks stay won` |
@@ -602,7 +608,7 @@ Test cases and the tests that prove them:
 | RWD-19-g | WP-82 | A week of the counted goal won or lost marks the goal counting it, which is worked out after it; its facts carry the counted goal's weeks; reached, it pays its own payout once; the board has the counted goal's weeks since it started | DB | DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] the counting goal's facts carry the counted goal's weeks`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] a week of the counted goal won marks the goals counting it`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] a goal counting weeks is worked out after the goal it counts`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] reached, it pays its own 15 points once`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] the board has the goal a rule counts`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] with its weeks that started on or after this goal's start date (D-126)` |
 | RWD-19-h | WP-82 | The form reads the counted goal: which goal, in total or in a row, the target | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-414] the form: perfect weeks › [RWD-19-h] reads the goal it counts, in a row or in total, and the target`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-19-h] the form: weeks won of Maya’s goal, in a row, from this goal’s start` |
 | RWD-19-i | WP-82 | The words: "1 of 3 weeks in a row", "best so far 1", "This week makes 2 in a row.", and the rule naming the goal it counts | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-414] perfect weeks in words › [RWD-19-i] "1 of 3 weeks in a row", best so far, what this week makes`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-414] perfect weeks in words › [RWD-19-i] the rule on Goals names the goal it counts`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-19-i][US-414] perfect weeks: 1 of 3 in a row, the weeks, what this week makes` |
-| RWD-19-j | WP-82 | On the preview: Maya's "3 perfect weeks in a row" counts her won homework weeks, 2 of 3 | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
+| RWD-19-j | WP-82 | On the preview: Maya's "3 perfect weeks in a row" counts her won homework weeks, 2 of 3 | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
 | RWD-20-a | WP-82 | One child short loses the week at once, though the other made every day | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-415] a family goal every child meets › [RWD-20-a] one child short loses the week at once, though the other made every day` |
 | RWD-20-b | WP-82 | Every child meeting it wins the week; its progress is the child furthest behind | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-415] a family goal every child meets › [RWD-20-b] every child meeting it wins the week; its progress is the child furthest behind` |
 | RWD-20-c | WP-82 | A child with nothing due doesn't hold it back; with nobody due the week is neither won nor missed | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-415] a family goal every child meets › [RWD-20-c] a child with nothing due doesn’t hold it back; with nobody due the week is neither` |
@@ -613,7 +619,7 @@ Test cases and the tests that prove them:
 | RWD-20-h | WP-82 | The form reads the option, and a form without it leaves the goal's own | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] the form: every child meets it › [RWD-20-h] reads the option on a family goal, and sends it`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-h] the form: every child meets it on a family goal, without steps` |
 | RWD-20-i | WP-82 | The words: each child's line, "Leo missed Tuesday. Starts again Monday, Oct 19.", "Everyone made it! 20 points each.", a week's row on Weeks | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] each child’s line, who missed it and when it starts again`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] won: everyone, or only the children with something due, as they are paid (D-126)`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] a week’s row on the goal’s Weeks`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i] a family goal’s weeks: each child, who had nothing due, and what each was paid`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-20-i][US-415] the family goal: each child’s days; missed by Leo; won by both` |
 | RWD-20-j | WP-82 | The forms, Goals' two cards and a family goal's Weeks at 390 and 1280 px, and the board's family card going, missed and won and the perfect-weeks card, in both themes | UI | UI `e2e/ui/goal-perfect.spec.ts`: `on a ${device} › [RWD-20-j][NFR-11] the forms, Goals and a family goal’s weeks fit a ${device} in ${theme}`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-h] the form: every child meets it on a family goal, without steps`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-19-h] the form: weeks won of Maya’s goal, in a row, from this goal’s start`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i] a family goal’s weeks: each child, who had nothing due, and what each was paid`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app the board at ${viewport.width}×${viewport.height} › [RWD-20-j][NFR-03] the family goal going, missed and won, and perfect weeks, in ${theme}: 28…`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-20-i][US-415] the family goal: each child’s days; missed by Leo; won by both`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-19-i][US-414] perfect weeks: 1 of 3 in a row, the weeks, what this week makes` |
-| RWD-20-k | WP-82 | On the preview: the family's "Everyone's homework home": a week both children made pays each 20 once; Leo's missed Tuesday leaves the next week unreached though Maya made every day | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
+| RWD-20-k | WP-82 | On the preview: the family's "Everyone's homework home": a week both children made pays each 20 once; Leo's missed Tuesday leaves the next week unreached though Maya made every day | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
 | NFR-16-a | WP-100 | Every admin page's fields, lists, dates and times are the app's on Chrome and iPhone WebKit, in Day and Evening: no browser look, 44 px or taller, 10 px round, 16 px text; a field is filled with the page's background and shows the focus ring | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}`<br>UI `e2e/ui/controls.spec.ts`: `[NFR-16-a] a field is filled, 10 px round, with a 3:1 edge and the focus ring` |
 | NFR-16-b | WP-100 | Every radio and check box is the app's: 20 px, a soft edge, the primary colour when chosen, on both engines | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}` |
 | NFR-16-c | WP-100 | A photo is chosen with **Choose a photo**; the file's name shows; the browser's own file picker never shows | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-c] a photo is chosen with the app’s button, and its name shows` |
@@ -631,6 +637,14 @@ Test cases and the tests that prove them:
 | NFR-16-o | WP-101 | A date reads "Mon, Oct 12, 2026" and a time "6:00 pm", for any date and time | Unit | Unit `apps/web/lib/goal-summaries.test.ts`: `dates and times as the frames write them › [NFR-16-o] "Mon, Oct 12, 2026" for any date, across months, years and DST`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `dates and times as the frames write them › [NFR-16-o] "6:00 pm" for any time, midnight and noon included` |
 | NFR-16-p | WP-101 | **Starts**, **Ends** and **By** show the written date or time; the real picker covers it, so a tap opens it, and choosing a date changes the words; on Chrome and as an iPhone in WebKit | UI | UI `e2e/ui/goal-form-summary.spec.ts`: `[NFR-16-p] Starts, Ends and By show the written date or time over a real picker` |
 | NFR-16-q | WP-101 | Every rule field keeps the name the form's rule list gives it once the page loads, however many forms the server has drawn (a bug found while building this: the names came from a counter shared by every render, so the server's names and the browser's differed) | UI | UI `e2e/ui/goal-form-summary.spec.ts`: `[NFR-16-q] every rule field keeps a name the form lists, however many forms the server drew` |
+| NFR-14-a | WP-102 | A failed psql call's connection string, password included, never reaches the run summary or an "E2E red on main" issue; the rest of its error does | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-14-a][D-110] a failed psql call never puts the database URL or its password in the summary or an issue` |
+| NFR-14-b | WP-102 | A board change that misses its 3 s budget while the board's own read of it took over 2 s carries infrastructure evidence and re-runs once; the budget stays 3 s | E2E | E2E `e2e/tests/board-calendar.spec.ts`: `[CAL-05][US-507][NFR-14-b] this board’s own calendars: School unticked leaves it within 3 seconds; ticked again it is back in its color; a calendar connected l…` |
+| NFR-14-c | WP-102 | One screen is judged against the board's own box, which drifts up to 2 px against burn-in, so the result is the same at any time of day | E2E | E2E `e2e/tests/board-home.spec.ts`: `[BRD-09][US-1008][NFR-14-c] done-when: one screen on the 4K panel and a laptop; Month chosen on the board saves nothing` |
+| NFR-14-d | WP-102 | A test starts from the data it needs, not what an earlier test left: a board's own layout starts from the household's default | E2E | E2E `e2e/tests/board-layout.spec.ts`: `[BRD-05][D-67][NFR-14-d] a board with its own layout: the month and no Goals here; every other board keeps the household’s` |
+| NFR-14-e | WP-102 | A spec's clean-up never deletes an item with check-offs: its days with none are removed and it is archived | E2E | E2E `e2e/tests/goal-steps.spec.ts`: `[RWD-18-m][RWD-17-e][NFR-14-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10`<br>E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row`<br>E2E `e2e/tests/repeating-goals.spec.ts`: `[RWD-15-m][US-410][US-411][NFR-14-e] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board` |
+| NFR-14-f | WP-102 | Specs use the controls as WP-75 and WP-100 drew them: the icon picker opened by its header, the lunch week read from its own list, a meal's **Change** opened only if closed | E2E | E2E `e2e/tests/chores.spec.ts`: `[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s list on a phone in under five minutes; each new item has its next two weeks planned`<br>E2E `e2e/tests/chores.spec.ts`: `[CHR-13][NFR-14-f] a private task stays with its creator, and reaches the other parent only if it’s theirs`<br>E2E `e2e/tests/lunch-quick.spec.ts`: `[MEAL-12][US-709][NFR-14-f] done-when: Pick lunches on Home opens the lunch week to pick, on the child chosen last`<br>E2E `e2e/tests/meal-edit.spec.ts`: `[MEAL-15][US-701][NFR-14-f] done-when: Alex edits a planned dinner in place, and Edit again shows what was saved` |
+| NFR-14-g | WP-102 | The board's Meals screen shows a feed's school menu on any day of the week, a Saturday and a Sunday included | E2E | E2E `e2e/tests/board-meals.spec.ts`: `[MENU-06][US-804][NFR-14-g] done-when: a feed’s day shows its entree options at home and three sections on Meals` |
+| NFR-14-h | WP-102 | A spec expects what the app is meant to do: history at the rules engine's current version, a calendar's people in the family's order | E2E | E2E `e2e/tests/board-calendar.spec.ts`: `[CAL-09-f][US-508][NFR-14-h] a calendar given two people on Calendars shows both faces on the board`<br>E2E `e2e/tests/insights.spec.ts`: `[RWD-11][RWD-12][US-408][NFR-14-h] a child’s last week, as hand-computed` |
 | NFR-19-a | WP-85 | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-a][US-913] a test traces to the IDs in its name and its describe blocks, in every layer` |
 | NFR-19-b | WP-85 | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-b][US-913] a test naming an unknown requirement, story, item or test case fails the check` |
 | NFR-19-c | WP-85 | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-c][US-913] a new gap fails the check, and a known gap does not` |
@@ -1827,8 +1841,8 @@ E2E · 3 tests
 | Test | Names |
 |---|---|
 | `[CAL-04][CAL-05][CAL-10][US-509] a new board shows the calendars set to show on the boards; an event shows in full, with where it is` | CAL-04, CAL-05, CAL-10, US-509 |
-| `[CAL-05][US-507] this board’s own calendars: School unticked leaves it within 3 seconds; ticked again it is back in its color; a calendar connected later stays…` | CAL-05, US-507 |
-| `[CAL-09-f][US-508] a calendar given two people on Calendars shows both faces on the board` | CAL-09-f, US-508 |
+| `[CAL-05][US-507][NFR-14-b] this board’s own calendars: School unticked leaves it within 3 seconds; ticked again it is back in its color; a calendar connected l…` | NFR-14-b, CAL-05, US-507 |
+| `[CAL-09-f][US-508][NFR-14-h] a calendar given two people on Calendars shows both faces on the board` | CAL-09-f, NFR-14-h, US-508 |
 
 #### `e2e/tests/board-fit.spec.ts`
 
@@ -1844,7 +1858,7 @@ E2E · 1 tests
 
 | Test | Names |
 |---|---|
-| `[BRD-09][US-1008] done-when: one screen on the 4K panel and a laptop; Month chosen on the board saves nothing` | BRD-09, US-1008 |
+| `[BRD-09][US-1008][NFR-14-c] done-when: one screen on the 4K panel and a laptop; Month chosen on the board saves nothing` | NFR-14-c, BRD-09, US-1008 |
 
 #### `e2e/tests/board-layout.spec.ts`
 
@@ -1854,7 +1868,7 @@ E2E · 3 tests
 |---|---|
 | `[BRD-01][BRD-05][D-66] a new board opens on the dashboard: five days, today’s list, then the cards` | BRD-01, BRD-05 |
 | `[BRD-05][US-1004] the done-when: Alex moves a card on Boards, and the board shows the new order within 3 seconds (p90 of 11)` | BRD-05, US-1004 |
-| `[BRD-05][D-67] a board with its own layout: the month and no Goals here; every other board keeps the household’s` | BRD-05 |
+| `[BRD-05][D-67][NFR-14-d] a board with its own layout: the month and no Goals here; every other board keeps the household’s` | NFR-14-d, BRD-05 |
 
 #### `e2e/tests/board-meals.spec.ts`
 
@@ -1866,7 +1880,7 @@ E2E · 5 tests
 | `[MEAL-06][DEV-05] a dinner changed reaches the board at once` | DEV-05, MEAL-06 |
 | `[MEAL-10][US-708] done-when: a dinner for Maya and Leo shows both faces, and is on Maya’s screen but not Sam’s` | MEAL-10, US-708 |
 | `[MEAL-06][US-705] the Meals screen: the week, today marked, each child’s lunch each day, read-only` | MEAL-06, US-705 |
-| `[MENU-06][US-804] done-when: a feed’s day shows its entree options at home and three sections on Meals` | MENU-06, US-804 |
+| `[MENU-06][US-804][NFR-14-g] done-when: a feed’s day shows its entree options at home and three sections on Meals` | NFR-14-g, MENU-06, US-804 |
 
 #### `e2e/tests/board-shop.spec.ts`
 
@@ -1913,11 +1927,11 @@ E2E · 11 tests
 |---|---|
 | `[CHR-01][CHR-13] Alex sees the family list, but not Sam’s private gift` | CHR-01, CHR-13 |
 | `[CHR-13] Sam sees the gift they’re responsible for, marked private` | CHR-13 |
-| `[CHR-01][CHR-03][CHR-09][CHR-11] a parent enters the family’s list on a phone in under five minutes; each new item has its next two weeks planned` | CHR-01, CHR-03, CHR-09, CHR-11 |
+| `[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s list on a phone in under five minutes; each new item has its next two weeks planned` | NFR-14-f, CHR-01, CHR-03, CHR-09, CHR-11 |
 | `[CHR-12] a task entered after its date is open and shows as overdue` | CHR-12 |
 | `[CHR-11] the list filters by time of day, person and kind` | CHR-11 |
 | `[CHR-10] a household tag: apply, filter, rename and archive (US-312)` | CHR-10, US-312 |
-| `[CHR-13] a private task stays with its creator, and reaches the other parent only if it’s theirs` | CHR-13 |
+| `[CHR-13][NFR-14-f] a private task stays with its creator, and reaches the other parent only if it’s theirs` | NFR-14-f, CHR-13 |
 | `[CHR-01] an item is archived and restored, never deleted` | CHR-01 |
 | `[CHR-07][CHR-18] an item’s page shows its last seven days: each child’s own bed, and the days each missed` | CHR-07, CHR-18 |
 | `[CHR-18] several people: everyone does their own by default for a chore; switching to any one of them makes one a day` | CHR-18 |
@@ -1963,7 +1977,7 @@ E2E · 1 tests
 
 | Test | Names |
 |---|---|
-| `[RWD-18-m][RWD-17-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10` | RWD-17-e, RWD-18-m, US-412, US-413 |
+| `[RWD-18-m][RWD-17-e][NFR-14-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10` | NFR-14-e, RWD-17-e, RWD-18-m, US-412, US-413 |
 
 #### `e2e/tests/goals.spec.ts`
 
@@ -2011,7 +2025,7 @@ E2E · 3 tests
 
 | Test | Names |
 |---|---|
-| `[RWD-11][RWD-12][US-408] a child’s last week, as hand-computed` | RWD-11, RWD-12, US-408 |
+| `[RWD-11][RWD-12][US-408][NFR-14-h] a child’s last week, as hand-computed` | NFR-14-h, RWD-11, RWD-12, US-408 |
 | `[RWD-11][US-408] a rebuild from history leaves every row identical` | RWD-11, US-408 |
 | `[RWD-05] a board shows Maya’s run from her stored history` | RWD-05 |
 
@@ -2040,7 +2054,7 @@ E2E · 1 tests
 
 | Test | Names |
 |---|---|
-| `[MEAL-12][US-709] done-when: Pick lunches on Home opens the lunch week to pick, on the child chosen last` | MEAL-12, US-709 |
+| `[MEAL-12][US-709][NFR-14-f] done-when: Pick lunches on Home opens the lunch week to pick, on the child chosen last` | NFR-14-f, MEAL-12, US-709 |
 
 #### `e2e/tests/lunch-week.spec.ts`
 
@@ -2072,7 +2086,7 @@ E2E · 1 tests
 
 | Test | Names |
 |---|---|
-| `[MEAL-15][US-701] done-when: Alex edits a planned dinner in place, and Edit again shows what was saved` | MEAL-15, US-701 |
+| `[MEAL-15][US-701][NFR-14-f] done-when: Alex edits a planned dinner in place, and Edit again shows what was saved` | NFR-14-f, MEAL-15, US-701 |
 
 #### `e2e/tests/meals.spec.ts`
 
@@ -2120,7 +2134,7 @@ E2E · 1 tests
 
 | Test | Names |
 |---|---|
-| `[RWD-20-k][RWD-19-j][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` | RWD-19-j, RWD-20-k, US-414, US-415 |
+| `[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` | NFR-14-e, RWD-19-j, RWD-20-k, US-414, US-415 |
 
 #### `e2e/tests/points.spec.ts`
 
@@ -2162,7 +2176,7 @@ E2E · 1 tests
 
 | Test | Names |
 |---|---|
-| `[RWD-15-m][US-410][US-411] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board` | RWD-15-m, US-410, US-411 |
+| `[RWD-15-m][US-410][US-411][NFR-14-e] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board` | NFR-14-e, RWD-15-m, US-410, US-411 |
 
 #### `e2e/tests/rewards.spec.ts`
 
@@ -3004,7 +3018,7 @@ Unit · 12 tests
 
 #### `scripts/e2e-infra.test.mjs`
 
-Unit · 6 tests
+Unit · 7 tests
 
 | Test | Names |
 |---|---|
@@ -3014,6 +3028,7 @@ Unit · 6 tests
 | `[NFR-14][D-110] the probe seeing the database slow while the test ran makes it infrastructure` | NFR-14 |
 | `[NFR-14][D-110] the code frame in an error never counts, only its own words` | NFR-14 |
 | `x` | — |
+| `[NFR-14-a][D-110] a failed psql call never puts the database URL or its password in the summary or an issue` | NFR-14-a |
 
 #### `scripts/e2e-run-fixture/assertion.spec.ts`
 
