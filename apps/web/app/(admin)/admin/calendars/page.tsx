@@ -24,7 +24,7 @@ const ERRORS: Record<string, string> = {
 export default async function CalendarsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ did?: string; name?: string; error?: string }>;
+  searchParams: Promise<{ did?: string; name?: string; error?: string; open?: string }>;
 }) {
   const db = await serverClient();
   const user = await requireSignedIn(db, '/admin/calendars');
@@ -49,6 +49,8 @@ export default async function CalendarsPage({
         archived: m.archivedAt !== null,
       }))}
       timezone={household.timezone}
+      now={new Date().getTime()}
+      open={params.open ?? null}
       notice={did && !failed ? did : null}
       error={params.error ? (ERRORS[params.error] ?? null) : failed ? (did ?? null) : null}
     />

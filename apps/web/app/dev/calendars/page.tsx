@@ -6,7 +6,8 @@ import { CalendarsView } from '../../(admin)/admin/calendars/view';
 // The household's calendars (WP-22) with made-up calendars and events and no database, for the UI
 // suite: one synced with what's coming up (an all-day trip, a moved instance), one whose link fails
 // with its last good sync kept, one not synced yet; on a phone and a laptop, in Day and Evening
-// (?theme=evening). ?state=empty for a household with none yet. Who each is for (WP-50): the whole
+// (?theme=evening). ?state=empty for a household with none yet. Each calendar folded (WP-93);
+// ?open=1 (Family), 2 or 3 shows one open, as after a save in it. Who each is for (WP-50): the whole
 // family, two children, one adult; Kit is archived, so never a tick.
 export const metadata: Metadata = { title: 'Calendars', robots: { index: false } };
 
@@ -40,6 +41,9 @@ const MEMBERS = [
     archived: true,
   },
 ] satisfies ComponentProps<typeof CalendarsView>['members'];
+
+/** Tue, Oct 20, 2026, 12:15 pm in the family's zone: Family synced 12 min before. */
+const NOW = Date.parse('2026-10-20T16:15:00Z');
 
 const CALENDARS: CalendarRow[] = [
   {
@@ -149,7 +153,7 @@ const CALENDARS: CalendarRow[] = [
 export default async function DevCalendarsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; state?: string }>;
+  searchParams: Promise<{ theme?: string; state?: string; open?: string }>;
 }) {
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -159,6 +163,8 @@ export default async function DevCalendarsPage({
         calendars={params.state === 'empty' ? [] : CALENDARS}
         members={MEMBERS}
         timezone="America/New_York"
+        now={NOW}
+        open={params.open ? `c1000000-0000-4000-8000-00000000000${params.open}` : null}
         notice={params.state === 'empty' ? null : 'Added Family and synced it.'}
         error={null}
       />

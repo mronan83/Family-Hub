@@ -40,8 +40,12 @@ export const ADMIN = [
   ['rewards', '/dev/rewards'],
   ['meals', '/dev/meals'],
   ['meals-library', '/dev/meals?page=library'],
+  // [NFR-18] WP-93's folds opened: Archived, a menu, a calendar (the fold audit's open frames).
+  ['meals-library-archived', '/dev/meals?page=library&open=archived'],
   ['menus', '/dev/menus'],
+  ['menus-open', '/dev/menus?open=1'],
   ['calendars', '/dev/calendars'],
+  ['calendars-open', '/dev/calendars?open=1'],
   ['boards', '/dev/boards'],
   ['reminders', '/dev/reminders'],
   ['settings', '/dev/settings'],

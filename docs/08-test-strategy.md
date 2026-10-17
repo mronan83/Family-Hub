@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.5: WP-93's test cases (NFR-18-a to NFR-18-j, D-131): the Test catalogue regenerated (§9).
 > v0.8.4: the e2e findings log and a run by hand (WP-98, NFR-14, D-130): each run with a failed test adds a comment to "E2E findings log", re-runs included, and the run summary lists tests that failed in more than one of the last 30 runs; the nightly run can be started by hand on `main` when no other e2e run is queued or going (§3, §8).
 > v0.8.3: the e2e red triage (WP-102, NFR-14, D-129): the run hides every connection string from its summary and issues; a board's own read over 2 s is evidence the test database was slow; three more rules for writing specs (§7).
 > v0.8.2: the UI suite runs as an iPhone in WebKit too, and an item built from a mockup shows a side-by-side before approval (WP-100, NFR-16, D-127).
@@ -266,16 +267,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2633** tests: Unit 797 · DB 1455 · UI 255 · E2E 126. 2172 name at least one ID; 461 name none.
+**2648** tests: Unit 805 · DB 1455 · UI 261 · E2E 127. 2187 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 116 of 134 |
+| Requirements built (a Done item builds them) | 117 of 134 |
 | Built requirements with no test | 0 |
-| Stories built | 103 of 120 |
+| Stories built | 104 of 120 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 108 (with a test: 108) |
+| Test cases | 118 (with a test: 118) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -292,16 +293,16 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Chores | 90 | 192 | 29 | 30 | 341 |
 | Points | 38 | 92 | 17 | 12 | 159 |
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
-| Calendar | 64 | 92 | 18 | 4 | 178 |
+| Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 57 | 43 | 29 | 11 | 140 |
-| School menu | 27 | 14 | 7 | 3 | 51 |
+| Meals and lunch | 57 | 43 | 30 | 11 | 141 |
+| School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 7 | 15 | 135 |
-| Platform | 149 | 167 | 47 | 14 | 377 |
+| Platform | 151 | 167 | 50 | 14 | 382 |
 | Not named | 58 | 438 | 10 | 1 | 507 |
-| **Total** | **797** | **1455** | **255** | **126** | **2633** |
+| **Total** | **805** | **1455** | **261** | **127** | **2648** |
 
 ### 9.3 By requirement
 
@@ -373,10 +374,10 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | CAL-02 | M | Covered | US-502 | WP-22 | — | U 5 · DB 11 · E2E 1 |
 | CAL-03 | M | Covered | US-501 | WP-22 | — | DB 3 · UI 1 |
 | CAL-04 | M | Covered | US-503, US-1008 | WP-23 | — | U 8 · DB 4 · UI 11 · E2E 1 |
-| CAL-05 | M | Covered | US-504, US-507 | WP-23, WP-46, WP-70 | — | U 10 · DB 11 · UI 3 · E2E 2 |
-| CAL-06 | M | Covered | US-505 | WP-22 | — | U 7 · DB 7 · UI 3 · E2E 1 |
+| CAL-05 | M | Covered | US-504, US-507 | WP-23, WP-46, WP-70 | — | U 11 · DB 11 · UI 3 · E2E 2 |
+| CAL-06 | M | Covered | US-505 | WP-22 | — | U 9 · DB 7 · UI 4 · E2E 2 |
 | CAL-07 | M | Covered | US-502 | WP-22 | — | U 17 · DB 6 · E2E 1 |
-| CAL-09 | S | Covered | US-508 | WP-50 | CAL-09-a, CAL-09-b, CAL-09-c, CAL-09-d, CAL-09-e, CAL-09-f, CAL-09-g | U 7 · DB 24 · UI 4 · E2E 1 |
+| CAL-09 | S | Covered | US-508 | WP-50 | CAL-09-a, CAL-09-b, CAL-09-c, CAL-09-d, CAL-09-e, CAL-09-f, CAL-09-g | U 8 · DB 24 · UI 4 · E2E 1 |
 | CAL-10 | S | Covered | US-509 | WP-52 | — | U 4 · DB 8 · UI 1 · E2E 1 |
 | CAL-08 | C | Not built | US-506 | WP-29 | — | — |
 | SCH-01 | M | Covered | US-601 | WP-21 | — | U 10 · DB 13 · UI 2 · E2E 5 |
@@ -386,7 +387,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | SCH-05 | S | Not built | US-604 | WP-54 | — | — |
 | SCH-06 | C | Not built | US-605 | WP-56 | — | — |
 | MEAL-01 | M | Covered | US-701 | WP-25 | — | U 4 · DB 1 · UI 3 · E2E 1 |
-| MEAL-02 | M | Covered | US-701 | WP-25 | — | U 3 · DB 2 · UI 2 · E2E 1 |
+| MEAL-02 | M | Covered | US-701 | WP-25 | — | U 3 · DB 2 · UI 3 · E2E 1 |
 | MEAL-03 | S | Covered | US-702 | WP-25 | — | U 1 · DB 3 · UI 1 · E2E 1 |
 | MEAL-04 | M | Covered | US-703 | WP-26 | — | U 5 · DB 4 · UI 1 · E2E 1 |
 | MEAL-05 | M | Covered | US-704 | WP-27 | — | U 3 · DB 2 · E2E 1 |
@@ -400,10 +401,10 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-13 | M | Covered | US-710 | WP-74 | — | U 9 · UI 4 · E2E 1 |
 | MEAL-14 | S | Covered | US-711 | WP-75 | — | U 4 · UI 4 · E2E 1 |
 | MEAL-15 | S | Covered | US-701 | WP-76 | — | DB 4 · UI 3 · E2E 1 |
-| MENU-01 | M | Covered | US-801 | WP-27 | — | U 2 · DB 1 · UI 2 · E2E 1 |
+| MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
-| MENU-03 | M | Covered | US-802 | WP-27 | — | U 5 · DB 3 · UI 2 · E2E 1 |
-| MENU-04 | M | Covered | US-803 | WP-27 | — | U 2 · DB 1 · UI 1 · E2E 1 |
+| MENU-03 | M | Covered | US-802 | WP-27 | — | U 6 · DB 3 · UI 2 · E2E 1 |
+| MENU-04 | M | Covered | US-803 | WP-27 | — | U 4 · DB 1 · UI 2 · E2E 1 |
 | MENU-05 | S | Covered | US-803 | WP-27 | — | U 5 · DB 3 · E2E 1 |
 | MENU-06 | S | Covered | US-804 | WP-64, WP-78 | — | U 10 · DB 4 · UI 1 · E2E 1 |
 | BRD-01 | M | Covered | US-303, US-1001 | WP-11, WP-35 | — | U 1 · DB 2 · UI 2 · E2E 3 |
@@ -440,7 +441,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | U 17 · DB 10 · UI 17 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
-| NFR-18 | S | Not built | US-111, US-323 | WP-93, WP-94, WP-95, WP-96, WP-97 | — | U 3 |
+| NFR-18 | S | Covered | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j | U 11 · UI 6 · E2E 1 |
 | NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 34 · DB 14 · UI 1 · E2E 15 |
 | NFR-19 | M | Covered | US-913 | WP-85, WP-86 | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | U 6 |
 
@@ -539,7 +540,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-90 | Done | **No cases** | — | — |
 | WP-91 | Done | **No cases** | — | U 1 |
 | WP-92 | Done | **No cases** | — | — |
-| WP-93 | Ready | — | — | — |
+| WP-93 | Done | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j | 10 of 10 | — |
 | WP-94 | Ready | — | — | — |
 | WP-95 | Ready | — | — | — |
 | WP-96 | Ready | — | — | — |
@@ -625,6 +626,16 @@ Test cases and the tests that prove them:
 | RWD-20-i | WP-82 | The words: each child's line, "Leo missed Tuesday. Starts again Monday, Oct 19.", "Everyone made it! 20 points each.", a week's row on Weeks | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] each child’s line, who missed it and when it starts again`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] won: everyone, or only the children with something due, as they are paid (D-126)`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] a week’s row on the goal’s Weeks`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i] a family goal’s weeks: each child, who had nothing due, and what each was paid`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-20-i][US-415] the family goal: each child’s days; missed by Leo; won by both` |
 | RWD-20-j | WP-82 | The forms, Goals' two cards and a family goal's Weeks at 390 and 1280 px, and the board's family card going, missed and won and the perfect-weeks card, in both themes | UI | UI `e2e/ui/goal-perfect.spec.ts`: `on a ${device} › [RWD-20-j][NFR-11] the forms, Goals and a family goal’s weeks fit a ${device} in ${theme}`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-h] the form: every child meets it on a family goal, without steps`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-19-h] the form: weeks won of Maya’s goal, in a row, from this goal’s start`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i] a family goal’s weeks: each child, who had nothing due, and what each was paid`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app the board at ${viewport.width}×${viewport.height} › [RWD-20-j][NFR-03] the family goal going, missed and won, and perfect weeks, in ${theme}: 28…`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-20-i][US-415] the family goal: each child’s days; missed by Leo; won by both`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-19-i][US-414] perfect weeks: 1 of 3 in a row, the weeks, what this week makes` |
 | RWD-20-k | WP-82 | On the preview: the family's "Everyone's homework home": a week both children made pays each 20 once; Leo's missed Tuesday leaves the next week unreached though Maya made every day | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
+| NFR-18-a | WP-93 | A calendar's folded header: who it's for, "Not on the boards" when hidden, "Synced" and how long ago, and how many events are coming up (one, many, none); one not synced yet says so | Unit | Unit `apps/web/lib/calendars.test.ts`: `a calendar’s folded header › [NFR-18-a][CAL-06][CAL-09] who it’s for, its sync and how many events are coming up`<br>Unit `apps/web/lib/calendars.test.ts`: `a calendar’s folded header › [NFR-18-a][CAL-05] one hidden from the boards says so; one not synced yet says that` |
+| NFR-18-b | WP-93 | A calendar that can't sync has **Can't sync** as its warning and says when it last synced, or that it never did | Unit | Unit `apps/web/lib/calendars.test.ts`: `a calendar’s folded header › [NFR-18-b][CAL-06][US-505] one that can’t sync has the warning and says when it last synced` |
+| NFR-18-c | WP-93 | A school menu's folded header: where it comes from, whose lunch it is or "nobody yet", a feed's **Fetched** with its time today or its day and time before, and the days with lunch in the next four weeks; a file or typed-in menu has nothing to fetch | Unit | Unit `apps/web/lib/menus.test.ts`: `a school menu’s folded header › [NFR-18-c][MENU-01][MENU-04] where it comes from, whose lunch, its fetch and its days`<br>Unit `apps/web/lib/menus.test.ts`: `a school menu’s folded header › [NFR-18-c][MENU-03] a file or typed-in menu has nothing to fetch; nobody yet, one day, none` |
+| NFR-18-d | WP-93 | A feed that can't fetch has **Can't fetch** as its warning and says when it last fetched, or that it never did; one not fetched yet says so | Unit | Unit `apps/web/lib/menus.test.ts`: `a school menu’s folded header › [NFR-18-d][MENU-04][US-803] a feed that can’t fetch has the warning and says when it last fetched` |
+| NFR-18-e | WP-93 | The headers' times hold across midnight UTC and the end of daylight saving: "today" is the household's day, and how long ago counts real hours | Unit | Unit `apps/web/lib/calendars.test.ts`: `a calendar’s folded header › [NFR-18-e] its times across midnight UTC and the end of daylight saving`<br>Unit `apps/web/lib/menus.test.ts`: `a school menu’s folded header › [NFR-18-e] "today" is the household’s day, across midnight UTC and the end of daylight saving` |
+| NFR-18-f | WP-93 | Calendars at 390 and 1280 px, Day and Evening: every calendar folded with its facts, **Can't sync** on its header while folded, **Add a calendar** folded to its button; each opened by a tap after hydration, a calendar to what's coming up, then **Edit** and **Remove** as folds; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/calendars.spec.ts`: `Calendars folded on ${device} › [NFR-18-f][US-111][CAL-06][D-120] every fold closed, then each opened by a tap, in ${theme}` |
+| NFR-18-g | WP-93 | School menus at 390 and 1280 px, Day and Evening: every menu folded with its facts, **Can't fetch** on its header while folded, **Add a school menu** folded to its button; each opened by a tap after hydration, a menu to its weeks, **Add a day to** (and a file's **Load a file into**) as folds, then **Fetch now**, **Rename** and **Remove** set apart, Remove still asking first; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/menus.spec.ts`: `School menus folded on a ${device} › [NFR-18-g][US-111][MENU-04][D-120] every fold closed, then each opened by a tap, in ${theme}` |
+| NFR-18-h | WP-93 | The meal library at 390 and 1280 px, Day and Evening: **Add a meal** folded to its button, **Our meals** open, **Archived** folded to its count; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/meals.spec.ts`: `The meal library folded on a ${device} › [NFR-18-h][US-111][MEAL-02][D-120] Add a meal and Archived folded, Our meals open, each opened by a tap, in ${theme}` |
+| NFR-18-i | WP-93 | A calendar or a menu just saved in comes back open and the others stay folded; **Archived** comes back open after an archive; with none yet, **Add a calendar**, **Add a school menu** and **Add a meal** are open | UI | UI `e2e/ui/calendars.spec.ts`: `[NFR-18-i][D-120] a calendar just saved in comes back open, the others folded; with none, Add a calendar is open`<br>UI `e2e/ui/meals.spec.ts`: `[NFR-18-i][D-120] Archived comes back open after an archive; with no meal yet, Add a meal is open`<br>UI `e2e/ui/menus.spec.ts`: `[NFR-18-i][D-120] a menu just saved in comes back open, the others folded; with none, Add a school menu is open` |
+| NFR-18-j | WP-93 | On the preview, Alex opens Calendars with every calendar folded, reads the Family calendar's header, opens it, saves an edit under **Edit**, and finds it open after the save | E2E | E2E `e2e/tests/calendar-fold.spec.ts`: `[NFR-18-j][CAL-06][D-120] Alex opens Calendars folded, reads the Family calendar’s header, saves an edit and finds it open` |
 | NFR-16-a | WP-100 | Every admin page's fields, lists, dates and times are the app's on Chrome and iPhone WebKit, in Day and Evening: no browser look, 44 px or taller, 10 px round, 16 px text; a field is filled with the page's background and shows the focus ring | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}`<br>UI `e2e/ui/controls.spec.ts`: `[NFR-16-a] a field is filled, 10 px round, with a 3:1 edge and the focus ring` |
 | NFR-16-b | WP-100 | Every radio and check box is the app's: 20 px, a soft edge, the primary colour when chosen, on both engines | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}` |
 | NFR-16-c | WP-100 | A photo is chosen with **Choose a photo**; the file's name shows; the browser's own file picker never shows | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-c] a photo is chosen with the app’s button, and its name shows` |
@@ -679,7 +690,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-108 | ACC-07 | Not built | — |
 | US-109 | NFR-17 | Covered | U 11 · DB 1 · UI 2 · E2E 1 |
 | US-110 | ACC-08 | Covered | DB 1 · UI 1 · E2E 1 |
-| US-111 | NFR-18 | Not built | — |
+| US-111 | NFR-18 | Covered | UI 3 |
 | US-201 | DEV-01, DEV-02 | Gap | — |
 | US-202 | DEV-03, DEV-02 | Gap | — |
 | US-203 | DEV-04 | Not built | — |
@@ -702,7 +713,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-320 | CHR-18, CHR-09 | Gap | — |
 | US-321 | CHR-19 | Covered | E2E 1 |
 | US-322 | CHR-20 | Covered | DB 1 · UI 1 · E2E 1 |
-| US-323 | CHR-21, NFR-18 | Not built | — |
+| US-323 | CHR-21 | Not built | — |
 | US-324 | CHR-22 | Not built | — |
 | US-325 | CHR-23 | Not built | — |
 | US-312 | CHR-10, RWD-02 | Covered | E2E 1 |
@@ -733,7 +744,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-503 | CAL-04 | Covered | U 4 · UI 2 |
 | US-504 | CAL-05 | Gap | — |
 | US-507 | CAL-05 | Covered | DB 7 · E2E 1 |
-| US-505 | CAL-06 | Covered | U 2 · DB 2 · UI 1 · E2E 1 |
+| US-505 | CAL-06 | Covered | U 3 · DB 2 · UI 1 · E2E 1 |
 | US-506 | CAL-08 | Not built | — |
 | US-508 | CAL-09 | Covered | DB 1 · UI 4 · E2E 1 |
 | US-509 | CAL-10 | Covered | DB 1 · UI 1 · E2E 1 |
@@ -755,7 +766,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-711 | MEAL-14 | Covered | UI 1 · E2E 1 |
 | US-801 | MENU-01, MENU-02 | Covered | U 3 · UI 2 |
 | US-802 | MENU-03 | Covered | U 4 · DB 2 · UI 2 · E2E 1 |
-| US-803 | MENU-04, MENU-05 | Covered | U 2 · DB 1 · UI 1 · E2E 1 |
+| US-803 | MENU-04, MENU-05 | Covered | U 3 · DB 1 · UI 1 · E2E 1 |
 | US-804 | MENU-06 | Covered | U 7 · UI 1 · E2E 1 |
 | US-901 | NFR-04, NFR-09 | Gap | — |
 | US-902 | NFR-05 | Not built | — |
@@ -1108,7 +1119,7 @@ Unit · 19 tests
 
 #### `apps/web/lib/calendars.test.ts`
 
-Unit · 12 tests
+Unit · 16 tests
 
 | Test | Names |
 |---|---|
@@ -1124,6 +1135,10 @@ Unit · 12 tests
 | `when an event is › [CAL-07] an all-day event on its own dates, in any zone` | CAL-07 |
 | `who a calendar is for › [CAL-09-d] the whole family, one person’s, or a list in the family’s order` | CAL-09-d |
 | `who a calendar is for › [CAL-09-d] someone archived is named so; someone gone is left out` | CAL-09-d |
+| `a calendar’s folded header › [NFR-18-a][CAL-06][CAL-09] who it’s for, its sync and how many events are coming up` | NFR-18-a, CAL-06, CAL-09 |
+| `a calendar’s folded header › [NFR-18-a][CAL-05] one hidden from the boards says so; one not synced yet says that` | NFR-18-a, CAL-05 |
+| `a calendar’s folded header › [NFR-18-b][CAL-06][US-505] one that can’t sync has the warning and says when it last synced` | NFR-18-b, CAL-06, US-505 |
+| `a calendar’s folded header › [NFR-18-e] its times across midnight UTC and the end of daylight saving` | NFR-18-e |
 
 #### `apps/web/lib/chores.test.ts`
 
@@ -1606,7 +1621,7 @@ Unit · 9 tests
 
 #### `apps/web/lib/menus.test.ts`
 
-Unit · 7 tests
+Unit · 11 tests
 
 | Test | Names |
 |---|---|
@@ -1617,6 +1632,10 @@ Unit · 7 tests
 | `school menus in the admin portal › [MENU-03][US-802] reads a day typed in: items, or no lunch with a note` | MENU-03, US-802 |
 | `school menus in the admin portal › [MENU-01][US-801] reads a new menu: a feed needs its district, school and menu picked` | MENU-01, US-801 |
 | `school menus in the admin portal › says a refusal in a parent’s words` | — |
+| `a school menu’s folded header › [NFR-18-c][MENU-01][MENU-04] where it comes from, whose lunch, its fetch and its days` | NFR-18-c, MENU-01, MENU-04 |
+| `a school menu’s folded header › [NFR-18-c][MENU-03] a file or typed-in menu has nothing to fetch; nobody yet, one day, none` | NFR-18-c, MENU-03 |
+| `a school menu’s folded header › [NFR-18-d][MENU-04][US-803] a feed that can’t fetch has the warning and says when it last fetched` | NFR-18-d, MENU-04, US-803 |
+| `a school menu’s folded header › [NFR-18-e] "today" is the household’s day, across midnight UTC and the end of daylight saving` | NFR-18-e |
 
 #### `apps/web/lib/outbox.test.ts`
 
@@ -1924,6 +1943,14 @@ E2E · 4 tests
 | `[CHR-04][PTS-01][NFR-03][US-305] Maya’s own items: a click checks off at once; a rapid double tap is one check-off; undo needs a second tap and gives the point…` | CHR-04, NFR-03, PTS-01, US-305 |
 | `[BRD-07][US-1006][CHR-09] who did it: the shared Feed the dog asks; Maya and Alex are both credited, only Maya earns` | BRD-07, CHR-09, US-1006 |
 | `[DEV-05][BRD-01] a check-off made elsewhere reaches the board live, with its points` | BRD-01, DEV-05 |
+
+#### `e2e/tests/calendar-fold.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-18-j][CAL-06][D-120] Alex opens Calendars folded, reads the Family calendar’s header, saves an edit and finds it open` | NFR-18-j, CAL-06 |
 
 #### `e2e/tests/calendar.spec.ts`
 
@@ -2396,7 +2423,7 @@ UI · 8 tests
 
 #### `e2e/ui/calendars.spec.ts`
 
-UI · 5 tests
+UI · 7 tests
 
 | Test | Names |
 |---|---|
@@ -2405,6 +2432,8 @@ UI · 5 tests
 | `[CAL-03][CAL-01] events are only read: no way to add or change one, and no link shown` | CAL-01, CAL-03 |
 | `[CAL-09-d][US-508] who a calendar is for: The whole family or a tick a person` | CAL-09-d, US-508 |
 | `[CAL-01] with none yet, the page says so and offers the form` | CAL-01 |
+| `Calendars folded on ${device} › [NFR-18-f][US-111][CAL-06][D-120] every fold closed, then each opened by a tap, in ${theme}` | NFR-18-f, CAL-06, US-111 |
+| `[NFR-18-i][D-120] a calendar just saved in comes back open, the others folded; with none, Add a calendar is open` | NFR-18-i |
 
 #### `e2e/ui/controls.spec.ts`
 
@@ -2629,7 +2658,7 @@ UI · 7 tests
 
 #### `e2e/ui/meals.spec.ts`
 
-UI · 13 tests
+UI · 15 tests
 
 | Test | Names |
 |---|---|
@@ -2646,10 +2675,12 @@ UI · 13 tests
 | `[MEAL-14][US-711] Add on a day opens Add to the plan with that day and meal filled in` | MEAL-14, US-711 |
 | `[MEAL-14] a day opened by the page: the one just added to or changed` | MEAL-14 |
 | `[MEAL-02] the library: each meal, what it’s good for and its recipe; archived ones aside` | MEAL-02 |
+| `The meal library folded on a ${device} › [NFR-18-h][US-111][MEAL-02][D-120] Add a meal and Archived folded, Our meals open, each opened by a tap, in ${theme}` | NFR-18-h, MEAL-02, US-111 |
+| `[NFR-18-i][D-120] Archived comes back open after an archive; with no meal yet, Add a meal is open` | NFR-18-i |
 
 #### `e2e/ui/menus.spec.ts`
 
-UI · 6 tests
+UI · 8 tests
 
 | Test | Names |
 |---|---|
@@ -2659,6 +2690,8 @@ UI · 6 tests
 | `[MENU-04][US-803] a feed that can’t fetch says why and keeps its menus` | MENU-04, US-803 |
 | `[MENU-02][US-801] adding a Nutrislice menu: find the district’s schools, then pick the school and its menu` | MENU-02, US-801 |
 | `[MENU-03][US-802] a file is looked at before it loads: how many days, from when to when, the first few` | MENU-03, US-802 |
+| `School menus folded on a ${device} › [NFR-18-g][US-111][MENU-04][D-120] every fold closed, then each opened by a tap, in ${theme}` | NFR-18-g, MENU-04, US-111 |
+| `[NFR-18-i][D-120] a menu just saved in comes back open, the others folded; with none, Add a school menu is open` | NFR-18-i |
 
 #### `e2e/ui/offline.spec.ts`
 

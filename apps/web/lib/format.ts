@@ -32,6 +32,18 @@ export function dayAndTime(at: string | Date, timeZone: string): string {
   return `${day(at, timeZone)} at ${time(at, timeZone)}`;
 }
 
+/**
+ * How long ago something happened, as a folded header says it (WP-91, WP-93): "just now",
+ * "5 min ago", "7 h ago", then the day and time.
+ */
+export function agoWords(at: string, now: number, timeZone: string): string {
+  const minutes = Math.floor((now - new Date(at).getTime()) / 60_000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes} min ago`;
+  if (minutes < 24 * 60) return `${Math.floor(minutes / 60)} h ago`;
+  return dayAndTime(at, timeZone);
+}
+
 /** Today's date in a timezone, as "YYYY-MM-DD" (a household's business date, 02 §1). */
 export function isoDay(timeZone: string, at: Date = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone }).format(at);

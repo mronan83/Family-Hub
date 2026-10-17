@@ -7,10 +7,13 @@ import type { MenuDayRow, MenuSourceRow } from '@/lib/menus';
 // for the UI suite and the guide's pictures: Maple Elementary's Nutrislice menu (one day the parent's
 // own), Oak Middle's from a file, and a feed that can't fetch and keeps its menus (US-803). Day or
 // Evening (?theme=evening); the add form with a district's schools found (?add=1); a file looked at
-// before loading (?file=1). No school's real identifiers or menus are used (NFR-05).
+// before loading (?file=1). Each menu folded (WP-93); ?open=1 (Maple Elementary), 2 or 3 shows one
+// open, as after a save in it; ?state=empty for a family with none yet. No school's real identifiers or menus are used (NFR-05).
 export const metadata: Metadata = { title: 'School menus', robots: { index: false } };
 
 const TODAY = '2026-10-12';
+/** Mon, Oct 12, 2026, 9:15 am in the family's zone: Maple Elementary fetched at 6:29 am. */
+const NOW = Date.parse('2026-10-12T13:15:00Z');
 const MAYA = 'f2000000-0000-4000-8000-000000000001';
 const LEO = 'f2000000-0000-4000-8000-000000000002';
 const LUNCHES = [
@@ -122,7 +125,13 @@ const FOUND = {
 export default async function DevMenusPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; add?: string; file?: string }>;
+  searchParams: Promise<{
+    theme?: string;
+    add?: string;
+    file?: string;
+    open?: string;
+    state?: string;
+  }>;
 }) {
   const p = await searchParams;
   const theme = p.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -130,7 +139,7 @@ export default async function DevMenusPage({
   return (
     <div className={`admin ${theme}`}>
       <MenusView
-        menus={MENUS}
+        menus={p.state === 'empty' ? [] : MENUS}
         names={
           new Map([
             [MAYA, 'Maya'],
@@ -139,6 +148,8 @@ export default async function DevMenusPage({
         }
         timezone="America/New_York"
         today={TODAY}
+        now={NOW}
+        open={p.open ? `f2f00000-0000-4000-8000-00000000000${p.open}` : null}
         notice={null}
         error={null}
         found={p.add ? FOUND : undefined}

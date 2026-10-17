@@ -1,4 +1,4 @@
-import { Banner, Button, Icon, type IconName } from '@familywise/ui';
+import { Banner, Button, Fold, Icon, type IconName } from '@familywise/ui';
 import Link from 'next/link';
 import { type MealRow, SLOT_WORDS } from '@/lib/meals';
 import { AdminHeader } from '../../header';
@@ -15,17 +15,21 @@ const goodFor = (m: MealRow) =>
         .replace(/, ([^,]*)$/, ' or $1');
 
 /**
- * [MEAL-02] The meal library: add a meal; each one with what it's good for and its recipe, to change
- * or archive (plans that use it keep its name); archived ones to restore.
+ * [MEAL-02][NFR-18] The meal library: Add a meal folded to its button (WP-93); Our meals open, each
+ * one with what it's good for and its recipe, to change or archive (plans that use it keep its
+ * name); Archived folded to its count, to restore, and open again after a meal is archived (D-120).
  */
 export function MealLibraryView({
   meals,
   notice,
   error,
+  openArchived = false,
 }: {
   meals: MealRow[];
   notice: string | null;
   error: string | null;
+  /** Archived shown open: just after a meal was archived. */
+  openArchived?: boolean;
 }) {
   const active = meals.filter((m) => !m.archivedAt);
   const archived = meals.filter((m) => m.archivedAt);
@@ -43,8 +47,18 @@ export function MealLibraryView({
           The meals your family makes again, to choose from when you plan. Back to{' '}
           <Link href="/admin/meals">the week’s meals</Link>.
         </p>
-        <MealForm />
       </section>
+
+      {/* With no meal yet, adding one is all there is to do here. */}
+      <Fold
+        id="add-meal"
+        title="Add a meal"
+        headingId="add-meal-heading"
+        button={{ label: 'Add a meal', icon: 'plus' }}
+        open={meals.length === 0}
+      >
+        <MealForm />
+      </Fold>
 
       <section className="fw-card" aria-labelledby="our-meals-heading">
         <h2 id="our-meals-heading">Our meals</h2>
@@ -98,8 +112,13 @@ export function MealLibraryView({
       </section>
 
       {archived.length > 0 ? (
-        <section className="fw-card" aria-labelledby="archived-meals-heading">
-          <h2 id="archived-meals-heading">Archived</h2>
+        <Fold
+          id="archived-meals"
+          title="Archived"
+          headingId="archived-meals-heading"
+          summary={[<b key="n">{archived.length} archived</b>]}
+          open={openArchived}
+        >
           <p className="fw-muted">Not offered when you plan; plans that used them keep them.</p>
           <ul className="fw-list" aria-label="Archived meals">
             {archived.map((m) => (
@@ -115,7 +134,7 @@ export function MealLibraryView({
               </li>
             ))}
           </ul>
-        </section>
+        </Fold>
       ) : null}
     </main>
   );

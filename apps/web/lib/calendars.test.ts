@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  calendarFacts,
   calendarSaveMessage,
   LINK_HELP,
   parseCalendar,
@@ -205,5 +206,119 @@ describe('who a calendar is for', () => {
   it('[CAL-09-d] someone archived is named so; someone gone is left out', () => {
     expect(whoFor(['maya', 'kit'], members)).toBe('Maya and Kit (archived)');
     expect(whoFor(['gone'], members)).toBe('The whole family');
+  });
+});
+
+// [NFR-18][D-120] A calendar's folded header on Calendars (WP-93).
+describe('a calendar’s folded header', () => {
+  const members = [
+    { id: 'maya', displayName: 'Maya' },
+    { id: 'leo', displayName: 'Leo' },
+    { id: 'kit', displayName: 'Kit', archived: true },
+  ];
+  /** Tue, Oct 20, 2026, 12:15 pm in New York. */
+  const NOW = Date.parse('2026-10-20T16:15:00Z');
+  const base = {
+    memberIds: [] as string[],
+    showOnBoard: true,
+    status: 'ok' as const,
+    lastSyncedAt: '2026-10-20T16:03:00Z',
+    lastSuccessAt: '2026-10-20T16:03:00Z',
+    upcomingCount: 23,
+  };
+
+  it('[NFR-18-a][CAL-06][CAL-09] who it’s for, its sync and how many events are coming up', () => {
+    expect(calendarFacts(base, members, NOW, NY)).toEqual({
+      meta: 'The whole family · Synced 12 min ago · 23 events coming up',
+      warning: null,
+    });
+    expect(
+      calendarFacts({ ...base, memberIds: ['maya'], upcomingCount: 1 }, members, NOW, NY).meta,
+    ).toBe('Maya’s · Synced 12 min ago · 1 event coming up');
+    expect(
+      calendarFacts(
+        { ...base, lastSyncedAt: '2026-10-20T16:14:40Z', upcomingCount: 0 },
+        members,
+        NOW,
+        NY,
+      ).meta,
+    ).toBe('The whole family · Synced just now · nothing coming up');
+    expect(
+      calendarFacts({ ...base, lastSyncedAt: '2026-10-18T21:48:00Z' }, members, NOW, NY).meta,
+    ).toBe('The whole family · Synced Sun, Oct 18 at 5:48 pm · 23 events coming up');
+  });
+
+  it('[NFR-18-a][CAL-05] one hidden from the boards says so; one not synced yet says that', () => {
+    expect(
+      calendarFacts(
+        {
+          ...base,
+          memberIds: ['maya', 'kit'],
+          showOnBoard: false,
+          status: 'pending',
+          lastSyncedAt: null,
+          lastSuccessAt: null,
+          upcomingCount: 0,
+        },
+        members,
+        NOW,
+        NY,
+      ),
+    ).toEqual({
+      meta: 'Maya and Kit (archived) · Not on the boards · Not synced yet · nothing coming up',
+      warning: null,
+    });
+  });
+
+  it('[NFR-18-b][CAL-06][US-505] one that can’t sync has the warning and says when it last synced', () => {
+    expect(
+      calendarFacts(
+        {
+          ...base,
+          memberIds: ['maya', 'leo'],
+          status: 'error',
+          lastSuccessAt: '2026-10-20T13:15:00Z',
+          upcomingCount: 2,
+        },
+        members,
+        NOW,
+        NY,
+      ),
+    ).toEqual({
+      meta: 'Maya and Leo · last synced 3 h ago · 2 events coming up',
+      warning: 'Can’t sync',
+    });
+    expect(
+      calendarFacts(
+        { ...base, status: 'error', lastSuccessAt: null, upcomingCount: 0 },
+        members,
+        NOW,
+        NY,
+      ),
+    ).toEqual({
+      meta: 'The whole family · never synced · nothing coming up',
+      warning: 'Can’t sync',
+    });
+  });
+
+  it('[NFR-18-e] its times across midnight UTC and the end of daylight saving', () => {
+    // 11:30 pm in New York is 3:30 am UTC: a sync a day ago is named by New York's day and time.
+    expect(
+      calendarFacts(
+        { ...base, lastSyncedAt: '2026-10-20T03:30:00Z' },
+        members,
+        Date.parse('2026-10-21T04:00:00Z'),
+        NY,
+      ).meta,
+    ).toBe('The whole family · Synced Mon, Oct 19 at 11:30 pm · 23 events coming up');
+    // Sunday, Nov 1, 2026: 1:30 am EDT to 7:00 am EST is six and a half hours, not five and a half.
+    expect(
+      calendarFacts(
+        { ...base, lastSyncedAt: '2026-11-01T05:30:00Z' },
+        members,
+        Date.parse('2026-11-01T12:00:00Z'),
+        NY,
+      ).meta,
+    ).toBe('The whole family · Synced 6 h ago · 23 events coming up');
   });
 });

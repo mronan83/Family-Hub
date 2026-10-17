@@ -372,7 +372,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 
 ### US-323 — Chores sorted into four sections
 **As an** admin **I want** the chores and tasks list sorted into Scheduled, Recurring, Completed and Archived **so that** a one-time job that is done stops cluttering the list, and I can see what is coming up at a glance.
-**Priority:** Should · **Phase:** P3 · **Reqs:** CHR-21, NFR-18
+**Priority:** Should · **Phase:** P3 · **Reqs:** CHR-21
 - Given "Book the dentist" is a one-time task due last Monday and not done, when I open Chores, then it is in **Scheduled** under **Overdue**, first, in the missed colour.
 - Given "Clean out the garage" was a one-time chore and Maya and Leo did it, when I open Chores, then it is not in Scheduled; it is in **Completed**, which is folded to "12 done" until I open it.
 - Given "Make bed" repeats every day, when it is done today, then it stays in **Recurring**; a repeating item is never completed.
