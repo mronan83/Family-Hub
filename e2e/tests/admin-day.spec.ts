@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '../support/test';
+import { foldOf, unfold } from '../support/fold';
 import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { addDays, householdToday } from '../support/day';
 import { signIn } from '../support/session';
@@ -220,7 +221,7 @@ test('[CHR-06] late credit for yesterday, then unchecked again; a day ahead skip
   expect(status(tomorrow)).toBe('scheduled');
 });
 
-test('[CHR-05][D-22] with approval on, a child’s check-off waits for a parent: approved, or sent back to try again', async () => {
+test('[CHR-05][D-22][NFR-18-w] with approval on, a child’s check-off waits for a parent: approved, or sent back to try again', async () => {
   // [D-110] About 9 server round trips (three page loads, four saves, the board twice): up to about
   // 40 s on a slow preview, so 3x that.
   test.setTimeout(120_000);
@@ -232,11 +233,23 @@ test('[CHR-05][D-22] with approval on, a child’s check-off waits for a parent:
   if (status(table) !== 'scheduled') systemEvent(table, 'admin_uncomplete');
 
   // [D-84] The switch is in Settings, Family options (WP-57).
+  // [NFR-18-w] Folded to the choice in words (WP-94), and open again after the save, the other
+  // sections folded. This spec owns the household's approval mode, so the fold is checked here.
   await admin.goto('/admin/settings/family');
+  const checkOffs = foldOf(admin, 'Check-offs');
+  await expect(checkOffs).not.toHaveAttribute('open');
+  await expect(checkOffs.locator(':scope > summary')).toContainText(
+    'A child’s check-off counts straight away',
+  );
+  await unfold(checkOffs);
   const form = admin.getByRole('form', { name: 'Check-offs', exact: true });
   await form.getByLabel('It waits for a parent to approve it').check();
   await form.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(admin.getByRole('status')).toContainText('Check-offs now wait for a parent.');
+  await expect(checkOffs).toHaveAttribute('open', '');
+  for (const other of ['The week', 'Weather on the boards', 'Admins', 'Invite an admin']) {
+    await expect(foldOf(admin, other)).not.toHaveAttribute('open');
+  }
   expect(
     sql(`select approval_mode from public.household_settings where household_id = '${DEMO}'`),
   ).toBe('on');
@@ -268,6 +281,7 @@ test('[CHR-05][D-22] with approval on, a child’s check-off waits for a parent:
   ).toBeVisible();
 
   await admin.goto('/admin/settings/family');
+  await unfold(checkOffs);
   await form.getByLabel('It counts straight away; a parent can uncheck it later').check();
   await form.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(admin.getByRole('status')).toContainText('Check-offs now count straight away.');

@@ -3,7 +3,7 @@ import { appendFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '../support/test';
 import { openFromMenu } from '../support/settings';
-import { unfold } from '../support/fold';
+import { foldOf, unfold } from '../support/fold';
 import { addDays, householdToday } from '../support/day';
 import { withSchoolDays } from '../support/school';
 import { signIn as signInAs } from '../support/session';
@@ -449,6 +449,8 @@ test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', asy
   const times: string[] = [];
   await signIn(page, 'Alex');
   await page.getByRole('link', { name: 'Tags', exact: true }).click();
+  // [NFR-18] Add a tag, folded to its button; each tag's Edit a fold (WP-94).
+  await unfold(foldOf(page, 'Add a tag'));
   const add = page.getByRole('form', { name: 'Add a tag' });
   await add.getByLabel('Name').fill('Tidy-up');
   await pick(add, 'Green');
@@ -488,7 +490,7 @@ test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', asy
     .getByRole('list', { name: 'Tags' })
     .getByRole('listitem')
     .filter({ hasText: 'Tidy-up' });
-  await row.getByText('Edit Tidy-up').click();
+  await unfold(foldOf(page, 'Edit Tidy-up'));
   const edit = row.getByRole('form', { name: 'Edit Tidy-up' });
   await edit.getByLabel('Name').fill('Tidy-up time');
   await edit.getByRole('button', { name: 'Save tag' }).click();
@@ -507,7 +509,7 @@ test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', asy
     .getByRole('list', { name: 'Tags' })
     .getByRole('listitem')
     .filter({ hasText: 'Tidy-up time' });
-  await renamed.getByText('Edit Tidy-up time').click();
+  await unfold(foldOf(page, 'Edit Tidy-up time'));
   await renamed.getByRole('button', { name: 'Archive Tidy-up time' }).click();
   await expect(page.getByRole('list', { name: 'Archived tags' })).toContainText('Tidy-up time');
   await page.goto('/admin/chores');

@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.40: the set-up pages folded (WP-94, D-120, D-133): Family options, School and a school year's page, Tags, Reminders and Health fold each section set once to what it is set to; a failing weather read, the invites waiting, a device removed, a failing job and a limit near show on the folded header; the section saved in comes back open; Home's **Add a day off** a fold too (A1, A2, A3, A10, A13, B1.1, B1.4, B1.5, B1.10, B1.13, B1.16).
 > v0.39: Calendars, School menus and the meal library folded (WP-93, D-120, D-131): each calendar folded to its colour, name and facts with **Can't sync** on its header, each school menu to its facts with **Can't fetch** on its header; **Add a calendar**, **Add a school menu** and **Add a meal** folded to their buttons; the library's **Archived** to its count; a calendar or menu comes back open after a save in it (A9, A15, B1.11, B1.15).
 > v0.38: the goal form as its mockups draw it (WP-101, D-128): a rule folds to one line with its weight; summaries on the form say what this week asks ("This week Homework home is due 4 days for Maya (Friday, Oct 16 is a teacher planning day)…") and change as you fill it in; items with their picture; dates written "Mon, Oct 12, 2026" (A7, A7b, A7c).
 > v0.37: the admin app's form controls drawn the same on an iPhone and a computer (WP-100, D-127): fields, lists, dates, radios and check boxes in the app's own look; **Repeats** as chips; the goal form's parts in boxes; **Something else** and **Set the goal**; the icon picker folded to the icon chosen in every form; **Choose a photo** for a photo (A7, B1).
@@ -137,11 +138,11 @@ On the **Sign in** page, either:
 
 Both parents can run FamilyWise. Each has their own sign-in.
 
-1. In **Settings**, open **Family options**. Under **Invite an admin**, enter **Their email**.
+1. In **Settings**, open **Family options**. Open **Invite an admin** (folded to its **Invite** button) and enter **Their email**.
 2. Choose **Create invite link**.
 3. Choose **Copy link** (or **Share** on a phone) and send it to them yourself. No email is sent for you.
 
-The link works once, for 7 days, and only for the email it names. Anyone with the link can use it, so share it only with them. While it waits it is listed under **Waiting to join**, where **Cancel invite** cancels it. A new invite to the same email replaces the open one.
+The link works once, for 7 days, and only for the email it names. Anyone with the link can use it, so share it only with them. While it waits it is listed under **Waiting to join**, where **Cancel invite** cancels it, and the folded header says how many wait and when the first runs out ("1 waiting · runs out in 2 days"). A new invite to the same email replaces the open one.
 
 **For the person invited:** open the link. It says **Join** and the household's name.
 
@@ -195,7 +196,7 @@ The board shows the family's day at once. From then on it keeps itself signed in
 
 **Home** is the first page you see. It shows what needs you, then the things you do most, a tap away.
 
-![Home on a laptop: Needs you lists 2 check-offs wait for you (Review), 1 reward request waits for you (Decide), and School can't sync (Calendars); Heads-up says Den hasn't been seen for 3 days (Boards) and No school menu for next week yet (School menus). Below, Quick actions: Add a chore, Add a task, Add a reward and Add a goal, then Add a meal (Plan a meal, New in the library), School lunches (This week: Maya has 1 day to pick; Leo is all set. Pick lunches), School today (No school today, Add a day off…) and School menu (Refresh school menu).](guide/img/admin-home-laptop.jpg "Home, on a laptop")
+![Home on a laptop: Needs you lists 2 check-offs wait for you (Review), 1 reward request waits for you (Decide), and School can't sync (Calendars); Heads-up says Den hasn't been seen for 3 days (Boards) and No school menu for next week yet (School menus). Below, Quick actions: Add a chore, Add a task, Add a reward and Add a goal, then Add a meal (Plan a meal, New in the library), School lunches (This week: Maya has 1 day to pick; Leo is all set. Pick lunches), School today (No school today, Add a day off) and School menu (Refresh school menu).](guide/img/admin-home-laptop.jpg "Home, on a laptop")
 
 - **Needs you** lists what needs you now, each with a button to where you deal with it: check-offs and reward requests waiting for you, a calendar that can't sync, a school menu that can't be read, and a background job that needs a look.
 - **Heads-up** lists what to know soon: no school menu for next week yet, no school year set up (or this one ending within two weeks), weather that hasn't updated, an invite about to run out, and a board that hasn't been seen for a day (switched off, or off the Wi-Fi; a board asleep overnight doesn't count).
@@ -206,7 +207,7 @@ The board shows the family's day at once. From then on it keeps itself signed in
 - **Add a chore**, **Add a task**, **Add a reward** and **Add a goal** open the page that adds one.
 - **Add a meal**: **Plan a meal** puts a meal on a day of the week; **New in the library** adds a meal you make again.
 - **School lunches** says whose days still need a lunch choice ("This week: Maya has 1 day to pick; Leo is all set."). **Pick lunches** opens **School lunch** on **Meals** in one tap: this week from Monday to Friday, next week on Saturday and Sunday, on the child you chose last on this phone or computer. Tap another child's face there to switch. It shows when a child has school lunch.
-- **School today**: **No school today** makes today a snow day in one tap. Today's school-day items (like homework) go at once; anything already checked off stays; the board shows a day off school. **Undo** makes it a school day again. **Add a day off…** adds a day off or a break on another date, without leaving Home.
+- **School today**: **No school today** makes today a snow day in one tap. Today's school-day items (like homework) go at once; anything already checked off stays; the board shows a day off school. **Undo** makes it a school day again. **Add a day off** (a fold) adds a day off or a break on another date, without leaving Home.
 - **Refresh school menu** reads your school menu feeds now, rather than waiting for the morning.
 
 ![Home on a phone in Evening, on a quiet day: Nothing needs you right now; the four add tiles two by two; Add a meal; School lunches with Pick lunches; School today says No school today: Snow day with Undo.](guide/img/admin-home-phone.jpg "Home on a phone, on a snow day")
@@ -237,12 +238,12 @@ When a child changes a day's lunch on the board, Buy or Bring or what they picke
 
 #### Approval: on or off
 
-In **Settings**, open **Family options**. Under **Check-offs**, choose what happens **When a child checks something off**:
+In **Settings**, open **Family options**, then **Check-offs** (folded to the choice in words). Choose what happens **When a child checks something off**:
 
 - **It counts straight away; a parent can uncheck it later** (the default). Points arrive at once. You check in real life and use **Uncheck** or **Not actually done** if needed.
 - **It waits for a parent to approve it.** The board shows **Waiting for a parent** and no points arrive until you approve.
 
-Choose **Save**. Switching changes only what is still to do: check-offs already waiting stay in **Waiting for you**, and ones already done stay done.
+Choose **Save**: **Check-offs** comes back open. Switching changes only what is still to do: check-offs already waiting stay in **Waiting for you**, and ones already done stay done.
 
 Approval applies only to members who earn rewards. A check-off by someone who doesn't earn rewards, like most adults, always counts straight away. Each item can also be set to **Always needs a parent's OK** or **Never needs a parent's OK**, under **Approval** in **More options** on its page.
 
@@ -297,10 +298,10 @@ They go back to open (or to missed, if their day is over), and their points are 
 
 1. On an iPhone or iPad, first add FamilyWise to your Home Screen (**Share**, then **Add to Home Screen**) and open it from there.
 2. On **Reminders**, choose **Turn on reminders**. Your browser asks to allow notifications: allow them.
-3. Under **My devices**, choose **Send a test**. A notification should arrive in a moment.
+3. Open **My devices** and choose **Send a test**. A notification should arrive in a moment.
 4. Do the same on each phone or computer you want reminders on (the button then reads **Add this device**).
 
-Then set **When to remind me** and choose **Save**:
+Then open **When to remind me**, set it and choose **Save**:
 
 | Setting | What it does |
 |---|---|
@@ -320,9 +321,11 @@ A reminder shows the item's name and when it is due ("Due at 3:00 pm", "Due toda
 
 The alert is only for a check-off that waits for you. With approval off in **Family options** (the default), a child's check-off counts straight away and brings no alert, unless its item is set to **Always needs a parent's OK**. To hear about every check-off, turn approval on: see [Approval: on or off](#approval-on-or-off).
 
+Folded, **My devices** says how many devices you have, which are on and when one was last reached; **When to remind me** says your settings in one line ("15 minutes before · no due time at 8:00 am · digest at 7:00 am · quiet 9:00 pm to 7:00 am · approvals on"). The one you just saved in comes back open.
+
 Reminders come only for items you are on, at most once each, and never after the item is done. **Turn off reminders** stops them all; your devices stay listed for when you **Turn reminders back on**.
 
-![The Reminders page on a phone: reminders on, two devices with Send a test, Switch off and Remove, and the When to remind me settings.](guide/img/admin-reminders-phone.jpg "Reminders, on a phone")
+![The Reminders page on a phone: reminders on; My devices opened, two devices each with Send a test, Switch off and Remove; When to remind me folded to its settings in one line.](guide/img/admin-reminders-phone.jpg "Reminders, on a phone")
 
 ### A4 Setting up chores and tasks
 <!-- covers: US-301 US-302 US-308 US-311 US-312 US-313 US-314 US-315 US-320 US-321 -->
@@ -828,9 +831,11 @@ Every date is one **day type** for each person:
 
 An item's **On these days** (under **More options**) says which day types it happens on; all are ticked to start. Untick to make, for example, homework happen on **School days** only.
 
-1. On **School**, under **Add a school year**, enter a **Name** (like "2026–27"), optionally the **School**, the **First day** and **Last day**. Keep **Default** ticked, and choose **Add school year**.
-2. Choose **Open** on the year. Under **Breaks and days off**, add each one: a **Name**, its **Kind**, **From** and optionally **To**, then **Add day off**. A break makes its weekdays "Break"; any other kind makes them "Day off school".
-3. Optionally, add **Terms** for reference.
+1. On **School**, open **Add a school year** (folded to its **Add a year** button; open at first while there is none) and enter a **Name** (like "2026–27"), optionally the **School**, the **First day** and **Last day**. Keep **Default** ticked, and choose **Add school year**.
+2. Choose **Open** on the year. Open **Breaks and days off**, then **Add a day off**, and add each one: a **Name**, its **Kind**, **From** and optionally **To**, then **Add day off**. A break makes its weekdays "Break"; any other kind makes them "Day off school".
+3. Optionally, add **Terms** for reference (**Terms**, then **Add a term**).
+
+On a year's page the timeline stays open; **Breaks and days off**, **Terms**, **Who follows it** and **Dates and name** fold to what they hold ("4 days off · next: Teacher day, Fri, Oct 23", "2 terms: Fall, Spring"), and **Archive** is last. The one you just saved in comes back open.
 
 The top of **School** shows what kind of day today is for each person. A year's page shows a timeline of its days.
 
@@ -881,7 +886,7 @@ Both looks use the same colors for the same things, never color alone: every sta
 ### A13 Weather on the board
 <!-- covers: US-1003 -->
 
-**What this is.** The sky, the temperature now and today's high, beside the clock on the board. **When.** Once, to set your place; after that it looks after itself. **How.** In **Settings**, open **Family options**; it's under **Weather on the boards**.
+**What this is.** The sky, the temperature now and today's high, beside the clock on the board. **When.** Once, to set your place; after that it looks after itself. **How.** In **Settings**, open **Family options**, then **Weather on the boards** (folded to the place, °F or °C and the last reading).
 
 1. Under **Town or ZIP code**, type your town's name or a US ZIP code, and choose **Find**.
 2. Under the places it found, choose **Use this** beside yours. Each is named with its state and country, so two towns with the same name are easy to tell apart.
@@ -896,7 +901,7 @@ Family options says "Saved. The boards show the weather in a moment." and, once 
 Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credit is here and in Family options, beside where you set your place, rather than on the board.
 
 - **How fresh it is.** FamilyWise reads the weather every 30 minutes. The board never asks the weather service itself, so it costs the board nothing.
-- **When it can't be read.** If the weather can't be read, or the last reading is more than 75 minutes old, the board simply shows no weather; nothing else on it moves. Family options says what went wrong ("Couldn't read the weather at …"), Home lists it under **Heads-up**, and tries again on its own.
+- **When it can't be read.** If the weather can't be read, or the last reading is more than 75 minutes old, the board simply shows no weather; nothing else on it moves. Family options says what went wrong ("Couldn't read the weather at …"), its folded header says "Not updated since" the last good reading, Home lists it under **Heads-up**, and tries again on its own.
 - **Offline.** A board without the internet keeps showing its last reading for the rest of that day.
 - **One board without it.** Untick **Show the weather beside the clock** in that board's layout on **Boards** (see [A11](#a11-the-boards-home-screen-layout)).
 - **Stop it everywhere.** **Stop showing the weather** in Family options forgets your place.
@@ -1097,7 +1102,7 @@ The admin app is for parents, on a phone or a laptop. On a laptop its menu is do
 | The household | Its name and today's date. |
 | **Needs you** | Check-offs and reward requests waiting for you, calendars that can't sync, school menus that can't be read and background jobs that need a look, each with a button to where you deal with it (**Review**, **Decide**, **Calendars**, **School menus**, **Health**). "Nothing needs you right now." when there's none. |
 | **Heads-up** | No school menu for next week, no school year (or one ending within two weeks), weather that hasn't updated, an invite about to run out. Shown only when there is one. |
-| **Quick actions** | **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**. **Add a meal**: **Plan a meal**, **New in the library**. **School lunches**: whose days still need a choice this week (next week at the weekend), and **Pick lunches**, which opens the lunch week on the child chosen last. **School today**: **No school today** (then "No school today: Snow day" and **Undo**), or "No school today: the weekend" or the day off's name; **Add a day off…** opens **Name**, **Kind**, **From**, **To (optional)** and **Add day off**. **School menu**: **Refresh school menu**, or **Set up school menus** when there's no feed. |
+| **Quick actions** | **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**. **Add a meal**: **Plan a meal**, **New in the library**. **School lunches**: whose days still need a choice this week (next week at the weekend), and **Pick lunches**, which opens the lunch week on the child chosen last. **School today**: **No school today** (then "No school today: Snow day" and **Undo**), or "No school today: the weekend" or the day off's name; **Add a day off**, a fold, opens **Name**, **Kind**, **From**, **To (optional)** and **Add day off**. **School menu**: **Refresh school menu**, or **Set up school menus** when there's no feed. |
 
 Messages: "No school today. Today's chores follow a day off school.", "Today is a school day again.", "Day off saved.", "School menus fetched.", "A school menu couldn't be fetched. School menus says why."
 
@@ -1131,10 +1136,10 @@ Messages: "Approved 2 lunch changes.", "Kept the day as it was.", "… was past 
 |---|---|
 | State | "On. Reminders come to the devices below.", "On, but no device is switched on: nothing comes yet." or "Off. Nothing is sent to you." |
 | Buttons | **Turn on reminders** (first time, on this device), **Add this device**, **Turn reminders back on**, **Turn off reminders**. |
-| **My devices** | Each phone or computer: on or off, when added, when last reached. **Send a test**, **Switch off** / **Switch on**, **Remove**. |
-| **When to remind me** | The settings in [A3](#a3-reminders-on-your-phone), then **Save**. |
+| **My devices** | Folded to how many devices, on or off, and when one was last reached ("2 devices, 1 on, 1 off · last reached 9:14 am"). Opened: each phone or computer: on or off, when added, when last reached. **Send a test**, **Switch off** / **Switch on**, **Remove**. |
+| **When to remind me** | Folded to the settings in one line. Opened: the settings in [A3](#a3-reminders-on-your-phone), then **Save**. |
 
-If a device can no longer get notifications, it is removed and the page says so: turn reminders on there again.
+If a device can no longer get notifications, it is removed and the page says so, with **1 removed** on **My devices**' folded header: turn reminders on there again. The section you saved in, or acted on a device in, comes back open.
 
 #### B1.5 Chores
 <!-- covers: US-301 US-312 US-315 -->
@@ -1169,7 +1174,7 @@ If a device can no longer get notifications, it is removed and the page says so:
 
 **An item's page** also shows **Coming up** (the next two weeks, with who), **Last 7 days** (each day's result and who did it), and **Archive** / **Restore**.
 
-**Tags page:** **Name** (up to 30), **Color**, **Icon (optional)**, **Add tag**; **Our tags** with how many items use each (a link to them); **Edit**, **Save tag**, **Archive**; **Archived** with **Restore**.
+**Tags page:** **Add a tag**, folded to its button (open while there is no tag): **Name** (up to 30), **Color**, **Icon (optional)**, **Add tag**; **Our tags**, open, with how many items use each (a link to them), each with **Edit** (name), a fold: **Save tag**, then **Archive** apart; **Archived**, folded to its count and names ("1 archived: Garden"), with **Restore**. A tag you saved comes back with its **Edit** open, and **Archived** comes back open after an archive.
 
 #### B1.6 Members
 <!-- covers: US-104 US-1106 US-1109 -->
@@ -1229,11 +1234,11 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 |---|---|
 | Today | Each person's day type today, and which school year they follow. |
 | **School years** | Each year: name, **Default** badge, dates, school; **Open**. |
-| **Lunch changes** | **Today's lunch can change until** (8:00 am to start, household time), **Save the cut-off**. After it a day is locked on the board, and a child's change still waiting is dropped. |
-| **Add a school year** | **Name**, **School (optional)**, **First day**, **Last day**, **Default**, **Add school year**. |
-| **Archived** | Archived years, with **Open**. |
+| **Lunch changes** | Folded to the cut-off ("Today's lunch can change until 8:00 am"). **Today's lunch can change until** (8:00 am to start, household time), **Save the cut-off**. After it a day is locked on the board, and a child's change still waiting is dropped. |
+| **Add a school year** | Folded to its **Add a year** button (open while there is none). **Name**, **School (optional)**, **First day**, **Last day**, **Default**, **Add school year**. |
+| **Archived** | Folded to its count and names. Archived years, with **Open**. |
 
-**A school year's page:** a timeline of its days; **Breaks and days off** (each with **Remove**; **Name**, **Kind**: **Break**, **Holiday**, **Teacher day**, **Snow day**, **Other day off**; **From**, **To (optional)**, **Add day off**); **Terms** (**Add term**, **Remove**); **Who follows it** (**Save who follows it**); **Dates and name** (**Save changes**); **Archive** / **Restore**. Archiving stops it applying (anyone following it goes back to the default); its days off stay as a record.
+**A school year's page:** a timeline of its days, open; then, each folded to what it holds: **Breaks and days off** (how many days off and the next; each with **Remove**; **Add a day off**, a fold: **Name**, **Kind**: **Break**, **Holiday**, **Teacher day**, **Snow day**, **Other day off**; **From**, **To (optional)**, **Add day off**); **Terms** (their names; **Remove**; **Add a term**, a fold: **Add term**); **Who follows it** (their names; **Save who follows it**); **Dates and name** (the dates and school; **Save changes**); **Archive** / **Restore**, last. Archiving stops it applying (anyone following it goes back to the default); its days off stay as a record. The section you saved in comes back open; archiving goes back to **School** with **Archived** open.
 
 #### B1.11 Calendars
 <!-- covers: US-501 US-504 US-505 US-111 -->
@@ -1269,11 +1274,13 @@ Every section starts folded: tap its header to open it, tap again to fold it. Af
 
 **System health** says whether everything behind the scenes is working: "Everything is running normally.", or which background jobs need attention, which calendars can't sync, and whether usage is near a free-plan limit.
 
+The verdict stays open; the three parts below fold to their counts, and a problem shows on the folded header: a failing or late job by name ("Calendar sync: Failing"), and "Near a limit" with the limit's name.
+
 | Part | What it shows |
 |---|---|
-| **Background jobs** | Each job (**Day close**, **Occurrence gen**, **Calendar sync**, **Reminders**, **Progress reconcile**, **Status check**, **Heartbeat**, **Purge history**) with when it last worked and its state: **Running fine**, **Running now**, **Late**, **Failing** or **Not run yet**. |
-| **Server errors** | Your household's server errors in the last 30 days, newest first. |
-| **Usage** | Use against the free plans' monthly limits, with FamilyWise's own share. Vercel's figures are read once a day. |
+| **Background jobs** | Folded to how many run fine and how many fail, are late or haven't run. Opened: each job (**Day close**, **Occurrence gen**, **Calendar sync**, **Reminders**, **Progress reconcile**, **Status check**, **Heartbeat**, **Purge history**) with when it last worked and its state: **Running fine**, **Running now**, **Late**, **Failing** or **Not run yet**. |
+| **Server errors** | Folded to how many in the last 30 days and the day of the latest. Opened: your household's server errors in the last 30 days, newest first. |
+| **Usage** | Folded to the highest share of a free plan ("Highest: Database, 31% of the free plan"). Opened: use against the free plans' monthly limits, with FamilyWise's own share. Vercel's figures are read once a day. |
 
 The jobs that matter most to the family: **Occurrence gen** plans the next two weeks, **Day close** closes each day, **Calendar sync** reads calendars, **Reminders** sends reminders, **Progress reconcile** works out goals.
 
@@ -1308,18 +1315,18 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 #### B1.16 Family options
 <!-- covers: US-110 US-310 US-103 US-1003 -->
 
-In **Settings**, the first tile. It says the day the week starts on and how check-offs count.
+In **Settings**, the first tile. It says the day the week starts on and how check-offs count. Each section is folded to what it is set to; the one you saved in comes back open.
 
-![Family options on a phone: The week (starts on Sunday; from Monday, Oct 19, it starts on Monday), with Start the week on, Save and Keep Sunday; Check-offs with its two choices one to a line; then Weather on the boards.](guide/img/admin-family-phone.jpg "Family options, on a phone")
+![Family options on a phone, every section folded: The week (Starts on Sunday · from Monday, Oct 19 it starts on Monday), Check-offs (A child's check-off counts straight away; a parent can uncheck it later), Weather on the boards (Springfield, Illinois, United States · °F · last reading 54°F), Admins (Alex (Owner) · Sam (Admin)) and Invite an admin (1 waiting · runs out in 2 days, and its Invite button).](guide/img/admin-family-phone.jpg "Family options, on a phone")
 
 | Part | What it shows or does |
 |---|---|
 | The household | Its name, timezone, and who you are signed in as. |
-| **The week** | The day the week starts on. **Start the week on** and **Save**: a change starts with the next week (the page says from which day), so this week's weekly limits, goals and streaks aren't cut short. **Keep** (the day it is now) cancels a change. |
-| **Check-offs** | **When a child checks something off**: **It counts straight away; a parent can uncheck it later** or **It waits for a parent to approve it**. **Save** applies it to what's still to do. |
-| **Weather on the boards** | The place the boards show the weather for, and the last reading (or why it failed). **Town or ZIP code** (or **Change the place**) and **Find**; **Use this** on a place found; **Show temperatures in**: **Fahrenheit (°F)** or **Celsius (°C)**, **Save**; **Stop showing the weather**. |
-| **Admins** | Everyone who can manage the household, as **Owner** or **Admin**. |
-| **Invite an admin** | **Their email**, **Create invite link**, then **Copy link** or **Share**. **Waiting to join** lists open invites with when they expire, and **Cancel invite**. |
+| **The week** | Folded to the start day, and a change waiting with the day it starts. The day the week starts on. **Start the week on** and **Save**: a change starts with the next week (the page says from which day), so this week's weekly limits, goals and streaks aren't cut short. **Keep** (the day it is now) cancels a change. |
+| **Check-offs** | Folded to the choice in words. **When a child checks something off**: **It counts straight away; a parent can uncheck it later** or **It waits for a parent to approve it**. **Save** applies it to what's still to do. |
+| **Weather on the boards** | Folded to the place, °F or °C and the last reading; "Not updated since" on the header when a read failed. The place the boards show the weather for, and the last reading (or why it failed). **Town or ZIP code** (or **Change the place**) and **Find**; **Use this** on a place found; **Show temperatures in**: **Fahrenheit (°F)** or **Celsius (°C)**, **Save**; **Stop showing the weather**. |
+| **Admins** | Folded to their names and roles. Everyone who can manage the household, as **Owner** or **Admin**, with their email. |
+| **Invite an admin** | Folded to its **Invite** button, with how many invites wait and when the first runs out. **Their email**, **Create invite link**, then **Copy link** or **Share**. **Waiting to join** lists open invites with when they expire, and **Cancel invite**. |
 
 ### B2 The board, screen by screen
 

@@ -164,7 +164,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | ACC-05 | US-105 | WP-03, WP-32 | DB, ADM | audit_log | DB, E2E | DB 20 |
 | ACC-06 | US-106 | WP-38 | ADM, SAUTH | household_user | E2E | — |
 | ACC-07 | US-108 | WP-55 | ADM, API, VAULT | household_settings | U, DB, E2E | — |
-| ACC-08 | US-110 | WP-57 | ADM, DB, SCHED | household, household_settings | DB, U, E2E | U 2 · DB 13 · UI 3 · E2E 1 |
+| ACC-08 | US-110 | WP-57 | ADM, DB, SCHED | household, household_settings | DB, U, E2E | U 2 · DB 13 · UI 4 · E2E 1 |
 | DEV-01 | US-201 | WP-05 | ADM, API, AUTH, BRD, SAUTH | device_pairing, device | E2E, DB | U 1 · DB 13 · UI 1 · E2E 2 |
 | DEV-02 | US-201, US-202 | WP-05, WP-59 | AUTH, DB, SAUTH | device | DB | U 4 · DB 26 · E2E 3 |
 | DEV-03 | US-202 | WP-05 | ADM, AUTH | device | E2E | U 2 · DB 7 · UI 1 · E2E 1 |
@@ -183,12 +183,12 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CHR-07 | US-307, US-314 | WP-10 | DB, SCHED, BRD, ADM | chore_occurrence, chore_completion_event | DB, U, E2E | U 5 · DB 15 · E2E 1 |
 | CHR-08 | US-309 | WP-12 | ADM, API, DB | chore_completion_event, points_ledger | E2E, DB | U 2 · DB 1 · UI 2 · E2E 1 |
 | CHR-09 | US-304, US-311, US-316, US-320 | WP-08, WP-09, WP-10, WP-43 | ADM, BRD, API, OCCGEN, DB | chore_assignee, chore_occurrence_assignee, chore_completion_event | DB, E2E | U 8 · DB 15 · UI 1 · E2E 3 |
-| CHR-10 | US-312 | WP-08, WP-15, WP-19, WP-46, WP-83 | ADM, RULES, DB | tag, chore_tag, reward_rule | DB, U, E2E | U 9 · DB 8 · UI 2 · E2E 2 |
+| CHR-10 | US-312 | WP-08, WP-15, WP-19, WP-46, WP-83 | ADM, RULES, DB | tag, chore_tag, reward_rule | DB, U, E2E | U 9 · DB 8 · UI 3 · E2E 2 |
 | CHR-11 | US-313 | WP-08, WP-09, WP-11 | ADM, BRD, OCCGEN | chore, chore_occurrence | E2E, U | U 9 · DB 5 · UI 1 · E2E 2 |
 | CHR-12 | US-303, US-314 | WP-09, WP-10, WP-11 | OCCGEN, SCHED, DB, BRD | chore_occurrence | DB, INT, E2E | U 5 · DB 9 · UI 2 · E2E 1 |
 | CHR-13 | US-315 | WP-08 | ADM, BRD, API, DB | chore, chore_assignee, chore_tag, audit_log | U, DB, E2E | U 4 · DB 28 · E2E 3 |
 | CHR-14 | US-316 | WP-12 | ADM | chore_occurrence_assignee | E2E | U 4 · DB 7 · UI 6 · E2E 2 |
-| CHR-15 | US-317 | WP-40 | NOTIFY, ADM, DB | push_subscription, reminder_preference | E2E, DB, U | U 8 · DB 3 · UI 4 · E2E 4 |
+| CHR-15 | US-317 | WP-40 | NOTIFY, ADM, DB | push_subscription, reminder_preference | E2E, DB, U | U 8 · DB 3 · UI 5 · E2E 4 |
 | CHR-16 | US-318 | WP-40 | NOTIFY, SCHED, ADM, DB | chore_assignee, reminder_delivery | DB, INT, E2E, U | U 5 · DB 6 · UI 2 · E2E 6 |
 | CHR-17 | US-319 | WP-40 | NOTIFY, ADM, DB | reminder_preference, reminder_delivery | DB, INT, E2E, U | U 2 · DB 2 · UI 1 · E2E 2 |
 | CHR-18 | US-320 | WP-43 | ADM, OCCGEN, DB | chore, chore_occurrence | DB, U, E2E | U 5 · DB 21 · E2E 2 |
@@ -227,8 +227,8 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CAL-08 | US-506 | WP-29 | CALSYNC, VAULT | calendar_source | INT | — |
 | CAL-09 | US-508 | WP-50 | ADM, BRD, DB | calendar_source, calendar_member | DB, E2E | U 8 · DB 24 · UI 4 · E2E 1 |
 | CAL-10 | US-509 | WP-52 | BRD, CALSYNC, DB | calendar_event, calendar_event_instance | U, DB, E2E | U 4 · DB 8 · UI 1 · E2E 1 |
-| SCH-01 | US-601 | WP-21 | ADM, DB | school_year, school_term, school_closure, member_school_profile | U, DB, E2E | U 10 · DB 13 · UI 2 · E2E 5 |
-| SCH-02 | US-602 | WP-21 | DB | resolve_day_type | DB, E2E | DB 14 · E2E 3 |
+| SCH-01 | US-601 | WP-21 | ADM, DB | school_year, school_term, school_closure, member_school_profile | U, DB, E2E | U 10 · DB 13 · UI 4 · E2E 5 |
+| SCH-02 | US-602 | WP-21 | DB | resolve_day_type | DB, E2E | DB 14 · UI 1 · E2E 3 |
 | SCH-03 | US-302, US-602 | WP-09, WP-21 | OCCGEN, DB | chore, chore_occurrence | DB, E2E | DB 17 · E2E 1 |
 | SCH-04 | US-603 | WP-36 | ADM, CALSYNC | school_closure, calendar_event_instance | INT | — |
 | SCH-05 | US-604 | WP-54 | ADM, BRD, DB | school_year, school_day_change | U, DB, E2E | — |
@@ -271,11 +271,11 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-04 | US-102, US-901 | WP-02, WP-03, WP-05 | DB, VAULT, SAUTH, API | all tables | DB, REV | U 1 · DB 82 |
 | NFR-05 | US-902 | WP-33 | ADM, API, DB | household, member | E2E, INT | U 1 |
 | NFR-06 | US-907 | WP-10 | DB, API | chore_completion_event | DB, U, E2E | U 7 · DB 20 |
-| NFR-07 | US-904 | WP-07, WP-42 | OBS, API, SCHED | job_run, private.job_schedule, private.app_error | U, DB, E2E, REV | U 43 · DB 28 · UI 1 · E2E 4 |
-| NFR-08 | US-909 | WP-01, WP-41, WP-42 | CICD, OBS | private.usage_sample | U, DB, E2E, REV | U 5 · DB 11 · E2E 1 |
+| NFR-07 | US-904 | WP-07, WP-42 | OBS, API, SCHED | job_run, private.job_schedule, private.app_error | U, DB, E2E, REV | U 43 · DB 28 · UI 2 · E2E 4 |
+| NFR-08 | US-909 | WP-01, WP-41, WP-42 | CICD, OBS | private.usage_sample | U, DB, E2E, REV | U 5 · DB 11 · UI 1 · E2E 1 |
 | NFR-09 | US-101, US-901 | WP-02 | DB | all tables | DB | DB 4 |
 | NFR-10 | US-903 | WP-24 | DB | — | REV | — |
-| NFR-11 | US-906 | WP-31, WP-46 | BRD, ADM, UI | — | E2E, REV | U 4 · UI 28 |
+| NFR-11 | US-906 | WP-31, WP-46 | BRD, ADM, UI | — | E2E, REV | U 4 · UI 29 |
 | PTS-01 | US-309, US-1101, US-1106 | WP-16 | DB, API, ADM | points_ledger, chore_occurrence | DB, U, E2E | U 10 · DB 42 · E2E 5 |
 | PTS-02 | US-1102 | WP-11, WP-16, WP-20 | BRD, DB | v_points_balance, points_ledger | E2E | U 4 · DB 11 · UI 1 · E2E 2 |
 | PTS-03 | US-1103 | WP-18 | ADM, API, BRD | reward_catalog_item | E2E, DB | U 5 · DB 6 · UI 4 · E2E 1 |
@@ -289,7 +289,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-15 | US-107 | WP-51 | ADM, UI | chore_occurrence, tag, calendar_source, device, reminder_preference | U, E2E | U 2 · UI 6 · E2E 1 |
 | NFR-16 | US-912 | WP-53, WP-71, WP-100, WP-101 | ADM, BRD, UI | — | E2E, CI | U 17 · DB 10 · UI 17 |
 | NFR-17 | US-109 | WP-57 | ADM, DB, UI | chore_occurrence, redemption, device, calendar_source, menu_source, school_closure | U, DB, E2E | U 11 · DB 2 · UI 4 · E2E 2 |
-| NFR-18 | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | ADM, UI | — | U, E2E | U 11 · UI 6 · E2E 1 |
+| NFR-18 | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | ADM, UI | — | U, E2E | U 31 · UI 15 · E2E 3 |
 | NFR-19 | US-913 | WP-85, WP-86 | CICD | — | CI, U | U 6 |
 
 ---
@@ -306,7 +306,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 
 - Requirements: **134** · with at least one story: **134** · stories: **120** (P0: 12 · P1: 52 · P2: 30 · P3: 26).
 - With at least one work package: **134** · work packages: **99**.
-- Tests: **2648** (2141 name a requirement) · built requirements with a test: **117 of 117** · known test gaps: **104** (`08` §9.6).
+- Tests: **2677** (2170 name a requirement) · built requirements with a test: **117 of 117** · known test gaps: **104** (`08` §9.6).
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -469,6 +469,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.150 | WP-94 The set-up pages folded (NFR-18, US-111, D-120, D-133), from the fold audit the owner approved on 16 October. No migration. Family options, School and a school year's page, Tags, Reminders and Health fold each section set once to its facts (`setup-facts.ts`: the week, check-offs, weather, admins, invites waiting; the cut-off, Archived, days off, terms, who follows, dates; devices, reminder settings; jobs, errors, usage), with a failing weather read, a removed device, a failing or late job and a limit near as the header's warning and the invites waiting in amber (`Fold`'s `waiting`); the section saved in comes back open; Home's Add a day off a fold. Tests: `setup-facts.test.ts`, `components.test.tsx`, UI suite `setup-folds.spec.ts`, e2e `admin-day.spec.ts`, `health.spec.ts`. |
 | 0.8.149 | WP-96 widened at the owner's request, recorded only (CHR-21, CHR-22, CHR-23, NFR-18, US-323, US-324, US-325, D-132): Chores in four sections (Scheduled, Recurring, Completed, Archived), person chips, two-line rows with a ⋯ menu, Duplicate and Do again, and the same ⋯ row on the Meal library and Tags; the owner approved its mockup with every recommendation, and asked that it be checked in Safari on an iPhone and on a Mac. No code. |
 | 0.8.148 | WP-93 Calendars, school menus and the meal library folded (NFR-18, US-111, D-120, D-131), from the fold audit the owner approved on 16 October. No migration. Each calendar a row of the shared `Fold` with `calendarFacts()` (who it's for, on the boards or not, its sync, how many events are coming up) and **Can't sync** on its header, opened to what's coming up, then **Edit** and **Remove** as folds; each school menu a row with `menuFacts()` (where it comes from, whose lunch, its fetch, its days) and **Can't fetch** on its header, opened to its weeks, **Load a file into** and **Add a day to** as folds, then **Fetch now**, **Rename** and **Remove** set apart; **Add a calendar**, **Add a school menu** and **Add a meal** folded to their buttons, the library's **Archived** to its count; a calendar or menu open again after a save in it. Tests: `calendars.test.ts`, `menus.test.ts`, UI suite `calendars.spec.ts`, `menus.spec.ts`, `meals.spec.ts`, e2e `calendar-fold.spec.ts`. |
 | 0.8.147 | WP-98 The e2e findings log (NFR-14, D-121, D-130): `scripts/e2e-findings.mjs` writes one comment per e2e run with a failed test to the issue "E2E findings log" (re-runs included, counts over the last 30 runs, redacted), and lists repeats in the run summary; `scripts/e2e-run.mjs --findings`; `e2e.yml` gains `workflow_dispatch` and a `guard` job (`scripts/e2e-guard.mjs`: `main` only, never while another e2e run is queued or going); tests: node:test `scripts/e2e-findings.test.mjs` (NFR-14-i to NFR-14-m), `scripts/e2e-guard.test.mjs` (NFR-14-n), and the run script's self-test |

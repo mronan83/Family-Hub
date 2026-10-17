@@ -6,7 +6,9 @@ import { RemindersView } from '../../(admin)/admin/reminders/view';
 // A person's reminders (WP-40) with made-up devices and no database, for the UI suite: the page's
 // layout on a phone and a laptop, in Day and Evening (?theme=evening). ?state=off for reminders not
 // yet turned on, ?state=unlinked for a sign-in not linked to a member ("Which one is you?", D-61;
-// &none=1 with no adult left to choose), ?keys=none for a site without web push keys.
+// &none=1 with no adult left to choose), ?keys=none for a site without web push keys. [NFR-18] My
+// devices and When to remind me folded (WP-94): ?open=devices or ?open=when, as after a save in it;
+// ?error=gone for a device just removed. Thursday, Oct 15, 2026 at 2:45 pm.
 export const metadata: Metadata = { title: 'Reminders', robots: { index: false } };
 
 // A well-formed public key (65 bytes, base64url); nothing is ever sent with it here.
@@ -30,7 +32,7 @@ const DEVICES: DeviceRow[] = [
     label: 'iPhone · Safari',
     enabled: true,
     createdAt: '2026-10-08T14:00:00Z',
-    lastSuccessAt: '2026-10-10T13:45:00Z',
+    lastSuccessAt: '2026-10-15T13:14:00Z',
     failureCount: 0,
   },
   {
@@ -46,7 +48,14 @@ const DEVICES: DeviceRow[] = [
 export default async function DevRemindersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; state?: string; keys?: string; none?: string }>;
+  searchParams: Promise<{
+    theme?: string;
+    state?: string;
+    keys?: string;
+    none?: string;
+    open?: string;
+    error?: string;
+  }>;
 }) {
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -78,8 +87,15 @@ export default async function DevRemindersPage({
         devices={off ? [] : DEVICES}
         vapidKey={params.keys === 'none' ? null : KEY}
         timezone="America/New_York"
-        notice={off ? null : 'Saved.'}
-        error={null}
+        notice={off || params.error ? null : 'Saved.'}
+        error={
+          params.error === 'gone'
+            ? 'That device can’t get notifications any more, so it was removed. Turn reminders on there again.'
+            : null
+        }
+        open={params.open === 'devices' || params.open === 'when' ? params.open : null}
+        removed={params.error === 'gone'}
+        now={new Date('2026-10-15T18:45:00Z')}
       />
     </div>
   );

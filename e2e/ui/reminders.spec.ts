@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { foldOf, unfold } from '../support/fold';
 
 // [CHR-15][CHR-16][CHR-17][CHR-20] A person's reminders (WP-40, WP-63) on /dev/reminders: made-up devices, no
 // database. The page's words, buttons and layout on a phone and a laptop, in Day and Evening, and the
@@ -51,13 +52,13 @@ test('[CHR-15][US-317] on: the devices, each to test, switch off or remove; one 
 }) => {
   await page.goto('/dev/reminders');
   await expect(page.getByText('On. Reminders come to the devices below.')).toBeVisible();
-  await expect(
-    page.getByText(
-      '15 minutes before the due time · items with no time at 8:00 am · a digest at 7:00 am · quiet 9:00 pm to 7:00 am · approvals.',
-    ),
-  ).toBeVisible();
+  // [NFR-18] The settings in a line on When to remind me's folded header (WP-94).
+  await expect(foldOf(page, 'When to remind me').locator('.fw-fold__sum')).toHaveText(
+    '15 minutes before · no due time at 8:00 am · digest at 7:00 am · quiet 9:00 pm to 7:00 am · approvals on',
+  );
   await expect(page.getByRole('button', { name: 'Add this device' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Turn off reminders' })).toBeVisible();
+  await unfold(foldOf(page, 'My devices'));
   const devices = page.getByRole('list', { name: 'My devices' });
   await expect(devices.getByRole('listitem')).toHaveCount(2);
   await expect(devices.getByRole('listitem').first()).toContainText('iPhone · Safari');
@@ -76,7 +77,12 @@ test('[CHR-16][CHR-17][US-319] when to remind me: the digest and quiet hours sho
   await page.goto('/dev/reminders?state=off');
   await expect(page.getByText('Off. Nothing is sent to you.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Turn on reminders' })).toBeVisible();
+  await expect(foldOf(page, 'My devices').locator('.fw-fold__sum')).toHaveText('None yet');
+  await unfold(foldOf(page, 'My devices'));
   await expect(page.getByText('None yet.', { exact: false })).toBeVisible();
+  // [D-110] React has hydrated the page: a tick now runs its handler.
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+  await unfold(foldOf(page, 'When to remind me'));
   const form = page.getByRole('form', { name: 'When to remind me' });
   await expect(form.getByRole('checkbox', { name: /Remind me about new items/ })).toBeChecked();
   await expect(form.getByRole('combobox', { name: /^Remind me/ })).toHaveValue('15');
@@ -97,6 +103,7 @@ test("[CHR-20][US-322] Approvals: on by default, under the person's other choice
   page,
 }) => {
   await page.goto('/dev/reminders?state=off');
+  await unfold(foldOf(page, 'When to remind me'));
   const form = page.getByRole('form', { name: 'When to remind me' });
   const approvals = form.getByRole('group', { name: 'Approvals' });
   await expect(

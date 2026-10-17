@@ -84,7 +84,7 @@ export async function setApprovalMode(form: FormData): Promise<void> {
     .eq('household_id', household.id);
   if (error) {
     log('warn', 'approval mode not saved', { code: error.code });
-    redirect(`${FAMILY}?done=failed#check-offs`);
+    redirect(`${FAMILY}?done=failed&open=check-offs#check-offs`);
   }
   revalidatePath(FAMILY);
   redirect(`${FAMILY}?done=approval-${mode}#check-offs`);
@@ -161,7 +161,7 @@ export async function setWeekStart(form: FormData): Promise<void> {
   });
   if (error) {
     log('warn', 'week start not saved', { code: error.code, hint: error.hint });
-    redirect(`${FAMILY}?done=failed#week`);
+    redirect(`${FAMILY}?done=failed&open=week#week`);
   }
   revalidatePath(FAMILY);
   redirect(

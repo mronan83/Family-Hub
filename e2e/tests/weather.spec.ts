@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '../support/test';
+import { foldOf, unfold } from '../support/fold';
 import { type Fetcher, storeWeather, type WeatherPlace } from '../../apps/web/lib/weather';
 import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
@@ -161,6 +162,11 @@ test('[BRD-04][US-1003] the done-when: with the source failing, the weather hide
 test('[BRD-04] in Family options: Alex sees the place and the last read, switches to °C, then stops showing the weather', async () => {
   await showWeather(64.1, 68.2, 3, 'Weather: 64 degrees Fahrenheit, cloudy, high 68');
   await admin.goto('/admin/settings/family');
+  // [NFR-18] Folded to the place, unit and last reading (WP-94); open again after a save in it.
+  await expect(foldOf(admin, 'Weather on the boards').locator(':scope > summary')).toContainText(
+    `${PLACE_NAME} · °F · last reading 64°F`,
+  );
+  await unfold(foldOf(admin, 'Weather on the boards'));
   const section = admin.getByRole('region', { name: 'Weather on the boards' });
   await expect(section).toContainText(
     `The boards show the weather for ${PLACE_NAME} beside the clock.`,

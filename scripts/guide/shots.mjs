@@ -264,7 +264,8 @@ const SHOTS = [
   // [D-118] Boards folded (WP-91): every board to its facts, Playroom's not-seen warning.
   { name: 'admin-boards-phone', device: 'phone', url: '/dev/boards', full: true },
   // Home at a glance and Family options (WP-57): what needs you and the quick actions; a quiet day
-  // with today's snow day on a phone; the week's start day with a change waiting.
+  // with today's snow day on a phone; Family options folded, the week's start day with a change
+  // waiting (WP-94).
   { name: 'admin-home-laptop', device: 'laptop', url: '/dev/home', full: true },
   {
     name: 'admin-home-phone',
@@ -287,7 +288,13 @@ const SHOTS = [
   { name: 'admin-today-laptop', device: 'laptop', url: '/dev/admin', full: true },
   { name: 'admin-not-done-phone', device: 'phone', url: '/dev/admin?notice=1', maxHeight: 1300 },
   { name: 'admin-my-tasks-phone', device: 'phone', url: '/dev/admin?view=my', full: true },
-  { name: 'admin-reminders-phone', device: 'phone', url: '/dev/reminders', maxHeight: 1500 },
+  // [NFR-18] My devices open, as after a device's action; When to remind me folded (WP-94).
+  {
+    name: 'admin-reminders-phone',
+    device: 'phone',
+    url: '/dev/reminders?open=devices',
+    maxHeight: 1500,
+  },
   {
     name: 'admin-rewards-laptop',
     device: 'laptop',

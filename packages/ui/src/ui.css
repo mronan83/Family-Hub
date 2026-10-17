@@ -774,17 +774,10 @@ body {
   grid-column: 1 / -1;
   margin: 0;
 }
-.fw-quick__more,
+/* School today's Add a day off: an inner fold across the card (WP-94). */
+.fw-quick__card > .fw-fold--inner,
 .fw-quick__link {
   grid-column: 1 / -1;
-}
-.fw-quick__more summary {
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  color: var(--primary-text);
-  font-weight: 600;
-  cursor: pointer;
 }
 
 /* Admin forms and cards (WP-03) ------------------------------------------------------------- */
@@ -3400,6 +3393,15 @@ details[open] > .fw-fold__head .fw-fold__sum {
   color: var(--reward-text);
   font-size: var(--t-small);
   font-weight: 700;
+  white-space: nowrap;
+}
+.fw-fold__wait {
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+  font-size: var(--t-small);
+  font-weight: 600;
   white-space: nowrap;
 }
 .fw-fold__flag-icon {

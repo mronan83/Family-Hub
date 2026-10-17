@@ -1,8 +1,10 @@
-import { Banner, Button } from '@familywise/ui';
+import { Banner, Button, Fold } from '@familywise/ui';
 import { time } from '@/lib/format';
+import { weatherFacts } from '@/lib/setup-facts';
 import { skyFor } from '@/lib/sky';
 import type { FoundPlace, TemperatureUnit } from '@/lib/weather';
 import { setTemperatureUnit, setWeatherPlace } from './actions';
+import { Line } from './fold-line';
 
 /** The household's last read, as Family options shows how it went. */
 export interface LastRead {
@@ -32,6 +34,8 @@ const deg = (t: number, unit: TemperatureUnit) =>
  * [BRD-04][US-1003] Weather on the boards, in Family options (WP-45, D-69; WP-57, D-84): the household's place (found by a
  * town's name or a postal code, then chosen from what matches), °F or °C, and how the last read
  * went. Boards show it beside the clock; a board's layout can turn it off (Boards).
+ * [NFR-18] Folded to the place, the unit and the last reading, a failed read on its header (WP-94);
+ * open again after a search or a save in it.
  */
 export function WeatherSection({
   place,
@@ -41,6 +45,8 @@ export function WeatherSection({
   query,
   found,
   notice,
+  open = false,
+  now = new Date(),
 }: {
   place: string | null;
   unit: TemperatureUnit;
@@ -51,10 +57,21 @@ export function WeatherSection({
   /** What matched it, or why the search failed. */
   found: { places: FoundPlace[] } | { error: string } | null;
   notice: WeatherNotice | null;
+  /** Open at first: after a search or a save in it. */
+  open?: boolean;
+  /** For "Not updated since"; a dev page fixes it. */
+  now?: Date;
 }) {
+  const facts = weatherFacts({ place, unit, last }, now, timezone);
   return (
-    <section id="weather" className="fw-card" aria-labelledby="weather-heading">
-      <h2 id="weather-heading">Weather on the boards</h2>
+    <Fold
+      id="weather"
+      title="Weather on the boards"
+      headingId="weather-heading"
+      open={open || notice !== null || query !== null}
+      summary={[<Line key="w" line={facts.line} />]}
+      warning={facts.warning}
+    >
       {notice ? (
         <Banner kind={notice === 'failed' ? 'notice' : 'info'}>{NOTICES[notice]}</Banner>
       ) : null}
@@ -171,6 +188,6 @@ export function WeatherSection({
           </Button>
         </form>
       ) : null}
-    </section>
+    </Fold>
   );
 }

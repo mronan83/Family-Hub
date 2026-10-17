@@ -48,6 +48,14 @@ export const ADMIN = [
   ['calendars-open', '/dev/calendars?open=1'],
   ['boards', '/dev/boards'],
   ['reminders', '/dev/reminders'],
+  // [NFR-18] WP-94's set-up pages, as the fold audit draws them: a failed weather read, a removed
+  // device and a failing job on their folded headers.
+  ['family-folded', '/dev/family?weather=failing&state=pending'],
+  ['school', '/dev/school'],
+  ['school-year', '/dev/school?page=year'],
+  ['tags', '/dev/tags'],
+  ['reminders-removed', '/dev/reminders?error=gone'],
+  ['health', '/dev/health'],
   ['settings', '/dev/settings'],
   ['insights', '/dev/insights'],
 ];

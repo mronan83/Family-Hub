@@ -250,6 +250,8 @@ export default async function DevAdminPage({
       {params.view === 'weather' ? (
         <main className="fw-page fw-page--wide">
           <WeatherSection
+            // Open: this view shows the section itself; Family options folds it (WP-94).
+            open
             place={params.state === 'none' ? null : 'Springfield, Illinois, United States'}
             unit="fahrenheit"
             last={

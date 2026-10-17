@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '../support/test';
+import { foldOf, unfold } from '../support/fold';
 import { sql as query } from '../support/db';
 import { signIn } from '../support/session';
 
@@ -54,6 +55,8 @@ test('[CHR-15][CHR-16][CHR-17][US-319] Alex’s own settings: off until he turns
       .or(page.getByText('Reminders aren’t set up on this site yet.')),
   ).toBeVisible();
 
+  // [NFR-18] Folded to its settings in one line (WP-94); open again after the save.
+  await unfold(foldOf(page, 'When to remind me'));
   const form = page.getByRole('form', { name: 'When to remind me' });
   await form.getByRole('combobox', { name: /^Remind me/ }).selectOption('60');
   await form.getByLabel(/no due time/).fill('07:30');
@@ -87,6 +90,8 @@ test('[CHR-15][US-317] a device: switched off and on, a test (live app only), re
   sql(`insert into public.push_subscription (household_id, member_id, user_id, endpoint, p256dh, auth_secret, device_label)
        values ('${DEMO}', '${alex()}', '${user}', '${ENDPOINT}', '${'B'.repeat(87)}', '${'a'.repeat(22)}', 'E2E phone')`);
   await page.goto('/admin/reminders');
+  // [NFR-18] Folded to how many devices (WP-94); open again after each device's action.
+  await unfold(foldOf(page, 'My devices'));
   const devices = page.getByRole('list', { name: 'My devices' });
   // Only the device this test added: Alex may have others (reminders-job.spec adds its own).
   await expect(devices.getByRole('listitem').filter({ hasText: 'E2E phone' })).toHaveCount(1);

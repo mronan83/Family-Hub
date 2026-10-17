@@ -44,7 +44,10 @@ export async function saveTag(_prev: FormState, form: FormData): Promise<FormSta
   }
   revalidatePath('/admin/tags');
   revalidatePath('/admin/chores');
-  redirect(`/admin/tags?saved=${encodeURIComponent(parsed.value.name)}`);
+  // [NFR-18] An edited tag comes back with its Edit open (WP-94).
+  redirect(
+    `/admin/tags?saved=${encodeURIComponent(parsed.value.name)}${id ? `&open=${encodeURIComponent(id)}` : ''}`,
+  );
 }
 
 /** [CHR-10] Archive (no longer offered; goals and history keep it) or restore. Never deleted. */
@@ -59,5 +62,5 @@ export async function setTagArchived(form: FormData): Promise<void> {
   if (error) log('warn', 'tag archive not saved', { code: error.code });
   revalidatePath('/admin/tags');
   revalidatePath('/admin/chores');
-  redirect('/admin/tags');
+  redirect(archive ? '/admin/tags?open=archived' : '/admin/tags');
 }

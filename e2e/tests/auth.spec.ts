@@ -1,5 +1,6 @@
 import { createHmac, randomBytes } from 'node:crypto';
 import { expect, test, type Page } from '../support/test';
+import { foldOf, unfold } from '../support/fold';
 import { sql as query } from '../support/db';
 
 // [ACC-01][ACC-02][ACC-03][ACC-05] Admin sign-in, invites and setup on the preview, as the demo
@@ -23,6 +24,8 @@ async function oneTap(page: Page, name: string) {
 async function newInviteLink(page: Page, to: string): Promise<string> {
   // Invites are in Settings, Family options (WP-57, D-84).
   await page.goto('/admin/settings/family');
+  // [NFR-18] Folded to its button (WP-94).
+  await unfold(foldOf(page, 'Invite an admin'));
   await page.getByLabel('Their email').fill(to);
   await page.getByRole('button', { name: 'Create invite link' }).click();
   await expect(page.getByTestId('invite-link')).toHaveText(/\/invite#[0-9a-f]{48}$/);
@@ -161,7 +164,10 @@ test('[ACC-01] Riley starts a household with a setup code and becomes its owner'
   await expect(page.getByRole('heading', { name: 'Riley e2e household', level: 1 })).toBeVisible();
   await page.goto('/admin/settings/family');
   await expect(page.getByText('America/Chicago', { exact: false }).first()).toBeVisible();
-  await expect(page.getByText('The week starts on Monday.')).toBeVisible();
+  // [NFR-18] The week, folded to its start day (WP-94).
+  await expect(foldOf(page, 'The week').locator(':scope > summary')).toContainText(
+    'Starts on Monday',
+  );
   await expect(page.getByRole('region', { name: 'Admins' })).toContainText('Owner');
   expect(
     sql(`select a.actor_type || ':' || u.email from public.audit_log a
