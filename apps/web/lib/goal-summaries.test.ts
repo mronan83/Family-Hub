@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { previewView } from './goal-preview';
 import {
   closureWords,
+  wouldBeDue,
   firstCounted,
   partsText,
   ruleProblem,
@@ -152,6 +153,8 @@ const planning = (member_id: string | null): PreviewClosure => ({
   member_id,
   name: 'Teacher planning day',
   kind: 'teacher_day',
+  // Homework would have been due on Friday were the school open; reading isn't due on Fridays.
+  due: [{ chore_id: HOMEWORK, tag_ids: ['t-school'] }],
 });
 
 function summaries(v: Partial<GoalFormValue>, read: Partial<PreviewRead> = {}) {
@@ -222,6 +225,33 @@ describe('the live summaries', () => {
       ],
     });
     expect(one.rules[0]).toContain('so this week needs 3. A normal week needs 4.');
+  });
+
+  it('[NFR-16-k][D-128] a normal week counts only the closed days the rule’s items would have been due', () => {
+    // Reading isn't due on Fridays, so Friday's closure takes nothing from a reading week.
+    const reading = summaries({
+      rules: [
+        {
+          type: 'DAYS_DUE',
+          target: 1,
+          scope: { chore_ids: [READING] },
+          params: { misses_allowed: 0 },
+        },
+      ],
+    });
+    expect(reading.rules[0]).toBe(
+      'This week Reading is due 4 days for Maya (Friday, Oct 16 is a teacher planning day), so this week needs 4.',
+    );
+    // Not knowing which routines would have been due, it says nothing of a normal week.
+    const unknown = summaries({}, { closures: [{ ...planning(MAYA), due: undefined }] });
+    expect(unknown.rules[0]).toBe(
+      'This week Homework home is due 4 days for Maya (Friday, Oct 16 is a teacher planning day), so this week needs 4.',
+    );
+    expect(wouldBeDue([planning(null)], { tag_ids: ['t-school'] })).toBe(1);
+    expect(wouldBeDue([planning(null)], { tag_ids: ['t-other'] })).toBe(0);
+    expect(wouldBeDue([planning(null)], { all: true })).toBe(1);
+    expect(wouldBeDue([{ ...planning(null), due: [] }], { all: true })).toBe(0);
+    expect(wouldBeDue([{ ...planning(null), due: undefined }], { all: true })).toBeNull();
   });
 
   it('[NFR-16-k] a week with no day off says nothing of one', () => {

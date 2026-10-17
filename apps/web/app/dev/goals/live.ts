@@ -31,6 +31,8 @@ export async function devLiveGoal(form: FormData): Promise<GoalSummaries | null>
       member_id,
       name: 'Teacher planning day',
       kind: 'teacher_day' as const,
+      // Friday's homework and reading would have been due were the school open.
+      due: [DEV.homework, DEV.reading].map((chore_id) => ({ chore_id, tag_ids: [] })),
     })),
   };
   return (

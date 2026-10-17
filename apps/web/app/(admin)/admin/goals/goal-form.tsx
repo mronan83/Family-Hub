@@ -182,11 +182,19 @@ export function GoalForm({
   const added = useRef(rows.length);
   const change = (key: string, patch: Partial<GoalFormRule>) =>
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
-  // [NFR-16][D-128] The rule being edited: a new goal's first rule, or the one tapped or added. The
-  // others fold to their summary line; a rule with something to fix stays open.
-  const [openKey, setOpenKey] = useState<string | null>(() =>
-    initial ? null : (rows[0]?.key ?? null),
+  // [NFR-16][D-128] The rules open to their fields: a new goal's first rule, each one added, and each
+  // one tapped, until its Done folds it; any number at once (the owner's choice). A rule with
+  // something to fix stays open whatever.
+  const [openKeys, setOpenKeys] = useState<ReadonlySet<string>>(
+    () => new Set(initial || !rows[0] ? [] : [rows[0].key]),
   );
+  const setOpen = (key: string, on: boolean) =>
+    setOpenKeys((ks) => {
+      const next = new Set(ks);
+      if (on) next.add(key);
+      else next.delete(key);
+      return next;
+    });
   const [start, setStart] = useState(seed?.startDate ?? today);
   const rulesLocked = lock === 'finished';
   const whoLocked = lock !== 'none';
@@ -473,8 +481,8 @@ export function GoalForm({
           items={items}
           countable={each ? [] : canCount}
           names={names}
-          open={openKey === r.key}
-          onOpen={(on) => setOpenKey(on ? r.key : null)}
+          open={openKeys.has(r.key)}
+          onOpen={(on) => setOpen(r.key, on)}
           summary={summaries?.rules[i] ?? null}
           onChange={(patch) => change(r.key, patch)}
           onRemove={() => setRows((rs) => rs.filter((x) => x.key !== r.key))}
@@ -487,10 +495,10 @@ export function GoalForm({
             variant="secondary"
             icon="plus"
             onClick={() => {
-              // A new rule opens to its fields; the others fold to their summary line.
+              // A new rule opens to its fields; the others stay as they are.
               const key = keyOf((added.current += 1));
               setRows((rs) => [...rs, { ...NEW_RULE, key }]);
-              setOpenKey(key);
+              setOpen(key, true);
             }}
           >
             Add a rule
@@ -962,7 +970,8 @@ interface RuleRowProps {
 /**
  * A rule of the goal. [NFR-16][D-128] On a goal with two or more rules each folds to one summary
  * line, "Rule 1 · weight" with its weight beside it (the WP-81 addendum), and opens to its fields on a
- * tap; a rule being edited, a new rule and a rule with something to fix are open. A folded rule sends
+ * tap, and folds again with Done; any number may be open at once. A new rule and a rule with
+ * something to fix are open. A folded rule sends
  * every field as it stands, so saving is the same folded or open.
  */
 function RuleRow(props: RuleRowProps) {

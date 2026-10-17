@@ -259,7 +259,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2619** tests: Unit 786 · DB 1452 · UI 255 · E2E 126. 2158 name at least one ID; 461 name none.
+**2623** tests: Unit 787 · DB 1455 · UI 255 · E2E 126. 2162 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
@@ -292,9 +292,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 7 | 15 | 135 |
-| Platform | 138 | 164 | 47 | 10 | 359 |
+| Platform | 139 | 167 | 47 | 10 | 363 |
 | Not named | 58 | 438 | 10 | 1 | 507 |
-| **Total** | **786** | **1452** | **255** | **126** | **2619** |
+| **Total** | **787** | **1455** | **255** | **126** | **2623** |
 
 ### 9.3 By requirement
 
@@ -428,7 +428,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85 | — | U 2 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
-| NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | U 16 · DB 7 · UI 17 |
+| NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | U 17 · DB 10 · UI 17 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Not built | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | — | U 3 |
 | NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99 | — | U 24 · DB 14 · UI 1 · E2E 2 |
@@ -623,10 +623,10 @@ Test cases and the tests that prove them:
 | NFR-16-g | WP-100 | The icon picker folded to the icon chosen; opened, the search and the icons; the choice shows on the folded header | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-g] the icon picker folds to the icon chosen; opened, the search and the icons` |
 | NFR-16-h | WP-100 | CI runs the UI suite as an iPhone in WebKit (the controls, goal, form and admin layout specs) and keeps the screenshots for the side-by-side | Unit | Unit `scripts/screen-shots.test.mjs`: `[NFR-16-h] the UI suite runs the goal, form and admin layout specs as an iPhone in WebKit`<br>Unit `scripts/screen-shots.test.mjs`: `[NFR-16-h] CI keeps iPhone and laptop screenshots of the goal screens as an artifact` |
 | NFR-16-i | WP-101 | A rule's summary line: what it counts, its target, what counts (items by name) and its time, e.g. "Every day it's due: Homework home, by 6:00 pm" and "Things done: 5 · Reading"; **What counts** alone as "Some items: Homework home" | Unit | Unit `apps/web/lib/goal-summaries.test.ts`: `a rule as one summary line › [NFR-16-i] every day it’s due, its item with its picture, and its time`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `a rule as one summary line › [NFR-16-i] things done with a target; tags; everything; misses, streaks and due times`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `a rule as one summary line › [NFR-16-i] What counts alone: "Some items: Homework home", tags, everything` |
-| NFR-16-j | WP-101 | Two rules on a weighted goal show as **Rule 1 · weight** and **Rule 2 · weight**, each one summary line with **Weight** beside it; a tap opens one; **Add a rule** opens the new rule and folds the others; a rule with nothing chosen to count stays open and says so; a folded rule still sends all its fields | UI | Unit `apps/web/lib/goal-summaries.test.ts`: `a rule as one summary line › [NFR-16-j] what keeps a rule open: nothing chosen to count, no target, a weight out of range`<br>UI `e2e/ui/goal-form-summary.spec.ts`: `[NFR-16-j] two weighted rules fold to "Rule 1 · weight" lines with Weight beside each; a tap opens one`<br>UI `e2e/ui/goal-form-summary.spec.ts`: `[NFR-16-j] a single rule keeps its fields; What counts is one line that opens to the choices` |
-| NFR-16-k | WP-101 | The live summaries' words: the rule's days due with the closure named and a normal week's need; every child's days; steps by days missed; the weights' sum and what the period would pay; the weeks a weeks-won rule counts (D-126) | Unit | Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] under the rule: the week’s days due, the day off named, and a normal week`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] a week with no day off says nothing of one`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] every child: each child’s days, the day off, what each needs`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] steps by days missed: what each step of this week pays`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] weights: each rule’s % times its weight, the sum, what the week would pay`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k][D-126] weeks won: the weeks that start on or after the goal’s start`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k][D-126] the first week counted: on a week’s first day, across a month and a year`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] a closure in words: a day off, a break, a holiday` |
+| NFR-16-j | WP-101 | Two rules on a weighted goal show as **Rule 1 · weight** and **Rule 2 · weight**, each one summary line with **Weight** beside it; a tap opens one and **Done** folds it; more than one may be open at once; **Add a rule** opens the new rule and leaves the others as they are; a rule with nothing chosen to count stays open and says so; a folded rule still sends all its fields | UI | Unit `apps/web/lib/goal-summaries.test.ts`: `a rule as one summary line › [NFR-16-j] what keeps a rule open: nothing chosen to count, no target, a weight out of range`<br>UI `e2e/ui/goal-form-summary.spec.ts`: `[NFR-16-j] two weighted rules fold to "Rule 1 · weight" lines with Weight beside each; a tap opens one`<br>UI `e2e/ui/goal-form-summary.spec.ts`: `[NFR-16-j] a single rule keeps its fields; What counts is one line that opens to the choices` |
+| NFR-16-k | WP-101 | The live summaries' words: the rule's days due with the closure named and a normal week's need; every child's days; steps by days missed; the weights' sum and what the period would pay; the weeks a weeks-won rule counts (D-126) | Unit | Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] under the rule: the week’s days due, the day off named, and a normal week`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k][D-128] a normal week counts only the closed days the rule’s items would have been due`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] a week with no day off says nothing of one`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] every child: each child’s days, the day off, what each needs`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] steps by days missed: what each step of this week pays`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] weights: each rule’s % times its weight, the sum, what the week would pay`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k][D-126] weeks won: the weeks that start on or after the goal’s start`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k][D-126] the first week counted: on a week’s first day, across a month and a year`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `the live summaries › [NFR-16-k] a closure in words: a day off, a break, a holiday` |
 | NFR-16-l | WP-101 | The live summaries show on the form where the frames place them (the rule, the steps, the weights, every child, perfect weeks) and change as the form changes; **Preview** still shows | UI | UI `e2e/ui/goal-form-summary.spec.ts`: `[NFR-16-l] the live summaries show where the frames place them and change with the form` |
-| NFR-16-m | WP-101 | The preview's facts give the school calendar's closures around today, by name and kind, for the goal's person or each child | DB | DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a child's goal: the closures of the school year they follow, by name and kind`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a child at another school: their own school's closures`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] each closure names the person it is for`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a family goal: Maya's closures`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a family goal: Leo's school's closures`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a family goal: the household's default year, for the family`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] no weekend day, and never another household's calendar` |
+| NFR-16-m | WP-101 | The preview's facts give the school calendar's closures around today, by name and kind, for the goal's person or each child | DB | DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a child's goal: the closures of the school year they follow, by name and kind`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a child at another school: their own school's closures`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] each closure names the person it is for`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a family goal: Maya's closures`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a family goal: Leo's school's closures`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a family goal: the household's default year, for the family`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] no weekend day, and never another household's calendar`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a closed day lists the person's routines that would have been due were the school open, not a weekend-only one nor another child's`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a routine only on some weekdays is listed only on those days`<br>DB `supabase/tests/530_goal_form_closures.test.sql`: `[NFR-16-m] a family goal's default-year closure lists any routine that would have been due` |
 | NFR-16-n | WP-101 | A rule's item choices and its summary show each item's picture beside its name | UI | UI `e2e/ui/goal-form-summary.spec.ts`: `[NFR-16-n] item pictures beside their names in the choices and the summary line` |
 | NFR-16-o | WP-101 | A date reads "Mon, Oct 12, 2026" and a time "6:00 pm", for any date and time | Unit | Unit `apps/web/lib/goal-summaries.test.ts`: `dates and times as the frames write them › [NFR-16-o] "Mon, Oct 12, 2026" for any date, across months, years and DST`<br>Unit `apps/web/lib/goal-summaries.test.ts`: `dates and times as the frames write them › [NFR-16-o] "6:00 pm" for any time, midnight and noon included` |
 | NFR-16-p | WP-101 | **Starts**, **Ends** and **By** show the written date or time; the real picker covers it, so a tap opens it, and choosing a date changes the words; on Chrome and as an iPhone in WebKit | UI | UI `e2e/ui/goal-form-summary.spec.ts`: `[NFR-16-p] Starts, Ends and By show the written date or time over a real picker` |
@@ -1217,7 +1217,7 @@ Unit · 10 tests
 
 #### `apps/web/lib/goal-summaries.test.ts`
 
-Unit · 14 tests
+Unit · 15 tests
 
 | Test | Names |
 |---|---|
@@ -1228,6 +1228,7 @@ Unit · 14 tests
 | `dates and times as the frames write them › [NFR-16-o] "Mon, Oct 12, 2026" for any date, across months, years and DST` | NFR-16-o |
 | `dates and times as the frames write them › [NFR-16-o] "6:00 pm" for any time, midnight and noon included` | NFR-16-o |
 | `the live summaries › [NFR-16-k] under the rule: the week’s days due, the day off named, and a normal week` | NFR-16-k |
+| `the live summaries › [NFR-16-k][D-128] a normal week counts only the closed days the rule’s items would have been due` | NFR-16-k |
 | `the live summaries › [NFR-16-k] a week with no day off says nothing of one` | NFR-16-k |
 | `the live summaries › [NFR-16-k] every child: each child’s days, the day off, what each needs` | NFR-16-k |
 | `the live summaries › [NFR-16-k] steps by days missed: what each step of this week pays` | NFR-16-k |
@@ -4950,7 +4951,7 @@ DB · 38 tests
 
 #### `supabase/tests/530_goal_form_closures.test.sql`
 
-DB · 7 tests
+DB · 10 tests
 
 | Test | Names |
 |---|---|
@@ -4961,5 +4962,8 @@ DB · 7 tests
 | `[NFR-16-m] a family goal: Leo's school's closures` | NFR-16-m |
 | `[NFR-16-m] a family goal: the household's default year, for the family` | NFR-16-m |
 | `[NFR-16-m] no weekend day, and never another household's calendar` | NFR-16-m |
+| `[NFR-16-m] a closed day lists the person's routines that would have been due were the school open, not a weekend-only one nor another child's` | NFR-16-m |
+| `[NFR-16-m] a routine only on some weekdays is listed only on those days` | NFR-16-m |
+| `[NFR-16-m] a family goal's default-year closure lists any routine that would have been due` | NFR-16-m |
 
 <!-- /catalogue -->

@@ -68,21 +68,25 @@ test('[NFR-16-j] two weighted rules fold to "Rule 1 · weight" lines with Weight
     await rule2.getByRole('button', { name: 'Done with rule 2' }).click();
     await expect(rule2.getByRole('combobox', { name: 'Counts' })).toHaveCount(0);
   });
-  await test.step('a new rule opens, the others fold', async () => {
+  await test.step('more than one rule open at once; a new rule opens and the others stay as they are', async () => {
     await rule1.getByRole('button', { name: /^Counts/ }).click();
+    await rule2.getByRole('button', { name: /^Counts/ }).click();
     await expect(rule1.getByRole('combobox', { name: 'Counts' })).toBeVisible();
+    await expect(rule2.getByRole('combobox', { name: 'Counts' })).toBeVisible();
+    await rule2.getByRole('button', { name: 'Done with rule 2' }).click();
     await form.getByRole('button', { name: 'Add a rule' }).click();
     const rule3 = form.getByRole('group', { name: 'Rule 3 · weight' });
     await expect(rule3.getByRole('combobox', { name: 'Counts' })).toBeVisible();
-    await expect(rule1.getByRole('combobox', { name: 'Counts' })).toHaveCount(0);
+    await expect(rule1.getByRole('combobox', { name: 'Counts' })).toBeVisible();
+    await expect(rule2.getByRole('combobox', { name: 'Counts' })).toHaveCount(0);
   });
   await test.step('a rule with something to fix stays open and says so', async () => {
     const rule3 = form.getByRole('group', { name: 'Rule 3 · weight' });
     await rule3.getByRole('radio', { name: 'Some items' }).check();
     await expect(rule3.getByText('Choose an item it counts.')).toBeVisible();
     await expect(rule3.getByRole('button', { name: 'Done with rule 3' })).toHaveCount(0);
-    await rule2.getByRole('button', { name: /^Counts/ }).click();
-    // Opening another rule leaves it open, still asking.
+    await rule3.getByRole('button', { name: 'Remove rule 3' }).scrollIntoViewIfNeeded();
+    // Without something chosen it can't be folded: it stays open, still asking.
     await expect(rule3.getByText('Choose an item it counts.')).toBeVisible();
     await expect(rule3.getByRole('combobox', { name: 'Counts' })).toBeVisible();
   });

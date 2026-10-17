@@ -1,9 +1,10 @@
 -- [NFR-16-m][D-128] The goal form's live summaries name the day the school is closed (WP-101): the
 -- preview's facts give the school calendar's closures on the weekdays around today, by name and kind,
 -- for the goal's person (the school year they follow) or, on a family goal, for each child and the
--- household's default year. Another household's calendar never shows.
+-- household's default year. Another household's calendar never shows. Each closure lists the routines
+-- that would have been due that day were the school open (D-128).
 begin;
-select plan(7);
+select plan(10);
 
 insert into auth.users (id, email) values
   ('53100000-0000-0000-0000-000000000001', 'parent@example.com');
@@ -58,6 +59,23 @@ insert into public.school_closure (household_id, school_year_id, name, closure_t
   ('53000000-0000-0000-0000-000000000002', '53500000-0000-0000-0000-000000000009', 'Their day off',
    'holiday', pg_temp.weekday(pg_temp.today() + 7), pg_temp.weekday(pg_temp.today() + 7));
 
+-- Maya's routines: homework every school day, piano on Mondays and Wednesdays, a weekend job and a
+-- to-do; Leo's reading every school day.
+insert into public.chore (id, household_id, title, kind, points, schedule, day_types, created_by, start_date) values
+  ('53c00000-0000-0000-0000-000000000001', '53000000-0000-0000-0000-000000000001', 'Homework home', 'chore', 5,
+   '{"freq": "weekly", "by_weekday": [1, 2, 3, 4, 5]}', array['school_day'], '53100000-0000-0000-0000-000000000001', pg_temp.today() - 30),
+  ('53c00000-0000-0000-0000-000000000002', '53000000-0000-0000-0000-000000000001', 'Piano', 'chore', 5,
+   '{"freq": "weekly", "by_weekday": [1, 3]}', array['school_day'], '53100000-0000-0000-0000-000000000001', pg_temp.today() - 30),
+  ('53c00000-0000-0000-0000-000000000003', '53000000-0000-0000-0000-000000000001', 'Weekend job', 'chore', 5,
+   '{"freq": "weekly", "by_weekday": [1, 2, 3, 4, 5]}', array['weekend'], '53100000-0000-0000-0000-000000000001', pg_temp.today() - 30),
+  ('53c00000-0000-0000-0000-000000000004', '53000000-0000-0000-0000-000000000001', 'Reading', 'chore', 5,
+   '{"freq": "weekly", "by_weekday": [1, 2, 3, 4, 5]}', array['school_day'], '53100000-0000-0000-0000-000000000001', pg_temp.today() - 30);
+insert into public.chore_assignee (household_id, chore_id, member_id) values
+  ('53000000-0000-0000-0000-000000000001', '53c00000-0000-0000-0000-000000000001', '53110000-0000-0000-0000-00000000000a'),
+  ('53000000-0000-0000-0000-000000000001', '53c00000-0000-0000-0000-000000000002', '53110000-0000-0000-0000-00000000000a'),
+  ('53000000-0000-0000-0000-000000000001', '53c00000-0000-0000-0000-000000000003', '53110000-0000-0000-0000-00000000000a'),
+  ('53000000-0000-0000-0000-000000000001', '53c00000-0000-0000-0000-000000000004', '53110000-0000-0000-0000-00000000000b');
+
 create function pg_temp.facts(p_member text) returns jsonb language sql as $$
   select public.goal_preview_facts(jsonb_build_object(
     'household_id', '53000000-0000-0000-0000-000000000001',
@@ -72,7 +90,7 @@ $$;
 select pg_temp.parent();
 
 select is(
-  (select jsonb_agg(c - 'member_id') from jsonb_array_elements(pg_temp.facts('53110000-0000-0000-0000-00000000000a') -> 'closures') c),
+  (select jsonb_agg(c - 'member_id' - 'due') from jsonb_array_elements(pg_temp.facts('53110000-0000-0000-0000-00000000000a') -> 'closures') c),
   jsonb_build_array(jsonb_build_object('date', pg_temp.weekday(pg_temp.today() + 7),
                                        'name', 'Teacher planning day', 'kind', 'teacher_day')),
   '[NFR-16-m] a child''s goal: the closures of the school year they follow, by name and kind');
@@ -100,6 +118,23 @@ select is(
   (select count(*)::int from jsonb_array_elements(pg_temp.facts(null) -> 'closures') c
     where c ->> 'name' in ('Saturday fair', 'Their day off')),
   0, '[NFR-16-m] no weekend day, and never another household''s calendar');
+
+create function pg_temp.due(p_member text) returns text[] language sql as $$
+  select array(select d ->> 'chore_id' from jsonb_array_elements(pg_temp.facts(p_member) -> 'closures') c,
+                                            jsonb_array_elements(c -> 'due') d
+                where c ->> 'name' = 'Teacher planning day' and c ->> 'member_id' is not distinct from p_member
+                order by 1)
+$$;
+select ok('53c00000-0000-0000-0000-000000000001' = any (pg_temp.due('53110000-0000-0000-0000-00000000000a'))
+          and not '53c00000-0000-0000-0000-000000000003' = any (pg_temp.due('53110000-0000-0000-0000-00000000000a'))
+          and not '53c00000-0000-0000-0000-000000000004' = any (pg_temp.due('53110000-0000-0000-0000-00000000000a')),
+  '[NFR-16-m] a closed day lists the person''s routines that would have been due were the school open, not a weekend-only one nor another child''s');
+select is('53c00000-0000-0000-0000-000000000002' = any (pg_temp.due('53110000-0000-0000-0000-00000000000a')),
+          extract(isodow from pg_temp.weekday(pg_temp.today() + 7)) in (1, 3),
+  '[NFR-16-m] a routine only on some weekdays is listed only on those days');
+select ok('53c00000-0000-0000-0000-000000000004' = any (pg_temp.due(null))
+          and '53c00000-0000-0000-0000-000000000001' = any (pg_temp.due(null)),
+  '[NFR-16-m] a family goal''s default-year closure lists any routine that would have been due');
 
 select * from finish();
 rollback;

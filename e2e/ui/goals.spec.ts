@@ -55,7 +55,7 @@ for (const [device, viewport] of [
         await contrastOk(page);
         await page.goto(`/dev/goals?form=new&theme=${theme}`);
         await page.getByRole('button', { name: 'Add a rule' }).click();
-        // [D-128] Adding a rule opens it and folds the first to its summary line.
+        // [D-128] Adding a rule opens it; the first stays open too.
         await page.getByRole('combobox', { name: 'Counts' }).last().selectOption('STREAK');
         await page.getByRole('radio', { name: 'A reward from the shop' }).check();
         await fits(page, viewport.width);
@@ -149,15 +149,10 @@ test('[RWD-02][RWD-03] the form: rules added up to five and removed; tags or ite
   await expect(form.getByRole('group', { name: /^Rule \d$/ })).toHaveCount(5);
   await expect(form.getByRole('button', { name: 'Add a rule' })).toHaveCount(0);
   await expect(form.getByRole('group', { name: 'It’s reached when' })).toBeVisible();
-  // [D-128] The rule added last is open; the others are folded to their line, opened by a tap.
-  await form
-    .getByRole('group', { name: 'Rule 2' })
-    .getByRole('button', { name: /^Counts/ })
-    .click();
+  // [D-128] A new goal's rule and each one added are open, any number at once.
   await form.getByRole('button', { name: 'Remove rule 2' }).click();
   await expect(form.getByRole('group', { name: /^Rule \d$/ })).toHaveCount(4);
   const rule1 = form.getByRole('group', { name: 'Rule 1' });
-  await rule1.getByRole('button', { name: /^Counts/ }).click();
   await rule1.getByRole('radio', { name: 'Some tags' }).check();
   await expect(
     rule1.getByRole('group', { name: 'Tags for rule 1' }).getByRole('checkbox'),

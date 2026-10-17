@@ -2,7 +2,32 @@
 -- week Homework home is due 4 days for Maya (Friday, Oct 16 is a teacher planning day)". The preview's
 -- facts gain the closures on the weekdays around today: for the goal's person, the school year they
 -- follow; for a family goal, each child's and the household's default year (member_id null). The rest
--- of goal_preview_facts is as before (20261016222454_perfect_periods.sql).
+-- of goal_preview_facts is as before (20261016222454_perfect_periods.sql). Each closure also lists
+-- the routines that would have been due that day were the school open (`due`, with their tags): the
+-- item's schedule, dates and a school day among its day types, for that person (or anyone on a family
+-- goal's default year). The summary's "A normal week needs 5" counts only the closed days a rule's
+-- items would have been due (D-128). A lunch-day item can't be known for a closed day and isn't listed.
+
+-- [D-128] The routines that would have been due on a closed day were the school open, each with its
+-- tags: for a person, the ones they are on; for the family (p_member null), any routine.
+create function private.goal_closed_day_due(p_household uuid, p_member uuid, p_day date)
+returns jsonb
+language sql stable security definer set search_path = '' as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'chore_id', c.id,
+           'tag_ids', coalesce((select jsonb_agg(t.tag_id order by t.tag_id)
+                                  from public.chore_tag t where t.chore_id = c.id), '[]'::jsonb))
+           order by c.id), '[]'::jsonb)
+    from public.chore c
+   where c.household_id = p_household and c.archived_at is null and c.kind = 'chore'
+     and c.lunch_days is null
+     and 'school_day' = any (c.day_types)
+     and private.schedule_matches(c.schedule, c.start_date, p_day)
+     and p_day >= c.start_date and (c.end_date is null or p_day <= c.end_date)
+     and (p_member is null
+          or exists (select from public.chore_assignee a where a.chore_id = c.id and a.member_id = p_member))
+$$;
+revoke all on function private.goal_closed_day_due(uuid, uuid, date) from public, anon, authenticated;
 
 create function private.goal_closures(p_household uuid, p_member uuid, p_from date, p_to date)
 returns jsonb
@@ -25,7 +50,8 @@ language sql stable security definer set search_path = '' as $$
      where extract(isodow from d) < 6
   )
   select coalesce(jsonb_agg(jsonb_build_object('date', x.day, 'member_id', x.member_id,
-                                               'name', x.name, 'kind', x.closure_type)
+                                               'name', x.name, 'kind', x.closure_type,
+                                               'due', private.goal_closed_day_due(p_household, x.member_id, x.day))
                             order by x.day, x.member_id nulls last), '[]'::jsonb)
     from (select distinct on (d.member_id, d.day) d.member_id, d.day, c.name, c.closure_type
             from days d

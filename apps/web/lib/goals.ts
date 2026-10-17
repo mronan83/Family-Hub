@@ -871,6 +871,8 @@ export interface PreviewClosure {
   member_id: string | null;
   name: string;
   kind: 'break' | 'holiday' | 'teacher_day' | 'snow_day' | 'other';
+  /** [D-128] The routines that would have been due that day were the school open, with their tags. */
+  due?: { chore_id: string; tag_ids: string[] }[];
 }
 
 export interface PreviewSide {

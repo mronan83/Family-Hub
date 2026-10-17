@@ -181,6 +181,22 @@ function closuresIn(
   return out;
 }
 
+/**
+ * [D-128] How many closed days one of a rule's items would have been due on were the school open;
+ * null when a closure doesn't say which routines would have been due.
+ */
+export function wouldBeDue(
+  closures: readonly PreviewClosure[],
+  scope: GoalFormValue['rules'][number]['scope'],
+): number | null {
+  if (closures.some((c) => !c.due)) return null;
+  const counts = (d: { chore_id: string; tag_ids: string[] }) =>
+    'all' in scope ||
+    (scope.chore_ids ?? []).includes(d.chore_id) ||
+    d.tag_ids.some((t) => (scope.tag_ids ?? []).includes(t));
+  return closures.filter((c) => c.due!.some(counts)).length;
+}
+
 /** What a DAYS_DUE rule counts, in a sentence: "Homework home", "Morning items", "something it counts". */
 function scopeWords(r: GoalFormValue['rules'][number], ctx: SummaryContext): string {
   if ('all' in r.scope) return 'something it counts';
@@ -263,7 +279,13 @@ export function goalSummaries(ctx: SummaryContext): GoalSummaries {
       const forWho = who ? ` for ${who}` : owner === null ? ' for the family' : '';
       const why = off.length ? ` (${andList(off.map(closureWords))})` : '';
       const needed = daysNeeded({ daysDue: due, missesAllowed: period.misses_allowed });
-      const usual = daysNeeded({ daysDue: due + off.length, missesAllowed: period.misses_allowed });
+      // [D-128] A normal week counts only the closed days one of the rule's items would have been
+      // due; when that isn't known, the sentence isn't said.
+      const missed = wouldBeDue(off, r.scope);
+      const usual =
+        missed === null
+          ? needed
+          : daysNeeded({ daysDue: due + missed, missesAllowed: period.misses_allowed });
       const line =
         due === 0
           ? `This ${word} nothing it counts is due${forWho}${why}, so this ${word} is neither won nor missed.`
@@ -281,7 +303,7 @@ export function goalSummaries(ctx: SummaryContext): GoalSummaries {
         out.steps = `${line}: ${pays.join(', ')}.`;
       } else if (due > 0) {
         out.rules[daysRule] = `${line}, so this ${word} needs ${needed}.${
-          off.length && usual !== needed ? ` A normal ${word} needs ${usual}.` : ''
+          usual !== needed ? ` A normal ${word} needs ${usual}.` : ''
         }`;
       } else {
         out.rules[daysRule] = line;
