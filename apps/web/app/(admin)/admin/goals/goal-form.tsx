@@ -1102,6 +1102,7 @@ function RuleRow({
             <input
               className="fw-input fw-input--clock"
               type="time"
+              step={60}
               name={name('ontime-at')}
               aria-label="Time"
               required
