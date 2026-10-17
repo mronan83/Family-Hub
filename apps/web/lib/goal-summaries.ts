@@ -305,12 +305,9 @@ export function goalSummaries(ctx: SummaryContext): GoalSummaries {
     const so = first
       ? `, so the first that counts is the ${unit} of ${dateWords(first)}`
       : ', so the next one is the first that counts';
+    // The help line above it says how a run is kept; the summary says which period comes first.
     out.rules[i] =
-      `A ${unit} counts when it starts on or after this goal’s start, ${dateWords(v.startDate)}${so}. ${
-        r.params.in_a_row
-          ? `A ${unit} with nothing due neither counts nor breaks the run; a missed one breaks it.`
-          : `Each ${unit} won counts.`
-      }`;
+      `A ${unit} counts when it starts on or after this goal’s start, ${dateWords(v.startDate)}${so}.`;
   });
 
   // [RWD-18] Weights: each rule's % (up to 100) times its weight, added up, and what it would pay.

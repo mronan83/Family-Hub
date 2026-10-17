@@ -3193,7 +3193,8 @@ span.fw-heat__cell {
   width: 100%;
   min-width: 0;
   padding-block: 10px;
-  padding-right: calc(var(--s-3) + 24px);
+  /* Room for the chevron, so a wrapped line never runs under it. */
+  padding-right: calc(var(--s-3) + 32px);
   text-align: left;
   cursor: pointer;
   background-image:

@@ -311,7 +311,7 @@ describe('the live summaries', () => {
       { facts: [] },
     );
     expect(counted.rules[0]).toBe(
-      'A week counts when it starts on or after this goal’s start, Thu, Oct 15, 2026, so the first that counts is the week of Mon, Oct 19, 2026. A week with nothing due neither counts nor breaks the run; a missed one breaks it.',
+      'A week counts when it starts on or after this goal’s start, Thu, Oct 15, 2026, so the first that counts is the week of Mon, Oct 19, 2026.',
     );
   });
 
