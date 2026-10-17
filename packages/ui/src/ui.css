@@ -921,6 +921,9 @@ select.fw-input {
     right 13px center;
   background-size: 5px 5px;
   background-repeat: no-repeat;
+  /* WebKit lets a list's words run past its edge, widening the page, unless it clips them. */
+  overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 /* Each theme's own color scheme, so a list's options and a date's picker open in the theme. */
