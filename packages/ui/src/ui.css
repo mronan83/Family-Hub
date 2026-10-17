@@ -890,6 +890,15 @@ textarea.fw-input {
   min-height: 88px;
   padding: var(--s-2) var(--s-3);
 }
+/* A number without the browser's arrows, as the mockups draw it (WebKit shows them always). */
+.fw-input[type='number'] {
+  -moz-appearance: textfield;
+}
+.fw-input[type='number']::-webkit-inner-spin-button,
+.fw-input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 .fw-input[type='search']::-webkit-search-decoration {
   -webkit-appearance: none;
 }
@@ -982,26 +991,29 @@ select.fw-input {
   outline-offset: 2px;
 }
 /* A group of fields in a box of its own (the mockups' Rule, Repeats, What it pays): a bold title,
-   then its fields. The legend is laid out as the box's first line, not on its edge. */
+   then its fields. The legend is placed inside the box, above its fields: Safari keeps a legend on the
+   box's edge even when floated, so it is taken out of the edge by position, and still names the group. */
 .fw-box {
+  position: relative;
   display: grid;
   gap: var(--s-3);
   min-width: 0;
+  min-inline-size: 0;
   margin: 0;
-  padding: var(--s-3);
+  padding: calc(var(--s-3) + 20px + var(--s-3)) var(--s-3) var(--s-3);
   border: var(--border-w) solid var(--line);
   border-radius: 12px;
 }
 .fw-box > legend {
-  float: left;
-  width: 100%;
+  position: absolute;
+  top: var(--s-3);
+  left: var(--s-3);
+  right: var(--s-3);
   margin: 0;
   padding: 0;
   font-size: var(--t-small);
   font-weight: 700;
-}
-.fw-box > legend + * {
-  clear: both;
+  line-height: 20px;
 }
 /* Two or more fields side by side where they fit (each at least 160 px), stacked on a phone. */
 .fw-fgrid {
@@ -1095,6 +1107,9 @@ select.fw-input {
   margin: 0;
   padding: 0;
   border: 0;
+}
+.fw-fieldset > legend {
+  padding: 0;
 }
 .fw-choice {
   display: inline-flex;
