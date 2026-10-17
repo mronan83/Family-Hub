@@ -2161,14 +2161,31 @@ html:has(.board) {
 }
 .fw-calendar__events {
   display: grid;
-  gap: var(--s-1);
   margin: 0;
   padding: 0;
   list-style: none;
 }
+/* [NFR-18] An event a row, as the fold audit draws it (WP-93): its title, then when, a line apart. */
+.fw-calendar__events > li {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--s-1);
+  padding-block: var(--s-2);
+  border-bottom: var(--border-w) solid var(--line);
+  font-weight: 600;
+}
+.fw-calendar__events > li.fw-muted,
+.fw-calendar__events > li:has(+ li.fw-muted),
+.fw-calendar__events > li:last-child {
+  border-bottom: 0;
+  font-weight: 400;
+}
 .fw-calendar__when {
+  order: 2;
+  flex-basis: 100%;
   color: var(--text-soft);
   font-size: var(--t-small);
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
 /* [CAL-09] Who a calendar is for (WP-50): its people's faces, overlapping, before their names. */
@@ -3296,6 +3313,7 @@ span.fw-heat__cell {
   gap: 0;
 }
 .fw-fold__head {
+  box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -3311,6 +3329,10 @@ span.fw-heat__cell {
 .fw-fold__head > :is(h2, h3) {
   margin: 0;
 }
+/* [NFR-18] A fold inside another is 56 px, as the fold audit draws it (WP-93). */
+.fw-fold--inner > .fw-fold__head {
+  min-height: 56px;
+}
 /* A long title shares the chevron's line and wraps beside it (the icon picker's, on a phone). */
 .fw-fold--inner > .fw-fold__head > h3 {
   flex: 1 1 0%;
@@ -3325,10 +3347,10 @@ details[open] > .fw-fold__head .fw-lunchday__chev {
   pointer-events: none;
   white-space: nowrap;
 }
-/* On a phone the header and Add a meal share one row, as in the mockup. */
+/* On a phone the header and Add a meal share one row, as in the mockup; a longer title (Add a
+   calendar) keeps its line and its button goes under it, at the right (WP-93). */
 @media (max-width: 480px) {
   .fw-fold__head:not(:has(.fw-fold__sum)) {
-    flex-wrap: nowrap;
     padding-inline: var(--s-3);
   }
   .fw-fold__head > h2 {
@@ -3902,11 +3924,22 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   list-style: none;
   overflow-wrap: anywhere;
 }
+/* [NFR-18] A day a row, as the fold audit draws it (WP-93): the date, then its menu, Change beside
+   them; opened, Change's form takes the row's width. */
 .fw-menu-days > li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-1) var(--s-2);
-  align-items: baseline;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-1) var(--s-3);
+  align-items: start;
+  padding-block: var(--s-2);
+  border-bottom: var(--border-w) solid var(--line);
+}
+.fw-menu-days > li:last-child {
+  border-bottom: 0;
+}
+.fw-menu-days > li > :not(.fw-menu-days__change) {
+  grid-column: 1;
+  justify-self: start;
 }
 .fw-menu-days > li[data-today] .fw-menu-days__date {
   color: var(--primary-text);
@@ -3916,7 +3949,8 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   font-weight: 600;
 }
 .fw-menu-days__change {
-  margin-left: auto;
+  grid-column: 2;
+  grid-row: 1 / span 2;
 }
 .fw-menu-days__change > summary {
   color: var(--primary-text);
@@ -3924,8 +3958,8 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   cursor: pointer;
 }
 .fw-menu-days__change[open] {
-  flex-basis: 100%;
-  margin-left: 0;
+  grid-column: 1 / -1;
+  grid-row: auto;
 }
 .fw-menu-picker,
 .fw-menu-preview {
