@@ -14,12 +14,13 @@
 //    or on its one infrastructure re-run.
 //
 //   node scripts/e2e-run.mjs [--specs "a.spec.ts b.spec.ts"] [--burn-in "a.spec.ts"] [--summary FILE]
-//                            [--reds FILE]
+//                            [--reds FILE] [--findings FILE]
 //
 // --reds writes each spec that ended red, with each red test's kind (infra or assertion) and cause,
 // as JSON ([{ spec, tests: [{ test, kind, cause, then }] }]): the nightly run opens or updates one
 // "E2E red on main: <spec>" issue from each (.github/workflows/e2e.yml). A run error or a pass that
-// wrote no report is listed as the spec "set-up".
+// wrote no report is listed as the spec "set-up". --findings writes every failed test, those that
+// passed on their re-run included, as the findings log's entries (scripts/e2e-findings.mjs, WP-98).
 //
 // Reads SUPABASE_DB_URL and E2E_BASE_URL (both optional: no probe without them),
 // VERCEL_AUTOMATION_BYPASS_SECRET and GITHUB_STEP_SUMMARY.
@@ -36,6 +37,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { classify, errorText, failureOf, redact } from './e2e-infra.mjs';
+import { entriesOf } from './e2e-findings.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BURN_IN = 5;
@@ -203,6 +205,46 @@ const secs = (ms) => `${(ms / 1000).toFixed(1)} s`;
 const mins = (ms) =>
   `${Math.floor(ms / 60_000)}:${String(Math.round((ms % 60_000) / 1000)).padStart(2, '0')}`;
 
+/** Each failed test in a pass's results, classified: [{ ...result, verdict }]. */
+export function failuresIn(results, degraded) {
+  return results
+    .filter(failed)
+    .map((r) => ({ ...r, verdict: classify(failureOf(r.result, r.test), degraded) }));
+}
+
+/**
+ * Settles each failure against its one re-run (rerun: Map "file:line" -> result): sets `after` on
+ * each infrastructure failure, and returns the ones that ended red. An assertion failure is red.
+ */
+export function settle(failures, rerun, degraded) {
+  const reds = [];
+  for (const f of failures) {
+    if (f.verdict.kind === 'assertion') {
+      reds.push(f);
+      continue;
+    }
+    const second = rerun.get(`${f.file}:${f.line}`);
+    if (!second || failed(second) || notRun(second)) {
+      const why =
+        second && failed(second) ? classify(failureOf(second.result, second.test), degraded) : null;
+      f.after =
+        !second || notRun(second)
+          ? 'did not run again'
+          : `failed again: ${why.kind === 'infra' ? why.cause : 'assertion failure'}`;
+      reds.push(f);
+    } else f.after = `passed on its re-run (${secs(second.result.duration)})`;
+  }
+  return reds;
+}
+
+/** A failure's cause in words: the infrastructure it names, or the assertion's first line. */
+export const causeOf = (f) =>
+  f.verdict.kind === 'infra'
+    ? f.verdict.cause
+    : errorText(f.result.errors?.[0] ?? f.result.error)
+        .split('\n')[0]
+        .slice(0, 160);
+
 async function main() {
   const specs = words(arg('--specs'));
   const burnIn = words(arg('--burn-in'));
@@ -223,10 +265,7 @@ async function main() {
   }
 
   const results = passes.flatMap((p) => resultsOf(p.report).map((r) => ({ ...r, pass: p.label })));
-  const failures = results.filter(failed).map((r) => ({
-    ...r,
-    verdict: classify(failureOf(r.result, r.test), probe.degraded),
-  }));
+  const failures = failuresIn(results, probe.degraded);
   const globalErrors = passes.flatMap((p) =>
     (p.report?.errors ?? []).map((e) => redact(e.message ?? String(e))),
   );
@@ -258,25 +297,7 @@ async function main() {
   probe.stop();
 
   // 3. The verdict.
-  const reds = [];
-  for (const f of failures) {
-    if (f.verdict.kind === 'assertion') {
-      reds.push(f);
-      continue;
-    }
-    const second = rerun.get(`${f.file}:${f.line}`);
-    if (!second || failed(second) || notRun(second)) {
-      const why =
-        second && failed(second)
-          ? classify(failureOf(second.result, second.test), probe.degraded)
-          : null;
-      f.after =
-        !second || notRun(second)
-          ? 'did not run again'
-          : `failed again: ${why.kind === 'infra' ? why.cause : 'assertion failure'}`;
-      reds.push(f);
-    } else f.after = `passed on its re-run (${secs(second.result.duration)})`;
-  }
+  const reds = settle(failures, rerun, probe.degraded);
   const rerunFiles = new Set(infra.filter((f) => serial(f.file)).map((f) => f.file));
   const skipped = results.filter(notRun).filter((r) => !rerunFiles.has(r.file) || !rerun.size);
   const passed = results.filter((r) => r.result?.status === 'passed').length;
@@ -359,12 +380,7 @@ async function main() {
       add(f.file, {
         test: `${f.file}:${f.line} ${f.title}`,
         kind: f.verdict.kind,
-        cause:
-          f.verdict.kind === 'infra'
-            ? f.verdict.cause
-            : errorText(f.result.errors?.[0] ?? f.result.error)
-                .split('\n')[0]
-                .slice(0, 160),
+        cause: causeOf(f),
         then: f.after ?? 'red: not re-run',
       });
     }
@@ -388,6 +404,21 @@ async function main() {
       });
     }
     writeFileSync(redsFile, JSON.stringify([...bySpec].map(([spec, tests]) => ({ spec, tests }))));
+  }
+  const findingsFile = arg('--findings');
+  if (findingsFile) {
+    const entries = entriesOf({
+      failures: failures.map((f) => ({ ...f, cause: causeOf(f) })),
+      notRun: skipped,
+      runErrors: [
+        ...globalErrors.map((e) => ({ test: 'the run', cause: e.split('\n')[0] })),
+        ...missingReport.map((p) => ({
+          test: `the ${p.label} pass`,
+          cause: `wrote no report (exit ${p.code})`,
+        })),
+      ],
+    });
+    writeFileSync(findingsFile, JSON.stringify(entries));
   }
   process.exit(green ? 0 : 1);
 }

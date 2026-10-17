@@ -7,24 +7,52 @@
 # is red at once; a failure the infrastructure caused (a statement timeout, a reset connection, a
 # Supabase or Auth 5xx, the preview not answering) re-runs that test once, and its cause is labelled in
 # the run summary. A red spec opens or updates one issue, "E2E red on main: <spec>", naming each red
-# test's kind and cause, and does nothing else.
+# test's kind and cause, and does nothing else. Every run, red or green, then writes the findings log
+# (scripts/e2e-findings.mjs, WP-98): one comment per run with a failed test on the issue "E2E findings
+# log", and the tests that failed in more than one of the last 30 runs in the run summary.
+#
+# A run can also be started by hand (Actions → e2e → Run workflow, on main; D-121, D-130). It runs
+# exactly as the night's run does, and starts only when no other e2e run is queued or going
+# (scripts/e2e-guard.mjs): the concurrency group keeps one waiting run and GitHub cancels it when a
+# newer one joins, so a run by hand never joins while another could be displaced.
 name: e2e
 
 on:
   schedule:
     - cron: '17 7 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: demo-family
-  cancel-in-progress: false
-
 jobs:
-  nightly:
+  guard:
     runs-on: ubuntu-24.04
     permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          ref: main
+      - name: A run by hand starts on main, and only when no other e2e run is queued or going
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          REF: ${{ github.ref }}
+        run: node scripts/e2e-guard.mjs
+
+  nightly:
+    needs: guard
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: demo-family
+      cancel-in-progress: false
+    permissions:
+      actions: read
       contents: read
       issues: write
     env:
@@ -49,6 +77,7 @@ jobs:
             exit 1
           fi
       - uses: actions/checkout@v7
+        id: checkout
         with:
           ref: main
       - uses: pnpm/action-setup@v6
@@ -89,7 +118,7 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: e2e
         id: e2e
-        run: node scripts/e2e-run.mjs --summary "$RUNNER_TEMP/e2e-summary.md" --reds "$RUNNER_TEMP/e2e-reds.json"
+        run: node scripts/e2e-run.mjs --summary "$RUNNER_TEMP/e2e-summary.md" --reds "$RUNNER_TEMP/e2e-reds.json" --findings "$RUNNER_TEMP/e2e-findings.json"
         env:
           E2E_REPORT: ${{ runner.temp }}/e2e-report.txt
       - name: Measurements (DEV-05 latency, WP-08 list entry)
@@ -138,3 +167,17 @@ jobs:
 
           Run: $RUN_URL"
           done
+      # Every run, red or green: the findings log (WP-98). A run with a failed test, one that passed on
+      # its re-run included, adds one comment to "E2E findings log"; the run summary lists each test
+      # that failed in more than one of the last 30 runs. Every word goes through redact() (D-129).
+      - name: Findings log
+        if: always() && steps.checkout.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          SHA=$(git rev-parse HEAD) node scripts/e2e-findings.mjs \
+            --findings "$RUNNER_TEMP/e2e-findings.json" --reds "$RUNNER_TEMP/e2e-reds.json"

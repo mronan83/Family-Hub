@@ -16,6 +16,7 @@ function run(specs, env = {}) {
   const state = mkdtempSync(join(tmpdir(), 'e2e-selftest-'));
   const summary = join(state, 'summary.md');
   const reds = join(state, 'reds.json');
+  const findings = join(state, 'findings.json');
   const r = spawnSync(
     'node',
     [
@@ -30,6 +31,8 @@ function run(specs, env = {}) {
       summary,
       '--reds',
       reds,
+      '--findings',
+      findings,
     ],
     {
       cwd: root,
@@ -49,11 +52,12 @@ function run(specs, env = {}) {
     code: r.status,
     summary: readFileSync(summary, 'utf8'),
     reds: existsSync(reds) ? JSON.parse(readFileSync(reds, 'utf8')) : null,
+    findings: existsSync(findings) ? JSON.parse(readFileSync(findings, 'utf8')) : null,
     out: r.stdout + r.stderr,
   };
 }
 
-test('[NFR-14] an injected statement timeout, a Supabase 5xx and Auth not answering re-run once, labelled, and pass', () => {
+test('[NFR-14][NFR-14-i] an injected statement timeout, a Supabase 5xx and Auth not answering re-run once, labelled, and pass', () => {
   const r = run('infra.spec.ts');
   assert.equal(r.code, 0, r.out);
   assert.match(r.summary, /## e2e: green/);
@@ -75,9 +79,16 @@ test('[NFR-14] an injected statement timeout, a Supabase 5xx and Auth not answer
   );
   assert.match(r.summary, /Re-runs \| 3 test\(s\), once each/);
   assert.deepEqual(r.reds, []);
+  // Every re-run is logged in the findings log, though the run is green (WP-98, D-129).
+  assert.equal(r.findings.length, 3);
+  for (const e of r.findings) {
+    assert.equal(e.kind, 'infra');
+    assert.equal(e.red, false);
+    assert.match(e.rerun, /^passed on its re-run/);
+  }
 });
 
-test('[NFR-14] a second infrastructure failure is red, with its cause', () => {
+test('[NFR-14][NFR-14-i] a second infrastructure failure is red, with its cause', () => {
   const r = run('infra.spec.ts', { SELFTEST_ALWAYS: '1' });
   assert.equal(r.code, 1, r.out);
   assert.match(r.summary, /## e2e: red/);
@@ -88,6 +99,9 @@ test('[NFR-14] a second infrastructure failure is red, with its cause', () => {
   const timeout = r.reds[0].tests.find((t) => t.test.includes('a statement timeout in the error'));
   assert.equal(timeout.kind, 'infra');
   assert.equal(timeout.cause, 'database statement timeout (in the error)');
+  const logged = r.findings.find((e) => e.test.includes('a statement timeout in the error'));
+  assert.equal(logged.red, true);
+  assert.equal(logged.rerun, 'failed again: database statement timeout (in the error)');
 });
 
 test('[NFR-14] an injected assertion failure is red and never re-runs', () => {
@@ -99,4 +113,7 @@ test('[NFR-14] an injected assertion failure is red and never re-runs', () => {
   assert.equal(r.reds[0].spec, 'assertion.spec.ts');
   assert.equal(r.reds[0].tests[0].kind, 'assertion');
   assert.equal(r.reds[0].tests[0].then, 'red: not re-run');
+  assert.equal(r.findings.length, 1);
+  assert.equal(r.findings[0].kind, 'assertion');
+  assert.equal(r.findings[0].rerun, 'none (assertion failures never re-run)');
 });

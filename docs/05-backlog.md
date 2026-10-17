@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.143: WP-98 (the e2e findings log) done (NFR-14, D-121, D-130): each e2e run with a failed test adds one comment to the issue "E2E findings log", infrastructure re-runs that passed included, with how many of the last 30 runs each test failed in; the run summary lists the tests that failed in more than one; `e2e.yml` can be started by hand on `main`, and only when no other e2e run is queued or going. Its test cases are NFR-14-i to NFR-14-n.
 > v0.8.142: WP-102 (the nightly e2e run green on main, the e2e red triage) added at the owner's request and done in the same change (NFR-14, D-110, D-129): the 12 "E2E red on main" issues of 16 and 17 October, each with its cause. Ten were the specs' own bugs (behind WP-34's drift, WP-75's folds and WP-100's folded icon picker; a real-clock weekday; another test's leftovers; a clean-up refused by append-only check-offs; out-of-date expectations), one an app bug WP-101 had already fixed, and one the test database slow while a board's read ran, which the probe missed. Found with it: the run quoted a failed psql command, password included, into an issue; the run now hides every connection string. The owner chose not to rotate the password (Y-12, closed). Its test cases are NFR-14-a to NFR-14-h.
 > v0.8.141: WP-101 (the goal form's last four differences from its mockups, WP-100's follow-up) added at the owner's request and done in the same change (NFR-16, D-128): a rule as one summary line with its weight, the live summaries where the frames place them (worked out by Preview's own code), item pictures, and dates and times written "Mon, Oct 12, 2026" and "6:00 pm" over real pickers. Found and fixed with it: a rule's field names differed between the server and the browser. Its test cases are NFR-16-i to NFR-16-q.
 > v0.8.140: WP-100 (the admin app on an iPhone looks like its approved mockups, a bug) added at the owner's request and done in the same change (NFR-16, D-127): the owner's iPhone showed the goal form unlike the WP-80 to WP-82 mockups, because iPhone Safari drew its own controls and nothing tested WebKit. Every admin form control is now drawn by the app; the goal screens match their frames; the UI suite runs as an iPhone in WebKit in CI; an item built from a mockup shows a side-by-side before approval. The icon picker's fold (WP-96's last bullet) is done with it. Its test cases are NFR-16-a to NFR-16-h.
@@ -285,7 +286,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Ready (mockup approved) |
 | WP-96 | Chores, an item's page and the icon picker folded | P3 | M | WP-91 | Ready (mockup approved) |
 | WP-97 | Today, My tasks and Insights folded | P3 | S | WP-91 | Ready (mockup approved) |
-| WP-98 | The e2e findings log | P3 | S | WP-90 | Ready |
+| WP-98 | The e2e findings log | P3 | S | WP-90 | Done |
 | WP-99 | Lean e2e: SQL set-up, a household per spec, parallel runs, unchanged nights skipped | P3 | L | SPIKE-07, WP-90 | Queued: SPIKE-07 first |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
@@ -1773,12 +1774,26 @@ flowchart LR
 
 ### WP-98 — The e2e findings log
 **Phase:** P3 · **Size:** S · **Depends on:** WP-90 · **Reqs:** NFR-14
-- Added at the owner's request on 16 October ("WP for the e2e findings log"). Recorded only; not built.
+- Added at the owner's request on 16 October ("WP for the e2e findings log"). Built on 17 October, after WP-102, with the D-129 re-runs logged too (D-130).
 - **Why:** each red nightly run opens or updates one issue per spec (WP-88), with each red test's kind and cause (WP-90). Nothing keeps the run-by-run record, so a test red on Monday and again on Thursday reads as two separate failures, and what was done about each is only in the PR that fixed it.
 - **The item:** a durable log with one entry per red test per nightly run: the date, the run and `main`'s commit, the spec and test, its kind (assertion or infrastructure), its cause as `scripts/e2e-run.mjs` labelled it, whether its one infrastructure re-run passed, and what was done (the PR or commit that fixed it, or "open"). The nightly run writes the entry; the worker who fixes it fills in what was done. Repeat failures show: each entry says how many of the last 30 runs the same test was red, and the run summary lists any test red more than once in them.
 - **A run by hand (the owner's choice, D-121):** `e2e.yml` gains a manual trigger (`workflow_dispatch`), so the nightly run can be started from Actions → e2e → Run workflow, on `main` only. It runs exactly as the scheduled run does: never on a pull request, never a required check or a deploy input, and it never blocks, cancels or delays anything (D-108). It shares the `demo-family` concurrency group, so a run by hand and the night's run never overlap.
 - **Where it lives (proposed, D-121):** in GitHub, one issue, "E2E findings log", with one comment per red run, written by the nightly run's existing `issues: write` permission. The nightly run never pushes to `main`. Free plans only. Real family data never appears in it: e2e runs only on the made-up demo family.
 - **Done when:** a unit test shows a run's JSON report with an assertion failure, an infrastructure failure that passed on its re-run and one that failed twice turned into three entries with their kinds and causes; a test red in 2 of the last 30 runs counted and listed in the run summary; a green run writes no entry; `e2e.yml` has a `workflow_dispatch` trigger, and a run started by hand on `main` goes through to its summary; the next nightly runs are the proof on the real preview.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| NFR-14-i | A run's report with an assertion failure, an infrastructure failure that passed on its one re-run and one that failed twice becomes three findings-log entries, each with its spec and test, kind, cause and re-run, two "open" and one needing nothing | Unit |
+| NFR-14-j | A test that failed in 2 of the last 30 runs is counted on its entry and listed in the run summary; a run older than the last 30 isn't counted, and a test that failed once isn't listed | Unit |
+| NFR-14-k | A run with no failed test writes no entry and opens no issue; its summary still lists the tests that failed in more than one of the last 30 runs | Unit |
+| NFR-14-l | A database connection string, password included, in a test's error, cause, title or re-run never reaches the findings log's comment or the run summary | Unit |
+| NFR-14-m | The first run with a failure opens the one "E2E findings log" issue and comments its entries; later runs comment on the same issue and count what earlier runs wrote; GitHub not answering is said in the summary and fails nothing | Unit |
+| NFR-14-n | `e2e.yml` can be started by hand (`workflow_dispatch`), on `main` only and only when no other e2e run is queued or going, so it never displaces one; it shares the one `demo-family` group with no other trigger, and the findings log runs after every run | Unit |
+
+- **As built:** `scripts/e2e-findings.mjs` (`entriesOf()`, `entriesOfReds()`, `logged()`, `counts()`, `commentOf()`, `summaryOf()`; reads and writes the issue through `gh`); `scripts/e2e-run.mjs` (`--findings`; `failuresIn()`, `settle()`, `causeOf()` taken out of the run so the log and the run decide alike); `scripts/e2e-guard.mjs` (`refusal()`); `.github/workflows/e2e.yml` (`workflow_dispatch`; a `guard` job; the concurrency group on the `nightly` job; `actions: read`; the **Findings log** step after every run). Tests: node:test `scripts/e2e-findings.test.mjs` (NFR-14-i to NFR-14-m), `scripts/e2e-guard.test.mjs` (NFR-14-n); the run script's self-test (`scripts/e2e-run.selftest.mjs`, CI `build`) checks the entries on a real Playwright run. No screen changes; nothing a parent or child sees.
+- **Proving it:** the first run by hand on `main` after the merge, which is also the first proof of WP-102's fixed specs.
+- **Deferred, as plain facts:** nothing.
 
 ### WP-99 — Lean e2e: SQL set-up, a household per spec, parallel runs, unchanged nights skipped
 **Phase:** P3 · **Size:** L · **Depends on:** SPIKE-07, WP-90 · **Reqs:** NFR-14
