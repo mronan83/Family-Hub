@@ -102,9 +102,24 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium
-      - name: Brand checks (tile style snapshots, axe contrast, manifests, fonts)
+      # [D-127] WebKit too: the UI suite's iPhone project runs in Safari's engine (WP-100).
+      - run: pnpm exec playwright install --with-deps chromium webkit
+      - name: Brand checks (tile style snapshots, axe contrast, manifests, fonts), Chrome and iPhone
         run: pnpm test:ui
+      # [D-127] The made-up family's screens as an iPhone (WebKit) and a laptop, and the board's goal
+      # cards, in Day and Evening: the pictures for a side-by-side with a mockup (WP-100).
+      - name: Screenshots for the side-by-side
+        if: success() || failure()
+        run: |
+          (pnpm --filter @familywise/web exec next start -p 3100 > /dev/null 2>&1 &)
+          until curl -sf http://localhost:3100/api/health > /dev/null; do sleep 1; done
+          node scripts/screen-shots.mjs --out=screen-shots
+      - if: success() || failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screen-shots
+          path: screen-shots
+          retention-days: 14
       # [D-110] The nightly e2e run script's verdicts on a tiny fixture suite (no preview, no database):
       # an injected statement timeout re-runs once and is labelled; an injected assertion failure never re-runs.
       - name: e2e re-run rules

@@ -126,7 +126,7 @@ test('[RWD-15-m][US-410][US-411] done-when: Maya’s weekly homework goal, a 4-d
     const pays = form.getByRole('group', { name: 'What each week pays' });
     await pays.getByRole('radio', { name: 'Points' }).check();
     await pays.getByLabel('Points paid').fill('10');
-    await form.getByRole('button', { name: 'Set goal' }).click();
+    await form.getByRole('button', { name: 'Set the goal' }).click();
     await expect(admin.getByRole('status')).toHaveText(`Saved ${TITLE}.`);
   });
 

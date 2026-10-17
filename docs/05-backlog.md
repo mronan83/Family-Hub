@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.140: WP-100 (the admin app on an iPhone looks like its approved mockups, a bug) added at the owner's request and done in the same change (NFR-16, D-127): the owner's iPhone showed the goal form unlike the WP-80 to WP-82 mockups, because iPhone Safari drew its own controls and nothing tested WebKit. Every admin form control is now drawn by the app; the goal screens match their frames; the UI suite runs as an iPhone in WebKit in CI; an item built from a mockup shows a side-by-side before approval. The icon picker's fold (WP-96's last bullet) is done with it. Its test cases are NFR-16-a to NFR-16-h.
 > v0.8.139: WP-82 (perfect periods, and a family goal every child meets) done (RWD-19, RWD-20, D-126), from the WP-80 to WP-82 mockup the owner approved on 16 October and its WP-82 addendum ([Perfect weeks, every child](https://claude.ai/artifact/XtkXNSiGna2TnFa42EFyRt)) approved the same day with their answers: a counted goal counts the periods that start on or after its start date; an every-child goal pays only the children who had something due; the option is fixed once the goal starts; no steps on it. Its test cases are RWD-19-a to RWD-19-j and RWD-20-a to RWD-20-k.
 > v0.8.138: WP-81 (a goal done by a time, and goals that pay in steps) done (RWD-17, RWD-18, D-124), from the WP-80 to WP-82 mockup and its WP-81 addendum the owner approved on 16 October, with their answers that day: steps by number (a one-off goal in steps has an end date) and weights on a goal with two or more rules. Its test cases are RWD-17-a to RWD-17-h and RWD-18-a to RWD-18-m.
 > v0.8.137: WP-80 (goals that repeat each week, month or school term) done (RWD-15, RWD-16, D-123), from the mockup for WP-80 to WP-82 the owner approved on 16 October with their answers: each period worked out, won and paid on its own, "every day it's due" with misses allowed, "Missed, starts again", a goal's weeks on Goals and the board, and **Stop after this week**. Its test cases are RWD-15-a to RWD-15-m and RWD-16-a to RWD-16-i. WP-81 and WP-82 are Ready: the mockup is theirs too. Goals' History and a goal's What happened and Cancel are folded with it, as the mockup drew them; WP-95 keeps the rest of its Goals part. "Next, in order" is the owner's to set.
@@ -273,6 +274,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-90 | Nightly e2e reliability | P3 | M | WP-60, WP-88 | Done |
 | WP-91 | The Boards settings as collapsible sections | P3 | S | WP-34, WP-75, WP-35 | Done |
 | WP-92 | Approval alerts at once (a bug) | P2 | S | WP-63 | Done |
+| WP-100 | The admin app on an iPhone looks like its approved mockups (a bug) | P3 | M | WP-80, WP-81, WP-82, WP-91 | Done |
 | WP-93 | Calendars, school menus and the meal library folded | P3 | M | WP-91 | Ready (mockup approved) |
 | WP-94 | The set-up pages folded | P3 | M | WP-91 | Ready (mockup approved) |
 | WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Ready (mockup approved) |
@@ -465,6 +467,10 @@ flowchart LR
     WP91 --> WP96[WP-96 Chores and icon picker folded]
     WP91 --> WP97[WP-97 Today and Insights folded]
     WP63 --> WP92[WP-92 Approval alerts at once]
+    WP80 --> WP100[WP-100 iPhone mockup fidelity]
+    WP81 --> WP100
+    WP82 --> WP100
+    WP91 --> WP100
     WP90 --> SP07[SPIKE-07 e2e specs audited by layer]
     WP90 --> WP98[WP-98 e2e findings log]
     SP07 --> WP99[WP-99 Lean e2e]
@@ -1617,7 +1623,7 @@ flowchart LR
 - Added at the owner's request with the fold audit (D-120).
 - **Chores:** the list open; **Filters** folded to what they are set to and how many items show, so a filtered list reads as filtered while folded.
 - **An item's page and the item form:** the main fields open; **More options** folded to how it is set (approval, days, lunch); **Coming up** (the next one and how many in two weeks), **Last 7 days** (done, missed, skipped) folded; **Archive** set apart.
-- **The icon picker,** in every form that has one (chores and tasks, rewards, goals, meals, tags): folded to **Chosen:** and the icon, opening to **Find an icon** and the groups.
+- **The icon picker,** in every form that has one (chores and tasks, rewards, goals, meals, tags): folded to **Chosen:** and the icon, opening to **Find an icon** and the groups. Done with WP-100, which needed it for the goal form's height on a phone; the rest of WP-96 is as written.
 - **Done when:** unit tests on the filter summary and each folded header; on the preview, Alex filters Chores by Maya and reads it on the folded header, then changes an item's icon and saves; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
 
 ### WP-97 — Today, My tasks and Insights folded
@@ -1627,6 +1633,30 @@ flowchart LR
 - **My tasks:** **Coming up** folded (how many in the next seven days, and the next one).
 - **Insights:** **Streaks** and **Done** open; **Day by day**, **Missed most**, **By tag** and **Checking** folded to their one-line finding; **History** folded.
 - **Done when:** unit tests on a part's done count and when it folds (done, skipped, sent back, waiting for a parent); on the preview, Alex marks the last open item of a part done and finds that part folded with its count, then opens it and unchecks one; the UI suite at 390 and 1280 px in both themes, every fold closed and opened, taps after hydration.
+### WP-100 — The admin app on an iPhone looks like its approved mockups (a bug)
+**Phase:** P3 · **Size:** M · **Depends on:** WP-80, WP-81, WP-82, WP-91 · **Reqs:** NFR-16
+- Added at the owner's request on 17 October, in the planner session: the admin app on their iPhone looks **nothing like** the approved WP-80 to WP-82 mockups ([Repeating goals](https://claude.ai/artifact/QX8BdvfM6YFDg8cmX63h4R), [Goal steps](https://claude.ai/artifact/Ti4opxKF9TQ6L5R1fhb4So), [Perfect weeks, every child](https://claude.ai/artifact/XtkXNSiGna2TnFa42EFyRt)), with the fold standard of the [fold audit](https://claude.ai/artifact/XmqoDeW6RNFbov3dntr5F4) (D-120). Recorded as a bug and fixed in the same change.
+- **The owner's evidence** (Goals → Set a goal, Evening, production `bf909ae`; the family's names left out): fields, **Starts** and **Target** with thin light outlines, the date short with its words centred; **Counts** a small native list under 44 px; **Photo** Safari's own "Choose File / no file selected"; radio dots in two colours (iOS blue and teal); the chosen chip with a teal ring; **Repeats** as separate pills with dots, where the mockup draws tinted chips; only **Rule** boxed, where the mockup also boxes **Repeats**, **What reaching it pays** and **For the whole family**; radio rows wrapping unevenly; the icon picker most of the form's height.
+- **Causes, found on `main`:** no CSS in the app set `appearance` (and `accent-color` only on some radios), so iPhone Safari drew its own controls; `e2e/ui.config.ts` ran Desktop Chrome only, so nothing tested WebKit, and the UI suite passed while the phone showed this.
+- **The fix (D-127):** every admin form control is drawn by the app on every engine, to the mockups' tokens: fields, lists, dates, times, numbers and searches 44 px tall, 10 px round, filled with the page's background, a 3:1 edge (`--field-edge`) and the focus ring, text 16 px; radios and check boxes 20 px in the primary colour; segmented chips (`.fw-seg`); a file picker with the app's button and the file's name (`FileField`); the admin buttons 12 px round in the body font, secondary on the card with a teal edge, ghost as teal words, and a plum **danger** button. The goal screens follow their frames: the form's **Repeats** as chips, **Who it's for** as choices, **Repeats**, **Rule**, **Counts only when done**, **What it pays**, **Pay in steps** and **For the whole family** in boxes, the points beside **Points**, **Points**, **A reward from the shop**, **Something else** in the mockup's order and words, **Set the goal** and **Cancel**; a goal page's head (**‹ Goals**, its name and state, its line) above the card, a started goal's who, repeats and start shown as fields; **Goals** above its card of goals, each goal's state on its title's row and its icon in a teal tile; the board's goal card with its icon in a tile and "3 of 4 days · 10 points" under the bar. The icon picker folds to the icon chosen in every form, as the fold audit draws it (WP-96's icon picker part).
+- **iPhone in CI (D-127):** the UI suite gains an `iphone` project, an iPhone 13 in WebKit, running the controls, goal, form and admin layout specs; CI's build job installs WebKit (free on GitHub Actions) and keeps iPhone and laptop screenshots of the made-up family's screens as the `screen-shots` artifact (`scripts/screen-shots.mjs`).
+- **The side-by-side (D-127):** an item built from a mockup shows each screen as built (iPhone WebKit at 390 px, and the laptop) next to its mockup frame, Day and Evening, on the demo family, with every remaining difference listed, linked in its PR before approval (`CLAUDE.md`, the deliver skill).
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| NFR-16-a | Every admin page's fields, lists, dates and times are the app's on Chrome and iPhone WebKit, in Day and Evening: no browser look, 44 px or taller, 10 px round, 16 px text; a field is filled with the page's background and shows the focus ring | UI |
+| NFR-16-b | Every radio and check box is the app's: 20 px, a soft edge, the primary colour when chosen, on both engines | UI |
+| NFR-16-c | A photo is chosen with **Choose a photo**; the file's name shows; the browser's own file picker never shows | UI |
+| NFR-16-d | The goal form: **Repeats** as tinted chips with no dot, **Who it's for** as choices with no ring, its parts in boxes, and the mockup's words (**Points**, **A reward from the shop**, **Something else**, **Set the goal**, **Cancel**) | UI |
+| NFR-16-e | A goal's page: **‹ Goals**, its name and state above its card; a started goal's who, repeats and start shown, not offered; Goals' heading and **Set a goal** above its card | UI |
+| NFR-16-f | The board's goal card: its icon in a tile, "3 of 4 days" and its points under the bar | UI |
+| NFR-16-g | The icon picker folded to the icon chosen; opened, the search and the icons; the choice shows on the folded header | UI |
+| NFR-16-h | CI runs the UI suite as an iPhone in WebKit (the controls, goal, form and admin layout specs) and keeps the screenshots for the side-by-side | Unit |
+- **Done when:** the UI suite passes on Chrome and as an iPhone in WebKit in CI, with the cases above; the side-by-side artifact shows each goal screen as built next to its frame, in Day and Evening, with every remaining difference listed; the deliver skill and `CLAUDE.md` carry the side-by-side rule.
+- **As built:** `brand/familywise-tokens.css` (`--field-edge`); `packages/ui/src/ui.css` (the controls, `.fw-seg`, `.fw-box`, `.fw-fgrid`, `.fw-choices`, the admin buttons, the goal head and card, the board goal tile, `.fw-meter__foot`); `packages/ui/src/FileField.tsx`; `IconPicker` folded; `Button`'s `danger`; `GoalMeter`'s `foot`; the goal form, Goals, a goal's page (`GoalHead`, `ReadField`) and the board's card; `RewardForm` and the school menu's file use `FileField`; `e2e/ui.config.ts` (`chrome` and `iphone` projects); `.github/workflows/ci.yml` (WebKit, `scripts/screen-shots.mjs`, the `screen-shots` artifact). Tests: UI `controls.spec.ts` (NFR-16-a to NFR-16-e, NFR-16-g), `board-repeating.spec.ts` (NFR-16-f), `goals.spec.ts`, `icons.spec.ts`, `menus.spec.ts` updated; `scripts/screen-shots.test.mjs` (NFR-16-h); `contrast.test.ts` (`--field-edge` at 3:1); e2e `icons.spec.ts` and the goal specs (nightly) for the folded picker and **Set the goal**.
+- **Remaining differences from the frames, as plain facts (D-127):** listed in the side-by-side and the PR.
+
 ### WP-85 — The test strategy and the Test catalogue
 **Phase:** P3 · **Size:** M · **Depends on:** — · **Reqs:** NFR-19, NFR-12, NFR-14
 - Added at the owner's request (15 October): "I think we need to develop an entire test strategy complete with documented rules and test cases. The strategy needs to think through what requires full e2e, what test cases are applicable for what changes, and the rules for that." And on the draft: "It also needs to contain all the tests and test cases and their relationship to items in the other documents. I want traceability back to requirements, user stories, backlog items, etc. This creates accountability and responsibility on your behalf to ensure we are testing the right things at the right time."

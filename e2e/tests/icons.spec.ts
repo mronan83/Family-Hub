@@ -80,6 +80,11 @@ test('[CHR-01][D-70] done-when: a chore saved with an icon found by search shows
   const form = admin.getByRole('form', { name: 'Add an item' });
   await form.getByLabel('Name', { exact: true }).fill(CHORE);
   await form.getByRole('checkbox', { name: 'Leo', exact: true }).check();
+  // The icon picker is folded to the icon chosen (WP-100): opened by its header.
+  await form
+    .locator('details', { has: admin.locator('.fw-iconpick') })
+    .locator('summary')
+    .click();
   await form.getByRole('searchbox', { name: 'Find an icon' }).fill('fish');
   await form
     .locator('label', { has: admin.getByRole('radio', { name: 'fish', exact: true }) })
@@ -109,6 +114,10 @@ test('[CHR-10][D-70] a tag takes a new color and a Lucide icon', async () => {
   await form.getByLabel('Name', { exact: true }).fill(TAG);
   await form
     .locator('label', { has: admin.getByRole('radio', { name: 'Navy', exact: true }) })
+    .click();
+  await form
+    .locator('details', { has: admin.locator('.fw-iconpick') })
+    .locator('summary')
     .click();
   const icons = form.getByRole('group', { name: 'Icon (optional)' });
   await icons

@@ -3,10 +3,13 @@
 // want, grouped (Home, Kitchen and food, School and learning, …), with a search over each icon's name
 // and words. The radios are the form field, so it works before the script loads, and an icon hidden by
 // the search or a group stays chosen. The app's own controls (chevrons, close, menu) are never
-// offered, but an icon chosen before still shows, first, as chosen.
+// offered, but an icon chosen before still shows, first, as chosen. [NFR-18][D-120] It folds to the icon
+// chosen, as the approved fold audit draws it in every form (WP-100): opened, the search, the groups
+// and the icons. The radios stay in the form while it is folded.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ICON_GROUPS, ICON_INDEX } from './generated/icon-index';
 import type { IconName } from './generated/icons';
+import { Fold } from './Fold';
 import { Icon, iconLabel } from './Icon';
 
 export interface IconPickerProps {
@@ -87,91 +90,106 @@ export function IconPicker({ name = 'icon', legend, selected, start, optional }:
   );
 
   return (
-    <fieldset className="fw-field fw-fieldset fw-iconpick">
-      <legend className="fw-field__label">{legend}</legend>
-      <p className="fw-iconpick__chosen" aria-live="polite">
-        {chosen ? (
-          <>
-            <Icon name={chosen} size={28} />
-            <span>Chosen: {iconLabel(chosen)}</span>
-          </>
+    <Fold
+      variant="inner"
+      title={legend}
+      summary={[
+        chosen ? (
+          <span className="fw-iconpick__sum">
+            <Icon name={chosen} size={20} />
+            <b>Chosen:</b> {iconLabel(chosen)}
+          </span>
         ) : (
-          <span>No icon chosen</span>
-        )}
-      </p>
-      <input
-        type="search"
-        className="fw-input"
-        placeholder="Find an icon, like bed or dog"
-        aria-label="Find an icon"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => {
-          // Enter in the search box would send the whole form.
-          if (e.key === 'Enter') e.preventDefault();
-        }}
-      />
-      <div className="fw-iconpick__groups" role="group" aria-label="Icon groups">
-        <button
-          type="button"
-          className="fw-iconpick__group"
-          aria-pressed={!group && !searching}
-          onClick={() => {
-            setGroup(null);
-            setQuery('');
+          <b>No icon chosen</b>
+        ),
+      ]}
+    >
+      <fieldset className="fw-field fw-fieldset fw-iconpick">
+        <legend className="fw-visually-hidden">{legend}</legend>
+        <p className="fw-iconpick__chosen" aria-live="polite">
+          {chosen ? (
+            <>
+              <Icon name={chosen} size={28} />
+              <span>Chosen: {iconLabel(chosen)}</span>
+            </>
+          ) : (
+            <span>No icon chosen</span>
+          )}
+        </p>
+        <input
+          type="search"
+          className="fw-input"
+          placeholder="Find an icon, like bed or dog"
+          aria-label="Find an icon"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            // Enter in the search box would send the whole form.
+            if (e.key === 'Enter') e.preventDefault();
           }}
-        >
-          All
-        </button>
-        {groups.map((g) => (
+        />
+        <div className="fw-iconpick__groups" role="group" aria-label="Icon groups">
           <button
-            key={g.key}
             type="button"
             className="fw-iconpick__group"
-            aria-pressed={group === g.key && !searching}
+            aria-pressed={!group && !searching}
             onClick={() => {
-              setGroup(g.key);
+              setGroup(null);
               setQuery('');
-              if (grid.current) grid.current.scrollTop = 0;
             }}
           >
-            {g.label}
+            All
           </button>
-        ))}
-      </div>
-      <div className="fw-iconpick__grid" ref={grid}>
-        {optional || earlier ? (
-          <div className="fw-picker" hidden={searching}>
-            {optional ? (
-              <label className="fw-picker__item">
-                <input
-                  type="radio"
-                  name={name}
-                  value=""
-                  defaultChecked={!selected}
-                  onChange={() => setChosen(null)}
-                  className="fw-visually-hidden"
-                />
-                <span>No icon</span>
-              </label>
-            ) : null}
-            {earlier ? radio(earlier) : null}
-          </div>
-        ) : null}
-        {shown.map((g) => (
-          <div key={g.key} role="group" aria-label={g.label} hidden={!g.visible.length}>
-            <p className="fw-iconpick__heading" aria-hidden="true">
+          {groups.map((g) => (
+            <button
+              key={g.key}
+              type="button"
+              className="fw-iconpick__group"
+              aria-pressed={group === g.key && !searching}
+              onClick={() => {
+                setGroup(g.key);
+                setQuery('');
+                if (grid.current) grid.current.scrollTop = 0;
+              }}
+            >
               {g.label}
-            </p>
-            <div className="fw-picker fw-iconpick__icons">
-              {g.icons.map((icon) => radio(icon, !g.visible.includes(icon)))}
+            </button>
+          ))}
+        </div>
+        <div className="fw-iconpick__grid" ref={grid}>
+          {optional || earlier ? (
+            <div className="fw-picker" hidden={searching}>
+              {optional ? (
+                <label className="fw-picker__item">
+                  <input
+                    type="radio"
+                    name={name}
+                    value=""
+                    defaultChecked={!selected}
+                    onChange={() => setChosen(null)}
+                    className="fw-visually-hidden"
+                  />
+                  <span>No icon</span>
+                </label>
+              ) : null}
+              {earlier ? radio(earlier) : null}
             </div>
-          </div>
-        ))}
-        {searching && !count ? (
-          <p className="fw-muted">No icon matches “{query.trim()}”. Try another word.</p>
-        ) : null}
-      </div>
-    </fieldset>
+          ) : null}
+          {shown.map((g) => (
+            <div key={g.key} role="group" aria-label={g.label} hidden={!g.visible.length}>
+              <p className="fw-iconpick__heading" aria-hidden="true">
+                {g.label}
+              </p>
+              <div className="fw-picker fw-iconpick__icons">
+                {g.icons.map((icon) => radio(icon, !g.visible.includes(icon)))}
+              </div>
+            </div>
+          ))}
+          {searching && !count ? (
+            <p className="fw-muted">No icon matches “{query.trim()}”. Try another word.</p>
+          ) : null}
+        </div>
+      </fieldset>
+    </Fold>
   );
 }

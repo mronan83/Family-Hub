@@ -20,6 +20,13 @@ async function contrastOk(page: Page) {
 
 const picker = (page: Page) => page.getByRole('group', { name: 'Icon', exact: true });
 const icon = (page: Page, name: string) => page.getByRole('radio', { name, exact: true });
+/** [NFR-16-g] The picker is folded to the icon chosen (WP-100): opened by its header. */
+const openIcons = (page: Page) =>
+  page
+    .locator('details', { has: page.locator('.fw-iconpick') })
+    .first()
+    .locator('summary')
+    .click();
 /** A radio hidden by a search or a group: out of the accessibility tree, still in the form. */
 const hiddenIcon = (page: Page, name: string) =>
   page.getByRole('radio', { name, exact: true, includeHidden: true });
@@ -65,6 +72,7 @@ test('[CHR-01] search finds an icon by its everyday words; Enter never sends the
   page,
 }) => {
   await page.goto('/dev/forms');
+  await openIcons(page);
   const search = page.getByRole('searchbox', { name: 'Find an icon' });
   await expect(picker(page)).toContainText('Chosen: bed');
   await search.fill('laundry');
@@ -92,6 +100,7 @@ test('[CHR-01] a group shows only its icons; All shows every group, Home first f
   page,
 }) => {
   await page.goto('/dev/forms');
+  await openIcons(page);
   const groups = page.getByRole('group', { name: 'Icon groups' });
   await expect(groups.getByRole('button')).toHaveText([
     'All',
@@ -126,6 +135,7 @@ test('[CHR-01] a group shows only its icons; All shows every group, Home first f
 
 test('[CHR-10] a tag starts with People and labels and can have no icon', async ({ page }) => {
   await page.goto('/dev/forms?form=tag');
+  await openIcons(page);
   const pick = page.getByRole('group', { name: 'Icon (optional)' });
   await expect(pick).toContainText('No icon chosen');
   await expect(pick.getByRole('radio', { name: 'No icon' })).toBeChecked();
@@ -142,6 +152,7 @@ test('[CHR-01] editing shows the chosen icon in view; one the picker no longer o
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/dev/forms?icon=washing-machine');
+  await openIcons(page);
   await expect(icon(page, 'washing machine')).toBeChecked();
   const grid = page.locator('.fw-iconpick__grid');
   const inView = await page.evaluate(() => {
@@ -156,6 +167,7 @@ test('[CHR-01] editing shows the chosen icon in view; one the picker no longer o
   await expect(grid).toBeVisible();
 
   await page.goto('/dev/forms?icon=image');
+  await openIcons(page);
   await expect(icon(page, 'image')).toBeChecked();
   await expect(picker(page)).toContainText('Chosen: image');
 });

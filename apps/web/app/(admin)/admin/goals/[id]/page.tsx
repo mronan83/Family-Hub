@@ -12,6 +12,7 @@ import { AdminHeader } from '../../header';
 import { goalAction, removeGoalPhoto } from '../actions';
 import { countableGoals, loadGoalEvents, loadGoals } from '../data';
 import { GoalForm, type GoalLock } from '../goal-form';
+import { GoalHead, GoalStatusPill } from '../view';
 import { bringGoalsUpToDate, loadGoalContext } from '../load';
 import { currentPeriod, WeeksFold } from '../repeating';
 
@@ -74,17 +75,22 @@ export default async function GoalPage({
     <main className="fw-page">
       <AdminHeader current="/admin/goals" />
       {removed ? <Banner kind="info">The photo is removed; the icon shows instead.</Banner> : null}
+      <GoalHead
+        title={goal.title}
+        pill={<GoalStatusPill goal={goal} today={today} />}
+        line={
+          <>
+            {who} · {STATUS_WORDS[goal.status]}
+            {repeat !== 'none'
+              ? ` · ${REPEAT_WORDS[repeat].toLowerCase()}${now && daysLine(now) ? ` · ${thisPeriod(repeat).toLowerCase()} ${daysLine(now)}` : ''}`
+              : goal.pct !== null
+                ? ` · ${Math.round(goal.pct)}% there`
+                : ''}
+            {pays ? ` · Pays ${pays}` : ''}
+          </>
+        }
+      />
       <section className="fw-card">
-        <h1>{goal.title}</h1>
-        <p className="fw-muted">
-          {who} · {STATUS_WORDS[goal.status]}
-          {repeat !== 'none'
-            ? ` · ${REPEAT_WORDS[repeat].toLowerCase()}${now && daysLine(now) ? ` · ${thisPeriod(repeat).toLowerCase()} ${daysLine(now)}` : ''}`
-            : goal.pct !== null
-              ? ` · ${Math.round(goal.pct)}% there`
-              : ''}
-          {pays ? ` · Pays ${pays}` : ''}
-        </p>
         {goal.needsReview ? (
           <div className="fw-goal__review">
             <Banner kind="notice">
@@ -264,7 +270,7 @@ export default async function GoalPage({
                 type="submit"
                 name="act"
                 value={`cancel:${goal.id}`}
-                variant="ghost"
+                variant="danger"
                 icon="minus-circle"
               >
                 {`Cancel ${goal.title}`}

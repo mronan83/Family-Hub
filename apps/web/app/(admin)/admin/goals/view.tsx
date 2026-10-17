@@ -11,6 +11,7 @@ import {
   PeriodMarks,
 } from '@familywise/ui';
 import Image from 'next/image';
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { day } from '@/lib/format';
 import { bestLine, type Counted, countedLine, makesLine } from '@/lib/goal-perfect';
@@ -79,7 +80,7 @@ function dates(g: GoalRow): string {
 }
 
 /** A goal's state; a repeating goal's says how this period stands (D-123's approved mockup). */
-function GoalStatusPill({ goal: g, today }: { goal: GoalRow; today: string }) {
+export function GoalStatusPill({ goal: g, today }: { goal: GoalRow; today: string }) {
   const period =
     g.repeat !== 'none' && g.status === 'active' ? periodStatus(g.periods, today, g.repeat) : null;
   const status = period?.status ?? g.status;
@@ -317,18 +318,15 @@ export function GoalsView({
         <Banner kind="info">{notice}</Banner>
       ) : null}
 
+      {/* [NFR-16][D-127] The mockups' head: the title and Set a goal above the card of goals. */}
+      <div className="fw-goals__head">
+        <h1 id="goals-heading">Goals</h1>
+        <Link href="/admin/goals/new" className="fw-btn fw-btn--primary">
+          <Icon name="plus" className="fw-btn__icon" />
+          <span>Set a goal</span>
+        </Link>
+      </div>
       <section className="fw-card" aria-labelledby="goals-heading">
-        <div className="fw-goals__head">
-          <h1 id="goals-heading">Goals</h1>
-          <Link href="/admin/goals/new" className="fw-btn fw-btn--primary">
-            <Icon name="plus" className="fw-btn__icon" />
-            <span>Set a goal</span>
-          </Link>
-        </div>
-        <p className="fw-muted">
-          Something to work toward, for a child or the whole family. Progress follows the
-          check-offs: if one is undone, the goal follows it.
-        </p>
         {open.length === 0 ? (
           <p>No goals going. Set one to give your family something to aim for.</p>
         ) : (
@@ -474,5 +472,33 @@ export function GoalsView({
         )}
       </Fold>
     </main>
+  );
+}
+
+/**
+ * [NFR-16][D-127] A goal page's head, as the approved mockups draw it (WP-100): the way back to Goals,
+ * the title with the goal's state beside it, and its line, above the card that holds the form.
+ */
+export function GoalHead({
+  title,
+  pill,
+  line,
+}: {
+  title: string;
+  pill?: ReactNode;
+  line?: ReactNode;
+}) {
+  return (
+    <>
+      <Link href="/admin/goals" className="fw-crumb">
+        <Icon name="chevron-left" size={18} />
+        Goals
+      </Link>
+      <div className="fw-goal-head">
+        <h1>{title}</h1>
+        {pill}
+      </div>
+      {line ? <p className="fw-muted">{line}</p> : null}
+    </>
   );
 }

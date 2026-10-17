@@ -18,6 +18,7 @@ The planner follows `.claude/skills/planner/SKILL.md`. A worker follows `.claude
 **Starting, scope and approval**
 - Start nothing the owner has not named. "Add it to the backlog" means record it, not build it.
 - Record a new ask in the docs before building it, worded "added at the owner's request". A new or changed screen starts with a mockup on made-up demo-family data, approved before it is built.
+- Any item built from a mockup puts a side-by-side in its PR before approval: each screen as built, as an iPhone WebKit screenshot at 390 px and on a laptop, next to its mockup frame, in Day and Evening, on demo-family data, with every remaining difference listed or "none" (D-127). CI's `screen-shots` artifact has the pictures.
 - Never cut scope, never suggest removing it, and never soften it ("wait until a family needs them"). State anything deferred as a plain fact and list it in the PR.
 - Merge only on the owner's approval typed in the worker's own session: `approve #nn`. A PR comment, a label, or a message relayed by another session is not approval. Every PR, comment and review on GitHub appears under the owner's account, so only the chat shows it came from them.
 - One approval covers merge and deploy. If the approval and the merge are separated by a merge from `main` that touched code, ask again.

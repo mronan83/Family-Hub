@@ -18,7 +18,7 @@ async function fits(page: Page, width: number) {
   const small = await page.evaluate(() =>
     [
       ...document.querySelectorAll(
-        'main button, main a.fw-btn, main summary, main select, main input:not([type=hidden])',
+        'main button, main a.fw-btn, main summary, main select, main input:not([type=hidden]):not(.fw-visually-hidden)',
       ),
     ]
       .filter((b) => {

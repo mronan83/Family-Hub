@@ -6,6 +6,7 @@ import { serverClient } from '@/lib/supabase/server';
 import { AdminHeader } from '../../header';
 import { countableGoals, loadGoals } from '../data';
 import { GoalForm } from '../goal-form';
+import { GoalHead } from '../view';
 import { loadGoalContext } from '../load';
 
 export const metadata: Metadata = { title: 'Set a goal' };
@@ -23,8 +24,8 @@ export default async function NewGoalPage() {
   return (
     <main className="fw-page">
       <AdminHeader current="/admin/goals" />
+      <GoalHead title="Set a goal" />
       <section className="fw-card">
-        <h1>Set a goal</h1>
         <GoalForm
           id={crypto.randomUUID()}
           members={ctx.earners}

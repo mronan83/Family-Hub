@@ -141,7 +141,7 @@ test('[RWD-20-k][RWD-19-j][US-414][US-415] done-when: every child meets the fami
     const pays = form.getByRole('group', { name: 'What each week pays' });
     await pays.getByRole('radio', { name: 'Points' }).check();
     await pays.getByLabel('Points paid').fill('20');
-    await form.getByRole('button', { name: 'Set goal' }).click();
+    await form.getByRole('button', { name: 'Set the goal' }).click();
     await expect(admin.getByRole('status')).toHaveText(`Saved ${FAMILY}.`);
   });
 
@@ -169,7 +169,7 @@ test('[RWD-20-k][RWD-19-j][US-414][US-415] done-when: every child meets the fami
 
   await test.step('Maya’s weekly goal, and her 3 perfect weeks in a row counting it', async () => {
     const form = await setWeekly(MAYAS, 'Maya', [`Homework e2e ${TAG} Maya`]);
-    await form.getByRole('button', { name: 'Set goal' }).click();
+    await form.getByRole('button', { name: 'Set the goal' }).click();
     await expect(admin.getByRole('status')).toHaveText(`Saved ${MAYAS}.`);
     await expect.poll(() => weeks(MAYAS), { timeout: 30_000 }).toBe('won, won');
 
@@ -184,7 +184,7 @@ test('[RWD-20-k][RWD-19-j][US-414][US-415] done-when: every child meets the fami
       .selectOption({ label: `${MAYAS} (each week)` });
     await perfect.getByRole('radio', { name: 'In a row' }).check();
     await perfect.getByLabel('Target').fill('3');
-    await perfect.getByRole('button', { name: 'Set goal' }).click();
+    await perfect.getByRole('button', { name: 'Set the goal' }).click();
     await expect(admin.getByRole('status')).toHaveText(`Saved ${PERFECT}.`);
     await expect
       .poll(() =>

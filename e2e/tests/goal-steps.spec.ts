@@ -111,7 +111,7 @@ test('[RWD-18-m][RWD-17-e][US-412][US-413] done-when: Maya’s homework by 6 pm 
     await steps.getByRole('checkbox', { name: 'Pay less for a week with misses' }).check();
     await steps.getByLabel('1 missed').fill('10');
     await steps.getByLabel('2 missed').fill('5');
-    await form.getByRole('button', { name: 'Set goal' }).click();
+    await form.getByRole('button', { name: 'Set the goal' }).click();
     await expect(admin.getByRole('status')).toHaveText(`Saved ${TITLE}.`);
   });
 

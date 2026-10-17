@@ -387,6 +387,7 @@ function RepeatingGoal({
               label={pays ? `Days · ${pays}` : 'Days'}
               value={Math.min(p.daysDone ?? 0, needed)}
               target={needed}
+              foot={{ start: `${Math.min(p.daysDone ?? 0, needed)} of ${needed} days`, end: pays }}
             />
           ) : (
             goal.rules

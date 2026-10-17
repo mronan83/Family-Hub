@@ -263,13 +263,13 @@ test('[RWD-13][US-409] what each goal pays, and a goal whose reward was given th
   );
 });
 
-test('[RWD-13] the form: the celebration, points, or a reward from the shop (a child’s goal only)', async ({
+test('[RWD-13] the form: points, a reward from the shop (a child’s goal only), or something else', async ({
   page,
 }) => {
   await page.goto('/dev/goals?form=new');
   const form = page.getByRole('form', { name: 'Set a goal' });
   const pays = form.getByRole('group', { name: 'What reaching it pays' });
-  await expect(pays.getByRole('radio', { name: 'Just the celebration' })).toBeChecked();
+  await expect(pays.getByRole('radio', { name: 'Something else' })).toBeChecked();
   await pays.getByRole('radio', { name: 'Points', exact: true }).check();
   await expect(pays.getByRole('spinbutton', { name: 'Points paid' })).toHaveValue('10');
   await pays.getByRole('radio', { name: 'A reward from the shop' }).check();
@@ -279,13 +279,13 @@ test('[RWD-13] the form: the celebration, points, or a reward from the shop (a c
   await expect(pays.getByRole('combobox', { name: 'Reward' })).toContainText(
     'Ice cream (30 points in the shop)',
   );
-  // The whole family: points to each child, or the celebration; not a reward from the shop.
+  // The whole family: points to each child, or something else; not a reward from the shop.
   await form
     .getByRole('group', { name: 'Who it’s for' })
     .getByRole('radio', { name: 'The whole family' })
     .check();
   await expect(pays.getByRole('radio', { name: 'A reward from the shop' })).toBeDisabled();
-  await expect(pays.getByRole('radio', { name: 'Just the celebration' })).toBeChecked();
+  await expect(pays.getByRole('radio', { name: 'Something else' })).toBeChecked();
   await pays.getByRole('radio', { name: 'Points', exact: true }).check();
   await expect(pays).toContainText('Each child who earns rewards gets them');
   await expect(form.getByRole('button', { name: 'Preview' })).toBeVisible();

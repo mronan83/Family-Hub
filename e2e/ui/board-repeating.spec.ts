@@ -68,6 +68,16 @@ for (const viewport of [
 test.describe('the card', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
 
+  test('[NFR-16-f] the board’s goal card: its icon in a tile, its days under the bar', async ({
+    page,
+  }) => {
+    await open(page, 'Maya', '?repeating=going');
+    const card = homework(page);
+    await expect(card.locator('.fw-meter__foot')).toHaveText('3 of 4 days10 points');
+    const tile = card.locator('.fw-today__goal-head > svg.fw-icon');
+    await expect(tile).toHaveCSS('border-top-left-radius', '14px');
+  });
+
   test('[RWD-15-l][RWD-16][US-411] going: a mark for each day, a day off a dash, "3 of 4 days" and what it pays', async ({
     page,
   }) => {

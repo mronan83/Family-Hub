@@ -22,6 +22,7 @@ An item is done when **every** line holds. Report against this list.
 |---|---|---|
 | 1 | The item's `Done when` list in `05` passes in CI and on its preview | The tests named there exist and are green |
 | 2 | Tests ship with it: pgTAP for schema, Vitest for logic, Playwright e2e for flows (they run nightly, not on the PR, D-108), the UI suite for any screen | They are in the PR |
+| 1a | Built from a mockup: a side-by-side of each screen as built (iPhone WebKit at 390 px, and the laptop) next to its mockup frame, Day and Evening, demo family, with every remaining difference listed, is published and linked in the PR before approval (D-127) | The artifact link in the PR |
 | 2a | Every new or changed test meets the test standard (`CLAUDE.md` "Tests", D-110): no fixed waits, no real clock, its own data, limits with 3× headroom, sign-in through `signIn()`. No e2e and no burn-in on the PR | Your own diff review, listed in the PR |
 | 3 | Validated locally before the first push (step 5) | You ran the commands |
 | 4 | The docs are updated in the same PR, and show the item as done (step 4) | `pnpm trace` and `pnpm docs:build --check` pass |
@@ -64,6 +65,12 @@ If the item adds or changes a screen and `05` doesn't say its mockup is approved
   - a check that could flake says what it saw when it fails.
 - **Scheduled jobs:** in `apps/web/lib/jobs/schedule.json`, one cron minute per HTTP job.
 - **Test cases first** (`08` §6, D-107): before writing code, turn each line of the item's Done when into numbered cases in its `05` §5 section, a table with the columns Case, Test case and Layer (`MEAL-11-a`, a requirement on the item's Reqs line plus a letter). Each case's test names it: `[MEAL-11-a] picking a milk keeps the entree`. Test the change by its class (`08` §3, §4; D-106): a bug fix starts with a test that fails on `main`.
+
+### 3a. Side-by-side, if the item was built from a mockup (D-127)
+
+- After the first green CI run, download the `screen-shots` artifact from the `build` job (iPhone WebKit at 390 px and the laptop, Day and Evening, from `scripts/screen-shots.mjs`; add the item's screens to its lists if they aren't there).
+- Publish one artifact: each screen as built next to its mockup frame, in Day and Evening, on the demo family. List every remaining difference, or say plainly that there are none.
+- Link it in the PR, and send it to the planner if one started you, before asking for approval.
 
 ### 4. Docs, in the same branch
 

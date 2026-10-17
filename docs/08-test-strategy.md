@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.2: the UI suite runs as an iPhone in WebKit too, and an item built from a mockup shows a side-by-side before approval (WP-100, NFR-16, D-127).
 > v0.8.1: added at the owner's request (WP-85, NFR-19, D-106, D-107), within D-108 (e2e nightly only, the deploy gate on the fast checks) and D-110 (the test standard): the test strategy, guidance by change type, and the Test catalogue (§9), generated from every test's name, which traces each test to the requirements, stories, backlog items and test cases it proves. CI fails a change that adds a test gap.
 
 Every change is one type, and each type has its own rules for the tests it must write and how the owner accepts it. Every pull request runs the same fast checks, and only those gate a merge and a deploy (D-108). The full e2e suite runs nightly on `main` and never blocks anything, so what only e2e can catch is reported the next morning, and fixed as the next item.
@@ -46,7 +47,7 @@ Each type, with what it proves, where it runs, when, and how fast.
 | Static checks | Format, lint, types, traceability (`check_traceability.py`), the docs build and its layout on 13 devices | CI `checks` and `docs` jobs | Every PR, and the merge commit on `main` | About a minute each |
 | Unit (Vitest, node:test) | Pure logic: the rules engine, dates, menu reading, lunch picks, the board's layout choice, sleep and wake, the scripts CI runs | CI `checks` (`pnpm test`) | Every PR | Seconds |
 | Database (pgTAP) | Tables, functions and access rules; household isolation (RLS) | CI `database`, on native Postgres (`scripts/db-test.sh`) | Every PR | About a minute |
-| UI suite (Playwright) | Screens on made-up data with no shared database: every size, theme and text size; the 28 px and 56 px floors; a page's own interactions | CI `build` (`pnpm test:ui`) | Every PR | Minutes |
+| UI suite (Playwright) | Screens on made-up data with no shared database: every size, theme and text size; the 28 px and 56 px floors; a page's own interactions. Desktop Chrome, and an iPhone in WebKit (Safari's engine) for the controls, goal, form and admin layout specs (the `iphone` project, D-127) | CI `build` (`pnpm test:ui`) | Every PR | Minutes |
 | Visual and accessibility | Tile style snapshots, axe contrast, manifests, fonts, keyboard | CI `build`, in the UI suite | Every PR | In the UI suite's time |
 | E2E (Playwright) | Real flows across the board, the admin app, the database and the jobs, as the demo family | A preview of `main` that the run builds, on the test database (`e2e.yml`) | Nightly at 07:17 UTC; never on a PR, never after a deploy (D-108) | 22–34 min for the last four green full runs before D-108 (225, 228, 229, 234), one worker; 40 spec files |
 | Burn-in | A new or changed e2e spec passes 5 runs in a row | The nightly run (`node scripts/e2e-run.mjs --burn-in <spec>`) | Optional, after the spec is on `main` (D-110) | 5 × the spec's time |
@@ -112,7 +113,7 @@ A change is one of these types (D-106). A worker may treat a change as a larger 
 | Docs only | Only `docs/`, `*.md`, guide images | None: the docs build, cross-links, layout and trace are its tests | Reads it |
 | Test only | Only tests and their support | The changed tests themselves; a changed e2e spec may be burnt in on the nightly run | — |
 | Bug fix | A fix in one area | A test that fails on `main` for the reason the owner saw, at the lowest layer that shows it (§4.2) | May check on the preview that the bug is gone |
-| Small feature | One area | Unit tests for every rule and edge; the screen's states in the UI suite; one e2e test only if it crosses surfaces (§4.3) | Tries its Done when on the preview |
+| Small feature | One area | Unit tests for every rule and edge; the screen's states in the UI suite; one e2e test only if it crosses surfaces (§4.3) | Tries its Done when on the preview; built from a mockup, a side-by-side of each screen (iPhone WebKit and laptop) next to its frame first (D-127) |
 | Large feature | Two or more areas (capabilities), or a new table | A test plan before it is built; coverage at each layer for each capability; one e2e journey per capability it crosses (§4.4) | A scripted acceptance of 3 to 8 steps on the preview |
 | Shared code | Migrations, auth, the board or admin shell, shared `lib/`, the test harness, dependencies, CI | Contract tests for what callers rely on (§4.5) | — |
 
@@ -258,7 +259,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2583** tests: Unit 770 · DB 1445 · UI 242 · E2E 126. 2122 name at least one ID; 461 name none.
+**2592** tests: Unit 772 · DB 1445 · UI 249 · E2E 126. 2131 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
@@ -267,7 +268,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 103 of 117 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 77 (with a test: 77) |
+| Test cases | 85 (with a test: 85) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -291,9 +292,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 7 | 15 | 135 |
-| Platform | 122 | 157 | 34 | 10 | 323 |
+| Platform | 124 | 157 | 41 | 10 | 332 |
 | Not named | 58 | 438 | 10 | 1 | 507 |
-| **Total** | **770** | **1445** | **242** | **126** | **2583** |
+| **Total** | **772** | **1445** | **249** | **126** | **2592** |
 
 ### 9.3 By requirement
 
@@ -427,7 +428,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85 | — | U 2 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
-| NFR-16 | S | Covered | US-912 | WP-53, WP-71 | — | UI 4 |
+| NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h | U 2 · UI 11 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Not built | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | — | U 3 |
 | NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99 | — | U 24 · DB 14 · UI 1 · E2E 2 |
@@ -535,6 +536,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-97 | Ready | — | — | — |
 | WP-98 | Ready | — | — | — |
 | WP-99 | Queued: | — | — | — |
+| WP-100 | Done | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h | 8 of 8 | — |
 
 Test cases and the tests that prove them:
 
@@ -611,6 +613,14 @@ Test cases and the tests that prove them:
 | RWD-20-i | WP-82 | The words: each child's line, "Leo missed Tuesday. Starts again Monday, Oct 19.", "Everyone made it! 20 points each.", a week's row on Weeks | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] each child’s line, who missed it and when it starts again`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] won: everyone, or only the children with something due, as they are paid (D-126)`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] a week’s row on the goal’s Weeks`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i] a family goal’s weeks: each child, who had nothing due, and what each was paid`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-20-i][US-415] the family goal: each child’s days; missed by Leo; won by both` |
 | RWD-20-j | WP-82 | The forms, Goals' two cards and a family goal's Weeks at 390 and 1280 px, and the board's family card going, missed and won and the perfect-weeks card, in both themes | UI | UI `e2e/ui/goal-perfect.spec.ts`: `on a ${device} › [RWD-20-j][NFR-11] the forms, Goals and a family goal’s weeks fit a ${device} in ${theme}`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-h] the form: every child meets it on a family goal, without steps`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-19-h] the form: weeks won of Maya’s goal, in a row, from this goal’s start`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i] a family goal’s weeks: each child, who had nothing due, and what each was paid`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app the board at ${viewport.width}×${viewport.height} › [RWD-20-j][NFR-03] the family goal going, missed and won, and perfect weeks, in ${theme}: 28…`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-20-i][US-415] the family goal: each child’s days; missed by Leo; won by both`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-19-i][US-414] perfect weeks: 1 of 3 in a row, the weeks, what this week makes` |
 | RWD-20-k | WP-82 | On the preview: the family's "Everyone's homework home": a week both children made pays each 20 once; Leo's missed Tuesday leaves the next week unreached though Maya made every day | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
+| NFR-16-a | WP-100 | Every admin page's fields, lists, dates and times are the app's on Chrome and iPhone WebKit, in Day and Evening: no browser look, 44 px or taller, 10 px round, 16 px text; a field is filled with the page's background and shows the focus ring | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}`<br>UI `e2e/ui/controls.spec.ts`: `[NFR-16-a] a field is filled, 10 px round, with a 3:1 edge and the focus ring` |
+| NFR-16-b | WP-100 | Every radio and check box is the app's: 20 px, a soft edge, the primary colour when chosen, on both engines | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}` |
+| NFR-16-c | WP-100 | A photo is chosen with **Choose a photo**; the file's name shows; the browser's own file picker never shows | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-c] a photo is chosen with the app’s button, and its name shows` |
+| NFR-16-d | WP-100 | The goal form: **Repeats** as tinted chips with no dot, **Who it's for** as choices with no ring, its parts in boxes, and the mockup's words (**Points**, **A reward from the shop**, **Something else**, **Set the goal**, **Cancel**) | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-d] the goal form: Repeats as chips, Who it’s for as choices, its parts in boxes` |
+| NFR-16-e | WP-100 | A goal's page: **‹ Goals**, its name and state above its card; a started goal's who, repeats and start shown, not offered; Goals' heading and **Set a goal** above its card | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-e] a goal’s page: Goals to go back to, its name and state, then its form` |
+| NFR-16-f | WP-100 | The board's goal card: its icon in a tile, "3 of 4 days" and its points under the bar | UI | UI `e2e/ui/board-repeating.spec.ts`: `the card › [NFR-16-f] the board’s goal card: its icon in a tile, its days under the bar` |
+| NFR-16-g | WP-100 | The icon picker folded to the icon chosen; opened, the search and the icons; the choice shows on the folded header | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-g] the icon picker folds to the icon chosen; opened, the search and the icons` |
+| NFR-16-h | WP-100 | CI runs the UI suite as an iPhone in WebKit (the controls, goal, form and admin layout specs) and keeps the screenshots for the side-by-side | Unit | Unit `scripts/screen-shots.test.mjs`: `[NFR-16-h] the UI suite runs the goal, form and admin layout specs as an iPhone in WebKit`<br>Unit `scripts/screen-shots.test.mjs`: `[NFR-16-h] CI keeps iPhone and laptop screenshots of the goal screens as an artifact` |
 | NFR-19-a | WP-85 | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-a][US-913] a test traces to the IDs in its name and its describe blocks, in every layer` |
 | NFR-19-b | WP-85 | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-b][US-913] a test naming an unknown requirement, story, item or test case fails the check` |
 | NFR-19-c | WP-85 | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-c][US-913] a new gap fails the check, and a known gap does not` |
@@ -2250,11 +2260,12 @@ UI · 7 tests
 
 #### `e2e/ui/board-repeating.spec.ts`
 
-UI · 4 tests
+UI · 5 tests
 
 | Test | Names |
 |---|---|
 | `at ${viewport.width}×${viewport.height} › [RWD-15-l][NFR-03] Maya’s goal going, missed and won, in ${theme}: 28 px text, AA contrast` | RWD-15-l, NFR-03 |
+| `the card › [NFR-16-f] the board’s goal card: its icon in a tile, its days under the bar` | NFR-16-f |
 | `the card › [RWD-15-l][RWD-16][US-411] going: a mark for each day, a day off a dash, "3 of 4 days" and what it pays` | RWD-15-l, RWD-16, US-411 |
 | `the card › [RWD-15-l][RWD-16-c][US-411] missed: "Missed, starts again" the next week’s first day, no part count` | RWD-15-l, RWD-16-c, US-411 |
 | `the card › [RWD-15-l] won: "Won this week! 10 points." and when the next week starts` | RWD-15-l |
@@ -2334,6 +2345,19 @@ UI · 5 tests
 | `[CAL-03][CAL-01] events are only read: no way to add or change one, and no link shown` | CAL-01, CAL-03 |
 | `[CAL-09-d][US-508] who a calendar is for: The whole family or a tick a person` | CAL-09-d, US-508 |
 | `[CAL-01] with none yet, the page says so and offers the form` | CAL-01 |
+
+#### `e2e/ui/controls.spec.ts`
+
+UI · 6 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}` | NFR-16-a, NFR-16-b |
+| `[NFR-16-a] a field is filled, 10 px round, with a 3:1 edge and the focus ring` | NFR-16-a |
+| `[NFR-16-d] the goal form: Repeats as chips, Who it’s for as choices, its parts in boxes` | NFR-16-d |
+| `[NFR-16-e] a goal’s page: Goals to go back to, its name and state, then its form` | NFR-16-e |
+| `[NFR-16-g] the icon picker folds to the icon chosen; opened, the search and the icons` | NFR-16-g |
+| `[NFR-16-c] a photo is chosen with the app’s button, and its name shows` | NFR-16-c |
 
 #### `e2e/ui/dashboard.spec.ts`
 
@@ -2422,7 +2446,7 @@ UI · 14 tests
 | `[RWD-14] a started goal with no end date: unticked at first, ticking it shows an empty date` | RWD-14 |
 | `[RWD-14] a reached goal keeps its rules and dates (D-115)` | RWD-14 |
 | `[RWD-13][US-409] what each goal pays, and a goal whose reward was given then undone needs a look` | RWD-13, US-409 |
-| `[RWD-13] the form: the celebration, points, or a reward from the shop (a child’s goal only)` | RWD-13 |
+| `[RWD-13] the form: points, a reward from the shop (a child’s goal only), or something else` | RWD-13 |
 | `[RWD-10][US-406] the preview: what saving would do, and each rule now and after` | RWD-10, US-406 |
 | `[RWD-15-l][RWD-16][US-410] a repeating goal on Goals: this week’s days, a lost week, and the weeks` | RWD-15-l, RWD-16, US-410 |
 | `[RWD-15-l][RWD-15-e] a repeating goal’s page: how it repeats stays, its rule and its weeks` | RWD-15-e, RWD-15-l |
@@ -2999,6 +3023,15 @@ Unit · 2 tests
 |---|---|
 | `[NFR-14] opens an issue when none with the title is open` | NFR-14 |
 | `[NFR-14] comments on the open issue with the same title, and opens no second one` | NFR-14 |
+
+#### `scripts/screen-shots.test.mjs`
+
+Unit · 2 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-16-h] the UI suite runs the goal, form and admin layout specs as an iPhone in WebKit` | NFR-16-h |
+| `[NFR-16-h] CI keeps iPhone and laptop screenshots of the goal screens as an artifact` | NFR-16-h |
 
 #### `scripts/trace-catalogue.test.mjs`
 

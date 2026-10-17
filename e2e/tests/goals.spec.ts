@@ -203,7 +203,7 @@ test('[RWD-01][RWD-06] a parent sets a goal through the form, then cancels it', 
   await form.getByRole('spinbutton', { name: 'Target', exact: true }).fill('3');
   await form.getByRole('radio', { name: 'Some tags', exact: true }).check();
   await form.getByRole('checkbox', { name: 'Morning', exact: true }).check();
-  await form.getByRole('button', { name: 'Set goal' }).click();
+  await form.getByRole('button', { name: 'Set the goal' }).click();
   await expect(admin.getByRole('status')).toHaveText(`Saved ${BIKE}.`);
   await expect(goal(BIKE)).toContainText('Maya · Started');
   await expect(goal(BIKE)).toContainText('3 things done, tagged Morning');

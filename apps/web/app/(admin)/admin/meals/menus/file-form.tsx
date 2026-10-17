@@ -1,6 +1,6 @@
 'use client';
 
-import { Banner, Button } from '@familywise/ui';
+import { Banner, Button, FileField } from '@familywise/ui';
 import { dayName } from '@/lib/board-calendar';
 import { useFormAction } from '@/lib/forms';
 import { MenuText } from '../menu-text';
@@ -23,14 +23,14 @@ export function MenuFileForm({
   return (
     <form onSubmit={onSubmit} className="fw-form" aria-label={`Load a file into ${name}`}>
       <input type="hidden" name="id" value={id} />
-      <label className="fw-field">
-        <span className="fw-field__label">Menu file (CSV)</span>
-        <input className="fw-input" type="file" name="file" accept=".csv,text/csv" />
-        <span className="fw-field__help">
-          A row per item, with the columns date, item and (if you like) section. A date with no item
-          means no lunch that day; its section says why, like Presidents’ Day.
-        </span>
-      </label>
+      <FileField
+        label="Menu file (CSV)"
+        name="file"
+        accept=".csv,text/csv"
+        button="Choose a file"
+        empty="No file chosen"
+        help="A row per item, with the columns date, item and (if you like) section. A date with no item means no lunch that day; its section says why, like Presidents’ Day."
+      />
       {state.problems?.length ? (
         <Banner kind="notice">
           <span>The file wasn’t loaded:</span>

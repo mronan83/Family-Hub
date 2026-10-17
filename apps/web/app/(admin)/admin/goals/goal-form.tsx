@@ -6,12 +6,14 @@ import {
   type AvatarKey,
   Banner,
   Button,
+  FileField,
   Icon,
   IconPicker,
   type IconName,
   type MemberColor,
 } from '@familywise/ui';
-import { useState } from 'react';
+import Link from 'next/link';
+import { type ReactNode, useState } from 'react';
 import { useFormAction } from '@/lib/forms';
 import { periodWord, REPEAT_WORDS } from '@/lib/goal-periods';
 import { type LowerStep, type StepKind, stepKind } from '@/lib/goal-steps';
@@ -216,13 +218,22 @@ export function GoalForm({
       </label>
 
       {whoLocked ? (
-        <input type="hidden" name="member" value={who} />
+        <div className="fw-fgrid">
+          {/* [NFR-16][D-127] Fixed once it starts: shown as the mockup draws them, not editable. */}
+          <input type="hidden" name="member" value={who} />
+          <ReadField label="Who it’s for">
+            {family
+              ? 'The whole family'
+              : (members.find((m) => m.id === who)?.displayName ?? 'Someone')}
+          </ReadField>
+          <ReadField label="Repeats">{REPEAT_WORDS[repeat]}</ReadField>
+        </div>
       ) : (
         <fieldset className="fw-field fw-fieldset">
           <legend className="fw-field__label">Who it’s for</legend>
-          <div className="fw-picker">
+          <div className="fw-choices">
             {members.map((m) => (
-              <label key={m.id} className="fw-picker__item">
+              <label key={m.id} className="fw-choice">
                 <input
                   type="radio"
                   name="member"
@@ -240,7 +251,7 @@ export function GoalForm({
                 {m.displayName}
               </label>
             ))}
-            <label className="fw-picker__item">
+            <label className="fw-choice">
               <input
                 type="radio"
                 name="member"
@@ -267,8 +278,8 @@ export function GoalForm({
           <input type="hidden" name="eachChild" value="on" />
         ) : null
       ) : family ? (
-        <fieldset className="fw-field fw-fieldset" aria-label="For the whole family">
-          <legend className="fw-field__label">For the whole family</legend>
+        <fieldset className="fw-box" aria-label="For the whole family">
+          <legend>For the whole family</legend>
           <label className="fw-choice">
             <input
               type="checkbox"
@@ -297,13 +308,14 @@ export function GoalForm({
       {whoLocked ? (
         <input type="hidden" name="repeat" value={repeat} />
       ) : (
-        <fieldset className="fw-field fw-fieldset">
-          <legend className="fw-field__label">Repeats</legend>
-          <div className="fw-picker">
+        <fieldset className="fw-box">
+          <legend>Repeats</legend>
+          <div className="fw-seg">
             {REPEATS.map((r) => (
-              <label key={r} className="fw-picker__item">
+              <label key={r} className="fw-seg__item">
                 <input
                   type="radio"
+                  className="fw-seg__input"
                   name="repeat"
                   value={r}
                   checked={repeat === r}
@@ -325,9 +337,12 @@ export function GoalForm({
         </fieldset>
       )}
 
-      <div className="fw-goal-form__dates">
+      <div className="fw-fgrid">
         {whoLocked ? (
-          <input type="hidden" name="startDate" value={initial?.startDate ?? today} />
+          <>
+            <input type="hidden" name="startDate" value={initial?.startDate ?? today} />
+            <ReadField label="Starts">{longDate(initial?.startDate ?? today)}</ReadField>
+          </>
         ) : (
           <label className="fw-field">
             <span className="fw-field__label">Starts</span>
@@ -396,7 +411,7 @@ export function GoalForm({
         ) : (
           <fieldset className="fw-field fw-fieldset">
             <legend className="fw-field__label">It’s reached when</legend>
-            <div className="fw-actions">
+            <div className="fw-choices">
               <label className="fw-choice">
                 <input
                   type="radio"
@@ -446,24 +461,20 @@ export function GoalForm({
         selected={initial?.icon ?? 'trophy'}
         start="rewards"
       />
-      <label className="fw-field">
-        <span className="fw-field__label">
-          {hasPhoto ? 'A new photo (optional)' : 'Photo (optional)'}
-        </span>
-        <input
-          className="fw-input"
-          name="photo"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-        />
-        <span className="fw-field__help">JPEG, PNG or WebP, up to 2 MB.</span>
-      </label>
+      <FileField
+        label={hasPhoto ? 'A new photo (optional)' : 'Photo (optional)'}
+        name="photo"
+        accept="image/jpeg,image/png,image/webp"
+        button="Choose a photo"
+        empty="No photo chosen"
+        help="JPEG, PNG or WebP, up to 2 MB."
+      />
 
       {state.message ? <Banner kind="notice">{state.message}</Banner> : null}
       {state.preview && !state.message ? <PreviewPanel preview={state.preview} /> : null}
       <div className="fw-actions">
         <Button type="submit" icon="check" disabled={pending}>
-          {initial ? 'Save changes' : 'Set goal'}
+          {initial ? 'Save changes' : 'Set the goal'}
         </Button>
         {rulesLocked ? null : (
           <Button
@@ -476,6 +487,11 @@ export function GoalForm({
           >
             Preview
           </Button>
+        )}
+        {initial ? null : (
+          <Link className="fw-btn fw-btn--ghost" href="/admin/goals">
+            Cancel
+          </Link>
         )}
       </div>
     </form>
@@ -541,21 +557,11 @@ function PayoutField({
   }
   const noItem = family || prizes.length === 0;
   return (
-    <fieldset className="fw-field fw-fieldset">
-      <legend className="fw-field__label">
+    <fieldset className="fw-box">
+      <legend>
         {repeat === 'none' ? 'What reaching it pays' : `What each ${periodWord(repeat)} pays`}
       </legend>
-      <div className="fw-actions">
-        <label className="fw-choice">
-          <input
-            type="radio"
-            name="payout"
-            value="custom"
-            checked={pays === 'custom'}
-            onChange={() => onPays('custom')}
-          />
-          Just the celebration
-        </label>
+      <div className="fw-choices">
         <label className="fw-choice">
           <input
             type="radio"
@@ -566,6 +572,19 @@ function PayoutField({
           />
           Points
         </label>
+        {pays === 'points' ? (
+          <input
+            className="fw-input fw-input--points"
+            name="payoutPoints"
+            type="number"
+            inputMode="numeric"
+            aria-label="Points paid"
+            min={1}
+            max={10000}
+            required
+            defaultValue={points}
+          />
+        ) : null}
         <label className="fw-choice">
           <input
             type="radio"
@@ -577,22 +596,17 @@ function PayoutField({
           />
           A reward from the shop
         </label>
-      </div>
-      {pays === 'points' ? (
-        <label className="fw-field">
-          <span className="fw-field__label">Points paid</span>
+        <label className="fw-choice">
           <input
-            className="fw-input fw-input--short"
-            name="payoutPoints"
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={10000}
-            required
-            defaultValue={points}
+            type="radio"
+            name="payout"
+            value="custom"
+            checked={pays === 'custom'}
+            onChange={() => onPays('custom')}
           />
+          Something else
         </label>
-      ) : null}
+      </div>
       {pays === 'points' && noSteps ? (
         <span className="fw-field__help">
           Pay in steps isn’t offered when every child meets it.
@@ -679,8 +693,8 @@ function StepsField({
     if (last) onLowest(last);
   };
   return (
-    <fieldset className="fw-fieldset fw-goal-steps" aria-label="Pay in steps">
-      <legend className="fw-field__label">Pay in steps</legend>
+    <fieldset className="fw-box fw-goal-steps" aria-label="Pay in steps">
+      <legend>Pay in steps</legend>
       <label className="fw-choice">
         <input
           type="checkbox"
@@ -885,9 +899,9 @@ function RuleRow({
   const onChoice = !row.onTime ? 'any' : row.onTime === 'due_time' ? 'due_time' : 'by';
   const daysDue = row.type === 'DAYS_DUE';
   return (
-    <fieldset className="fw-field fw-fieldset fw-goal-rule">
-      <legend className="fw-field__label">{only ? 'Rule' : `Rule ${n}`}</legend>
-      <div className="fw-goal-rule__head">
+    <fieldset className="fw-box fw-goal-rule">
+      <legend>{only ? 'Rule' : `Rule ${n}`}</legend>
+      <div className="fw-fgrid">
         <label className="fw-field">
           <span className="fw-field__label">Counts</span>
           <select
@@ -1003,7 +1017,7 @@ function RuleRow({
       ) : null}
       <fieldset className="fw-fieldset">
         <legend className="fw-field__label">What counts</legend>
-        <div className="fw-actions">
+        <div className="fw-choices">
           {(['all', 'tags', 'items'] as const).map((s) => (
             <label key={s} className="fw-choice">
               <input
@@ -1021,9 +1035,9 @@ function RuleRow({
           ))}
         </div>
         {row.scope === 'tags' ? (
-          <div className="fw-picker" role="group" aria-label={`Tags for rule ${n}`}>
+          <div className="fw-choices" role="group" aria-label={`Tags for rule ${n}`}>
             {tags.map((t) => (
-              <label key={t.id} className="fw-picker__item">
+              <label key={t.id} className="fw-choice">
                 <input
                   type="checkbox"
                   name={name('tag')}
@@ -1036,9 +1050,9 @@ function RuleRow({
           </div>
         ) : null}
         {row.scope === 'items' ? (
-          <div className="fw-picker" role="group" aria-label={`Items for rule ${n}`}>
+          <div className="fw-choices" role="group" aria-label={`Items for rule ${n}`}>
             {items.map((t) => (
-              <label key={t.id} className="fw-picker__item">
+              <label key={t.id} className="fw-choice">
                 <input
                   type="checkbox"
                   name={name('item')}
@@ -1051,9 +1065,9 @@ function RuleRow({
           </div>
         ) : null}
       </fieldset>
-      <fieldset className="fw-fieldset fw-goal-ontime">
-        <legend className="fw-field__label">Counts only when done</legend>
-        <div className="fw-actions">
+      <fieldset className="fw-box fw-goal-ontime">
+        <legend>Counts only when done</legend>
+        <div className="fw-choices">
           <label className="fw-choice">
             <input
               type="radio"
@@ -1085,17 +1099,15 @@ function RuleRow({
             By a time
           </label>
           {onChoice === 'by' ? (
-            <label className="fw-field">
-              <span className="fw-field__label">Time</span>
-              <input
-                className="fw-input fw-input--short"
-                type="time"
-                name={name('ontime-at')}
-                required
-                value={row.onTime ?? '18:00'}
-                onChange={(e) => onChange({ onTime: e.target.value || '18:00' })}
-              />
-            </label>
+            <input
+              className="fw-input fw-input--clock"
+              type="time"
+              name={name('ontime-at')}
+              aria-label="Time"
+              required
+              value={row.onTime ?? '18:00'}
+              onChange={(e) => onChange({ onTime: e.target.value || '18:00' })}
+            />
           ) : null}
         </div>
         {onChoice !== 'any' ? (
@@ -1148,9 +1160,9 @@ function CountedRule({
   const source = countable.find((c) => c.id === row.source) ?? countable[0];
   const unit = source ? periodWord(source.repeat, 2) : 'weeks';
   return (
-    <fieldset className="fw-field fw-fieldset fw-goal-rule">
-      <legend className="fw-field__label">{only ? 'Rule' : `Rule ${n}`}</legend>
-      <div className="fw-goal-rule__head">
+    <fieldset className="fw-box fw-goal-rule">
+      <legend>{only ? 'Rule' : `Rule ${n}`}</legend>
+      <div className="fw-fgrid">
         <label className="fw-field">
           <span className="fw-field__label">Counts</span>
           <select
@@ -1199,7 +1211,7 @@ function CountedRule({
       </label>
       <fieldset className="fw-fieldset">
         <legend className="fw-field__label">How</legend>
-        <div className="fw-actions">
+        <div className="fw-choices">
           <label className="fw-choice">
             <input
               type="radio"
@@ -1241,5 +1253,27 @@ function CountedRule({
         </div>
       )}
     </fieldset>
+  );
+}
+
+/** "Sep 14, 2026" for a date. */
+function longDate(iso: string): string {
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
+/** [NFR-16][D-127] A field that can't change any more, shown as a field without its edge. */
+function ReadField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <span className="fw-field">
+      <span className="fw-field__label">{label}</span>
+      <span className="fw-input fw-input--read" aria-readonly="true">
+        {children}
+      </span>
+    </span>
   );
 }
