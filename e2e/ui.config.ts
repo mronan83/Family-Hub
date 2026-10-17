@@ -28,6 +28,10 @@ export default defineConfig({
     {
       name: 'iphone',
       use: { ...devices['iPhone 13'] },
+      // [D-110] Measured on CI's WebKit: the slowest, goals.spec's fit check (four pages, each with
+      // axe's contrast scan), took 15 to 27 s and timed out past 30 s on a slower runner; 100 s
+      // keeps more than 3× the slowest. Every other iPhone test took under 17 s.
+      timeout: 100_000,
       testMatch: [
         'controls.spec.ts',
         'goals.spec.ts',
