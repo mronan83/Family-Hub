@@ -53,7 +53,7 @@ export async function loadGoalContext(db: SupabaseClient, householdId: string, k
     tags: tags.filter((t) => !t.archivedAt).map((t) => ({ id: t.id, name: t.name })),
     items: chores
       .filter((c) => !c.archivedAt)
-      .map((c) => ({ id: c.id, title: c.title }))
+      .map((c) => ({ id: c.id, title: c.title, icon: c.icon }))
       .sort((a, b) => a.title.localeCompare(b.title)),
     names: {
       tags: new Map(tags.map((t) => [t.id, t.name])),

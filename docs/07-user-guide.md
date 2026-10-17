@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.38: the goal form as its mockups draw it (WP-101, D-128): a rule folds to one line with its weight; summaries on the form say what this week asks ("This week Homework home is due 4 days for Maya (Friday, Oct 16 is a teacher planning day)…") and change as you fill it in; items with their picture; dates written "Mon, Oct 12, 2026" (A7, A7b, A7c).
 > v0.37: the admin app's form controls drawn the same on an iPhone and a computer (WP-100, D-127): fields, lists, dates, radios and check boxes in the app's own look; **Repeats** as chips; the goal form's parts in boxes; **Something else** and **Set the goal**; the icon picker folded to the icon chosen in every form; **Choose a photo** for a photo (A7, B1).
 > v0.36: perfect weeks, and a family goal every child meets (WP-82, D-126): **Weeks won of a repeating goal**, in total or in a row, and **Every child meets it** on a family goal, with each child's days on Goals and the board (A7c, B1.8).
 > v0.35: a goal done by a time, and goals that pay in steps (WP-81, D-124): **Counts only when done**, **Pay in steps** by days missed, by number or by weighted rules, and the board's steps (A7b, B1.8).
@@ -599,14 +600,18 @@ On **Rewards**, a reward someone is saving for says so ("Maya is saving for it")
 
 1. Enter a **Name** and, optionally, a **Description**.
 2. Choose **Who it's for**: someone who earns rewards, or **The whole family** (which counts what everyone does).
-3. Set when it **Starts**. To give it an end date, tick **Ends on a date** and choose the day. Left unticked, it has no end date and keeps going until it's reached or you end it.
+3. Set when it **Starts**: tap the date ("Mon, Oct 12, 2026") to pick another. To give it an end date, tick **Ends on a date** and choose the day. Left unticked, it has no end date and keeps going until it's reached or you end it.
 4. Set the **Rule**: what it **Counts** and its **Target**:
    - **Things done**: items done within the goal's dates.
    - **Days with everything done**: days when every routine was done.
    - **Good days in a row**: a streak, with **Misses forgiven a week** (0 to 3, 1 by default).
    - **Points earned**: points from items done.
-5. Choose **What counts**: **Everything**, **Some tags** or **Some items**.
-6. Optionally, **Add a rule** (up to 5), and choose whether **It's reached when** **Every rule is met** or **Any one rule is met**.
+5. Choose **What counts**: **Everything**, **Some tags** or **Some items** (each item with its picture). On a goal you've already set, **What counts** shows as one line ("Some items: Homework home"); tap it to change it.
+6. Optionally, **Add a rule** (up to 5), and choose whether **It's reached when** **Every rule is met** or **Any one rule is met**. With two or more rules, each one folds to a line such as "Every day it's due: Homework home, by 6:00 pm" while you work on another; tap a line to open that rule, and **Done** to fold it again. A rule that still needs something (an item to count, say) stays open and says what.
+
+As you fill it in, the form says what it means for this week, under the rule: "This week Homework home is due 4 days for Maya (Friday, Oct 16 is a teacher planning day), so this week needs 4. A normal week needs 5." It changes as you change the form, worked out the same way as **Preview**.
+
+![A rule in the goal form on a phone: Counts Every day it's due, Misses allowed each week 0, What counts Some items with Homework home ticked, each item with its picture, and under it "This week Homework home is due 4 days for Maya (Friday, Oct 16 is a teacher planning day), so this week needs 4. A normal week needs 5."](guide/img/admin-goal-summary-phone.jpg "What this week asks, as you fill it in")
 7. Choose **What reaching it pays**:
    - **Points**: type the points (1 to 10,000) in the box beside it. They go to the child when it's reached. A family goal pays them to each child who earns rewards.
    - **A reward from the shop** (a child's goal only): choose the **Reward**. It is approved for them at once and costs them nothing; you mark it given on **Rewards** as usual. A reward taken out of the shop can still be a goal's prize.
@@ -692,7 +697,9 @@ On the goal's page, **Weeks** is folded to "Won 3 of the last 4 weeks" and the p
 
 - **Counts only when done**: **Any time that day** (as before), **By each chore's due time**, or **By** a time you set. A tick after the time still completes the chore and earns its points; it just doesn't count for this goal. A chore without a due time, under **By each chore's due time**, counts any time that day. The tick's own time decides, even when the board was offline. Your own tick after the time doesn't count either.
 - **Pay in steps** (when it pays points): the points you set are the top step. On **Every day it's due**, the steps are days missed: "All days 20, 1 missed 10, 2 missed 5", so a short week's top step is still all its days, and the lowest step sets the misses allowed. On a goal counted by number, a step is a number reached: "20 pays 20, 15 pays 10, 10 pays 5"; a goal like that that doesn't repeat needs an end date.
-- **Two or more rules in steps**: each rule gets a **Weight (%)**, together 100%. The goal's % is each rule's % times its weight ("homework 75% × 60% + reading 80% × 40% = 77%"), the steps are % of the goal, and it is reached at 100%, every rule met.
+- **Two or more rules in steps**: each rule gets a **Weight**, together 100%, beside its line ("Rule 1 · weight"). At the foot of the form a line adds them up as the week stands: "So far this week: Homework home 3 of 4 days (75%) × 60% = 45, Reading 4 of 5 (80%) × 40% = 32. 77%: 10 points if the week closes now."; with steps by days missed it says what each step pays this week: "all 4 on time pays 20, 3 pays 10, 2 pays 5".
+
+![Two weighted rules on a phone: Rule 1 · weight, "Every day it's due: Homework home, by 6:00 pm" with Weight 60%; Rule 2 · weight, "Things done: 5 · Reading" with Weight 40%; Weights total 100%; "So far this week: Homework home 3 of 4 days (75%) × 60% = 45, Reading 4 of 5 (80%) × 40% = 32. 77%: 10 points if the week closes now."](guide/img/admin-goal-rules-phone.jpg "Two rules, weighted") The goal's % is each rule's % times its weight ("homework 75% × 60% + reading 80% × 40% = 77%"), the steps are % of the goal, and it is reached at 100%, every rule met.
 - **The highest step reached pays, not the sum.** The top step pays the moment it's reached. A lower step pays when the week (or the goal) ends, or as soon as nothing higher can be reached. If you fix a tick later and the week moves to another step, the difference is paid or taken back.
 
 **On Goals,** the goal shows its steps and where it stands ("Steps: All 5: 20 · 4: 10 · 3: 5 · On course for 10 points."), and a day ticked late ("Wednesday was after 6:00 pm."). The goal's **Weeks** say the step each week was won at: "Won at 1 missed: 10 points".
@@ -708,8 +715,8 @@ On the goal's page, **Weeks** is folded to "Won 3 of the last 4 weeks" and the p
 
 **What this is.** A goal that counts the weeks another goal was won ("3 perfect homework weeks in a row"), and a family goal each child has to meet on their own. **When.** To reward a run of good weeks with something bigger, or when one child shouldn't carry the others. **How.** In the goal form.
 
-- **Weeks won of a repeating goal**: under **Counts**, choose it, then **Which goal** (that person's goals that repeat, or the family's for a family goal), **How** (**In total** or **In a row**) and the **Target**. A week with nothing due neither counts nor breaks a run; a missed week breaks it. Only weeks that start on or after this goal's start date count, so a goal set up on a Thursday counts from the next week. What it pays is its own, apart from what each week pays: an ice cream trip for 3 in a row.
-- **Every child meets it**: on a goal for **The whole family**, under **For the whole family**. Each child who earns rewards has to meet it on their own: one child's missed Tuesday loses the week for everyone, however well the others did. A child with nothing due that week doesn't hold it back. The points go to each child who had something due, and only to them. It can't be changed once the goal starts, and it doesn't pay in steps.
+- **Weeks won of a repeating goal**: under **Counts**, choose it, then **Which goal** (that person's goals that repeat, or the family's for a family goal), **How** (**In total** or **In a row**) and the **Target**. A week with nothing due neither counts nor breaks a run; a missed week breaks it. Only weeks that start on or after this goal's start date count, so a goal set up on a Thursday counts from the next week; the form says which week is the first. What it pays is its own, apart from what each week pays: an ice cream trip for 3 in a row.
+- **Every child meets it**: on a goal for **The whole family**, under **For the whole family**. Each child who earns rewards has to meet it on their own: one child's missed Tuesday loses the week for everyone, however well the others did. A child with nothing due that week doesn't hold it back. The points go to each child who had something due, and only to them. The form says what this week asks of each: "due 4 days for Maya and 4 days for Leo (…): each needs 4." It can't be changed once the goal starts, and it doesn't pay in steps.
 
 **On Goals,** a family goal every child meets shows each child's days this week and who missed ("Leo missed Tuesday. Starts again Monday, Oct 19."); its **Weeks** say how each child did and what each was paid. A goal counting weeks shows its run ("1 of 3 weeks in a row · best so far 1") and the counted goal's weeks.
 

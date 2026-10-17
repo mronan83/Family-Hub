@@ -8,6 +8,8 @@ import { GoalForm } from '../../(admin)/admin/goals/goal-form';
 import { WeeksFold } from '../../(admin)/admin/goals/repeating';
 import { GoalHead, GoalStatusPill, GoalsView } from '../../(admin)/admin/goals/view';
 import { goalSteps } from '@/lib/goal-steps';
+import { DEV } from './facts';
+import { devLiveGoal } from './live';
 
 // The admin Goals page and goal form (WP-19, WP-39) with a made-up family and no database, for the UI
 // suite: the list in Day or Evening (?theme=evening), the form for a new goal (?form=new), for one
@@ -477,12 +479,8 @@ const TAGS = [
   { id: MORNING, name: 'Morning' },
   { id: KITCHEN, name: 'Kitchen' },
 ];
-const ITEMS = [
-  { id: BED, title: 'Make bed' },
-  { id: HOMEWORK, title: 'Homework home' },
-  { id: READING, title: 'Reading' },
-  { id: 'f2c00000-0000-4000-8000-000000000002', title: 'Set the table' },
-];
+// [NFR-16-n] Each item with its picture (WP-101).
+const ITEMS = DEV.items.map((i) => ({ ...i }));
 
 export default async function DevGoalsPage({
   searchParams,
@@ -544,11 +542,12 @@ export default async function DevGoalsPage({
               tags={TAGS}
               items={ITEMS}
               prizes={PRIZES}
+              live={devLiveGoal}
               today={TODAY}
               lock={params.form === 'family-weeks' ? 'started' : 'none'}
               countable={[
                 {
-                  id: 'g8',
+                  id: DEV.homeworkGoal,
                   title: 'Homework home every school day',
                   memberId: MAYA,
                   repeat: 'week',
@@ -574,7 +573,7 @@ export default async function DevGoalsPage({
                           tagIds: [],
                           itemIds: [],
                           grace: 1,
-                          source: 'g8',
+                          source: DEV.homeworkGoal,
                           inARow: true,
                         },
                       ],
@@ -584,7 +583,7 @@ export default async function DevGoalsPage({
                       description: null,
                       icon: 'family',
                       memberId: null,
-                      startDate: params.form === 'family-weeks' ? family.startDate : TODAY,
+                      startDate: params.form === 'family-weeks' ? family.startDate : '2026-10-12',
                       endDate: null,
                       logic: 'all',
                       repeat: 'week',
@@ -674,7 +673,7 @@ export default async function DevGoalsPage({
               description: null,
               icon: 'backpack' as const,
               memberId: MAYA,
-              startDate: TODAY,
+              startDate: '2026-10-12',
               endDate: null,
               logic: 'all' as const,
               repeat: 'week' as const,
@@ -742,6 +741,7 @@ export default async function DevGoalsPage({
               tags={TAGS}
               items={ITEMS}
               prizes={PRIZES}
+              live={devLiveGoal}
               today={TODAY}
               lock={params.form === 'steps' ? 'started' : 'none'}
               initial={initial}
@@ -757,6 +757,51 @@ export default async function DevGoalsPage({
               kind="misses"
             />
           ) : null}
+        </main>
+      </div>
+    );
+  }
+  // [NFR-16][D-128] homework: a new goal filled in as the WP-80 frame "Set a goal: Maya's homework,
+  // each week" draws it, its rule open with its live summary (WP-101).
+  if (params.form === 'homework') {
+    return (
+      <div className={`admin ${theme}`}>
+        <main className="fw-page">
+          <AdminHeader current="/admin/goals" />
+          <GoalHead title="Set a goal" />
+          <section className="fw-card">
+            <GoalForm
+              id="f2e00000-0000-4000-8000-000000000030"
+              members={MEMBERS}
+              tags={TAGS}
+              items={ITEMS}
+              prizes={PRIZES}
+              today="2026-10-12"
+              live={devLiveGoal}
+              draft={{
+                title: 'Homework home every school day',
+                description: null,
+                icon: 'backpack',
+                memberId: MAYA,
+                startDate: '2026-10-12',
+                endDate: null,
+                logic: 'all',
+                repeat: 'week',
+                payout: { type: 'points', amount: 10 },
+                rules: [
+                  {
+                    type: 'DAYS_DUE',
+                    target: 1,
+                    scope: 'items',
+                    tagIds: [],
+                    itemIds: [HOMEWORK],
+                    grace: 1,
+                    misses: 0,
+                  },
+                ],
+              }}
+            />
+          </section>
         </main>
       </div>
     );
@@ -780,6 +825,7 @@ export default async function DevGoalsPage({
               tags={TAGS}
               items={ITEMS}
               prizes={PRIZES}
+              live={devLiveGoal}
               today={TODAY}
               lock="started"
               preview={{
@@ -869,6 +915,7 @@ export default async function DevGoalsPage({
               tags={TAGS}
               items={ITEMS}
               prizes={PRIZES}
+              live={devLiveGoal}
               today="2026-10-10"
               lock={params.form === 'reached' ? 'finished' : started ? 'started' : 'none'}
               preview={

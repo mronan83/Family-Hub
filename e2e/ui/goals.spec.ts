@@ -55,7 +55,8 @@ for (const [device, viewport] of [
         await contrastOk(page);
         await page.goto(`/dev/goals?form=new&theme=${theme}`);
         await page.getByRole('button', { name: 'Add a rule' }).click();
-        await page.getByRole('combobox', { name: 'Counts' }).nth(1).selectOption('STREAK');
+        // [D-128] Adding a rule opens it and folds the first to its summary line.
+        await page.getByRole('combobox', { name: 'Counts' }).last().selectOption('STREAK');
         await page.getByRole('radio', { name: 'A reward from the shop' }).check();
         await fits(page, viewport.width);
         await contrastOk(page);
@@ -94,7 +95,7 @@ test('[RWD-04][RWD-07] goals in play: achieved first, each rule’s meter and wh
   await expect(inPlay.getByRole('listitem').first()).toContainText('Trip to the park');
   await expect(inPlay.getByRole('listitem').first()).toContainText('Achieved again');
   const movie = inPlay.getByRole('listitem').filter({ hasText: 'Movie night' });
-  await expect(movie).toContainText('Leo · Started Sat, Oct 3 · ends Sat, Oct 17');
+  await expect(movie).toContainText('Leo · Started Sat, Oct 3, 2026 · ends Sat, Oct 17, 2026');
   await expect(movie.getByRole('progressbar', { name: '19 things done' })).toHaveAttribute(
     'aria-valuenow',
     '95',
@@ -106,7 +107,7 @@ test('[RWD-04][RWD-07] goals in play: achieved first, each rule’s meter and wh
   await expect(park).toContainText('Reached when every rule is met.');
   await expect(park).toContainText('Reached. 5 in a row now.');
   await expect(inPlay.getByRole('listitem').filter({ hasText: 'Pizza night' })).toContainText(
-    'The whole family · Started Sat, Oct 3, no end date',
+    'The whole family · Started Sat, Oct 3, 2026, no end date',
   );
   const bike = inPlay.getByRole('listitem').filter({ hasText: 'Bike ride' });
   await expect(bike).toContainText('Starts later');
@@ -127,13 +128,13 @@ test('[RWD-09][US-405] an achieved goal is marked redeemed; history keeps the re
   const history = page.getByRole('list', { name: 'History' });
   await expect(history.getByRole('listitem')).toHaveCount(3);
   await expect(history.getByRole('listitem').filter({ hasText: 'Zoo trip' })).toContainText(
-    'Redeemed Thu, Oct 1 by Alex',
+    'Redeemed Thu, Oct 1, 2026 by Alex',
   );
   await expect(history.getByRole('listitem').filter({ hasText: 'Zoo trip' })).toContainText(
     'Needs a look',
   );
   await expect(history.getByRole('listitem').filter({ hasText: 'New book' })).toContainText(
-    'Ended Wed, Sep 30',
+    'Ended Wed, Sep 30, 2026',
   );
 });
 
@@ -148,9 +149,15 @@ test('[RWD-02][RWD-03] the form: rules added up to five and removed; tags or ite
   await expect(form.getByRole('group', { name: /^Rule \d$/ })).toHaveCount(5);
   await expect(form.getByRole('button', { name: 'Add a rule' })).toHaveCount(0);
   await expect(form.getByRole('group', { name: 'It’s reached when' })).toBeVisible();
+  // [D-128] The rule added last is open; the others are folded to their line, opened by a tap.
+  await form
+    .getByRole('group', { name: 'Rule 2' })
+    .getByRole('button', { name: /^Counts/ })
+    .click();
   await form.getByRole('button', { name: 'Remove rule 2' }).click();
   await expect(form.getByRole('group', { name: /^Rule \d$/ })).toHaveCount(4);
   const rule1 = form.getByRole('group', { name: 'Rule 1' });
+  await rule1.getByRole('button', { name: /^Counts/ }).click();
   await rule1.getByRole('radio', { name: 'Some tags' }).check();
   await expect(
     rule1.getByRole('group', { name: 'Tags for rule 1' }).getByRole('checkbox'),
@@ -171,9 +178,13 @@ test('[RWD-06] a started goal keeps who it’s for and its start date; its rules
   await expect(form.getByLabel('End date')).toHaveValue('2026-10-24');
   await expect(form.getByRole('group', { name: /^Rule \d$/ })).toHaveCount(2);
   await expect(form.getByRole('radio', { name: 'Any one rule is met' })).toBeChecked();
-  await expect(
-    form.getByRole('group', { name: 'Rule 2' }).getByRole('checkbox', { name: 'Morning' }),
-  ).toBeChecked();
+  // [D-128] A saved goal's rules are folded to their lines; a tap opens one.
+  const rule2 = form.getByRole('group', { name: 'Rule 2' });
+  await expect(rule2.getByRole('button', { name: /^Counts/ })).toContainText(
+    'Things done: 20 · Morning items',
+  );
+  await rule2.getByRole('button', { name: /^Counts/ }).click();
+  await expect(rule2.getByRole('checkbox', { name: 'Morning' })).toBeChecked();
 });
 
 test('[RWD-14] the end date: ticked shows the date and Clear; Clear and unticking take it off; the date is the field’s value, not its default', async ({

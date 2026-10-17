@@ -6,6 +6,8 @@ import {
   type AvatarKey,
   Banner,
   Button,
+  DatePick,
+  dateWords,
   FileField,
   Icon,
   IconPicker,
@@ -13,10 +15,19 @@ import {
   type MemberColor,
 } from '@familywise/ui';
 import Link from 'next/link';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { useFormAction } from '@/lib/forms';
 import { periodWord, REPEAT_WORDS } from '@/lib/goal-periods';
 import { type LowerStep, type StepKind, stepKind } from '@/lib/goal-steps';
+import {
+  type GoalSummaries,
+  partsText,
+  ruleProblem,
+  ruleSummaryParts,
+  scopeParts,
+  type SummaryNames,
+  type SummaryPart,
+} from '@/lib/goal-summaries';
 import {
   EACH_CHILD_FIELD,
   type GoalPayout,
@@ -25,7 +36,7 @@ import {
   RULE_WORDS,
   type ScopeChoice,
 } from '@/lib/goals';
-import { type GoalFormState, type GoalPreviewView, saveGoal } from './actions';
+import { type GoalFormState, type GoalPreviewView, liveGoal, saveGoal } from './actions';
 import { EndDateField } from './end-date-field';
 
 export interface GoalFormRule {
@@ -70,6 +81,13 @@ export interface GoalFormInitial {
   payout: GoalPayout;
 }
 
+/** [NFR-16][D-128] An item a rule may count, with its picture. */
+export interface GoalItem {
+  id: string;
+  title: string;
+  icon?: IconName | null;
+}
+
 /** A reward in the shop a goal can pay: those not removed, and the goal's own even if it was. */
 export interface GoalPrize {
   id: string;
@@ -102,8 +120,13 @@ const SCOPE_WORDS: Record<ScopeChoice, string> = {
   items: 'Some items',
 };
 
-let counter = 0;
-const nextKey = () => `r${(counter += 1)}`;
+/**
+ * A rule's key names its fields (`rule-<key>-<field>`). It is the same on the server and in the
+ * browser, so the fields the server drew keep the names `rule-keys` lists once the page hydrates (a
+ * counter shared by every render gave the server's fields other names, WP-101): the rules a form
+ * starts with are r1, r2…, and each rule added takes the next number.
+ */
+const keyOf = (n: number) => `r${n}`;
 
 const PAYOUT_CHOICE = { custom: 'custom', points: 'points', catalog_item: 'item' } as const;
 
@@ -126,12 +149,15 @@ export function GoalForm({
   hasPhoto = false,
   preview,
   countable = [],
+  live = liveGoal,
+  draft,
 }: {
   id: string;
   initial?: GoalFormInitial;
   members: { id: string; displayName: string; avatarKey: AvatarKey | null; color: MemberColor }[];
   tags: { id: string; name: string }[];
-  items: { id: string; title: string }[];
+  /** [NFR-16][D-128] Each item with its picture, shown beside its name (WP-101). */
+  items: GoalItem[];
   prizes: GoalPrize[];
   today: string;
   lock?: GoalLock;
@@ -140,20 +166,33 @@ export function GoalForm({
   preview?: GoalPreviewView;
   /** [RWD-19] The repeating goals a rule may count (not this one, nor one that counts weeks). */
   countable?: CountableGoal[];
+  /** A new goal's fields filled in already (the made-up /dev/goals page draws a mockup's frame). */
+  draft?: GoalFormInitial;
+  /**
+   * [NFR-16][D-128] Works out the live summaries from the form as it stands, as Preview does (the
+   * /dev pages give one on made-up facts).
+   */
+  live?: (form: FormData) => Promise<GoalSummaries | null>;
 }) {
   const [state, onSubmit, pending] = useFormAction<GoalFormState>(saveGoal, { preview });
+  const seed = initial ?? draft;
   const [rows, setRows] = useState<Row[]>(() =>
-    (initial?.rules.length ? initial.rules : [NEW_RULE]).map((r) => ({ ...r, key: nextKey() })),
+    (seed?.rules.length ? seed.rules : [NEW_RULE]).map((r, i) => ({ ...r, key: keyOf(i + 1) })),
   );
+  const added = useRef(rows.length);
   const change = (key: string, patch: Partial<GoalFormRule>) =>
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+  // [NFR-16][D-128] The rule being edited: a new goal's first rule, or the one tapped or added. The
+  // others fold to their summary line; a rule with something to fix stays open.
+  const [openKey, setOpenKey] = useState<string | null>(() =>
+    initial ? null : (rows[0]?.key ?? null),
+  );
+  const [start, setStart] = useState(seed?.startDate ?? today);
   const rulesLocked = lock === 'finished';
   const whoLocked = lock !== 'none';
-  const [who, setWho] = useState(
-    initial ? (initial.memberId ?? 'family') : (members[0]?.id ?? 'family'),
-  );
+  const [who, setWho] = useState(seed ? (seed.memberId ?? 'family') : (members[0]?.id ?? 'family'));
   // [RWD-15] How it repeats: chosen until it starts, then fixed (D-123).
-  const [repeat, setRepeat] = useState<Repeat>(initial?.repeat ?? 'none');
+  const [repeat, setRepeat] = useState<Repeat>(seed?.repeat ?? 'none');
   const chooseRepeat = (r: Repeat) => {
     setRepeat(r);
     // Every day it's due is for a goal that repeats.
@@ -162,7 +201,7 @@ export function GoalForm({
     }
   };
   // [RWD-20] Every child meets it: a family goal's option, fixed once it starts (D-126).
-  const [eachChild, setEachChild] = useState(initial?.eachChild ?? false);
+  const [eachChild, setEachChild] = useState(seed?.eachChild ?? false);
   const family = who === 'family';
   const each = family && eachChild;
   // [RWD-19] The goals this person's (or the family's) rule may count.
@@ -176,10 +215,10 @@ export function GoalForm({
     }
   };
   const [pays, setPays] = useState<'custom' | 'points' | 'item'>(
-    PAYOUT_CHOICE[initial?.payout.type ?? 'custom'],
+    PAYOUT_CHOICE[seed?.payout.type ?? 'custom'],
   );
   // [RWD-18] Pay in steps (points only); with two or more rules, each rule's weight.
-  const initialSteps = initial?.payout.type === 'points' ? (initial.payout.steps ?? []) : [];
+  const initialSteps = seed?.payout.type === 'points' ? (seed.payout.steps ?? []) : [];
   const [stepsOn, setStepsOn] = useState(initialSteps.length > 0);
   const kind = stepKind(rows);
   const inSteps = pays === 'points' && stepsOn && !each;
@@ -188,11 +227,63 @@ export function GoalForm({
     initialSteps.at(-1)?.misses ?? (rows[0]?.misses || 1),
   );
   const label = initial ? `Edit ${initial.title}` : 'Set a goal';
-  const points = initial?.payout.type === 'points' ? initial.payout.amount : 10;
-  const prize = initial?.payout.type === 'catalog_item' ? initial.payout.item_id : prizes[0]?.id;
+
+  // [NFR-16][D-128] The live summaries, worked out as Preview works them out each time the form
+  // changes (a short pause first, so typing sends one request); a late answer never replaces a newer.
+  const formRef = useRef<HTMLFormElement>(null);
+  const [summaries, setSummaries] = useState<GoalSummaries | null>(
+    () => preview?.summaries ?? null,
+  );
+  const asked = useRef(0);
+  // Whether the first summaries have come back: the form says so (data-live), for its screenshots.
+  const [answered, setAnswered] = useState(rulesLocked);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const refresh = useCallback(() => {
+    if (rulesLocked) return;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      const form = formRef.current;
+      if (!form) return;
+      const n = (asked.current += 1);
+      const data = new FormData(form);
+      data.delete('photo');
+      live(data).then(
+        (out) => {
+          if (n !== asked.current) return;
+          setSummaries(out);
+          setAnswered(true);
+        },
+        () => {
+          if (n !== asked.current) return;
+          setSummaries(null);
+          setAnswered(true);
+        },
+      );
+    }, 300);
+  }, [live, rulesLocked]);
+  useEffect(() => {
+    refresh();
+  }, [refresh, rows, who, repeat, eachChild, pays, stepsOn, lowest, start]);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+  const names: SummaryNames = { tags, items, goals: countable };
+  const points = seed?.payout.type === 'points' ? seed.payout.amount : 10;
+  const prize = seed?.payout.type === 'catalog_item' ? seed.payout.item_id : prizes[0]?.id;
 
   return (
-    <form onSubmit={onSubmit} className="fw-form" aria-label={label} encType="multipart/form-data">
+    <form
+      ref={formRef}
+      onSubmit={onSubmit}
+      onInput={refresh}
+      data-live={answered ? 'ready' : 'waiting'}
+      className="fw-form"
+      aria-label={label}
+      encType="multipart/form-data"
+    >
       <input type="hidden" name="id" value={id} />
       <label className="fw-field">
         <span className="fw-field__label">Name</span>
@@ -201,7 +292,7 @@ export function GoalForm({
           name="title"
           maxLength={80}
           required
-          defaultValue={initial?.title ?? ''}
+          defaultValue={seed?.title ?? ''}
           autoComplete="off"
           placeholder="Movie night"
         />
@@ -212,7 +303,7 @@ export function GoalForm({
           className="fw-input"
           name="description"
           maxLength={300}
-          defaultValue={initial?.description ?? ''}
+          defaultValue={seed?.description ?? ''}
           autoComplete="off"
         />
       </label>
@@ -340,26 +431,28 @@ export function GoalForm({
       <div className="fw-fgrid">
         {whoLocked ? (
           <>
-            <input type="hidden" name="startDate" value={initial?.startDate ?? today} />
-            <ReadField label="Starts">{longDate(initial?.startDate ?? today)}</ReadField>
+            <input type="hidden" name="startDate" value={seed?.startDate ?? today} />
+            <ReadField label="Starts">{dateWords(seed?.startDate ?? today)}</ReadField>
           </>
         ) : (
           <label className="fw-field">
             <span className="fw-field__label">Starts</span>
-            <input
-              className="fw-input"
+            <DatePick
               type="date"
               name="startDate"
+              label="Starts"
               required
-              defaultValue={initial?.startDate ?? today}
+              initial={seed?.startDate ?? today}
+              value={start}
+              onValue={setStart}
             />
           </label>
         )}
         {rulesLocked ? (
-          <input type="hidden" name="endDate" value={initial?.endDate ?? ''} />
+          <input type="hidden" name="endDate" value={seed?.endDate ?? ''} />
         ) : (
           <EndDateField
-            initial={initial?.endDate ?? null}
+            initial={seed?.endDate ?? null}
             min={lock === 'started' ? today : undefined}
           />
         )}
@@ -379,6 +472,10 @@ export function GoalForm({
           tags={tags}
           items={items}
           countable={each ? [] : canCount}
+          names={names}
+          open={openKey === r.key}
+          onOpen={(on) => setOpenKey(on ? r.key : null)}
+          summary={summaries?.rules[i] ?? null}
           onChange={(patch) => change(r.key, patch)}
           onRemove={() => setRows((rs) => rs.filter((x) => x.key !== r.key))}
         />
@@ -389,7 +486,12 @@ export function GoalForm({
             type="button"
             variant="secondary"
             icon="plus"
-            onClick={() => setRows((rs) => [...rs, { ...NEW_RULE, key: nextKey() }])}
+            onClick={() => {
+              // A new rule opens to its fields; the others fold to their summary line.
+              const key = keyOf((added.current += 1));
+              setRows((rs) => [...rs, { ...NEW_RULE, key }]);
+              setOpenKey(key);
+            }}
           >
             Add a rule
           </Button>
@@ -407,7 +509,7 @@ export function GoalForm({
         <input type="hidden" name="logic" value="all" />
       ) : rows.length > 1 ? (
         rulesLocked ? (
-          <input type="hidden" name="logic" value={initial?.logic ?? 'all'} />
+          <input type="hidden" name="logic" value={seed?.logic ?? 'all'} />
         ) : (
           <fieldset className="fw-field fw-fieldset">
             <legend className="fw-field__label">It’s reached when</legend>
@@ -417,7 +519,7 @@ export function GoalForm({
                   type="radio"
                   name="logic"
                   value="all"
-                  defaultChecked={(initial?.logic ?? 'all') === 'all'}
+                  defaultChecked={(seed?.logic ?? 'all') === 'all'}
                 />
                 Every rule is met
               </label>
@@ -426,7 +528,7 @@ export function GoalForm({
                   type="radio"
                   name="logic"
                   value="any"
-                  defaultChecked={initial?.logic === 'any'}
+                  defaultChecked={seed?.logic === 'any'}
                 />
                 Any one rule is met
               </label>
@@ -458,7 +560,7 @@ export function GoalForm({
 
       <IconPicker
         legend="Icon, shown when there’s no photo"
-        selected={initial?.icon ?? 'trophy'}
+        selected={seed?.icon ?? 'trophy'}
         start="rewards"
       />
       <FileField
@@ -470,6 +572,16 @@ export function GoalForm({
         help="JPEG, PNG or WebP, up to 2 MB."
       />
 
+      {summaries?.steps ? (
+        <p className="fw-callout" data-testid="steps-summary" aria-live="polite">
+          {summaries.steps}
+        </p>
+      ) : null}
+      {weighted && summaries?.weights ? (
+        <p className="fw-callout" data-testid="weights-summary" aria-live="polite">
+          {summaries.weights}
+        </p>
+      ) : null}
       {state.message ? <Banner kind="notice">{state.message}</Banner> : null}
       {state.preview && !state.message ? <PreviewPanel preview={state.preview} /> : null}
       <div className="fw-actions">
@@ -822,20 +934,7 @@ function PreviewPanel({ preview }: { preview: GoalPreviewView }) {
   );
 }
 
-function RuleRow({
-  row,
-  n,
-  weight,
-  missesByStep,
-  only,
-  locked,
-  repeat,
-  tags,
-  items,
-  countable,
-  onChange,
-  onRemove,
-}: {
+interface RuleRowProps {
   /** [RWD-19] The repeating goals it may count. */
   countable: CountableGoal[];
   row: Row;
@@ -848,59 +947,217 @@ function RuleRow({
   locked: boolean;
   repeat: Repeat;
   tags: { id: string; name: string }[];
-  items: { id: string; title: string }[];
+  items: GoalItem[];
+  /** [NFR-16][D-128] Names and pictures for its summary line. */
+  names: SummaryNames;
+  /** [NFR-16][D-128] Open to its fields (on a goal with two or more rules), or its What counts open. */
+  open: boolean;
+  onOpen: (open: boolean) => void;
+  /** [NFR-16][D-128] Its live summary: its days due this period, or the weeks it counts. */
+  summary: string | null;
   onChange: (patch: Partial<GoalFormRule>) => void;
   onRemove: () => void;
-}) {
-  const name = (field: string) => `rule-${row.key}-${field}`;
+}
+
+/**
+ * A rule of the goal. [NFR-16][D-128] On a goal with two or more rules each folds to one summary
+ * line, "Rule 1 · weight" with its weight beside it (the WP-81 addendum), and opens to its fields on a
+ * tap; a rule being edited, a new rule and a rule with something to fix are open. A folded rule sends
+ * every field as it stands, so saving is the same folded or open.
+ */
+function RuleRow(props: RuleRowProps) {
+  const { row, n, weight, only, locked, names, open, onOpen, onChange } = props;
   if (locked) {
     // A finished goal's rules stay as they are; they are sent back unchanged.
+    return <RuleFields row={row} />;
+  }
+  const problem = ruleProblem({ ...row, weight }, weight !== null);
+  if (!only && !open && !problem) {
+    const parts = ruleSummaryParts(row, names);
+    const name = (field: string) => `rule-${row.key}-${field}`;
     return (
-      <>
-        <input type="hidden" name={name('type')} value={row.type} />
-        <input type="hidden" name={name('target')} value={row.target} />
-        <input type="hidden" name={name('scope')} value={row.scope} />
-        {row.tagIds.map((t) => (
-          <input key={t} type="hidden" name={name('tag')} value={t} />
-        ))}
-        {row.itemIds.map((t) => (
-          <input key={t} type="hidden" name={name('item')} value={t} />
-        ))}
-        <input type="hidden" name={name('grace')} value={row.grace} />
-        <input type="hidden" name={name('misses')} value={row.misses ?? 0} />
-        <input
-          type="hidden"
-          name={name('ontime')}
-          value={!row.onTime ? 'any' : row.onTime === 'due_time' ? 'due_time' : 'by'}
-        />
-        <input
-          type="hidden"
-          name={name('ontime-at')}
-          value={row.onTime && row.onTime !== 'due_time' ? row.onTime : ''}
-        />
-        <input type="hidden" name={name('weight')} value={row.weight ?? ''} />
-        <input type="hidden" name={name('source')} value={row.source ?? ''} />
-        <input type="hidden" name={name('row')} value={row.inARow ? 'row' : 'total'} />
-      </>
+      <fieldset className="fw-box fw-goal-rule" data-folded="true">
+        <legend>{weight !== null ? `Rule ${n} · weight` : `Rule ${n}`}</legend>
+        <RuleFields row={row} weight={weight === null} />
+        <div className="fw-goal-rule__sum">
+          <span className="fw-field">
+            <span className="fw-field__label" id={name('counts')}>
+              Counts
+            </span>
+            <button
+              type="button"
+              className="fw-input fw-goal-rule__line"
+              aria-expanded="false"
+              aria-labelledby={`${name('counts')} ${name('line')}`}
+              onClick={() => onOpen(true)}
+            >
+              <SummaryLine id={name('line')} parts={parts} />
+            </button>
+          </span>
+          {weight !== null ? (
+            <WeightField name={name('weight')} n={n} weight={weight} onChange={onChange} />
+          ) : null}
+        </div>
+      </fieldset>
     );
   }
-  if (row.type === 'PERIODS_WON') {
-    return (
-      <CountedRule
-        row={row}
-        n={n}
-        only={only}
-        countable={countable}
-        onChange={onChange}
-        onRemove={onRemove}
+  if (row.type === 'PERIODS_WON') return <CountedRule {...props} problem={problem} />;
+  return <OpenRule {...props} problem={problem} />;
+}
+
+/** [NFR-16][D-128] A summary line's words, each item with its picture beside its name. */
+function SummaryLine({ id, parts }: { id?: string; parts: readonly SummaryPart[] }) {
+  return (
+    <span id={id} className="fw-goal-rule__words" aria-label={partsText(parts)}>
+      {parts.map((p, i) => {
+        // A space between pieces, but none before a comma.
+        const gap = i > 0 && !(typeof p === 'string' && p.startsWith(',')) ? ' ' : '';
+        return typeof p === 'string' ? (
+          <span key={i}>{`${gap}${p}`}</span>
+        ) : (
+          <span key={i}>
+            {gap}
+            <ItemName icon={p.icon} title={p.text} />
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+/** [NFR-16][D-128] An item's picture beside its name. */
+function ItemName({ icon, title }: { icon?: string | null; title: string }) {
+  return (
+    <span className="fw-item-pic">
+      {icon ? <Icon name={icon as IconName} size={20} /> : null}
+      {title}
+    </span>
+  );
+}
+
+/** [RWD-18] A rule's weight, "Weight" with "60%" in its field (the WP-81 addendum). */
+function WeightField({
+  name,
+  n,
+  weight,
+  onChange,
+}: {
+  name: string;
+  n: number;
+  weight: number;
+  onChange: (patch: Partial<GoalFormRule>) => void;
+}) {
+  return (
+    <label className="fw-field fw-goal-rule__weight">
+      <span className="fw-field__label">Weight</span>
+      <span className="fw-pct">
+        <input
+          className="fw-input"
+          name={name}
+          type="number"
+          inputMode="numeric"
+          aria-label={`Weight of rule ${n}, in %`}
+          min={1}
+          max={100}
+          required
+          value={weight}
+          onChange={(e) => onChange({ weight: Number(e.target.value) })}
+        />
+      </span>
+    </label>
+  );
+}
+
+/**
+ * Every field of a rule as hidden fields: a finished goal's rules sent back unchanged, or a folded
+ * rule's as it stands (its weight, shown beside the line, is sent by that field unless `weight`).
+ */
+function RuleFields({ row, weight = true }: { row: Row; weight?: boolean }) {
+  const name = (field: string) => `rule-${row.key}-${field}`;
+  return (
+    <>
+      <input type="hidden" name={name('type')} value={row.type} />
+      <input type="hidden" name={name('target')} value={row.type === 'DAYS_DUE' ? 1 : row.target} />
+      <ScopeFields row={row} />
+      <input type="hidden" name={name('grace')} value={row.grace} />
+      <input type="hidden" name={name('misses')} value={row.misses ?? 0} />
+      <input
+        type="hidden"
+        name={name('ontime')}
+        value={!row.onTime ? 'any' : row.onTime === 'due_time' ? 'due_time' : 'by'}
       />
-    );
-  }
+      <input
+        type="hidden"
+        name={name('ontime-at')}
+        value={row.onTime && row.onTime !== 'due_time' ? row.onTime : ''}
+      />
+      {weight ? <input type="hidden" name={name('weight')} value={row.weight ?? ''} /> : null}
+      <input type="hidden" name={name('source')} value={row.source ?? ''} />
+      <input type="hidden" name={name('row')} value={row.inARow ? 'row' : 'total'} />
+    </>
+  );
+}
+
+/** What a rule counts, as hidden fields. */
+function ScopeFields({ row }: { row: Row }) {
+  const name = (field: string) => `rule-${row.key}-${field}`;
+  return (
+    <>
+      <input type="hidden" name={name('scope')} value={row.scope} />
+      {row.tagIds.map((t) => (
+        <input key={t} type="hidden" name={name('tag')} value={t} />
+      ))}
+      {row.itemIds.map((t) => (
+        <input key={t} type="hidden" name={name('item')} value={t} />
+      ))}
+    </>
+  );
+}
+
+/** Folds a rule back to its summary line, on a goal with two or more rules. */
+function FoldButton({ n, onOpen }: { n: number; onOpen: (open: boolean) => void }) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      icon="chevron-down"
+      onClick={() => onOpen(false)}
+      aria-label={`Done with rule ${n}`}
+    >
+      Done
+    </Button>
+  );
+}
+
+function OpenRule({
+  row,
+  n,
+  weight,
+  missesByStep,
+  only,
+  repeat,
+  tags,
+  items,
+  names,
+  open,
+  onOpen,
+  summary,
+  onChange,
+  onRemove,
+  countable,
+  problem,
+}: RuleRowProps & { problem: string | null }) {
+  const name = (field: string) => `rule-${row.key}-${field}`;
   const onChoice = !row.onTime ? 'any' : row.onTime === 'due_time' ? 'due_time' : 'by';
   const daysDue = row.type === 'DAYS_DUE';
+  // [NFR-16][D-128] A single rule's What counts folds to one line ("Some items: Homework home") until
+  // it is tapped, as the frames draw it; a new goal's, or one with nothing chosen, is open.
+  const scopeOpen = !only || open || problem !== null;
+  const toggle = (list: string[], id: string, on: boolean) =>
+    on ? [...new Set([...list, id])] : list.filter((x) => x !== id);
   return (
     <fieldset className="fw-box fw-goal-rule">
-      <legend>{only ? 'Rule' : `Rule ${n}`}</legend>
+      <legend>{only ? 'Rule' : weight !== null ? `Rule ${n} · weight` : `Rule ${n}`}</legend>
       <div className="fw-fgrid">
         <label className="fw-field">
           <span className="fw-field__label">Counts</span>
@@ -975,20 +1232,7 @@ function RuleRow({
           </label>
         )}
         {weight !== null ? (
-          <label className="fw-field">
-            <span className="fw-field__label">Weight (%)</span>
-            <input
-              className="fw-input fw-input--short"
-              name={name('weight')}
-              type="number"
-              inputMode="numeric"
-              min={1}
-              max={100}
-              required
-              value={weight}
-              onChange={(e) => onChange({ weight: Number(e.target.value) })}
-            />
-          </label>
+          <WeightField name={name('weight')} n={n} weight={weight} onChange={onChange} />
         ) : null}
         {row.type === 'STREAK' ? (
           <label className="fw-field">
@@ -1015,56 +1259,95 @@ function RuleRow({
           misses allowed: a short week needs only its days.
         </span>
       ) : null}
-      <fieldset className="fw-fieldset">
-        <legend className="fw-field__label">What counts</legend>
-        <div className="fw-choices">
-          {(['all', 'tags', 'items'] as const).map((s) => (
-            <label key={s} className="fw-choice">
-              <input
-                type="radio"
-                name={name('scope')}
-                value={s}
-                checked={row.scope === s}
-                onChange={() => onChange({ scope: s })}
-                disabled={
-                  (s === 'tags' && tags.length === 0) || (s === 'items' && items.length === 0)
-                }
-              />
-              {SCOPE_WORDS[s]}
-            </label>
-          ))}
-        </div>
-        {row.scope === 'tags' ? (
-          <div className="fw-choices" role="group" aria-label={`Tags for rule ${n}`}>
-            {tags.map((t) => (
-              <label key={t.id} className="fw-choice">
+      {scopeOpen ? (
+        <fieldset className="fw-fieldset">
+          <legend className="fw-field__label">What counts</legend>
+          <div className="fw-choices">
+            {(['all', 'tags', 'items'] as const).map((sc) => (
+              <label key={sc} className="fw-choice">
                 <input
-                  type="checkbox"
-                  name={name('tag')}
-                  value={t.id}
-                  defaultChecked={row.tagIds.includes(t.id)}
+                  type="radio"
+                  name={name('scope')}
+                  value={sc}
+                  checked={row.scope === sc}
+                  onChange={() => onChange({ scope: sc })}
+                  disabled={
+                    (sc === 'tags' && tags.length === 0) || (sc === 'items' && items.length === 0)
+                  }
                 />
-                {t.name}
+                {SCOPE_WORDS[sc]}
               </label>
             ))}
           </div>
-        ) : null}
-        {row.scope === 'items' ? (
-          <div className="fw-choices" role="group" aria-label={`Items for rule ${n}`}>
-            {items.map((t) => (
-              <label key={t.id} className="fw-choice">
-                <input
-                  type="checkbox"
-                  name={name('item')}
-                  value={t.id}
-                  defaultChecked={row.itemIds.includes(t.id)}
-                />
-                {t.title}
-              </label>
-            ))}
-          </div>
-        ) : null}
-      </fieldset>
+          {row.scope === 'tags' ? (
+            <div className="fw-choices" role="group" aria-label={`Tags for rule ${n}`}>
+              {tags.map((t) => (
+                <label key={t.id} className="fw-choice">
+                  <input
+                    type="checkbox"
+                    name={name('tag')}
+                    value={t.id}
+                    checked={row.tagIds.includes(t.id)}
+                    onChange={(e) =>
+                      onChange({ tagIds: toggle(row.tagIds, t.id, e.target.checked) })
+                    }
+                  />
+                  {t.name}
+                </label>
+              ))}
+            </div>
+          ) : null}
+          {row.scope === 'items' ? (
+            <div className="fw-choices" role="group" aria-label={`Items for rule ${n}`}>
+              {items.map((t) => (
+                <label key={t.id} className="fw-choice">
+                  <input
+                    type="checkbox"
+                    name={name('item')}
+                    value={t.id}
+                    checked={row.itemIds.includes(t.id)}
+                    onChange={(e) =>
+                      onChange({ itemIds: toggle(row.itemIds, t.id, e.target.checked) })
+                    }
+                  />
+                  <ItemName icon={t.icon} title={t.title} />
+                </label>
+              ))}
+            </div>
+          ) : null}
+          {only && !problem && open ? (
+            <div className="fw-actions">
+              <FoldButton n={n} onOpen={onOpen} />
+            </div>
+          ) : null}
+        </fieldset>
+      ) : (
+        <span className="fw-field">
+          <span className="fw-field__label" id={name('what')}>
+            What counts
+          </span>
+          <ScopeFields row={row} />
+          <button
+            type="button"
+            className="fw-input fw-goal-rule__line"
+            aria-expanded="false"
+            aria-labelledby={`${name('what')} ${name('what-line')}`}
+            onClick={() => onOpen(true)}
+          >
+            <SummaryLine id={name('what-line')} parts={scopeParts(row, names)} />
+          </button>
+        </span>
+      )}
+      {problem ? (
+        <p className="fw-field__help fw-goal-rule__problem" role="status">
+          {problem}
+        </p>
+      ) : null}
+      {summary ? (
+        <p className="fw-callout" data-testid={`rule-${n}-summary`} aria-live="polite">
+          {summary}
+        </p>
+      ) : null}
       <fieldset className="fw-box fw-goal-ontime">
         <legend>Counts only when done</legend>
         <div className="fw-choices">
@@ -1099,15 +1382,15 @@ function RuleRow({
             By
           </label>
           {onChoice === 'by' ? (
-            <input
-              className="fw-input fw-input--clock"
+            <DatePick
               type="time"
-              step={60}
+              className="fw-pick--clock"
               name={name('ontime-at')}
-              aria-label="Time"
+              label="Time"
               required
+              initial={row.onTime ?? '18:00'}
               value={row.onTime ?? '18:00'}
-              onChange={(e) => onChange({ onTime: e.target.value || '18:00' })}
+              onValue={(t) => onChange({ onTime: t || '18:00' })}
             />
           ) : null}
         </div>
@@ -1122,6 +1405,7 @@ function RuleRow({
       </fieldset>
       {only ? null : (
         <div className="fw-actions">
+          {problem ? null : <FoldButton n={n} onOpen={onOpen} />}
           <Button
             type="button"
             variant="ghost"
@@ -1147,16 +1431,11 @@ function CountedRule({
   n,
   only,
   countable,
+  onOpen,
+  summary,
   onChange,
   onRemove,
-}: {
-  row: Row;
-  n: number;
-  only: boolean;
-  countable: CountableGoal[];
-  onChange: (patch: Partial<GoalFormRule>) => void;
-  onRemove: () => void;
-}) {
+}: RuleRowProps & { problem: string | null }) {
   const name = (field: string) => `rule-${row.key}-${field}`;
   const source = countable.find((c) => c.id === row.source) ?? countable[0];
   const unit = source ? periodWord(source.repeat, 2) : 'weeks';
@@ -1240,8 +1519,14 @@ function CountedRule({
           count.
         </span>
       </fieldset>
+      {summary ? (
+        <p className="fw-callout" data-testid={`rule-${n}-summary`} aria-live="polite">
+          {summary}
+        </p>
+      ) : null}
       {only ? null : (
         <div className="fw-actions">
+          <FoldButton n={n} onOpen={onOpen} />
           <Button
             type="button"
             variant="ghost"
@@ -1255,16 +1540,6 @@ function CountedRule({
       )}
     </fieldset>
   );
-}
-
-/** "Sep 14, 2026" for a date. */
-function longDate(iso: string): string {
-  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    timeZone: 'UTC',
-  });
 }
 
 /** [NFR-16][D-127] A field that can't change any more, shown as a field without its edge. */

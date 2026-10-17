@@ -115,7 +115,9 @@ test.describe('the admin app', () => {
     await page.goto('/dev/goals?form=perfect');
     await hydrated(page);
     await expect(page.getByRole('combobox', { name: 'Counts' })).toHaveValue('PERIODS_WON');
-    await expect(page.getByRole('combobox', { name: 'Which goal' })).toHaveValue('g8');
+    await expect(page.getByRole('combobox', { name: 'Which goal' })).toHaveValue(
+      'f2e00000-0000-4000-8000-000000000008',
+    );
     await expect(page.getByRole('radio', { name: 'In a row' })).toBeChecked();
     await expect(
       page.getByText(/Only weeks that start on or after this goal’s start date count/),

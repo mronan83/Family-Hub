@@ -6,20 +6,17 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { FormState } from '@/lib/auth/messages';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
+import { type GoalPreviewView, previewView } from '@/lib/goal-preview';
+import type { GoalSummaries } from '@/lib/goal-summaries';
 import {
-  describeRule,
   type GoalFormValue,
   type GoalPayout,
   goalPayload,
   type GoalRead,
   goalRefusal,
   parseGoalForm,
-  payoutWords,
-  previewGoal,
-  previewOutcome,
   type PreviewRead,
 } from '@/lib/goals';
-import { daysNeeded, periodWord } from '@/lib/goal-periods';
 import { log } from '@/lib/log';
 import { checkPhoto } from '@/lib/rewards';
 import { serverClient } from '@/lib/supabase/server';
@@ -34,65 +31,16 @@ async function context() {
   return { db: db!, household };
 }
 
-/** One rule's progress before and after, in the parent's words. */
-export interface GoalPreviewRow {
-  text: string;
-  before: string | null;
-  after: string;
-  met: boolean;
-}
-
-/** [RWD-10] What the form's Preview shows: each rule now and after, and what saving would do. */
-export interface GoalPreviewView {
-  outcome: string;
-  /** [RWD-16] "This week Homework home is due 4 days for Maya, so this week needs 4." */
-  period?: string;
-  before: string | null;
-  after: string;
-  rows: GoalPreviewRow[];
-}
+export type { GoalPreviewRow, GoalPreviewView } from '@/lib/goal-preview';
 
 export interface GoalFormState extends FormState {
   preview?: GoalPreviewView;
 }
 
 /**
- * [RWD-16] What an "every day it's due" rule asks of the period going now: "This week Homework home
- * is due 4 days for Maya, so this week needs 4." Null for other rules and goals that don't repeat.
- */
-function periodPreview(
-  v: GoalFormValue,
-  period: ReturnType<typeof previewGoal>['period'],
-  names: { tags: Map<string, string>; items: Map<string, string> },
-  family: boolean,
-): string | null {
-  const rule = v.rules.find((r) => r.type === 'DAYS_DUE');
-  if (v.repeat === 'none' || !rule || !period || period.days_due === null) return null;
-  const word = periodWord(v.repeat);
-  const scope =
-    'all' in rule.scope
-      ? 'something it counts'
-      : [
-          ...(rule.scope.chore_ids ?? []).map((i) => names.items.get(i) ?? 'an item'),
-          ...(rule.scope.tag_ids ?? []).map((t) => `${names.tags.get(t) ?? 'a tag'} items`),
-        ].join(' or ');
-  const due = period.days_due;
-  const needed = daysNeeded({ daysDue: due, missesAllowed: period.misses_allowed });
-  const who = family ? ' for the family' : '';
-  return due === 0
-    ? `This ${word} nothing it counts is due${who}, so this ${word} is neither won nor missed.`
-    : `This ${word} ${scope} is due ${due} ${due === 1 ? 'day' : 'days'}${who}, so this ${word} needs ${needed}.`;
-}
-
-const progressWords = (r: { value: number; target: number; met: boolean }) =>
-  `${r.value.toLocaleString('en-US')} of ${r.target.toLocaleString('en-US')}${r.met ? ', met' : ''}`;
-const goalWords = (s: { pct: number; achieved: boolean }) =>
-  s.achieved ? 'Reached' : `${Math.round(s.pct)}% there`;
-
-/**
  * [RWD-10][US-406] The goal as the form has it, worked out from every check-off without saving
- * anything: each rule's progress now and after the change, and what saving would do (reach it and
- * pay, take it back and what it paid, end it). A goal not yet set shows where it would start.
+ * anything (previewView): the facts goal_preview_facts gives for the form's dates and person, the
+ * saved goal, and the names it needs.
  */
 async function preview(
   db: Awaited<ReturnType<typeof serverClient>> & object,
@@ -130,58 +78,64 @@ async function preview(
     stored = old.data as GoalRead;
     storedPayout = (goal.data?.payout as GoalPayout | undefined) ?? null;
   }
-  const [{ data: tags }, { data: chores }, { data: prizes }, { data: goals }] = await Promise.all([
-    db.from('tag').select('id, name').eq('household_id', householdId),
-    db.from('chore').select('id, title').eq('household_id', householdId),
-    db.from('reward_catalog_item').select('id, title').eq('household_id', householdId),
-    db.from('reward_goal').select('id, title, repeats').eq('household_id', householdId),
-  ]);
-  const names = {
-    tags: new Map((tags ?? []).map((t) => [t.id as string, t.name as string])),
-    items: new Map((chores ?? []).map((c) => [c.id as string, c.title as string])),
-    goals: new Map(
-      (goals ?? []).map((g) => [
-        g.id as string,
-        { title: g.title as string, repeat: g.repeats as Repeat },
-      ]),
-    ),
-  };
-  const prize = (id: string) => prizes?.find((p) => p.id === id)?.title as string | undefined;
-  const result = previewGoal(v, facts, stored);
-  const family = v.memberId === null;
-  // A rule's "now" is shown where the saved goal has the same rule in the same place.
-  const same = (i: number) => {
-    const old = stored?.rules[i];
-    return (
-      old !== undefined &&
-      describeRule(old as Parameters<typeof describeRule>[0], names) ===
-        describeRule(v.rules[i]!, names)
-    );
-  };
-  const period = periodPreview(v, result.period, names, family);
+  const [{ data: tags }, { data: chores }, { data: prizes }, { data: goals }, { data: people }] =
+    await Promise.all([
+      db.from('tag').select('id, name').eq('household_id', householdId),
+      db.from('chore').select('id, title').eq('household_id', householdId),
+      db.from('reward_catalog_item').select('id, title').eq('household_id', householdId),
+      db.from('reward_goal').select('id, title, repeats').eq('household_id', householdId),
+      db.from('member').select('id, display_name').eq('household_id', householdId),
+    ]);
   return {
-    preview: {
-      ...(period ? { period } : {}),
-      outcome: previewOutcome(result, {
-        saved: facts.saved,
-        pays: payoutWords(v.payout, family, prize),
-        paid: storedPayout ? payoutWords(storedPayout, family, prize) : null,
-        paidItem: storedPayout?.type === 'catalog_item',
-      }),
-      before: result.before ? goalWords(result.before) : null,
-      after: goalWords(result.after),
-      rows: v.rules.map((r, i) => {
-        const after = result.after.rules[i]!;
-        const before = same(i) ? result.before?.rules[i] : undefined;
-        return {
-          text: describeRule(r, names),
-          before: before ? progressWords(before) : null,
-          after: progressWords(after),
-          met: after.met,
-        };
-      }),
-    },
+    preview: previewView(v, {
+      facts,
+      stored,
+      storedPayout,
+      tags: new Map((tags ?? []).map((t) => [t.id as string, t.name as string])),
+      items: new Map((chores ?? []).map((c) => [c.id as string, c.title as string])),
+      goals: new Map(
+        (goals ?? []).map((g) => [
+          g.id as string,
+          { title: g.title as string, repeat: g.repeats as Repeat },
+        ]),
+      ),
+      prizes: new Map((prizes ?? []).map((p) => [p.id as string, p.title as string])),
+      people: new Map((people ?? []).map((m) => [m.id as string, m.display_name as string])),
+    }),
   };
+}
+
+/**
+ * [NFR-16][D-128] The form's live summaries (WP-101): the form as it stands, worked out as Preview
+ * works it out, without saving. A form that can't be read yet (no name, a rule half chosen) gives
+ * none, and the form keeps showing nothing until it can.
+ */
+export async function liveGoal(form: FormData): Promise<GoalSummaries | null> {
+  const { db, household } = await context();
+  const value = await readForm(db, household.id, form);
+  if (!value) return null;
+  const out = await preview(db, household.id, value);
+  return out.preview?.summaries ?? null;
+}
+
+/** The form, read as saving reads it; a missing name doesn't stop the summaries. */
+async function readForm(
+  db: Awaited<ReturnType<typeof serverClient>> & object,
+  householdId: string,
+  form: FormData,
+): Promise<GoalFormValue | null> {
+  const { data: members } = await db
+    .from('member')
+    .select('id')
+    .eq('household_id', householdId)
+    .eq('earns_rewards', true)
+    .is('archived_at', null);
+  if (!String(form.get('title') ?? '').trim()) form.set('title', 'Goal');
+  const parsed = parseGoalForm(form, {
+    icons: ICON_NAMES,
+    memberIds: (members ?? []).map((m) => m.id as string),
+  });
+  return parsed.ok ? parsed.value : null;
 }
 
 /**

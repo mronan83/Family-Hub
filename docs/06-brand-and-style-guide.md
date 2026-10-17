@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
 > Version 1.18 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-45, WP-46, WP-47, WP-48, WP-28, WP-51, WP-52)
+> v1.28: the goal screens' dates and the form's callouts (WP-101, D-128): a whole date "Mon, Oct 12, 2026" and a time "6:00 pm" on the goal screens, written over the real picker; the callout (a soft fill with the primary colour's bar on its left); a rule folded to its summary line with a list's chevron, items with their picture (§2, §7).
 > v1.27: the admin app's form controls drawn by the app on every engine (WP-100, D-127): fields 44 px, 10 px round, filled with the background, with `--field-edge` (3:1) and the focus ring, 16 px text; radios and check boxes 20 px in Teal; segmented chips (`.fw-seg`), boxes (`.fw-box`), the app's file picker; admin buttons 12 px round in Inter 600, secondary on the card with a Teal edge, ghost as Teal words, danger in Plum.
 > v1.26: a family goal every child meets (WP-82, D-126): a row per child (`.fw-goal__kids`), their avatar and name with how it stands for them and their days; a goal counting weeks won shows the counted goal's weeks as period marks (`.fw-goal__counted`).
 > v1.25: a goal's steps (WP-81, D-124): chips (`.fw-steps`), the one in reach or won at in Sun with a heavier border and `aria-current`; a day missed by a late tick marked as missed (`late`, the same Plum cross, its words "missed, ticked after the time").
@@ -72,7 +73,7 @@
 - Use "bad streak" only in parent insights. On the board it is "a rough patch" or just a plain count.
 - Points are "points" in the app. Arcade-style tickets are an *icon style* for the shop, not different currency.
 - Sentence case everywhere. No ALL CAPS except tiny labels in admin tables.
-- Numbers: digits always ("5 chores", "120 points"). Dates: "Tue, Oct 7". Times: "7:42 am".
+- Numbers: digits always ("5 chores", "120 points"). Dates: "Tue, Oct 7"; where the year matters, as on the goal screens and their fields, "Mon, Oct 12, 2026" (D-128). Times: "7:42 am".
 - Contractions are fine. Emoji are not used in UI copy; icons do that job.
 
 ---

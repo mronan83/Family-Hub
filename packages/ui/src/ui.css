@@ -951,6 +951,57 @@ select.fw-input {
   max-width: 100%;
   overflow: hidden;
 }
+/* [NFR-16][D-128] A date or time written as the mockups write it (WP-101, DatePick): the written
+   words in a field's look, the real field over them, see-through, so a tap opens the phone's picker.
+   The focus ring shows on the words while the field has the keyboard. */
+.fw-pick {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+.fw-pick__face {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  width: 100%;
+  color: var(--text);
+}
+.fw-pick__face .fw-icon {
+  color: var(--text-soft);
+}
+.fw-pick[data-empty] .fw-pick__words {
+  color: var(--text-soft);
+}
+.fw-pick__words {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.fw-pick__input {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  font-size: 16px;
+  cursor: pointer;
+}
+.fw-pick:has(.fw-pick__input:focus-visible) .fw-pick__face {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-pick--clock {
+  display: inline-block;
+  width: 9em;
+}
 /* [NFR-16][D-127] Segmented chips (WP-100, the mockups' Repeats): one choice of a few, each a chip
    with its radio hidden; chosen, tinted with a primary edge. */
 .fw-seg {
@@ -3124,6 +3175,84 @@ span.fw-heat__cell {
   display: inline-flex;
   align-items: center;
   background: transparent;
+}
+/* [NFR-16][D-128] A rule folded to its summary line, "Rule 1 · weight" (WP-101, the WP-81 addendum):
+   the line a field-like button with the list's chevron that opens the rule, its weight beside it, a
+   "%" inside the weight's field. Items show their picture beside their name. */
+.fw-goal-rule__sum {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-3);
+  align-items: end;
+}
+.fw-goal-rule__sum:not(:has(.fw-goal-rule__weight)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.fw-input.fw-goal-rule__line {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding-block: 10px;
+  padding-right: calc(var(--s-3) + 24px);
+  text-align: left;
+  cursor: pointer;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-soft) 50%),
+    linear-gradient(135deg, var(--text-soft) 50%, transparent 50%);
+  background-position:
+    right 18px center,
+    right 13px center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+.fw-input.fw-goal-rule__line[aria-expanded='true'] {
+  background-image:
+    linear-gradient(135deg, var(--text-soft) 50%, transparent 50%),
+    linear-gradient(45deg, transparent 50%, var(--text-soft) 50%);
+}
+.fw-goal-rule__weight .fw-pct {
+  width: 96px;
+}
+.fw-pct {
+  position: relative;
+  display: inline-block;
+}
+.fw-pct > .fw-input {
+  width: 100%;
+  padding-right: calc(var(--s-3) + 1em);
+}
+.fw-pct::after {
+  content: '%';
+  position: absolute;
+  right: var(--s-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-soft);
+  pointer-events: none;
+}
+.fw-item-pic {
+  white-space: nowrap;
+}
+.fw-item-pic .fw-icon {
+  margin-right: 4px;
+  vertical-align: -4px;
+}
+.fw-item-pic > .fw-icon {
+  color: var(--primary-text);
+}
+/* [NFR-16][D-128] The form's live summaries (WP-101): the mockups' callout, a soft fill with the
+   primary colour's bar on its left, where the frames place it. */
+.fw-callout {
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+  border-left: 4px solid var(--primary);
+  border-radius: 0 10px 10px 0;
+  background: var(--bg);
+  color: var(--text);
+  font-size: var(--t-small);
+}
+.fw-callout b {
+  font-weight: 700;
 }
 
 /* Meals (WP-25): the week's plan, a day per row (its four meals across on a laptop, stacked on a

@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.75: the goal form's live summaries (WP-101, D-128): the form asks the server, a moment after each change, for the summaries Preview's own code works out (`liveGoal`, `apps/web/lib/goal-preview.ts`, `goal-summaries.ts`); the preview's facts gain the school's closures (§5.2).
 > v0.8.74: perfect periods, and a family goal every child meets (WP-82, D-103, D-126): the rules engine counts another goal's periods and works an every-child goal out for each child (`ENGINE_VERSION` 4); a goal counting periods is worked out after the goal it counts (§5.2).
 > v0.8.73: no model name in commits or pull requests (D-125), at the owner's request: `ci / checks` reads the branch's commit messages and its PR's title and body, and `pr-text` reads the title and body again on an edit (§9.3).
 > v0.8.72: goals done by a time and paid in steps (WP-81, D-102, D-124): the rules engine reads each tick's time and the payout's steps (`ENGINE_VERSION` 3); the step paid is kept per period and goal (§5.2).

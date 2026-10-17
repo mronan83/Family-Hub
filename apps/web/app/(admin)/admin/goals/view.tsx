@@ -3,6 +3,7 @@ import {
   type AvatarKey,
   Banner,
   Button,
+  dateWords,
   Fold,
   GoalMeter,
   Icon,
@@ -13,7 +14,7 @@ import {
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { day } from '@/lib/format';
+import { fullDay } from '@/lib/format';
 import { bestLine, type Counted, countedLine, makesLine } from '@/lib/goal-perfect';
 import { periodLabel, REPEAT_WORDS } from '@/lib/goal-periods';
 import { goalSteps, stepChips, stepKind, stepNudge } from '@/lib/goal-steps';
@@ -45,7 +46,8 @@ export interface GoalsViewProps {
 }
 
 /** "Oct 7" for a household-local date. */
-const dateLabel = (iso: string) => day(`${iso}T12:00:00Z`, 'UTC');
+// [NFR-16][D-128] Dates as the mockups write them: "Mon, Oct 12, 2026" (WP-101).
+const dateLabel = (iso: string) => dateWords(iso);
 
 export function GoalPicture({
   goal,
@@ -442,11 +444,11 @@ export function GoalsView({
                     <span className="fw-muted">
                       {who(g.memberId)} · {STATUS_WORDS[g.status]}
                       {g.status === 'redeemed' && g.redeemedAt
-                        ? ` ${day(g.redeemedAt, timezone)}${g.redeemedBy && admins.get(g.redeemedBy) ? ` by ${admins.get(g.redeemedBy)}` : ''}`
+                        ? ` ${fullDay(g.redeemedAt, timezone)}${g.redeemedBy && admins.get(g.redeemedBy) ? ` by ${admins.get(g.redeemedBy)}` : ''}`
                         : g.status === 'expired' && g.endDate
                           ? ` ${dateLabel(g.endDate)}`
                           : g.status === 'cancelled' && g.archivedAt
-                            ? ` ${day(g.archivedAt, timezone)}`
+                            ? ` ${fullDay(g.archivedAt, timezone)}`
                             : ''}
                     </span>
                     {g.needsReview ? (

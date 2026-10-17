@@ -1,10 +1,10 @@
-import { Banner, Button, Fold } from '@familywise/ui';
+import { Banner, Button, dateWords, Fold } from '@familywise/ui';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
-import { dayAndTime, isoDay } from '@/lib/format';
-import { daysLine, periodWord, REPEAT_WORDS, spanWords, thisPeriod } from '@/lib/goal-periods';
+import { fullDay, isoDay, time } from '@/lib/format';
+import { daysLine, periodWord, REPEAT_WORDS, thisPeriod } from '@/lib/goal-periods';
 import { goalSteps, stepKind } from '@/lib/goal-steps';
 import { eventWords, payoutWords, STATUS_WORDS } from '@/lib/goals';
 import { serverClient } from '@/lib/supabase/server';
@@ -197,7 +197,8 @@ export default async function GoalPage({
             ? [
                 <span key="latest">
                   <b>Latest:</b> {eventWords(events[0])},{' '}
-                  {dayAndTime(events[0].at, household.timezone)} · {events.length}{' '}
+                  {fullDay(events[0].at, household.timezone)} at{' '}
+                  {time(events[0].at, household.timezone)} · {events.length}{' '}
                   {events.length === 1 ? 'event' : 'events'}
                 </span>,
               ]
@@ -210,7 +211,7 @@ export default async function GoalPage({
               <span className="fw-item__body">
                 <strong>{eventWords(e)}</strong>
                 <span className="fw-muted">
-                  {dayAndTime(e.at, household.timezone)}
+                  {fullDay(e.at, household.timezone)} at {time(e.at, household.timezone)}
                   {actor(e)}
                 </span>
               </span>
@@ -233,13 +234,8 @@ export default async function GoalPage({
         >
           {stopped && goal.endDate ? (
             <Banner kind="info">
-              It stops after{' '}
-              {
-                spanWords({ start: goal.endDate, end: goal.endDate, outcome: 'open' }).split(
-                  ' to ',
-                )[0]
-              }
-              : this {repeat === 'none' ? 'period' : periodWord(repeat)} still counts.
+              It stops after {dateWords(goal.endDate)}: this{' '}
+              {repeat === 'none' ? 'period' : periodWord(repeat)} still counts.
             </Banner>
           ) : null}
           {repeat !== 'none' && goal.status === 'active' ? (

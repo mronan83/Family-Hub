@@ -24,6 +24,7 @@ export const ADMIN = [
   ['goals-steps', '/dev/goals?list=steps'],
   ['goals-perfect', '/dev/goals?list=perfect'],
   ['goal-new', '/dev/goals?form=new'],
+  ['goal-homework', '/dev/goals?form=homework'],
   ['goal-repeating', '/dev/goals?form=repeating&open=weeks'],
   ['goal-steps', '/dev/goals?form=steps'],
   ['goal-count-steps', '/dev/goals?form=count-steps'],
@@ -65,6 +66,8 @@ async function shoot(context, url, file, person) {
   await page.goto(url);
   // The page is ready once React has hydrated it (D-110) and its fonts have loaded.
   await page.locator('html[data-hydrated]').waitFor();
+  // [D-128] A goal form shows its live summaries once they are worked out (WP-101).
+  await page.waitForFunction(() => !document.querySelector('form[data-live="waiting"]'));
   if (person) {
     await page
       .getByRole('list', { name: 'Family', exact: true })
