@@ -271,9 +271,9 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 117 of 134 |
+| Requirements built (a Done item builds them) | 117 of 141 |
 | Built requirements with no test | 0 |
-| Stories built | 104 of 120 |
+| Stories built | 104 of 126 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
 | Test cases | 132 (with a test: 132) |
@@ -392,7 +392,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-04 | M | Covered | US-703 | WP-26 | — | U 5 · DB 4 · UI 1 · E2E 1 |
 | MEAL-05 | M | Covered | US-704 | WP-27 | — | U 3 · DB 2 · E2E 1 |
 | MEAL-06 | M | Covered | US-705 | WP-28 | — | U 6 · DB 3 · UI 4 · E2E 3 |
-| MEAL-07 | C | Not built | US-706 | WP-36 | — | — |
+| MEAL-07 | S | Not built | US-706, US-715 | WP-105 | — | — |
 | MEAL-09 | S | Covered | US-707 | WP-49, WP-77 | — | U 9 · DB 13 · UI 6 · E2E 1 |
 | MEAL-08 | S | Covered | US-701 | WP-25 | — | U 2 · DB 1 · UI 2 · E2E 1 |
 | MEAL-10 | M | Covered | US-708 | WP-62 | — | U 3 · DB 5 · UI 2 · E2E 1 |
@@ -401,6 +401,13 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-13 | M | Covered | US-710 | WP-74 | — | U 9 · UI 4 · E2E 1 |
 | MEAL-14 | S | Covered | US-711 | WP-75 | — | U 4 · UI 4 · E2E 1 |
 | MEAL-15 | S | Covered | US-701 | WP-76 | — | DB 4 · UI 3 · E2E 1 |
+| MEAL-16 | S | Not built | US-712 | WP-103 | — | — |
+| MEAL-17 | S | Not built | US-713 | WP-103 | — | — |
+| MEAL-18 | S | Not built | US-714 | WP-104 | — | — |
+| MEAL-19 | S | Not built | US-715 | WP-105 | — | — |
+| MEAL-20 | S | Not built | US-715 | WP-105 | — | — |
+| MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
+| MEAL-22 | S | Not built | US-717 | WP-107 | — | — |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
 | MENU-03 | M | Covered | US-802 | WP-27 | — | U 6 · DB 3 · UI 2 · E2E 1 |
@@ -550,6 +557,11 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-100 | Done | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h | 8 of 8 | — |
 | WP-101 | Done | NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | 9 of 9 | — |
 | WP-102 | Done | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | 8 of 8 | — |
+| WP-103 | Queued: | — | — | — |
+| WP-104 | Queued | — | — | — |
+| WP-105 | Queued | — | — | — |
+| WP-106 | Queued | — | — | — |
+| WP-107 | Queued | — | — | — |
 
 Test cases and the tests that prove them:
 
@@ -778,6 +790,12 @@ Status as in §9.3, for tests that name the story itself.
 | US-709 | MEAL-12 | Covered | UI 1 · E2E 1 |
 | US-710 | MEAL-13 | Covered | UI 1 · E2E 1 |
 | US-711 | MEAL-14 | Covered | UI 1 · E2E 1 |
+| US-712 | MEAL-16 | Not built | — |
+| US-713 | MEAL-17 | Not built | — |
+| US-714 | MEAL-18 | Not built | — |
+| US-715 | MEAL-07, MEAL-19, MEAL-20 | Not built | — |
+| US-716 | MEAL-21 | Not built | — |
+| US-717 | MEAL-22 | Not built | — |
 | US-801 | MENU-01, MENU-02 | Covered | U 3 · UI 2 |
 | US-802 | MENU-03 | Covered | U 4 · DB 2 · UI 2 · E2E 1 |
 | US-803 | MENU-04, MENU-05 | Covered | U 3 · DB 1 · UI 1 · E2E 1 |

@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.64: US-712 to US-717 added at the owner's request (SPIKE-08, WP-103 to WP-107, D-134): the grocery list kept in Apple Reminders and synced by the Mac Studio, on the board and in the admin app, meals → groceries with duplicates merged, staples, and children's asks. US-706 moves to WP-105.
 > v0.8.63: US-323, US-324 and US-325 added at the owner's request (WP-96, D-132): Chores in four sections with person chips, Duplicate, and Do again.
 > v0.8.62: US-414 and US-415 as built (WP-82, D-126): **Weeks won of a repeating goal**, in total or in a row, from the goal's start date; **Every child meets it** on a family goal, paying the children with something due; each child's days on Goals and the board.
 > v0.8.61: US-412 and US-413 as built (WP-81, D-124): **Counts only when done**, **Pay in steps** and rule weights, and the board's steps.
@@ -732,7 +733,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 
 ### US-706 — Ready for a grocery list
 **As an** admin **I want** meals to hold ingredients **so that** a future grocery list can be generated.
-**Priority:** Could · **Phase:** P3 · **Reqs:** MEAL-07
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-07
 - Given I add ingredients to a meal, when I save, then they are stored structured and exportable.
 - Given a week is planned, when I request a consolidated ingredient export, then I receive de-duplicated quantities.
 
@@ -785,6 +786,53 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a day of the meal week, when I tap **Add**, then **Add to the plan** opens with that day filled in.
 - Given Meals, when it opens, then the week's days come first, then **Add to the plan**, then **Copy last week** (collapsed at first, opening on tap), then **School lunch** (added at the owner's request, D-114).
 - Given I add, edit, move or remove a meal of a day, when the page comes back, then that day is open.
+
+### US-712 — Our grocery list stays in Apple Reminders
+**As a** parent **I want** our shared Apple Reminders grocery list to stay the list we use, kept in step with FamilyWise **so that** we still add by Siri and shop from the Watch, and FamilyWise can help with it (added at the owner's request).
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-16
+- Given I say "Hey Siri, add oat milk to Groceries", when the Mac Studio is on, then FamilyWise has oat milk on its grocery list within seconds.
+- Given FamilyWise adds "Tortillas", when I open Groceries in Apple Reminders on my iPhone, then it is there within seconds.
+- Given I tick "Bananas" in the shop, when the Mac Studio syncs, then FamilyWise has it ticked, with when (and who, where Apple Reminders says; SPIKE-08 finds out).
+- Given the Mac Studio restarted and was off for ten minutes while "Eggs" was added on my iPhone, when it is back, then FamilyWise has Eggs without anyone doing anything.
+- Given "Bread" was renamed "Sourdough" on my iPhone and ticked in FamilyWise at about the same time, when both reach the sync, then the newer change wins and both sides show the same.
+
+### US-713 — The Mac that keeps it in sync
+**As an** admin **I want** to set up the Mac Studio's sync once and see that it is working **so that** I trust the list without checking it.
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-17
+- Given the admin app, when I ask to connect the Mac, then it shows a short code that works once, for a few minutes; I type it at the Mac and the sync program keeps its own key in the Mac's Keychain. I never paste a key anywhere.
+- Given the sync is set up, when I open Health, then the Mac is listed with the background jobs: when it was last heard from, its last sync, and any error.
+- Given the Mac has not been heard from for longer than it should, when I open Health, then it says so on the Mac's row.
+- Given I disconnect the Mac in the admin app, when the sync program next calls, then it is refused and the list stops syncing.
+
+### US-714 — The grocery list on the board and in the admin app
+**As a** parent **I want** the grocery list in the admin app and on the board **so that** I can manage it on my laptop and everyone can see what's needed at the kitchen board.
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-18
+- Given the admin app's Groceries, when I add "Apples", change "Milk" to "Milk ×2", tick "Rice" or remove "Foil", then each change reaches Apple Reminders within seconds.
+- Given the board, when I open Groceries, then I see what is on the list, by the Groceries list's sections where they reach the sync (Produce, Dairy, …), and nothing on it is a button that changes the list.
+- Given an item is ticked in the shop, when the board next reads the list, then it is no longer among what's needed.
+
+### US-715 — This week's meals onto the grocery list
+**As a** parent **I want** the ingredients of the week's planned meals added to the grocery list **so that** I don't write out the shopping from the meal plan by hand.
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-07, MEAL-19, MEAL-20
+- Given "Tacos" has ingredients (tortillas, ground beef, cheese, lettuce) and is planned for Tuesday, when I choose to add this week's ingredients, then I first see everything that will be added, by meal, and can untick what we have.
+- Given I untick cheese and confirm, when the list updates, then tortillas, ground beef and lettuce are on it, in FamilyWise and in Apple Reminders, and cheese is not.
+- Given "2 onions" is already on the list and Wednesday's chili needs 1 onion, when its ingredients are added, then the list has one "Onions ×3", not two items.
+- Given "milk" is on the list and Leo asks for "Milk", when the ask is added, then there is still one Milk.
+
+### US-716 — Staples before they run out
+**As a** parent **I want** FamilyWise to suggest what we usually need by now **so that** we don't run out of milk and eggs.
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-21
+- Given milk is usually bought every 5 days and was last bought 6 days ago, and it isn't on the list, when I open Groceries, then **Milk** is suggested, with "usually every 5 days".
+- Given a suggestion, when I tap **Add**, then it is on the list; when I tap **Not now**, then it isn't suggested again until it is due again.
+- Given nothing is tapped, when a suggestion is shown, then nothing is added to the list by itself.
+
+### US-717 — Asking for something from the board
+**As a** kid **I want** to ask for a grocery item at the board **so that** my parents know I want yogurt without me remembering to tell them.
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-22
+- Given the board's Groceries, when Maya picks **Ask for something** and chooses or types "Yogurt", then the ask is recorded as Maya's.
+- Given the household's parent OK is on, when Maya asks, then the ask waits for a parent, and a parent with alerts on is told; it reaches the list and Apple Reminders only once a parent approves it.
+- Given the parent OK is off, when Leo asks for "Apples", then Apples goes straight on the list, marked as Leo's ask.
+- Given a parent turns an ask down, when Maya looks at the board, then she sees it wasn't added.
 
 ---
 

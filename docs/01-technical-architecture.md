@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.78: the smart grocery list, added at the owner's request and recorded only (SPIKE-08, WP-103 to WP-107, D-134): Apple Reminders stays the list; a sync program on the owner's Mac Studio (`MACSYNC`) keeps one shared Apple Reminders grocery list in two-way sync with Supabase, with its own key and a row on Health (§2, §3, §4, §5.11, §10, §11).
 > v0.8.77: the e2e findings log and a run by hand (WP-98, D-130): every e2e run with a failed test adds one comment to the issue "E2E findings log", re-runs included; the run summary lists the tests that failed in more than one of the last 30 runs; `e2e.yml` can be started by hand on `main` when no other e2e run is queued or going (§9.5).
 > v0.8.76: the e2e red triage (WP-102, D-129): the run hides every connection string from its summary and issues; a board's own read of a late change taking over 2 s is infrastructure evidence (§9.5).
 > v0.8.75: the goal form's live summaries (WP-101, D-128): the form asks the server, a moment after each change, for the summaries Preview's own code works out (`liveGoal`, `apps/web/lib/goal-preview.ts`, `goal-summaries.ts`); the preview's facts gain the school's closures (§5.2).
@@ -121,6 +122,8 @@ flowchart LR
   apple[("iCloud Calendar<br/>ICS / CalDAV, read-only")]
   menu[("School menu source<br/>Nutrislice / SchoolCafe / CSV")]
   meteo[("Open-Meteo<br/>weather + place search")]
+  mac["Mac Studio sync program<br/>MACSYNC (planned, D-134)"]
+  areminders[("Apple Reminders<br/>the grocery list")]
 
   kid -->|"check off, browse"| board
   parents -->|"configure, approve, my tasks"| admin
@@ -129,6 +132,9 @@ flowchart LR
   core -->|"scheduled pull"| apple
   core -->|"adapter / import"| menu
   core -->|"weather every 30 min, place search"| meteo
+  parents -->|"add, tick (Siri, Watch, iPhone)"| areminders
+  mac <-->|"EventKit, two-way"| areminders
+  mac <-->|"its own key"| core
 ```
 
 ---
@@ -190,6 +196,12 @@ flowchart TB
   NOTIFY --> DB
   NOTIFY -- "web push (VAPID)" --> WPUSH[("Push services<br/>Apple, Google, Mozilla")]
   WPUSH -- "notification" --> PARENTS
+  subgraph MACHOST["Mac Studio (planned, D-134)"]
+    MACSYNC["MACSYNC — grocery sync program"]
+  end
+  MACSYNC -- "EventKit, two-way" --> AREM[("Apple Reminders grocery list")]
+  MACSYNC -- "its own key: grocery list + sync status" --> DB
+  RT -. "list changes" .-> MACSYNC
 ```
 
 ---
@@ -216,6 +228,7 @@ flowchart TB
 | `PI` | Kiosk host | Raspberry Pi OS, Chromium kiosk, watchdog, screen power. | systemd, Chromium | DEV-04/07, NFR-02 |
 | `OBS` | Observability | Structured JSON logs without PII (`lib/log.ts`). Server errors and failed jobs are kept 30 days in `private.app_error` (`onRequestError`), each with the household it happened for. `job_run` and `job_health()`. Usage: the database size, read live, and the Vercel account's usage, read daily by the usage workflow. All shown on System Health, where each household sees only its own jobs and errors (WP-42, D-42). | Vercel runtime logs, Postgres, GitHub Actions | NFR-07, NFR-08, CAL-06 |
 | `UI` | Design system | FamilyWise tokens (Day and Evening, sixteen member colors with Evening line shades), self-hosted fonts, typed icon set (our own and Lucide's, D-70), avatars and brand components (`ChoreTile`, `PointsChip`, `GoalMeter`, `Banner`, `Button`, `Logo`, `BootSplash`, `IconPicker`) shared by board and admin. `brand/` is the source of truth: `packages/ui/scripts/lucide.mjs` copies the Lucide icons listed in `brand/icons/lucide.json` into the kit, and `packages/ui/scripts/brand.mjs` generates the typed icons (drawings for every surface; words and picker groups in a module only the admin loads) and theme colors (committed, checked in CI) and, before every dev run and build, copies fonts, logos, avatars and app icons into `apps/web/public` and writes the two manifests and the font-precaching service worker. | `packages/ui`, `brand/` | NFR-13, NFR-11 |
+| `MACSYNC` | Grocery sync (planned, D-134) | A small program on the owner's Mac Studio, on all the time, started at login: keeps one shared Apple Reminders grocery list in two-way sync with Supabase within seconds, catches up after a restart, the newest change to an item wins; holds its own key (from a single-use code typed at the Mac, kept in the Keychain) that reaches only the household's grocery list and sync status; reports to Health with the background jobs. Apple has no web API for Reminders and upgraded lists don't sync over CalDAV, so nothing else can reach them. SPIKE-08 settles the details (§5.11). | EventKit, or what SPIKE-08 finds best; macOS LaunchAgent | MEAL-16, MEAL-17 |
 | `CICD` | Delivery pipeline | Pull-request gates, preview environments, ordered production deploys (migrations, then app), docs traceability. No Docker, no staging. | GitHub Actions, Vercel, Supabase CLI, `psql`/`pg_dump` | NFR-14, NFR-12, NFR-08, NFR-10 |
 
 **As built (WP-51, D-81): the admin app's menu.** Every admin page starts with `AdminHeader` (a server component): it reads who is signed in and how many check-offs wait for a parent (`chore_occurrence` `pending_approval`, through RLS), and renders `AdminNav` (a client component): `NAV_GROUPS` from `lib/admin-nav.ts` (Your day, The family, Set-up), Help, and the person with **Sign out**. From 1024 px the menu is fixed down the left and `.admin:has(.fw-shell)` makes room for it; below, a **Menu** button opens it over the page. `/admin/settings` reads each part's state (`lib/settings-status.ts`: the school year, calendars that can't sync, boards, tags, the parent's own reminders, jobs needing a look). A page `SETTINGS_PAGES` lists marks Settings and shows the way back.
@@ -614,6 +627,10 @@ sequenceDiagram
 
 ---
 
+### 5.11 The grocery list's sync with Apple Reminders (MEAL-16, MEAL-17, D-134)
+
+Planned, not built. SPIKE-08 records its findings here: two-way changes and the identifier that stays stable for an item; coming back by itself after a restart (automatic login, and FileVault); measured change latency each way, in seconds (counts only); whether the Groceries list's sections reach the sync program; whether Apple Reminders says when and by whom an item was ticked; the tooling and its one-time permission. Until then the intended shape is `MACSYNC` in §4: Apple Reminders stays the list, the Mac Studio's program syncs it, the newest change to an item wins, and the program's own key reaches only the grocery list.
+
 ## 6. Security architecture
 
 ### 6.1 Principals
@@ -898,6 +915,7 @@ Every GitHub secret below is a repository secret, which any workflow run in the 
 | Day-close job skipped | history views lag | the job catches up all past dates on its next run; `fold_occurrence_status` also reports `missed` for any past-due unresolved occurrence on the next touch |
 | Device token revoked | board returns to pairing screen | by design |
 | Push service rejects a device, or a subscription expired | that device stops getting reminders | 404/410 deletes the subscription; the Reminders page shows when each device was last reached and has a test button; My tasks and the board still list everything |
+| Mac Studio off, asleep or not signed in (planned, D-134) | FamilyWise's grocery list and Apple Reminders stop syncing; each side still works on its own | Health shows when the Mac was last heard from; the program catches up when it is back; the newest change to an item wins |
 | Pi power loss | reboot to board in <2 min | SSD boot, auto-launch |
 
 ---
@@ -913,6 +931,7 @@ Every GitHub secret below is a repository secret, which any workflow run in the 
 | Occurrences | Materialized rows | Computed on the fly | Stable denominators for streaks; edits can't rewrite history |
 | Realtime payloads | Notify-then-refetch | Apply row deltas client-side | Derived data stays server-authoritative |
 | Calendar writes | None (Apple Calendar only) | Two-way sync | Write-back is where sync bugs live |
+| Grocery list (D-134) | Apple Reminders stays the list, synced both ways by a program on the owner's Mac Studio | A FamilyWise-only list; CalDAV from the server; an iPhone app | The family shops from Apple Reminders (Siri, the Watch, sharing, sections); Apple has no web API for Reminders and upgraded lists don't sync over CalDAV; an iPhone app was considered and is not chosen now. Two-way here is deliberate: adding by Siri and ticking in the shop are the point |
 | Calendar selection | Per-device selection table | Global show/hide flag | Different boards can show different calendars |
 | Points | Append-only ledger; balance derived | Mutable balance column | Clawbacks, redemptions, and audits stay exact |
 | Family list | One model for every member's chores and tasks; behavior follows the person (earns-rewards switch) | Separate kid and parent lists | One code path for scheduling, history and check-off; the board shows the whole family's day (D-30, D-32) |
