@@ -2,6 +2,7 @@ import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf } from '../support/day';
 import { foldOf, unfold } from '../support/fold';
+import { retireItems, storedRuns } from '../support/history';
 import { signIn } from '../support/session';
 
 // [RWD-19][RWD-20] Perfect weeks, and a family goal every child meets (WP-82, D-103, D-126) on the
@@ -14,7 +15,10 @@ import { signIn } from '../support/session';
 // Its own items ("Homework e2e … Maya" and "… Leo", 0 points, one each), with each day's state set in
 // SQL, as the board and day close would leave them; each week's fifth to seventh days hold nothing.
 // Afterwards the won family week is undone (each child's 20 points come back off, so the balances are
-// as they were), the goals cancelled and the items removed.
+// as they were), the goals cancelled and the items removed. [NFR-14-t] Check-offs are append-only, so
+// the items' ticks stay in Maya's and Leo's history: each is skipped, a day that counts for nothing,
+// and the last step checks their good and bad runs are as before (wishlist.spec.ts and insights.spec.ts
+// read Leo's as the seed left them).
 const db = process.env.SUPABASE_DB_URL;
 const DEMO = '0de00000-0000-4000-8000-000000000001';
 const TAG = Math.random().toString(36).slice(2, 6);
@@ -55,13 +59,26 @@ const paid = () =>
                                   order by m.display_name, l.created_at, l.id), '')
          from public.points_ledger l join public.member m on m.id = l.member_id
         where l.goal_id = '${goalId(FAMILY) || '00000000-0000-0000-0000-000000000000'}'`);
+/** Opens the child's Insights, which brings their stored history up to date first, then reads it. */
+async function runsNow(who: 'Maya' | 'Leo') {
+  await admin.goto(`/admin/insights?member=${member(who)}&days=7`);
+  await expect(admin.getByRole('region', { name: 'Streaks' })).toBeVisible();
+  return storedRuns(db!, member(who));
+}
+/** Each child's runs before the spec added anything. */
+const before: Record<'Maya' | 'Leo', string> = { Maya: '', Leo: '' };
+let putBackDone = false;
+
 const weeks = (title: string) =>
   sql(`select string_agg(outcome, ', ' order by start_date) from public.reward_goal_period
         where goal_id = '${goalId(title)}' and start_date < '${thisWeek}'`);
 
 test.beforeAll(async ({ browser }) => {
-  // [D-110] Sign-in and the items' set-up, about 10 s on the preview.
+  // [D-110] Sign-in, two Insights pages and the items' set-up, about 15 s on the preview.
   test.setTimeout(60_000);
+  admin = await browser.newPage();
+  await signIn(admin);
+  for (const who of ['Maya', 'Leo'] as const) before[who] = await runsNow(who);
   const today = householdToday(db!);
   thisWeek = weekStartOf(today, householdWeekStart(db!));
   lastWeek = addDays(thisWeek, -7);
@@ -86,12 +103,16 @@ test.beforeAll(async ({ browser }) => {
     if (d === 1) miss('Leo', addDays(lastWeek, d));
     else tick('Leo', addDays(lastWeek, d));
   }
-  admin = await browser.newPage();
-  await signIn(admin);
 });
 
-test.afterAll(async () => {
-  test.setTimeout(90_000);
+/**
+ * Puts back what the spec changed: the won family week undone, the goals cancelled, each check-off
+ * skipped and the items removed. Once only: the last step does it and checks it, the clean-up does it
+ * when a step before failed.
+ */
+async function putBack() {
+  if (putBackDone) return;
+  putBackDone = true;
   try {
     if (goalId(FAMILY)) {
       // The won family week undone: worked out once more, it takes back each child's 20 points.
@@ -105,16 +126,16 @@ test.afterAll(async () => {
     sql(`update public.reward_goal set status = 'cancelled', archived_at = now()
           where household_id = '${DEMO}' and title in ('${FAMILY.replace(/'/g, "''")}', '${MAYAS}', '${PERFECT}')
             and status <> 'cancelled'`);
-    // Check-offs are append-only (private.prevent_event_change), so the items can't be deleted: their
-    // days without a check-off are removed and they are archived, as insights.spec.ts does.
-    const ids = Object.values(items)
-      .filter(Boolean)
-      .map((id) => `'${id}'`)
-      .join(', ');
-    if (ids)
-      sql(`delete from public.chore_occurrence o where o.chore_id in (${ids})
-             and not exists (select from public.chore_completion_event e where e.occurrence_id = o.id);
-           update public.chore set archived_at = now() where id in (${ids}) and archived_at is null`);
+    // [NFR-14-t] The goals cancelled first, so none is worked out again from the skips.
+    retireItems(db!, Object.values(items));
+  }
+}
+
+test.afterAll(async () => {
+  test.setTimeout(90_000);
+  try {
+    if (admin) await putBack();
+  } finally {
     await admin?.close();
   }
 });
@@ -136,9 +157,10 @@ async function setWeekly(title: string, who: 'Maya' | 'The whole family', itemsC
   return form;
 }
 
-test('[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row', async () => {
-  // [D-110] Six page loads and three saves: about 40 s at worst on the preview, so 3x that.
-  test.setTimeout(120_000);
+test('[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][NFR-14-t][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row; their history put back', async () => {
+  // [D-110] Nine page loads (the put-back's three included) and three saves: about 50 s at worst on
+  // the preview, so 3x that.
+  test.setTimeout(150_000);
 
   await test.step('Alex sets the family goal: every child meets it, 20 points each', async () => {
     const form = await setWeekly(FAMILY, 'The whole family', [
@@ -209,5 +231,11 @@ test('[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][US-414][US-415] done-when: every 
       .filter({ hasText: PERFECT });
     await expect(card).toContainText(`Maya · counts ${MAYAS}`);
     await expect(card).toContainText('2 of 3 weeks in a row');
+  });
+
+  await test.step('[NFR-14-t] put back: the won week undone, and Maya’s and Leo’s runs as before', async () => {
+    await putBack();
+    for (const who of ['Maya', 'Leo'] as const)
+      expect(await runsNow(who), `${who}’s good and bad runs after the put-back`).toBe(before[who]);
   });
 });

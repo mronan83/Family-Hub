@@ -2,6 +2,7 @@ import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf } from '../support/day';
 import { foldOf, unfold } from '../support/fold';
+import { retireItems } from '../support/history';
 import { signIn } from '../support/session';
 
 // [RWD-17][RWD-18] A goal done by a time, paid in steps (WP-81, D-102, D-124) on the preview, as Alex
@@ -80,12 +81,9 @@ test.afterAll(async () => {
       await expect(admin.getByRole('status')).toHaveText('Cancelled. It’s in the history.');
     }
   } finally {
-    // Check-offs are append-only (private.prevent_event_change), so the item can't be deleted: its
-    // days without a check-off are removed and it is archived, as insights.spec.ts does.
-    if (item)
-      sql(`delete from public.chore_occurrence o where o.chore_id = '${item}'
-             and not exists (select from public.chore_completion_event e where e.occurrence_id = o.id);
-           update public.chore set archived_at = now() where id = '${item}' and archived_at is null`);
+    // [NFR-14-t] Its ticks skipped, so Maya's good and bad runs are as before (WP-109); its days
+    // without a check-off removed and it archived.
+    retireItems(db!, [item]);
     await admin?.close();
   }
 });
