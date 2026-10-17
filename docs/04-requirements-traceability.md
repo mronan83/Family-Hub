@@ -215,11 +215,11 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CAL-02 | US-502 | WP-22 | CALSYNC, SCHED | calendar_event, calendar_event_instance | U, INT | U 5 · DB 11 · E2E 1 |
 | CAL-03 | US-501 | WP-22 | CALSYNC, ADM, BRD | — | REV | DB 3 · UI 1 |
 | CAL-04 | US-503, US-1008 | WP-23 | BRD | calendar_event_instance | E2E | U 8 · DB 4 · UI 11 · E2E 1 |
-| CAL-05 | US-504, US-507 | WP-23, WP-46, WP-70 | ADM, BRD, DB | calendar_source, device_calendar | E2E, DB | U 10 · DB 11 · UI 3 · E2E 2 |
-| CAL-06 | US-505 | WP-22 | CALSYNC, ADM, OBS | calendar_source, job_run | INT, E2E | U 7 · DB 7 · UI 3 · E2E 1 |
+| CAL-05 | US-504, US-507 | WP-23, WP-46, WP-70 | ADM, BRD, DB | calendar_source, device_calendar | E2E, DB | U 11 · DB 11 · UI 3 · E2E 2 |
+| CAL-06 | US-505 | WP-22 | CALSYNC, ADM, OBS | calendar_source, job_run | INT, E2E | U 9 · DB 7 · UI 4 · E2E 2 |
 | CAL-07 | US-502 | WP-22 | CALSYNC | calendar_event, calendar_event_instance | U | U 17 · DB 6 · E2E 1 |
 | CAL-08 | US-506 | WP-29 | CALSYNC, VAULT | calendar_source | INT | — |
-| CAL-09 | US-508 | WP-50 | ADM, BRD, DB | calendar_source, calendar_member | DB, E2E | U 7 · DB 24 · UI 4 · E2E 1 |
+| CAL-09 | US-508 | WP-50 | ADM, BRD, DB | calendar_source, calendar_member | DB, E2E | U 8 · DB 24 · UI 4 · E2E 1 |
 | CAL-10 | US-509 | WP-52 | BRD, CALSYNC, DB | calendar_event, calendar_event_instance | U, DB, E2E | U 4 · DB 8 · UI 1 · E2E 1 |
 | SCH-01 | US-601 | WP-21 | ADM, DB | school_year, school_term, school_closure, member_school_profile | U, DB, E2E | U 10 · DB 13 · UI 2 · E2E 5 |
 | SCH-02 | US-602 | WP-21 | DB | resolve_day_type | DB, E2E | DB 14 · E2E 3 |
@@ -228,7 +228,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | SCH-05 | US-604 | WP-54 | ADM, BRD, DB | school_year, school_day_change | U, DB, E2E | — |
 | SCH-06 | US-605 | WP-56 | ADM, API | school_year, school_closure, school_day_change | U, INT, E2E | — |
 | MEAL-01 | US-701 | WP-25 | ADM, BRD | meal_plan_entry | U, DB, E2E | U 4 · DB 1 · UI 3 · E2E 1 |
-| MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | U, DB, E2E | U 3 · DB 2 · UI 2 · E2E 1 |
+| MEAL-02 | US-701 | WP-25 | ADM | meal, meal_plan_entry | U, DB, E2E | U 3 · DB 2 · UI 3 · E2E 1 |
 | MEAL-03 | US-702 | WP-25 | ADM, API | meal_plan_entry | DB, E2E, INT | U 1 · DB 3 · UI 1 · E2E 1 |
 | MEAL-04 | US-703 | WP-26 | ADM, DB | lunch_override, member_lunch | U, DB, E2E | U 5 · DB 4 · UI 1 · E2E 1 |
 | MEAL-05 | US-704 | WP-27 | MENUIMP, BRD, ADM | school_menu_day, member_lunch | U, DB, E2E | U 3 · DB 2 · E2E 1 |
@@ -242,10 +242,10 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | MEAL-13 | US-710 | WP-74 | ADM | lunch_override, member_lunch, lunch_choice, school_menu_day | U, UI, E2E | U 9 · UI 4 · E2E 1 |
 | MEAL-14 | US-711 | WP-75 | ADM | meal_plan_entry | U, E2E | U 4 · UI 4 · E2E 1 |
 | MEAL-15 | US-701 | WP-76 | ADM, DB | meal_plan_entry, meal_plan_entry_member | U, DB, E2E | DB 4 · UI 3 · E2E 1 |
-| MENU-01 | US-801 | WP-27 | ADM, MENUIMP | menu_source, member_lunch | U, DB, E2E | U 2 · DB 1 · UI 2 · E2E 1 |
+| MENU-01 | US-801 | WP-27 | ADM, MENUIMP | menu_source, member_lunch | U, DB, E2E | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | US-801 | WP-27 | MENUIMP | menu_source | U, DB, E2E | U 4 · DB 2 · UI 2 · E2E 1 |
-| MENU-03 | US-802 | WP-27 | ADM, MENUIMP | school_menu_day | U, DB, E2E | U 5 · DB 3 · UI 2 · E2E 1 |
-| MENU-04 | US-803 | WP-27 | MENUIMP, ADM, OBS | school_menu_day, menu_source | U, DB, E2E | U 2 · DB 1 · UI 1 · E2E 1 |
+| MENU-03 | US-802 | WP-27 | ADM, MENUIMP | school_menu_day | U, DB, E2E | U 6 · DB 3 · UI 2 · E2E 1 |
+| MENU-04 | US-803 | WP-27 | MENUIMP, ADM, OBS | school_menu_day, menu_source | U, DB, E2E | U 4 · DB 1 · UI 2 · E2E 1 |
 | MENU-05 | US-803 | WP-27 | MENUIMP, SCHED | school_menu_day | U, DB, E2E | U 5 · DB 3 · E2E 1 |
 | MENU-06 | US-804 | WP-64, WP-78 | MENUIMP, BRD, ADM | school_menu_day | U, E2E | U 10 · DB 4 · UI 1 · E2E 1 |
 | BRD-01 | US-303, US-1001 | WP-11, WP-35 | BRD | board_snapshot | E2E | U 1 · DB 2 · UI 2 · E2E 3 |
@@ -283,7 +283,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-15 | US-107 | WP-51 | ADM, UI | chore_occurrence, tag, calendar_source, device, reminder_preference | U, E2E | U 2 · UI 6 · E2E 1 |
 | NFR-16 | US-912 | WP-53, WP-71, WP-100, WP-101 | ADM, BRD, UI | — | E2E, CI | U 17 · DB 10 · UI 17 |
 | NFR-17 | US-109 | WP-57 | ADM, DB, UI | chore_occurrence, redemption, device, calendar_source, menu_source, school_closure | U, DB, E2E | U 11 · DB 2 · UI 4 · E2E 2 |
-| NFR-18 | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | ADM, UI | — | U, E2E | U 3 |
+| NFR-18 | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | ADM, UI | — | U, E2E | U 11 · UI 6 · E2E 1 |
 | NFR-19 | US-913 | WP-85, WP-86 | CICD | — | CI, U | U 6 |
 
 ---
@@ -300,7 +300,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 
 - Requirements: **131** · with at least one story: **131** · stories: **117** (P0: 12 · P1: 52 · P2: 30 · P3: 23).
 - With at least one work package: **131** · work packages: **99**.
-- Tests: **2633** (2126 name a requirement) · built requirements with a test: **116 of 116** · known test gaps: **104** (`08` §9.6).
+- Tests: **2648** (2141 name a requirement) · built requirements with a test: **117 of 117** · known test gaps: **104** (`08` §9.6).
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -463,6 +463,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.148 | WP-93 Calendars, school menus and the meal library folded (NFR-18, US-111, D-120, D-131), from the fold audit the owner approved on 16 October. No migration. Each calendar a row of the shared `Fold` with `calendarFacts()` (who it's for, on the boards or not, its sync, how many events are coming up) and **Can't sync** on its header, opened to what's coming up, then **Edit** and **Remove** as folds; each school menu a row with `menuFacts()` (where it comes from, whose lunch, its fetch, its days) and **Can't fetch** on its header, opened to its weeks, **Load a file into** and **Add a day to** as folds, then **Fetch now**, **Rename** and **Remove** set apart; **Add a calendar**, **Add a school menu** and **Add a meal** folded to their buttons, the library's **Archived** to its count; a calendar or menu open again after a save in it. Tests: `calendars.test.ts`, `menus.test.ts`, UI suite `calendars.spec.ts`, `menus.spec.ts`, `meals.spec.ts`, e2e `calendar-fold.spec.ts`. |
 | 0.8.147 | WP-98 The e2e findings log (NFR-14, D-121, D-130): `scripts/e2e-findings.mjs` writes one comment per e2e run with a failed test to the issue "E2E findings log" (re-runs included, counts over the last 30 runs, redacted), and lists repeats in the run summary; `scripts/e2e-run.mjs --findings`; `e2e.yml` gains `workflow_dispatch` and a `guard` job (`scripts/e2e-guard.mjs`: `main` only, never while another e2e run is queued or going); tests: node:test `scripts/e2e-findings.test.mjs` (NFR-14-i to NFR-14-m), `scripts/e2e-guard.test.mjs` (NFR-14-n), and the run script's self-test |
 | 0.8.146 | WP-102 The nightly e2e run green on main, the e2e red triage added at the owner's request (NFR-14, D-110, D-129): the 12 "E2E red on main" issues of 16 and 17 October, each with its cause and fix (ten in the specs, one an app bug WP-101 had fixed, one the test database slow under a board's read); the run hides connection strings (`redact()` in `scripts/e2e-infra.mjs`); the board marks its read's start when the read returns; tests: node:test `scripts/e2e-infra.test.mjs` (NFR-14-a), e2e board-calendar, board-home, board-layout, board-meals, chores, lunch-quick, meal-edit, goal-steps, repeating-goals, perfect-periods, insights (NFR-14-b to NFR-14-h) |
 | 0.8.145 | WP-101 The goal form's last four differences from its mockups, WP-100's follow-up added at the owner's request (NFR-16, D-128): a rule folded to its summary line with its weight, the live summaries from Preview's own code (`apps/web/lib/goal-summaries.ts`, `goal-preview.ts`, `liveGoal`), item pictures, dates and times written as the frames write them over real pickers (`DatePick`, `dateWords`, `timeWords` in `@familywise/ui`); migration `20261017042418_goal_form_closures.sql` (`goal_preview_facts()` gains `closures`, `private.goal_closures()`); a rule's field names now the same on the server and in the browser. Tests: `goal-summaries.test.ts`, `530_goal_form_closures.test.sql`, UI `goal-form-summary.spec.ts` (NFR-16-i to NFR-16-q). |

@@ -464,8 +464,15 @@ const SHOTS = [
     url: '/dev/admin?lunches=1',
     element: '.fw-lunchq',
   },
-  // School menus (WP-27): the page on a laptop, and adding one on a phone with the schools found.
-  { name: 'admin-menus-laptop', device: 'laptop', url: '/dev/menus', maxHeight: 1500, quality: 62 },
+  // School menus (WP-27): the page on a laptop, Maple Elementary opened and the others folded
+  // (WP-93), and adding one on a phone with the schools found.
+  {
+    name: 'admin-menus-laptop',
+    device: 'laptop',
+    url: '/dev/menus?open=1',
+    maxHeight: 1500,
+    quality: 62,
+  },
   {
     name: 'admin-menu-add-phone',
     device: 'phone',
@@ -483,7 +490,7 @@ const SHOTS = [
   {
     name: 'admin-calendar-who-phone',
     device: 'phone',
-    url: '/dev/calendars',
+    url: '/dev/calendars?open=2',
     element: 'form[aria-label="Edit School"]',
     act: async (page) => {
       await page.locator('summary', { hasText: 'Edit School' }).click();

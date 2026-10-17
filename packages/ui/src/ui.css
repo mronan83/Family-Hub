@@ -1426,6 +1426,7 @@ select.fw-input.fw-input--short {
 }
 .fw-more > summary,
 .fw-list__row--stack summary,
+.fw-menu-days__change > summary,
 .fw-field details > summary {
   min-height: var(--touch);
   display: flex;
@@ -2178,6 +2179,13 @@ html:has(.board) {
 }
 .fw-calendar__faces {
   display: inline-flex;
+  flex: none;
+}
+/* [NFR-18] A calendar's color before its name on its folded header (WP-93). */
+.fw-calendar__swatch {
+  display: inline-block;
+  margin-right: var(--s-2);
+  vertical-align: 1px;
 }
 .fw-calendar__faces > * + * {
   margin-left: -6px;

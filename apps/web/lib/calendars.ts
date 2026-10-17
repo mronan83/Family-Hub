@@ -1,6 +1,6 @@
 import { MEMBER_COLORS, type MemberColor } from '@familywise/ui';
 import { icsUrl } from './calendar/ics';
-import { andList, day, dayAndTime, time } from './format';
+import { agoWords, andList, day, dayAndTime, time } from './format';
 
 // [CAL-01][CAL-03][CAL-06][CAL-09] The household's calendars in the admin portal (WP-22, D-63): a
 // name, a color, who it's for (the whole family or any of its people, WP-50), and the published link,
@@ -152,4 +152,47 @@ export function whoFor(
     .map((m) => (m.archived ? `${m.displayName} (archived)` : m.displayName));
   if (names.length === 0) return 'The whole family';
   return names.length === 1 ? `${names[0]}’s` : andList(names);
+}
+
+/** What a calendar's folded header on Calendars says about it (WP-93, D-120). */
+export interface CalendarFacts {
+  /** "The whole family · Synced 12 min ago · 23 events coming up" */
+  meta: string;
+  /** "Can’t sync" while its sync fails; else null. */
+  warning: string | null;
+}
+
+/**
+ * [CAL-06][CAL-09][NFR-18] A calendar's facts on its folded header (WP-93): who it's for, "Not on
+ * the boards" when hidden, its sync ("Synced 12 min ago", "last synced" its last good sync while it
+ * fails, or "Not synced yet") and how many events are coming up; "Can’t sync" as its warning.
+ */
+export function calendarFacts(
+  c: Pick<
+    CalendarRow,
+    'memberIds' | 'showOnBoard' | 'status' | 'lastSyncedAt' | 'lastSuccessAt' | 'upcomingCount'
+  >,
+  members: { id: string; displayName: string; archived?: boolean }[],
+  now: number,
+  timeZone: string,
+): CalendarFacts {
+  const failing = c.status === 'error';
+  const sync = failing
+    ? c.lastSuccessAt
+      ? `last synced ${agoWords(c.lastSuccessAt, now, timeZone)}`
+      : 'never synced'
+    : c.status === 'ok' && c.lastSyncedAt
+      ? `Synced ${agoWords(c.lastSyncedAt, now, timeZone)}`
+      : 'Not synced yet';
+  const n = c.upcomingCount;
+  const coming = n === 0 ? 'nothing coming up' : `${n} ${n === 1 ? 'event' : 'events'} coming up`;
+  return {
+    meta: [
+      whoFor(c.memberIds, members),
+      ...(c.showOnBoard ? [] : ['Not on the boards']),
+      sync,
+      coming,
+    ].join(' · '),
+    warning: failing ? 'Can’t sync' : null,
+  };
 }

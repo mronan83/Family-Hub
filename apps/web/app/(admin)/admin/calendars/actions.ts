@@ -56,7 +56,10 @@ export async function saveCalendar(_prev: FormState, form: FormData): Promise<Fo
     did += outcome?.status === 'synced' ? '_synced' : '_failed';
   }
   revalidatePath('/admin/calendars');
-  redirect(`/admin/calendars?did=${did}&name=${encodeURIComponent(v.name)}`);
+  // [NFR-18] The calendar comes back open (WP-93).
+  redirect(
+    `/admin/calendars?did=${did}&name=${encodeURIComponent(v.name)}&open=${data as string}#calendar-${data as string}`,
+  );
 }
 
 /** [CAL-01] Removes a calendar: its events leave FamilyWise and its link leaves Vault. */

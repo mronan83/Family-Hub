@@ -51,6 +51,8 @@ export default async function MenusPage({
       names={new Map(members.map((m) => [m.id, m.displayName]))}
       timezone={household.timezone}
       today={today}
+      now={new Date().getTime()}
+      open={p.open ?? null}
       notice={did && !failed ? did : null}
       error={
         p.error

@@ -7,7 +7,7 @@ import { type MealRow, type PlanEntry, type Slot, weekDays } from '@/lib/meals';
 // The admin Meals pages (WP-25) with a made-up family and no database, for the UI suite and the
 // guide's pictures: the week in Day or Evening (?theme=evening), opened to add a Wednesday snack
 // (?add=1), an entry opened for editing (?edit=<its id>, WP-76), a day opened (?open=<day>, WP-75),
-// and the meal library (?page=library). School lunch (WP-26): Thursday is a day off, Leo's Tuesday is changed to buy.
+// and the meal library (?page=library; &open=archived shows Archived open, as after an archive; &state=empty, none yet). School lunch (WP-26): Thursday is a day off, Leo's Tuesday is changed to buy.
 // School menus (WP-27): both have Maple Elementary's; a buy day shows it. The lunch week is a list of
 // days (WP-74): Leo's Wednesday (today) has nothing picked yet, so his face has a dot.
 export const metadata: Metadata = { title: 'Meals', robots: { index: false } };
@@ -182,6 +182,7 @@ export default async function DevMealsPage({
     edit?: string;
     open?: string;
     lunches?: string;
+    state?: string;
   }>;
 }) {
   const p = await searchParams;
@@ -189,7 +190,12 @@ export default async function DevMealsPage({
   return (
     <div className={`admin ${theme}`}>
       {p.page === 'library' ? (
-        <MealLibraryView meals={MEALS} notice={null} error={null} />
+        <MealLibraryView
+          meals={p.state === 'empty' ? [] : MEALS}
+          notice={null}
+          error={null}
+          openArchived={p.open === 'archived'}
+        />
       ) : (
         <MealsView
           week={WEEK}

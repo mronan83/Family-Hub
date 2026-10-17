@@ -3,6 +3,7 @@ import {
   fetchStatus,
   itemsFrom,
   itemsText,
+  menuFacts,
   menuRefusal,
   menuWords,
   parseDayForm,
@@ -170,5 +171,109 @@ describe('school menus in the admin portal', () => {
   it('says a refusal in a parent’s words', () => {
     expect(menuRefusal({ hint: 'not_a_child' })).toBe('School lunch is for children.');
     expect(menuRefusal({ hint: 'whatever' })).toBe('That didn’t save. Try again in a moment.');
+  });
+});
+
+// [NFR-18][D-120] A school menu's folded header on School menus (WP-93).
+describe('a school menu’s folded header', () => {
+  const NY = 'America/New_York';
+  const names = new Map([
+    ['maya', 'Maya'],
+    ['leo', 'Leo'],
+  ]);
+  /** Mon, Oct 12, 2026, 9:15 am in New York. */
+  const NOW = Date.parse('2026-10-12T13:15:00Z');
+  const day = (date: string, noService = false) => ({
+    date,
+    items: noService ? [] : [{ name: 'Pizza' }],
+    noService,
+    origin: 'adapter' as const,
+    own: false,
+  });
+  const feed = {
+    adapter: 'nutrislice' as const,
+    status: 'ok' as const,
+    lastFetchAt: '2026-10-12T10:29:04Z',
+    lastSuccessAt: '2026-10-12T10:29:04Z',
+    childIds: ['maya', 'leo'],
+    days: [day('2026-10-12'), day('2026-10-13'), day('2026-10-16', true)],
+  };
+
+  it('[NFR-18-c][MENU-01][MENU-04] where it comes from, whose lunch, its fetch and its days', () => {
+    expect(menuFacts(feed, names, NOW, NY)).toEqual({
+      meta: 'From Nutrislice · Maya and Leo · Fetched 6:29 am · 2 days in the next four weeks',
+      warning: null,
+    });
+    // Fetched yesterday: its day and time.
+    expect(menuFacts({ ...feed, lastFetchAt: '2026-10-11T10:29:04Z' }, names, NOW, NY).meta).toBe(
+      'From Nutrislice · Maya and Leo · Fetched Sun, Oct 11 at 6:29 am · 2 days in the next four weeks',
+    );
+  });
+
+  it('[NFR-18-c][MENU-03] a file or typed-in menu has nothing to fetch; nobody yet, one day, none', () => {
+    expect(
+      menuFacts(
+        { ...feed, adapter: 'csv', childIds: [], days: [day('2026-10-12')] },
+        names,
+        NOW,
+        NY,
+      ),
+    ).toEqual({ meta: 'From a file · nobody yet · 1 day in the next four weeks', warning: null });
+    expect(
+      menuFacts({ ...feed, adapter: 'manual', childIds: ['leo'], days: [] }, names, NOW, NY).meta,
+    ).toBe('Typed in · Leo · no days in the next four weeks');
+  });
+
+  it('[NFR-18-d][MENU-04][US-803] a feed that can’t fetch has the warning and says when it last fetched', () => {
+    expect(
+      menuFacts(
+        { ...feed, status: 'error', lastSuccessAt: '2026-10-11T10:29:05Z', childIds: [] },
+        names,
+        NOW,
+        NY,
+      ),
+    ).toEqual({
+      meta: 'From Nutrislice · nobody yet · last fetched Sun, Oct 11 at 6:29 am · 2 days in the next four weeks',
+      warning: 'Can’t fetch',
+    });
+    expect(
+      menuFacts({ ...feed, status: 'error', lastSuccessAt: null, days: [] }, names, NOW, NY),
+    ).toEqual({
+      meta: 'From Nutrislice · Maya and Leo · never fetched · no days in the next four weeks',
+      warning: 'Can’t fetch',
+    });
+    expect(
+      menuFacts({ ...feed, status: 'pending', lastFetchAt: null, days: [] }, names, NOW, NY).meta,
+    ).toBe('From Nutrislice · Maya and Leo · Not fetched yet · no days in the next four weeks');
+  });
+
+  it('[NFR-18-e] "today" is the household’s day, across midnight UTC and the end of daylight saving', () => {
+    // 7:30 pm and 9:00 pm on Monday in New York are on different days in UTC: still today.
+    expect(
+      menuFacts(
+        { ...feed, lastFetchAt: '2026-10-12T23:30:00Z' },
+        names,
+        Date.parse('2026-10-13T01:00:00Z'),
+        NY,
+      ).meta,
+    ).toContain('Fetched 7:30 pm');
+    // 11:30 pm Monday and 12:30 am Tuesday in New York share a UTC day: yesterday's, by its day.
+    expect(
+      menuFacts(
+        { ...feed, lastFetchAt: '2026-10-13T03:30:00Z' },
+        names,
+        Date.parse('2026-10-13T04:30:00Z'),
+        NY,
+      ).meta,
+    ).toContain('Fetched Mon, Oct 12 at 11:30 pm');
+    // Sunday, Nov 1, 2026, when daylight saving ends: 1:30 am EDT is today at 7 am EST.
+    expect(
+      menuFacts(
+        { ...feed, lastFetchAt: '2026-11-01T05:30:00Z' },
+        names,
+        Date.parse('2026-11-01T12:00:00Z'),
+        NY,
+      ).meta,
+    ).toContain('Fetched 1:30 am');
   });
 });

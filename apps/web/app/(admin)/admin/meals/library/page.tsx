@@ -30,6 +30,7 @@ export default async function MealLibraryPage({
       meals={await loadMeals(db!, household.id)}
       notice={notice}
       error={p.did === 'failed' ? 'That didn’t change. Try again in a moment.' : null}
+      openArchived={p.did === 'archived'}
     />
   );
 }

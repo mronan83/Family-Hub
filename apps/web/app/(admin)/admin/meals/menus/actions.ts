@@ -26,10 +26,12 @@ async function context() {
   return { db: db!, household };
 }
 
+/** Back to School menus; `open` is a menu's id, which comes back open (WP-93, NFR-18). */
 function back(params: Record<string, string>): never {
   revalidatePath(PAGE);
   revalidatePath('/admin/meals');
-  redirect(`${PAGE}?${new URLSearchParams(params).toString()}`);
+  const at = params.open ? `#menu-${params.open}` : '';
+  redirect(`${PAGE}?${new URLSearchParams(params).toString()}${at}`);
 }
 
 /** What the Add a school menu form holds between its steps: the district's schools once found. */
@@ -89,7 +91,7 @@ export async function addMenu(prev: AddMenuState, form: FormData): Promise<AddMe
     });
     did = outcome?.status === 'fetched' ? 'added_fetched' : 'added_failed';
   }
-  back({ did, name: v.name });
+  back({ did, name: v.name, open: data as string });
 }
 
 /** [MENU-01] Renames a menu. */
@@ -111,9 +113,9 @@ export async function renameMenu(form: FormData): Promise<void> {
   });
   if (error) {
     log('warn', 'menu not renamed', { code: error.code, hint: error.hint });
-    back({ error: error.hint ?? 'failed' });
+    back({ error: error.hint ?? 'failed', open: id });
   }
-  back({ did: 'renamed', name });
+  back({ did: 'renamed', name, open: id });
 }
 
 /** [MENU-04] Fetches a feed now, as the morning's job would. */
@@ -138,6 +140,7 @@ export async function fetchMenuNow(form: FormData): Promise<void> {
   back({
     did: outcome && outcome.status !== 'error' ? 'fetched' : 'fetch_failed',
     name: src!.name,
+    open: id,
   });
 }
 
@@ -183,7 +186,7 @@ export async function loadMenuFile(_prev: CsvState, form: FormData): Promise<Csv
       log('warn', 'menu file not loaded', { code: error.code, hint: error.hint });
       return { message: menuRefusal(error) };
     }
-    back({ did: 'loaded', count: String(data as number) });
+    back({ did: 'loaded', count: String(data as number), open: id });
   }
   const file = form.get('file');
   if (!(file instanceof File) || file.size === 0) return { message: 'Choose a CSV file.' };
@@ -216,7 +219,7 @@ export async function saveMenuDay(_prev: FormState, form: FormData): Promise<For
     log('warn', 'menu day not saved', { code: error.code, hint: error.hint });
     return { message: menuRefusal(error) };
   }
-  back({ did: 'day', date: parsed.value.date });
+  back({ did: 'day', date: parsed.value.date, open: String(form.get('id') ?? '') });
 }
 
 /** Clears a day: a feed's goes back to the feed (filled in at its next fetch). */
@@ -228,7 +231,10 @@ export async function clearMenuDay(form: FormData): Promise<void> {
   });
   if (error) {
     log('warn', 'menu day not cleared', { code: error.code });
-    back({ error: 'failed' });
+    back({ error: 'failed', open: String(form.get('id') ?? '') });
   }
-  back({ did: form.get('feed') === 'true' ? 'day_feed' : 'day_cleared' });
+  back({
+    did: form.get('feed') === 'true' ? 'day_feed' : 'day_cleared',
+    open: String(form.get('id') ?? ''),
+  });
 }

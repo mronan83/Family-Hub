@@ -1,4 +1,4 @@
-import { dayAndTime } from './format';
+import { andList, dayAndTime, isoDay, time } from './format';
 import { csvDate } from './menu/csv';
 import {
   MAX_ITEMS,
@@ -96,6 +96,58 @@ export function fetchStatus(
     };
   }
   return { kind: 'pending', label: 'Not fetched yet', detail: 'It fetches within a day.' };
+}
+
+/** What a school menu's folded header on School menus says about it (WP-93, D-120). */
+export interface MenuFacts {
+  /** "From Nutrislice · Maya and Leo · Fetched 6:29 am · 9 days in the next four weeks" */
+  meta: string;
+  /** "Can’t fetch" while its feed fails; else null. */
+  warning: string | null;
+}
+
+/**
+ * [MENU-01][MENU-04][NFR-18] A school menu's facts on its folded header (WP-93): where it comes
+ * from, whose lunch it is ("nobody yet"), a feed's fetch ("Fetched" and its time today, or its day;
+ * "last fetched" its last good fetch while it fails; "Not fetched yet") and the days it has lunch in
+ * the next four weeks; "Can’t fetch" as its warning.
+ */
+export function menuFacts(
+  m: Pick<
+    MenuSourceRow,
+    'adapter' | 'status' | 'lastFetchAt' | 'lastSuccessAt' | 'childIds' | 'days'
+  >,
+  names: Map<string, string>,
+  now: number,
+  timeZone: string,
+): MenuFacts {
+  // A fetch today is said by its time; an older one by its day and time.
+  const when = (at: string) =>
+    isoDay(timeZone, new Date(at)) === isoDay(timeZone, new Date(now))
+      ? time(at, timeZone)
+      : dayAndTime(at, timeZone);
+  const feed = m.adapter === 'nutrislice';
+  const failing = feed && m.status === 'error';
+  const fetch = !feed
+    ? []
+    : failing
+      ? [m.lastSuccessAt ? `last fetched ${when(m.lastSuccessAt)}` : 'never fetched']
+      : m.status === 'ok' && m.lastFetchAt
+        ? [`Fetched ${when(m.lastFetchAt)}`]
+        : ['Not fetched yet'];
+  const whose = m.childIds.map((id) => names.get(id)).filter((n): n is string => Boolean(n));
+  const n = m.days.filter((d) => !d.noService).length;
+  return {
+    meta: [
+      ADAPTER_WORDS[m.adapter],
+      whose.length > 0 ? andList(whose) : 'nobody yet',
+      ...fetch,
+      n === 0
+        ? 'no days in the next four weeks'
+        : `${n} ${n === 1 ? 'day' : 'days'} in the next four weeks`,
+    ].join(' · '),
+    warning: failing ? 'Can’t fetch' : null,
+  };
 }
 
 /** A day with no lunch served in words, or null when lunch is served. */

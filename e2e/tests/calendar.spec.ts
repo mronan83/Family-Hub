@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '../support/test';
 import { runCalendarSync, type Fetcher } from '../../apps/web/lib/calendar/sync';
 import { serviceRpc, sql as query } from '../support/db';
+import { foldOf, unfold } from '../support/fold';
 import { openSetting } from '../support/settings';
 import { addDays, householdToday } from '../support/day';
 import { signIn } from '../support/session';
@@ -147,6 +148,8 @@ test('[CAL-01][US-501][CAL-02][CAL-07][CAL-06][US-505] a calendar added by its l
 
   await test.step('[CAL-01][US-501] Alex adds a calendar by its link: it goes to Vault only, and is synced at once', async () => {
     await asAlexOnCalendars(page);
+    // [NFR-18] Add a calendar folds to its button while the family has calendars (WP-93).
+    await unfold(foldOf(page, 'Add a calendar'));
     const form = page.getByRole('form', { name: 'Add a calendar' });
     await form.getByLabel('Name').fill(NAME);
     await form.getByLabel('Public link').fill(LINK.replace('https://', 'webcal://'));
@@ -207,6 +210,8 @@ test('[CAL-01][US-501][CAL-02][CAL-07][CAL-06][US-505] a calendar added by its l
 
     await onCalendars(page);
     await expect(row(page)).toContainText('Synced');
+    // [NFR-18] Each calendar is folded at first (WP-93): what's coming up is inside.
+    await unfold(foldOf(page, NAME));
     const coming = page.getByRole('list', { name: `Coming up on ${NAME}` });
     await expect(coming).toContainText('All day Field trip e2e');
     await expect(coming).toContainText('6:00 pm Swim e2e · moved');
@@ -230,6 +235,7 @@ test('[CAL-01][US-501][CAL-02][CAL-07][CAL-06][US-505] a calendar added by its l
       'The link answered 404 (Not Found): the calendar may no longer be public.',
     );
     await expect(row(page)).toContainText('the board keeps showing its events.');
+    await unfold(foldOf(page, NAME));
     await expect(page.getByRole('list', { name: `Coming up on ${NAME}` })).toContainText(
       'Field trip e2e',
     );
@@ -250,10 +256,9 @@ test('[CAL-01][US-501][CAL-02][CAL-07][CAL-06][US-505] a calendar added by its l
   });
 
   await test.step('[CAL-01] removing the calendar takes its events and its link', async () => {
-    const remove = row(page).locator('details', {
-      has: page.locator('summary', { hasText: `Remove ${NAME}` }),
-    });
-    await remove.locator('summary').click();
+    await unfold(foldOf(page, NAME));
+    const remove = foldOf(page, `Remove ${NAME}`);
+    await unfold(remove);
     await remove.getByRole('button', { name: `Remove ${NAME}` }).click();
     await page.waitForURL(/did=removed/);
     await expect(page.getByText(`Removed ${NAME}. It stays in Apple Calendar.`)).toBeVisible();
