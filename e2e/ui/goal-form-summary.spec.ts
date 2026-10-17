@@ -204,6 +204,8 @@ test('[NFR-16-p] Starts, Ends and By show the written date or time over a real p
     await expect(pick.locator('.fw-pick__words')).toHaveText('Mon, Oct 12, 2026');
     const field = form.getByLabel('Starts');
     await expect(field).toHaveAttribute('type', 'date');
+    // On a phone the field starts below the fold; what is under a point is only known on screen.
+    await field.scrollIntoViewIfNeeded();
     await expect(field).toHaveValue('2026-10-12');
     // The field covers the words, so a tap anywhere on them lands on it and opens the picker.
     const [face, input] = await Promise.all([
