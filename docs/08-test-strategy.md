@@ -542,7 +542,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-93 | Ready | — | — | — |
 | WP-94 | Ready | — | — | — |
 | WP-95 | Ready | — | — | — |
-| WP-96 | Mockup | — | — | — |
+| WP-96 | Ready | — | — | — |
 | WP-97 | Ready | — | — | — |
 | WP-98 | Done | NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | 6 of 6 | — |
 | WP-99 | Queued: | — | — | — |
