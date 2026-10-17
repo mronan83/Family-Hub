@@ -3,6 +3,7 @@ import { appendFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '../support/test';
 import { openFromMenu } from '../support/settings';
+import { unfold } from '../support/fold';
 import { addDays, householdToday } from '../support/day';
 import { withSchoolDays } from '../support/school';
 import { signIn as signInAs } from '../support/session';
@@ -109,12 +110,17 @@ async function signIn(page: Page, who: 'Alex' | 'Sam') {
 
 const list = (page: Page) => page.getByRole('list', { name: 'Chores and tasks' });
 
-/** Picks an option in a picker whose radio is visually hidden (the icon grid, tag colors). */
+/**
+ * Picks an option in a picker whose radio is visually hidden (the icon grid, tag colors). [NFR-16-g]
+ * The icon picker is folded to the icon chosen (WP-100): it is opened by its header first, as a
+ * parent taps it. The tag colors are never folded.
+ */
 async function pick(form: Locator, name: string) {
   const label = form.locator('label', {
     has: form.page().getByRole('radio', { name, exact: true }),
   });
-  if (!(await label.isVisible())) await form.getByText('More icons').click();
+  if (!(await label.isVisible()))
+    await unfold(form.locator('details', { has: form.page().locator('.fw-iconpick') }));
   await label.click();
 }
 
@@ -229,7 +235,7 @@ test('[CHR-13] Sam sees the gift they’re responsible for, marked private', asy
   await expectContrastOk(page);
 });
 
-test('[CHR-01][CHR-03][CHR-09][CHR-11] a parent enters the family’s list on a phone in under five minutes; each new item has its next two weeks planned', async ({
+test('[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s list on a phone in under five minutes; each new item has its next two weeks planned', async ({
   page,
 }) => {
   // [D-110] The 300 s entry budget is a requirement, so the limit sits above it (and the planning
@@ -516,10 +522,11 @@ test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', asy
   ).toBe('3');
 });
 
-test('[CHR-13] a private task stays with its creator, and reaches the other parent only if it’s theirs', async ({
+test('[CHR-13][NFR-14-f] a private task stays with its creator, and reaches the other parent only if it’s theirs', async ({
   browser,
 }) => {
   made.push('Plan the birthday surprise', 'Pick up the cake');
+  const times: string[] = [];
   const alex = await (await browser.newContext()).newPage();
   const sam = await (await browser.newContext()).newPage();
   try {
@@ -532,12 +539,20 @@ test('[CHR-13] a private task stays with its creator, and reaches the other pare
       const form = alex.getByRole('form', { name: 'Add an item' });
       await enter(form, { title, people: [who], icon: 'gift', onDate: demoDate(4) });
       await form.getByRole('switch', { name: 'Private' }).check();
-      await form.getByRole('button', { name: 'Save', exact: true }).click();
-      await expect(alex.getByRole('status')).toHaveText(`Saved ${title}.`);
+      // Timed as the other saves are (WP-83): a save that never answers, a refused one and a slow
+      // one each say so (16 October: no banner within 15 s, and nothing in the log to say which).
+      await save(
+        alex,
+        form.getByRole('button', { name: 'Save', exact: true }),
+        title,
+        `Saved ${title}.`,
+        times,
+      );
       await expect(list(alex).getByRole('listitem').filter({ hasText: title })).toContainText(
         'Private',
       );
     }
+    report(`CHR-13 saves: ${times.join(', ')}`);
 
     await signIn(sam, 'Sam');
     await expect(list(sam)).toContainText('Pick up the cake');

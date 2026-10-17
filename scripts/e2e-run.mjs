@@ -35,7 +35,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { classify, errorText, failureOf } from './e2e-infra.mjs';
+import { classify, errorText, failureOf, redact } from './e2e-infra.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BURN_IN = 5;
@@ -228,7 +228,7 @@ async function main() {
     verdict: classify(failureOf(r.result, r.test), probe.degraded),
   }));
   const globalErrors = passes.flatMap((p) =>
-    (p.report?.errors ?? []).map((e) => e.message ?? String(e)),
+    (p.report?.errors ?? []).map((e) => redact(e.message ?? String(e))),
   );
   const missingReport = passes.filter((p) => !p.report);
 

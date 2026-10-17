@@ -2,6 +2,7 @@ import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
 import { pairBoard, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
+import { DRIFT_PX } from '../../apps/web/lib/board-sleep';
 
 // [BRD-09][US-1008] The board's home screen on one screen (WP-48, D-74), on the preview, at the
 // reference panel's 3840×2160 (1920×1080 CSS px at device scale 2) and in a 13" laptop's browser
@@ -31,23 +32,39 @@ const saved = () =>
          from public.device d join public.household_settings s using (household_id)
         where d.household_id = '${DEMO}' and d.name = '${BOARD}'`);
 
-/** Each part of the home screen, where it sits in the window, and how far the page scrolls. */
+/**
+ * Each part of the home screen outside the screen, how far the page scrolls, and whether the board
+ * sits where it should. [DEV-07] The board drifts up to DRIFT_PX each way against burn-in (WP-34, by
+ * the real clock) and what drifts past the edge is clipped by design, so a part is judged against the
+ * board's own box, and the box must be within DRIFT_PX of the window's corner.
+ */
 const parts = (page: Page) =>
-  page.evaluate(() => ({
-    pageScroll: document.documentElement.scrollHeight - innerHeight,
-    outside: [
-      '.fw-today__people',
-      '.fw-board__bar',
-      '.fw-dash__cal',
-      '.fw-dash__list',
-      ...[...document.querySelectorAll('.fw-dash__card h2')].map(
-        (_, i) => `.fw-dash__card:nth-child(${i + 1})`,
-      ),
-    ].filter((s) => {
-      const r = document.querySelector(s)?.getBoundingClientRect();
-      return !r || r.top < 0 || r.bottom > innerHeight + 1 || r.right > innerWidth + 1;
-    }),
-  }));
+  page.evaluate((driftPx) => {
+    const board = document.querySelector('.fw-board')?.getBoundingClientRect();
+    const left = board?.left ?? 0;
+    const top = board?.top ?? 0;
+    return {
+      pageScroll: document.documentElement.scrollHeight - innerHeight,
+      inPlace: !!board && Math.abs(left) <= driftPx && Math.abs(top) <= driftPx,
+      outside: [
+        '.fw-today__people',
+        '.fw-board__bar',
+        '.fw-dash__cal',
+        '.fw-dash__list',
+        ...[...document.querySelectorAll('.fw-dash__card h2')].map(
+          (_, i) => `.fw-dash__card:nth-child(${i + 1})`,
+        ),
+      ].filter((s) => {
+        const r = document.querySelector(s)?.getBoundingClientRect();
+        return (
+          !r ||
+          r.top - top < 0 ||
+          r.bottom - top > innerHeight + 1 ||
+          r.right - left > innerWidth + 1
+        );
+      }),
+    };
+  }, DRIFT_PX);
 
 test.beforeAll(async ({ browser }, testInfo) => {
   // Signing in and pairing a board takes 10 to 40 s on a cold preview (pairBoard).
@@ -74,18 +91,18 @@ test.afterAll(async () => {
   }
 });
 
-test('[BRD-09][US-1008] done-when: one screen on the 4K panel and a laptop; Month chosen on the board saves nothing', async () => {
+test('[BRD-09][US-1008][NFR-14-c] done-when: one screen on the 4K panel and a laptop; Month chosen on the board saves nothing', async () => {
   await expect(board.locator('.fw-dash')).toBeVisible();
   // Retried: the weather, the calendar's read and the fonts may still move things as they land.
   await expect
     .poll(() => parts(board), { message: 'the 4K panel: page scroll, and the parts outside it' })
-    .toEqual({ pageScroll: 0, outside: [] });
+    .toEqual({ pageScroll: 0, inPlace: true, outside: [] });
 
   // A 13" laptop's browser window: the board zooms down, and still nothing scrolls the page.
   await board.setViewportSize({ width: 1470, height: 830 });
   await expect
     .poll(() => parts(board), { message: 'the laptop: page scroll, and the parts outside it' })
-    .toEqual({ pageScroll: 0, outside: [] });
+    .toEqual({ pageScroll: 0, inPlace: true, outside: [] });
   await board.setViewportSize({ width: 1920, height: 1080 });
 
   const before = saved();
@@ -104,7 +121,7 @@ test('[BRD-09][US-1008] done-when: one screen on the 4K panel and a laptop; Mont
     .poll(() => parts(board), {
       message: `the month (${rows} rows): page scroll, and the parts outside it`,
     })
-    .toEqual({ pageScroll: 0, outside: [] });
+    .toEqual({ pageScroll: 0, inPlace: true, outside: [] });
   // The view is the board's own choice for now: nothing saved changes.
   expect(saved()).toBe(before);
 });

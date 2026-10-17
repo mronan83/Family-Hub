@@ -105,8 +105,16 @@ test.afterAll(async () => {
     sql(`update public.reward_goal set status = 'cancelled', archived_at = now()
           where household_id = '${DEMO}' and title in ('${FAMILY.replace(/'/g, "''")}', '${MAYAS}', '${PERFECT}')
             and status <> 'cancelled'`);
-    for (const id of Object.values(items))
-      if (id) sql(`delete from public.chore where id = '${id}'`);
+    // Check-offs are append-only (private.prevent_event_change), so the items can't be deleted: their
+    // days without a check-off are removed and they are archived, as insights.spec.ts does.
+    const ids = Object.values(items)
+      .filter(Boolean)
+      .map((id) => `'${id}'`)
+      .join(', ');
+    if (ids)
+      sql(`delete from public.chore_occurrence o where o.chore_id in (${ids})
+             and not exists (select from public.chore_completion_event e where e.occurrence_id = o.id);
+           update public.chore set archived_at = now() where id in (${ids}) and archived_at is null`);
     await admin?.close();
   }
 });
@@ -128,7 +136,7 @@ async function setWeekly(title: string, who: 'Maya' | 'The whole family', itemsC
   return form;
 }
 
-test('[RWD-20-k][RWD-19-j][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row', async () => {
+test('[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row', async () => {
   // [D-110] Six page loads and three saves: about 40 s at worst on the preview, so 3x that.
   test.setTimeout(120_000);
 

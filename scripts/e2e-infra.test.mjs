@@ -1,7 +1,7 @@
 // [NFR-14][D-110] Telling an infrastructure failure from an assertion failure (scripts/e2e-infra.mjs).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { causeInText, classify, errorText, failureOf } from './e2e-infra.mjs';
+import { causeInText, classify, errorText, failureOf, redact } from './e2e-infra.mjs';
 
 const failure = (over = {}) => ({
   errors: [],
@@ -100,4 +100,18 @@ test('[NFR-14][D-110] the code frame in an error never counts, only its own word
     annotations: [],
   };
   assert.equal(classify(failureOf(result, { annotations: [] })).kind, 'assertion');
+});
+
+test('[NFR-14-a][D-110] a failed psql call never puts the database URL or its password in the summary or an issue', () => {
+  const message =
+    "Command failed: psql postgresql://postgres.ref:pa55-w0rd@pooler.example.com:5432/postgres -X -A -t -q -c delete from public.chore where id = 'x'\nERROR:  completion events are append-only";
+  const text = errorText({ message });
+  assert.doesNotMatch(text, /pa55-w0rd|pooler\.example\.com/);
+  assert.match(text, /^Command failed: psql postgresql:\/\/\*\*\* -X /);
+  assert.match(text, /completion events are append-only/);
+  assert.equal(
+    redact('postgres://u:p@h/db and POSTGRESQL://u:p@h/db'),
+    'postgresql://*** and postgresql://***',
+  );
+  assert.equal(redact('no URL here'), 'no URL here');
 });

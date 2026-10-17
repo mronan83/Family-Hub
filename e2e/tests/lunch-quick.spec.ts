@@ -19,7 +19,7 @@ function report(line: string) {
   if (process.env.E2E_REPORT) appendFileSync(process.env.E2E_REPORT, `${line}\n`);
 }
 
-test('[MEAL-12][US-709] done-when: Pick lunches on Home opens the lunch week to pick, on the child chosen last', async ({
+test('[MEAL-12][US-709][NFR-14-f] done-when: Pick lunches on Home opens the lunch week to pick, on the child chosen last', async ({
   browser,
 }) => {
   // Signing in on a cold preview can take most of 30 s, as in lunch-week.spec.ts.
@@ -45,11 +45,10 @@ test('[MEAL-12][US-709] done-when: Pick lunches on Home opens the lunch week to 
 
     await test.step(`[MEAL-12] ${weekend ? 'a weekend: the coming week' : 'a weekday: this week'}, Monday ${monday}`, async () => {
       await pick();
-      await expect(page.locator('.fw-lunchday').first()).toHaveAttribute('data-date', monday);
-      await expect(page.locator('.fw-lunchday').last()).toHaveAttribute(
-        'data-date',
-        addDays(monday, 4),
-      );
+      // The shown child's lunch week only: the planner's days above it are .fw-lunchday too (WP-75).
+      const days = page.getByRole('list', { name: /’s lunch week$/ }).locator('.fw-lunchday');
+      await expect(days.first()).toHaveAttribute('data-date', monday);
+      await expect(days.last()).toHaveAttribute('data-date', addDays(monday, 4));
     });
 
     await test.step('[MEAL-12] Leo chosen, then Home again: it opens on Leo', async () => {

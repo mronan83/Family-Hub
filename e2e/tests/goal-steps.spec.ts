@@ -80,12 +80,17 @@ test.afterAll(async () => {
       await expect(admin.getByRole('status')).toHaveText('Cancelled. It’s in the history.');
     }
   } finally {
-    if (item) sql(`delete from public.chore where id = '${item}'`);
+    // Check-offs are append-only (private.prevent_event_change), so the item can't be deleted: its
+    // days without a check-off are removed and it is archived, as insights.spec.ts does.
+    if (item)
+      sql(`delete from public.chore_occurrence o where o.chore_id = '${item}'
+             and not exists (select from public.chore_completion_event e where e.occurrence_id = o.id);
+           update public.chore set archived_at = now() where id = '${item}' and archived_at is null`);
     await admin?.close();
   }
 });
 
-test('[RWD-18-m][RWD-17-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10', async () => {
+test('[RWD-18-m][RWD-17-e][NFR-14-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10', async () => {
   // [D-110] Four page loads and a save: about 30 s at worst on the preview, so 3x that.
   test.setTimeout(90_000);
 

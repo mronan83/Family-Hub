@@ -196,6 +196,25 @@ async function boardStages(pressed: number, saved: number, heard: string | null)
   );
 }
 
+/**
+ * [NFR-14][D-110][D-129] When a change reached the board late, and the board's own read of it took
+ * longer than the probe's 2 s bar for the test database, says so as infrastructure evidence: the
+ * database was slow while the test ran, though the probe's cheap query answered in time. The 3 s
+ * budget is unchanged; such a failure re-runs once (scripts/e2e-run.mjs).
+ */
+async function slowRead(ms: number) {
+  if (ms <= 3_000) return;
+  const status = board.getByRole('status');
+  const took =
+    Number((await status.getAttribute('data-read-to')) ?? 0) -
+    Number((await status.getAttribute('data-read-from')) ?? 0);
+  if (took > 2_000)
+    test.info().annotations.push({
+      type: 'infra',
+      description: `the board's read of its snapshot took ${took} ms, over the probe's 2 s: the test database slow while the test ran`,
+    });
+}
+
 test.beforeAll(async ({ browser }, testInfo) => {
   // Connecting two calendars (a psql process per call of the job's code), signing in and pairing a
   // board take 15 to 40 s on a cold preview.
@@ -244,7 +263,7 @@ test('[CAL-04][CAL-05][CAL-10][US-509] a new board shows the calendars set to sh
 
 // One story on this board's own calendar choice: School unticked, ticked again, then a calendar
 // connected later. Two measured saves, two admin page loads, a sync and a reload: 20 to 50 s.
-test('[CAL-05][US-507] this board’s own calendars: School unticked leaves it within 3 seconds; ticked again it is back in its color; a calendar connected later stays off', async () => {
+test('[CAL-05][US-507][NFR-14-b] this board’s own calendars: School unticked leaves it within 3 seconds; ticked again it is back in its color; a calendar connected later stays off', async () => {
   test.setTimeout(150_000);
   await admin.goto('/admin/devices');
   // [DEV-09][D-118] The board's fold opened (WP-91), its calendars inside.
@@ -264,6 +283,7 @@ test('[CAL-05][US-507] this board’s own calendars: School unticked leaves it w
     // save, Realtime, read or screen can be told apart.
     const stages = await boardStages(pressed, saved, heard);
     console.log(`[CAL-05] School left the board ${ms} ms after the save (${stages})`);
+    await slowRead(ms);
     expect(
       ms,
       `[CAL-05] School left the board ${ms} ms after the save, over 3 s: ${stages}`,
@@ -286,6 +306,7 @@ test('[CAL-05][US-507] this board’s own calendars: School unticked leaves it w
     const ms = await untilOnBoard(bar, 'Picture day e2e', false, saved);
     const stages = await boardStages(pressed, saved, heard);
     console.log(`[US-507] School back on the board ${ms} ms after the save (${stages})`);
+    await slowRead(ms);
     expect(
       ms,
       `[US-507] School back on the board ${ms} ms after the save, over 3 s: ${stages}`,
@@ -323,7 +344,7 @@ test('[CAL-05][US-507] this board’s own calendars: School unticked leaves it w
 
 // [CAL-09] WP-50's done-when, as one story: Alex gives School Leo as well as Maya on Calendars, and the
 // board shows both their faces. School is put back to Maya's alone afterwards.
-test('[CAL-09-f][US-508] a calendar given two people on Calendars shows both faces on the board', async () => {
+test('[CAL-09-f][US-508][NFR-14-h] a calendar given two people on Calendars shows both faces on the board', async () => {
   const id = (name: string) =>
     sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
   const school = sql(
@@ -353,18 +374,19 @@ test('[CAL-09-f][US-508] a calendar given two people on Calendars shows both fac
         .filter({ hasText: 'School e2e' })
         .first()
         .locator('.fw-calendar__who');
-      await expect(line).toHaveText(/Maya and Leo/);
+      // In the family's order, children first and then by name (D-122): Leo, then Maya.
+      await expect(line).toHaveText(/Leo and Maya/);
     });
 
     await test.step('the board shows both their faces with School’s event', async () => {
       await boardCalendar();
       const bar = week().locator('.fw-tgrid__bar[data-calendar="School e2e"]');
       // The board hears the save and reads the calendar again.
-      await expect(bar).toHaveAccessibleName(/^Picture day e2e, .*, all day, Maya and Leo$/);
+      await expect(bar).toHaveAccessibleName(/^Picture day e2e, .*, all day, Leo and Maya$/);
       await bar.tap();
       const sheet = board.getByRole('dialog', { name: 'Picture day e2e' });
       const people = sheet.locator('.fw-evdetails__person');
-      await expect(people).toHaveText(['Maya', 'Leo']);
+      await expect(people).toHaveText(['Leo', 'Maya']);
       await expect(people.locator('.fw-avatar')).toHaveCount(2);
       await sheet.getByRole('button', { name: 'Close' }).tap();
       await expect(sheet).toBeHidden();

@@ -91,7 +91,9 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
     // or Realtime's reconnect reads again.
     const reload = coalesce(async () => {
       await readSoon(async (signal) => {
-        mark(status, 'data-read-from', Date.now());
+        // Marked with its return, so a follow-up read that starts at once doesn't hide how long the
+        // read that drew the change took (e2e's evidence of a slow database, D-129).
+        const from = Date.now();
         const { data, error } = await db.rpc('board_snapshot').abortSignal(signal);
         // Unmounted: stop. Given up at the deadline: readSoon has already moved on to the next read.
         if (cancelled) return true;
@@ -103,6 +105,7 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
         const next = readSnapshot(data);
         if (next) setSnapshot(next);
         else leave();
+        mark(status, 'data-read-from', from);
         mark(status, 'data-read-to', Date.now());
         return true;
       });

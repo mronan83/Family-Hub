@@ -71,10 +71,22 @@ export function classify(failure, degraded = [], slack = 10_000) {
   return { kind: 'assertion', cause: 'assertion failure' };
 }
 
-/** An error's own words: no colour codes, no code frame, no stack lines (they quote the spec's source). */
+/**
+ * Text with every database connection string hidden. A failed psql call's error names its command,
+ * the test database's URL and password with it, and the run summary and the "E2E red on main"
+ * issue quote that error: GitHub masks a secret in a job's log, not in an issue it opens.
+ */
+export function redact(text) {
+  return String(text ?? '').replace(/\bpostgres(?:ql)?:\/\/[^\s'"`]+/gi, 'postgresql://***');
+}
+
+/**
+ * An error's own words: no colour codes, no code frame, no stack lines (they quote the spec's source),
+ * and no connection string.
+ */
 export function errorText(e) {
   return (
-    String(e?.message ?? e ?? '')
+    redact(e?.message ?? e ?? '')
       // eslint-disable-next-line no-control-regex
       .replace(/\u001b\[[0-9;]*m/g, '')
       .split('\n')

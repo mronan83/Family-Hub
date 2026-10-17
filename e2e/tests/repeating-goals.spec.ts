@@ -97,13 +97,18 @@ test.afterAll(async () => {
       await expect(admin.getByRole('status')).toHaveText('Cancelled. It’s in the history.');
     }
   } finally {
-    if (item) sql(`delete from public.chore where id = '${item}'`);
+    // Check-offs are append-only (private.prevent_event_change), so the item can't be deleted: its
+    // days without a check-off are removed and it is archived, as insights.spec.ts does.
+    if (item)
+      sql(`delete from public.chore_occurrence o where o.chore_id = '${item}'
+             and not exists (select from public.chore_completion_event e where e.occurrence_id = o.id);
+           update public.chore set archived_at = now() where id = '${item}' and archived_at is null`);
     await retireBoard(board, BOARD);
     await admin?.close();
   }
 });
 
-test('[RWD-15-m][US-410][US-411] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board', async ({
+test('[RWD-15-m][US-410][US-411][NFR-14-e] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board', async ({
   browser,
 }) => {
   // [D-110] Six page loads, a save, and pairing a board (10 to 40 s, board.ts): about 70 s at worst
