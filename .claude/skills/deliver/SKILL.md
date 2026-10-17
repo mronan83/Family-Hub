@@ -131,7 +131,7 @@ Re-read your own diff as a reviewer would, and ask what would make CI reject it.
 ### 7. Get to green
 
 - **CI red:** find the cause and fix it, re-validate (step 5), push.
-- **e2e:** it doesn't run on a PR (D-108). Don't wait on it, queue for it or re-run it. A spec you add or change runs in the next nightly run; an "E2E red on main" issue names a failing spec, and each red test's kind (infra or assertion) and cause (D-110). An infra failure was already re-run once; red after that means it failed twice. An assertion failure is real: fix it in the app or the test, never by loosening the check.
+- **e2e:** it doesn't run on a PR (D-108). Don't wait on it, queue for it or re-run it. A spec you add or change runs in the next nightly run; an "E2E red on main" issue names a failing spec, and each red test's kind (infra or assertion) and cause (D-110). An infra failure was already re-run once; red after that means it failed twice. An assertion failure is real: fix it in the app or the test, never by loosening the check. Each failed test also has an entry in the issue "E2E findings log" (WP-98), with how many of the last 30 runs it failed in: once your fix is merged, edit that entry's **Done** from "open" to your PR.
 - **Review comments:** address them, or reply with why not.
 - Never end a wake on a red PR without a pushed fix or a clear message to the owner on what is blocking.
 

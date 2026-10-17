@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.4: the e2e findings log and a run by hand (WP-98, NFR-14, D-130): each run with a failed test adds a comment to "E2E findings log", re-runs included, and the run summary lists tests that failed in more than one of the last 30 runs; the nightly run can be started by hand on `main` when no other e2e run is queued or going (§3, §8).
 > v0.8.3: the e2e red triage (WP-102, NFR-14, D-129): the run hides every connection string from its summary and issues; a board's own read over 2 s is evidence the test database was slow; three more rules for writing specs (§7).
 > v0.8.2: the UI suite runs as an iPhone in WebKit too, and an item built from a mockup shows a side-by-side before approval (WP-100, NFR-16, D-127).
 > v0.8.1: added at the owner's request (WP-85, NFR-19, D-106, D-107), within D-108 (e2e nightly only, the deploy gate on the fast checks) and D-110 (the test standard): the test strategy, guidance by change type, and the Test catalogue (§9), generated from every test's name, which traces each test to the requirements, stories, backlog items and test cases it proves. CI fails a change that adds a test gap.
@@ -63,7 +64,7 @@ Regression is not a type of its own: it is every existing test run again, plus o
 
 ## 3. What runs, and when
 
-Every pull request runs the same fast checks, whatever it changes: `checks` (lint, format, types, unit, traceability), `database` (pgTAP), `docs` (the docs build and its layout) and `build` (the app and the UI suite). A pull request is ready when those four are green and the owner approves; the deploy gate ships `main`'s head when they passed on it and on its pull request's head (D-108). e2e runs nightly on `main` only.
+Every pull request runs the same fast checks, whatever it changes: `checks` (lint, format, types, unit, traceability), `database` (pgTAP), `docs` (the docs build and its layout) and `build` (the app and the UI suite). A pull request is ready when those four are green and the owner approves; the deploy gate ships `main`'s head when they passed on it and on its pull request's head (D-108). e2e runs nightly on `main` only. The same run can be started by hand (Actions → e2e → Run workflow, on `main`): it starts only when no other e2e run is queued or going, so it never displaces the night's run, and like it, it blocks nothing (D-130).
 
 ```mermaid
 flowchart LR
@@ -250,7 +251,8 @@ The test standard is in `CLAUDE.md` ("Tests", D-110). In short:
 
 - Never skip, disable or quarantine a test, and never call a failure a flake without a cause.
 - The run summary and an issue never quote a database connection string: the run hides each one (`postgresql://***`) first, since GitHub masks secrets in a log but not in an issue the run opens (D-129).
-- A test with two infrastructure faults in two weeks gets a robustness fix. WP-98's findings log keeps the record that shows it: an entry per red test per nightly run, and the tests red in 2 of the last 30 runs.
+- A test with two infrastructure faults in two weeks gets a robustness fix. The findings log keeps the record that shows it (WP-98, D-130): the issue "E2E findings log" gains one comment per run with a failed test, an entry per test with its kind, cause and re-run, re-runs that passed included; each entry says how many of the last 30 runs the test failed in, and the run summary lists every test that failed in more than one of them.
+- The worker who fixes a red test edits its entry's **Done** from "open" to the PR that fixed it.
 
 **Measured before and after:** push to green for a small change, and red nightly runs per week by kind (assertion or infrastructure).
 
@@ -264,7 +266,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2624** tests: Unit 788 · DB 1455 · UI 255 · E2E 126. 2163 name at least one ID; 461 name none.
+**2633** tests: Unit 797 · DB 1455 · UI 255 · E2E 126. 2172 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
@@ -273,7 +275,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 103 of 117 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 102 (with a test: 102) |
+| Test cases | 108 (with a test: 108) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -297,9 +299,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 7 | 15 | 135 |
-| Platform | 140 | 167 | 47 | 14 | 368 |
+| Platform | 149 | 167 | 47 | 14 | 377 |
 | Not named | 58 | 438 | 10 | 1 | 507 |
-| **Total** | **788** | **1455** | **255** | **126** | **2624** |
+| **Total** | **797** | **1455** | **255** | **126** | **2633** |
 
 ### 9.3 By requirement
 
@@ -436,7 +438,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | U 17 · DB 10 · UI 17 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Not built | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | — | U 3 |
-| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | U 25 · DB 14 · UI 1 · E2E 15 |
+| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 34 · DB 14 · UI 1 · E2E 15 |
 | NFR-19 | M | Covered | US-913 | WP-85, WP-86 | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | U 6 |
 
 ### 9.4 By backlog item
@@ -539,7 +541,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-95 | Ready | — | — | — |
 | WP-96 | Ready | — | — | — |
 | WP-97 | Ready | — | — | — |
-| WP-98 | Ready | — | — | — |
+| WP-98 | Done | NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | 6 of 6 | — |
 | WP-99 | Queued: | — | — | — |
 | WP-100 | Done | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h | 8 of 8 | — |
 | WP-101 | Done | NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | 9 of 9 | — |
@@ -651,6 +653,12 @@ Test cases and the tests that prove them:
 | NFR-19-d | WP-85 | A Done item's test case with no test fails the check; a case of an item not yet built may wait for its test | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-d][US-913] a Done item's test case with no test fails; a case of an item not built yet may wait` |
 | NFR-19-e | WP-85 | `--fix` writes the catalogue to `08` and the Tests column and line to `04`, and the check fails while they are out of date | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-e][US-913] --fix writes the catalogue and 04's Tests column and line; the check fails while they are out of date` |
 | NFR-19-f | WP-85 | `--fix` takes a closed gap off the known gaps and never adds one | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-f][US-913] --fix takes a closed gap off the known gaps, and never adds one` |
+| NFR-14-i | WP-98 | A run's report with an assertion failure, an infrastructure failure that passed on its one re-run and one that failed twice becomes three findings-log entries, each with its spec and test, kind, cause and re-run, two "open" and one needing nothing | Unit | Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-i] an assertion failure, a re-run that passed and one that failed twice make three entries` |
+| NFR-14-j | WP-98 | A test that failed in 2 of the last 30 runs is counted on its entry and listed in the run summary; a run older than the last 30 isn't counted, and a test that failed once isn't listed | Unit | Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-j] a test that failed in 2 of the last 30 runs is counted and listed; older runs are not` |
+| NFR-14-k | WP-98 | A run with no failed test writes no entry and opens no issue; its summary still lists the tests that failed in more than one of the last 30 runs | Unit | Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-k] a run with no failed test writes no entry and opens no issue, and still lists repeats` |
+| NFR-14-l | WP-98 | A database connection string, password included, in a test's error, cause, title or re-run never reaches the findings log's comment or the run summary | Unit | Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-l] a connection string, password included, never reaches the findings log or the run summary` |
+| NFR-14-m | WP-98 | The first run with a failure opens the one "E2E findings log" issue and comments its entries; later runs comment on the same issue and count what earlier runs wrote; GitHub not answering is said in the summary and fails nothing | Unit | Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-m] the first red run opens "E2E findings log"; later runs comment on it and read it back`<br>Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-m] when GitHub cannot be reached, the summary says so and the run is not failed by it` |
+| NFR-14-n | WP-98 | `e2e.yml` can be started by hand (`workflow_dispatch`), on `main` only and only when no other e2e run is queued or going, so it never displaces one; it shares the one `demo-family` group with no other trigger, and the findings log runs after every run | Unit | Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] a run by hand starts on main when no other e2e run is queued or going`<br>Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] a run by hand never displaces or joins behind another run, and starts on main only`<br>Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] e2e.yml can be run by hand, guarded, in the one demo-family group, and logs every run` |
 
 ### 9.5 By user story
 
@@ -3015,6 +3023,29 @@ Unit · 12 tests
 | `[NFR-14] refuses when a fast check failed or never ran on the pull request head` | NFR-14 |
 | `[NFR-14] reads no e2e result (D-108)` | NFR-14 |
 | `[NFR-14] refuses when GitHub cannot be read` | NFR-14 |
+
+#### `scripts/e2e-findings.test.mjs`
+
+Unit · 6 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-14-i] an assertion failure, a re-run that passed and one that failed twice make three entries` | NFR-14-i |
+| `[NFR-14-j] a test that failed in 2 of the last 30 runs is counted and listed; older runs are not` | NFR-14-j |
+| `[NFR-14-k] a run with no failed test writes no entry and opens no issue, and still lists repeats` | NFR-14-k |
+| `[NFR-14-l] a connection string, password included, never reaches the findings log or the run summary` | NFR-14-l |
+| `[NFR-14-m] the first red run opens "E2E findings log"; later runs comment on it and read it back` | NFR-14-m |
+| `[NFR-14-m] when GitHub cannot be reached, the summary says so and the run is not failed by it` | NFR-14-m |
+
+#### `scripts/e2e-guard.test.mjs`
+
+Unit · 3 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-14-n] a run by hand starts on main when no other e2e run is queued or going` | NFR-14-n |
+| `[NFR-14-n] a run by hand never displaces or joins behind another run, and starts on main only` | NFR-14-n |
+| `[NFR-14-n] e2e.yml can be run by hand, guarded, in the one demo-family group, and logs every run` | NFR-14-n |
 
 #### `scripts/e2e-infra.test.mjs`
 
