@@ -2,7 +2,7 @@ import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf, weekday } from '../support/day';
-import { mealDay, unfold } from '../support/fold';
+import { foldOf, mealDay, unfold } from '../support/fold';
 import { withSchoolDays } from '../support/school';
 import { signIn } from '../support/session';
 
@@ -122,6 +122,8 @@ test('[MEAL-02][MEAL-01][MEAL-08][US-701][MEAL-03][US-702] done-when: a meal add
   test.setTimeout(360_000);
   await test.step('[MEAL-02] a parent adds a meal to the library', async () => {
     await admin.goto('/admin/meals/library');
+    // [NFR-18] Add a meal folds to its button while the library has meals (WP-93).
+    await unfold(foldOf(admin, 'Add a meal'));
     const form = admin.getByRole('form', { name: 'Add a meal' });
     await form.getByLabel('Name', { exact: true }).fill(MEAL);
     await form.getByRole('checkbox', { name: 'Dinner' }).check();

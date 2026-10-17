@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.39: Calendars, School menus and the meal library folded (WP-93, D-120, D-131): each calendar folded to its colour, name and facts with **Can't sync** on its header, each school menu to its facts with **Can't fetch** on its header; **Add a calendar**, **Add a school menu** and **Add a meal** folded to their buttons; the library's **Archived** to its count; a calendar or menu comes back open after a save in it (A9, A15, B1.11, B1.15).
 > v0.38: the goal form as its mockups draw it (WP-101, D-128): a rule folds to one line with its weight; summaries on the form say what this week asks ("This week Homework home is due 4 days for Maya (Friday, Oct 16 is a teacher planning day)…") and change as you fill it in; items with their picture; dates written "Mon, Oct 12, 2026" (A7, A7b, A7c).
 > v0.37: the admin app's form controls drawn the same on an iPhone and a computer (WP-100, D-127): fields, lists, dates, radios and check boxes in the app's own look; **Repeats** as chips; the goal form's parts in boxes; **Something else** and **Set the goal**; the icon picker folded to the icon chosen in every form; **Choose a photo** for a photo (A7, B1).
 > v0.36: perfect weeks, and a family goal every child meets (WP-82, D-126): **Weeks won of a repeating goal**, in total or in a row, and **Every child meets it** on a family goal, with each child's days on Goals and the board (A7c, B1.8).
@@ -759,7 +760,7 @@ On the goal's page, **Weeks** is folded to "Won 3 of the last 4 weeks" and the p
 #### Connect a calendar
 
 1. In Apple Calendar, open the calendar's settings, turn on **Public Calendar** and copy the link (it starts with `webcal://`).
-2. In FamilyWise, go to **Calendars**. Under **Add a calendar**, enter a **Name** and paste the **Public link**.
+2. In FamilyWise, go to **Calendars** and tap **Add a calendar** to open it (it is open already while you have none). Enter a **Name** and paste the **Public link**.
 3. Pick a **Color**, and choose **Who it's for**: leave **The whole family** ticked, or tick each person it belongs to, as many as you like (a calendar the two kids share, say). The board shows their faces with its events, and puts it on each of their screens.
 4. Keep **Show on the boards** ticked, and choose **Add calendar**.
 
@@ -769,15 +770,15 @@ FamilyWise syncs it straight away and says "Added Family and synced it.", then l
 
 #### Keep calendars healthy
 
-Each calendar shows how its sync went: **Synced** (with when), **Not synced yet**, or **Can't sync** with the reason and the last good sync. Calendars sync every 15 minutes, so a new event in Apple Calendar shows within 15 minutes. A calendar that can't sync keeps its last good events on the board, and **Health** names it too.
+Each calendar is folded to one line: its colour and name, who it's for, "Not on the boards" if hidden, when it last synced ("Synced 12 min ago") and how many events are coming up. One that can't sync says **Can't sync** on that line, so you see it without opening anything. Tap a calendar to open it: how its sync went, **Synced** (with when), **Not synced yet**, or **Can't sync** with the reason and the last good sync, then what's coming up, then **Edit** and **Remove**. After you save, the calendar comes back open. Calendars sync every 15 minutes, so a new event in Apple Calendar shows within 15 minutes. A calendar that can't sync keeps its last good events on the board, and **Health** names it too.
 
 **Remove** (the calendar's name) takes its events off FamilyWise and the boards. The calendar itself stays in Apple Calendar.
 
-![Calendars on a phone: Family synced with its coming events, School (Ava and Ben) unable to sync with the reason, and Work (Alex's) not synced yet.](guide/img/admin-calendars-phone.jpg "Calendars, each with how its sync went")
+![Calendars on a phone, each folded: Family (The whole family, synced 12 min ago, 23 events coming up), School (Ava and Ben, last synced 18 h ago, 2 events coming up) with Can't sync on its line, and Work (Alex's, not on the boards, not synced yet); then the Add a calendar button.](guide/img/admin-calendars-phone.jpg "Calendars, each folded to its line")
 
 #### Who a calendar is for
 
-Open **Edit** (the calendar's name) and tick under **Who it's for**. Ticking a person clears **The whole family**; clearing every person ticks it again. Each calendar's line says who it's for: "The whole family", "Alex's" or "Ava and Ben", with their faces. Ticking everyone keeps it as those people: someone you add to the family later isn't on it until you tick them, so use **The whole family** for a calendar everyone should see. Someone archived stays on a calendar and is back on it when restored.
+Open the calendar, then **Edit** (the calendar's name), and tick under **Who it's for**. Ticking a person clears **The whole family**; clearing every person ticks it again. Each calendar's line says who it's for: "The whole family", "Alex's" or "Ava and Ben", with their faces. Ticking everyone keeps it as those people: someone you add to the family later isn't on it until you tick them, so use **The whole family** for a calendar everyone should see. Someone archived stays on a calendar and is back on it when restored.
 
 ![Editing School on a phone: under Who it's for, Ava and Ben ticked with their faces, The whole family and Alex not ticked.](guide/img/admin-calendar-who-phone.jpg "Who it's for: Ava and Ben")
 
@@ -923,14 +924,14 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credi
 
 #### Build the library
 
-1. On **Meals**, choose **Meal library**.
+1. On **Meals**, choose **Meal library**, then tap **Add a meal** to open it (it is open already while the library is empty).
 2. Enter a **Name** and, if you like, a **Description**.
 3. Tick what it's **Good for**: **Breakfast**, **Snack**, **Lunch**, **Dinner**. These meals are offered first when you plan that meal of the day; none ticked means any.
 4. Optionally add a **Recipe link** and pick an **Icon**, then choose **Add meal**.
 
-Choose **Edit** (the meal's name) to change one. **Archive** takes a meal out of the library: it isn't offered any more, and plans that used it keep its name. **Restore** puts it back.
+Choose **Edit** (the meal's name) to change one. **Archive** takes a meal out of the library: it isn't offered any more, and plans that used it keep its name. Archived meals are folded under **Archived**, which says how many; open it and **Restore** puts one back.
 
-![The meal library on a phone: the Add a meal form, then Our meals with what each is good for and a recipe link.](guide/img/admin-meal-library-phone.jpg "The meal library, on a phone")
+![The meal library on a phone: Add a meal folded to its button, then Our meals with what each is good for and a recipe link, then Archived folded to 1 archived.](guide/img/admin-meal-library-phone.jpg "The meal library, on a phone")
 
 #### Plan the week
 <!-- covers: US-711 -->
@@ -982,7 +983,7 @@ A chore can follow these days, like "Pack lunch" only when a child brings: see [
 
 #### School menus: what the school serves
 
-A day a child buys can show what the school serves that day. Open **School menus** (the button beside **School lunch** on **Meals**) and add the school's menu once:
+A day a child buys can show what the school serves that day. Open **School menus** (the button beside **School lunch** on **Meals**), tap **Add a school menu** (open already while you have none) and add the school's menu once:
 
 - **From the school's Nutrislice menus**, if your school's lunch menu is on Nutrislice (its address ends in nutrislice.com). Type the name at the start of that address (for menus at example.nutrislice.com, type example) or paste the whole address, then **Find the schools**. Choose the school and its lunch menu, then **Add the menu**: FamilyWise fetches the next four weeks straight away, and again every morning.
 - **From a file**, for a school whose menu comes another way: a spreadsheet saved as CSV with a row for each item, and the columns **date** (like 2027-02-01, or 2/1/2027), **item** and, if you like, **section** (Choice of Entree, Choice of Milk). An item can hold choices: "Beef tacos or Chicken wrap with tortilla chips" is two options, the wrap with its chips. A date with no item means no lunch that day, and its section says why (Presidents' Day). **Look at the file** shows how many days it holds and the first few; **Load** stores them.
@@ -993,9 +994,10 @@ Then, under **Usual week** on **Meals** (tap it to open it), choose each child's
 FamilyWise reads a menu as the school writes it: each section's options, "or" between them, and "with" (or "and" after it) for what comes with one: "Fish sticks with Fries and Coleslaw" is one option with two sides. A section's name is shortened to show it ("Choice of Entree" shows as **Entree**, "Fruits & Vegetables offered" as **Fruits & Vegetables**), and the **Entree** is the section whose name says entree or main (else the first). A menu with no sections lists what's served with commas, as before.
 
 - **Change a day:** each day's **Change** lets you write it yourself: a section a line, its name and a colon first, "or" between options and "with" before a side, "and" before another (Choice of Milk: 1% milk or Chocolate milk; Choice of Entree: Pizza or Fish sticks with Fries and Coleslaw), or **No lunch that day** with a note. A day you change is **Yours**: the morning's fetch never replaces it. **Use Nutrislice's menu again** hands it back.
-- **When Nutrislice can't be reached:** the menu says **Can't fetch**, why, and when it last worked. The menus you have stay, and it tries again the next morning; **Fetch now** tries at once.
+- **Each menu is folded** to one line: where it comes from, whose lunch it is, when it was fetched and how many days it has in the next four weeks. Tap it to open its days, then **Load a file into** (a file's), **Add a day to**, and set apart under **Menu**: **Fetch now**, **Rename** and **Remove** (which asks first). After you save, the menu comes back open.
+- **When Nutrislice can't be reached:** the menu's line says **Can't fetch**, even while it is folded; opened, it says why and when it last worked. The menus you have stay, and it tries again the next morning; **Fetch now** tries at once.
 
-![School menus on a laptop: Maple Elementary from Nutrislice, fetched, its days with one marked Yours and a day with no lunch; a menu from a file; a feed that can't fetch keeping its menus.](guide/img/admin-menus-laptop.jpg "School menus, on a laptop")
+![School menus on a laptop: Maple Elementary opened, from Nutrislice, fetched, its days with one marked Yours and a day with no lunch, then Add a day to and the Menu group with Fetch now, Rename and Remove; Oak Middle from a file and Cedar High with Can't fetch on its line, both folded.](guide/img/admin-menus-laptop.jpg "School menus, on a laptop")
 
 ![Adding a school menu on a phone: the district typed, then the school and its menu to choose.](guide/img/admin-menu-add-phone.jpg "Adding a school menu, on a phone")
 
@@ -1234,14 +1236,14 @@ One member at a time, children first; **Last 7 days**, **Last 30 days** (default
 **A school year's page:** a timeline of its days; **Breaks and days off** (each with **Remove**; **Name**, **Kind**: **Break**, **Holiday**, **Teacher day**, **Snow day**, **Other day off**; **From**, **To (optional)**, **Add day off**); **Terms** (**Add term**, **Remove**); **Who follows it** (**Save who follows it**); **Dates and name** (**Save changes**); **Archive** / **Restore**. Archiving stops it applying (anyone following it goes back to the default); its days off stay as a record.
 
 #### B1.11 Calendars
-<!-- covers: US-501 US-504 US-505 -->
+<!-- covers: US-501 US-504 US-505 US-111 -->
 
 | Part | What it shows or does |
 |---|---|
-| Each calendar | Its color and name, who it's for ("The whole family", "Alex's", "Ava and Ben", with their faces), "Not on the boards" if hidden, its sync (**Synced**, **Can't sync**, **Not synced yet**) with details, and what's coming up ("· moved" for a moved event; "and N more in the next four months"). |
+| Each calendar | Folded at first to its color and name, who it's for ("The whole family", "Alex's", "Ava and Ben", with their faces), "Not on the boards" if hidden, when it synced ("Synced 12 min ago", "last synced …" while it can't, "Not synced yet") and how many events are coming up; **Can't sync** on its line, folded or open. Opened: its sync (**Synced**, **Can't sync**, **Not synced yet**) with details, and what's coming up ("· moved" for a moved event; "and N more in the next four months"), then **Edit** and **Remove**, each folded. It comes back open after a save in it. |
 | **Edit** (name) | **Name**, **Replace the link (optional)**, **Color**, **Who it's for** (**The whole family**, or a tick a person), **Show on the boards**, **Save calendar**. A new link syncs at once. |
 | **Remove** (name) | Takes its events off FamilyWise and the boards. It stays in Apple Calendar; you can add it again. |
-| **Add a calendar** | **Name** (up to 40), **Public link**, **Color**, **Who it's for**, **Show on the boards**, **Add calendar** ("Adding and syncing…"). |
+| **Add a calendar** | Folded to its button; open while there is no calendar. **Name** (up to 40), **Public link**, **Color**, **Who it's for**, **Show on the boards**, **Add calendar** ("Adding and syncing…"). |
 
 #### B1.12 Boards
 <!-- covers: US-201 US-202 US-507 US-1004 US-1007 US-207 US-208 -->
@@ -1298,9 +1300,9 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | **School lunch** | **School menus**. The children's faces (a dot: a day still to pick), then one child's Monday to Friday, each day closed: weekday, date, **Buy** or **Bring**, a check once set, **Today**, **Waiting** for a child's change; **No school**, greyed, on a day without. Opened: **Buy** · **Bring**, **Changed from the usual** or **Changed on the board**, **Buy? waiting** (or **New picks waiting**) linking to **Today**. **Usual week**, closed at first with a line per child ("Maya: Mon Bring · …"); opened, Monday to Friday and **School menu**, **Save** (name)**'s usual lunches**. |
 | Picks | A Buy day opened: its menu a section each (**pick one** or **any**), the picks ticked and highlighted (**Menu changed: look again** if the menu no longer has one), **Save** (name)**'s picks**; **No menu yet**, or the menu as text when it has nothing to pick. |
 
-**The meal library:** **Add a meal** (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe link (optional)**, **Icon**, **Add meal**); **Our meals**, each with what it's good for and its recipe, **Edit** and **Archive**; **Archived**, with **Restore**.
+**The meal library:** **Add a meal**, folded to its button (open while the library is empty) (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe link (optional)**, **Icon**, **Add meal**); **Our meals**, each with what it's good for and its recipe, **Edit** and **Archive**; **Archived**, folded to how many, with **Restore** (open after an archive).
 
-**School menus:** each menu with where it comes from (**From Nutrislice**, **From a file**, **Typed in**), whose lunch it is, and for Nutrislice **Fetched**, **Not fetched yet** or **Can't fetch** (why, and when it last worked); its next four weeks, each day's menu a line a section, each day with **Change** (**What's for lunch**: a section a line, "or" between options, "with" before a side; **No lunch that day**, **Note (optional)**, **Save the day**; a day you wrote is **Yours**, with **Use Nutrislice's menu again**, or **Remove** for a file's); **Load a file into** (name) (**Menu file (CSV)**, **Look at the file**, **Load** N **days**); **Add a day to** (name); **Fetch** (name) **now**; **Rename** and **Remove**. **Add a school menu:** **Name**, **Where the menu comes from**, and for Nutrislice **Your district on Nutrislice**, **Find the schools**, **School and menu**; **Add the menu**.
+**School menus:** each menu folded at first to where it comes from, whose lunch it is ("nobody yet"), for Nutrislice **Fetched** (the time today, else the day), and how many days it has in the next four weeks, with **Can't fetch** on its line, folded or open; opened, each menu with where it comes from (**From Nutrislice**, **From a file**, **Typed in**), whose lunch it is, and for Nutrislice **Fetched**, **Not fetched yet** or **Can't fetch** (why, and when it last worked); its next four weeks, each day's menu a line a section, each day with **Change** (**What's for lunch**: a section a line, "or" between options, "with" before a side; **No lunch that day**, **Note (optional)**, **Save the day**; a day you wrote is **Yours**, with **Use Nutrislice's menu again**, or **Remove** for a file's); **Load a file into** (name) (**Menu file (CSV)**, **Look at the file**, **Load** N **days**); **Add a day to** (name), both folded; then **Menu**, set apart: **Fetch** (name) **now**, **Rename** (its name and **Rename**) and **Remove** (name), which asks first. A menu comes back open after a save in it. **Add a school menu**, folded to **Add a menu** (open while there is no menu): **Name**, **Where the menu comes from**, and for Nutrislice **Your district on Nutrislice**, **Find the schools**, **School and menu**; **Add the menu**.
 
 
 #### B1.16 Family options

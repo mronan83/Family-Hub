@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { foldOf, unfold } from '../support/fold';
 
 // [MEAL-01][MEAL-02][MEAL-03][MEAL-08] Meals for a parent (WP-25) on /dev/meals: a made-up family, no
 // database. The week (each day's four meals, entries in order, for everyone or one person), the
@@ -405,7 +406,7 @@ test('[MEAL-14] a day opened by the page: the one just added to or changed', asy
 test('[MEAL-02] the library: each meal, what it’s good for and its recipe; archived ones aside', async ({
   page,
 }) => {
-  await page.goto('/dev/meals?page=library');
+  await open(page, '/dev/meals?page=library');
   const meals = page.getByRole('list', { name: 'Meals', exact: true });
   await expect(meals.getByRole('listitem')).toHaveCount(7);
   await expect(meals.getByRole('listitem').filter({ hasText: 'Chicken soup' })).toContainText(
@@ -415,11 +416,63 @@ test('[MEAL-02] the library: each meal, what it’s good for and its recipe; arc
     'href',
     'https://example.com/tacos',
   );
+  await unfold(foldOf(page, 'Archived'));
   await expect(page.getByRole('list', { name: 'Archived meals' })).toContainText('Old casserole');
+  await unfold(foldOf(page, 'Add a meal'));
   const add = page.getByRole('form', { name: 'Add a meal' });
   await expect(add.getByRole('group', { name: 'Good for' }).getByRole('checkbox')).toHaveCount(4);
   await meals.getByText('Edit Tacos').click();
   await expect(
     page.getByRole('form', { name: 'Edit Tacos' }).getByRole('checkbox', { name: 'Dinner' }),
   ).toBeChecked();
+});
+
+// [NFR-18][D-120] The meal library folded (WP-93), as the fold audit draws it: Add a meal to its
+// button, Our meals open, Archived to its count; each opened by a tap after React has taken the page
+// over (D-110).
+for (const [device, viewport] of [
+  ['phone', { width: 390, height: 844 }],
+  ['laptop', { width: 1280, height: 800 }],
+] as const) {
+  test.describe(`The meal library folded on a ${device}`, () => {
+    test.use({ viewport });
+    for (const theme of ['day', 'evening'] as const) {
+      test(`[NFR-18-h][US-111][MEAL-02][D-120] Add a meal and Archived folded, Our meals open, each opened by a tap, in ${theme}`, async ({
+        page,
+      }) => {
+        await open(page, `/dev/meals?page=library&theme=${theme}`);
+        const add = foldOf(page, 'Add a meal');
+        const archived = foldOf(page, 'Archived');
+        await test.step('folded at first: Add a meal’s button, Our meals, Archived’s count', async () => {
+          await expect(add).not.toHaveAttribute('open');
+          await expect(archived).not.toHaveAttribute('open');
+          await expect(add.locator(':scope > summary .fw-fold__closed')).toHaveText('Add a meal');
+          await expect(archived.locator(':scope > summary .fw-fold__sum')).toHaveText('1 archived');
+          await expect(page.getByRole('list', { name: 'Meals', exact: true })).toBeVisible();
+          await expect(page.getByRole('form', { name: 'Add a meal' })).toBeHidden();
+          await fits(page, viewport.width);
+          await contrastOk(page);
+        });
+        await test.step('each opened by a tap', async () => {
+          await add.locator(':scope > summary').click();
+          await expect(page.getByRole('form', { name: 'Add a meal' })).toBeVisible();
+          await expect(add.locator(':scope > summary .fw-fold__closed')).toBeHidden();
+          await archived.locator(':scope > summary').click();
+          await expect(page.getByRole('button', { name: 'Restore Old casserole' })).toBeVisible();
+          await fits(page, viewport.width);
+          await contrastOk(page);
+        });
+      });
+    }
+  });
+}
+
+test('[NFR-18-i][D-120] Archived comes back open after an archive; with no meal yet, Add a meal is open', async ({
+  page,
+}) => {
+  await open(page, '/dev/meals?page=library&open=archived');
+  await expect(foldOf(page, 'Archived')).toHaveAttribute('open', '');
+  await expect(foldOf(page, 'Add a meal')).not.toHaveAttribute('open');
+  await open(page, '/dev/meals?page=library&state=empty');
+  await expect(foldOf(page, 'Add a meal')).toHaveAttribute('open', '');
 });

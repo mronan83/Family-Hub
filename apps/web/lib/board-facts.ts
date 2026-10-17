@@ -2,7 +2,7 @@ import { TEXT_SIZES } from '@familywise/ui';
 import { readLayout } from './board-layout';
 import { boardMissed, readBoardSleep, type SchoolDays, sleepStatus } from './board-sleep';
 import { type BoardThemeSetting, boardTextSize, boardThemeSetting } from './devices';
-import { dayAndTime } from './format';
+import { agoWords } from './format';
 import { howLong } from './home-alerts';
 
 // [DEV-09][D-118] What a board's folded header on Boards says about it (WP-91): its facts, and Home's
@@ -20,12 +20,7 @@ export const THEME_WORDS: Record<BoardThemeSetting, string> = {
  * "seen 5 min ago", "seen 7 h ago", then the day and time; "not seen yet" for a new board.
  */
 export function seenWords(lastSeenAt: string | null, now: number, timeZone: string): string {
-  if (!lastSeenAt) return 'not seen yet';
-  const minutes = Math.floor((now - new Date(lastSeenAt).getTime()) / 60_000);
-  if (minutes < 1) return 'seen just now';
-  if (minutes < 60) return `seen ${minutes} min ago`;
-  if (minutes < 24 * 60) return `seen ${Math.floor(minutes / 60)} h ago`;
-  return `seen ${dayAndTime(lastSeenAt, timeZone)}`;
+  return lastSeenAt ? `seen ${agoWords(lastSeenAt, now, timeZone)}` : 'not seen yet';
 }
 
 /** What a board's folded header on Boards says about it (WP-91, D-118). */

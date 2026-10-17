@@ -3,6 +3,7 @@ import { runCalendarSync, type Fetcher } from '../../apps/web/lib/calendar/sync'
 import { boardFold, pairBoard, retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
+import { foldOf, unfold } from '../support/fold';
 
 // [CAL-04][CAL-05][CAL-09][CAL-10][US-507][US-508][US-509] Calendars on a board, on the preview at the reference panel's 3840×2160
 // (WP-23, D-65). Two made-up calendars of the demo family (School, Maya's, and Family) are connected
@@ -353,7 +354,9 @@ test('[CAL-09-f][US-508][NFR-14-h] a calendar given two people on Calendars show
   try {
     await test.step('Alex ticks Leo for School on Calendars and saves', async () => {
       await admin.goto('/admin/calendars');
-      await admin.locator('summary', { hasText: 'Edit School e2e' }).click();
+      // [NFR-18] The calendar, then its Edit, are folds (WP-93).
+      await unfold(foldOf(admin, 'School e2e'));
+      await unfold(foldOf(admin, 'Edit School e2e'));
       const edit = admin.getByRole('form', { name: 'Edit School e2e' });
       const who = edit.getByRole('group', { name: 'Who it’s for' });
       await expect(who.getByRole('checkbox', { name: 'Maya', exact: true })).toBeChecked();

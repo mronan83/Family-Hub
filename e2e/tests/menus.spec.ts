@@ -4,7 +4,7 @@ import { parseMenuCsv } from '../../apps/web/lib/menu/csv';
 import { serviceRpc, sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf, weekday } from '../support/day';
 import { withSchoolDays } from '../support/school';
-import { unfold } from '../support/fold';
+import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
 
 // [MENU-01..05][MEAL-05] School menus on the preview (WP-27, D-79), as Alex of the demo family. The
@@ -122,15 +122,17 @@ test('[MENU-01][MENU-03][US-802] done-when: four weeks load from a file, looked 
   page,
 }) => {
   await asAlexOnMenus(page);
+  // [NFR-18] Add a school menu folds to its button while the family has menus (WP-93).
+  await unfold(foldOf(page, 'Add a school menu'));
   const add = page.getByRole('form', { name: 'Add a school menu' });
   await add.getByRole('textbox', { name: 'Name', exact: true }).fill(FILE);
   await add.getByRole('radio', { name: /A file/ }).check();
   await add.getByRole('button', { name: 'Add the menu' }).click();
   await expect(page.getByText(`Added ${FILE}.`)).toBeVisible();
 
-  await row(page, FILE)
-    .locator('summary', { hasText: `Load a file into ${FILE}` })
-    .click();
+  // The menu just added comes back open (WP-93); its Load a file into is a fold.
+  await expect(foldOf(page, FILE)).toHaveAttribute('open', '');
+  await unfold(foldOf(page, `Load a file into ${FILE}`));
   const load = page.getByRole('form', { name: `Load a file into ${FILE}` });
   await load.getByLabel('Menu file (CSV)').setInputFiles({
     name: 'oak-e2e.csv',
@@ -192,6 +194,8 @@ test('[MENU-02][MENU-04][MENU-05][US-803] done-when: a feed that fails keeps its
   await expect(cedar).toContainText('Can’t fetch');
   await expect(cedar).toContainText('Nutrislice answered 503. FamilyWise tries again tomorrow.');
   await expect(cedar).toContainText('the menus below are kept until it works again');
+  // [NFR-18] Each menu is folded at first (WP-93): its weeks are inside.
+  await unfold(foldOf(page, FEED));
   const first = [0, 1, 2, 3].map(day).find((d) => weekday(d) > 0 && weekday(d) < 6)!;
   await expect(page.getByRole('list', { name: `Lunch at ${FEED}` })).toContainText(
     `Cedar lunch ${first}`,
