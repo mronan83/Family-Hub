@@ -49,13 +49,15 @@ function wrongControls(page: Page) {
     const shown = (el: Element) => el.getClientRects().length > 0;
     const wrong: string[] = [];
     const name = (el: Element) =>
+      el.parentElement?.querySelector('.fw-pick__input')?.getAttribute('aria-label') ??
       el.getAttribute('aria-label') ??
       el.getAttribute('name') ??
       el.closest('label')?.textContent?.trim().slice(0, 40) ??
       el.tagName;
     const controls = [
       ...document.querySelectorAll(
-        'main input:not([type=hidden]):not(.fw-visually-hidden):not(.fw-seg__input), main select, main textarea',
+        // [D-128] A date or time is its written face; the real field over it is see-through.
+        'main input:not([type=hidden]):not(.fw-visually-hidden):not(.fw-seg__input):not(.fw-pick__input), main select, main textarea, main .fw-pick__face',
       ),
     ].filter(shown) as HTMLInputElement[];
     for (const el of controls) {

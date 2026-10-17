@@ -38,6 +38,8 @@ export {
 export { Banner, type BannerKind } from './Banner';
 export { Fold, type FoldProps } from './Fold';
 export { FileField, type FileFieldProps } from './FileField';
+export { DatePick, type DatePickProps } from './DatePick';
+export { dateWords, timeWords } from './date-words';
 export { Button, type ButtonProps, type ButtonVariant } from './Button';
 export {
   applyBoardTextSize,

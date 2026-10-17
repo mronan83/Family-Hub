@@ -99,7 +99,7 @@ test.describe('the admin app', () => {
   }) => {
     await page.goto('/dev/goals?form=weighted');
     await hydrated(page);
-    const weights = page.getByLabel('Weight (%)');
+    const weights = page.getByRole('spinbutton', { name: /^Weight of rule/ });
     await expect(weights).toHaveCount(2);
     await expect(weights.nth(0)).toHaveValue('60');
     await expect(weights.nth(1)).toHaveValue('40');
@@ -112,7 +112,7 @@ test.describe('the admin app', () => {
     await expect(steps.getByLabel('At %').first()).toHaveValue('75');
     // Without steps, the weights go and all or any is back.
     await steps.getByRole('checkbox').uncheck();
-    await expect(page.getByLabel('Weight (%)')).toHaveCount(0);
+    await expect(weights).toHaveCount(0);
     await expect(page.getByRole('group', { name: 'It’s reached when' })).toBeVisible();
   });
 

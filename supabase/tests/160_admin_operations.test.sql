@@ -29,8 +29,15 @@ create function pg_temp.today() returns date language sql as $$
 $$;
 create temp sequence tick;
 grant usage on sequence tick to authenticated;
+-- [D-110] Each event is after the household's midnight, so it falls on today whatever the hour UTC: up
+-- to 3 hours before now, or half the time since midnight when that is less (in the first hours of
+-- the household's day, 3 hours before now was yesterday and a check-off then waited for a parent).
+-- Ticks are a millisecond apart, so they stay in order and before now.
 create function pg_temp.at() returns timestamptz language sql as $$
-  select now() - interval '3 hours' + nextval('tick') * interval '1 second'
+  select now()
+         - least(interval '3 hours',
+                 (now() - (pg_temp.today()::timestamp at time zone 'America/Chicago')) / 2)
+         + nextval('tick') * interval '1 millisecond'
 $$;
 -- Five 5-point routines for Maya, every day.
 insert into public.chore (id, household_id, title, kind, points, schedule, created_by, start_date)

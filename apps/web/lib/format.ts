@@ -8,6 +8,20 @@ export function day(at: string | Date, timeZone: string): string {
   }).format(new Date(at));
 }
 
+/**
+ * [NFR-16][D-128] A whole date as the goal screens' mockups write it: "Mon, Oct 12, 2026", for a
+ * timestamp in a timezone (a household-local "YYYY-MM-DD" goes through `dateWords`).
+ */
+export function fullDay(at: string | Date, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone,
+  }).format(new Date(at));
+}
+
 export function time(at: string | Date, timeZone: string): string {
   return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone })
     .format(new Date(at))

@@ -305,12 +305,43 @@ const SHOTS = [
     // under 120 KB.
     quality: 48,
   },
+  // [NFR-16][D-128] The goal form's rule with its live summary, and two weighted rules folded to
+  // their lines (WP-101), once the summaries are back.
+  {
+    name: 'admin-goal-summary-phone',
+    device: 'phone',
+    url: '/dev/goals?form=homework',
+    element: 'fieldset.fw-goal-rule',
+    act: async (page) => {
+      await page.locator('form[data-live="ready"]').waitFor();
+    },
+  },
+  {
+    name: 'admin-goal-rules-phone',
+    device: 'phone',
+    url: '/dev/goals?form=weighted',
+    element: '.fw-form',
+    quality: 50,
+    act: async (page) => {
+      await page.locator('form[data-live="ready"]').waitFor();
+      // Only the rules and the weights' line: the rest of the form folded away for the picture.
+      await page.evaluate(() => {
+        for (const el of document.querySelectorAll('.fw-form > *')) {
+          const keep =
+            el.matches('fieldset.fw-goal-rule, [data-testid="weights-summary"]') ||
+            el.querySelector('[data-testid="weights-total"]');
+          if (!keep && !el.matches('[data-testid="weights-total"]')) el.style.display = 'none';
+        }
+      });
+    },
+  },
   // [RWD-14] A started goal's end date (WP-79): Ends on a date ticked, the date and Clear.
   {
     name: 'admin-goal-end-date-phone',
     device: 'phone',
     url: '/dev/goals?form=started',
-    element: '.fw-goal-form__dates',
+    // The Ends field (its own box since WP-100 put Starts and Ends in the form's grid).
+    element: '.fw-end-date',
   },
   // [RWD-15][RWD-16] A repeating goal (WP-80): Maya's card on Goals, and her week on the board.
   {

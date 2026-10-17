@@ -37,6 +37,7 @@ export default defineConfig({
         'goals.spec.ts',
         'goal-steps.spec.ts',
         'goal-perfect.spec.ts',
+        'goal-form-summary.spec.ts',
         'forms.spec.ts',
         'admin-day.spec.ts',
         'admin-menu.spec.ts',

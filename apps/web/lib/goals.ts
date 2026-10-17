@@ -858,6 +858,21 @@ export interface PreviewRead {
   members?: string[];
   /** [RWD-19] The periods of each goal the form's rules count. */
   sources?: GoalInput['sources'];
+  /**
+   * [NFR-16][D-128] The school calendar's closures on the days around today (WP-101): for the goal's
+   * person, or for each child and the household's default year (member_id null) on a family goal.
+   */
+  closures?: PreviewClosure[];
+}
+
+/** [NFR-16][D-128] A day the school is closed, for the form's summaries: "a teacher planning day". */
+export interface PreviewClosure {
+  date: string;
+  member_id: string | null;
+  name: string;
+  kind: 'break' | 'holiday' | 'teacher_day' | 'snow_day' | 'other';
+  /** [D-128] The routines that would have been due that day were the school open, with their tags. */
+  due?: { chore_id: string; tag_ids: string[] }[];
 }
 
 export interface PreviewSide {
@@ -874,6 +889,8 @@ export interface GoalPreviewResult {
   period: GoalEvaluation['periods'][number] | null;
   /** The status changes saving would make: started, achieved, unachieved, expired. */
   transitions: string[];
+  /** [RWD-18] A goal that doesn't repeat: where its steps stand; null otherwise. */
+  step: GoalEvaluation['step'];
 }
 
 const side = (e: GoalEvaluation): PreviewSide => ({
@@ -925,6 +942,7 @@ export function previewGoal(
       after.periods.at(-1) ??
       null,
     transitions: after.transitions.map((t) => t.type),
+    step: after.step,
   };
 }
 
