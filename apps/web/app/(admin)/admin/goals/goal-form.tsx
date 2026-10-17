@@ -1096,7 +1096,7 @@ function RuleRow({
               checked={onChoice === 'by'}
               onChange={() => onChange({ onTime: '18:00' })}
             />
-            By a time
+            By
           </label>
           {onChoice === 'by' ? (
             <input

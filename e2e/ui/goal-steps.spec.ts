@@ -66,7 +66,7 @@ test.describe('the admin app', () => {
   }) => {
     await page.goto('/dev/goals?form=steps');
     await hydrated(page);
-    await expect(page.getByRole('radio', { name: 'By a time' })).toBeChecked();
+    await expect(page.getByRole('radio', { name: 'By', exact: true })).toBeChecked();
     await expect(page.getByRole('textbox', { name: 'Time' })).toHaveValue('18:00');
     await expect(page.getByText(/A tick after the time still completes the chore/)).toBeVisible();
     const steps = page.getByRole('group', { name: 'Pay in steps' });
