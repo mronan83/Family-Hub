@@ -71,6 +71,43 @@ export function classify(failure, degraded = [], slack = 10_000) {
   return { kind: 'assertion', cause: 'assertion failure' };
 }
 
+/** [D-129] The probe's bar: a read of the test database that takes longer is the database slow. */
+export const SLOW_READ_MS = 2_000;
+
+/**
+ * [NFR-14][D-129][D-135] Infrastructure evidence for a change that missed its latency budget: the
+ * reads that would have shown it, each the app's own read of the test database (a board's read of
+ * its snapshot, or an admin page's load), returned or still going when the wait ended. Only when
+ * every one took longer than the probe's 2 s bar was the database slow under the test; one read
+ * under the bar that still didn't show the change is the app's own delay, an assertion failure.
+ * `reads`: milliseconds, or null where a late change had no read of its own to time.
+ * Returns the evidence in words, or null.
+ */
+export function slowReads(reads, what = 'reads') {
+  if (!reads.length || reads.some((ms) => ms === null || ms <= SLOW_READ_MS)) return null;
+  return `the ${what} took ${reads.map((ms) => ms.toLocaleString('en-US')).join(', ')} ms, over the probe's 2 s: the test database slow while the test ran`;
+}
+
+/**
+ * [NFR-14-q] A missed wait's page loads in words: those that finished, and the one still loading when
+ * the wait ended (`out`, timed so far, or null), so the message is never blank.
+ */
+export function loadWords(done, out) {
+  const finished = done.length ? `its reloads took ${done.join(', ')} ms` : 'no reload finished';
+  return out === null ? finished : `${finished}, and one was still loading after ${out} ms`;
+}
+
+/**
+ * [NFR-14][D-135] A reading of the preview's /api/health, which never touches the database: an
+ * answer slower than the probe's 2 s bar is the preview itself slow (its functions, not the
+ * database), as a 5xx or no answer is the preview down. Returns the bad reading in words, or null.
+ */
+export function healthReading(status, ms) {
+  if (status >= 500) return `the preview answered /api/health with ${status}`;
+  if (ms > SLOW_READ_MS) return `the preview took ${ms} ms to answer /api/health`;
+  return null;
+}
+
 /**
  * Text with every database connection string hidden. A failed psql call's error names its command,
  * the test database's URL and password with it, and the run summary and the "E2E red on main"

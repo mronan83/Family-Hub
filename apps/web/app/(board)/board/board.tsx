@@ -90,6 +90,9 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
     // reaches the screen. Offline, the tries fail and what is on screen stays; the network's return
     // or Realtime's reconnect reads again.
     const reload = coalesce(async () => {
+      // While a read is out, since when (0 once it is back), so e2e can time a read that never
+      // returned within its wait too (D-129).
+      mark(status, 'data-reading-since', Date.now());
       await readSoon(async (signal) => {
         // Marked with its return, so a follow-up read that starts at once doesn't hide how long the
         // read that drew the change took (e2e's evidence of a slow database, D-129).
@@ -109,6 +112,7 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
         mark(status, 'data-read-to', Date.now());
         return true;
       });
+      mark(status, 'data-reading-since', 0);
     });
     refresh.current = () => void reload();
     // [DEV-08] The jobs that keep today's list right, as this board may see them (job_run's RLS).
@@ -278,7 +282,8 @@ function LiveStatus({
   events: number;
   status: RefObject<HTMLSpanElement | null>;
 }) {
-  // data-heard-at, data-read-from, data-read-to and data-read-failed are written by mark().
+  // data-heard-at, data-read-from, data-read-to, data-reading-since and data-read-failed are written by
+  // mark().
   return (
     <span ref={status} className="fw-live" role="status" data-link={link} data-events={events}>
       <Icon name={link === 'offline' ? 'wifi-off' : 'wifi'} size={28} />

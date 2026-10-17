@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.6: the three e2e reds of 17 October (WP-108, NFR-14, D-135): a late change's evidence is the read or page load that would show it, and every one over 2 s; the preview's `/api/health` over 2 s is a slow reading (§8). Test cases NFR-14-o to NFR-14-r; the Test catalogue regenerated (§9).
 > v0.8.5: WP-93's test cases (NFR-18-a to NFR-18-j, D-131): the Test catalogue regenerated (§9).
 > v0.8.4: the e2e findings log and a run by hand (WP-98, NFR-14, D-130): each run with a failed test adds a comment to "E2E findings log", re-runs included, and the run summary lists tests that failed in more than one of the last 30 runs; the nightly run can be started by hand on `main` when no other e2e run is queued or going (§3, §8).
 > v0.8.3: the e2e red triage (WP-102, NFR-14, D-129): the run hides every connection string from its summary and issues; a board's own read over 2 s is evidence the test database was slow; three more rules for writing specs (§7).
@@ -247,7 +248,7 @@ The test standard is in `CLAUDE.md` ("Tests", D-110). In short:
 |---|---|
 | A fast check | Red on the PR: the PR waits until it is fixed, and the deploy gate won't ship it |
 | A wrong result in the nightly run | Red, never re-run; the issue "E2E red on main: <spec>" opens or gains the run, with the test's kind and cause; it blocks nothing and is fixed as the next item (D-108) |
-| Infrastructure in the nightly run: a statement timeout, a refused or reset connection, a Supabase or Auth 5xx, the preview not answering, the test database or preview slow or down (the probe, or a board's own read of a late change taking over 2 s, D-129), the demo family's day turned since its load | That test re-runs once by itself, on that evidence only, and its cause is labelled in the run summary; a second fault is red, with its cause (D-110) |
+| Infrastructure in the nightly run: a statement timeout, a refused or reset connection, a Supabase or Auth 5xx, the preview not answering, the test database or preview slow or down (the probe, the preview's `/api/health` answering in over 2 s, or the reads that would show a late change all taking over 2 s: a board's read of it, D-129, or a reloaded page's loads, D-135), the demo family's day turned since its load | That test re-runs once by itself, on that evidence only, and its cause is labelled in the run summary; a second fault is red, with its cause (D-110) |
 | A refused or failed deploy | The issue "Deploy refused: <commit>" opens or gains the run (D-108) |
 
 - Never skip, disable or quarantine a test, and never call a failure a flake without a cause.
@@ -267,7 +268,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2677** tests: Unit 825 · DB 1455 · UI 270 · E2E 127. 2216 name at least one ID; 461 name none.
+**2680** tests: Unit 828 · DB 1455 · UI 270 · E2E 127. 2219 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
@@ -276,7 +277,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 104 of 126 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 132 (with a test: 132) |
+| Test cases | 136 (with a test: 136) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -300,9 +301,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
-| Platform | 171 | 167 | 56 | 14 | 408 |
+| Platform | 174 | 167 | 56 | 14 | 411 |
 | Not named | 58 | 438 | 10 | 1 | 507 |
-| **Total** | **825** | **1455** | **270** | **127** | **2677** |
+| **Total** | **828** | **1455** | **270** | **127** | **2680** |
 
 ### 9.3 By requirement
 
@@ -449,7 +450,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | U 17 · DB 10 · UI 17 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Covered | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j, NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x | U 31 · UI 15 · E2E 3 |
-| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 34 · DB 14 · UI 1 · E2E 15 |
+| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102, WP-108 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 37 · DB 14 · UI 1 · E2E 17 |
 | NFR-19 | M | Covered | US-913 | WP-85, WP-86 | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | U 6 |
 
 ### 9.4 By backlog item
@@ -562,6 +563,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-105 | Queued | — | — | — |
 | WP-106 | Queued | — | — | — |
 | WP-107 | Queued | — | — | — |
+| WP-108 | Done | NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r | 4 of 4 | — |
 
 Test cases and the tests that prove them:
 
@@ -626,7 +628,7 @@ Test cases and the tests that prove them:
 | RWD-19-g | WP-82 | A week of the counted goal won or lost marks the goal counting it, which is worked out after it; its facts carry the counted goal's weeks; reached, it pays its own payout once; the board has the counted goal's weeks since it started | DB | DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] the counting goal's facts carry the counted goal's weeks`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] a week of the counted goal won marks the goals counting it`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] a goal counting weeks is worked out after the goal it counts`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] reached, it pays its own 15 points once`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] the board has the goal a rule counts`<br>DB `supabase/tests/520_perfect_periods.test.sql`: `[RWD-19-g] with its weeks that started on or after this goal's start date (D-126)` |
 | RWD-19-h | WP-82 | The form reads the counted goal: which goal, in total or in a row, the target | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-414] the form: perfect weeks › [RWD-19-h] reads the goal it counts, in a row or in total, and the target`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-19-h] the form: weeks won of Maya’s goal, in a row, from this goal’s start` |
 | RWD-19-i | WP-82 | The words: "1 of 3 weeks in a row", "best so far 1", "This week makes 2 in a row.", and the rule naming the goal it counts | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-414] perfect weeks in words › [RWD-19-i] "1 of 3 weeks in a row", best so far, what this week makes`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-414] perfect weeks in words › [RWD-19-i] the rule on Goals names the goal it counts`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-19-i][US-414] perfect weeks: 1 of 3 in a row, the weeks, what this week makes` |
-| RWD-19-j | WP-82 | On the preview: Maya's "3 perfect weeks in a row" counts her won homework weeks, 2 of 3 | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
+| RWD-19-j | WP-82 | On the preview: Maya's "3 perfect weeks in a row" counts her won homework weeks, 2 of 3 | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
 | RWD-20-a | WP-82 | One child short loses the week at once, though the other made every day | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-415] a family goal every child meets › [RWD-20-a] one child short loses the week at once, though the other made every day` |
 | RWD-20-b | WP-82 | Every child meeting it wins the week; its progress is the child furthest behind | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-415] a family goal every child meets › [RWD-20-b] every child meeting it wins the week; its progress is the child furthest behind` |
 | RWD-20-c | WP-82 | A child with nothing due doesn't hold it back; with nobody due the week is neither won nor missed | Unit | Unit `packages/rules-engine/src/perfect.test.ts`: `[US-415] a family goal every child meets › [RWD-20-c] a child with nothing due doesn’t hold it back; with nobody due the week is neither` |
@@ -637,7 +639,7 @@ Test cases and the tests that prove them:
 | RWD-20-h | WP-82 | The form reads the option, and a form without it leaves the goal's own | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] the form: every child meets it › [RWD-20-h] reads the option on a family goal, and sends it`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-h] the form: every child meets it on a family goal, without steps` |
 | RWD-20-i | WP-82 | The words: each child's line, "Leo missed Tuesday. Starts again Monday, Oct 19.", "Everyone made it! 20 points each.", a week's row on Weeks | Unit | Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] each child’s line, who missed it and when it starts again`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] won: everyone, or only the children with something due, as they are paid (D-126)`<br>Unit `apps/web/lib/goal-perfect.test.ts`: `[US-415] every child meets it in words › [RWD-20-i] a week’s row on the goal’s Weeks`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i] a family goal’s weeks: each child, who had nothing due, and what each was paid`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-20-i][US-415] the family goal: each child’s days; missed by Leo; won by both` |
 | RWD-20-j | WP-82 | The forms, Goals' two cards and a family goal's Weeks at 390 and 1280 px, and the board's family card going, missed and won and the perfect-weeks card, in both themes | UI | UI `e2e/ui/goal-perfect.spec.ts`: `on a ${device} › [RWD-20-j][NFR-11] the forms, Goals and a family goal’s weeks fit a ${device} in ${theme}`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-h] the form: every child meets it on a family goal, without steps`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-19-h] the form: weeks won of Maya’s goal, in a row, from this goal’s start`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i][RWD-19-i] Goals: each child’s week and who missed it; perfect weeks in a row`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app › [RWD-20-j][RWD-20-i] a family goal’s weeks: each child, who had nothing due, and what each was paid`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the admin app the board at ${viewport.width}×${viewport.height} › [RWD-20-j][NFR-03] the family goal going, missed and won, and perfect weeks, in ${theme}: 28…`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-20-i][US-415] the family goal: each child’s days; missed by Leo; won by both`<br>UI `e2e/ui/goal-perfect.spec.ts`: `the board’s cards › [RWD-20-j][RWD-19-i][US-414] perfect weeks: 1 of 3 in a row, the weeks, what this week makes` |
-| RWD-20-k | WP-82 | On the preview: the family's "Everyone's homework home": a week both children made pays each 20 once; Leo's missed Tuesday leaves the next week unreached though Maya made every day | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
+| RWD-20-k | WP-82 | On the preview: the family's "Everyone's homework home": a week both children made pays each 20 once; Leo's missed Tuesday leaves the next week unreached though Maya made every day | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
 | NFR-18-a | WP-93 | A calendar's folded header: who it's for, "Not on the boards" when hidden, "Synced" and how long ago, and how many events are coming up (one, many, none); one not synced yet says so | Unit | Unit `apps/web/lib/calendars.test.ts`: `a calendar’s folded header › [NFR-18-a][CAL-06][CAL-09] who it’s for, its sync and how many events are coming up`<br>Unit `apps/web/lib/calendars.test.ts`: `a calendar’s folded header › [NFR-18-a][CAL-05] one hidden from the boards says so; one not synced yet says that` |
 | NFR-18-b | WP-93 | A calendar that can't sync has **Can't sync** as its warning and says when it last synced, or that it never did | Unit | Unit `apps/web/lib/calendars.test.ts`: `a calendar’s folded header › [NFR-18-b][CAL-06][US-505] one that can’t sync has the warning and says when it last synced` |
 | NFR-18-c | WP-93 | A school menu's folded header: where it comes from, whose lunch it is or "nobody yet", a feed's **Fetched** with its time today or its day and time before, and the days with lunch in the next four weeks; a file or typed-in menu has nothing to fetch | Unit | Unit `apps/web/lib/menus.test.ts`: `a school menu’s folded header › [NFR-18-c][MENU-01][MENU-04] where it comes from, whose lunch, its fetch and its days`<br>Unit `apps/web/lib/menus.test.ts`: `a school menu’s folded header › [NFR-18-c][MENU-03] a file or typed-in menu has nothing to fetch; nobody yet, one day, none` |
@@ -683,10 +685,14 @@ Test cases and the tests that prove them:
 | NFR-14-b | WP-102 | A board change that misses its 3 s budget while the board's own read of it took over 2 s carries infrastructure evidence and re-runs once; the budget stays 3 s | E2E | E2E `e2e/tests/board-calendar.spec.ts`: `[CAL-05][US-507][NFR-14-b] this board’s own calendars: School unticked leaves it within 3 seconds; ticked again it is back in its color; a calendar connected l…` |
 | NFR-14-c | WP-102 | One screen is judged against the board's own box, which drifts up to 2 px against burn-in, so the result is the same at any time of day | E2E | E2E `e2e/tests/board-home.spec.ts`: `[BRD-09][US-1008][NFR-14-c] done-when: one screen on the 4K panel and a laptop; Month chosen on the board saves nothing` |
 | NFR-14-d | WP-102 | A test starts from the data it needs, not what an earlier test left: a board's own layout starts from the household's default | E2E | E2E `e2e/tests/board-layout.spec.ts`: `[BRD-05][D-67][NFR-14-d] a board with its own layout: the month and no Goals here; every other board keeps the household’s` |
-| NFR-14-e | WP-102 | A spec's clean-up never deletes an item with check-offs: its days with none are removed and it is archived | E2E | E2E `e2e/tests/goal-steps.spec.ts`: `[RWD-18-m][RWD-17-e][NFR-14-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10`<br>E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row`<br>E2E `e2e/tests/repeating-goals.spec.ts`: `[RWD-15-m][US-410][US-411][NFR-14-e] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board` |
+| NFR-14-e | WP-102 | A spec's clean-up never deletes an item with check-offs: its days with none are removed and it is archived | E2E | E2E `e2e/tests/goal-steps.spec.ts`: `[RWD-18-m][RWD-17-e][NFR-14-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10`<br>E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row`<br>E2E `e2e/tests/repeating-goals.spec.ts`: `[RWD-15-m][US-410][US-411][NFR-14-e] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board` |
 | NFR-14-f | WP-102 | Specs use the controls as WP-75 and WP-100 drew them: the icon picker opened by its header, the lunch week read from its own list, a meal's **Change** opened only if closed | E2E | E2E `e2e/tests/chores.spec.ts`: `[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s list on a phone in under five minutes; each new item has its next two weeks planned`<br>E2E `e2e/tests/chores.spec.ts`: `[CHR-13][NFR-14-f] a private task stays with its creator, and reaches the other parent only if it’s theirs`<br>E2E `e2e/tests/lunch-quick.spec.ts`: `[MEAL-12][US-709][NFR-14-f] done-when: Pick lunches on Home opens the lunch week to pick, on the child chosen last`<br>E2E `e2e/tests/meal-edit.spec.ts`: `[MEAL-15][US-701][NFR-14-f] done-when: Alex edits a planned dinner in place, and Edit again shows what was saved` |
 | NFR-14-g | WP-102 | The board's Meals screen shows a feed's school menu on any day of the week, a Saturday and a Sunday included | E2E | E2E `e2e/tests/board-meals.spec.ts`: `[MENU-06][US-804][NFR-14-g] done-when: a feed’s day shows its entree options at home and three sections on Meals` |
 | NFR-14-h | WP-102 | A spec expects what the app is meant to do: history at the rules engine's current version, a calendar's people in the family's order | E2E | E2E `e2e/tests/board-calendar.spec.ts`: `[CAL-09-f][US-508][NFR-14-h] a calendar given two people on Calendars shows both faces on the board`<br>E2E `e2e/tests/insights.spec.ts`: `[RWD-11][RWD-12][US-408][NFR-14-h] a child’s last week, as hand-computed` |
+| NFR-14-o | WP-108 | The perfect-weeks goal's Target is found by its role, so the icon picker's "target" icon, in the form while folded, never matches it | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` |
+| NFR-14-p | WP-108 | A DEV-05 miss is the test database slow only when the board's read of every late change took over 2 s, returned or still out; one read under 2 s keeps it an assertion; the budget stays p95 under 3 s | Unit | E2E `e2e/tests/devices.spec.ts`: `[DEV-05][NFR-14-p] a rename in the admin app reaches the board within 3 seconds (p95 of 20)`<br>Unit `scripts/e2e-infra.test.mjs`: `[NFR-14-p][D-129] a late change is the database slow only when every read of it took over 2 s` |
+| NFR-14-q | WP-108 | A missed wait for Meals in the admin app names each page load, the one still loading included, never blank; every load over 2 s is the database slow, one under keeps it an assertion | Unit | E2E `e2e/tests/lunches.spec.ts`: `[MEAL-09][MEAL-11][US-707][NFR-14-q] done-when: the item opens Maya’s week; she picks a buy day; Meals shows it within 3 s; a parent approves it; Done checks i…`<br>Unit `scripts/e2e-infra.test.mjs`: `[NFR-14-q][D-135] a missed page wait says each load, the one still loading included, and is evidence only if all were slow` |
+| NFR-14-r | WP-108 | The preview answering `/api/health` in over 2 s, or with a 5xx, is a bad probe reading, and a test that failed while it was read is infrastructure | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-14-r][D-135] the preview answering /api/health in over 2 s, or with a 5xx, is a bad reading` |
 | NFR-19-a | WP-85 | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-a][US-913] a test traces to the IDs in its name and its describe blocks, in every layer` |
 | NFR-19-b | WP-85 | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-b][US-913] a test naming an unknown requirement, story, item or test case fails the check` |
 | NFR-19-c | WP-85 | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-c][US-913] a new gap fails the check, and a known gap does not` |
@@ -2046,7 +2052,7 @@ E2E · 11 tests
 | `[CHR-04][CHR-09][PTS-01] the board checks off a shared chore; a replay records nothing new; undo reopens it` | CHR-04, CHR-09, PTS-01 |
 | `[CHR-04][CHR-06] the board cannot approve; a removed occurrence is gone; the rest of the batch is recorded` | CHR-04, CHR-06 |
 | `[DEV-05] a change in the household reaches the board live (Realtime under RLS)` | DEV-05 |
-| `[DEV-05] a rename in the admin app reaches the board within 3 seconds (p95 of 20)` | DEV-05 |
+| `[DEV-05][NFR-14-p] a rename in the admin app reaches the board within 3 seconds (p95 of 20)` | NFR-14-p, DEV-05 |
 | `[DEV-05] after the network drops and comes back, the board catches up on its own` | DEV-05 |
 | `[DEV-05] an admin holds the board on Evening or Day; it switches at once and stays legible` | DEV-05 |
 | `[DEV-02] a board whose session is lost signs itself in again` | DEV-02 |
@@ -2169,7 +2175,7 @@ E2E · 1 tests
 
 | Test | Names |
 |---|---|
-| `[MEAL-09][MEAL-11][US-707] done-when: the item opens Maya’s week; she picks a buy day; Meals shows it within 3 s; a parent approves it; Done checks it off; her…` | MEAL-09, MEAL-11, US-707 |
+| `[MEAL-09][MEAL-11][US-707][NFR-14-q] done-when: the item opens Maya’s week; she picks a buy day; Meals shows it within 3 s; a parent approves it; Done checks i…` | NFR-14-q, MEAL-09, MEAL-11, US-707 |
 
 #### `e2e/tests/meal-days.spec.ts`
 
@@ -2233,7 +2239,7 @@ E2E · 1 tests
 
 | Test | Names |
 |---|---|
-| `[RWD-20-k][RWD-19-j][NFR-14-e][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` | NFR-14-e, RWD-19-j, RWD-20-k, US-414, US-415 |
+| `[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row` | NFR-14-e, NFR-14-o, RWD-19-j, RWD-20-k, US-414, US-415 |
 
 #### `e2e/tests/points.spec.ts`
 
@@ -3163,7 +3169,7 @@ Unit · 3 tests
 
 #### `scripts/e2e-infra.test.mjs`
 
-Unit · 7 tests
+Unit · 10 tests
 
 | Test | Names |
 |---|---|
@@ -3174,6 +3180,9 @@ Unit · 7 tests
 | `[NFR-14][D-110] the code frame in an error never counts, only its own words` | NFR-14 |
 | `x` | — |
 | `[NFR-14-a][D-110] a failed psql call never puts the database URL or its password in the summary or an issue` | NFR-14-a |
+| `[NFR-14-p][D-129] a late change is the database slow only when every read of it took over 2 s` | NFR-14-p |
+| `[NFR-14-q][D-135] a missed page wait says each load, the one still loading included, and is evidence only if all were slow` | NFR-14-q |
+| `[NFR-14-r][D-135] the preview answering /api/health in over 2 s, or with a 5xx, is a bad reading` | NFR-14-r |
 
 #### `scripts/e2e-run-fixture/assertion.spec.ts`
 

@@ -1,7 +1,16 @@
 // [NFR-14][D-110] Telling an infrastructure failure from an assertion failure (scripts/e2e-infra.mjs).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { causeInText, classify, errorText, failureOf, redact } from './e2e-infra.mjs';
+import {
+  causeInText,
+  classify,
+  errorText,
+  failureOf,
+  healthReading,
+  loadWords,
+  redact,
+  slowReads,
+} from './e2e-infra.mjs';
 
 const failure = (over = {}) => ({
   errors: [],
@@ -114,4 +123,50 @@ test('[NFR-14-a][D-110] a failed psql call never puts the database URL or its pa
     'postgresql://*** and postgresql://***',
   );
   assert.equal(redact('no URL here'), 'no URL here');
+});
+
+test('[NFR-14-p][D-129] a late change is the database slow only when every read of it took over 2 s', () => {
+  // 10de2f5's DEV-05 window: each late change's read slow.
+  assert.equal(
+    slowReads([11_469, 4_388, 2_001], "board's reads of its late changes"),
+    "the board's reads of its late changes took 11,469, 4,388, 2,001 ms, over the probe's 2 s: the test database slow while the test ran",
+  );
+  // One read back in time that still didn't show the change is the app's own delay.
+  assert.equal(slowReads([11_469, 2_000]), null);
+  assert.equal(slowReads([11_469, 900]), null);
+  // A late change with no read of its own to time is no evidence.
+  assert.equal(slowReads([11_469, null]), null);
+  assert.equal(slowReads([]), null);
+  // Its verdict: infrastructure, with the evidence as its cause.
+  const evidence = slowReads([4_542, 4_961]);
+  assert.deepEqual(classify(failure({ annotations: [{ type: 'infra', description: evidence }] })), {
+    kind: 'infra',
+    cause: evidence,
+  });
+});
+
+test('[NFR-14-q][D-135] a missed page wait says each load, the one still loading included, and is evidence only if all were slow', () => {
+  // 8ed3d23's MEAL-09: the first reload still out at 3 s. The message was "took  ms".
+  assert.equal(loadWords([], 3_104), 'no reload finished, and one was still loading after 3104 ms');
+  assert.equal(loadWords([812, 950], null), 'its reloads took 812, 950 ms');
+  assert.equal(
+    loadWords([812], 2_190),
+    'its reloads took 812 ms, and one was still loading after 2190 ms',
+  );
+  assert.equal(
+    slowReads([3_104], 'loads of Meals in the admin app'),
+    "the loads of Meals in the admin app took 3,104 ms, over the probe's 2 s: the test database slow while the test ran",
+  );
+  // A load back within 2 s without the change: the app's delay, an assertion failure.
+  assert.equal(slowReads([812, 2_190], 'loads of Meals in the admin app'), null);
+});
+
+test('[NFR-14-r][D-135] the preview answering /api/health in over 2 s, or with a 5xx, is a bad reading', () => {
+  assert.equal(healthReading(200, 340), null);
+  assert.equal(healthReading(200, 2_000), null);
+  assert.equal(healthReading(200, 2_473), 'the preview took 2473 ms to answer /api/health');
+  assert.equal(healthReading(503, 120), 'the preview answered /api/health with 503');
+  // A bad reading while a test ran makes its failure infrastructure.
+  const at = failure().start + 5_000;
+  assert.equal(classify(failure(), [{ at, what: healthReading(200, 2_473) }]).kind, 'infra');
 });
