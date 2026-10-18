@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.57: the household's preferred store (WP-112, D-142): `grocery_list.preferred_store_id`, cleared with its store; `set_grocery_preferred_store()`; `grocery_list` audited (§3.8).
 > v0.8.56: Do again (WP-96, D-132, D-141): `do_chore_again()` adds a new one-time item from a done one, the original untouched (§3.2).
 > v0.8.55: the grocery list and meals → groceries (WP-104, WP-105, D-138, D-139): `grocery_list`, `grocery_category`, `grocery_store`, `grocery_item`, `grocery_item_reason`, `grocery_item_event`, `grocery_learned_word`; the one way in, `add_groceries()`; `board_groceries()`; `meal.ingredients` checked (§3.8).
 > v0.8.54: the goal form's live summaries (WP-101, D-128): `goal_preview_facts()` gains `closures`, the school calendar's closures on the weekdays around today for the goal's person or each child, from `private.goal_closures()` (§5).
@@ -651,7 +652,7 @@ FamilyWise's own grocery list (D-138 (1)): it works with no Mac and no Apple Rem
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `grocery_list` | `household_id` (unique) | The household's one list. Every household has one from the start. |
+| `grocery_list` | `household_id` (unique), `preferred_store_id` | The household's one list. Every household has one from the start. `preferred_store_id` (WP-112, D-142): New items go to, null for Any store; set only by `set_grocery_preferred_store()`, cleared when its store is removed (`on delete set null (preferred_store_id)`); audited. |
 | `grocery_category` | `name`, `icon`, `starter_key?`, `is_other`, `sort_order` | The household's own categories, in its order (MEAL-23). A made-up starter set and Other (one per household; never renamed or removed, always last). `starter_key` keeps a starter category findable by the starter word list through a rename. |
 | `grocery_store` | `name`, `sort_order` | The household's own stores, six to start. |
 | `grocery_item` | `list_id`, `name`, `name_key`, `amount?`, `category_id`, `store_id?`, `status` (`open`/`ticked`/`removed`), `ticked_at?`, `ticked_by?`, `removed_at?`, `created_by` | A thing to buy. `name_key` is the one merge's key (MEAL-20, set by the app); one open item of a key (`grocery_item_open_key`). A tick is a buy, a removal is not; never deleted. `amount` is the admin's own (Edit). |
@@ -665,6 +666,7 @@ FamilyWise's own grocery list (D-138 (1)): it works with no Mac and no Apple Rem
 - `private.grocery_starter(household)` makes the list, the starter categories (Produce, Dairy & Eggs, Bakery, Meat & Seafood, Pantry, Frozen, Snacks, Household, Other) and stores (Costco, Kroger, Aldi, Walmart, Meijer, Sam's Club); `trg_grocery_starter` runs it for each new household, and the migration ran it for every household then.
 - `add_groceries(household, items jsonb)`: **the one way in** every source uses. Each item `{name, key, amount, category_id, store_id, into_id, reason}` joins the open item with its key (or `into_id`, the open item an admin chose with Make it one), adding its reason and amount and a `merged` event; otherwise it is a new item in its category (Other when none is given) and store, with an `added` event. A ticked item is never merged into. Returns `[{id, merged}]`.
 - `set_groceries_ticked(ids, ticked)` (unticking folds an open twin added meanwhile into the item), `remove_groceries(ids)`, `update_grocery_item(id, name, key, amount)` (the amount typed replaces the reasons'; a name another open item has is refused, `already_on_list`), `move_groceries(ids, category)` (teaches the words), `set_groceries_store(ids, store?)`.
+- `set_grocery_preferred_store(household, store | null)` (WP-112): the household's preferred store, one of its own stores or none; a parent of the household only.
 - `add_grocery_place(household, 'category' | 'store', name)`, `rename_grocery_place()`, `move_grocery_place(kind, id, ±1)` and `remove_grocery_place(kind, id)`: a removed category's items go to Other; a removed store leaves its items with any store (`on delete set null (store_id)`). Categories and stores are audited.
 - `board_groceries()` (a board only; null for anyone else): the household's categories, stores and open items with their reasons, and `ever` (whether it has had an item). `grocery_item`, `grocery_item_reason`, `grocery_category` and `grocery_store` are in Realtime; the board reads `board_groceries()` with each snapshot read and keeps it with the snapshot.
 

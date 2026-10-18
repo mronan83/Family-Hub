@@ -558,8 +558,29 @@ const SHOTS = [
   {
     name: 'admin-groceries-places-laptop',
     device: 'laptop',
-    url: '/dev/groceries?open=places',
-    maxHeight: 1900,
+    // [MEAL-28] With Costco under New items go to (WP-112).
+    url: '/dev/groceries?open=places&preferred=Costco',
+    element: '#places',
+  },
+  // [MEAL-27][MEAL-28] Groceries on Home (WP-112): typing something new, and after Add; the add
+  // field with the preferred store picked.
+  {
+    name: 'admin-home-groceries-phone',
+    device: 'phone',
+    url: '/dev/home?typed=olive%20oil',
+    element: 'li[aria-labelledby="groceries-quick-heading"]',
+  },
+  {
+    name: 'admin-home-groceries-added-phone',
+    device: 'phone',
+    url: '/dev/home?groceries=added',
+    element: 'li[aria-labelledby="groceries-quick-heading"]',
+  },
+  {
+    name: 'admin-groceries-preferred-phone',
+    device: 'phone',
+    url: '/dev/groceries?preferred=Costco&typed=olive%20oil',
+    maxHeight: 1000,
   },
   { name: 'admin-calendars-phone', device: 'phone', url: '/dev/calendars', maxHeight: 1330 },
   // [CAL-09] Who a calendar is for (WP-50): The whole family, or a tick a person.

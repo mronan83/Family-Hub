@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.43: Groceries on Home and a preferred store (WP-112, D-142): Home's Groceries card (add without leaving Home, where it goes, Added with Change), **New items go to** in Categories and stores, and the store suggested as last time's, then the preferred one.
 > v0.42: Chores in four sections (WP-96, D-132, D-141): Scheduled, Recurring, Completed and Archived; the person chips and More filters; each item's ⋯ (Edit, Duplicate, Archive or Restore), or hold the row; Duplicate and Do again; an item's page folded; the meal library and Tags take the same ⋯ (A4, A15, B1.5, B1.15).
 > v0.41: the grocery list and meals → groceries (WP-104, WP-105, D-138): A17 The grocery list (adding with the category and store suggested, the list, Select, Got recently, your own categories and stores, Groceries on the board); in A15, a meal's recipe and ingredients and this week's meals onto the grocery list, and a recipe at the board; B1.17 Groceries and B2.11 Groceries; B1.15 and B2.9 updated.
 > v0.40: the set-up pages folded (WP-94, D-120, D-133): Family options, School and a school year's page, Tags, Reminders and Health fold each section set once to what it is set to; a failing weather read, the invites waiting, a device removed, a failing job and a limit near show on the folded header; the section saved in comes back open; Home's **Add a day off** a fold too (A1, A2, A3, A10, A13, B1.1, B1.4, B1.5, B1.10, B1.13, B1.16).
@@ -198,7 +199,7 @@ The board shows the family's day at once. From then on it keeps itself signed in
 
 **Home** is the first page you see. It shows what needs you, then the things you do most, a tap away.
 
-![Home on a laptop: Needs you lists 2 check-offs wait for you (Review), 1 reward request waits for you (Decide), and School can't sync (Calendars); Heads-up says Den hasn't been seen for 3 days (Boards) and No school menu for next week yet (School menus). Below, Quick actions: Add a chore, Add a task, Add a reward and Add a goal, then Add a meal (Plan a meal, New in the library), School lunches (This week: Maya has 1 day to pick; Leo is all set. Pick lunches), School today (No school today, Add a day off) and School menu (Refresh school menu).](guide/img/admin-home-laptop.jpg "Home, on a laptop")
+![Home on a laptop: Needs you lists 2 check-offs wait for you (Review), 1 reward request waits for you (Decide), and School can't sync (Calendars); Heads-up says Den hasn't been seen for 3 days (Boards) and No school menu for next week yet (School menus). Below, Quick actions: Add a chore, Add a task, Add a reward and Add a goal, then Groceries two columns wide (8 on the list, the add field, Open the list, This week's meals), Add a meal (Plan a meal, New in the library), School lunches (This week: Maya has 1 day to pick; Leo is all set. Pick lunches), School today (No school today, Add a day off) and School menu (Refresh school menu).](guide/img/admin-home-laptop.jpg "Home, on a laptop")
 
 - **Needs you** lists what needs you now, each with a button to where you deal with it: check-offs and reward requests waiting for you, a calendar that can't sync, a school menu that can't be read, and a background job that needs a look.
 - **Heads-up** lists what to know soon: no school menu for next week yet, no school year set up (or this one ending within two weeks), weather that hasn't updated, an invite about to run out, and a board that hasn't been seen for a day (switched off, or off the Wi-Fi; a board asleep overnight doesn't count).
@@ -207,12 +208,13 @@ The board shows the family's day at once. From then on it keeps itself signed in
 **Quick actions:**
 
 - **Add a chore**, **Add a task**, **Add a reward** and **Add a goal** open the page that adds one.
+- **Groceries** says how many things are on the list, and adds one without leaving Home: see [Add from Home](#add-from-home).
 - **Add a meal**: **Plan a meal** puts a meal on a day of the week; **New in the library** adds a meal you make again.
 - **School lunches** says whose days still need a lunch choice ("This week: Maya has 1 day to pick; Leo is all set."). **Pick lunches** opens **School lunch** on **Meals** in one tap: this week from Monday to Friday, next week on Saturday and Sunday, on the child you chose last on this phone or computer. Tap another child's face there to switch. It shows when a child has school lunch.
 - **School today**: **No school today** makes today a snow day in one tap. Today's school-day items (like homework) go at once; anything already checked off stays; the board shows a day off school. **Undo** makes it a school day again. **Add a day off** (a fold) adds a day off or a break on another date, without leaving Home.
 - **Refresh school menu** reads your school menu feeds now, rather than waiting for the morning.
 
-![Home on a phone in Evening, on a quiet day: Nothing needs you right now; the four add tiles two by two; Add a meal; School lunches with Pick lunches; School today says No school today: Snow day with Undo.](guide/img/admin-home-phone.jpg "Home on a phone, on a snow day")
+![Home on a phone in Evening, on a quiet day: Nothing needs you right now; the four add tiles two by two; Groceries with 8 on the list; Add a meal; School lunches with Pick lunches; School today says No school today: Snow day with Undo.](guide/img/admin-home-phone.jpg "Home on a phone, on a snow day")
 
 #### Check the day on Today
 
@@ -1129,12 +1131,33 @@ The family can pick the coming week's school lunches at the board, on a Sunday s
 #### Add something
 
 1. At the top of **Groceries**, type what to get, with its amount if you like: "2 lb ground beef", "Onions ×3", "milk".
-2. As you type, FamilyWise suggests where it **Goes in** and its **Store**: where it went and where it was bought last time, else what your own moves have taught it, else **Other**. One tap on another chip changes it; **Other…** and **More…** show the rest.
+2. As you type, FamilyWise suggests where it **Goes in** and its **Store**: where it went and where it was bought last time, else what your own moves have taught it, else **Other**; a store from last time, else your [preferred store](#your-preferred-store), else **Any store**. One tap on another chip changes it; **Other…** and **More…** show the rest.
 3. Choose **Add**. Something already on the list isn't added twice: "onion" joins "Onions", its amount added. If what you type might be something already on the list ("milk 2%" while "Milk" is on), it says **Also on the list** and offers **Make it one**.
 
 The **+** on a category's heading adds straight into it.
 
 ![Groceries on a phone, adding "greek yog": Goes in Dairy & Eggs, from your own moves, the Store chips with Any store chosen, and Also on the list: Greek yogurt, Maya asked, with Make it one.](guide/img/admin-groceries-adding-phone.jpg "Adding, with the category and store suggested")
+
+#### Add from Home
+<!-- covers: US-721 -->
+
+The **Groceries** card, first among Home's quick actions, says how many things are on the list ("8 on the list", or "Nothing on the list") and has the same field as **Groceries**.
+
+1. Type what to get: "2 lb ground beef".
+2. One line under the field says where it goes: its category, then its store and why ("Meat & Seafood · Kroger, where it went last time", "Pantry · Costco, your preferred store"). Something already on the list says so and what adding makes: "Onions ×3 are on the list already. Adding makes ×4."
+3. Choose **Add**, or press Enter. It says what was added and where ("Added Ground beef 2 lb to Meat & Seafood."), the count goes up, and the field is ready for the next thing. **Change** opens it on **Groceries**, with **Move to…** and **Store…**.
+
+**Open the list** opens **Groceries**; **This week's meals** opens the week's **Add to groceries** on **Meals**.
+
+![Home's Groceries card on a phone, with "olive oil" typed: 8 on the list, the field and Add, then "Pantry · Costco, your preferred store", Open the list and This week's meals.](guide/img/admin-home-groceries-phone.jpg "Adding from Home")
+
+![Home's Groceries card on a phone after Add: 9 on the list, the field empty, and "Added Ground beef 2 lb to Meat & Seafood. Change".](guide/img/admin-home-groceries-added-phone.jpg "After Add, on Home")
+
+#### Your preferred store
+
+In **Categories and stores**, **New items go to** sets the store something new goes to, or **Any store** (how you start). Something you've had before keeps the store it had last time. Either way, one tap on another store chip changes it before **Add**. The store chosen shows **Preferred** in your list of stores; removing that store sets **New items go to** back to **Any store**. It applies wherever something is added: on Home, on **Groceries**, and from the week's meals.
+
+![Groceries on a phone with "olive oil" typed and Costco preferred: Goes in Pantry, from the starter list; the Store chips Any store, Costco (chosen), Kroger, Aldi and More…, and "Costco is your preferred store."](guide/img/admin-groceries-preferred-phone.jpg "The preferred store, picked for something new")
 
 #### The list
 
@@ -1152,9 +1175,9 @@ Each move teaches FamilyWise your words, so the next time it suggests the right 
 
 #### Your categories and stores
 
-Open **Categories and stores** at the foot of **Groceries**. Categories show in the order the list and the board use; the arrows move one up or down, and its **⋯** holds **Rename** and **Remove**. Removing a category with things in it asks first, then moves them to **Other**, which always stays, last. Stores have **Rename**, **Move up**, **Move down** and **Remove** (their things can then be got anywhere). Type a name and **Add** for a new one. You start with a made-up set of categories and six stores.
+Open **Categories and stores** at the foot of **Groceries**. Categories show in the order the list and the board use; the arrows move one up or down, and its **⋯** holds **Rename** and **Remove**. Removing a category with things in it asks first, then moves them to **Other**, which always stays, last. Stores have **Rename**, **Move up**, **Move down** and **Remove** (their things can then be got anywhere). Type a name and **Add** for a new one. **New items go to** is above the stores. You start with a made-up set of categories and six stores.
 
-![Categories and stores open on a laptop: Produce, Dairy & Eggs, Bakery, Meat & Seafood, Pantry, Frozen, Snacks, Household and Other, each with how many are on the list, then the stores.](guide/img/admin-groceries-places-laptop.jpg "Your own categories and stores")
+![Categories and stores open on a laptop: Produce, Dairy & Eggs, Bakery, Meat & Seafood, Pantry, Frozen, Snacks, Household and Other, each with how many are on the list; then Stores with New items go to set to Costco and its help line, Costco marked Preferred, Kroger, Aldi, Walmart, Meijer and Sam's Club, and a new store's field.](guide/img/admin-groceries-places-laptop.jpg "Your own categories and stores")
 
 #### Groceries on the board
 
@@ -1200,16 +1223,16 @@ The admin app is for parents, on a phone or a laptop. On a laptop its menu is do
 ![The menu open on a phone: Your day, The family two to a row, Set-up with Settings, then Help and Sign out.](guide/img/admin-menu-phone.jpg "The menu, on a phone")
 
 #### B1.1 Home
-<!-- covers: US-109 US-709 -->
+<!-- covers: US-109 US-709 US-721 -->
 
 | Part | What it shows or does |
 |---|---|
 | The household | Its name and today's date. |
 | **Needs you** | Check-offs and reward requests waiting for you, calendars that can't sync, school menus that can't be read and background jobs that need a look, each with a button to where you deal with it (**Review**, **Decide**, **Calendars**, **School menus**, **Health**). "Nothing needs you right now." when there's none. |
 | **Heads-up** | No school menu for next week, no school year (or one ending within two weeks), weather that hasn't updated, an invite about to run out. Shown only when there is one. |
-| **Quick actions** | **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**. **Add a meal**: **Plan a meal**, **New in the library**. **School lunches**: whose days still need a choice this week (next week at the weekend), and **Pick lunches**, which opens the lunch week on the child chosen last. **School today**: **No school today** (then "No school today: Snow day" and **Undo**), or "No school today: the weekend" or the day off's name; **Add a day off**, a fold, opens **Name**, **Kind**, **From**, **To (optional)** and **Add day off**. **School menu**: **Refresh school menu**, or **Set up school menus** when there's no feed. |
+| **Quick actions** | **Add a chore**, **Add a task**, **Add a reward**, **Add a goal**. **Groceries**, first among the cards (two columns wide on a laptop): "8 on the list" or "Nothing on the list"; the add field and **Add**; one line saying where it goes, or that it is on the list already and what adding makes; after **Add**, "Added … to …" with **Change**; **Open the list**, **This week's meals**. **Add a meal**: **Plan a meal**, **New in the library**. **School lunches**: whose days still need a choice this week (next week at the weekend), and **Pick lunches**, which opens the lunch week on the child chosen last. **School today**: **No school today** (then "No school today: Snow day" and **Undo**), or "No school today: the weekend" or the day off's name; **Add a day off**, a fold, opens **Name**, **Kind**, **From**, **To (optional)** and **Add day off**. **School menu**: **Refresh school menu**, or **Set up school menus** when there's no feed. |
 
-Messages: "No school today. Today's chores follow a day off school.", "Today is a school day again.", "Day off saved.", "School menus fetched.", "A school menu couldn't be fetched. School menus says why."
+Messages: "Added Ground beef 2 lb to Meat & Seafood.", "No school today. Today's chores follow a day off school.", "Today is a school day again.", "Day off saved.", "School menus fetched.", "A school menu couldn't be fetched. School menus says why."
 
 #### B1.2 Today
 <!-- covers: US-306 US-307 US-309 -->
@@ -1442,15 +1465,15 @@ In **Settings**, the first tile. It says the day the week starts on and how chec
 | **Invite an admin** | Folded to its **Invite** button, with how many invites wait and when the first runs out. **Their email**, **Create invite link**, then **Copy link** or **Share**. **Waiting to join** lists open invites with when they expire, and **Cancel invite**. |
 
 #### B1.17 Groceries
-<!-- covers: US-714 US-718 US-719 -->
+<!-- covers: US-714 US-718 US-719 US-721 -->
 
 | Part | What it shows or does |
 |---|---|
-| **Groceries** | How many to get; "FamilyWise's own list. Apple Reminders sync is off."; the add field and **Add**, open at the top. Typing shows **Goes in** and **Store** chips (**Other…**, **More…**) and, for something that may be on the list already, **Also on the list** with **Make it one**. |
+| **Groceries** | How many to get; "FamilyWise's own list. Apple Reminders sync is off."; the add field and **Add**, open at the top. Typing shows **Goes in** and **Store** chips (**Other…**, **More…**; the preferred store picked for something new, "Costco is your preferred store.") and, for something that may be on the list already, **Also on the list** with **Make it one**. |
 | **On the list** | Its count; **Select** (or **Done**); the store chips (**All**, each store with things, **Any store**); then each category with its count and **+**, its things A to Z: the box (**Got** it), the name and amount, the store and why; **⋯** (**Why it's on the list**, **Edit**, **Move to…**, **Store…**, **Select several**, **Remove**). **Nothing on the list right now.** when empty. |
 | Select | **N selected**; **Move to…** (each category and **New category…**), **Store…** (**Any store** and each store), **Remove** (asks first: **Remove** N **items** or **Keep them**). |
 | **Got recently** | Folded to the last thing got and how many more this week; opened, each with when and by whom, and **Untick**. |
-| **Categories and stores** | Folded to how many; opened, **Categories** in order with how many on the list, the arrows and **⋯** (**Rename**, **Remove**; with things in it, it asks first), **Other** always last; a new one's name and **Add**; **Stores** with how many on the list and **⋯** (**Rename**, **Move up**, **Move down**, **Remove**); a new one's name and **Add**. |
+| **Categories and stores** | Folded to how many; opened, **Categories** in order with how many on the list, the arrows and **⋯** (**Rename**, **Remove**; with things in it, it asks first), **Other** always last; a new one's name and **Add**; **New items go to** (**Any store** or a store) with "A new item gets this store. One you've had before keeps the store it had last time."; **Stores** with how many on the list, **Preferred** on the chosen one, and **⋯** (**Rename**, **Move up**, **Move down**, **Remove**); a new one's name and **Add**. |
 
 ### B2 The board, screen by screen
 
