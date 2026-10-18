@@ -1,4 +1,4 @@
-// Types for e2e/support/household.ts, which imports scripts/e2e-household.mjs (WP-110, D-136).
+// Types for e2e/support/household.ts, which imports scripts/e2e-household.mjs (WP-111, D-137).
 export declare const DEMO_PREFIX: string;
 export declare const PERSONAS: string[];
 export declare function checkKey(key: string): string;

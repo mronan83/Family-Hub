@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// [NFR-14][D-136] Each e2e spec's own made-up household (WP-110), on the test database only.
+// [NFR-14][D-137] Each e2e spec's own made-up household (WP-111), on the test database only.
 //
 // A spec file gets a copy of the demo family (supabase/seed.sql: the same made-up members, items,
 // rewards, goals, meals and menus, the same dates from today), under ids and sign-ins of its own:

@@ -12,7 +12,7 @@ import {
   removeSql,
 } from '../../scripts/e2e-household.mjs';
 
-// [NFR-14][D-110][D-136] Each spec's own made-up household (WP-110, scripts/e2e-household.mjs): a
+// [NFR-14][D-110][D-137] Each spec's own made-up household (WP-111, scripts/e2e-household.mjs): a
 // copy of the demo family under ids and sign-ins of its own, made afresh when the spec file starts.
 // No spec sees another's rows, and none depends on run order or on the demo family being freshly
 // loaded. The demo family itself is left to previews and auth.spec.ts.
@@ -63,7 +63,7 @@ function run(db: string, script: string): void {
 }
 
 /**
- * [NFR-14][D-136] Gives the calling spec file its own household, called once at its top:
+ * [NFR-14][D-137] Gives the calling spec file its own household, called once at its top:
  * `const family = ownHousehold('chores')` in chores.spec.ts. Its ids are known at once
  * (`family.id`, `family.own(seedId)`); the household is made afresh, with its sign-ins' passwords,
  * in a beforeAll that runs before the spec's own. signIn() and the other helpers in e2e/support use it.

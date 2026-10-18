@@ -612,7 +612,7 @@ test('[CHR-07][CHR-18] an item’s page shows its last seven days: each child’
   // The demo family's seeded week (supabase/seed.sql): each makes their own bed (D-47); Leo missed
   // yesterday and Maya three days ago.
   await signIn(page, 'Alex');
-  await page.goto('/admin/chores/0de00000-0000-4000-8000-0000000c0001');
+  await page.goto(`/admin/chores/${family.own('0de00000-0000-4000-8000-0000000c0001')}`);
   const week = page.getByRole('list', { name: 'Last 7 days', exact: true });
   await expect(week.getByRole('listitem')).toHaveCount(7);
   const yesterday = week.getByRole('listitem').first();

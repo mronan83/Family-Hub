@@ -151,7 +151,7 @@ export function failureOf(result, test) {
 export const AUTH_SIGN_INS = 30;
 
 /**
- * [NFR-14-z][D-136] The run's sign-ins to Supabase Auth, from the "sign-in" annotations e2e/support
+ * [NFR-14-z][D-137] The run's sign-ins to Supabase Auth, from the "sign-in" annotations e2e/support
  * makes (signIn(), pairBoard(): "<ISO time> <whose>"), each counted once however many tests carry
  * it: how many, and the most in any 5 minutes, against Auth's limit. Null when there were none.
  */

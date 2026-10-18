@@ -60,7 +60,7 @@ export async function pairingCode(admin: Page): Promise<string> {
 }
 
 /**
- * [DEV-01][D-110] A board of the spec's own household (D-136), as the board specs pair it: any board of
+ * [DEV-01][D-110] A board of the spec's own household (D-137), as the board specs pair it: any board of
  * this name left by an earlier run removed, Alex signed in on Boards, a pairing code asked for and read
  * once all eight digits are there, and a board in a context of its own paired with it and streaming
  * changes ("Live"). Returns the admin page, still on Boards (close it when it is not needed), and the

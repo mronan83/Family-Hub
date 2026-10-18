@@ -95,7 +95,7 @@ function watch(context: BrowserContext): void {
 
 /**
  * The household's day as the database has it, and the day its data was loaded: the spec's own
- * household (D-136), or the demo family for a spec without one (auth.spec.ts).
+ * household (D-137), or the demo family for a spec without one (auth.spec.ts).
  */
 function householdDays(): { today: string; loaded: string } | null {
   const db = process.env.SUPABASE_DB_URL;
@@ -126,7 +126,7 @@ function householdDays(): { today: string; loaded: string } | null {
   }
 }
 
-// [NFR-14][D-85][D-136] Every spec imports `test` from here, not from @playwright/test. Playwright
+// [NFR-14][D-85][D-137] Every spec imports `test` from here, not from @playwright/test. Playwright
 // runs the files in one worker and starts a new worker only after a failure, to carry on with the
 // next file. Nothing is loaded again then: each spec makes its own household afresh when it starts
 // (ownHousehold(), e2e/support/household.ts), so no file starts from what another left behind.

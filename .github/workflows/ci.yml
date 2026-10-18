@@ -71,7 +71,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-      - name: Each e2e spec's own household (D-136)
+      - name: Each e2e spec's own household (D-137)
         run: node --test scripts/db-tests/*.test.mjs
       - name: Setup codes
         run: bash scripts/setup-code.test.sh

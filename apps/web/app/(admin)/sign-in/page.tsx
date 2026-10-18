@@ -25,7 +25,7 @@ export default async function SignInPage({
   searchParams: Promise<{ next?: string; error?: string; household?: string }>;
 }) {
   const params = await searchParams;
-  // [D-136] e2e signs in to its spec's own household (e2e/support/session.ts); nothing on the page changes.
+  // [D-137] e2e signs in to its spec's own household (e2e/support/session.ts); nothing on the page changes.
   const household = isE2eHousehold(params.household) ? params.household : null;
   const next = safeNext(params.next);
   const db = await serverClient();

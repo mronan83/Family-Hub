@@ -8,7 +8,7 @@
 // 3. Classifies each failed test (scripts/e2e-infra.mjs). An infrastructure failure (a statement
 //    timeout, a refused or reset connection, a 5xx from Supabase or the preview's gateway, or the
 //    database or preview slow or down while it ran) re-runs once, that test only (its whole file when
-//    the file is serial); its spec makes its own household afresh as it starts (D-136), so nothing is
+//    the file is serial); its spec makes its own household afresh as it starts (D-137), so nothing is
 //    loaded again first. An assertion failure never re-runs.
 // 4. Writes what ran, each failure with its cause, re-runs, timings and any test with less than 3×
 //    headroom under its time limit to the run summary. Exits 1 unless every test passed, first time
@@ -317,7 +317,7 @@ async function main() {
   );
   say(`| Re-runs | ${infra.length ? `${rerun.size} test(s), once each` : 'none'} |`);
   say(`| Time | ${mins(Date.now() - started)} |`);
-  // [NFR-14-z][D-136] Each spec signs in to its own household, so the run's sign-ins are counted.
+  // [NFR-14-z][D-137] Each spec signs in to its own household, so the run's sign-ins are counted.
   const signIns = signInWords(
     [...results, ...rerun.values()].flatMap((r) => [
       ...(r.result?.annotations ?? []),

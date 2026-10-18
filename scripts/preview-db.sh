@@ -15,8 +15,8 @@
 #    The secret stays on this runner (never on a command line or in a query); the database gets
 #    only the derived passwords and stores their bcrypt hashes.
 #
-# --demo-family-only skips 2, to load the demo family again by hand. e2e no longer uses it (WP-110):
-# each spec makes its own household afresh as it starts (scripts/e2e-household.mjs, D-136), so a
+# --demo-family-only skips 2, to load the demo family again by hand. e2e no longer uses it (WP-111):
+# each spec makes its own household afresh as it starts (scripts/e2e-household.mjs, D-137), so a
 # re-run or a new worker after a failure starts from a fresh household without a reload.
 #
 # Requires SUPABASE_DB_URL (the test project's session pooler URI), TEST_PROJECT_REF,

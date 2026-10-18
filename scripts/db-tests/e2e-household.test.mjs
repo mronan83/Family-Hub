@@ -1,4 +1,4 @@
-// [NFR-14][D-136] Each e2e spec's own household on native Postgres (CI database job; no Docker),
+// [NFR-14][D-137] Each e2e spec's own household on native Postgres (CI database job; no Docker),
 // as e2e/support/household.ts makes it: on a throwaway database with the Supabase compatibility
 // bootstrap, the migrations and the demo family (scripts/preview-db.sh), two spec households are
 // made, made again and taken away. Uses the libpq variables like scripts/db-test.sh.

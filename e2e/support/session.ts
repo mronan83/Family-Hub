@@ -1,7 +1,7 @@
 import { test, type Cookie, type Page } from '@playwright/test';
 import { currentHousehold } from './household';
 
-/** The demo sign-ins a spec works as, in its own household (supabase/seed.sql, D-136). */
+/** The demo sign-ins a spec works as, in its own household (supabase/seed.sql, D-137). */
 export type Persona = 'Alex' | 'Sam';
 
 /**
@@ -19,7 +19,7 @@ const sessions = new Map<string, { cookies: Cookie[]; at: number }>();
 const REUSE_MS = 30 * 60_000;
 
 /**
- * [NFR-14-z][D-136] Notes a sign-in to Supabase Auth in the test's annotations ("sign-in": when, and
+ * [NFR-14-z][D-137] Notes a sign-in to Supabase Auth in the test's annotations ("sign-in": when, and
  * whose), so the run counts them against Auth's limit (scripts/e2e-run.mjs, signInWords).
  */
 export function noteSignIn(whose: string): void {
@@ -29,7 +29,7 @@ export function noteSignIn(whose: string): void {
 }
 
 /**
- * [ACC-02][NFR-14][D-110][D-136] Signs the page's browser context in as a demo persona of the
+ * [ACC-02][NFR-14][D-110][D-137] Signs the page's browser context in as a demo persona of the
  * spec's own household (ownHousehold(), e2e/support/household.ts) and opens /admin. Each worker
  * signs in once per persona and household, by the preview's one-tap sign-in with the household's
  * key, and every later call reuses that session's cookies: no test pays for a sign-in, and a run asks

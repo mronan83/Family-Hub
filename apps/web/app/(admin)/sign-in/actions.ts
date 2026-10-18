@@ -66,7 +66,7 @@ export async function sendMagicLink(_prev: FormState, form: FormData): Promise<F
 
 /**
  * [ACC-02] One tap into a demo sign-in, on previews only (lib/auth/demo.ts): the demo family's, or
- * an e2e household's copy when the form names one (D-136).
+ * an e2e household's copy when the form names one (D-137).
  */
 export async function demoSignIn(form: FormData): Promise<void> {
   const secret = demoSecret();
