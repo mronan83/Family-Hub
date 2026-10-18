@@ -64,7 +64,14 @@ test('[MEAL-19-f][MEAL-20] done-when: a week’s ingredients added once each, tw
     await admin.getByRole('link', { name: 'Add to groceries' }).click();
     const sheet = admin.getByRole('dialog', { name: 'Add this week to groceries' });
     await expect(sheet.locator('legend b')).toHaveText(['Tacos', 'Spaghetti']);
-    await expect(sheet.locator('label').filter({ hasText: 'Onions' })).toContainText('With Tacos');
+    // Spaghetti's onions merge with Tacos' (the household's list has Onions already, so Tacos' own
+    // row says so too).
+    const spaghetti = sheet.locator('fieldset', {
+      has: admin.locator('legend', { hasText: 'Spaghetti' }),
+    });
+    await expect(spaghetti.locator('label').filter({ hasText: 'Onions' })).toContainText(
+      'With Tacos',
+    );
     expect(onList('onion')).toMatch(/^1 $/);
   });
   await test.step('Add: each thing once on the list, both meals its reasons', async () => {
