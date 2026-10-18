@@ -186,9 +186,9 @@ test.beforeAll(() => {
         where household_id = '${HOUSEHOLD}' and id::text not like '${SEEDED_CHORES}' and archived_at is null;
        delete from public.tag where household_id = '${HOUSEHOLD}' and id::text not like '${SEEDED_TAGS}';
        update public.tag set archived_at = null, name = case id::text
-           when family.own('0de00000-0000-4000-8000-0000000a0001') then 'Morning'
-           when family.own('0de00000-0000-4000-8000-0000000a0002') then 'Kitchen'
-           when family.own('0de00000-0000-4000-8000-0000000a0003') then 'Bedroom'
+           when '${family.own('0de00000-0000-4000-8000-0000000a0001')}' then 'Morning'
+           when '${family.own('0de00000-0000-4000-8000-0000000a0002')}' then 'Kitchen'
+           when '${family.own('0de00000-0000-4000-8000-0000000a0003')}' then 'Bedroom'
            else 'School' end
         where household_id = '${HOUSEHOLD}';
        update public.chore set archived_at = null
@@ -624,7 +624,7 @@ test('[CHR-07][CHR-18] an item’s page shows its last seven days: each child’
   expect(
     sql(`select string_agg(m.display_name || '=' || o.status, ',' order by o.due_date desc, m.display_name)
            from public.chore_occurrence o join public.member m on m.id = o.member_id
-          where o.chore_id = family.own('0de00000-0000-4000-8000-0000000c0001') and o.due_date in (${TODAY} - 1, ${TODAY} - 3)`),
+          where o.chore_id = '${family.own('0de00000-0000-4000-8000-0000000c0001')}' and o.due_date in (${TODAY} - 1, ${TODAY} - 3)`),
   ).toBe('Leo=missed,Maya=completed,Leo=completed,Maya=missed');
   await expectContrastOk(page);
 });
