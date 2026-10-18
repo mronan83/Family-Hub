@@ -2,7 +2,13 @@
 
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { demoEmail, demoPassword, demoSecret, isDemoPersona } from '@/lib/auth/demo';
+import {
+  demoEmail,
+  demoPassword,
+  demoSecret,
+  isDemoPersona,
+  isE2eHousehold,
+} from '@/lib/auth/demo';
 import {
   type FormState,
   hintMessage,
@@ -58,13 +64,18 @@ export async function sendMagicLink(_prev: FormState, form: FormData): Promise<F
   return { sent: true, message: LINK_SENT };
 }
 
-/** [ACC-02] One tap into a demo sign-in, on previews only (lib/auth/demo.ts). */
+/**
+ * [ACC-02] One tap into a demo sign-in, on previews only (lib/auth/demo.ts): the demo family's, or
+ * an e2e household's copy when the form names one (D-136).
+ */
 export async function demoSignIn(form: FormData): Promise<void> {
   const secret = demoSecret();
   const persona = form.get('persona');
+  const household = form.get('household');
   const db = await serverClient();
   if (!secret || !db || !isDemoPersona(persona)) redirect('/sign-in');
-  const email = demoEmail(persona);
+  if (household !== null && !isE2eHousehold(household)) redirect('/sign-in');
+  const email = demoEmail(persona, household);
   const credentials = { email, password: demoPassword(secret, email) };
   let { error } = await db.auth.signInWithPassword(credentials);
   // Supabase Auth answering 5xx, or not answering (status 0), is its own failure, not a refusal:

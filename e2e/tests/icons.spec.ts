@@ -4,14 +4,16 @@ import { foldOf, unfold } from '../support/fold';
 import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [CHR-01][CHR-10][ACC-04] The larger icon set and the sixteen colors on the preview (WP-46, D-70).
 // The done-when: on a phone, Alex finds the fish icon by searching, saves a chore for Leo with it, and
 // the paired board shows the chore with that icon. Alex adds a tag in Navy with a Lucide icon, and
 // gives Leo initials in the new Magenta, which the board's avatar takes. Everything is put back at
 // the end.
+const family = ownHousehold('icons');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Icons e2e';
 const RUN = Math.random().toString(36).slice(2, 6);
 const CHORE = `Feed the fish ${RUN}`;
@@ -31,25 +33,25 @@ function report(line: string) {
 
 /** Takes away what a run of this spec made; history it gathered stays, archived (D-46). */
 function tidy() {
-  sql(`delete from public.chore c where c.household_id = '${DEMO}' and c.title = '${CHORE}'
+  sql(`delete from public.chore c where c.household_id = '${HOUSEHOLD}' and c.title = '${CHORE}'
           and not exists (select from public.chore_occurrence o
                             join public.chore_completion_event e on e.occurrence_id = o.id
                            where o.chore_id = c.id);
        update public.chore set archived_at = now(), title = title || ' (old)'
-        where household_id = '${DEMO}' and title = '${CHORE}';
+        where household_id = '${HOUSEHOLD}' and title = '${CHORE}';
        delete from public.chore_tag ct using public.tag t
-        where ct.tag_id = t.id and t.household_id = '${DEMO}' and t.name = '${TAG}';
-       delete from public.tag where household_id = '${DEMO}' and name = '${TAG}';`);
+        where ct.tag_id = t.id and t.household_id = '${HOUSEHOLD}' and t.name = '${TAG}';
+       delete from public.tag where household_id = '${HOUSEHOLD}' and name = '${TAG}';`);
 }
 
 test.beforeAll(async ({ browser }) => {
   const [color, avatar] = sql(
     `select color || '|' || coalesce(avatar_key, '') from public.member
-      where household_id = '${DEMO}' and display_name = 'Leo'`,
+      where household_id = '${HOUSEHOLD}' and display_name = 'Leo'`,
   ).split('|');
   leo = { color: color!, avatar: avatar! };
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
+  sql(`delete from public.device_pairing where household_id = '${HOUSEHOLD}' and device_name = '${BOARD}';
+       delete from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}';`);
   admin = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await signIn(admin);
   await admin.goto('/admin/devices');
@@ -69,7 +71,7 @@ test.afterAll(async () => {
   tidy();
   sql(
     `update public.member set color = '${leo.color}', avatar_key = nullif('${leo.avatar}', '')
-      where household_id = '${DEMO}' and display_name = 'Leo'`,
+      where household_id = '${HOUSEHOLD}' and display_name = 'Leo'`,
   );
   await retireBoard(board, BOARD);
   await admin?.context().close();
@@ -100,7 +102,7 @@ test('[CHR-01][D-70] done-when: a chore saved with an icon found by search shows
   const saved = Date.now();
   report(`WP-46: the chore's save took ${saved - clicked} ms`);
   expect(
-    sql(`select icon from public.chore where household_id = '${DEMO}' and title = '${CHORE}'`),
+    sql(`select icon from public.chore where household_id = '${HOUSEHOLD}' and title = '${CHORE}'`),
   ).toBe('fish');
 
   const row = board.locator('.fw-dash__row').filter({ hasText: CHORE });
@@ -134,7 +136,7 @@ test('[CHR-10][D-70] a tag takes a new color and a Lucide icon', async () => {
   await expect(admin.getByRole('status').filter({ hasText: `Saved ${TAG}.` })).toBeVisible();
   expect(
     sql(
-      `select color || ':' || icon from public.tag where household_id = '${DEMO}' and name = '${TAG}'`,
+      `select color || ':' || icon from public.tag where household_id = '${HOUSEHOLD}' and name = '${TAG}'`,
     ),
   ).toBe('member-11:turtle');
 });
@@ -152,7 +154,7 @@ test('[ACC-04][D-70] a member takes one of the new colors, and the board shows i
   await expect
     .poll(() =>
       sql(`select color || ':' || coalesce(avatar_key, 'initials') from public.member
-            where household_id = '${DEMO}' and display_name = 'Leo'`),
+            where household_id = '${HOUSEHOLD}' and display_name = 'Leo'`),
     )
     .toBe('member-14:initials');
   // Leo's button in the board's people bar now carries "L" on Magenta.

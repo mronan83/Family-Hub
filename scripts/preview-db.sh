@@ -15,7 +15,9 @@
 #    The secret stays on this runner (never on a command line or in a query); the database gets
 #    only the derived passwords and stores their bcrypt hashes.
 #
-# --demo-family-only skips 2: e2e uses it to load the demo family again before a retry
+# --demo-family-only skips 2, to load the demo family again by hand. e2e no longer uses it: each spec
+# makes its own household afresh as it starts (scripts/e2e-household.mjs, D-136). It was used to load
+# the demo family again before a retry
 # (e2e/support/test.ts), so a retried test starts where the first attempt did.
 #
 # Requires SUPABASE_DB_URL (the test project's session pooler URI), TEST_PROJECT_REF,

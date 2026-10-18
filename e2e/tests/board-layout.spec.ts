@@ -3,14 +3,16 @@ import { expect, test, type Page } from '../support/test';
 import { boardFold, pairBoard, retireBoard } from '../support/board';
 import { unfold } from '../support/fold';
 import { sql as query } from '../support/db';
+import { ownHousehold } from '../support/household';
 
 // [BRD-01][BRD-05][US-1004] The board's home screen on the preview (WP-35, D-66, D-67). A board paired
 // here opens on the family dashboard: the calendar (five days unless set), today's list, then the
 // cards. The done-when: Alex moves a card on Boards, and the board shows the new order within 3
 // seconds, 10 times in 11. Alex then gives this board its own layout (the month, without Goals); the household's
 // stays as it was. The household's layout and the board are put back at the end.
+const family = ownHousehold('board-layout');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Layout e2e';
 const sql = (q: string) => query(db!, q);
 
@@ -27,7 +29,9 @@ function report(line: string) {
 
 /** The household's layout as the seed left it: none saved, so the defaults. */
 const putBack = () =>
-  sql(`update public.household_settings set board_layout = '{}' where household_id = '${DEMO}'`);
+  sql(
+    `update public.household_settings set board_layout = '{}' where household_id = '${HOUSEHOLD}'`,
+  );
 
 const cards = () => board.locator('.fw-dash__cards > section h2');
 const everyBoard = () =>
@@ -140,19 +144,19 @@ test('[BRD-05][US-1004] the done-when: Alex moves a card on Boards, and the boar
   await expect(cards()).toHaveText(['Goals', 'Coming up', 'Waiting for a parent']);
   expect(
     sql(
-      `select board_layout -> 'cards' -> 2 ->> 'id' from public.household_settings where household_id = '${DEMO}'`,
+      `select board_layout -> 'cards' -> 2 ->> 'id' from public.household_settings where household_id = '${HOUSEHOLD}'`,
     ),
   ).toBe('coming');
 });
 
 test('[BRD-05][D-67][NFR-14-d] a board with its own layout: the month and no Goals here; every other board keeps the household’s', async () => {
   // [D-110] Own data: the household's default layout, whatever the test before left (its odd number of
-  // moves when it passed, the seed's order when it failed and a new worker loaded the demo family).
+  // moves when it passed, the seed's order when it failed and a re-run made the household afresh).
   putBack();
   // The household's layout as it is before this board gets its own.
   const household = () =>
     sql(
-      `select coalesce(board_layout::text, '') from public.household_settings where household_id = '${DEMO}'`,
+      `select coalesce(board_layout::text, '') from public.household_settings where household_id = '${HOUSEHOLD}'`,
     );
   const householdBefore = household();
   await admin.goto('/admin/devices');
@@ -170,7 +174,7 @@ test('[BRD-05][D-67][NFR-14-d] a board with its own layout: the month and no Goa
   await mine.getByRole('checkbox', { name: /^Goals/ }).uncheck();
   await mine.getByRole('button', { name: 'Save layout', exact: true }).click();
   const id = sql(
-    `select id from public.device where household_id = '${DEMO}' and name = '${BOARD}' and status = 'active'`,
+    `select id from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}' and status = 'active'`,
   );
   await expect(admin.locator(`#layout-${id}`).getByRole('status')).toHaveText(
     `Saved the home screen for ${BOARD}. It shows the change in a moment.`,
@@ -182,7 +186,7 @@ test('[BRD-05][D-67][NFR-14-d] a board with its own layout: the month and no Goa
   await expect(cards()).toHaveText(['Waiting for a parent', 'Coming up']);
   expect(
     sql(`select board_config -> 'layout' ->> 'calendar' from public.device
-          where household_id = '${DEMO}' and name = '${BOARD}'`),
+          where household_id = '${HOUSEHOLD}' and name = '${BOARD}'`),
   ).toBe('month');
   // The household's is as it was.
   expect(household(), 'the household’s layout').toBe(householdBefore);
@@ -200,7 +204,7 @@ test('[BRD-05][D-67][NFR-14-d] a board with its own layout: the month and no Goa
   await expect(admin.locator(`#layout-${id}`).getByRole('status')).toBeVisible();
   expect(
     sql(`select board_config -> 'layout' ->> 'calendar' from public.device
-          where household_id = '${DEMO}' and name = '${BOARD}'`),
+          where household_id = '${HOUSEHOLD}' and name = '${BOARD}'`),
   ).toBe('month');
   await expect(board.locator('.fw-dash')).toHaveAttribute('data-span', 'month');
 });

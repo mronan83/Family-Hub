@@ -4,6 +4,7 @@ import { serviceRpc, sql as query } from '../support/db';
 import { browserKeys, decryptPush, mockPushService, vapidKeys } from '../support/push';
 import { addDays, householdToday } from '../support/day';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [CHR-15][CHR-16][CHR-17][CHR-20] The reminders job against a mocked push service (WP-40, D-58;
 // WP-63, D-88): the job's own code (lib/reminders.ts) runs here on the e2e runner against the shared
@@ -14,8 +15,9 @@ import { signIn } from '../support/session';
 // minutes) never reaches these. Each test starts from the same set-up (reminders on, both devices, no
 // item of this spec's left), so none depends on another. What is made here is approved, archived or
 // removed before each test and at the end.
+const family = ownHousehold('reminders-job');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const TAG = 'rmd-e2e';
 const sql = (q: string) => query(db!, q);
 
@@ -37,14 +39,14 @@ const at = (time: string, next = false) =>
       Number(
         sql(`select extract(epoch from (('${day}'::date + ${next ? 1 : 0}) + '${time}'::time)
                                         at time zone h.timezone)::bigint
-               from public.household h where h.id = '${DEMO}'`),
+               from public.household h where h.id = '${HOUSEHOLD}'`),
       ),
   );
 const run = (time: string, next = false) => {
   push = mockPushService((endpoint) => (endpoint === LAPTOP ? 410 : 201));
   return runReminders(
     serviceRpc(db!) as unknown as Parameters<typeof runReminders>[0],
-    DEMO,
+    HOUSEHOLD,
     at(time, next),
     webPushSender(vapid, push.transport),
   );
@@ -62,7 +64,7 @@ const phoneSaw = () =>
  * (his default is off here, so the demo family's own items never remind him during the test).
  */
 function task(title: string, due: string, opts: { private?: boolean } = {}) {
-  const id = sql(`select public.save_chore('${DEMO}', null,
+  const id = sql(`select public.save_chore('${HOUSEHOLD}', null,
     jsonb_build_object('title', '${title} ${TAG}', 'kind', 'task',
                        'schedule', jsonb_build_object('freq', 'once', 'on_date', '${day}'),
                        'due_time', '${due}', 'start_date', '${day}',
@@ -80,12 +82,12 @@ const occurrence = (chore: string) =>
  */
 function checkOff(title: string) {
   const maya = sql(
-    `select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`,
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Maya'`,
   );
-  const id = sql(`select public.save_chore('${DEMO}', null,
+  const id = sql(`select public.save_chore('${HOUSEHOLD}', null,
     jsonb_build_object('title', '${title} ${TAG}', 'kind', 'chore', 'points', 0, 'approval', 'required',
-                       'schedule', jsonb_build_object('freq', 'once', 'on_date', private.household_today('${DEMO}')),
-                       'start_date', private.household_today('${DEMO}')),
+                       'schedule', jsonb_build_object('freq', 'once', 'on_date', private.household_today('${HOUSEHOLD}')),
+                       'start_date', private.household_today('${HOUSEHOLD}')),
     array['${maya}'::uuid])`);
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)
        values (gen_random_uuid(), '${occurrence(id)}', 'complete', array['${maya}'::uuid], now())`);
@@ -104,7 +106,7 @@ const runNow = () => {
   push = mockPushService(() => 201);
   return runReminders(
     serviceRpc(db!) as unknown as Parameters<typeof runReminders>[0],
-    DEMO,
+    HOUSEHOLD,
     // The database's clock, which stamped the check-offs.
     new Date(Number(sql(`select (extract(epoch from now()) * 1000)::bigint`))),
     webPushSender(vapid, push.transport),
@@ -118,19 +120,19 @@ function cleanUp() {
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
        select gen_random_uuid(), o.id, 'approve', now()
          from public.chore_occurrence o join public.chore c on c.id = o.chore_id
-        where c.household_id = '${DEMO}' and c.title like '% ${TAG}' and c.archived_at is null
+        where c.household_id = '${HOUSEHOLD}' and c.title like '% ${TAG}' and c.archived_at is null
           and o.status = 'pending_approval';
        update public.chore set archived_at = now()
-        where household_id = '${DEMO}' and title like '% ${TAG}' and archived_at is null;
+        where household_id = '${HOUSEHOLD}' and title like '% ${TAG}' and archived_at is null;
        delete from public.push_subscription where endpoint like 'https://push.familywise.invalid/${TAG}-%';
        delete from public.reminder_preference where member_id = (select id from public.member
-         where household_id = '${DEMO}' and display_name = 'Alex');`);
+         where household_id = '${HOUSEHOLD}' and display_name = 'Alex');`);
 }
 
 let user = '';
 test.beforeAll(() => {
   alex = sql(
-    `select id from public.member where household_id = '${DEMO}' and display_name = 'Alex'`,
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Alex'`,
   );
   user = sql(`select user_id from public.member where id = '${alex}'`);
   day = addDays(householdToday(db!), 2);
@@ -141,10 +143,10 @@ test.beforeAll(() => {
 test.beforeEach(() => {
   cleanUp();
   sql(`insert into public.reminder_preference (member_id, household_id, enabled, default_on, morning_time)
-       values ('${alex}', '${DEMO}', true, false, '08:00');
+       values ('${alex}', '${HOUSEHOLD}', true, false, '08:00');
        insert into public.push_subscription (household_id, member_id, user_id, endpoint, p256dh, auth_secret, device_label)
-       values ('${DEMO}', '${alex}', '${user}', '${PHONE}', '${phone.p256dh}', '${phone.auth}', 'iPhone · Safari'),
-              ('${DEMO}', '${alex}', '${user}', '${LAPTOP}', '${laptop.p256dh}', '${laptop.auth}', 'Old laptop');`);
+       values ('${HOUSEHOLD}', '${alex}', '${user}', '${PHONE}', '${phone.p256dh}', '${phone.auth}', 'iPhone · Safari'),
+              ('${HOUSEHOLD}', '${alex}', '${user}', '${LAPTOP}', '${laptop.p256dh}', '${laptop.auth}', 'Old laptop');`);
 });
 
 /** [CHR-20] How many of Maya's check-offs an approvals alert counts ("Maya: 3 check-offs and …"). */

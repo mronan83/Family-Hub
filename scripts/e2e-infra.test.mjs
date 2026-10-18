@@ -9,6 +9,7 @@ import {
   healthReading,
   loadWords,
   redact,
+  signInWords,
   slowReads,
 } from './e2e-infra.mjs';
 
@@ -169,4 +170,25 @@ test('[NFR-14-r][D-135] the preview answering /api/health in over 2 s, or with a
   // A bad reading while a test ran makes its failure infrastructure.
   const at = failure().start + 5_000;
   assert.equal(classify(failure(), [{ at, what: healthReading(200, 2_473) }]).kind, 'infra');
+});
+
+test('[NFR-14-z] the run counts its sign-ins once each, and the most in any 5 minutes against Auth’s limit', () => {
+  const at = (min, whose) => ({
+    type: 'sign-in',
+    description: `${new Date(Date.UTC(2026, 9, 18, 3, 0) + min * 60_000).toISOString()} ${whose}`,
+  });
+  const a = [
+    at(0, 'alex+board'),
+    at(0, 'alex+board'),
+    at(1, 'board Hall e2e'),
+    at(4.9, 'sam+board'),
+  ];
+  // The same sign-in on several tests (a beforeAll's) counts once; 4.9 minutes is within 5.
+  assert.equal(
+    signInWords([...a, at(10, 'alex+chores'), { type: 'limit', description: '90000' }]),
+    '4 by e2e/support; at most 3 in any 5 minutes (Auth allows 30 per address)',
+  );
+  const busy = Array.from({ length: 21 }, (_, i) => at(i * 0.2, `alex+s${i}`));
+  assert.match(signInWords(busy), /at most 21 in any 5 minutes .*within a third of it/);
+  assert.equal(signInWords([{ type: 'infra', description: 'x' }]), null);
 });

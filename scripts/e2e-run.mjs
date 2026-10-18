@@ -8,7 +8,8 @@
 // 3. Classifies each failed test (scripts/e2e-infra.mjs). An infrastructure failure (a statement
 //    timeout, a refused or reset connection, a 5xx from Supabase or the preview's gateway, or the
 //    database or preview slow or down while it ran) re-runs once, that test only (its whole file when
-//    the file is serial), after the demo family is loaded again. An assertion failure never re-runs.
+//    the file is serial); its spec makes its own household afresh as it starts (D-136), so nothing is
+//    loaded again first. An assertion failure never re-runs.
 // 4. Writes what ran, each failure with its cause, re-runs, timings and any test with less than 3×
 //    headroom under its time limit to the run summary. Exits 1 unless every test passed, first time
 //    or on its one infrastructure re-run.
@@ -24,7 +25,7 @@
 //
 // Reads SUPABASE_DB_URL and E2E_BASE_URL (both optional: no probe without them),
 // VERCEL_AUTOMATION_BYPASS_SECRET and GITHUB_STEP_SUMMARY.
-import { spawn, spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import {
   appendFileSync,
   existsSync,
@@ -36,7 +37,14 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { classify, errorText, failureOf, healthReading, redact } from './e2e-infra.mjs';
+import {
+  classify,
+  errorText,
+  failureOf,
+  healthReading,
+  redact,
+  signInWords,
+} from './e2e-infra.mjs';
 import { entriesOf } from './e2e-findings.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -278,16 +286,6 @@ async function main() {
   const infra = failures.filter((f) => f.verdict.kind === 'infra');
   const rerun = new Map();
   if (infra.length) {
-    if (process.env.SUPABASE_DB_URL) {
-      const reload = spawnSync(
-        'bash',
-        [join(ROOT, 'scripts/preview-db.sh'), '--demo-family-only'],
-        {
-          stdio: 'inherit',
-        },
-      );
-      if (reload.status !== 0) say('The demo family could not be loaded again before the re-run.');
-    }
     const units = [...new Set(infra.map((f) => (serial(f.file) ? f.file : `${f.file}:${f.line}`)))];
     const again = await playwright(units, 'rerun', dir);
     for (const r of resultsOf(again.report)) {
@@ -319,6 +317,14 @@ async function main() {
   );
   say(`| Re-runs | ${infra.length ? `${rerun.size} test(s), once each` : 'none'} |`);
   say(`| Time | ${mins(Date.now() - started)} |`);
+  // [NFR-14-z][D-136] Each spec signs in to its own household, so the run's sign-ins are counted.
+  const signIns = signInWords(
+    [...results, ...rerun.values()].flatMap((r) => [
+      ...(r.result?.annotations ?? []),
+      ...(r.test.annotations ?? []),
+    ]),
+  );
+  say(`| Sign-ins | ${signIns ?? 'none'} |`);
   say(
     `| Probe | ${probe.degraded.length ? `${probe.degraded.length} slow or failed reading(s)` : 'the test database and the preview answered every probe in time'} |`,
   );

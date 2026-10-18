@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import path from 'node:path';
 import { test as base, type BrowserContext, type Page, type Response } from '@playwright/test';
+import { maybeCurrentHousehold } from './household';
 
 export * from '@playwright/test';
 
@@ -93,10 +93,14 @@ function watch(context: BrowserContext): void {
   });
 }
 
-/** The demo family's day as the database has it, and the day its data was loaded. */
-function demoDays(): { today: string; loaded: string } | null {
+/**
+ * The household's day as the database has it, and the day its data was loaded: the spec's own
+ * household (D-136), or the demo family for a spec without one (auth.spec.ts).
+ */
+function householdDays(): { today: string; loaded: string } | null {
   const db = process.env.SUPABASE_DB_URL;
   if (!db) return null;
+  const household = maybeCurrentHousehold()?.id ?? DEMO;
   try {
     const [today, loaded] = execFileSync(
       'psql',
@@ -110,7 +114,7 @@ function demoDays(): { today: string; loaded: string } | null {
         ' ',
         '-c',
         `select (now() at time zone timezone)::date, (created_at at time zone timezone)::date
-           from public.household where id = '${DEMO}'`,
+           from public.household where id = '${household}'`,
       ],
       { encoding: 'utf8', timeout: 15_000 },
     )
@@ -122,27 +126,11 @@ function demoDays(): { today: string; loaded: string } | null {
   }
 }
 
-// [NFR-14][D-85] Every spec imports `test` from here, not from @playwright/test. Playwright runs the
-// files in one worker and starts a new worker only after a failure, to carry on with the next file;
-// that new worker first loads the demo family again (scripts/preview-db.sh --demo-family-only, on the
-// test database only), so the next file starts from the demo family as seeded, not from what the
-// failed test left behind.
-export const test = base.extend<{ infraWatch: void }, { cleanStart: void; contextWatch: void }>({
-  cleanStart: [
-    async ({}, use, workerInfo) => {
-      if (workerInfo.workerIndex > 0 && process.env.CI && process.env.SUPABASE_DB_URL) {
-        execFileSync(
-          'bash',
-          [path.resolve(__dirname, '../../scripts/preview-db.sh'), '--demo-family-only'],
-          {
-            stdio: 'inherit',
-          },
-        );
-      }
-      await use();
-    },
-    { scope: 'worker', auto: true },
-  ],
+// [NFR-14][D-85][D-136] Every spec imports `test` from here, not from @playwright/test. Playwright
+// runs the files in one worker and starts a new worker only after a failure, to carry on with the
+// next file. Nothing is loaded again then: each spec makes its own household afresh when it starts
+// (ownHousehold(), e2e/support/household.ts), so no file starts from what another left behind.
+export const test = base.extend<{ infraWatch: void }, { contextWatch: void }>({
   // Every context a test makes, by browser.newContext() or newPage() as most specs do, is watched.
   contextWatch: [
     async ({ browser }, use) => {
@@ -161,9 +149,9 @@ export const test = base.extend<{ infraWatch: void }, { cleanStart: void; contex
     await use(context);
   },
   // [NFR-14][D-110] What the run's verdict reads (scripts/e2e-run.mjs): the test's time limit, any
-  // infrastructure failure seen under it, and, when it failed, whether the demo family's day had
+  // infrastructure failure seen under it, and, when it failed, whether its household's day had
   // turned since its data was loaded (seed data counts from the day it was loaded, so a test after
-  // the family's midnight reads yesterday's seed; it re-runs once on a reloaded family). It takes
+  // the family's midnight reads yesterday's seed; it re-runs once, on a household made afresh). It takes
   // `context` so it ends before the test's own context closes, and can wait for the bodies it reads.
   infraWatch: [
     async ({ context }, use, testInfo) => {
@@ -183,10 +171,10 @@ export const test = base.extend<{ infraWatch: void }, { cleanStart: void; contex
         }
         sink = null;
         if (testInfo.status !== testInfo.expectedStatus) {
-          const days = demoDays();
+          const days = householdDays();
           if (days && days.today !== days.loaded) {
             seen.push(
-              `the demo family's day turned from ${days.loaded} to ${days.today} after its data was loaded`,
+              `the household's day turned from ${days.loaded} to ${days.today} after its data was loaded`,
             );
           }
         }

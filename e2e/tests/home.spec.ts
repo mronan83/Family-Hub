@@ -3,6 +3,7 @@ import { sql as query } from '../support/db';
 import { householdToday } from '../support/day';
 import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [NFR-17][US-109][ACC-08][US-110] Home at a glance and Family options on the preview (WP-57, D-84),
 // as Alex in the demo family. The done-when: on a school day, one tap makes today a snow day (stored,
@@ -10,8 +11,9 @@ import { signIn } from '../support/session';
 // Home says why there is no school. A new start day for the week waits for the next week (stored,
 // and said on the page) while the week now running keeps its start, and Keep cancels it. What Home
 // asks for matches the database. Everything this spec changes is put back at the end.
+const family = ownHousehold('home');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const sql = (q: string) => query(db!, q);
 /** The demo family's today, read once for the file ([D-110]), as an SQL date. */
 let TODAY = '';
@@ -25,10 +27,10 @@ let admin: Page;
 function putBack() {
   if (!TODAY) return;
   sql(`delete from public.school_closure
-        where household_id = '${DEMO}' and name = 'Snow day' and closure_type = 'snow_day'
+        where household_id = '${HOUSEHOLD}' and name = 'Snow day' and closure_type = 'snow_day'
           and start_date = ${TODAY} and end_date = ${TODAY};
        update public.household_settings set week_start_next = null, week_start_next_on = null
-        where household_id = '${DEMO}';`);
+        where household_id = '${HOUSEHOLD}';`);
 }
 
 test.beforeAll(async ({ browser }) => {
@@ -48,7 +50,7 @@ test('[NFR-17][US-109] Home: what needs Alex matches the database, and the quick
   await expect(admin.getByRole('heading', { name: 'Demo family', level: 1 })).toBeVisible();
   const waiting = Number(
     sql(`select count(*) from public.chore_occurrence
-          where household_id = '${DEMO}' and status = 'pending_approval'`),
+          where household_id = '${HOUSEHOLD}' and status = 'pending_approval'`),
   );
   const needs = admin.getByRole('region', { name: 'Needs you' });
   if (waiting > 0) {
@@ -67,11 +69,11 @@ test('[NFR-17][US-109] Home: what needs Alex matches the database, and the quick
 test('[NFR-17][SCH-01] the done-when: no school today in one tap, then Undo', async () => {
   const kind = sql(`select coalesce((select 'off' from public.school_closure c
                       join public.school_year y on y.id = c.school_year_id and y.archived_at is null
-                     where c.household_id = '${DEMO}' and ${TODAY} between c.start_date and c.end_date
+                     where c.household_id = '${HOUSEHOLD}' and ${TODAY} between c.start_date and c.end_date
                        and ${TODAY} between y.start_date and y.end_date limit 1),
                      (select case when extract(isodow from ${TODAY}) in (6, 7) then 'weekend' else 'school' end
                         from public.school_year
-                       where household_id = '${DEMO}' and archived_at is null
+                       where household_id = '${HOUSEHOLD}' and archived_at is null
                          and ${TODAY} between start_date and end_date limit 1),
                      'none')`);
   await admin.goto('/admin');
@@ -92,7 +94,7 @@ test('[NFR-17][SCH-01] the done-when: no school today in one tap, then Undo', as
   await expect(admin.getByRole('status').first()).toContainText('No school today.');
   expect(
     sql(`select count(*) from public.school_closure
-          where household_id = '${DEMO}' and closure_type = 'snow_day'
+          where household_id = '${HOUSEHOLD}' and closure_type = 'snow_day'
             and start_date = ${TODAY} and end_date = ${TODAY}`),
   ).toBe('1');
   await expect(more).toContainText('No school today: Snow day');
@@ -101,14 +103,14 @@ test('[NFR-17][SCH-01] the done-when: no school today in one tap, then Undo', as
   await expect(admin.getByRole('status').first()).toContainText('Today is a school day again.');
   expect(
     sql(`select count(*) from public.school_closure
-          where household_id = '${DEMO}' and closure_type = 'snow_day'
+          where household_id = '${HOUSEHOLD}' and closure_type = 'snow_day'
             and start_date = ${TODAY} and end_date = ${TODAY}`),
   ).toBe('0');
   await expect(more.getByRole('button', { name: 'No school today' })).toBeVisible();
 });
 
 test('[NFR-14-s][ACC-08][US-110] the done-when: a new start day waits for the next week, and Keep cancels it', async () => {
-  const start = Number(sql(`select week_start from public.household where id = '${DEMO}'`));
+  const start = Number(sql(`select week_start from public.household where id = '${HOUSEHOLD}'`));
   const next = (start + 1) % 7;
   await admin.goto('/admin/settings');
   await admin
@@ -133,7 +135,7 @@ test('[NFR-14-s][ACC-08][US-110] the done-when: a new start day waits for the ne
                 (s.week_start_next_on = private.week_start_switch_day(${TODAY}, h.week_start, ${next}::smallint))::text
                 || ',' || h.week_start
            from public.household_settings s join public.household h on h.id = s.household_id
-          where h.id = '${DEMO}'`),
+          where h.id = '${HOUSEHOLD}'`),
   ).toBe(`${next},true,${start}`);
   await expect(week).toContainText(/From \w+day, \w{3} \d+, it starts on/);
 
@@ -141,7 +143,7 @@ test('[NFR-14-s][ACC-08][US-110] the done-when: a new start day waits for the ne
   await expect(admin.getByRole('status').first()).toContainText('The week keeps its start day.');
   expect(
     sql(`select coalesce(week_start_next::text, 'none') from public.household_settings
-          where household_id = '${DEMO}'`),
+          where household_id = '${HOUSEHOLD}'`),
   ).toBe('none');
   await expect(week).not.toContainText('From ');
 });

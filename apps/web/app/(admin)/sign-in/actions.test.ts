@@ -111,6 +111,29 @@ describe('sign-in actions', () => {
     });
   });
 
+  it('[NFR-14-w] demo sign-in into an e2e household uses its copy of the persona, and refuses a bad key', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('VERCEL_AUTOMATION_BYPASS_SECRET', 'test-secret');
+    expect(await redirectOf(demoSignIn(form({ persona: 'alex', household: 'chores' })))).toBe(
+      '/admin',
+    );
+    // The same vector is asserted where e2e sets the password (scripts/e2e-household.test.mjs).
+    expect(auth.signInWithPassword).toHaveBeenCalledWith({
+      email: 'alex+chores@demo.familywise.invalid',
+      password: 'b6bc796be5e4e92f3d719148c185fdb6e5c27143477b81f552700887d8b1aa4d',
+    });
+    auth.signInWithPassword.mockClear();
+    for (const household of ['', 'Chores', 'chores@example.com', 'a/b', 'x'.repeat(41)]) {
+      expect(await redirectOf(demoSignIn(form({ persona: 'alex', household })))).toBe('/sign-in');
+    }
+    expect(auth.signInWithPassword).not.toHaveBeenCalled();
+    vi.stubEnv('VERCEL_ENV', 'production');
+    expect(await redirectOf(demoSignIn(form({ persona: 'alex', household: 'chores' })))).toBe(
+      '/sign-in',
+    );
+    expect(auth.signInWithPassword).not.toHaveBeenCalled();
+  });
+
   it('[ACC-02] demo sign-in asks Auth once more when it answers 5xx or not at all, never after a refusal', async () => {
     vi.stubEnv('VERCEL_ENV', 'preview');
     vi.stubEnv('VERCEL_AUTOMATION_BYPASS_SECRET', 'test-secret');

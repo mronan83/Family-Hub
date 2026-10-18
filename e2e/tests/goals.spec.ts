@@ -3,6 +3,7 @@ import { sql as query } from '../support/db';
 import { householdToday } from '../support/day';
 import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [RWD-01][RWD-04][RWD-06][RWD-09] Goals on the preview (WP-19, D-56), as Alex of the demo family. The
 // done-when: the seeded "Movie night" (Leo, 19 things done since last week; he has 18) becomes
@@ -16,16 +17,19 @@ import { signIn } from '../support/session';
 // "Trip to the park" (STREAK 5, a miss a week forgiven) is reached on any weekday the seed is loaded:
 // of Maya's seven seeded days only the bed missed 3 days ago is bad (always forgiven: it is the only
 // one), and only the day of the latest homework, waiting for a parent, is open, so at least 5 are good.
+const family = ownHousehold('goals');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
-const MOVIE = '0de00000-0000-4000-8000-000000060001';
-const PARK = '0de00000-0000-4000-8000-000000060002';
-const MAKE_BED = '0de00000-0000-4000-8000-0000000c0001';
+const HOUSEHOLD = family.id;
+const MOVIE = family.own('0de00000-0000-4000-8000-000000060001');
+const PARK = family.own('0de00000-0000-4000-8000-000000060002');
+const MAKE_BED = family.own('0de00000-0000-4000-8000-0000000c0001');
 const BIKE = `Bike ride e2e ${Math.random().toString(36).slice(2, 6)}`;
 const sql = (q: string) => query(db!, q);
 
 const memberId = (name: string) =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+  sql(
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+  );
 const movie = () =>
   sql(`select g.status || ':' || g.achievement_count || ':' || p.pct
          from public.reward_goal g join public.reward_goal_progress p on p.goal_id = g.id where g.id = '${MOVIE}'`);
@@ -49,7 +53,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
   // an earlier spec left done today is put back first, and named.
   const left = sql(`select coalesce(string_agg(o.id || ' ' || c.title, ','), '')
                       from public.chore_occurrence o join public.chore c on c.id = o.chore_id
-                     where o.household_id = '${DEMO}' and o.due_date = '${today}'
+                     where o.household_id = '${HOUSEHOLD}' and o.due_date = '${today}'
                        and (o.member_id = '${leo}' or '${leo}' = any (o.done_by))
                        and o.status in ('completed', 'approved')`);
   for (const item of left ? left.split(',') : []) {
@@ -76,7 +80,7 @@ test.afterAll(async () => {
   sql(`update public.reward_goal set status = 'achieved', redeemed_at = null, redeemed_by = null
         where id = '${PARK}' and status = 'redeemed';
        delete from public.reward_goal_event where goal_id = '${PARK}' and type = 'redeemed';
-       delete from public.reward_goal where household_id = '${DEMO}' and title = '${BIKE}';`);
+       delete from public.reward_goal where household_id = '${HOUSEHOLD}' and title = '${BIKE}';`);
   // And his goal worked out again, so it is going as the seed left it: a goal left reached would open
   // every later spec's board on its celebration (WP-20).
   await admin.goto('/admin/goals');
@@ -209,7 +213,7 @@ test('[RWD-01][RWD-06] a parent sets a goal through the form, then cancels it', 
   await expect(goal(BIKE)).toContainText('3 things done, tagged Morning');
   expect(
     sql(`select g.status || ':' || r.rule_type || ':' || r.target from public.reward_goal g
-           join public.reward_rule r on r.goal_id = g.id where g.household_id = '${DEMO}' and g.title = '${BIKE}'`),
+           join public.reward_rule r on r.goal_id = g.id where g.household_id = '${HOUSEHOLD}' and g.title = '${BIKE}'`),
   ).toBe('active:COUNT:3');
 
   await admin.getByRole('link', { name: `Change ${BIKE}` }).click();

@@ -4,6 +4,7 @@ import { type Fetcher, storeWeather, type WeatherPlace } from '../../apps/web/li
 import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [BRD-04][US-1003] Weather on a board, on the preview (WP-45, D-69). Alex sets the demo family's
 // place; the weather job's own code reads made-up weather for it on the e2e runner (the preview holds
@@ -12,8 +13,9 @@ import { signIn } from '../support/session';
 // weather hides and nothing else on the board changes. Then Alex switches to °C and stops showing the
 // weather in Settings, Family options (WP-57). Each test sets the place and the reading it starts
 // from; the place is cleared at the end.
+const family = ownHousehold('weather');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Weather e2e';
 const PLACE_NAME = 'Springfield, Illinois, United States';
 const sql = (q: string) => query(db!, q);
@@ -24,7 +26,9 @@ let admin: Page;
 let board: Page;
 
 const alex = () =>
-  sql(`select user_id from public.member where household_id = '${DEMO}' and display_name = 'Alex'`);
+  sql(
+    `select user_id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Alex'`,
+  );
 /** Calls a function as Alex, as the admin app does (RLS and the admin checks as for them). */
 const asAlex = (call: string) =>
   sql(`select set_config('request.jwt.claims', '{"sub":"${alex()}","role":"authenticated"}', false);
@@ -34,7 +38,7 @@ const asAlex = (call: string) =>
 function place(): WeatherPlace {
   const [lat, lon, unit] = sql(
     `select weather_latitude || '|' || weather_longitude || '|' || temperature_unit
-       from public.household_settings where household_id = '${DEMO}'`,
+       from public.household_settings where household_id = '${HOUSEHOLD}'`,
   ).split('|');
   return {
     latitude: Number(lat),
@@ -64,9 +68,14 @@ function answer(temperature: number, high: number, code: number): Fetcher {
 const failing: Fetcher = async () =>
   new Response('', { status: 503, statusText: 'Service Unavailable' });
 const read = (fetch: Fetcher) =>
-  storeWeather(serviceRpc(db!) as unknown as Parameters<typeof storeWeather>[0], DEMO, place(), {
-    fetch,
-  });
+  storeWeather(
+    serviceRpc(db!) as unknown as Parameters<typeof storeWeather>[0],
+    HOUSEHOLD,
+    place(),
+    {
+      fetch,
+    },
+  );
 
 const weather = () => board.getByRole('group', { name: /^Weather:/ });
 /** Where the clock, the people and the dashboard sit, what the dashboard lists, and the clock's time. */
@@ -82,8 +91,8 @@ const boardAsIs = () =>
 
 /** The place set, in °F, and a good read of it on the board: where tests 2 and 3 start from. */
 async function showWeather(temperature: number, high: number, code: number, name: string) {
-  asAlex(`public.set_weather_place('${DEMO}', '${PLACE_NAME}', 39.80172, -89.64371)`);
-  asAlex(`public.set_temperature_unit('${DEMO}', 'fahrenheit')`);
+  asAlex(`public.set_weather_place('${HOUSEHOLD}', '${PLACE_NAME}', 39.80172, -89.64371)`);
+  asAlex(`public.set_temperature_unit('${HOUSEHOLD}', 'fahrenheit')`);
   expect(await read(answer(temperature, high, code))).toBe('ok');
   await expect(weather()).toHaveAccessibleName(name);
 }
@@ -92,14 +101,14 @@ function cleanUp() {
   sql(`update public.household_settings
           set weather_place = null, weather_latitude = null, weather_longitude = null,
               temperature_unit = 'fahrenheit'
-        where household_id = '${DEMO}';
-       delete from public.weather_reading where household_id = '${DEMO}';`);
+        where household_id = '${HOUSEHOLD}';
+       delete from public.weather_reading where household_id = '${HOUSEHOLD}';`);
 }
 
 test.beforeAll(async ({ browser }) => {
   cleanUp();
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
+  sql(`delete from public.device_pairing where household_id = '${HOUSEHOLD}' and device_name = '${BOARD}';
+       delete from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}';`);
   admin = await browser.newPage();
   await signIn(admin);
   await admin.goto('/admin/devices');
@@ -123,7 +132,7 @@ test.afterAll(async () => {
 
 test('[BRD-04][US-1003] the done-when: with a place set, the board shows the temperature now and today’s high', async () => {
   await expect(weather()).toHaveCount(0);
-  asAlex(`public.set_weather_place('${DEMO}', '${PLACE_NAME}', 39.80172, -89.64371)`);
+  asAlex(`public.set_weather_place('${HOUSEHOLD}', '${PLACE_NAME}', 39.80172, -89.64371)`);
   expect(place()).toEqual({ latitude: 39.8, longitude: -89.64, unit: 'fahrenheit' });
   expect(await read(answer(63.4, 68.2, 61))).toBe('ok');
   await expect(weather()).toHaveAccessibleName('Weather: 63 degrees Fahrenheit, rain, high 68');
@@ -151,7 +160,7 @@ test('[BRD-04][US-1003] the done-when: with the source failing, the weather hide
     });
   }
   expect(after, 'the board after the weather hid, against before').toEqual(before);
-  expect(sql(`select error from public.weather_reading where household_id = '${DEMO}'`)).toBe(
+  expect(sql(`select error from public.weather_reading where household_id = '${HOUSEHOLD}'`)).toBe(
     'The weather service answered 503 (Service Unavailable). FamilyWise tries again in 30 minutes.',
   );
   // The next good read brings it back.
@@ -180,7 +189,9 @@ test('[BRD-04] in Family options: Alex sees the place and the last read, switche
     'Saved. The boards show temperatures in the new unit in a moment.',
   );
   expect(
-    sql(`select temperature_unit from public.household_settings where household_id = '${DEMO}'`),
+    sql(
+      `select temperature_unit from public.household_settings where household_id = '${HOUSEHOLD}'`,
+    ),
   ).toBe('celsius');
   // The °F read is gone; the job's next read (here, made up) is in °C.
   expect(await read(answer(17.8, 20.1, 0))).toBe('ok');
@@ -196,7 +207,7 @@ test('[BRD-04] in Family options: Alex sees the place and the last read, switche
   await expect(weather()).toHaveCount(0);
   expect(
     sql(
-      `select coalesce(weather_place, 'none') from public.household_settings where household_id = '${DEMO}'`,
+      `select coalesce(weather_place, 'none') from public.household_settings where household_id = '${HOUSEHOLD}'`,
     ),
   ).toBe('none');
 });

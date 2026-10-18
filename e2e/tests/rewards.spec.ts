@@ -2,6 +2,7 @@ import { expect, test, type Page } from '../support/test';
 import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [PTS-03][PTS-04] The rewards shop on the preview (WP-18, D-53), as Alex of the demo family with a
 // paired board: a reward added with a photo; the board asks for it for Maya (asking twice is one
@@ -11,11 +12,12 @@ import { signIn } from '../support/session';
 // against the database in scripts/redemption-race.sh. Afterwards Leo's seeded request is waiting again;
 // Maya's spend on the test reward stays (it was given; the ledger is append-only) and the reward
 // stays archived under its own name.
+const family = ownHousehold('rewards');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Shop e2e';
-const STAY_UP = '0de00000-0000-4000-8000-0000000e0003';
-const LEOS_REQUEST = '0de00000-0000-4000-8000-0000000f0001';
+const STAY_UP = family.own('0de00000-0000-4000-8000-0000000e0003');
+const LEOS_REQUEST = family.own('0de00000-0000-4000-8000-0000000f0001');
 // A 1×1 PNG.
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
@@ -24,7 +26,9 @@ const PNG = Buffer.from(
 
 const sql = (q: string) => query(db!, q);
 const memberId = (name: string) =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+  sql(
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+  );
 const balance = (member: string) =>
   Number(
     sql(`select coalesce(sum(amount), 0) from public.points_ledger where member_id = '${member}'`),
@@ -53,8 +57,8 @@ const ask = (id: string, member: string, item: string) =>
   board.request.post('/api/redemptions', { data: { id, member_id: member, item_id: item } });
 
 test.beforeAll(async ({ browser }) => {
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
+  sql(`delete from public.device_pairing where household_id = '${HOUSEHOLD}' and device_name = '${BOARD}';
+       delete from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}';`);
   admin = await browser.newPage();
   await signIn(admin);
   await admin.goto('/admin/devices');
@@ -105,10 +109,10 @@ test('[PTS-03][PTS-04][US-1103][US-1104][US-1105] a reward with a photo: added, 
     await expect(admin.getByRole('list', { name: 'The shop', exact: true })).toContainText(title);
 
     const row = sql(`select id || ' ' || image_path from public.reward_catalog_item
-                    where household_id = '${DEMO}' and title = '${title}'`);
+                    where household_id = '${HOUSEHOLD}' and title = '${title}'`);
     const [id, path] = row.split(' ') as [string, string];
     itemId = id;
-    expect(path).toMatch(new RegExp(`^${DEMO}/${itemId}/[0-9a-f-]+\\.png$`));
+    expect(path).toMatch(new RegExp(`^${HOUSEHOLD}/${itemId}/[0-9a-f-]+\\.png$`));
     expect(
       sql(`select count(*) from storage.objects where bucket_id = 'rewards' and name = '${path}'`),
     ).toBe('1');

@@ -4,21 +4,23 @@ import { sql as query } from '../support/db';
 import { foldOf, unfold } from '../support/fold';
 import { openSetting } from '../support/settings';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [NFR-07][NFR-08] System Health on the preview (WP-42, D-42), as Alex of the demo family: a failing
 // job shows with its message and clears after a good run, a server error recorded for the household
 // shows, and usage is listed against the Free-plan limits. That no other household sees any of it
 // is pinned by 080_system_health.test.sql. Rows are written with psql, as the job runner and the
 // error log would write them in production.
+const family = ownHousehold('health');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const FAILURE = 'e2e: forced failure (job-run workflow)';
 const ERROR = 'Error: e2e seeded server error';
 
 const sql = (q: string) => query(db!, q);
 
-const CLEAN = `delete from public.job_run where household_id = '${DEMO}' and (error = '${FAILURE}' or stats ? 'e2e');
-               delete from private.app_error where household_id = '${DEMO}' and message = '${ERROR}';`;
+const CLEAN = `delete from public.job_run where household_id = '${HOUSEHOLD}' and (error = '${FAILURE}' or stats ? 'e2e');
+               delete from private.app_error where household_id = '${HOUSEHOLD}' and message = '${ERROR}';`;
 
 async function asAlexOnHealth(page: Page) {
   await signIn(page);
@@ -38,9 +40,9 @@ test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e 
 test.beforeAll(() => {
   sql(`${CLEAN}
        insert into public.job_run (household_id, job_type, status, started_at, finished_at, error)
-       values ('${DEMO}', 'heartbeat', 'error', now(), now(), '${FAILURE}');
+       values ('${HOUSEHOLD}', 'heartbeat', 'error', now(), now(), '${FAILURE}');
        insert into private.app_error (route, kind, message, household_id)
-       values ('/admin/members', 'action', '${ERROR}', '${DEMO}');`);
+       values ('/admin/members', 'action', '${ERROR}', '${HOUSEHOLD}');`);
 });
 
 test.afterAll(() => {
@@ -70,7 +72,7 @@ test('[NFR-18-x][NFR-07] a failing job is named on the folded header, shows with
   );
   await expect(page.getByRole('list', { name: 'Server errors', exact: true })).toContainText(ERROR);
   // The seed marks the demo family, so production's jobs leave it alone (D-62); the page says so.
-  expect(sql(`select is_demo from public.household where id = '${DEMO}'`)).toBe('t');
+  expect(sql(`select is_demo from public.household where id = '${HOUSEHOLD}'`)).toBe('t');
   await expect(
     page.getByText('The background jobs leave the demo family alone', { exact: false }),
   ).toBeVisible();
@@ -84,7 +86,7 @@ test('[NFR-18-x][NFR-07] a failing job is named on the folded header, shows with
 test('[NFR-07] after a good run the job is fine again', async ({ page }) => {
   // A later transaction than beforeAll's failing run, so now() is already after it (not in the future).
   sql(`insert into public.job_run (household_id, job_type, status, started_at, finished_at, stats)
-       values ('${DEMO}', 'heartbeat', 'ok', now(), now(), '{"e2e": true}');`);
+       values ('${HOUSEHOLD}', 'heartbeat', 'ok', now(), now(), '{"e2e": true}');`);
   await asAlexOnHealth(page);
   await openFolds(page);
   const heartbeat = page

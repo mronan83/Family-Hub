@@ -3,6 +3,7 @@ import { expect, test, type Page } from '../support/test';
 import { pairBoard, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 import { DRIFT_PX } from '../../apps/web/lib/board-sleep';
+import { ownHousehold } from '../support/household';
 
 // [BRD-09][US-1008] The board's home screen on one screen (WP-48, D-74), on the preview, at the
 // reference panel's 3840×2160 (1920×1080 CSS px at device scale 2) and in a 13" laptop's browser
@@ -10,8 +11,9 @@ import { DRIFT_PX } from '../../apps/web/lib/board-sleep';
 // every card with no page scroll at both sizes; Month chosen on the board shows the month there and
 // changes nothing saved for the board. The idle return to the board's own view is in the UI suite
 // (e2e/ui/dashboard.spec.ts), where the clock can run ahead. The board is disconnected at the end.
+const family = ownHousehold('board-home');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'One screen e2e';
 const sql = (q: string) => query(db!, q);
 
@@ -30,7 +32,7 @@ function report(line: string) {
 const saved = () =>
   sql(`select coalesce(d.board_config::text, '') || ' | ' || coalesce(s.board_layout::text, '')
          from public.device d join public.household_settings s using (household_id)
-        where d.household_id = '${DEMO}' and d.name = '${BOARD}'`);
+        where d.household_id = '${HOUSEHOLD}' and d.name = '${BOARD}'`);
 
 /**
  * Each part of the home screen outside the screen, how far the page scrolls, and whether the board
@@ -72,9 +74,11 @@ test.beforeAll(async ({ browser }, testInfo) => {
   // [D-110] One screen is judged on the household's default layout (the cards a board shows by
   // default), whatever another spec left: set here, put back after.
   layout = sql(
-    `select board_layout::text from public.household_settings where household_id = '${DEMO}'`,
+    `select board_layout::text from public.household_settings where household_id = '${HOUSEHOLD}'`,
   );
-  sql(`update public.household_settings set board_layout = '{}' where household_id = '${DEMO}'`);
+  sql(
+    `update public.household_settings set board_layout = '{}' where household_id = '${HOUSEHOLD}'`,
+  );
   const paired = await pairBoard(browser, BOARD, {
     admin: { viewport: { width: 390, height: 844 } },
     board: { viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 2 },
@@ -87,7 +91,7 @@ test.afterAll(async () => {
   await retireBoard(board, BOARD);
   if (layout) {
     sql(`update public.household_settings set board_layout = '${layout.replace(/'/g, "''")}'::jsonb
-          where household_id = '${DEMO}'`);
+          where household_id = '${HOUSEHOLD}'`);
   }
 });
 

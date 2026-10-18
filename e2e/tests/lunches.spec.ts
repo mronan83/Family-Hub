@@ -7,6 +7,7 @@ import { addDays, householdToday } from '../support/day';
 import { withSchoolDays } from '../support/school';
 import { signIn } from '../support/session';
 import { loadWords, slowReads } from '../../scripts/e2e-infra.mjs';
+import { ownHousehold } from '../support/household';
 
 // [MEAL-09][MEAL-11][US-707][D-95] Next week's lunches picked on the board, on the preview (WP-49).
 // The done-when: a weekly item opens Maya's coming week on a paired board; a day changed there shows
@@ -20,8 +21,9 @@ import { loadWords, slowReads } from '../../scripts/e2e-infra.mjs';
 // today is open), else the next school day. Maya's menu, the cut-off and the day are put back at the
 // end; the item, menu, school days and board are removed. The tests are one story (the picks made in
 // the first are approved, then changed), so they are one test with a step each.
+const family = ownHousehold('lunches');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Lunches e2e';
 const ITEM = 'Pick next week’s lunches e2e';
 const MENU = 'Lunches e2e';
@@ -66,15 +68,15 @@ const cleanUp = () =>
          delete from public.lunch_choice where member_id = '${maya}' and lunch_date = '${day}';`
       : ''
   }
-       delete from public.chore c where c.household_id = '${DEMO}' and c.title = '${ITEM.replace(/'/g, "''")}'
+       delete from public.chore c where c.household_id = '${HOUSEHOLD}' and c.title = '${ITEM.replace(/'/g, "''")}'
           and not exists (select from public.chore_occurrence o
                             join public.chore_completion_event e on e.occurrence_id = o.id
                            where o.chore_id = c.id);
        update public.chore set archived_at = now(), title = title || ' (old)'
-        where household_id = '${DEMO}' and title = '${ITEM.replace(/'/g, "''")}';
+        where household_id = '${HOUSEHOLD}' and title = '${ITEM.replace(/'/g, "''")}';
        update public.member_lunch set menu_source_id = ${before.menu ? `'${before.menu}'` : 'null'}
         where member_id = '${maya}';
-       delete from public.menu_source where household_id = '${DEMO}' and name = '${MENU}';`);
+       delete from public.menu_source where household_id = '${HOUSEHOLD}' and name = '${MENU}';`);
 
 test.beforeAll(async ({ browser }, testInfo) => {
   // Signing in and pairing a board can take most of 30 s on a cold preview.
@@ -82,7 +84,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
   today = householdToday(db!);
   TODAY = `'${today}'::date`;
   maya = sql(
-    `select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`,
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Maya'`,
   );
   // [D-110] School days of her own, whatever the date: every weekday of the next two weeks.
   noSchoolDays = withSchoolDays(db!, [maya], today, addDays(today, 14));
@@ -91,7 +93,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
       `select coalesce(menu_source_id::text, '') from public.member_lunch where member_id = '${maya}'`,
     ),
     cutoff: sql(
-      `select to_char(lunch_cutoff, 'HH24:MI') from public.household_settings where household_id = '${DEMO}'`,
+      `select to_char(lunch_cutoff, 'HH24:MI') from public.household_settings where household_id = '${HOUSEHOLD}'`,
     ),
     change: '',
   };
@@ -103,34 +105,36 @@ test.beforeAll(async ({ browser }, testInfo) => {
     `select coalesce(mode, '') from public.lunch_override where member_id = '${maya}' and lunch_date = '${day}'`,
   );
   cleanUp();
-  sql(`update public.household_settings set lunch_cutoff = '23:59' where household_id = '${DEMO}'`);
+  sql(
+    `update public.household_settings set lunch_cutoff = '23:59' where household_id = '${HOUSEHOLD}'`,
+  );
   sql(`insert into public.menu_source (household_id, name, adapter, config)
-       values ('${DEMO}', '${MENU}', 'manual', '{}')`);
+       values ('${HOUSEHOLD}', '${MENU}', 'manual', '{}')`);
   sql(`insert into public.school_menu_day (household_id, source_id, menu_date, meal_service, items, origin,
                                            is_override)
-       select '${DEMO}', s.id, d::date, 'lunch', '${items}'::jsonb, 'manual', true
+       select '${HOUSEHOLD}', s.id, d::date, 'lunch', '${items}'::jsonb, 'manual', true
          from public.menu_source s, generate_series(${TODAY}, ${TODAY} + 21, interval '1 day') d
-        where s.household_id = '${DEMO}' and s.name = '${MENU}'`);
+        where s.household_id = '${HOUSEHOLD}' and s.name = '${MENU}'`);
   sql(`insert into public.member_lunch (member_id, household_id, menu_source_id)
-       values ('${maya}', '${DEMO}', (select id from public.menu_source where household_id = '${DEMO}' and name = '${MENU}'))
+       values ('${maya}', '${HOUSEHOLD}', (select id from public.menu_source where household_id = '${HOUSEHOLD}' and name = '${MENU}'))
        on conflict (member_id) do update set menu_source_id = excluded.menu_source_id`);
   // Bring that day, so she changes it to Buy.
   sql(`select set_config('request.jwt.claims', '{}', false);
        delete from public.lunch_override where member_id = '${maya}' and lunch_date = '${day}';
        insert into public.lunch_override (household_id, member_id, lunch_date, mode)
-       select '${DEMO}', '${maya}', '${day}', 'bring' where private.usual_lunch('${maya}', '${day}') = 'buy'`);
+       select '${HOUSEHOLD}', '${maya}', '${day}', 'bring' where private.usual_lunch('${maya}', '${day}') = 'buy'`);
   // [MEAL-09] The weekly item that opens Lunches, due today for Maya, set on the item in Chores.
   sql(`with c as (
          insert into public.chore (household_id, title, icon, kind, points, schedule, day_types, start_date,
                                    assignment, opens)
-         values ('${DEMO}', '${ITEM.replace(/'/g, "''")}', 'lunch', 'task', 0,
+         values ('${HOUSEHOLD}', '${ITEM.replace(/'/g, "''")}', 'lunch', 'task', 0,
                  jsonb_build_object('freq', 'once', 'on_date', ${TODAY}),
                  array['school_day', 'no_school', 'break', 'weekend', 'summer'], ${TODAY}, 'each', 'lunches')
          returning id)
        insert into public.chore_assignee (household_id, chore_id, member_id)
-       select '${DEMO}', c.id, '${maya}' from c`);
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
+       select '${HOUSEHOLD}', c.id, '${maya}' from c`);
+  sql(`delete from public.device_pairing where household_id = '${HOUSEHOLD}' and device_name = '${BOARD}';
+       delete from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}';`);
 
   admin = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   await signIn(admin);
@@ -152,12 +156,12 @@ test.afterAll(async () => {
   try {
     cleanUp();
     sql(`update public.household_settings set lunch_cutoff = '${before.cutoff || '08:00'}'
-          where household_id = '${DEMO}'`);
+          where household_id = '${HOUSEHOLD}'`);
     if (day)
       sql(
         before.change
           ? `insert into public.lunch_override (household_id, member_id, lunch_date, mode)
-           values ('${DEMO}', '${maya}', '${day}', '${before.change}')
+           values ('${HOUSEHOLD}', '${maya}', '${day}', '${before.change}')
            on conflict (member_id, lunch_date) do update set mode = excluded.mode`
           : `delete from public.lunch_override where member_id = '${maya}' and lunch_date = '${day}'`,
       );
@@ -315,7 +319,7 @@ test('[MEAL-09][MEAL-11][US-707][NFR-14-q] done-when: the item opens Maya’s we
       .poll(
         () =>
           sql(`select o.status from public.chore_occurrence o join public.chore c on c.id = o.chore_id
-              where c.household_id = '${DEMO}' and c.title = '${ITEM.replace(/'/g, "''")}'
+              where c.household_id = '${HOUSEHOLD}' and c.title = '${ITEM.replace(/'/g, "''")}'
                 and o.member_id = '${maya}'`),
         { message: 'the item’s occurrence for Maya' },
       )

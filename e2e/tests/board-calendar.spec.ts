@@ -4,6 +4,7 @@ import { boardFold, pairBoard, retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
 import { foldOf, unfold } from '../support/fold';
+import { ownHousehold } from '../support/household';
 
 // [CAL-04][CAL-05][CAL-09][CAL-10][US-507][US-508][US-509] Calendars on a board, on the preview at the reference panel's 3840×2160
 // (WP-23, D-65). Two made-up calendars of the demo family (School, Maya's, and Family) are connected
@@ -13,8 +14,9 @@ import { foldOf, unfold } from '../support/fold';
 // seconds; ticked again, they come back in School's color. A calendar connected afterwards stays off
 // this board, which now has its own choice. WP-50's done-when: School given Leo as well as Maya on
 // Calendars shows both their faces on the board. Everything made here is removed at the end.
+const family = ownHousehold('board-calendar');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Calendar e2e';
 const sql = (q: string) => query(db!, q);
 
@@ -85,14 +87,18 @@ async function connect(
   const link = `https://calendar.familywise.invalid/${slug}.ics`;
   FILES[link] = calendarFile(slug, event, allDay);
   const alex = sql(
-    `select user_id from public.member where household_id = '${DEMO}' and display_name = 'Alex'`,
+    `select user_id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Alex'`,
   );
   sql(`select set_config('request.jwt.claims', '{"sub":"${alex}","role":"authenticated"}', false);
-       select public.save_calendar('${DEMO}', null, '${name}', '${link}', '${color}',
+       select public.save_calendar('${HOUSEHOLD}', null, '${name}', '${link}', '${color}',
          array[${member ? `'${member}'` : ''}]::uuid[], true)`);
-  await runCalendarSync(ownCalendars as unknown as Parameters<typeof runCalendarSync>[0], DEMO, {
-    fetch: serve,
-  });
+  await runCalendarSync(
+    ownCalendars as unknown as Parameters<typeof runCalendarSync>[0],
+    HOUSEHOLD,
+    {
+      fetch: serve,
+    },
+  );
 }
 /**
  * The job's database access as the service role, syncing only this spec's calendars: another
@@ -115,7 +121,7 @@ const ownCalendars = {
 const CALENDARS = ['School e2e', 'Family e2e', 'Sports e2e'];
 function cleanUp() {
   // Each calendar's link goes from Vault with it (trg_calendar_source_secrets).
-  sql(`delete from public.calendar_source where household_id = '${DEMO}'
+  sql(`delete from public.calendar_source where household_id = '${HOUSEHOLD}'
          and name in (${CALENDARS.map((c) => `'${c}'`).join(', ')})`);
 }
 
@@ -223,7 +229,7 @@ test.beforeAll(async ({ browser }, testInfo) => {
   cleanUp();
   today = householdToday(db!);
   const maya = sql(
-    `select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`,
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Maya'`,
   );
   await connect('School e2e', 'school-e2e', 'member-3', maya, 'Picture day e2e', true);
   await connect('Family e2e', 'family-e2e', 'member-6', null, 'Swim e2e', false);
@@ -333,7 +339,7 @@ test('[CAL-05][US-507][NFR-14-b] this board’s own calendars: School unticked l
     // Sports shows on the boards by default; this board chose its own, so not here.
     expect(
       sql(
-        `select show_on_board from public.calendar_source where household_id = '${DEMO}' and name = 'Sports e2e'`,
+        `select show_on_board from public.calendar_source where household_id = '${HOUSEHOLD}' and name = 'Sports e2e'`,
       ),
     ).toBe('t');
     await board.reload();
@@ -347,9 +353,11 @@ test('[CAL-05][US-507][NFR-14-b] this board’s own calendars: School unticked l
 // board shows both their faces. School is put back to Maya's alone afterwards.
 test('[CAL-09-f][US-508][NFR-14-h] a calendar given two people on Calendars shows both faces on the board', async () => {
   const id = (name: string) =>
-    sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+    sql(
+      `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+    );
   const school = sql(
-    `select id from public.calendar_source where household_id = '${DEMO}' and name = 'School e2e'`,
+    `select id from public.calendar_source where household_id = '${HOUSEHOLD}' and name = 'School e2e'`,
   );
   try {
     await test.step('Alex ticks Leo for School on Calendars and saves', async () => {
