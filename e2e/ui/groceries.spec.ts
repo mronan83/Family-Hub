@@ -148,6 +148,15 @@ test.describe('the admin app’s Groceries', () => {
     const edit = page.getByRole('form', { name: 'Edit Onions' });
     await expect(edit.getByLabel('Amount')).toHaveValue('×3');
     await expect(edit.getByLabel('Name')).toHaveValue('Onions');
+    // On a phone both fields fit inside the form.
+    await page.setViewportSize({ width: 390, height: 844 });
+    const spill = await edit.evaluate((f) => {
+      const box = f.getBoundingClientRect();
+      return [...f.querySelectorAll('input:not([type=hidden])')]
+        .filter((i) => i.getBoundingClientRect().right > box.right + 0.5)
+        .map((i) => i.getAttribute('name'));
+    });
+    expect(spill).toEqual([]);
     await open(page, '/dev/groceries?move=Onions');
     await expect(
       page.getByRole('form', { name: 'Move Onions to' }).getByRole('radio', { name: 'Produce' }),

@@ -6293,6 +6293,14 @@ textarea.fw-groc__addinput {
   display: flex;
   gap: var(--s-2);
 }
+/* Each field takes its share of the row, not the browser's default input width, so the two fit a
+   phone. */
+.fw-groc__editrow > .fw-field {
+  min-width: 0;
+}
+.fw-groc__editrow .fw-input {
+  width: 100%;
+}
 .fw-groc__amtfield {
   flex: 0 0 96px;
 }
