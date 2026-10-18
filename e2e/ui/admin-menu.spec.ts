@@ -49,6 +49,7 @@ test.describe('on a laptop', () => {
       'Rewards',
       'Goals',
       'Meals',
+      'Groceries',
       'Insights',
       'Settings',
     ]);

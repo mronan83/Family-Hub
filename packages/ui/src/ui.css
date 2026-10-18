@@ -5848,3 +5848,461 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   background: var(--missed-tint);
   color: var(--missed-text);
 }
+
+/* [MEAL-18][MEAL-23][MEAL-24] Groceries in the admin app (WP-104, D-138): the add field open at the
+   top with its suggestion chips, the list by category with a tick, the row's words and ⋯, store
+   chips, Select's bar, Got recently, and the household's categories and stores. */
+.fw-groc__head h1 {
+  margin: 0;
+}
+.fw-groc__state {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-groc__add,
+.fw-groc__placeform {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-groc__addrow {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+}
+.fw-groc__addfield {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.fw-groc__addfield .fw-input {
+  width: 100%;
+}
+.fw-groc__sug {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.fw-groc__sug legend {
+  float: left;
+  min-width: 64px;
+  margin-right: var(--s-2);
+  font-weight: 600;
+  font-size: var(--t-small);
+}
+.fw-groc__from {
+  flex-basis: 100%;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-groc__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.fw-groc__more-chips {
+  display: contents;
+}
+.fw-groc__more-chips[open] > .fw-groc__chips {
+  flex-basis: 100%;
+}
+.fw-groc__more-chips > summary {
+  list-style: none;
+}
+.fw-groc__more-chips > summary::-webkit-details-marker {
+  display: none;
+}
+.fw-groc__chip,
+.admin a.fw-groc__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: var(--touch);
+  padding: 0 var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 600;
+  font-size: var(--t-small);
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+}
+.fw-groc__chip .fw-icon {
+  color: var(--primary-text);
+}
+.fw-groc__chip b {
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.fw-groc__chip:has(input:checked),
+.admin a.fw-groc__chip[aria-current='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-groc__chip:has(input:focus-visible),
+.fw-groc__chip:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-groc__also {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--primary-tint);
+  color: var(--text);
+}
+.fw-groc__also .fw-icon {
+  color: var(--primary-text);
+}
+.fw-groc__listhead {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.fw-groc__listhead h2 {
+  margin: 0;
+}
+.fw-groc__count,
+.fw-groc__n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  padding: 1px var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--bg);
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.fw-groc__n {
+  border: 0;
+  background: none;
+  min-width: 0;
+  padding: 0;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.fw-groc__grow {
+  flex: 1 1 auto;
+}
+.fw-groc__sech {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: var(--s-4) 0 var(--s-1);
+  color: var(--text-soft);
+}
+.fw-groc__sech h3 {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.fw-groc__sech .fw-icon {
+  color: var(--primary-text);
+}
+.admin a.fw-groc__secadd {
+  display: inline-grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--primary-text);
+}
+.fw-groc__rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-groc__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--touch) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 var(--s-2);
+  min-height: 56px;
+  padding: var(--s-1) 0;
+  border-bottom: var(--border-w) solid var(--line);
+}
+.fw-groc__row:last-child {
+  border-bottom: 0;
+}
+.fw-groc__row > .fw-groc__panel,
+.fw-groc__row > .fw-groc__placeform,
+.fw-groc__row > form.fw-form {
+  grid-column: 1 / -1;
+}
+.fw-groc__row--sel {
+  margin: 0 calc(-1 * var(--s-2));
+  padding-inline: var(--s-2);
+  border-radius: var(--r-sm);
+  background: var(--primary-tint);
+}
+.fw-groc__row--got,
+.fw-groc__place {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.fw-groc__place {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.fw-groc__tick {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  margin: 0;
+}
+.fw-groc__box {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.fw-groc__box::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--field-edge);
+  border-radius: 5px;
+}
+.fw-groc__box:hover::before {
+  border-color: var(--primary);
+}
+.fw-groc__box:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+  border-radius: var(--r-sm);
+}
+.fw-groc__words {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.fw-groc__l1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--s-2);
+  min-width: 0;
+}
+.fw-groc__l1 strong {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.fw-groc__amt {
+  color: var(--text-soft);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.fw-groc__l2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--s-1);
+  font-size: var(--t-small);
+  color: var(--text-soft);
+  overflow-wrap: anywhere;
+}
+.fw-groc__why {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.fw-groc__why .fw-icon {
+  color: var(--primary-text);
+}
+.fw-groc__why .fw-avatar {
+  width: 20px;
+  height: 20px;
+}
+.fw-groc__store {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 7px;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+}
+.fw-groc__store .fw-icon {
+  color: var(--primary-text);
+}
+.fw-groc__more {
+  position: relative;
+}
+.fw-groc__more > summary {
+  list-style: none;
+}
+.fw-groc__more > summary::-webkit-details-marker {
+  display: none;
+}
+.fw-groc__morebtn,
+.fw-groc__iconbtn {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  padding: 0;
+  border: var(--border-w) solid transparent;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+.fw-groc__iconbtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.fw-groc__more[open] > .fw-groc__morebtn {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-groc__morebtn:focus-visible,
+.fw-groc__iconbtn:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-groc__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 5;
+  display: grid;
+  min-width: 240px;
+  padding: var(--s-1);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.fw-groc__mh {
+  display: grid;
+  gap: 2px;
+  padding: var(--s-2) var(--s-3) var(--s-1);
+  border-bottom: var(--border-w) solid var(--line);
+  margin-bottom: var(--s-1);
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-groc__mh b {
+  color: var(--text);
+}
+.fw-groc__mi,
+.admin a.fw-groc__mi {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.fw-groc__mi:hover,
+.fw-groc__mi:focus-visible {
+  background: var(--primary-tint);
+}
+.fw-groc__mi .fw-icon {
+  color: var(--primary-text);
+}
+.fw-groc__mi--rm .fw-icon {
+  color: var(--missed);
+}
+.fw-groc__panel {
+  display: grid;
+  gap: var(--s-2);
+  margin: var(--s-2) 0;
+  padding: var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.fw-groc__panel-h {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-groc__opt {
+  min-height: var(--touch);
+}
+.fw-groc__editrow {
+  display: flex;
+  gap: var(--s-2);
+}
+.fw-groc__amtfield {
+  flex: 0 0 96px;
+}
+.fw-groc__selbar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-w) solid var(--primary);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.fw-groc__selbar > .fw-groc__panel {
+  flex-basis: 100%;
+}
+.fw-groc__select .fw-groc__row {
+  grid-template-columns: var(--touch) minmax(0, 1fr);
+}
+.fw-groc__empty {
+  margin: 0;
+  padding: var(--s-3) 0 var(--s-1);
+  color: var(--text-soft);
+}
+.fw-groc__tile {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-groc__placeacts {
+  display: flex;
+  align-items: center;
+}

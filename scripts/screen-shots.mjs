@@ -58,6 +58,15 @@ export const ADMIN = [
   ['health', '/dev/health'],
   ['settings', '/dev/settings'],
   ['insights', '/dev/insights'],
+  // [MEAL-18][MEAL-23][MEAL-24] WP-104's Groceries, as the smart grocery list mockup draws it (D-138):
+  // busy, an item's ⋯, adding with the suggestion, moving several, categories and stores, empty.
+  ['groceries', '/dev/groceries'],
+  ['groceries-menu', '/dev/groceries?menu=Onions'],
+  ['groceries-adding', '/dev/groceries?typed=greek%20yog'],
+  ['groceries-select', '/dev/groceries?select=1&sel=Apples,Avocados,Bananas&panel=move'],
+  ['groceries-places', '/dev/groceries?store=Costco&open=places'],
+  ['groceries-got', '/dev/groceries?open=got'],
+  ['groceries-empty', '/dev/groceries?state=empty'],
 ];
 /** [name, query, person] per board screen: Maya's goal cards. */
 export const BOARD = [

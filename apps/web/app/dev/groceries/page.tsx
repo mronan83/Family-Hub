@@ -1,0 +1,51 @@
+import type { Metadata } from 'next';
+import { GroceriesView } from '../../(admin)/admin/groceries/view';
+import { groceriesData, NOW, TZ } from './fixture';
+
+// The admin Groceries page (WP-104) with the made-up demo family and no database, for the UI suite,
+// the screen shots and the guide: Day or Evening (?theme=evening); ?state=empty; the add field typed
+// into (?typed=greek yog); an item's ⋯ open (?menu=Onions); Select with three picked and Move to
+// open (?select=1&sel=Apples,Avocados,Bananas&panel=move); a store chip (?store=Costco); Got
+// recently or Categories and stores open (?open=got, ?open=places); a row's Edit, Move to or Store
+// (?edit=Onions, ?move=Onions, ?storeOf=Onions).
+export const metadata: Metadata = { title: 'Groceries', robots: { index: false } };
+
+type Params = Record<string, string | undefined>;
+
+export default async function DevGroceriesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Params>;
+}) {
+  const p = await searchParams;
+  const theme = p.theme === 'evening' ? 'theme-evening' : 'theme-day';
+  const data = groceriesData(p.state === 'empty' ? 'empty' : 'busy');
+  const idOf = (name: string | undefined) =>
+    name ? data.items.find((i) => i.name === name)?.id : undefined;
+  const store = p.store
+    ? (data.stores.find((s) => s.name === p.store || s.id === p.store)?.id ?? p.store)
+    : undefined;
+  return (
+    <div className={`admin ${theme}`}>
+      <GroceriesView
+        data={data}
+        timezone={TZ}
+        now={NOW}
+        query={{
+          ...p,
+          store,
+          edit: idOf(p.edit),
+          move: idOf(p.move),
+          storeOf: idOf(p.storeOf),
+          sel: p.sel
+            ?.split(',')
+            .map((n) => idOf(n))
+            .filter(Boolean)
+            .join(','),
+        }}
+        error={null}
+        dev={{ typed: p.typed, menu: idOf(p.menu), panel: p.panel }}
+      />
+    </div>
+  );
+}

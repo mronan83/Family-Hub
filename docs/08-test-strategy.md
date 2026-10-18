@@ -272,7 +272,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2751** tests: Unit 849 · DB 1502 · UI 272 · E2E 128. 2254 name at least one ID; 497 name none.
+**2768** tests: Unit 857 · DB 1502 · UI 280 · E2E 129. 2271 name at least one ID; 497 name none.
 
 | Measure | Count |
 |---|---|
@@ -281,7 +281,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 104 of 129 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 183 (with a test: 157) |
+| Test cases | 183 (with a test: 167) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -300,14 +300,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 66 | 54 | 30 | 11 | 161 |
+| Meals and lunch | 74 | 54 | 38 | 12 | 178 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
 | Platform | 186 | 167 | 57 | 15 | 425 |
 | Not named | 58 | 474 | 10 | 1 | 543 |
-| **Total** | **849** | **1502** | **272** | **128** | **2751** |
+| **Total** | **857** | **1502** | **280** | **129** | **2768** |
 
 ### 9.3 By requirement
 
@@ -408,13 +408,13 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-15 | S | Covered | US-701 | WP-76 | — | DB 4 · UI 3 · E2E 1 |
 | MEAL-16 | S | Not built | US-712 | WP-103 | — | — |
 | MEAL-17 | S | Not built | US-713 | WP-103 | — | — |
-| MEAL-18 | S | Not built | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | DB 5 |
+| MEAL-18 | S | Not built | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 1 · DB 5 · UI 4 · E2E 1 |
 | MEAL-19 | S | Not built | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 1 |
 | MEAL-20 | S | Not built | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 |
 | MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
 | MEAL-22 | S | Not built | US-717 | WP-107 | — | — |
-| MEAL-23 | S | Not built | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | DB 3 |
-| MEAL-24 | S | Not built | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | DB 1 |
+| MEAL-23 | S | Not built | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | U 3 · DB 3 · UI 3 · E2E 1 |
+| MEAL-24 | S | Not built | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 4 · DB 1 · UI 1 |
 | MEAL-25 | S | Not built | US-720 | WP-105 | MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | — |
 | MEAL-26 | S | Not built | US-720 | WP-105 | MEAL-26-a | — |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
@@ -567,7 +567,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-101 | Done | NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | 9 of 9 | — |
 | WP-102 | Done | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | 8 of 8 | — |
 | WP-103 | Queued: | — | — | — |
-| WP-104 | Ready | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 5 of 16 | — |
+| WP-104 | Ready | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 15 of 16 | — |
 | WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 5 of 20 | — |
 | WP-106 | Queued | — | — | — |
 | WP-107 | Queued | — | — | — |
@@ -729,19 +729,19 @@ Test cases and the tests that prove them:
 | NFR-14-n | WP-98 | `e2e.yml` can be started by hand (`workflow_dispatch`), on `main` only and only when no other e2e run is queued or going, so it never displaces one; it shares the one `demo-family` group with no other trigger, and the findings log runs after every run | Unit | Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] a run by hand starts on main when no other e2e run is queued or going`<br>Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] a run by hand never displaces or joins behind another run, and starts on main only`<br>Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] e2e.yml can be run by hand, guarded, in the one demo-family group, and logs every run` |
 | MEAL-18-a | WP-104 | The grocery list, its items, their reasons and their history are the household's own: another household's admin and board read none of them and write none; the household's board reads its list and writes nothing | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] not onto another family's list`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] nobody writes the list directly`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] the household's board reads its list, reasons and categories` |
 | MEAL-18-b | WP-104 | Ticking an item records a tick with when and who, unticking puts it back on the list, and removing it is not a tick; every event stays in the history after the item is removed | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-b] ticking is a buy`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-b] unticking puts it back` |
-| MEAL-18-c | WP-104 | Got recently holds the items ticked in the last 7 days, newest first, and not one ticked 8 days ago; a ticked item is off the list at once | Unit | **none** |
-| MEAL-18-d | WP-104 | The admin app's Groceries on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: the add field open at the top, the list by category A to Z with each item's amount, store and why, an item's ⋯ (why it's on the list, Edit, Move to…, Store…, Select several, Remove), Got recently with Untick; nothing overflows, contrast is AA, targets are 44 px | UI | **none** |
+| MEAL-18-c | WP-104 | Got recently holds the items ticked in the last 7 days, newest first, and not one ticked 8 days ago; a ticked item is off the list at once | Unit | Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-18-c] Got recently: ticked in the last 7 days, newest first; not 8 days ago` |
+| MEAL-18-d | WP-104 | The admin app's Groceries on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: the add field open at the top, the list by category A to Z with each item's amount, store and why, an item's ⋯ (why it's on the list, Edit, Move to…, Store…, Select several, Remove), Got recently with Untick; nothing overflows, contrast is AA, targets are 44 px | UI | UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] the list by category, A to Z, with amount, store and why; fits in ${theme}`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an item’s ⋯ says why it is on the list and holds the rest`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] Got recently: what was got this week, with Untick`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an empty list says so` |
 | MEAL-18-e | WP-104 | The board's Groceries on the demo family, Day and Evening: the list by category A to Z with each item's picture, amount, and why for a meal; text 28 px or more; nothing on it changes the list; an empty list says "Nothing on the list right now."; Groceries is in the rail once the household has had its first item | UI | **none** |
-| MEAL-18-f | WP-104 | On the real preview, an admin adds an item, ticks it, finds it under Got recently and unticks it back onto the list | E2E | **none** |
-| MEAL-23-a | WP-104 | The list groups by the household's categories in their order, Other last, with items A to Z inside, whatever their capitals; a store chip shows only that store's items, still by category; Any store shows the items with no store; the counts on the chips match | Unit | **none** |
+| MEAL-18-f | WP-104 | On the real preview, an admin adds an item, ticks it, finds it under Got recently and unticks it back onto the list | E2E | E2E `e2e/tests/groceries.spec.ts`: `[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at once` |
+| MEAL-23-a | WP-104 | The list groups by the household's categories in their order, Other last, with items A to Z inside, whatever their capitals; a store chip shows only that store's items, still by category; Any store shows the items with no store; the counts on the chips match | Unit | Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] groups by the household’s categories in their order, Other last, A to Z inside`<br>Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] a store chip shows only its items, still by category; Any store those with none`<br>Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] each item says what to buy and why, the meals once each` |
 | MEAL-23-b | WP-104 | Categories and stores are the household's own: added, renamed, ordered and removed only by its admins; removing a category moves its items to Other; Other can't be removed or renamed; a removed store leaves its items with no store | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-23-b] several items move to a category at once`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-23-b] a parent adds a category` |
 | MEAL-23-c | WP-104 | A new household starts with the made-up starter categories, Other, the six starter stores and its list | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-23-c] a new household starts with the starter categories, Other last` |
-| MEAL-23-d | WP-104 | Select, tick three items, Move to… a new category: all three move at once; Store… sets the store of several; Remove takes several off after asking; the store chips filter the list; Categories and stores adds, renames, reorders and removes, asking before a category with items goes | UI | **none** |
-| MEAL-23-e | WP-104 | On the real preview, an admin selects several items and moves them to another category at once | E2E | **none** |
-| MEAL-24-a | WP-104 | The suggestion for an item had before is the category and store it had last time | Unit | **none** |
-| MEAL-24-b | WP-104 | An item never had before takes the category the household's own words point to, learned from earlier moves, before the starter list; a move teaches every word of its name | Unit | **none** |
-| MEAL-24-c | WP-104 | An item neither had before nor learned takes the starter list's category, built from Open Food Facts' categories; a renamed starter category is still found; a removed one gives Other | Unit | **none** |
-| MEAL-24-d | WP-104 | An item nothing knows goes to Other with any store; one tap changes the suggestion before Add | Unit | **none** |
+| MEAL-23-d | WP-104 | Select, tick three items, Move to… a new category: all three move at once; Store… sets the store of several; Remove takes several off after asking; the store chips filter the list; Categories and stores adds, renames, reorders and removes, asking before a category with items goes | UI | UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-23-d] Select: tick several, then Move to…, Store… or Remove for all at once`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-23-d] the store chips filter the list, still by category`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-23-d] Categories and stores: in order, each to rename, move or remove; removing one with items asks` |
+| MEAL-23-e | WP-104 | On the real preview, an admin selects several items and moves them to another category at once | E2E | E2E `e2e/tests/groceries.spec.ts`: `[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at once` |
+| MEAL-24-a | WP-104 | The suggestion for an item had before is the category and store it had last time | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-a] an item had before gets the category and store it had last time` |
+| MEAL-24-b | WP-104 | An item never had before takes the category the household's own words point to, learned from earlier moves, before the starter list; a move teaches every word of its name | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-b] a new item takes the household’s learned words before the starter list` |
+| MEAL-24-c | WP-104 | An item neither had before nor learned takes the starter list's category, built from Open Food Facts' categories; a renamed starter category is still found; a removed one gives Other | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-c] an item nothing has taught takes the starter list’s category, renamed or not` |
+| MEAL-24-d | WP-104 | An item nothing knows goes to Other with any store; one tap changes the suggestion before Add | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-d] an item nothing knows goes to Other, with any store`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-24-d] adding suggests the category and store before Add; one tap changes it` |
 | MEAL-24-e | WP-104 | Moving items teaches their words to their own household only | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-24-e] the move teaches each word of their names` |
 | MEAL-07-a | WP-105 | A meal's ingredients are kept as rows of a name, an optional amount to buy and We usually have it; a row with no name, a name over 80 characters or more than 60 rows is refused | DB | **none** |
 | MEAL-07-b | WP-105 | A meal's form shows its Ingredients, a row each with the amount, the name and We usually have it, the last row adding one and × removing one; saved and opened again, they are as typed | UI | **none** |
@@ -1422,6 +1422,21 @@ Unit · 26 tests
 | `repeating goals (WP-80) › [RWD-15-j] a goal without a repeat doesn’t repeat; an unknown one is read as none` | RWD-15-j, WP-80 |
 | `repeating goals (WP-80) › [RWD-16-i] every day it’s due on a goal that doesn’t repeat says what to fix` | RWD-16-i, WP-80 |
 | `repeating goals (WP-80) › [RWD-16] describes the rule, and a period’s events and a stop` | RWD-16, WP-80 |
+
+#### `apps/web/lib/groceries.test.ts`
+
+Unit · 8 tests
+
+| Test | Names |
+|---|---|
+| `the list › [MEAL-23-a] groups by the household’s categories in their order, Other last, A to Z inside` | MEAL-23-a |
+| `the list › [MEAL-23-a] a store chip shows only its items, still by category; Any store those with none` | MEAL-23-a |
+| `the list › [MEAL-18-c] Got recently: ticked in the last 7 days, newest first; not 8 days ago` | MEAL-18-c |
+| `the list › [MEAL-23-a] each item says what to buy and why, the meals once each` | MEAL-23-a |
+| `the suggestion › [MEAL-24-a] an item had before gets the category and store it had last time` | MEAL-24-a |
+| `the suggestion › [MEAL-24-b] a new item takes the household’s learned words before the starter list` | MEAL-24-b |
+| `the suggestion › [MEAL-24-c] an item nothing has taught takes the starter list’s category, renamed or not` | MEAL-24-c |
+| `the suggestion › [MEAL-24-d] an item nothing knows goes to Other, with any store` | MEAL-24-d |
 
 #### `apps/web/lib/grocery-merge.test.ts`
 
@@ -2183,6 +2198,14 @@ E2E · 3 tests
 | `[RWD-09][US-405] an achieved goal is marked redeemed: it moves to history with who and when` | RWD-09, US-405 |
 | `[RWD-01][RWD-06] a parent sets a goal through the form, then cancels it` | RWD-01, RWD-06 |
 
+#### `e2e/tests/groceries.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at once` | MEAL-18-f, MEAL-23-e |
+
 #### `e2e/tests/health.spec.ts`
 
 E2E · 3 tests
@@ -2708,6 +2731,21 @@ UI · 14 tests
 | `[RWD-15-l][RWD-16][US-410] a repeating goal on Goals: this week’s days, a lost week, and the weeks` | RWD-15-l, RWD-16, US-410 |
 | `[RWD-15-l][RWD-15-e] a repeating goal’s page: how it repeats stays, its rule and its weeks` | RWD-15-e, RWD-15-l |
 | `[RWD-15-l][RWD-16-i] a new goal: choosing how it repeats offers "every day it’s due" and its misses` | RWD-15-l, RWD-16-i |
+
+#### `e2e/ui/groceries.spec.ts`
+
+UI · 8 tests
+
+| Test | Names |
+|---|---|
+| `the admin app’s Groceries › [MEAL-18-d] the list by category, A to Z, with amount, store and why; fits in ${theme}` | MEAL-18-d |
+| `the admin app’s Groceries › [MEAL-18-d] an item’s ⋯ says why it is on the list and holds the rest` | MEAL-18-d |
+| `the admin app’s Groceries › [MEAL-24-d] adding suggests the category and store before Add; one tap changes it` | MEAL-24-d |
+| `the admin app’s Groceries › [MEAL-23-d] Select: tick several, then Move to…, Store… or Remove for all at once` | MEAL-23-d |
+| `the admin app’s Groceries › [MEAL-23-d] the store chips filter the list, still by category` | MEAL-23-d |
+| `the admin app’s Groceries › [MEAL-18-d] Got recently: what was got this week, with Untick` | MEAL-18-d |
+| `the admin app’s Groceries › [MEAL-23-d] Categories and stores: in order, each to rename, move or remove; removing one with items asks` | MEAL-23-d |
+| `the admin app’s Groceries › [MEAL-18-d] an empty list says so` | MEAL-18-d |
 
 #### `e2e/ui/help.spec.ts`
 
