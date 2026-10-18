@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '../support/test';
 import { boardFold, pairBoard, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
+import { ownHousehold } from '../support/household';
 
 // [DEV-07][US-207] Sleep and wake per board on the preview (WP-34, D-116, D-117). Alex sets
 // a board paired here to sleep now on Boards (set times from two hours ago to two hours ahead, on the
@@ -8,8 +9,9 @@ import { sql as query } from '../support/db';
 // wakes it and checks nothing off. Then, the board closed and last seen two days ago, Home lists it
 // only as each choice says: Always yes; Only while awake no, as it is asleep; Never no. The board is
 // retired at the end; it is this spec's own.
+const family = ownHousehold('board-sleep');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Sleep e2e';
 const sql = (q: string) => query(db!, q);
 
@@ -34,10 +36,10 @@ test.afterAll(async () => {
 const clock = (hours: number) =>
   sql(
     `select to_char((now() at time zone timezone) + interval '${hours} hours', 'HH24:MI')
-       from public.household where id = '${DEMO}'`,
+       from public.household where id = '${HOUSEHOLD}'`,
   );
 const deviceId = () =>
-  sql(`select id from public.device where household_id = '${DEMO}' and name = '${BOARD}'`);
+  sql(`select id from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}'`);
 /** Check-offs this board has sent (its outbox posts them as completion events). */
 const sent = () =>
   Number(
@@ -113,7 +115,7 @@ test('[DEV-07][US-207] WP-34: a board set to sleep now goes black; the touch tha
     // Other boards of the demo family dark for a day, if any: Home counts them in the same line.
     const others = Number(
       sql(`select count(*) from public.device
-            where household_id = '${DEMO}' and status = 'active' and id <> '${id}'
+            where household_id = '${HOUSEHOLD}' and status = 'active' and id <> '${id}'
               and last_seen_at < now() - interval '1 day'
               and coalesce(board_config -> 'sleep' ->> 'missed', 'always') = 'always'`),
     );

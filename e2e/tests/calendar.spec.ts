@@ -5,6 +5,7 @@ import { foldOf, unfold } from '../support/fold';
 import { openSetting } from '../support/settings';
 import { addDays, householdToday } from '../support/day';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [CAL-01][CAL-02][CAL-03][CAL-06][CAL-07] Calendar sync on the preview (WP-22, D-63), as Alex of the
 // demo family. Alex adds a calendar by its link on Calendars: the link goes to Vault and nowhere
@@ -16,8 +17,9 @@ import { signIn } from '../support/session';
 // job's calls do. A broken link keeps the last good events; a working one again is OK. Removing the
 // calendar takes its events and its link. These are the steps of one story, so they are one test.
 // Production's jobs leave the demo family alone (D-62), so nothing else syncs it meanwhile.
+const family = ownHousehold('calendar');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const NAME = 'Family e2e';
 const LINK = 'https://calendar.familywise.invalid/family-e2e.ics';
 // What only the link holds (the demo sign-ins' addresses end in familywise.invalid too).
@@ -106,7 +108,7 @@ const answering =
  * sync), so the calendar is due again whatever the runner's own clock says.
  */
 const runJob = (minutes: number, fetcher: Fetcher) =>
-  runCalendarSync(serviceRpc(db!) as unknown as Parameters<typeof runCalendarSync>[0], DEMO, {
+  runCalendarSync(serviceRpc(db!) as unknown as Parameters<typeof runCalendarSync>[0], HOUSEHOLD, {
     fetch: fetcher,
     now: new Date(
       Number(sql(`select (extract(epoch from now()) * 1000)::bigint`)) + minutes * 60_000,
@@ -115,7 +117,9 @@ const runJob = (minutes: number, fetcher: Fetcher) =>
 
 function cleanUp() {
   // This spec's calendar only. Its Vault secret goes with it (trg_calendar_source_secrets).
-  sql(`delete from public.calendar_source where household_id = '${DEMO}' and name = '${NAME}'`);
+  sql(
+    `delete from public.calendar_source where household_id = '${HOUSEHOLD}' and name = '${NAME}'`,
+  );
 }
 
 async function asAlexOnCalendars(page: Page) {
@@ -169,7 +173,7 @@ test('[CAL-01][US-501][CAL-02][CAL-07][CAL-06][US-505] a calendar added by its l
     await expect(page.locator('main')).not.toContainText(LINK_PATH);
 
     calendarId = sql(
-      `select id from public.calendar_source where household_id = '${DEMO}' and name = '${NAME}'`,
+      `select id from public.calendar_source where household_id = '${HOUSEHOLD}' and name = '${NAME}'`,
     );
     expect(
       sql(`select d.decrypted_secret from vault.decrypted_secrets d

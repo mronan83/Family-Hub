@@ -6,6 +6,7 @@ import { addDays, householdToday, householdWeekStart, weekStartOf, weekday } fro
 import { withSchoolDays } from '../support/school';
 import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [MENU-01..05][MEAL-05] School menus on the preview (WP-27, D-79), as Alex of the demo family. The
 // done-when: four weeks load from a file, and a feed that fails keeps its cached menus and shows a
@@ -17,8 +18,9 @@ import { signIn } from '../support/session';
 // school week of its own), and her buy day shows it on Meals. Each test makes its own menu, so none
 // needs another. Production's jobs leave the demo family alone (D-62). No real school's menu or
 // identifiers.
+const family = ownHousehold('menus');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const FILE = 'Oak e2e';
 const FEED = 'Cedar e2e';
 const BIRCH = 'Birch e2e';
@@ -30,7 +32,7 @@ test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e 
 let today = '';
 const day = (n: number) => addDays(today, n);
 const maya = () =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`);
+  sql(`select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Maya'`);
 /** A day as the pages name it: "Mon, Oct 19". */
 const dayName = (date: string) =>
   new Intl.DateTimeFormat('en-US', {
@@ -86,7 +88,7 @@ const answering =
  * fetch), so the feed is due again.
  */
 const runJob = (hours: number, fetcher: Fetcher) =>
-  runMenuImport(serviceRpc(db!) as unknown as Parameters<typeof runMenuImport>[0], DEMO, {
+  runMenuImport(serviceRpc(db!) as unknown as Parameters<typeof runMenuImport>[0], HOUSEHOLD, {
     fetch: fetcher,
     now: new Date(
       Number(sql(`select (extract(epoch from now()) * 1000)::bigint`)) + hours * 3_600_000,
@@ -96,12 +98,12 @@ const runJob = (hours: number, fetcher: Fetcher) =>
 function cleanUp() {
   // This spec's menus only. Days go with their menu; children who had it are unlinked (and Maya's
   // put back below).
-  sql(`delete from public.menu_source where household_id = '${DEMO}'
+  sql(`delete from public.menu_source where household_id = '${HOUSEHOLD}'
          and name in ('${FILE}', '${FEED}', '${BIRCH}')`);
   sql(`update public.member_lunch set defaults = '{"fri": "buy"}',
               menu_source_id = (select id from public.menu_source
-                                 where household_id = '${DEMO}' and name = 'Maple Elementary')
-        where household_id = '${DEMO}' and member_id = '${maya()}'`);
+                                 where household_id = '${HOUSEHOLD}' and name = 'Maple Elementary')
+        where household_id = '${HOUSEHOLD}' and member_id = '${maya()}'`);
 }
 
 async function asAlexOnMenus(page: Page) {
@@ -144,14 +146,14 @@ test('[MENU-01][MENU-03][US-802] done-when: four weeks load from a file, looked 
   // Nothing is stored until the parent says so.
   expect(
     sql(`select count(*) from public.school_menu_day d join public.menu_source s on s.id = d.source_id
-               where s.household_id = '${DEMO}' and s.name = '${FILE}'`),
+               where s.household_id = '${HOUSEHOLD}' and s.name = '${FILE}'`),
   ).toBe('0');
   await load.getByRole('button', { name: 'Load 20 days' }).click();
   await expect(page.getByText('Loaded 20 days from the file.')).toBeVisible();
   expect(
     sql(`select count(*) || ' ' || bool_and(d.is_override and d.origin = 'csv')
            from public.school_menu_day d join public.menu_source s on s.id = d.source_id
-          where s.household_id = '${DEMO}' and s.name = '${FILE}'`),
+          where s.household_id = '${HOUSEHOLD}' and s.name = '${FILE}'`),
   ).toBe('20 true');
   const first = [0, 1, 2, 3].map(day).find((d) => weekday(d) > 0 && weekday(d) < 6)!;
   // [MENU-06] A line a section: Main Line's item, then Beverages' (WP-64).
@@ -172,13 +174,13 @@ test('[MENU-02][MENU-04][MENU-05][US-803] done-when: a feed that fails keeps its
   // two page loads and a saved day: about 60 s at worst on a preview, so three times that.
   test.setTimeout(180_000);
   sql(`insert into public.menu_source (household_id, name, adapter, config)
-       values ('${DEMO}', '${FEED}', 'nutrislice',
+       values ('${HOUSEHOLD}', '${FEED}', 'nutrislice',
                '{"district": "example-district", "school": "cedar-e2e", "menu_type": "lunch",
                  "school_name": "Cedar e2e", "menu_type_name": "Lunch"}')`);
   expect(await runJob(0, answering(200))).toEqual({ due: 1, fetched: 1, unchanged: 0, failed: 0 });
   const stored =
     sql(`select count(*) from public.school_menu_day d join public.menu_source s on s.id = d.source_id
-                       where s.household_id = '${DEMO}' and s.name = '${FEED}'`);
+                       where s.household_id = '${HOUSEHOLD}' and s.name = '${FEED}'`);
   expect(Number(stored)).toBe(20);
 
   // A day later Nutrislice is down: the run records why, and the menus stay.
@@ -186,7 +188,7 @@ test('[MENU-02][MENU-04][MENU-05][US-803] done-when: a feed that fails keeps its
   expect(
     sql(`select s.status || ' ' || count(d.*) from public.menu_source s
            left join public.school_menu_day d on d.source_id = s.id
-          where s.household_id = '${DEMO}' and s.name = '${FEED}' group by s.status`),
+          where s.household_id = '${HOUSEHOLD}' and s.name = '${FEED}' group by s.status`),
   ).toBe(`error ${stored}`);
 
   await asAlexOnMenus(page);
@@ -227,11 +229,11 @@ test('[MEAL-05][US-704] Maya’s buy day shows the menu her lunch comes from', a
   const undo = withSchoolDays(db!, [kid], next, addDays(next, 6));
   try {
     const source = sql(`insert into public.menu_source (household_id, name, adapter, status)
-                        values ('${DEMO}', '${BIRCH}', 'csv', 'ok') returning id`);
+                        values ('${HOUSEHOLD}', '${BIRCH}', 'csv', 'ok') returning id`);
     // The week's days as a loaded file stores them (the app's own parser, then save_menu_days' insert).
     const days = JSON.stringify(parseMenuCsv(menuCsv('Birch', next, 7)).days).replace(/'/g, "''");
     sql(`insert into public.school_menu_day (household_id, source_id, menu_date, items, origin, is_override)
-         select '${DEMO}', '${source}', (d ->> 'date')::date, private.menu_items(d -> 'items'), 'csv', true
+         select '${HOUSEHOLD}', '${source}', (d ->> 'date')::date, private.menu_items(d -> 'items'), 'csv', true
            from jsonb_array_elements('${days}'::jsonb) d`);
     // The first school day of next week, as Maya's school year has it.
     const school =

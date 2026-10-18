@@ -3,14 +3,16 @@ import { sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf } from '../support/day';
 import { mealDay, unfold } from '../support/fold';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [MEAL-14][US-711][D-98] The meal planner's days folded (WP-75), as Alex of the demo family, on the
 // preview. The done-when: Alex opens Meals with every day collapsed, sees "2 of 4 set" on a day with
 // two meals, adds the other two from the expanded day and sees the checkmark, and edits a meal there.
 // Its own week (six weeks ahead, clear of meals.spec.ts's two and three and meal-edit.spec.ts's five),
 // its own two meals made in SQL; the week's plan is cleared before and after.
+const family = ownHousehold('meal-days');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const PORRIDGE = 'e2e75000-0000-4000-8000-000000000001';
 const STEW = 'e2e75000-0000-4000-8000-000000000002';
 const sql = (q: string) => query(db!, q);
@@ -23,7 +25,7 @@ let week: string;
 let day: string;
 
 const clear = () =>
-  sql(`delete from public.meal_plan_entry where household_id = '${DEMO}'
+  sql(`delete from public.meal_plan_entry where household_id = '${HOUSEHOLD}'
          and plan_date between '${week}' and '${addDays(week, 6)}'`);
 
 test.beforeAll(async ({ browser }) => {
@@ -31,8 +33,8 @@ test.beforeAll(async ({ browser }) => {
   day = addDays(week, 2);
   clear();
   sql(`insert into public.meal_plan_entry (id, household_id, plan_date, slot, sort_order, free_text) values
-         ('${PORRIDGE}', '${DEMO}', '${day}', 'breakfast', 1, 'Porridge e2e-days'),
-         ('${STEW}', '${DEMO}', '${day}', 'dinner', 1, 'Stew e2e-days')`);
+         ('${PORRIDGE}', '${HOUSEHOLD}', '${day}', 'breakfast', 1, 'Porridge e2e-days'),
+         ('${STEW}', '${HOUSEHOLD}', '${day}', 'dinner', 1, 'Stew e2e-days')`);
   admin = await browser.newPage();
   await signIn(admin);
 });

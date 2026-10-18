@@ -58,7 +58,7 @@ If the item adds or changes a screen and `05` doesn't say its mockup is approved
 - **Code:** follow `00-README` "Conventions for Claude Code".
 - **Tests:** build them to the test standard in `CLAUDE.md` ("Tests", D-110), with the same care as the code:
   - prefer Vitest and the UI suite; e2e only for what needs the real database and a preview;
-  - e2e specs import `test` from `e2e/support/test.ts`, sign in with `signIn()` (`e2e/support/session.ts`), take dates from `e2e/support/day.ts` (and school days from `e2e/support/school.ts`), create their own data with unique names, and put back anything they change in the demo family in `afterAll` or `finally`;
+  - e2e specs import `test` from `e2e/support/test.ts`, get a made-up household of their own with `ownHousehold('<spec>')` (`e2e/support/household.ts`, D-137), sign in with `signIn()` (`e2e/support/session.ts`), take dates from `e2e/support/day.ts` (and school days from `e2e/support/school.ts`), create their own data with unique names, and put back anything one test changes in `afterAll` or `finally`;
   - no fixed waits, no test that needs another test first; steps of one story are one test with `test.step`;
   - a test that takes long sets its limit from its measured time with 3× headroom;
   - a board a spec pairs is made with `pairBoard()` and retired when the spec ends (`retireBoard()`);

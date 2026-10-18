@@ -4,6 +4,7 @@ import { sql as query } from '../support/db';
 import { addDays, householdToday, weekStartOf } from '../support/day';
 import { withSchoolDays } from '../support/school';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [MEAL-13][US-710][D-98] The lunch week as a list of days, on the preview (WP-74). The done-when:
 // Alex opens Maya's lunch week on a 390 px phone with nothing scrolling sideways and every day
@@ -12,8 +13,9 @@ import { signIn } from '../support/session';
 // Friday, is the spec's own: school days for Maya (support/school) with a snow day on Thursday, a
 // made-up menu by section ("Lunch week e2e") on each day, and Monday and Tuesday set to Buy. Maya's
 // menu is put back and everything the spec made is taken away at the end.
+const family = ownHousehold('lunch-week');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const MENU = 'Lunch week e2e';
 const sql = (q: string) => query(db!, q);
 
@@ -40,7 +42,7 @@ test('[MEAL-13][US-710] done-when: Maya’s week on a phone, every day closed; a
   const mon = weekStartOf(addDays(householdToday(db!), 28), 1);
   const [tue, thu, fri] = [addDays(mon, 1), addDays(mon, 3), addDays(mon, 4)];
   const maya = sql(
-    `select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`,
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Maya'`,
   );
   const inWeek = `member_id = '${maya}' and lunch_date between '${mon}' and '${fri}'`;
   const menuBefore = sql(
@@ -51,24 +53,24 @@ test('[MEAL-13][US-710] done-when: Maya’s week on a phone, every day closed; a
   try {
     // A snow day on Thursday, in the school year the spec gave her (it goes with that year).
     sql(`insert into public.school_closure (household_id, school_year_id, name, closure_type, start_date, end_date)
-         select '${DEMO}', public.member_school_year('${maya}', '${mon}'), 'Snow day e2e', 'snow_day',
+         select '${HOUSEHOLD}', public.member_school_year('${maya}', '${mon}'), 'Snow day e2e', 'snow_day',
                 '${thu}', '${thu}'`);
-    sql(`delete from public.menu_source where household_id = '${DEMO}' and name = '${MENU}';
+    sql(`delete from public.menu_source where household_id = '${HOUSEHOLD}' and name = '${MENU}';
          insert into public.menu_source (household_id, name, adapter, config)
-         values ('${DEMO}', '${MENU}', 'manual', '{}');
+         values ('${HOUSEHOLD}', '${MENU}', 'manual', '{}');
          insert into public.school_menu_day (household_id, source_id, menu_date, meal_service, items, origin,
                                              is_override)
-         select '${DEMO}', s.id, d::date, 'lunch', '${items}'::jsonb, 'manual', true
+         select '${HOUSEHOLD}', s.id, d::date, 'lunch', '${items}'::jsonb, 'manual', true
            from public.menu_source s, generate_series('${mon}'::date, '${fri}'::date, interval '1 day') d
-          where s.household_id = '${DEMO}' and s.name = '${MENU}';
+          where s.household_id = '${HOUSEHOLD}' and s.name = '${MENU}';
          insert into public.member_lunch (member_id, household_id, menu_source_id)
-         values ('${maya}', '${DEMO}', (select id from public.menu_source where household_id = '${DEMO}' and name = '${MENU}'))
+         values ('${maya}', '${HOUSEHOLD}', (select id from public.menu_source where household_id = '${HOUSEHOLD}' and name = '${MENU}'))
          on conflict (member_id) do update set menu_source_id = excluded.menu_source_id;`);
     sql(`select set_config('request.jwt.claims', '{}', false);
          delete from public.lunch_choice where ${inWeek};
          delete from public.lunch_override where ${inWeek};
          insert into public.lunch_override (household_id, member_id, lunch_date, mode)
-         values ('${DEMO}', '${maya}', '${mon}', 'buy'), ('${DEMO}', '${maya}', '${tue}', 'buy');`);
+         values ('${HOUSEHOLD}', '${maya}', '${mon}', 'buy'), ('${HOUSEHOLD}', '${maya}', '${tue}', 'buy');`);
 
     await signIn(page, 'Alex');
     await page.goto(`/admin/meals?week=${mon}`);
@@ -131,7 +133,7 @@ test('[MEAL-13][US-710] done-when: Maya’s week on a phone, every day closed; a
          delete from public.lunch_override where ${inWeek};
          update public.member_lunch set menu_source_id = ${menuBefore ? `'${menuBefore}'` : 'null'}
           where member_id = '${maya}';
-         delete from public.menu_source where household_id = '${DEMO}' and name = '${MENU}';`);
+         delete from public.menu_source where household_id = '${HOUSEHOLD}' and name = '${MENU}';`);
     undo();
     await page.close();
   }

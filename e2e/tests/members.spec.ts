@@ -2,14 +2,16 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [ACC-04][PTS-07] Members on the preview, as Alex of the demo family (D-37, D-39): add a child and
 // an adult, check the earns-rewards default, change it, link an adult to an admin, archive and
 // restore. The database is read with psql to confirm what was saved. Each test adds the members it
 // needs, named for this run; they are deleted at the end, and Sam keeps his sign-in.
+const family = ownHousehold('members');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
-const SAM = '0de00000-0000-4000-8000-0000000000a2';
+const HOUSEHOLD = family.id;
+const SAM = family.own('0de00000-0000-4000-8000-0000000000a2');
 const RUN = Math.random().toString(36).slice(2, 6);
 const AVA = `Ava ${RUN}`;
 const PAT = `Pat ${RUN}`;
@@ -22,11 +24,11 @@ const sql = (q: string) => query(db!, q);
 /** A member added straight to the demo family, for a test that only needs one to be there. */
 const addByDb = (name: string, role: 'child' | 'adult') =>
   sql(`insert into public.member (household_id, display_name, role)
-       values ('${DEMO}', '${name}', '${role}') returning id`);
+       values ('${HOUSEHOLD}', '${name}', '${role}') returning id`);
 /** Sam's own sign-in, as the seed left it. */
 const relinkSam = () =>
   sql(
-    `update public.member set user_id = '${SAM}' where household_id = '${DEMO}' and display_name = 'Sam'`,
+    `update public.member set user_id = '${SAM}' where household_id = '${HOUSEHOLD}' and display_name = 'Sam'`,
   );
 
 async function expectContrastOk(page: Page) {
@@ -59,7 +61,9 @@ test.beforeAll(relinkSam);
 
 test.afterAll(() => {
   // Only the members this run added, by name; Sam's sign-in as the seed left it.
-  sql(`delete from public.member where household_id = '${DEMO}' and display_name in (${MADE})`);
+  sql(
+    `delete from public.member where household_id = '${HOUSEHOLD}' and display_name in (${MADE})`,
+  );
   relinkSam();
 });
 
@@ -67,7 +71,7 @@ test('[ACC-04] the demo family lists its children and adults', async ({ page }) 
   await asAlex(page);
   const list = page.getByRole('list', { name: 'Members', exact: true });
   for (const name of ['Maya', 'Leo', 'Alex', 'Sam']) await expect(list).toContainText(name);
-  await expect(list).toContainText('Signs in as sam@demo.familywise.invalid');
+  await expect(list).toContainText(`Signs in as ${family.email('sam')}`);
   await expectContrastOk(page);
 });
 
@@ -94,7 +98,7 @@ test('[ACC-04][PTS-07] a new child earns rewards by default; a new adult does no
   expect(
     sql(`select string_agg(display_name || ':' || role || ':' || earns_rewards || ':' || coalesce(avatar_key, '-')
                            || ':' || color || ':' || coalesce(user_id::text, '-'), ',' order by display_name)
-           from public.member where household_id = '${DEMO}' and display_name in ('${AVA}', '${PAT}')`),
+           from public.member where household_id = '${HOUSEHOLD}' and display_name in ('${AVA}', '${PAT}')`),
   ).toBe(`${AVA}:child:true:cat:member-5:-,${PAT}:adult:false:owl:member-1:-`);
 });
 
@@ -111,7 +115,7 @@ test('[PTS-07] the switch can be changed for anyone', async ({ page }) => {
   );
   expect(
     sql(
-      `select earns_rewards from public.member where household_id = '${DEMO}' and display_name = '${ROBIN}'`,
+      `select earns_rewards from public.member where household_id = '${HOUSEHOLD}' and display_name = '${ROBIN}'`,
     ),
   ).toBe('t');
 });
@@ -128,21 +132,21 @@ test('[ACC-04] an adult is linked to an admin, and only to one member', async ({
     await expect(page.getByRole('status')).toHaveText('Saved Sam.');
     expect(
       sql(
-        `select coalesce(user_id::text, '-') from public.member where household_id = '${DEMO}' and display_name = 'Sam'`,
+        `select coalesce(user_id::text, '-') from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Sam'`,
       ),
     ).toBe('-');
 
     // Now Kim could take Sam's sign-in; give it back to Sam instead.
     await page.getByRole('link', { name: 'Edit Sam' }).click();
     form = page.getByRole('form', { name: 'Edit member' });
-    await form.getByLabel('Their sign-in').selectOption({ label: 'sam@demo.familywise.invalid' });
+    await form.getByLabel('Their sign-in').selectOption({ label: family.email('sam') });
     await form.getByRole('button', { name: 'Save changes' }).click();
     await expect(page.getByRole('list', { name: 'Members', exact: true })).toContainText(
-      'Signs in as sam@demo.familywise.invalid',
+      `Signs in as ${family.email('sam')}`,
     );
     expect(
       sql(
-        `select user_id from public.member where household_id = '${DEMO}' and display_name = 'Sam'`,
+        `select user_id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Sam'`,
       ),
     ).toBe(SAM);
 
@@ -152,8 +156,8 @@ test('[ACC-04] an adult is linked to an admin, and only to one member', async ({
     await expect(page.getByRole('heading', { name: KIM, level: 1 })).toBeVisible();
     const options = await page.getByLabel('Their sign-in').locator('option').allTextContents();
     expect(options[0]).toBe('Not linked');
-    expect(options).not.toContain('alex@demo.familywise.invalid');
-    expect(options).not.toContain('sam@demo.familywise.invalid');
+    expect(options).not.toContain(family.email('alex'));
+    expect(options).not.toContain(family.email('sam'));
   } finally {
     // Sam keeps his sign-in even when a step above failed between unlinking and linking him again.
     relinkSam();
@@ -175,8 +179,8 @@ test('[ACC-04] archiving takes a member off the list and keeps them; restoring b
   await page.getByRole('button', { name: `Restore ${NOA}` }).click();
   await expect(page.getByRole('list', { name: 'Members', exact: true })).toContainText(NOA);
   expect(
-    sql(`select count(*) from public.audit_log where household_id = '${DEMO}' and entity_type = 'member'
-           and entity_id = '${noa}' and actor_id = '0de00000-0000-4000-8000-0000000000a1'
+    sql(`select count(*) from public.audit_log where household_id = '${HOUSEHOLD}' and entity_type = 'member'
+           and entity_id = '${noa}' and actor_id = '${family.own('0de00000-0000-4000-8000-0000000000a1')}'
            and action = 'update' and diff ? 'archived_at' and at >= '${since}'`),
   ).toBe('2');
 });

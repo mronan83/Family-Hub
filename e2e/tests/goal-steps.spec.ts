@@ -4,6 +4,7 @@ import { addDays, householdToday, householdWeekStart, weekStartOf } from '../sup
 import { foldOf, unfold } from '../support/fold';
 import { retireItems } from '../support/history';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [RWD-17][RWD-18] A goal done by a time, paid in steps (WP-81, D-102, D-124) on the preview, as Alex
 // of the demo family. The done-when: Alex sets Maya "Homework before 6 pm", each week, by 6:00 pm,
@@ -14,8 +15,9 @@ import { signIn } from '../support/session';
 // Its own item ("Homework e2e …", 0 points, Maya's), with each tick's time set in SQL as a board
 // would record it; the week's last two days hold nothing. Afterwards the won week is undone (its 10
 // points come back off, so Maya's balance is as it was), the goal cancelled and the item removed.
+const family = ownHousehold('goal-steps');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const TAG = Math.random().toString(36).slice(2, 6);
 const TITLE = `Homework before 6 pm e2e ${TAG}`;
 const ITEM = `Homework e2e ${TAG}`;
@@ -30,9 +32,9 @@ let lastWeek: string;
 let item = '';
 
 const maya = () =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`);
+  sql(`select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Maya'`);
 const goalId = () =>
-  sql(`select id from public.reward_goal where household_id = '${DEMO}' and title = '${TITLE}'
+  sql(`select id from public.reward_goal where household_id = '${HOUSEHOLD}' and title = '${TITLE}'
         order by created_at desc limit 1`);
 const occurrence = (date: string) =>
   sql(`select id from public.chore_occurrence where chore_id = '${item}' and due_date = '${date}'`);
@@ -41,7 +43,7 @@ const tickAt = (date: string, time: string) =>
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)
        values (gen_random_uuid(), '${occurrence(date)}', 'complete', array['${maya()}'::uuid],
                ('${date}'::date + '${time}'::time) at time zone
-                 (select timezone from public.household where id = '${DEMO}'))`);
+                 (select timezone from public.household where id = '${HOUSEHOLD}'))`);
 const paid = () =>
   sql(`select coalesce(string_agg(entry_type || ' ' || amount, ', ' order by created_at, id), '')
          from public.points_ledger where goal_id = '${goalId() || '00000000-0000-0000-0000-000000000000'}'`);
@@ -51,12 +53,12 @@ test.beforeAll(async ({ browser }) => {
   test.setTimeout(60_000);
   today = householdToday(db!);
   lastWeek = addDays(weekStartOf(today, householdWeekStart(db!)), -7);
-  item = sql(`select public.save_chore('${DEMO}', null,
+  item = sql(`select public.save_chore('${HOUSEHOLD}', null,
     jsonb_build_object('title', '${ITEM}', 'kind', 'chore', 'points', 0,
                        'schedule', jsonb_build_object('freq', 'daily'), 'start_date', '${lastWeek}'),
     array['${maya()}'::uuid])`);
   sql(
-    `select private.generate_occurrences('${DEMO}', '${lastWeek}', '${addDays(lastWeek, 6)}', array['${item}'::uuid])`,
+    `select private.generate_occurrences('${HOUSEHOLD}', '${lastWeek}', '${addDays(lastWeek, 6)}', array['${item}'::uuid])`,
   );
   // Five days due; the week's last two hold nothing.
   sql(`delete from public.chore_occurrence where chore_id = '${item}'

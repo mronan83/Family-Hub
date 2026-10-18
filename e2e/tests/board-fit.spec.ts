@@ -2,6 +2,7 @@ import { appendFileSync } from 'node:fs';
 import { expect, test, type Page } from '../support/test';
 import { boardFold, pairBoard, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
+import { ownHousehold } from '../support/household';
 
 // [BRD-08][US-1007] A board's text size on the preview (WP-47, D-73), at the reference panel's
 // 3840×2160 (the board-4k project: 1920×1080 CSS px at device scale 2, where the board's fit is 1).
@@ -9,8 +10,9 @@ import { sql as query } from '../support/db';
 // 1.15 and puts the list under the calendar, and after a reload it is still Larger. Standard puts it
 // back. The board is disconnected at the end. [DEV-09][D-118] (WP-91) Boards opens with every board folded;
 // the board's header says its text size, and it is open again after the save.
+const family = ownHousehold('board-fit');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Text size e2e';
 const sql = (q: string) => query(db!, q);
 
@@ -31,7 +33,7 @@ const zoom = (page: Page) =>
 
 const savedSize = () =>
   sql(`select coalesce(board_config ->> 'text_size', 'standard') from public.device
-        where household_id = '${DEMO}' and name = '${BOARD}'`);
+        where household_id = '${HOUSEHOLD}' and name = '${BOARD}'`);
 
 /**
  * Chooses a text size on Boards, and waits until it is saved (the page is already on Boards).

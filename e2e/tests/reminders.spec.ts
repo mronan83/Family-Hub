@@ -2,25 +2,27 @@ import { expect, test, type Page } from '../support/test';
 import { foldOf, unfold } from '../support/fold';
 import { sql as query } from '../support/db';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [CHR-15][CHR-16][CHR-17] A parent's own reminders on the preview (WP-40, D-58), as Alex of the demo
 // family: his settings saved and read back, a device switched off, tested and removed, the bell on
 // an item in My tasks, and an item's reminder lead time in the editor. Sending is tested on the
 // runner against a mocked push service (reminders-job.spec.ts); a preview holds no VAPID private key,
 // so a test notification says it works on the live app. Everything it changes it puts back.
+const family = ownHousehold('reminders');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
-const TRIP_FEE = '0de00000-0000-4000-8000-0000000c0007';
+const HOUSEHOLD = family.id;
+const TRIP_FEE = family.own('0de00000-0000-4000-8000-0000000c0007');
 const sql = (q: string) => query(db!, q);
 const ENDPOINT = 'https://push.familywise.invalid/rmd-ui-e2e';
-const ALEX_SIGN_IN = '0de00000-0000-4000-8000-0000000000a1';
+const ALEX_SIGN_IN = family.own('0de00000-0000-4000-8000-0000000000a1');
 
 test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
 let page: Page;
 const alex = () =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = 'Alex'`);
+  sql(`select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Alex'`);
 
 function putBack() {
   sql(`delete from public.reminder_preference where member_id = '${alex()}';
@@ -88,7 +90,7 @@ test('[CHR-15][CHR-16][CHR-17][US-319] Alex’s own settings: off until he turns
 test('[CHR-15][US-317] a device: switched off and on, a test (live app only), removed', async () => {
   const user = sql(`select user_id from public.member where id = '${alex()}'`);
   sql(`insert into public.push_subscription (household_id, member_id, user_id, endpoint, p256dh, auth_secret, device_label)
-       values ('${DEMO}', '${alex()}', '${user}', '${ENDPOINT}', '${'B'.repeat(87)}', '${'a'.repeat(22)}', 'E2E phone')`);
+       values ('${HOUSEHOLD}', '${alex()}', '${user}', '${ENDPOINT}', '${'B'.repeat(87)}', '${'a'.repeat(22)}', 'E2E phone')`);
   await page.goto('/admin/reminders');
   // [NFR-18] Folded to how many devices (WP-94); open again after each device's action.
   await unfold(foldOf(page, 'My devices'));

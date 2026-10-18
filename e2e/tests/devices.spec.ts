@@ -7,19 +7,21 @@ import { householdToday } from '../support/day';
 import { networkSwitch, type NetworkSwitch } from '../support/network';
 import { signIn } from '../support/session';
 import { slowReads } from '../../scripts/e2e-infra.mjs';
+import { ownHousehold } from '../support/household';
 
 // [DEV-01][DEV-02][DEV-03][DEV-05] A board on the preview (WP-05, WP-06, SPIKE-01, D-40): Alex gets
 // a code, a second browser pairs with it and reads the demo family, admin changes reach it within
 // the 3-second budget, it catches up after the network drops, follows the theme Alex sets, signs
 // itself in again after its session is lost, and stops reading the moment Alex disconnects it.
+const family = ownHousehold('devices');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Kitchen e2e';
 /** The board the pairing test pairs on its own, and the one that listens while BOARD is disconnected. */
 const SECOND = 'Hall e2e';
 const CONTROL = 'Porch e2e';
 const BOARDS = `('${BOARD}', '${SECOND}', '${CONTROL}')`;
-const FEED_THE_DOG = '0de00000-0000-4000-8000-0000000c0003';
+const FEED_THE_DOG = family.own('0de00000-0000-4000-8000-0000000c0003');
 
 function sql(query: string): string {
   return execFileSync('psql', [db!, '-X', '-A', '-t', '-q', '-v', 'ON_ERROR_STOP=1', '-c', query], {
@@ -98,8 +100,8 @@ let net: NetworkSwitch;
 let today = '';
 
 // The seeded names, put back before a retry and after the run.
-const RESET_NAMES = `update public.member set display_name = 'Maya' where household_id = '${DEMO}' and display_name like 'Maya%';
-     update public.member set display_name = 'Leo' where household_id = '${DEMO}' and display_name like 'Leo%';`;
+const RESET_NAMES = `update public.member set display_name = 'Maya' where household_id = '${HOUSEHOLD}' and display_name like 'Maya%';
+     update public.member set display_name = 'Leo' where household_id = '${HOUSEHOLD}' and display_name like 'Leo%';`;
 
 /** Today's Feed the dog open again, as the seed has it: before the check-off tests and after the file. */
 function reopenFeedTheDog() {
@@ -113,10 +115,10 @@ test.beforeAll(async ({ browser }, testInfo) => {
   testInfo.setTimeout(90_000);
   today = householdToday(db!);
   // A retry starts with none of this file's boards and the seeded member names (their sign-ins go
-  // at the next demo family reset).
+  // when the household is made afresh).
   sql(`${RESET_NAMES}
-       delete from public.device_pairing where household_id = '${DEMO}' and device_name in ${BOARDS};
-       delete from public.device where household_id = '${DEMO}' and name in ${BOARDS};`);
+       delete from public.device_pairing where household_id = '${HOUSEHOLD}' and device_name in ${BOARDS};
+       delete from public.device where household_id = '${HOUSEHOLD}' and name in ${BOARDS};`);
   reopenFeedTheDog();
   admin = await alexOnBoards(browser);
   // The board every other test uses, paired once here. Its network goes through a switch
@@ -150,7 +152,7 @@ test('[DEV-01][DEV-02] an admin gets an 8-digit code for a named board; a second
       secondCode = await newCode(admin, SECOND);
       expect(
         sql(`select device_name || ':' || (expires_at - created_at)::text from public.device_pairing
-              where household_id = '${DEMO}' and device_name = '${SECOND}' and consumed_at is null
+              where household_id = '${HOUSEHOLD}' and device_name = '${SECOND}' and consumed_at is null
               order by created_at desc limit 1`),
       ).toBe(`${SECOND}:00:10:00`);
     });
@@ -165,13 +167,13 @@ test('[DEV-01][DEV-02] an admin gets an 8-digit code for a named board; a second
       expect(
         sql(`select d.status || ':' || (u.raw_app_meta_data ->> 'role') || ':' || (d.last_seen_at is not null)
                from public.device d join auth.users u on u.id = d.auth_user_id
-              where d.household_id = '${DEMO}' and d.name = '${SECOND}'`),
+              where d.household_id = '${HOUSEHOLD}' and d.name = '${SECOND}'`),
       ).toBe('active:device:true');
       expect(
         sql(`select string_agg(a.actor_type || ':' || a.action || ':' || (a.diff ->> 'status'), ',' order by a.id)
                from public.audit_log a
-              where a.household_id = '${DEMO}' and a.entity_type = 'device'
-                and a.entity_id = (select id from public.device where household_id = '${DEMO}' and name = '${SECOND}')`),
+              where a.household_id = '${HOUSEHOLD}' and a.entity_type = 'device'
+                and a.entity_id = (select id from public.device where household_id = '${HOUSEHOLD}' and name = '${SECOND}')`),
       ).toBe('system:insert:active');
     });
   } finally {
@@ -189,7 +191,7 @@ const todayOf = (chore: string) =>
 const now = () => sql(`select to_char(now() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`);
 const memberId = (name: string) =>
   sql(
-    `select id from public.member where household_id = '${DEMO}' and display_name like '${name}%'`,
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name like '${name}%'`,
   );
 const post = (events: object[]) => board.request.post('/api/completions', { data: { events } });
 
@@ -292,7 +294,7 @@ test('[DEV-05] a change in the household reaches the board live (Realtime under 
   // can take up to about 20 seconds after a quiet spell.
   await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
   sql(
-    `update public.member set display_name = 'Maya R' where household_id = '${DEMO}' and display_name like 'Maya%'`,
+    `update public.member set display_name = 'Maya R' where household_id = '${HOUSEHOLD}' and display_name like 'Maya%'`,
   );
   // The budget is measured in the next test (DEV-05, p95 under 3 s).
   await expect(board.getByRole('list', { name: 'Family', exact: true })).toContainText('Maya R');
@@ -303,7 +305,7 @@ test('[DEV-05][NFR-14-p] a rename in the admin app reaches the board within 3 se
   // is about 30 s (a 20 s miss after about 10 s of slow page load and save): 20 of them is 600 s.
   test.setTimeout(600_000);
   const leo = sql(
-    `select id from public.member where household_id = '${DEMO}' and display_name like 'Leo%'`,
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name like 'Leo%'`,
   );
   const family = board.getByRole('list', { name: 'Family', exact: true });
   const live = board.getByRole('status');
@@ -402,7 +404,7 @@ test('[DEV-05] after the network drops and comes back, the board catches up on i
     await context.setOffline(true);
     await expect(status).toHaveText('Reconnecting…');
     sql(
-      `update public.member set display_name = 'Leo again' where household_id = '${DEMO}' and display_name like 'Leo%'`,
+      `update public.member set display_name = 'Leo again' where household_id = '${HOUSEHOLD}' and display_name like 'Leo%'`,
     );
   } finally {
     net.set(true);
@@ -417,7 +419,7 @@ test('[DEV-05] an admin holds the board on Evening or Day; it switches at once a
   // Live first, so the theme arrives as a change, not by the read a (re)connect makes.
   await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
   const from = sql(
-    `select coalesce(max(id), 0) from public.audit_log where household_id = '${DEMO}'`,
+    `select coalesce(max(id), 0) from public.audit_log where household_id = '${HOUSEHOLD}'`,
   );
   for (const [label, theme] of [
     ['Always Evening', 'evening'],
@@ -458,7 +460,7 @@ test('[DEV-05] an admin holds the board on Evening or Day; it switches at once a
   await expect
     .poll(() =>
       sql(`select coalesce(board_config ->> 'theme', 'auto') from public.device
-            where household_id = '${DEMO}' and name = '${BOARD}'`),
+            where household_id = '${HOUSEHOLD}' and name = '${BOARD}'`),
     )
     .toBe('auto');
   // Each save is in the board's history, by an admin.
@@ -467,8 +469,8 @@ test('[DEV-05] an admin holds the board on Evening or Day; it switches at once a
                            coalesce(a.diff -> 'status' ->> 'to', a.diff -> 'board_config' -> 'to' ->> 'theme', a.diff ->> 'status', '?'),
                            ',' order by a.id)
            from public.audit_log a
-          where a.household_id = '${DEMO}' and a.entity_type = 'device' and a.id > ${from}
-            and a.entity_id = (select id from public.device where household_id = '${DEMO}' and name = '${BOARD}')`),
+          where a.household_id = '${HOUSEHOLD}' and a.entity_type = 'device' and a.id > ${from}
+            and a.entity_id = (select id from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}')`),
   ).toBe('admin:update:evening,admin:update:day,admin:update:auto');
 });
 
@@ -505,7 +507,7 @@ test('[DEV-03] the admin sees the board, renames it and disconnects it; the boar
     const controlFamily = control.getByRole('list', { name: 'Family', exact: true });
     await expect(control.getByRole('status')).toHaveText('Live', { timeout: 30_000 });
     const from = sql(
-      `select coalesce(max(id), 0) from public.audit_log where household_id = '${DEMO}'`,
+      `select coalesce(max(id), 0) from public.audit_log where household_id = '${HOUSEHOLD}'`,
     );
     await admin.goto('/admin/devices');
     const boards = admin.getByRole('list', { name: 'Paired boards', exact: true });
@@ -529,12 +531,12 @@ test('[DEV-03] the admin sees the board, renames it and disconnects it; the boar
     // Settled first: a change made after the disconnect reaches the control board, so anything sent
     // before it (the disconnect's own row change among them) has reached the board too.
     sql(
-      `update public.member set display_name = 'Leo P' where household_id = '${DEMO}' and display_name like 'Leo%'`,
+      `update public.member set display_name = 'Leo P' where household_id = '${HOUSEHOLD}' and display_name like 'Leo%'`,
     );
     await expect(controlFamily).toContainText('Leo P');
     const heard = (await live.getAttribute('data-events')) ?? '0';
     sql(
-      `update public.member set display_name = 'Maya Q' where household_id = '${DEMO}' and display_name like 'Maya%'`,
+      `update public.member set display_name = 'Maya Q' where household_id = '${HOUSEHOLD}' and display_name like 'Maya%'`,
     );
     // The control board hears it, so it was sent; the disconnected board heard nothing.
     await expect(controlFamily).toContainText('Maya Q');
@@ -555,17 +557,17 @@ test('[DEV-03] the admin sees the board, renames it and disconnects it; the boar
     expect(
       sql(`select d.status || ':' || (u.banned_until = 'infinity')
            from public.device d join auth.users u on u.id = d.auth_user_id
-          where d.household_id = '${DEMO}' and d.name = '${BOARD}'`),
+          where d.household_id = '${HOUSEHOLD}' and d.name = '${BOARD}'`),
     ).toBe('revoked:true');
     expect(
       sql(`select string_agg(a.actor_type || ':' || a.action || ':' ||
                            coalesce(a.diff -> 'status' ->> 'to', a.diff -> 'board_config' -> 'to' ->> 'theme', a.diff ->> 'status'),
                            ',' order by a.id)
            from public.audit_log a
-          where a.household_id = '${DEMO}' and a.entity_type = 'device'
+          where a.household_id = '${HOUSEHOLD}' and a.entity_type = 'device'
             and a.id > ${from}
             -- Only the board paired in this run: a retry pairs a new one, and earlier rows stay.
-            and a.entity_id = (select id from public.device where household_id = '${DEMO}' and name = '${BOARD}')`),
+            and a.entity_id = (select id from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}')`),
     ).toBe('admin:update:revoked');
   } finally {
     await retireBoard(control, CONTROL);

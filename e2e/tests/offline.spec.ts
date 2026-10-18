@@ -5,6 +5,7 @@ import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { householdToday } from '../support/day';
 import { networkSwitch, type NetworkSwitch } from '../support/network';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [DEV-06][DEV-08][NFR-01][US-205] A board offline on the preview (WP-13), paired to the demo family:
 // it goes offline, checks off three of Maya's items, reloads with no network (its page from the
@@ -12,12 +13,13 @@ import { signIn } from '../support/session';
 // returns exactly three events arrive, and the parent's later uncheck wins (D-20). Then a day passes
 // offline (Playwright's clock): opened again, the board shows its last day and says how old it is.
 // The real 24-hour soak runs on the Pi (WP-24). Everything it checks off it puts back.
+const family = ownHousehold('offline');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Porch e2e';
-const MAKE_BED = '0de00000-0000-4000-8000-0000000c0001';
-const BRUSH_TEETH = '0de00000-0000-4000-8000-0000000c0002';
-const FEED_THE_DOG = '0de00000-0000-4000-8000-0000000c0003';
+const MAKE_BED = family.own('0de00000-0000-4000-8000-0000000c0001');
+const BRUSH_TEETH = family.own('0de00000-0000-4000-8000-0000000c0002');
+const FEED_THE_DOG = family.own('0de00000-0000-4000-8000-0000000c0003');
 /** The demo family's day, read once (D-110): what this spec checks off, and puts back, is that day's. */
 let day = '';
 
@@ -28,7 +30,9 @@ function sql(query: string): string {
 }
 
 const memberId = (name: string) =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+  sql(
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+  );
 const todayOf = (chore: string, member?: string) =>
   sql(`select id from public.chore_occurrence
         where chore_id = '${chore}' and due_date = '${day}'
@@ -41,7 +45,7 @@ function putBack() {
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
        select gen_random_uuid(), o.id, 'admin_uncomplete', now()
          from public.chore_occurrence o
-        where o.household_id = '${DEMO}' and o.due_date = '${day}' and o.status <> 'scheduled'
+        where o.household_id = '${HOUSEHOLD}' and o.due_date = '${day}' and o.status <> 'scheduled'
           and o.chore_id in ('${MAKE_BED}', '${BRUSH_TEETH}', '${FEED_THE_DOG}')`);
 }
 
@@ -107,8 +111,8 @@ test.beforeAll(async ({ browser }, testInfo) => {
   day = householdToday(db!);
   // A retry starts from today as the seed left it, with no board of this name.
   putBack();
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
+  sql(`delete from public.device_pairing where household_id = '${HOUSEHOLD}' and device_name = '${BOARD}';
+       delete from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}';`);
   const admin = await browser.newPage();
   await signIn(admin);
   await admin.goto('/admin/devices');
@@ -159,7 +163,7 @@ test('[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no netwo
     sql(`select count(*) from public.chore_completion_event e
           where e.occurrence_id in ('${items.bed}', '${items.teeth}', '${items.dog}')
             and e.recorded_at >= '${started}' and e.actor_type = 'device'
-            and e.actor_id = (select id from public.device where household_id = '${DEMO}' and name = '${BOARD}')`);
+            and e.actor_id = (select id from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}')`);
 
   await step('offline, three check-offs', async () => {
     await asMaya(board);
@@ -238,7 +242,7 @@ test('[NFR-01][DEV-08][US-205] opened after a day offline, the board shows its l
   // and the board online.
   await goOnline(board.context());
   sql(
-    `select private.generate_occurrences('${DEMO}', '${day}', '${day}', array['${MAKE_BED}']::uuid[])`,
+    `select private.generate_occurrences('${HOUSEHOLD}', '${day}', '${day}', array['${MAKE_BED}']::uuid[])`,
   );
   const maya = memberId('Maya');
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, done_by, occurred_at)

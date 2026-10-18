@@ -1,15 +1,17 @@
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [CHR-14][CHR-15][ACC-04] "Which one is you?" on the preview (D-61), as Alex of the demo family: a
 // sign-in linked to no one links itself in one tap from Reminders or My tasks; a parent whose own
 // record says Child is told to choose Adult, then links from their member page; and a sign-in left on
 // an archived record moves to the one still here. Alex is put back as before, an adult with their own
 // sign-in.
+const family = ownHousehold('link-me');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
-const ALEX_SIGN_IN = '0de00000-0000-4000-8000-0000000000a1';
+const HOUSEHOLD = family.id;
+const ALEX_SIGN_IN = family.own('0de00000-0000-4000-8000-0000000000a1');
 const OLD = 'Alex (old record)';
 const sql = (q: string) => query(db!, q);
 
@@ -18,15 +20,15 @@ test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e 
 
 let page: Page;
 const alex = () =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = 'Alex'`);
+  sql(`select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Alex'`);
 const linked = () =>
   sql(`select string_agg(display_name, ',' order by display_name) from public.member
-        where household_id = '${DEMO}' and user_id = '${ALEX_SIGN_IN}'`);
+        where household_id = '${HOUSEHOLD}' and user_id = '${ALEX_SIGN_IN}'`);
 
 function putBack() {
-  sql(`delete from public.member where household_id = '${DEMO}' and display_name = '${OLD}';
+  sql(`delete from public.member where household_id = '${HOUSEHOLD}' and display_name = '${OLD}';
        update public.member set role = 'adult', user_id = '${ALEX_SIGN_IN}'
-        where household_id = '${DEMO}' and display_name = 'Alex';`);
+        where household_id = '${HOUSEHOLD}' and display_name = 'Alex';`);
 }
 
 function unlink(extra = '') {
@@ -105,11 +107,11 @@ test('[ACC-04][US-316] Alex’s record says Child: told to choose Adult, then �
 test('[ACC-04][US-316] Alex’s sign-in left on an archived record: named, then moved to Alex', async () => {
   unlink();
   sql(`insert into public.member (household_id, display_name, role, color, user_id, archived_at)
-       values ('${DEMO}', '${OLD}', 'adult', 'member-5', '${ALEX_SIGN_IN}', now())`);
+       values ('${HOUSEHOLD}', '${OLD}', 'adult', 'member-5', '${ALEX_SIGN_IN}', now())`);
   await page.goto(`/admin/members/${alex()}`);
   // The sign-in choice says where Alex’s sign-in went, rather than leaving it out without a word.
   await expect(page.getByRole('form', { name: 'Edit member' })).toContainText(
-    `alex@demo.familywise.invalid to ${OLD} (archived)`,
+    `${family.email('alex')} to ${OLD} (archived)`,
   );
   const me = page.getByRole('region', { name: 'Is this you?' });
   await expect(me).toContainText(`Your sign-in is on ${OLD}, who is archived. Move it here`);

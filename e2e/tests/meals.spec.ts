@@ -5,6 +5,7 @@ import { addDays, householdToday, householdWeekStart, weekStartOf, weekday } fro
 import { foldOf, mealDay, unfold } from '../support/fold';
 import { withSchoolDays } from '../support/school';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [MEAL-01][MEAL-02][MEAL-03][MEAL-04][MEAL-08] Meals on the preview (WP-25, D-77; lunch WP-26, D-78), as
 // Alex of the demo family.
@@ -14,8 +15,9 @@ import { signIn } from '../support/session';
 // school day changed and changed back, in a week that is a school week of the test's own. The weeks
 // used are two and three weeks ahead, clear of the seeded week, taken once from the household's day,
 // and are cleared again afterwards (Maya's usual lunch put back as seeded).
+const family = ownHousehold('meals');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const MEAL = 'Lasagne e2e';
 const sql = (q: string) => query(db!, q);
 
@@ -37,16 +39,16 @@ const plan = (from: string) =>
                                   order by e.plan_date, e.slot, e.sort_order), '')
          from public.meal_plan_entry e
          left join public.meal m on m.id = e.meal_id
-        where e.household_id = '${DEMO}' and e.plan_date between '${from}' and '${addDays(from, 6)}'`);
+        where e.household_id = '${HOUSEHOLD}' and e.plan_date between '${from}' and '${addDays(from, 6)}'`);
 /** What this spec changes, put back: the two weeks' plans, its meal, Maya's lunch in those weeks. */
 const clear = () =>
-  sql(`delete from public.meal_plan_entry where household_id = '${DEMO}'
+  sql(`delete from public.meal_plan_entry where household_id = '${HOUSEHOLD}'
          and plan_date between '${first}' and '${addDays(second, 6)}';
-       delete from public.meal where household_id = '${DEMO}' and name = '${MEAL}';
-       delete from public.lunch_override where household_id = '${DEMO}' and member_id = '${maya}'
+       delete from public.meal where household_id = '${HOUSEHOLD}' and name = '${MEAL}';
+       delete from public.lunch_override where household_id = '${HOUSEHOLD}' and member_id = '${maya}'
          and lunch_date between '${first}' and '${addDays(second, 6)}';
        update public.member_lunch set defaults = '{"fri": "buy"}'
-        where household_id = '${DEMO}' and member_id = '${maya}'`);
+        where household_id = '${HOUSEHOLD}' and member_id = '${maya}'`);
 
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
@@ -58,7 +60,7 @@ let second: string;
 
 test.beforeAll(async ({ browser }) => {
   maya = sql(
-    `select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`,
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Maya'`,
   );
   first = weekStartOf(addDays(householdToday(db!), 14), householdWeekStart(db!));
   second = addDays(first, 7);
@@ -132,7 +134,7 @@ test('[MEAL-02][MEAL-01][MEAL-08][US-701][MEAL-03][US-702] done-when: a meal add
     await expect(admin.getByRole('list', { name: 'Meals', exact: true })).toContainText(MEAL);
     expect(
       sql(
-        `select array_to_string(meal_types, ',') from public.meal where household_id = '${DEMO}' and name = '${MEAL}'`,
+        `select array_to_string(meal_types, ',') from public.meal where household_id = '${HOUSEHOLD}' and name = '${MEAL}'`,
       ),
     ).toBe('dinner');
   });

@@ -2,6 +2,7 @@ import { appendFileSync } from 'node:fs';
 import { expect, test } from '../support/test';
 import { addDays, householdToday, weekday } from '../support/day';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [MEAL-12][US-709][D-98] The lunch picks one tap from Home, on the preview (WP-73). The done-when:
 // Alex taps **Pick lunches** on Home and lands on the lunch week, this week Monday to Friday and the
@@ -10,6 +11,7 @@ import { signIn } from '../support/session';
 // week is proved by the unit tests on lunchWeekToOpen() (D-113); this spec checks the day it runs on,
 // and the nightly run covers weekdays and weekends in turn. It changes nothing in the database: the
 // child chosen last is kept in this page's own storage.
+const family = ownHousehold('lunch-quick');
 const db = process.env.SUPABASE_DB_URL;
 
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');

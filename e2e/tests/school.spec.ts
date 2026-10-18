@@ -5,15 +5,17 @@ import { householdToday } from '../support/day';
 import { foldOf, unfold } from '../support/fold';
 import { openSetting } from '../support/settings';
 import { signIn as signInAs } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [SCH-01][SCH-02][SCH-03] School years on the preview, as the demo family (D-37): the seeded year and
 // next year's, today's day type for each member, the timeline, days off, overlapping defaults, and a
 // child who follows another school's calendar. Dates come from the database, so the spec works on
 // any day of the year. The database is read with psql to confirm what was saved. What the spec adds
 // (a snow day, a non-default year with its break and its follower) is removed at the end, by name.
+const family = ownHousehold('school');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
-const MAKE_BED = '0de00000-0000-4000-8000-0000000c0001';
+const HOUSEHOLD = family.id;
+const MAKE_BED = family.own('0de00000-0000-4000-8000-0000000c0001');
 const RUN = Math.random().toString(36).slice(2, 6);
 const SNOW = `Snow day e2e ${RUN}`;
 const CAMP = `Summer camp e2e ${RUN}`;
@@ -28,7 +30,7 @@ const NAMES: Record<string, string> = {
 const sql = (q: string) => query(db!, q);
 
 const member = (name: string) =>
-  `(select id from public.member where household_id = '${DEMO}' and display_name = '${name}')`;
+  `(select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}')`;
 const dayType = (name: string, date: string) =>
   sql(`select public.resolve_day_type(${member(name)}, '${date}')`);
 
@@ -36,7 +38,7 @@ const dayType = (name: string, date: string) =>
 function nextSchoolDay(today: string): { yearId: string; date: string } {
   const [yearId, date] =
     sql(`select y.id, d.day from public.school_year y, public.school_year_days(y.id) d
-     where y.household_id = '${DEMO}' and y.is_default and y.archived_at is null
+     where y.household_id = '${HOUSEHOLD}' and y.is_default and y.archived_at is null
        and d.day > '${today}'::date + 1 and d.day_type = 'school_day' order by d.day limit 1`).split(
       '|',
     );
@@ -45,8 +47,8 @@ function nextSchoolDay(today: string): { yearId: string; date: string } {
 
 /** Takes away what this spec adds; the camp year's break and follower go with it. */
 const tidy = () =>
-  sql(`delete from public.school_closure where household_id = '${DEMO}' and name = '${SNOW}';
-       delete from public.school_year where household_id = '${DEMO}' and name = '${CAMP}';`);
+  sql(`delete from public.school_closure where household_id = '${HOUSEHOLD}' and name = '${SNOW}';
+       delete from public.school_year where household_id = '${HOUSEHOLD}' and name = '${CAMP}';`);
 
 async function expectContrastOk(page: Page) {
   const { violations } = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze();
@@ -83,7 +85,7 @@ test('[SCH-01][SCH-02] the demo family’s school years, and what kind of day to
   const years = page.getByRole('list', { name: 'School years', exact: true });
   for (const name of sql(
     `select string_agg(name, '|' order by start_date) from public.school_year
-      where household_id = '${DEMO}' and is_default and archived_at is null`,
+      where household_id = '${HOUSEHOLD}' and is_default and archived_at is null`,
   ).split('|')) {
     await expect(years.getByRole('listitem').filter({ hasText: name })).toContainText('Default');
   }
@@ -102,13 +104,13 @@ test('[SCH-01] a school year’s timeline counts its school days, breaks and day
 }) => {
   await signIn(page);
   const year = sql(
-    `select name from public.school_year where id = '0de00000-0000-4000-8000-0000000b0001'`,
+    `select name from public.school_year where id = '${family.own('0de00000-0000-4000-8000-0000000b0001')}'`,
   );
   await page.getByRole('link', { name: `Open ${year}` }).click();
   await expect(page.getByRole('heading', { name: year, level: 1 })).toBeVisible();
   const counts = Object.fromEntries(
     sql(
-      `select day_type || '=' || count(*) from public.school_year_days('0de00000-0000-4000-8000-0000000b0001') group by day_type`,
+      `select day_type || '=' || count(*) from public.school_year_days('${family.own('0de00000-0000-4000-8000-0000000b0001')}') group by day_type`,
     )
       .split('\n')
       .map((l) => l.split('=')),
@@ -145,7 +147,7 @@ test('[SCH-01][SCH-02][SCH-03] a snow day added for a coming school day makes it
           where chore_id = '${MAKE_BED}'`) === 't';
   const homework = () =>
     sql(
-      `select count(*) from public.chore_occurrence where chore_id = '0de00000-0000-4000-8000-0000000c0005' and due_date = '${date}'`,
+      `select count(*) from public.chore_occurrence where chore_id = '${family.own('0de00000-0000-4000-8000-0000000c0005')}' and due_date = '${date}'`,
     );
   if (planned) expect(homework()).toBe('1');
   await signIn(page);
@@ -182,7 +184,7 @@ test('[SCH-01][SCH-02] two default school years may not overlap; one that isn’
   const years = () =>
     Number(
       sql(
-        `select count(*) from public.school_year where household_id = '${DEMO}' and archived_at is null`,
+        `select count(*) from public.school_year where household_id = '${HOUSEHOLD}' and archived_at is null`,
       ),
     );
   await test.step('two default school years may not overlap; one that isn’t the default may', async () => {
@@ -209,7 +211,7 @@ test('[SCH-01][SCH-02] two default school years may not overlap; one that isn’
 
   await test.step('a child at another school follows its calendar; archiving it puts them back on the default', async () => {
     const camp = sql(
-      `select id from public.school_year where household_id = '${DEMO}' and name = '${CAMP}'`,
+      `select id from public.school_year where household_id = '${HOUSEHOLD}' and name = '${CAMP}'`,
     );
     // Still signed in from the step before: /sign-in would send a signed-in parent on to Home.
     await page.goto(`/admin/school/${camp}`);

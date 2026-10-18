@@ -6,15 +6,14 @@ import {
   type Page,
 } from '@playwright/test';
 import { sql } from './db';
+import { currentHousehold } from './household';
 import { unfold } from './fold';
-import { signIn } from './session';
-
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+import { noteSignIn, signIn } from './session';
 
 /**
  * Retires a board a spec paired, once the spec is done with it. Its browser context closes, so it
  * stops listening and sending, and its device is removed, so anything it left queued can't reach the
- * demo family. Files run one after another in one browser, so without this every board stays live
+ * spec's household. Files run one after another in one browser, so without this every board stays live
  * for the rest of the run: since WP-20 any of them can take a goal's celebration ("whichever board
  * shows it first"), and any can replay a check-off from its outbox in the middle of another spec.
  */
@@ -27,8 +26,8 @@ export async function retireBoard(board: Page | undefined, name: string): Promis
   if (!db) return;
   sql(
     db,
-    `delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${name}';
-     delete from public.device where household_id = '${DEMO}' and name = '${name}';`,
+    `delete from public.device_pairing where household_id = '${currentHousehold().id}' and device_name = '${name}';
+     delete from public.device where household_id = '${currentHousehold().id}' and name = '${name}';`,
   );
 }
 
@@ -61,7 +60,7 @@ export async function pairingCode(admin: Page): Promise<string> {
 }
 
 /**
- * [DEV-01][D-110] A board of the demo family for one spec, as the board specs pair it: any board of
+ * [DEV-01][D-110] A board of the spec's own household (D-137), as the board specs pair it: any board of
  * this name left by an earlier run removed, Alex signed in on Boards, a pairing code asked for and read
  * once all eight digits are there, and a board in a context of its own paired with it and streaming
  * changes ("Live"). Returns the admin page, still on Boards (close it when it is not needed), and the
@@ -81,8 +80,8 @@ export async function pairBoard(
   const db = process.env.SUPABASE_DB_URL!;
   sql(
     db,
-    `delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${name}';
-     delete from public.device where household_id = '${DEMO}' and name = '${name}';`,
+    `delete from public.device_pairing where household_id = '${currentHousehold().id}' and device_name = '${name}';
+     delete from public.device where household_id = '${currentHousehold().id}' and name = '${name}';`,
   );
   const admin = await browser.newPage(adminOptions);
   await signIn(admin);
@@ -97,6 +96,8 @@ export async function pairBoard(
   await board.getByLabel('Pairing code from the admin app', { exact: true }).fill(code);
   await board.getByRole('button', { name: 'Pair this board', exact: true }).click();
   await expect(board).toHaveURL(/\/board$/);
+  // Pairing signs the board's own sign-in in (app/(board)/board/pair/actions.ts).
+  noteSignIn(`board ${name}`);
   // Changes stream before the specs rely on the board reading again (devices.spec: up to about 20 s
   // after a quiet spell).
   await expect(board.getByRole('status')).toHaveText('Live', { timeout: 30_000 });

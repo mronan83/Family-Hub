@@ -5,6 +5,7 @@ import { sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
 import { signIn } from '../support/session';
 import { ENGINE_VERSION } from '../../packages/rules-engine/src/index';
+import { ownHousehold } from '../support/household';
 
 // [RWD-11][RWD-12][US-408] Streak history and Insights on the preview (WP-17, D-55), as Alex of the
 // demo family. The first two tests read a child this file adds, with a last week of its own, so no
@@ -16,9 +17,10 @@ import { ENGINE_VERSION } from '../../packages/rules-engine/src/index';
 //   runs: good 2, bad 1, good 3, bad 1 (going); 18 of the 20 routines that counted were done.
 // Opening Insights builds the child's history (new occurrences mark it), a rebuild leaves every row
 // identical, and a board shows Maya's flame from her stored run.
+const family = ownHousehold('insights');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
-const ALEX_SIGN_IN = '0de00000-0000-4000-8000-0000000000a1';
+const HOUSEHOLD = family.id;
+const ALEX_SIGN_IN = family.own('0de00000-0000-4000-8000-0000000000a1');
 const BOARD = 'Flame e2e';
 const sql = (q: string) => query(db!, q);
 
@@ -32,7 +34,9 @@ const TABLE = { id: randomUUID(), title: `Set the table ${SUFFIX}` };
 const CHORES = `array['${BED.id}', '${TEETH.id}', '${TABLE.id}']::uuid[]`;
 
 const memberId = (name: string) =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+  sql(
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+  );
 /** A member's stored history, as text that changes if any row does. */
 const rows = (member: string) =>
   sql(`select md5(coalesce(string_agg(x, ',' order by x), '')) from (
@@ -54,24 +58,24 @@ let TODAY = '';
  */
 function addChildWithLastWeek() {
   sql(`insert into public.member (id, household_id, display_name, role, color, earns_rewards)
-       values ('${KID}', '${DEMO}', '${KID_NAME}', 'child', 'member-6', false);
+       values ('${KID}', '${HOUSEHOLD}', '${KID_NAME}', 'child', 'member-6', false);
        insert into public.chore (id, household_id, title, icon, kind, points, approval, schedule, due_time,
                                  created_by, start_date, assignment)
-       values ('${BED.id}', '${DEMO}', '${BED.title}', 'chore-bed', 'chore', 0, 'none',
+       values ('${BED.id}', '${HOUSEHOLD}', '${BED.title}', 'chore-bed', 'chore', 0, 'none',
                '{"freq": "daily"}', '07:30', '${ALEX_SIGN_IN}', '${addDays(TODAY, -7)}', 'shared'),
-              ('${TEETH.id}', '${DEMO}', '${TEETH.title}', 'chore-teeth', 'chore', 0, 'none',
+              ('${TEETH.id}', '${HOUSEHOLD}', '${TEETH.title}', 'chore-teeth', 'chore', 0, 'none',
                '{"freq": "daily"}', '07:45', '${ALEX_SIGN_IN}', '${addDays(TODAY, -7)}', 'shared'),
-              ('${TABLE.id}', '${DEMO}', '${TABLE.title}', 'chore-table', 'chore', 0, 'none',
+              ('${TABLE.id}', '${HOUSEHOLD}', '${TABLE.title}', 'chore-table', 'chore', 0, 'none',
                '{"freq": "daily"}', '17:30', '${ALEX_SIGN_IN}', '${addDays(TODAY, -7)}', 'shared');
        insert into public.chore_assignee (household_id, chore_id, member_id)
-       select '${DEMO}', c, '${KID}' from unnest(${CHORES}) c;
+       select '${HOUSEHOLD}', c, '${KID}' from unnest(${CHORES}) c;
        do $$
        declare
          v_today constant date := '${TODAY}';
          o record;
          k integer;
        begin
-         perform private.generate_occurrences('${DEMO}', v_today - 7, v_today - 1, ${CHORES});
+         perform private.generate_occurrences('${HOUSEHOLD}', v_today - 7, v_today - 1, ${CHORES});
          for o in select id, chore_id, due_date, due_time from public.chore_occurrence
                    where chore_id = any (${CHORES}) and due_date < v_today loop
            k := v_today - o.due_date;
@@ -82,7 +86,7 @@ function addChildWithLastWeek() {
                    case when o.chore_id = '${TABLE.id}' and k = 2 then '{}'::uuid[] else array['${KID}'::uuid] end,
                    ((o.due_date + o.due_time)::timestamp at time zone 'America/New_York') + interval '5 minutes');
          end loop;
-         perform private.close_past_due('${DEMO}');
+         perform private.close_past_due('${HOUSEHOLD}');
        end $$;`);
 }
 
@@ -167,8 +171,8 @@ test('[RWD-05] a board shows Maya’s run from her stored history', async ({ bro
   const run = sql(`select coalesce(max(case when kind = 'good' then length_days end), 0)
                      from public.streak_segment where member_id = '${maya}' and end_date is null`);
 
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
+  sql(`delete from public.device_pairing where household_id = '${HOUSEHOLD}' and device_name = '${BOARD}';
+       delete from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}';`);
   let board: Page | undefined;
   try {
     await admin.goto('/admin/devices');

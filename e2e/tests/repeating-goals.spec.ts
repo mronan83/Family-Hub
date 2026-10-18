@@ -5,6 +5,7 @@ import { pairBoard, retireBoard } from '../support/board';
 import { foldOf, unfold } from '../support/fold';
 import { retireItems } from '../support/history';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [RWD-15][RWD-16] Goals that repeat each week (WP-80, D-101, D-123) on the preview, as Alex of the
 // demo family. The done-when: Alex sets Maya "Homework home every school day, each week" paying 10
@@ -17,8 +18,9 @@ import { signIn } from '../support/session';
 // day close would leave them; the item's Friday to Sunday hold nothing. Afterwards the won week is
 // undone (its 10 points come back off, so Maya's balance is as it was), the goal cancelled and the
 // item removed.
+const family = ownHousehold('repeating-goals');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const TAG = Math.random().toString(36).slice(2, 6);
 const TITLE = `Homework home e2e ${TAG}`;
 const ITEM = `Homework e2e ${TAG}`;
@@ -37,9 +39,9 @@ let lastWeek: string;
 let item = '';
 
 const maya = () =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`);
+  sql(`select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Maya'`);
 const goalId = () =>
-  sql(`select id from public.reward_goal where household_id = '${DEMO}' and title = '${TITLE}'
+  sql(`select id from public.reward_goal where household_id = '${HOUSEHOLD}' and title = '${TITLE}'
         order by created_at desc limit 1`);
 const occurrence = (date: string) =>
   sql(`select id from public.chore_occurrence where chore_id = '${item}' and due_date = '${date}'`);
@@ -63,12 +65,12 @@ test.beforeAll(async ({ browser }) => {
   thisWeek = weekStartOf(today, householdWeekStart(db!));
   lastWeek = addDays(thisWeek, -7);
   twoAgo = addDays(thisWeek, -14);
-  item = sql(`select public.save_chore('${DEMO}', null,
+  item = sql(`select public.save_chore('${HOUSEHOLD}', null,
     jsonb_build_object('title', '${ITEM}', 'kind', 'chore', 'points', 0,
                        'schedule', jsonb_build_object('freq', 'daily'), 'start_date', '${twoAgo}'),
     array['${maya()}'::uuid])`);
   sql(
-    `select private.generate_occurrences('${DEMO}', '${twoAgo}', '${addDays(today, 7)}', array['${item}'::uuid])`,
+    `select private.generate_occurrences('${HOUSEHOLD}', '${twoAgo}', '${addDays(today, 7)}', array['${item}'::uuid])`,
   );
   // Each week's fifth to seventh days hold nothing: a day off school, then the weekend.
   for (const week of [twoAgo, lastWeek, thisWeek]) {

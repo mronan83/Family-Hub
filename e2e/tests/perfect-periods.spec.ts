@@ -4,6 +4,7 @@ import { addDays, householdToday, householdWeekStart, weekStartOf } from '../sup
 import { foldOf, unfold } from '../support/fold';
 import { retireItems, storedRuns } from '../support/history';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [RWD-19][RWD-20] Perfect weeks, and a family goal every child meets (WP-82, D-103, D-126) on the
 // preview, as Alex of the demo family. The done-when: Alex sets the family "Everyone's homework home,
@@ -19,8 +20,9 @@ import { signIn } from '../support/session';
 // the items' ticks stay in Maya's and Leo's history: each is skipped, a day that counts for nothing,
 // and the last step checks their good and bad runs are as before (wishlist.spec.ts and insights.spec.ts
 // read Leo's as the seed left them).
+const family = ownHousehold('perfect-periods');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const TAG = Math.random().toString(36).slice(2, 6);
 const FAMILY = `Everyone’s homework e2e ${TAG}`;
 const MAYAS = `Homework home e2e ${TAG}`;
@@ -37,9 +39,11 @@ let lastWeek: string;
 const items: Record<'Maya' | 'Leo', string> = { Maya: '', Leo: '' };
 
 const member = (name: string) =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+  sql(
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+  );
 const goalId = (title: string) =>
-  sql(`select id from public.reward_goal where household_id = '${DEMO}' and title = '${title.replace(/'/g, "''")}'
+  sql(`select id from public.reward_goal where household_id = '${HOUSEHOLD}' and title = '${title.replace(/'/g, "''")}'
         order by created_at desc limit 1`);
 const occurrence = (who: 'Maya' | 'Leo', date: string) =>
   sql(
@@ -84,12 +88,12 @@ test.beforeAll(async ({ browser }) => {
   lastWeek = addDays(thisWeek, -7);
   twoAgo = addDays(thisWeek, -14);
   for (const who of ['Maya', 'Leo'] as const) {
-    items[who] = sql(`select public.save_chore('${DEMO}', null,
+    items[who] = sql(`select public.save_chore('${HOUSEHOLD}', null,
       jsonb_build_object('title', 'Homework e2e ${TAG} ${who}', 'kind', 'chore', 'points', 0,
                          'schedule', jsonb_build_object('freq', 'daily'), 'start_date', '${twoAgo}'),
       array['${member(who)}'::uuid])`);
   }
-  sql(`select private.generate_occurrences('${DEMO}', '${twoAgo}', '${addDays(today, 7)}',
+  sql(`select private.generate_occurrences('${HOUSEHOLD}', '${twoAgo}', '${addDays(today, 7)}',
          array['${items.Maya}'::uuid, '${items.Leo}'::uuid])`);
   for (const week of [twoAgo, lastWeek, thisWeek]) {
     sql(`delete from public.chore_occurrence where chore_id in ('${items.Maya}', '${items.Leo}')
@@ -124,7 +128,7 @@ async function putBack() {
     }
   } finally {
     sql(`update public.reward_goal set status = 'cancelled', archived_at = now()
-          where household_id = '${DEMO}' and title in ('${FAMILY.replace(/'/g, "''")}', '${MAYAS}', '${PERFECT}')
+          where household_id = '${HOUSEHOLD}' and title in ('${FAMILY.replace(/'/g, "''")}', '${MAYAS}', '${PERFECT}')
             and status <> 'cancelled'`);
     // [NFR-14-t] The goals cancelled first, so none is worked out again from the skips.
     retireItems(db!, Object.values(items));

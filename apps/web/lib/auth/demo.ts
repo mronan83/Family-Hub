@@ -16,8 +16,20 @@ export const DEMO_PERSONAS = [
 
 export type DemoPersona = (typeof DEMO_PERSONAS)[number]['key'];
 
-export function demoEmail(persona: DemoPersona): string {
-  return `${persona}@demo.familywise.invalid`;
+/**
+ * [ACC-02][D-137] A demo sign-in's email: the demo family's, or, with an e2e household's key, that
+ * household's copy of it (`alex+chores@demo.familywise.invalid`, WP-111). Each e2e spec has a made-up
+ * household of its own on the test database (scripts/e2e-household.mjs), signed in to the same way.
+ */
+export function demoEmail(persona: DemoPersona, household?: string | null): string {
+  return household
+    ? `${persona}+${household}@demo.familywise.invalid`
+    : `${persona}@demo.familywise.invalid`;
+}
+
+/** [D-137] An e2e household's key, as scripts/e2e-household.mjs checks it: a spec file's name. */
+export function isE2eHousehold(value: unknown): value is string {
+  return typeof value === 'string' && /^[a-z][a-z0-9-]{0,39}$/.test(value);
 }
 
 export function isDemoPersona(value: unknown): value is DemoPersona {
