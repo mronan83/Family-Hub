@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.65: US-718, US-719 and US-720 added at the owner's request, and US-712 to US-717 changed, from the grocery mockup the owner approved (WP-104, WP-105, WP-107, D-138): Groceries works without the sync; the household's own categories and stores, moving several at once; the category suggested on add; recipes as links, photos and PDFs, shown on the board; each child's parent OK.
 > v0.8.64: US-712 to US-717 added at the owner's request (SPIKE-08, WP-103 to WP-107, D-134): the grocery list kept in Apple Reminders and synced by the Mac Studio, on the board and in the admin app, meals → groceries with duplicates merged, staples, and children's asks. US-706 moves to WP-105.
 > v0.8.63: US-323, US-324 and US-325 added at the owner's request (WP-96, D-132): Chores in four sections with person chips, Duplicate, and Do again.
 > v0.8.62: US-414 and US-415 as built (WP-82, D-126): **Weeks won of a repeating goal**, in total or in a row, from the goal's start date; **Every child meets it** on a family goal, paying the children with something due; each child's days on Goals and the board.
@@ -808,7 +809,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As a** parent **I want** the grocery list in the admin app and on the board **so that** I can manage it on my laptop and everyone can see what's needed at the kitchen board.
 **Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-18
 - Given the admin app's Groceries, when I add "Apples", change "Milk" to "Milk ×2", tick "Rice" or remove "Foil", then each change reaches Apple Reminders within seconds.
-- Given the board, when I open Groceries, then I see what is on the list, by the Groceries list's sections where they reach the sync (Produce, Dairy, …), and nothing on it is a button that changes the list.
+- Given the board, when I open Groceries, then I see what is on the list by our own categories, A to Z inside each, and nothing on it is a button that changes the list; the store chips (Costco, Aldi, …) only change what it shows.
+- Given the Mac isn't connected, when I use Groceries in the admin app and on the board, then everything works the same as FamilyWise's own list.
 - Given an item is ticked in the shop, when the board next reads the list, then it is no longer among what's needed.
 
 ### US-715 — This week's meals onto the grocery list
@@ -816,6 +818,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-07, MEAL-19, MEAL-20
 - Given "Tacos" has ingredients (tortillas, ground beef, cheese, lettuce) and is planned for Tuesday, when I choose to add this week's ingredients, then I first see everything that will be added, by meal, and can untick what we have.
 - Given I untick cheese and confirm, when the list updates, then tortillas, ground beef and lettuce are on it, in FamilyWise and in Apple Reminders, and cheese is not.
+- Given Wednesday's chili is taken off the plan after its ingredients were added, when the plan saves, then kidney beans (only the chili needed them, not ticked) leave the list and "Onions ×3" becomes "Onions ×1", for Tacos only.
 - Given "2 onions" is already on the list and Wednesday's chili needs 1 onion, when its ingredients are added, then the list has one "Onions ×3", not two items.
 - Given "milk" is on the list and Leo asks for "Milk", when the ask is added, then there is still one Milk.
 
@@ -830,9 +833,32 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **As a** kid **I want** to ask for a grocery item at the board **so that** my parents know I want yogurt without me remembering to tell them.
 **Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-22
 - Given the board's Groceries, when Maya picks **Ask for something** and chooses or types "Yogurt", then the ask is recorded as Maya's.
-- Given the household's parent OK is on, when Maya asks, then the ask waits for a parent, and a parent with alerts on is told; it reaches the list and Apple Reminders only once a parent approves it.
-- Given the parent OK is off, when Leo asks for "Apples", then Apples goes straight on the list, marked as Leo's ask.
-- Given a parent turns an ask down, when Maya looks at the board, then she sees it wasn't added.
+- Given Maya's parent OK is on, when Maya asks, then the ask waits for a parent, and a parent with alerts on is told; it reaches the list and Apple Reminders only once a parent approves it.
+- Given Leo's parent OK is off, when Leo asks for "Apples", then Apples goes straight on the list, marked as Leo's ask.
+- Given a parent turns an ask down, when Maya looks at the board, then they see "Not this time" until the day ends.
+- Given Alex asks for "Coffee" at the board, when the ask is saved, then it goes straight on the list: an adult's ask never waits.
+
+### US-718 — Our own categories and stores
+**As a** parent **I want** to set up our own grocery categories and stores and move items between them **so that** the list is grouped the way we shop (added at the owner's request).
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-23
+- Given Groceries, when I add a category "Baby", rename "Pantry" to "Cupboard" or move "Snacks" above "Household", then the list and the board show the categories that way.
+- Given I remove "Snacks", when I confirm, then its items move to Other.
+- Given "Milk" has the store Costco, when I tap the Costco chip, then I see only what we get at Costco, by category.
+- Given I select Apples, Avocados and Bananas, when I choose **Move to…** → **New category…** "Fruit", then all three are in Fruit at once, and in Apple Reminders' sections too where the sync can set them.
+
+### US-719 — The category suggested as I add
+**As a** parent **I want** FamilyWise to suggest where a new item goes **so that** I don't sort every item by hand (added at the owner's request).
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-24
+- Given "Greek yogurt" went in Dairy & Eggs at Aldi last time, when I type "greek yog", then Dairy & Eggs and Aldi are chosen before I tap **Add**, and one tap changes either.
+- Given "kombucha" has never been on our list, when I type it, then FamilyWise suggests a category from what it has learned and open data, or Other.
+- Given I add under a category's own **+**, when I add, then it goes straight there.
+
+### US-720 — Recipes with our meals, at the board too
+**As a** parent **I want** to keep a meal's recipe as a link, a photo or a PDF and cook from it at the kitchen board **so that** the recipe and the shopping come from one place (added at the owner's request).
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-25, MEAL-26
+- Given a recipe link, when I tap **Read ingredients**, then the ingredients the page publishes fill the rows for me to check before I save.
+- Given a photo of Grandma's recipe card, when I tap **Read ingredients**, then the text read on my device fills the rows for me to check; nothing is saved unchecked.
+- Given Tacos has a recipe, when I tap Tacos on the board's Meals, then its photo or PDF, ingredients and steps open full screen, and **Close** goes back.
 
 ---
 
