@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.152: The grocery list's logic and screens, from the mockup the owner approved on 18 October, recorded only (MEAL-16, MEAL-18, MEAL-19, MEAL-22 to MEAL-26, D-138): added at the owner's request, Groceries works with or without the Apple Reminders sync, so WP-104 comes first and is Ready, and WP-103 now follows SPIKE-08 and WP-104; WP-104 gains the household's own categories and stores, moving several items at once and the category suggested on add (M to L); WP-105 gains recipes as links, photos and PDFs, read for ingredients and shown on the board; WP-107's parent OK is set per child. The mockup ([Smart grocery list](https://claude.ai/artifact/T7JhbAyMdpXBvJmW1JXXWU)) is the mockup for WP-104 to WP-107. Nothing is built in this change.
 > v0.8.151: WP-111 (each e2e spec on a made-up household of its own) added at the owner's request and done in the same change (NFR-14, D-110, D-137): each spec that signs in or reaches the database makes a copy of the demo family's seed under its own ids and sign-ins as it starts, so no spec sees another's rows or depends on run order or a reseed; the demo family stays for previews and `auth.spec.ts`. Every test's assertions and limits are unchanged. It is WP-99's household per spec, done first; WP-99 keeps the rest. Its test cases are NFR-14-u to NFR-14-z.
 > v0.8.150: WP-110 (the two e2e reds of 17 October night: Maya's request on the board and the goal form's save) added at the owner's request and done in the same change (PTS-04, NFR-16, D-136): both were the app's own bugs, each reproduced on `main`'s code in the UI suite. A request the server had taken stayed on "Sending…" until a Realtime notice made the board read its snapshot again, so a missed notice left it there for up to 4 minutes (#137); now it says "Waiting for a grown-up" once taken and the board reads its snapshot at once. The goal form's live summaries were a server action, and Next runs a page's server actions one at a time, so "Set the goal" waited behind every summary still out (#138); they now come from `POST /api/goals/summaries`. Its test cases are PTS-04-a, NFR-16-r and NFR-16-s.
 > v0.8.149: WP-109 (the two e2e reds of 17 October evening: Family options' week and the streak bonus) added at the owner's request and done in the same change (NFR-14, D-110): both were the specs' own bugs. Home's start-day test (#134) used The week's form while WP-94 had folded it; the streak bonus (#135) read Leo's history as the seed left it, but `perfect-periods.spec.ts`, green for the first time on `d2b0aa4`, had left its check-offs in Maya's and Leo's runs. Its clean-up, and the two other specs' that tick a child's own homework, now skip each check-off they made, and the spec checks the runs are as before. No app change. Its test cases are NFR-14-s and NFR-14-t.
@@ -301,18 +302,18 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-97 | Today, My tasks and Insights folded | P3 | S | WP-91 | Ready (mockup approved) |
 | WP-98 | The e2e findings log | P3 | S | WP-90 | Done |
 | WP-99 | Lean e2e: SQL set-up, a household per spec, parallel runs, unchanged nights skipped | P3 | L | SPIKE-07, WP-90 | Queued: SPIKE-07 first |
-| WP-103 | The grocery list synced with Apple Reminders by the Mac Studio | P3 | L | WP-07, WP-42 | Queued: SPIKE-08 first |
-| WP-104 | Groceries on the board and in the admin app | P3 | M | WP-103, WP-48 | Queued (mockup first) |
-| WP-105 | Meals → groceries: ingredients on meals, duplicates merged | P3 | L | WP-104, WP-25 | Queued (mockup first) |
-| WP-106 | Staples suggested by how often they run out | P3 | M | WP-104 | Queued (mockup first) |
-| WP-107 | Children ask for groceries from the board, with an optional parent OK | P3 | M | WP-104, WP-63 | Queued (mockup first) |
+| WP-103 | The grocery list synced with Apple Reminders by the Mac Studio | P3 | L | WP-104, WP-07, WP-42 | Queued: SPIKE-08 and WP-104 first (mockup approved) |
+| WP-104 | Groceries on the board and in the admin app, with our own categories and stores | P3 | L | WP-48 | Ready (mockup approved) |
+| WP-105 | Meals → groceries: ingredients and recipes on meals, duplicates merged | P3 | L | WP-104, WP-25 | Queued (mockup approved) |
+| WP-106 | Staples suggested by how often they run out | P3 | M | WP-104 | Queued (mockup approved) |
+| WP-107 | Children ask for groceries from the board, with an optional parent OK | P3 | M | WP-104, WP-63 | Queued (mockup approved) |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
 | WP-36 | Closure import | P3 | M | WP-22 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (17 October, D-134): SPIKE-08 first, then WP-103 and WP-104, then WP-105, WP-106 and WP-107.
+**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107.
 
 ---
 
@@ -540,8 +541,8 @@ flowchart LR
     SP08[SPIKE-08 Mac sync of Apple Reminders] --> WP103[WP-103 Grocery list synced by the Mac]
     WP07 --> WP103
     WP42 --> WP103
-    WP103 --> WP104[WP-104 Groceries on the board and admin]
-    WP48 --> WP104
+    WP48 --> WP104[WP-104 Groceries on the board and admin]
+    WP104 --> WP103
     WP104 --> WP105[WP-105 Meals to groceries, duplicates merged]
     WP25 --> WP105
     WP104 --> WP106[WP-106 Staples by how often they run out]
@@ -1986,12 +1987,13 @@ flowchart LR
 - **Within:** D-108 (nightly only, never on a pull request, never blocking anything), D-110 and `CLAUDE.md` "Tests" (no fixed waits, no real clock, own data, measured limits, no blind retries); no test is skipped, disabled or quarantined to make the run faster. Free plans only.
 - **Done when:** the run's time before and after is recorded in `01` §9.5 from measured nightly runs; every spec runs on its own household with its data set up by SQL, and `scripts/preview-db.test.sh` shows the set-up still refuses production; two specs run at once on the real preview without either seeing the other's data; a unit test shows an unchanged `main` skipped, a changed one run, the weekly run going with no change, and a run by hand never skipped; the run summary lists Auth sign-ins and the slowest tests against their limits.
 
-### The smart grocery list — Apple Reminders kept as the list, synced by the Mac Studio
-Added at the owner's request on 17 October in the planner session ("smart grocery list, Apple Reminders kept as the list, synced by the Mac Studio; spike first, then groceries on the board, then meals → groceries, staples and kids' asks"), with the planner's recommendation the owner accepted (D-134). Recorded only; nothing is built in this change.
-- **Why this shape:** the family keeps its grocery list in Apple Reminders today and keeps shopping from it (Siri, the Watch, sharing, the Groceries list's sections). FamilyWise adds the smart layer on top. Apple has no web API for Reminders, and upgraded Reminders lists no longer sync over CalDAV, so neither the server, Vercel nor the Pi can reach them; the owner's Mac Studio, on all the time, runs a small sync program that keeps one shared Apple Reminders grocery list in two-way sync with Supabase.
-- **Considered and not chosen now:** an iPhone app (the owner has an Apple developer account).
-- **The family's data:** real grocery lists are never committed; fixtures are made up; spike reports give counts only.
-- **Order (the owner's):** SPIKE-08, then WP-103 and WP-104, then WP-105, WP-106 and WP-107. Every new or changed screen starts with a mockup on the demo family, approved before it is built.
+### The smart grocery list — FamilyWise's own list, with Apple Reminders synced by the Mac Studio
+Added at the owner's request on 17 October in the planner session ("smart grocery list, Apple Reminders kept as the list, synced by the Mac Studio; spike first, then groceries on the board, then meals → groceries, staples and kids' asks"), with the planner's recommendation the owner accepted (D-134). Changed at the owner's request on 18 October with the mockup's approval (D-138): Groceries works with or without the Apple Reminders sync; items have a store; the household makes its own categories; several items move at once; the category is suggested on add; meals hold recipes as links, photos and PDFs. Recorded only; nothing is built in this change.
+- **Why this shape:** the family keeps its grocery list in Apple Reminders today and keeps shopping from it (Siri, the Watch, sharing). FamilyWise's list stands on its own, and the sync keeps it in step with Apple Reminders. Apple has no web API for Reminders, and upgraded Reminders lists no longer sync over CalDAV, so neither the server, Vercel nor the Pi can reach them; the owner's Mac Studio, on all the time, runs a small sync program that keeps one shared Apple Reminders grocery list in two-way sync with Supabase.
+- **The mockup:** [Smart grocery list](https://claude.ai/artifact/T7JhbAyMdpXBvJmW1JXXWU), on the made-up demo family, the kitchen board at 1920 × 1080 and the admin app at 390 and 1280 px, Day and Evening, in the app's current tokens and controls (D-120, D-127, D-128): the logic written out, the board's Groceries (busy, the Mac off, empty), asking, typing an ask, a recipe on the board; the admin app's Groceries (busy, the Mac off with every fallback, empty, without the sync), an item's ⋯, adding with the category and store suggested, moving several, categories and stores, a meal's recipe and ingredients, the week's review, Staples, connecting the Mac, and Health. Every element SPIKE-08 settles is marked S8·1 to S8·8 with its fallback drawn. **Approved by the owner on 18 October** ("Approve mockup, rules, requirements, logic"), with their answers to its 23 questions (D-138). It is the mockup for WP-103 to WP-107.
+- **Considered and not chosen now:** an iPhone app (the owner has an Apple developer account); a paid service for suggestions or reading recipes; a Groceries card on the board's Home (Q16).
+- **The family's data:** real grocery lists and recipes are never committed; fixtures are made up; spike reports give counts only.
+- **Order (the owner's, 18 October):** WP-104, then SPIKE-08 and WP-103, then WP-105, WP-106 and WP-107.
 
 ### SPIKE-08 — The grocery list's Mac sync: Apple Reminders both ways through the Mac Studio
 **Milestone:** P3 · **Size:** S · **Depends on:** — · **Gates:** WP-103 · **Reqs:** MEAL-16, MEAL-17
@@ -2007,42 +2009,46 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 - **Done when:** the answers, measured latencies (counts only), the restart result and the recommendation are recorded in `01` §5.11; the decisions it needs are in `00`; WP-103's design follows them and WP-103 is Ready.
 
 ### WP-103 — The grocery list synced with Apple Reminders by the Mac Studio
-**Phase:** P3 · **Size:** L · **Depends on:** SPIKE-08, WP-07, WP-42 · **Reqs:** MEAL-16, MEAL-17
-- Added at the owner's request on 17 October (D-134). Recorded only; not built. After SPIKE-08.
-- **Data:** the household's grocery list and its items in Supabase (`grocery_list`, `grocery_item`), each item's history (`grocery_item_event`: added, changed, ticked, unticked, removed, when, and by whom where known), and the sync program's own identity (`grocery_sync_client`). Every new table has `household_id`, RLS and pgTAP. The history is kept from the first day, so WP-106 learns from real run-outs.
-- **The sync program (`MACSYNC`):** on the Mac Studio, started at login, keeps the one shared Apple Reminders grocery list and Supabase in two-way sync within the latency SPIKE-08 measured; catches up after a restart; the newest change to an item wins a conflict; never touches another list.
-- **Its key:** **Connect the Mac** in the admin app shows a short single-use code that expires in minutes; typed at the Mac once, it is traded for the program's own key, kept in the Mac's Keychain, never pasted anywhere. The key reaches only the household's grocery list and the sync's status. **Disconnect** revokes it.
-- **Health:** the Mac is listed with the background jobs: when it was last heard from, its last sync, any error, and a warning when it hasn't been heard from for longer than it should.
+**Phase:** P3 · **Size:** L · **Depends on:** SPIKE-08, WP-104, WP-07, WP-42 · **Reqs:** MEAL-16, MEAL-17
+- Added at the owner's request on 17 October (D-134). Recorded only; not built. After SPIKE-08 and WP-104, which makes the list's tables (D-138).
+- **Data:** the sync program's own identity (`grocery_sync_client`), with `household_id`, RLS and pgTAP; the list, its items, categories, stores and history come from WP-104.
+- **The sync program (`MACSYNC`):** on the Mac Studio, started at login, keeps the one shared Apple Reminders grocery list and Supabase in two-way sync within the latency SPIKE-08 measured; catches up after a restart; the newest change to an item wins a conflict; never touches another list. In Apple Reminders an item's title carries its name and amount, its notes the why and "Store: Costco" (or a #Costco tag where reachable); the household's categories mirror the list's sections by name, both ways, where SPIKE-08 finds that possible (D-138).
+- **Its key:** **Connect the Mac**, in the **Apple Reminders sync** fold set apart at the foot of Groceries, shows a short single-use code that expires in 10 minutes; typed at the Mac once, it is traded for the program's own key, kept in the Mac's Keychain, never pasted anywhere. The key reaches only the household's grocery list and the sync's status. **Disconnect** revokes it.
+- **Late:** the fold sets how long the Mac may be quiet before it counts as late: 2 min, 10 min, 30 min or 1 hour, 10 min to start (D-138). Late, the board shows a Sun pill, Groceries a notice, and changes made in FamilyWise are marked **Not in Apple Reminders yet** until the Mac is back.
+- **Health:** the Mac is listed with the background jobs: when it was last heard from, its last sync, any error, and a warning when it is late.
 - **Owner steps (a Y-item when built):** the Mac account's automatic login, as SPIKE-08 settles it; installing the program; its one-time Reminders permission; typing the code.
-- **Done when:** unit tests show the merge (both sides changed, the newest wins; a change made while the Mac was off caught up; an item removed on one side and changed on the other); pgTAP shows the key reaches only its household's list and is refused once revoked; Health shows the Mac's row and its warning in the UI suite; on the owner's Mac (HW), an item added by Siri reaches Supabase and one added in FamilyWise reaches the iPhone within the budget, and the sync comes back by itself after a restart.
+- **Done when:** the side-by-side is in the PR (D-127); unit tests show the merge (both sides changed, the newest wins; a change made while the Mac was off caught up; an item removed on one side and changed on the other; a duplicate typed in Apple Reminders folded in and removed there); pgTAP shows the key reaches only its household's list and is refused once revoked; Health shows the Mac's row and its warning in the UI suite; on the owner's Mac (HW), an item added by Siri reaches Supabase and one added in FamilyWise reaches the iPhone within the budget, and the sync comes back by itself after a restart.
 
-### WP-104 — Groceries on the board and in the admin app
-**Phase:** P3 · **Size:** M · **Depends on:** WP-103, WP-48 · **Reqs:** MEAL-18
-- Added at the owner's request on 17 October (D-134). Recorded only; not built. A mockup on the demo family first.
-- **Admin app:** **Groceries** in the menu: the list, by section where the sections reach the sync; add, change, tick and remove an item, each change reaching Apple Reminders.
-- **Board:** **Groceries** in the rail shows what is on the list, by section, at board sizes (text 28 px or more). It doesn't change the list; adding from the board comes with WP-107's asks (D-134).
-- **Done when:** the mockup is approved; the side-by-side is in the PR (D-127); an admin's change reaches Apple Reminders through the sync; the board shows the list and a ticked item leaves it; the UI suite covers both screens on the demo family.
+### WP-104 — Groceries on the board and in the admin app, with our own categories and stores
+**Phase:** P3 · **Size:** L · **Depends on:** WP-48 · **Reqs:** MEAL-18, MEAL-23, MEAL-24
+- Added at the owner's request on 17 October (D-134); widened at the owner's request on 18 October and no longer waits for the sync (D-138). Recorded only; not built. Its mockup is approved.
+- **Data:** the household's grocery list and its items (`grocery_list`, `grocery_item`: name, amount, category, store, why), its categories and stores (`grocery_category`, `grocery_store`, in the household's order), and each item's history (`grocery_item_event`: added, merged, changed, ticked, unticked, removed, when, and by whom where known), kept for good. Every new table has `household_id`, RLS and pgTAP. The one way in, which every source uses, lives here; WP-105 adds the merge's amounts and meals to it.
+- **Admin app:** **Groceries** in the menu after Meals: the add field open at the top (an exception to D-120 for this page), the category and store suggested before **Add**; the list by category, A to Z, each item with its store, why and ⋯ (why it's on the list, Edit, Move to…, Store…, Select several, Remove); store chips; **Select** to move, set the store of or remove several at once; **Got recently** (7 days, Untick); **Categories and stores** (add, rename, order, remove; a removed category's items go to Other, after asking). It works the same with no sync.
+- **The suggestion:** the item's last category and store, then the household's own learned words (every move teaches them), then a starter list from open data (Open Food Facts' categories), then a small open-source model where it helps; no paid service. The worker measures the open options (how often each is right on a made-up list, and the cost on an iPhone) and brings the choice to the owner as a decision before building it.
+- **Board:** **Groceries** in the rail shows the list by category, A to Z, with each item's picture where one fits, its amount, and why when a meal needs it or a child asked; store chips change only what it shows. Text 28 px or more. It doesn't change the list; asking comes with WP-107 (D-134).
+- **Done when:** the side-by-side is in the PR (D-127); unit tests show the suggestion (last time's, a learned word, the starter list, Other) and the categories' order; pgTAP shows the tables within the household and a removed category's items moved to Other; the UI suite covers both screens on the demo family, Select and Move to, and the store chips; e2e adds, ticks, moves several and unticks on the real preview.
 
-### WP-105 — Meals → groceries: ingredients on meals, duplicates merged
-**Phase:** P3 · **Size:** L · **Depends on:** WP-104, WP-25 · **Reqs:** MEAL-07, MEAL-19, MEAL-20
-- Added at the owner's request on 17 October (D-134). Recorded only; not built. A mockup on the demo family first.
-- **Meals gain ingredients:** a meal in the library holds its ingredients, each a name and an optional amount (MEAL-07, moved here from WP-36).
-- **Meals → groceries:** from a planned week, **Add to groceries** shows what the week's meals need, by meal, and an admin unticks what the household has before anything is added.
-- **Duplicates merged:** an item added that is already on the list, open, is merged into it (the same thing whatever its capitals or plural; amounts combined), whichever way it came: Apple Reminders, the admin app, a meal, a staple (WP-106) or a child's ask (WP-107). The rule lives in the one place items are added, so WP-106 and WP-107 use it.
-- **Done when:** the mockup is approved; the side-by-side is in the PR; unit tests show the merge (capitals, plurals, amounts that add and amounts that don't); pgTAP shows ingredients and the week's add within the household; e2e adds a week's ingredients and finds them once each.
+### WP-105 — Meals → groceries: ingredients and recipes on meals, duplicates merged
+**Phase:** P3 · **Size:** L · **Depends on:** WP-104, WP-25 · **Reqs:** MEAL-07, MEAL-19, MEAL-20, MEAL-25, MEAL-26
+- Added at the owner's request on 17 October (D-134); recipes added at the owner's request on 18 October, in this item (D-138). Recorded only; not built. Its mockup is approved.
+- **Meals gain ingredients:** a meal in the library holds its ingredients, each a name, an optional amount to buy ("1 can", "8", "1 lb", not the recipe's spoonfuls) and **We usually have it** (MEAL-07, moved here from WP-36).
+- **Recipes:** a library meal holds a link, photos and PDFs, up to 10 MB each, in Supabase Storage (`meal_recipe_file`, with `household_id`, RLS and pgTAP). **Read ingredients** fills the rows from a link's published recipe data, a PDF's text, or a photo read in the browser by free open-source text reading (Tesseract.js); always for the admin to check, never saved unchecked. On the board's Meals, a tap on a meal opens its recipe full screen, read-only, with **Close**.
+- **Meals → groceries:** from a planned week, **Add to groceries** shows what the week's meals need, by meal in day order; what we usually have and meals already added that week start unticked; nothing is added until confirmed. No scaling by who eats. A meal taken off the plan takes its share off the list: an item only it needed and not yet ticked is removed, a merged item loses that meal's amount and reason.
+- **Duplicates merged:** an item added that is already on the list, open, is merged into it (the same thing whatever its capitals or plural; counts and same units added, different units side by side), whichever way it came: Apple Reminders, the admin app, a meal, a staple (WP-106) or a child's ask (WP-107). "Milk" and "milk 2%" are never merged by themselves; the admin app and the review offer **Make it one**.
+- **Done when:** the side-by-side is in the PR; unit tests show the merge (capitals, plurals, amounts that add and amounts that don't, "milk 2%" not merged) and a meal taken off the plan; unit tests read made-up recipe pages, a made-up PDF and a made-up photo; pgTAP shows ingredients, recipe files and the week's add within the household; the UI suite covers the recipe on the board; e2e adds a week's ingredients and finds them once each.
 
 ### WP-106 — Staples suggested by how often they run out
 **Phase:** P3 · **Size:** M · **Depends on:** WP-104 · **Reqs:** MEAL-21
-- Added at the owner's request on 17 October (D-134). Recorded only; not built. A mockup on the demo family first.
-- From each item's history (WP-103), FamilyWise learns how often it is bought and suggests it when it is due again and not on the list ("Milk: usually every 5 days"). An admin adds a suggestion in one tap or dismisses it until it is next due; nothing is added by itself.
-- **Done when:** the mockup is approved; the side-by-side is in the PR; unit tests show the intervals on made-up histories (too few buys to suggest, a regular staple, one bought irregularly, a dismissed suggestion); the UI suite covers the suggestions on the demo family.
+- Added at the owner's request on 17 October (D-134). Recorded only; not built. Its mockup is approved.
+- From the ticks in each item's history (WP-104), FamilyWise learns how often it is bought: at least 4 buys at a steady gap. It suggests it when it is not on the list and due again, a day early (two for gaps over a week), under **Running low?** on the admin app's Groceries only; it stops after 3 gaps with no buy. **Add** puts it on the list in one tap; **Not now** hides it for one gap; **Don't suggest**, in **Staples**, stops it until **Suggest again**. Nothing is added by itself (D-138).
+- **Done when:** the side-by-side is in the PR; unit tests show the intervals on made-up histories (too few buys to suggest, a regular staple, one bought irregularly, a dismissed suggestion, one no longer bought); the UI suite covers the suggestions and Staples on the demo family.
 
 ### WP-107 — Children ask for groceries from the board, with an optional parent OK
 **Phase:** P3 · **Size:** M · **Depends on:** WP-104, WP-63 · **Reqs:** MEAL-22
-- Added at the owner's request on 17 October (D-134). Recorded only; not built. A mockup on the demo family first.
-- On the board's Groceries, a child picks **Ask for something** and chooses a common item or types one; the ask is recorded as theirs.
-- **The parent OK** (a household setting): on, the ask waits for a parent, as a check-off waits on Today, and a parent with alerts on is told (WP-63); it reaches the list and Apple Reminders only once approved. Off, it goes straight on the list, marked as the child's ask. Either way it goes through WP-105's merge.
-- **Done when:** the mockup is approved; the side-by-side is in the PR; pgTAP shows a board can ask only for its household and only approval puts a waiting ask on the list; the UI suite covers the ask on the board; e2e covers ask, approve and the item on the list.
+- Added at the owner's request on 17 October (D-134). Recorded only; not built. Its mockup is approved.
+- On the board's Groceries, **Ask for something**: the asker's face, then 11 picture tiles (the household's most-bought things) or **Something else** typed on the board's own keyboard; the ask is recorded as theirs. An adult's ask never waits. Something already on the list says "Already on the list!" and adds the child to its reasons. A child has at most 5 asks waiting, and **Call off** takes one back.
+- **The parent OK**, set for each child in the **Apple Reminders sync** fold, on by default (D-138): on, the ask waits under **Asked for** on Groceries and as a count on Home's **Needs you**, and a parent with alerts on is told (WP-63); it reaches the list and Apple Reminders only once approved. Off, it goes straight on the list, marked as the child's ask. Either way it goes through WP-105's merge. The board's **Asked for** card says "Waiting for a grown-up", "On the list", and until the day ends "Got it!" or "Not this time".
+- **Done when:** the side-by-side is in the PR; pgTAP shows a board can ask only for its household and only approval puts a waiting ask on the list; the UI suite covers the ask on the board; e2e covers ask, approve and the item on the list.
 
 ---
 
@@ -2056,6 +2062,6 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82, WP-92 | Menu adapters, WP-49 and WP-80 are the Ls |
-| P3 | SPIKE-06, SPIKE-07, SPIKE-08, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-85, WP-86, WP-88 – WP-91, WP-93 – WP-99, WP-103 – WP-107 | WP-56, WP-58, WP-68, WP-72, WP-86, WP-99, WP-103 and WP-105 are the Ls |
+| P3 | SPIKE-06, SPIKE-07, SPIKE-08, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-85, WP-86, WP-88 – WP-91, WP-93 – WP-99, WP-103 – WP-107 | WP-56, WP-58, WP-68, WP-72, WP-86, WP-99, WP-103, WP-104 and WP-105 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.
