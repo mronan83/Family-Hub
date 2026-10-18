@@ -31,13 +31,35 @@ const meal = (
     archivedAt: null,
     ...extra,
   }) satisfies MealRow;
+const ing = (amount: string | null, name: string, have = false) => ({ name, amount, have });
 const MEALS: MealRow[] = [
-  meal(1, 'Tacos', 'utensils', ['dinner'], { recipeUrl: 'https://example.com/tacos' }),
+  meal(1, 'Tacos', 'utensils', ['dinner'], {
+    recipeUrl: 'https://example.com/tacos',
+    // [MEAL-07] What it needs to buy (WP-105), as the mockup's Tacos.
+    ingredients: [
+      ing('1 lb', 'Ground beef'),
+      ing('8', 'Tortillas'),
+      ing('1', 'Onion'),
+      ing('1', 'Lettuce'),
+      ing(null, 'Cheddar'),
+      ing(null, 'Taco seasoning', true),
+      ing(null, 'Olive oil', true),
+    ],
+  }),
   meal(2, 'Spaghetti', 'dinner', ['dinner'], {
     description: 'With the meat sauce from the freezer',
+    ingredients: [
+      ing('1 lb', 'Ground beef'),
+      ing('2', 'Onions'),
+      ing('1 box', 'Spaghetti'),
+      ing(null, 'Parmesan'),
+    ],
   }),
   meal(3, 'Porridge', 'breakfast', ['breakfast']),
-  meal(4, 'Pancakes', 'breakfast', ['breakfast'], { description: 'Saturdays' }),
+  meal(4, 'Pancakes', 'breakfast', ['breakfast'], {
+    description: 'Saturdays',
+    ingredients: [ing(null, 'Eggs'), ing(null, 'Milk'), ing(null, 'Flour', true)],
+  }),
   meal(5, 'Chicken soup', 'soup', ['lunch', 'dinner']),
   meal(6, 'Fish pie', 'dinner', ['dinner']),
   meal(7, 'Apple slices', 'apple', ['snack']),

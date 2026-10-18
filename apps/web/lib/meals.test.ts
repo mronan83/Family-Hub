@@ -319,6 +319,7 @@ describe('the forms', () => {
         icon: 'utensils',
         mealTypes: ['lunch', 'dinner'],
         recipeUrl: 'https://example.com/tacos',
+        ingredients: [],
       },
     });
     expect(parseMealForm(form([['name', '']]), [])).toEqual({

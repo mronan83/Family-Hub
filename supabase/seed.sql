@@ -308,6 +308,20 @@ begin
     ('0de00000-0000-4000-8000-000000071005', v_demo, 'Chicken soup', null, 'soup', '{lunch,dinner}', null, null),
     ('0de00000-0000-4000-8000-000000071006', v_demo, 'Apple slices', null, 'apple', '{snack}', null, null),
     ('0de00000-0000-4000-8000-000000071007', v_demo, 'Old casserole', null, 'dinner', '{}', null, now() - interval '30 days');
+  -- [MEAL-07] What three of them need to buy (WP-105); salt-and-oil things the family usually has.
+  update public.meal set ingredients = i.rows
+    from (values
+      ('0de00000-0000-4000-8000-000000071001'::uuid,
+       '[{"name": "Ground beef", "amount": "1 lb"}, {"name": "Tortillas", "amount": "8"},
+         {"name": "Onion", "amount": "1"}, {"name": "Lettuce", "amount": "1"}, {"name": "Cheddar"},
+         {"name": "Taco seasoning", "have": true}, {"name": "Olive oil", "have": true}]'::jsonb),
+      ('0de00000-0000-4000-8000-000000071002'::uuid,
+       '[{"name": "Ground beef", "amount": "1 lb"}, {"name": "Onions", "amount": "2"},
+         {"name": "Spaghetti", "amount": "1 box"}, {"name": "Parmesan"}]'::jsonb),
+      ('0de00000-0000-4000-8000-000000071004'::uuid,
+       '[{"name": "Eggs"}, {"name": "Milk"}, {"name": "Flour", "have": true}]'::jsonb)
+    ) i (id, rows)
+   where meal.id = i.id;
   insert into public.meal_plan_entry (id, household_id, plan_date, slot, sort_order, meal_id, free_text, notes,
                                       created_by)
   values

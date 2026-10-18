@@ -5,10 +5,11 @@ import type { FormState } from '@/lib/auth/messages';
 import { useFormAction } from '@/lib/forms';
 import { type MealFormValue, SLOT_WORDS, SLOTS } from '@/lib/meals';
 import { saveMeal } from './actions';
+import { IngredientsField } from './ingredients-field';
 
 /**
- * [MEAL-02] Add a meal to the library, or change one: its name, a description, what it's good for
- * (offered first for those meals of the day), a recipe link and an icon.
+ * [MEAL-02][MEAL-07] Add a meal to the library, or change one: its name, a description, what it's good
+ * for (offered first for those meals of the day), a recipe link, its ingredients (WP-105) and an icon.
  */
 export function MealForm({ id, initial }: { id?: string; initial?: MealFormValue }) {
   const [state, onSubmit, pending] = useFormAction(saveMeal, {} as FormState);
@@ -72,6 +73,7 @@ export function MealForm({ id, initial }: { id?: string; initial?: MealFormValue
           placeholder="https://"
         />
       </label>
+      <IngredientsField initial={initial?.ingredients ?? []} />
       <IconPicker
         legend="Icon"
         selected={(initial?.icon ?? 'utensils') as IconName}

@@ -76,6 +76,9 @@ export function MealLibraryView({
                     <strong>{m.name}</strong>
                     <span className="fw-muted">
                       {goodFor(m)}
+                      {m.ingredients?.length
+                        ? ` · ${m.ingredients.length} ingredient${m.ingredients.length === 1 ? '' : 's'}`
+                        : ''}
                       {m.description ? ` · ${m.description}` : ''}
                     </span>
                     {m.recipeUrl ? (
@@ -95,6 +98,7 @@ export function MealLibraryView({
                       icon: m.icon,
                       mealTypes: m.mealTypes,
                       recipeUrl: m.recipeUrl,
+                      ingredients: m.ingredients ?? [],
                     }}
                   />
                   <form action={setMealArchived}>

@@ -169,6 +169,7 @@ export async function saveMeal(_prev: FormState, form: FormData): Promise<FormSt
     icon: v.icon,
     meal_types: v.mealTypes,
     recipe_url: v.recipeUrl,
+    ingredients: v.ingredients ?? [],
   };
   const { error } = GUID.test(id)
     ? await db.from('meal').update(row).eq('id', id).eq('household_id', household.id)

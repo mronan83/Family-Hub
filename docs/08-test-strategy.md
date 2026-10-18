@@ -272,7 +272,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2775** tests: Unit 857 · DB 1506 · UI 283 · E2E 129. 2275 name at least one ID; 500 name none.
+**2787** tests: Unit 861 · DB 1512 · UI 285 · E2E 129. 2282 name at least one ID; 505 name none.
 
 | Measure | Count |
 |---|---|
@@ -281,7 +281,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 104 of 129 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 183 (with a test: 168) |
+| Test cases | 183 (with a test: 170) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -300,14 +300,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 74 | 55 | 41 | 12 | 182 |
+| Meals and lunch | 78 | 56 | 43 | 12 | 189 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
 | Platform | 186 | 167 | 57 | 15 | 425 |
-| Not named | 58 | 477 | 10 | 1 | 546 |
-| **Total** | **857** | **1506** | **283** | **129** | **2775** |
+| Not named | 58 | 482 | 10 | 1 | 551 |
+| **Total** | **861** | **1512** | **285** | **129** | **2787** |
 
 ### 9.3 By requirement
 
@@ -397,7 +397,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-04 | M | Covered | US-703 | WP-26 | — | U 5 · DB 4 · UI 1 · E2E 1 |
 | MEAL-05 | M | Covered | US-704 | WP-27 | — | U 3 · DB 2 · E2E 1 |
 | MEAL-06 | M | Covered | US-705 | WP-28 | — | U 6 · DB 3 · UI 4 · E2E 3 |
-| MEAL-07 | S | Not built | US-706, US-715 | WP-105 | MEAL-07-a, MEAL-07-b | — |
+| MEAL-07 | S | Not built | US-706, US-715 | WP-105 | MEAL-07-a, MEAL-07-b | U 1 · DB 1 · UI 2 |
 | MEAL-09 | S | Covered | US-707 | WP-49, WP-77 | — | U 9 · DB 13 · UI 6 · E2E 1 |
 | MEAL-08 | S | Covered | US-701 | WP-25 | — | U 2 · DB 1 · UI 2 · E2E 1 |
 | MEAL-10 | M | Covered | US-708 | WP-62 | — | U 3 · DB 5 · UI 2 · E2E 1 |
@@ -408,7 +408,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-15 | S | Covered | US-701 | WP-76 | — | DB 4 · UI 3 · E2E 1 |
 | MEAL-16 | S | Not built | US-712 | WP-103 | — | — |
 | MEAL-17 | S | Not built | US-713 | WP-103 | — | — |
-| MEAL-18 | S | Not built | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 1 · DB 6 · UI 7 · E2E 1 |
+| MEAL-18 | S | Not built | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 4 · DB 6 · UI 7 · E2E 1 |
 | MEAL-19 | S | Not built | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 1 |
 | MEAL-20 | S | Not built | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 |
 | MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
@@ -568,7 +568,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-102 | Done | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | 8 of 8 | — |
 | WP-103 | Queued: | — | — | — |
 | WP-104 | Ready | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 16 of 16 | — |
-| WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 5 of 20 | — |
+| WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 7 of 20 | — |
 | WP-106 | Queued | — | — | — |
 | WP-107 | Queued | — | — | — |
 | WP-108 | Done | NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r | 4 of 4 | — |
@@ -743,8 +743,8 @@ Test cases and the tests that prove them:
 | MEAL-24-c | WP-104 | An item neither had before nor learned takes the starter list's category, built from Open Food Facts' categories; a renamed starter category is still found; a removed one gives Other | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-c] an item nothing has taught takes the starter list’s category, renamed or not` |
 | MEAL-24-d | WP-104 | An item nothing knows goes to Other with any store; one tap changes the suggestion before Add | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-d] an item nothing knows goes to Other, with any store`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-24-d] adding suggests the category and store before Add; one tap changes it` |
 | MEAL-24-e | WP-104 | Moving items teaches their words to their own household only | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-24-e] the move teaches each word of their names` |
-| MEAL-07-a | WP-105 | A meal's ingredients are kept as rows of a name, an optional amount to buy and We usually have it; a row with no name, a name over 80 characters or more than 60 rows is refused | DB | **none** |
-| MEAL-07-b | WP-105 | A meal's form shows its Ingredients, a row each with the amount, the name and We usually have it, the last row adding one and × removing one; saved and opened again, they are as typed | UI | **none** |
+| MEAL-07-a | WP-105 | A meal's ingredients are kept as rows of a name, an optional amount to buy and We usually have it; a row with no name, a name over 80 characters or more than 60 rows is refused | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-07-a] a meal keeps its ingredients: a name, an amount to buy, and we usually have it` |
+| MEAL-07-b | WP-105 | A meal's form shows its Ingredients, a row each with the amount, the name and We usually have it, the last row adding one and × removing one; saved and opened again, they are as typed | UI | UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-07-b] a meal’s Ingredients: amount, name and We usually have it; the last row adds one, × takes one away`<br>UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-07-b] a meal’s form with its ingredients fits a ${device} in ${theme}` |
 | MEAL-19-a | WP-105 | The week's review lists the planned library meals by meal in day order with their ingredients ticked; We usually have it starts unticked; a meal already added that week starts unticked, marked "Added Sun"; an item on the list says what it makes once merged; nothing is scaled | Unit | **none** |
 | MEAL-19-b | WP-105 | Adding the week's ingredients puts them on the household's list with each meal as a reason, merged into what is there; a meal of another household is refused | DB | **none** |
 | MEAL-19-c | WP-105 | A meal taken off the plan, removed or changed to another meal, takes its share off the list: an item only it needed and not yet ticked is removed, a merged item loses its amount and reason, a ticked item is left as it is | DB | **none** |
@@ -1031,6 +1031,17 @@ Unit · 11 tests
 | `celebrating once › [RWD-08] names who reached it` | RWD-08 |
 | `celebrating once › [RWD-15-i] a repeating goal is celebrated for each won week while it goes on` | RWD-15-i |
 | `celebrating once › [RWD-08] tells the server which goal and which time it was reached` | RWD-08 |
+
+#### `apps/web/lib/board-groceries.test.ts`
+
+Unit · 4 tests
+
+| Test | Names |
+|---|---|
+| `groceries on the board › [MEAL-18] reads board_groceries(), skipping what it can’t read` | MEAL-18 |
+| `groceries on the board › [MEAL-18] rides with the snapshot, and only beside one` | MEAL-18 |
+| `groceries on the board › [MEAL-18] a picture where one fits, else the category’s` | MEAL-18 |
+| `groceries on the board › [MEAL-07] a meal’s ingredients read safely: named rows, an amount or none, at most 60` | MEAL-07 |
 
 #### `apps/web/lib/board-health.test.ts`
 
@@ -2858,6 +2869,15 @@ UI · 7 tests
 | `the board › [BRD-03] Lunches keep the board’s floors and AA contrast, ${theme}` | BRD-03 |
 | `Today in the admin app › [MEAL-09][US-707] the children’s lunch changes wait, a group a child, with Approve and Keep` | MEAL-09, US-707 |
 | `Today in the admin app › [MEAL-09][NFR-11] lunch changes at ${width} px, ${theme}: nothing sideways, 44 px buttons, AA contrast` | MEAL-09, NFR-11 |
+
+#### `e2e/ui/meal-groceries.spec.ts`
+
+UI · 2 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-07-b] a meal’s Ingredients: amount, name and We usually have it; the last row adds one, × takes one away` | MEAL-07-b |
+| `[MEAL-07-b] a meal’s form with its ingredients fits a ${device} in ${theme}` | MEAL-07-b |
 
 #### `e2e/ui/meals.spec.ts`
 
@@ -5353,5 +5373,18 @@ DB · 51 tests
 | `... each with why it is on the list` | — |
 | `... another family's board gets none of it` | — |
 | `... and anyone but a board gets nothing` | — |
+
+#### `supabase/tests/550_meal_groceries.test.sql`
+
+DB · 6 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-07-a] a meal keeps its ingredients: a name, an amount to buy, and we usually have it` | MEAL-07-a |
+| `... as written` | — |
+| `... a row with no name is refused` | — |
+| `... and a name over 80 characters` | — |
+| `... and more than 60 rows` | — |
+| `... and a we-usually-have-it that isn't true or false` | — |
 
 <!-- /catalogue -->

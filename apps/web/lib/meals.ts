@@ -35,6 +35,32 @@ export interface MealRow {
   mealTypes: Slot[];
   recipeUrl: string | null;
   archivedAt: string | null;
+  /** [MEAL-07] What it needs to buy (WP-105); none read on pages that don't use them. */
+  ingredients?: Ingredient[];
+}
+
+/**
+ * [MEAL-07] One of a meal's ingredients (WP-105): its name, the amount to buy ("1 can", "8", "1 lb",
+ * not the recipe's spoonfuls; none for "some"), and whether the family usually has it.
+ */
+export interface Ingredient {
+  name: string;
+  amount: string | null;
+  have: boolean;
+}
+
+/** [MEAL-07] A meal's ingredients as stored, read safely: rows with a name, at most 60. */
+export function readIngredients(x: unknown): Ingredient[] {
+  if (!Array.isArray(x)) return [];
+  return x
+    .filter((r): r is Record<string, unknown> => typeof r === 'object' && r !== null)
+    .map((r) => ({
+      name: typeof r.name === 'string' ? r.name.trim().slice(0, 80) : '',
+      amount: typeof r.amount === 'string' && r.amount.trim() ? r.amount.trim().slice(0, 40) : null,
+      have: r.have === true,
+    }))
+    .filter((r) => r.name)
+    .slice(0, 60);
 }
 
 export interface PlanEntry {
@@ -136,6 +162,8 @@ export interface MealFormValue {
   icon: string;
   mealTypes: Slot[];
   recipeUrl: string | null;
+  /** [MEAL-07] Its ingredients (WP-105). */
+  ingredients?: Ingredient[];
 }
 
 /** [MEAL-02] The library's form, or a line saying what to fix. */
@@ -160,6 +188,25 @@ export function parseMealForm(
     .map(String)
     .filter((t): t is Slot => (SLOTS as readonly string[]).includes(t));
   const icon = String(form.get('icon') ?? 'utensils');
+  // [MEAL-07] The ingredient rows, sent as JSON by the form (WP-105); empty rows are dropped.
+  let rows: unknown = [];
+  try {
+    rows = JSON.parse(String(form.get('ingredients') ?? '[]'));
+  } catch {
+    return { ok: false, message: 'The ingredients didn’t come through. Try again.' };
+  }
+  const raw = Array.isArray(rows) ? rows : [];
+  const named = raw.filter(
+    (r) =>
+      typeof r === 'object' && r !== null && String((r as { name?: unknown }).name ?? '').trim(),
+  );
+  if (named.length > 60) return { ok: false, message: 'Keep it to 60 ingredients.' };
+  if (named.some((r) => String((r as { name: unknown }).name).trim().length > 80)) {
+    return { ok: false, message: 'Keep each ingredient’s name to 80 characters.' };
+  }
+  if (named.some((r) => String((r as { amount?: unknown }).amount ?? '').trim().length > 40)) {
+    return { ok: false, message: 'Keep each amount to 40 characters, like 1 lb.' };
+  }
   return {
     ok: true,
     value: {
@@ -168,6 +215,7 @@ export function parseMealForm(
       icon: icons.includes(icon) ? icon : 'utensils',
       mealTypes: SLOTS.filter((s) => types.includes(s)),
       recipeUrl: recipe || null,
+      ingredients: readIngredients(named),
     },
   };
 }

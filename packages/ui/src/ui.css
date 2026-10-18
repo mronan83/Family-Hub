@@ -6461,3 +6461,49 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   color: var(--text-soft);
   font-size: var(--t-body);
 }
+
+/* [MEAL-07] A meal's ingredients in its form (WP-105): the amount to buy, the name and ×, then We
+   usually have it under the name. */
+.fw-ing__rows {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-ing__row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) var(--touch);
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+  padding-bottom: var(--s-2);
+  border-bottom: var(--border-w) solid var(--line);
+}
+.fw-ing__row:last-child {
+  border-bottom: 0;
+}
+.fw-ing__row .fw-input {
+  width: 100%;
+  min-width: 0;
+}
+.fw-ing__have {
+  grid-column: 2 / span 2;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-ing__x {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+.fw-ing__x:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}

@@ -183,6 +183,8 @@ describe('board snapshot', () => {
           },
         ],
       },
+      // A snapshot read without board_groceries() beside it (WP-104) has none.
+      groceries: null,
       members: [
         {
           id: 'm1',
