@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.11: the UI suite runs WP-96's screens as Safari on a Mac too, desktop WebKit at 1280 px (the `mac` project, NFR-16, D-141).
 > v0.8.10: WP-111's follow-up: NFR-14-x reads each spec with the TypeScript parser, so a seed id or `family.` inside SQL text fails it (run 251's `chores.spec.ts`); the UI suite's MENU-06 Meals check passes on a Sunday too.
 > v0.8.9: each e2e spec its own made-up household (WP-111, NFR-14, D-137): rule 4 says how a spec gets it, and rule 11 that leftovers stay in it. Test cases NFR-14-u to NFR-14-z; the Test catalogue regenerated (§9).
 > v0.8.8: the two e2e reds of 17 October night (WP-110, PTS-04, NFR-16, D-136): both the app's bugs, each proved by a UI test that fails on `main`'s code (PTS-04-a, NFR-16-r) and a unit test (NFR-16-s); the Test catalogue regenerated (§9).
@@ -55,7 +56,7 @@ Each type, with what it proves, where it runs, when, and how fast.
 | Static checks | Format, lint, types, traceability (`check_traceability.py`), the docs build and its layout on 13 devices | CI `checks` and `docs` jobs | Every PR, and the merge commit on `main` | About a minute each |
 | Unit (Vitest, node:test) | Pure logic: the rules engine, dates, menu reading, lunch picks, the board's layout choice, sleep and wake, the scripts CI runs | CI `checks` (`pnpm test`) | Every PR | Seconds |
 | Database (pgTAP) | Tables, functions and access rules; household isolation (RLS) | CI `database`, on native Postgres (`scripts/db-test.sh`) | Every PR | About a minute |
-| UI suite (Playwright) | Screens on made-up data with no shared database: every size, theme and text size; the 28 px and 56 px floors; a page's own interactions. Desktop Chrome, and an iPhone in WebKit (Safari's engine) for the controls, goal, form and admin layout specs (the `iphone` project, D-127) | CI `build` (`pnpm test:ui`) | Every PR | Minutes |
+| UI suite (Playwright) | Screens on made-up data with no shared database: every size, theme and text size; the 28 px and 56 px floors; a page's own interactions. Desktop Chrome, and an iPhone in WebKit (Safari's engine) for the controls, goal, form and admin layout specs (the `iphone` project, D-127); the screens WP-96 changes also run as Safari on a Mac, desktop WebKit at 1280 px (the `mac` project, D-141) | CI `build` (`pnpm test:ui`) | Every PR | Minutes |
 | Visual and accessibility | Tile style snapshots, axe contrast, manifests, fonts, keyboard | CI `build`, in the UI suite | Every PR | In the UI suite's time |
 | E2E (Playwright) | Real flows across the board, the admin app, the database and the jobs, as the demo family | A preview of `main` that the run builds, on the test database (`e2e.yml`) | Nightly at 07:17 UTC; never on a PR, never after a deploy (D-108) | 22–34 min for the last four green full runs before D-108 (225, 228, 229, 234), one worker; 40 spec files |
 | Burn-in | A new or changed e2e spec passes 5 runs in a row | The nightly run (`node scripts/e2e-run.mjs --burn-in <spec>`) | Optional, after the spec is on `main` (D-110) | 5 × the spec's time |
@@ -272,16 +273,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2829** tests: Unit 876 · DB 1534 · UI 289 · E2E 130. 2307 name at least one ID; 522 name none.
+**2884** tests: Unit 905 · DB 1544 · UI 300 · E2E 135. 2362 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 125 of 145 |
+| Requirements built (a Done item builds them) | 128 of 145 |
 | Built requirements with no test | 0 |
-| Stories built | 110 of 129 |
+| Stories built | 113 of 129 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 183 (with a test: 183) |
+| Test cases | 200 (with a test: 200) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -295,7 +296,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
-| Chores | 90 | 192 | 31 | 30 | 343 |
+| Chores | 116 | 202 | 38 | 33 | 389 |
 | Points | 38 | 92 | 18 | 12 | 160 |
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
@@ -305,9 +306,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
-| Platform | 186 | 167 | 57 | 15 | 425 |
+| Platform | 189 | 167 | 61 | 17 | 434 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **876** | **1534** | **289** | **130** | **2829** |
+| **Total** | **905** | **1544** | **300** | **135** | **2884** |
 
 ### 9.3 By requirement
 
@@ -352,9 +353,9 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | CHR-18 | M | Covered | US-320 | WP-43 | — | U 5 · DB 21 · E2E 2 |
 | CHR-19 | M | Covered | US-321 | WP-61 | — | U 2 · DB 14 · UI 1 · E2E 1 |
 | CHR-20 | S | Covered | US-322 | WP-63, WP-92 | — | U 3 · DB 22 · UI 1 · E2E 1 |
-| CHR-21 | S | Not built | US-323 | WP-96 | — | — |
-| CHR-22 | S | Not built | US-324 | WP-96 | — | — |
-| CHR-23 | S | Not built | US-325 | WP-96 | — | — |
+| CHR-21 | S | Covered | US-323 | WP-96 | CHR-21-a, CHR-21-b, CHR-21-c, CHR-21-d, CHR-21-e, CHR-21-f, CHR-21-g, CHR-21-h, CHR-21-i | U 21 · UI 6 · E2E 3 |
+| CHR-22 | S | Covered | US-324 | WP-96 | CHR-22-a, CHR-22-b | U 2 · E2E 1 |
+| CHR-23 | S | Covered | US-325 | WP-96 | CHR-23-a, CHR-23-b, CHR-23-c | U 3 · DB 10 · UI 1 · E2E 1 |
 | RWD-01 | M | Covered | US-401 | WP-19 | — | U 5 · DB 1 · UI 2 · E2E 1 |
 | RWD-02 | M | Covered | US-312, US-401 | WP-15 | — | U 16 · UI 1 |
 | RWD-03 | M | Covered | US-401 | WP-15 | — | U 5 · UI 1 |
@@ -455,9 +456,9 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85 | — | U 2 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
-| NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101, WP-110 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s | U 20 · DB 10 · UI 18 |
+| NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110 | NFR-16-t, NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s | U 20 · DB 10 · UI 22 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
-| NFR-18 | S | Covered | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j, NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x | U 31 · UI 15 · E2E 3 |
+| NFR-18 | S | Covered | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j, NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x, NFR-18-y, NFR-18-z | U 34 · UI 15 · E2E 5 |
 | NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102, WP-108, WP-109, WP-111 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r, NFR-14-s, NFR-14-t, NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 46 · DB 14 · UI 1 · E2E 19 |
 | NFR-19 | M | Covered | US-913 | WP-85, WP-86 | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | U 6 |
 
@@ -559,7 +560,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-93 | Done | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j | 10 of 10 | — |
 | WP-94 | Done | NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x | 14 of 14 | — |
 | WP-95 | Ready | — | — | — |
-| WP-96 | Ready | — | — | — |
+| WP-96 | Done | CHR-21-a, CHR-21-b, CHR-21-c, CHR-21-d, CHR-21-e, CHR-21-f, CHR-21-g, CHR-21-h, CHR-21-i, CHR-22-a, CHR-22-b, CHR-23-a, CHR-23-b, CHR-23-c, NFR-16-t, NFR-18-y, NFR-18-z | 17 of 17 | — |
 | WP-97 | Ready | — | — | — |
 | WP-98 | Done | NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | 6 of 6 | — |
 | WP-99 | Queued: | — | — | — |
@@ -669,12 +670,29 @@ Test cases and the tests that prove them:
 | NFR-18-p | WP-94 | The headers' days hold across midnight UTC and the end of daylight saving: an invite's days left, a device reached today or before, a server error's day and the next day off count the household's days | Unit | Unit `apps/web/lib/setup-facts.test.ts`: `the household’s days › [NFR-18-p] an invite’s days left count the household’s days, across midnight UTC`<br>Unit `apps/web/lib/setup-facts.test.ts`: `the household’s days › [NFR-18-p] across the end of daylight saving, a day is still a day`<br>Unit `apps/web/lib/setup-facts.test.ts`: `the household’s days › [NFR-18-p] a server error’s day is the household’s, not UTC’s` |
 | NFR-18-q | WP-94 | Family options at 390 and 1280 px, Day and Evening: every section folded to its header, the weather's warning and the invites waiting on their headers while folded; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/setup-folds.spec.ts`: `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-q][ACC-08] Family options: every section folded to what it is set to, the weather’s warning and the invites waiting on their headers` |
 | NFR-18-r | WP-94 | School and a school year's page at 390 and 1280 px, Day and Evening: today and School years open, **Lunch changes**, **Add a school year** (to its button) and **Archived** (its count) folded; a year's timeline open, **Breaks and days off** (with **Add a day off** and **Add a term** inner folds), **Terms**, **Who follows it**, **Dates and name** folded and **Archive** set apart at the bottom; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/setup-folds.spec.ts`: `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-r][SCH-01] School: today and the years open, the cut-off, Add a school year and Archived folded`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-r][SCH-01][SCH-02] a school year: the timeline open, its set-up folded to its facts, Archive set apart at the bottom` |
-| NFR-18-s | WP-94 | Tags at 390 and 1280 px, Day and Evening: **Add a tag** folded to its button, **Our tags** open with each tag's **Edit** in the fold's look, **Archived** folded to its count; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/setup-folds.spec.ts`: `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-s][CHR-10] Tags: Add a tag folded to its button, Our tags open, each Edit a fold, Archived folded to its count` |
+| NFR-18-s | WP-94 | Tags at 390 and 1280 px, Day and Evening: **Add a tag** folded to its button, **Our tags** open with each tag's **Edit** in the fold's look, **Archived** folded to its count; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/setup-folds.spec.ts`: `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-s][CHR-10] Tags: Add a tag folded to its button, Our tags open, each tag a row with ⋯, Archived folded to its count` |
 | NFR-18-t | WP-94 | Reminders at 390 and 1280 px, Day and Evening: the state line and its buttons open, **My devices** and **When to remind me** folded to their headers, a removed device on the header while folded; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/setup-folds.spec.ts`: `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-t][CHR-15] Reminders: the state open, My devices and When to remind me folded, a removed device on the header` |
 | NFR-18-u | WP-94 | Health at 390 and 1280 px, Day and Evening: the verdict open, **Background jobs**, **Server errors** and **Usage** folded, a failing job and a limit near on their headers while folded; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/setup-folds.spec.ts`: `on ${name} › [NFR-18-q][NFR-18-r][NFR-18-s][NFR-18-t][NFR-18-u][NFR-11] the set-up pages fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/setup-folds.spec.ts`: `folded › [NFR-18-u][NFR-07][NFR-08] Health: the verdict open, jobs, errors and usage folded, a failing job and a limit near on their headers` |
 | NFR-18-v | WP-94 | A section saved in comes back open and the others stay folded (Check-offs, The week, Weather, a school year's sections, Lunch changes, a tag's Edit, When to remind me, My devices); **Archived** comes back open after an archive; with none yet, **Add a tag** and **Add a school year** are open; Home's **Add a day off** is an inner fold | UI | UI `e2e/ui/setup-folds.spec.ts`: `open again › [NFR-18-v][D-120] the section saved in comes back open and the others stay folded`<br>UI `e2e/ui/setup-folds.spec.ts`: `open again › [NFR-18-v] with none yet, Add a tag and Add a school year are open; Home’s Add a day off is an inner fold` |
 | NFR-18-w | WP-94 | On the preview, Alex changes the check-offs choice on Family options and finds **Check-offs** open after the save, the other sections folded | E2E | E2E `e2e/tests/admin-day.spec.ts`: `[CHR-05][D-22][NFR-18-w] with approval on, a child’s check-off waits for a parent: approved, or sent back to try again` |
 | NFR-18-x | WP-94 | On the preview, Alex opens Health with a failing job named on **Background jobs**' folded header | E2E | E2E `e2e/tests/health.spec.ts`: `[NFR-18-x][NFR-07] a failing job is named on the folded header, shows with its message, and the household’s server errors are listed` |
+| CHR-21-a | WP-96 | Which section an item is in: a one-time item not done is Scheduled, done is Completed; a one-time chore missed is Completed and marked missed; a one-time task past its date stays in Scheduled under Overdue; each their own with one done stays in Scheduled with "1 of 2 done", and is Completed once everyone has done theirs; a recurring item is never completed; anything archived is Archived; only the occurrences on the item's own date count | Unit | Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-a] which section an item is in › [CHR-21-a] a one-time item not done is Scheduled; done, it is Completed`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-a] which section an item is in › [CHR-21-a] a one-time chore missed is Completed and marked missed; a task stays Scheduled, overdue`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-a] which section an item is in › [CHR-21-a] each their own: Scheduled with "1 of 2 done" until everyone has done theirs`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-a] which section an item is in › [CHR-21-a] a recurring item is never completed; anything archived is Archived; one not planned yet is Scheduled`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-a] which section an item is in › [CHR-21-a] only the occurrences on its own date count, so a date moved later is Scheduled again` |
+| CHR-21-b | WP-96 | Scheduled's headings: before today Overdue, then Today, This week to the last day of the household's week (from Sunday or Monday), then Later; across midnight UTC the household's own date decides the day an item was done; across the end of DST the dates stay calendar dates; a heading with nothing under it is left out | Unit | Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-b] Scheduled’s date headings › [CHR-21-b] Overdue, Today, This week to the week’s last day, then Later`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-b] Scheduled’s date headings › [CHR-21-b] the week ends where the household’s week does`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-b] Scheduled’s date headings › [CHR-21-b] across midnight UTC the household’s own date decides the day it was done`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-b] Scheduled’s date headings › [CHR-21-b] across the end of DST the dates stay calendar dates`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-b] Scheduled’s date headings › [CHR-21-b] headings in order, leaving out one with nothing under it` |
+| CHR-21-c | WP-96 | The order inside each section: Scheduled by date then time; Recurring by time of day (morning first, anytime last) then name; Completed newest done first; Archived newest archived first | Unit | Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-c] the order inside each section › [CHR-21-c] Scheduled by date then time; Recurring by time of day then name`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-c] the order inside each section › [CHR-21-c] Completed newest done first; Archived newest archived first` |
+| CHR-21-d | WP-96 | The person chips filter every section at once; several faces show what is any of theirs; a chosen face tapped again comes off; Clear is the page without them; anything unknown in the address is ignored | Unit | Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-d] the person chips › [CHR-21-d] a face filters every section at once; several show what is any of theirs`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-d] the person chips › [CHR-21-d] a chosen face tapped again comes off; Clear is the page without them`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-d] the person chips › [CHR-21-d] anything unknown in the address is ignored, and the old person link still works` |
+| CHR-21-e | WP-96 | More filters: Tag, Kind and Time of day filter the items; folded, it reads the defaults, or what is set and how many show of all ("Tag: Kitchen · 4 of 23 show") | Unit | Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-e] More filters folded › [CHR-21-e] reads the defaults when nothing is set`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-e] More filters folded › [CHR-21-e] reads what is set and how many show, so a filtered page reads as filtered`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-e] More filters folded › [CHR-21-e] the tag, kind and time of day filter the items` |
+| CHR-21-f | WP-96 | Completed's count says the done ones and how many were missed ("12 done · 1 missed"); each row's second line by its section: a date ("Due today", late when overdue), its time, who, "1 of 2 done" and points; a recurring task's "Overdue since" first; "Done" or "Missed" and the day; when it was archived | Unit | Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-f] Completed’s count and each row’s second line › [CHR-21-f] Completed counts the done ones and says how many were missed`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-f] Completed’s count and each row’s second line › [CHR-21-f] Scheduled: its date, time, who, "1 of 2 done" and points; overdue in the missed colour`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-f] Completed’s count and each row’s second line › [CHR-21-f] Recurring leads with a task’s "Overdue since"; Completed with done or missed; Archived end…` |
+| CHR-21-g | WP-96 | The Chores page on the demo family at 390 and 1280 px in Day and Evening, in Chrome, as an iPhone in WebKit and as Safari on a Mac in WebKit: the four sections, Scheduled under its headings and Recurring open, Completed and Archived folded to their counts and each opened; Maya chosen; More filters opened and set; a ⋯ menu opened by a tap (Edit, Duplicate, Archive; Do again first on a completed one; Restore on an archived one), closed by Escape and by a tap elsewhere; Show older; a family just started; no sideways scroll, 44 px targets, AA contrast; taps after hydration | UI | UI `e2e/ui/chores.spec.ts`: `Chores in four sections › [CHR-21-g] the four sections, Scheduled and Recurring open, Completed and Archived folded; fits in ${theme}`<br>UI `e2e/ui/chores.spec.ts`: `Chores in four sections › [CHR-21-g] a face chosen filters every section; More filters reads what is set`<br>UI `e2e/ui/chores.spec.ts`: `Chores in four sections › [CHR-21-g] a ⋯ menu opened by a tap: Edit, Duplicate and Archive; Do again first on a completed one; Restore on an archived one`<br>UI `e2e/ui/chores.spec.ts`: `Chores in four sections › [CHR-21-g] Completed opened: the newest 20, then Show older`<br>UI `e2e/ui/chores.spec.ts`: `Chores in four sections › [CHR-21-g] a family just started: all four sections show and say so` |
+| CHR-21-h | WP-96 | Pressing and holding a row, by touch on the phone and by mouse on a laptop, opens its ⋯ menu and does not follow the name's link; the row and its link have no touch callout where the engine has one, and no text selection; the browser's own context menu on a row is the row's menu | UI | UI `e2e/ui/chores.spec.ts`: `Chores in four sections › [CHR-21-h] pressing and holding a row opens its menu, not the link nor Safari’s preview` |
+| CHR-21-i | WP-96 | On the preview, Alex taps Maya's chip and every section shows only Maya's, opens Completed and taps Show older | E2E | E2E `e2e/tests/chore-sections.spec.ts`: `[CHR-21-i][US-323] Maya’s chip filters every section; Completed opens and Show older brings the rest` |
+| CHR-22-a | WP-96 | Duplicate's form is filled in from the original, every field as it is, its name marked "(copy)" and cut to fit 80 characters; the copy's lists are its own | Unit | Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-22-a] Duplicate’s filled form › [CHR-22-a] every field from the original, its name marked "(copy)"`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-22-a] Duplicate’s filled form › [CHR-22-a] a long name is cut so the copy still fits 80 characters` |
+| CHR-22-b | WP-96 | On the preview, Alex duplicates an item from its ⋯ and saves the copy: the same kind, points, icon, time, schedule and people; the original is unchanged | E2E | E2E `e2e/tests/chore-sections.spec.ts`: `[CHR-22-b][US-324] an item duplicated from its ⋯ and the copy saved; the original unchanged` |
+| CHR-23-a | WP-96 | Do again's quick dates: Tomorrow, the next Saturday after tomorrow and In a week, a date already offered offered once (across a week's end, a month's end and DST); Change more first fills the form as a one-time item on that date under the item's own name; the sheet picks a date and says what the first one keeps | Unit, UI | Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-23-a] Do again › [CHR-23-a] its quick dates: Tomorrow, the next Saturday, In a week`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-23-a] Do again › [CHR-23-a] across a week’s end a date already offered is offered once`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-23-a] Do again › [CHR-23-a] Change more first fills the form as a one-time item on that date, under its own name`<br>UI `e2e/ui/chores.spec.ts`: `Chores in four sections › [CHR-23-a] Do again’s sheet: a date picked, what the first one keeps` |
+| CHR-23-b | WP-96 | Do again adds a new one-time item on the date picked, with the same name, icon, points, time, assignment, people and active tags, planned on its date and not done; the original keeps its completion, the points it paid and its goal credit; a repeating item, another household's item and no date are refused | DB | DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] Do again adds a new one-time item on the date picked, with the same name, icon, points, time and assignment`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] the new item is for the same people`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] the new item keeps the active tags, not one archived since`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] the new item is planned on its date, one for each person, not done`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] the original keeps its completion, the points it paid and its goal credit, and is not reopened`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] a repeating item is not done again`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] another household's item is not found`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] Do again needs a date` |
+| CHR-23-c | WP-96 | On the preview, Alex uses Do again on a completed one-time item and finds the new one under its date in Scheduled while the first stays done, then changes its icon and saves | E2E | E2E `e2e/tests/chore-sections.spec.ts`: `[CHR-23-c][US-325] Do again on a completed one-time item: a new one under its date in Scheduled, the first stays done; then its icon changed` |
+| NFR-16-t | WP-96 | The screens WP-96 changes besides Chores, in Chrome, as an iPhone in WebKit and as Safari on a Mac: an item's page with More options, Coming up, Last 7 days and Archive folded to their lines and each opened; Duplicate's form filled in; Do again's Change more first on its date; the Meal library's and Tags' rows with ⋯, a meal's Edit under its row and Duplicate's Add a meal | UI | UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] an item’s page folded: the form open, More options, Coming up, Last 7 days and Archive folded…`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] Duplicate’s form filled in, "(copy)"; Do again’s Change more first on its date`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] the Meal library: a meal a row with ⋯ (Edit, Duplicate, Archive); Duplicate opens Add a meal…`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] Tags: a tag a row with ⋯ (Edit, Archive); Edit opens its form under the row` |
+| NFR-18-y | WP-96 | An item's page folded: More options reads approval, days and lunch as set; Coming up reads the next one, when and who, and how many in two weeks; Last 7 days reads how many done, missed and skipped | Unit | Unit `apps/web/lib/chore-sections.test.ts`: `[NFR-18-y] an item’s page folded › [NFR-18-y] More options reads how it is set: approval, days and lunch`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[NFR-18-y] an item’s page folded › [NFR-18-y] Coming up reads the next one, when and who, and how many in two weeks`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[NFR-18-y] an item’s page folded › [NFR-18-y] Last 7 days reads how many done, missed and skipped` |
+| NFR-18-z | WP-96 | On the preview, Alex edits, duplicates and archives a meal from its ⋯ on the Meal library, and edits and archives a tag from its ⋯ on Tags | E2E | E2E `e2e/tests/chore-sections.spec.ts`: `[NFR-18-z] the Meal library from ⋯: a meal edited, duplicated and archived`<br>E2E `e2e/tests/chore-sections.spec.ts`: `[NFR-18-z] Tags from ⋯: a tag edited and archived` |
 | NFR-16-a | WP-100 | Every admin page's fields, lists, dates and times are the app's on Chrome and iPhone WebKit, in Day and Evening: no browser look, 44 px or taller, 10 px round, 16 px text; a field is filled with the page's background and shows the focus ring | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}`<br>UI `e2e/ui/controls.spec.ts`: `[NFR-16-a] a field is filled, 10 px round, with a 3:1 edge and the focus ring` |
 | NFR-16-b | WP-100 | Every radio and check box is the app's: 20 px, a soft edge, the primary colour when chosen, on both engines | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}` |
 | NFR-16-c | WP-100 | A photo is chosen with **Choose a photo**; the file's name shows; the browser's own file picker never shows | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-c] a photo is chosen with the app’s button, and its name shows` |
@@ -803,9 +821,9 @@ Status as in §9.3, for tests that name the story itself.
 | US-320 | CHR-18, CHR-09 | Gap | — |
 | US-321 | CHR-19 | Covered | E2E 1 |
 | US-322 | CHR-20 | Covered | DB 1 · UI 1 · E2E 1 |
-| US-323 | CHR-21 | Not built | — |
-| US-324 | CHR-22 | Not built | — |
-| US-325 | CHR-23 | Not built | — |
+| US-323 | CHR-21 | Covered | E2E 1 |
+| US-324 | CHR-22 | Covered | E2E 1 |
+| US-325 | CHR-23 | Covered | E2E 1 |
 | US-312 | CHR-10, RWD-02 | Covered | E2E 1 |
 | US-313 | CHR-11 | Gap | — |
 | US-314 | CHR-12, CHR-07 | Gap | — |
@@ -1258,6 +1276,42 @@ Unit · 16 tests
 | `a calendar’s folded header › [NFR-18-a][CAL-05] one hidden from the boards says so; one not synced yet says that` | NFR-18-a, CAL-05 |
 | `a calendar’s folded header › [NFR-18-b][CAL-06][US-505] one that can’t sync has the warning and says when it last synced` | NFR-18-b, CAL-06, US-505 |
 | `a calendar’s folded header › [NFR-18-e] its times across midnight UTC and the end of daylight saving` | NFR-18-e |
+
+#### `apps/web/lib/chore-sections.test.ts`
+
+Unit · 29 tests
+
+| Test | Names |
+|---|---|
+| `[CHR-21-a] which section an item is in › [CHR-21-a] a one-time item not done is Scheduled; done, it is Completed` | CHR-21-a |
+| `[CHR-21-a] which section an item is in › [CHR-21-a] a one-time chore missed is Completed and marked missed; a task stays Scheduled, overdue` | CHR-21-a |
+| `[CHR-21-a] which section an item is in › [CHR-21-a] each their own: Scheduled with "1 of 2 done" until everyone has done theirs` | CHR-21-a |
+| `[CHR-21-a] which section an item is in › [CHR-21-a] a recurring item is never completed; anything archived is Archived; one not planned yet is Scheduled` | CHR-21-a |
+| `[CHR-21-a] which section an item is in › [CHR-21-a] only the occurrences on its own date count, so a date moved later is Scheduled again` | CHR-21-a |
+| `[CHR-21-b] Scheduled’s date headings › [CHR-21-b] Overdue, Today, This week to the week’s last day, then Later` | CHR-21-b |
+| `[CHR-21-b] Scheduled’s date headings › [CHR-21-b] the week ends where the household’s week does` | CHR-21-b |
+| `[CHR-21-b] Scheduled’s date headings › [CHR-21-b] across midnight UTC the household’s own date decides the day it was done` | CHR-21-b |
+| `[CHR-21-b] Scheduled’s date headings › [CHR-21-b] across the end of DST the dates stay calendar dates` | CHR-21-b |
+| `[CHR-21-b] Scheduled’s date headings › [CHR-21-b] headings in order, leaving out one with nothing under it` | CHR-21-b |
+| `[CHR-21-c] the order inside each section › [CHR-21-c] Scheduled by date then time; Recurring by time of day then name` | CHR-21-c |
+| `[CHR-21-c] the order inside each section › [CHR-21-c] Completed newest done first; Archived newest archived first` | CHR-21-c |
+| `[CHR-21-d] the person chips › [CHR-21-d] a face filters every section at once; several show what is any of theirs` | CHR-21-d |
+| `[CHR-21-d] the person chips › [CHR-21-d] a chosen face tapped again comes off; Clear is the page without them` | CHR-21-d |
+| `[CHR-21-d] the person chips › [CHR-21-d] anything unknown in the address is ignored, and the old person link still works` | CHR-21-d |
+| `[CHR-21-e] More filters folded › [CHR-21-e] reads the defaults when nothing is set` | CHR-21-e |
+| `[CHR-21-e] More filters folded › [CHR-21-e] reads what is set and how many show, so a filtered page reads as filtered` | CHR-21-e |
+| `[CHR-21-e] More filters folded › [CHR-21-e] the tag, kind and time of day filter the items` | CHR-21-e |
+| `[CHR-21-f] Completed’s count and each row’s second line › [CHR-21-f] Completed counts the done ones and says how many were missed` | CHR-21-f |
+| `[CHR-21-f] Completed’s count and each row’s second line › [CHR-21-f] Scheduled: its date, time, who, "1 of 2 done" and points; overdue in the missed colour` | CHR-21-f |
+| `[CHR-21-f] Completed’s count and each row’s second line › [CHR-21-f] Recurring leads with a task’s "Overdue since"; Completed with done or missed; Archived end…` | CHR-21-f |
+| `[CHR-22-a] Duplicate’s filled form › [CHR-22-a] every field from the original, its name marked "(copy)"` | CHR-22-a |
+| `[CHR-22-a] Duplicate’s filled form › [CHR-22-a] a long name is cut so the copy still fits 80 characters` | CHR-22-a |
+| `[CHR-23-a] Do again › [CHR-23-a] its quick dates: Tomorrow, the next Saturday, In a week` | CHR-23-a |
+| `[CHR-23-a] Do again › [CHR-23-a] across a week’s end a date already offered is offered once` | CHR-23-a |
+| `[CHR-23-a] Do again › [CHR-23-a] Change more first fills the form as a one-time item on that date, under its own name` | CHR-23-a |
+| `[NFR-18-y] an item’s page folded › [NFR-18-y] More options reads how it is set: approval, days and lunch` | NFR-18-y |
+| `[NFR-18-y] an item’s page folded › [NFR-18-y] Coming up reads the next one, when and who, and how many in two weeks` | NFR-18-y |
+| `[NFR-18-y] an item’s page folded › [NFR-18-y] Last 7 days reads how many done, missed and skipped` | NFR-18-y |
 
 #### `apps/web/lib/chores.test.ts`
 
@@ -2175,6 +2229,18 @@ E2E · 1 tests
 |---|---|
 | `[CAL-01][US-501][CAL-02][CAL-07][CAL-06][US-505] a calendar added by its link is synced, keeps its events while broken, is OK again, and is removed` | CAL-01, CAL-02, CAL-06, CAL-07, US-501, US-505 |
 
+#### `e2e/tests/chore-sections.spec.ts`
+
+E2E · 5 tests
+
+| Test | Names |
+|---|---|
+| `[CHR-21-i][US-323] Maya’s chip filters every section; Completed opens and Show older brings the rest` | CHR-21-i, US-323 |
+| `[CHR-22-b][US-324] an item duplicated from its ⋯ and the copy saved; the original unchanged` | CHR-22-b, US-324 |
+| `[CHR-23-c][US-325] Do again on a completed one-time item: a new one under its date in Scheduled, the first stays done; then its icon changed` | CHR-23-c, US-325 |
+| `[NFR-18-z] the Meal library from ⋯: a meal edited, duplicated and archived` | NFR-18-z |
+| `[NFR-18-z] Tags from ⋯: a tag edited and archived` | NFR-18-z |
+
 #### `e2e/tests/chores.spec.ts`
 
 E2E · 11 tests
@@ -2184,11 +2250,11 @@ E2E · 11 tests
 | `[CHR-01][CHR-13] Alex sees the family list, but not Sam’s private gift` | CHR-01, CHR-13 |
 | `[CHR-13] Sam sees the gift they’re responsible for, marked private` | CHR-13 |
 | `[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s list on a phone in under five minutes; each new item has its next two weeks planned` | NFR-14-f, CHR-01, CHR-03, CHR-09, CHR-11 |
-| `[CHR-12] a task entered after its date is open and shows as overdue` | CHR-12 |
+| `[CHR-12][CHR-21] a task entered after its date is open and shows as overdue` | CHR-12, CHR-21 |
 | `[CHR-11] the list filters by time of day, person and kind` | CHR-11 |
 | `[CHR-10] a household tag: apply, filter, rename and archive (US-312)` | CHR-10, US-312 |
 | `[CHR-13][NFR-14-f] a private task stays with its creator, and reaches the other parent only if it’s theirs` | NFR-14-f, CHR-13 |
-| `[CHR-01] an item is archived and restored, never deleted` | CHR-01 |
+| `[CHR-01][CHR-21] an item is archived and restored from its ⋯, never deleted` | CHR-01, CHR-21 |
 | `[CHR-07][CHR-18] an item’s page shows its last seven days: each child’s own bed, and the days each missed` | CHR-07, CHR-18 |
 | `[CHR-18] several people: everyone does their own by default for a chore; switching to any one of them makes one a day` | CHR-18 |
 | `[CHR-19][US-321] a lunch-day item follows each child’s school lunch, and re-plans when a lunch changes` | CHR-19, US-321 |
@@ -2685,6 +2751,24 @@ UI · 7 tests
 | `Calendars folded on ${device} › [NFR-18-f][US-111][CAL-06][D-120] every fold closed, then each opened by a tap, in ${theme}` | NFR-18-f, CAL-06, US-111 |
 | `[NFR-18-i][D-120] a calendar just saved in comes back open, the others folded; with none, Add a calendar is open` | NFR-18-i |
 
+#### `e2e/ui/chores.spec.ts`
+
+UI · 11 tests
+
+| Test | Names |
+|---|---|
+| `Chores in four sections › [CHR-21-g] the four sections, Scheduled and Recurring open, Completed and Archived folded; fits in ${theme}` | CHR-21-g |
+| `Chores in four sections › [CHR-21-g] a face chosen filters every section; More filters reads what is set` | CHR-21-g |
+| `Chores in four sections › [CHR-21-g] a ⋯ menu opened by a tap: Edit, Duplicate and Archive; Do again first on a completed one; Restore on an archived one` | CHR-21-g |
+| `Chores in four sections › [CHR-21-h] pressing and holding a row opens its menu, not the link nor Safari’s preview` | CHR-21-h |
+| `Chores in four sections › [CHR-21-g] Completed opened: the newest 20, then Show older` | CHR-21-g |
+| `Chores in four sections › [CHR-21-g] a family just started: all four sections show and say so` | CHR-21-g |
+| `Chores in four sections › [CHR-23-a] Do again’s sheet: a date picked, what the first one keeps` | CHR-23-a |
+| `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] an item’s page folded: the form open, More options, Coming up, Last 7 days and Archive folded…` | NFR-16-t |
+| `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] Duplicate’s form filled in, "(copy)"; Do again’s Change more first on its date` | NFR-16-t |
+| `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] the Meal library: a meal a row with ⋯ (Edit, Duplicate, Archive); Duplicate opens Add a meal…` | NFR-16-t |
+| `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] Tags: a tag a row with ⋯ (Edit, Archive); Edit opens its form under the row` | NFR-16-t |
+
 #### `e2e/ui/controls.spec.ts`
 
 UI · 6 tests
@@ -3019,7 +3103,7 @@ UI · 9 tests
 | `folded › [NFR-18-q][ACC-08] Family options: every section folded to what it is set to, the weather’s warning and the invites waiting on their headers` | NFR-18-q, ACC-08 |
 | `folded › [NFR-18-r][SCH-01] School: today and the years open, the cut-off, Add a school year and Archived folded` | NFR-18-r, SCH-01 |
 | `folded › [NFR-18-r][SCH-01][SCH-02] a school year: the timeline open, its set-up folded to its facts, Archive set apart at the bottom` | NFR-18-r, SCH-01, SCH-02 |
-| `folded › [NFR-18-s][CHR-10] Tags: Add a tag folded to its button, Our tags open, each Edit a fold, Archived folded to its count` | NFR-18-s, CHR-10 |
+| `folded › [NFR-18-s][CHR-10] Tags: Add a tag folded to its button, Our tags open, each tag a row with ⋯, Archived folded to its count` | NFR-18-s, CHR-10 |
 | `folded › [NFR-18-t][CHR-15] Reminders: the state open, My devices and When to remind me folded, a removed device on the header` | NFR-18-t, CHR-15 |
 | `folded › [NFR-18-u][NFR-07][NFR-08] Health: the verdict open, jobs, errors and usage folded, a failing job and a limit near on their headers` | NFR-18-u, NFR-07, NFR-08 |
 | `open again › [NFR-18-v][D-120] the section saved in comes back open and the others stay folded` | NFR-18-v |
@@ -5463,5 +5547,22 @@ DB · 28 tests
 | `[MEAL-26] board_recipes gives a board each planned meal's recipe, with its files` | MEAL-26 |
 | `[MEAL-25-f] another family's board reads none of them` | MEAL-25-f |
 | `... and another family's parent adds none` | — |
+
+#### `supabase/tests/560_do_chore_again.test.sql`
+
+DB · 10 tests
+
+| Test | Names |
+|---|---|
+| `[CHR-23] set-up: the garage is done by Maya and Leo` | CHR-23 |
+| `[CHR-23] set-up: Maya and Leo earned its 20 points each` | CHR-23 |
+| `[CHR-23-b] Do again adds a new one-time item on the date picked, with the same name, icon, points, time and assignment` | CHR-23-b |
+| `[CHR-23-b] the new item is for the same people` | CHR-23-b |
+| `[CHR-23-b] the new item keeps the active tags, not one archived since` | CHR-23-b |
+| `[CHR-23-b] the new item is planned on its date, one for each person, not done` | CHR-23-b |
+| `[CHR-23-b] the original keeps its completion, the points it paid and its goal credit, and is not reopened` | CHR-23-b |
+| `[CHR-23-b] a repeating item is not done again` | CHR-23-b |
+| `[CHR-23-b] another household's item is not found` | CHR-23-b |
+| `[CHR-23-b] Do again needs a date` | CHR-23-b |
 
 <!-- /catalogue -->

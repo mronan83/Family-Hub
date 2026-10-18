@@ -43,7 +43,17 @@ export default defineConfig({
         'admin-menu.spec.ts',
         'groceries.spec.ts',
         'meal-groceries.spec.ts',
+        'chores.spec.ts',
       ],
+    },
+    // [NFR-16][D-132] Safari on a Mac (WP-96): the screens WP-96 changes again in desktop WebKit at
+    // 1280 px, as the laptop pictures of the side-by-side are. Desktop Safari's own chrome is not
+    // drawn; WebKit is its engine, so its layout and form controls are. Limit as the iPhone's.
+    {
+      name: 'mac',
+      use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 } },
+      timeout: 100_000,
+      testMatch: ['chores.spec.ts'],
     },
   ],
   webServer: {

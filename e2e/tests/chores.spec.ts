@@ -31,6 +31,14 @@ let today = '';
 let TODAY = '';
 /** A date in the demo family's time zone, `days` from today, as "YYYY-MM-DD". */
 const demoDate = (days: number) => addDays(today, days);
+/** A date as the list writes it: "Mon, Oct 12". */
+const calendarDay = (date: string) =>
+  new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${date}T12:00:00Z`));
 
 // [D-110] Each test makes its own items and takes them away after itself, pass or fail (afterEach):
 // the ones it entered in the app (by title, made since it began) and any tag it added. Items a test
@@ -110,7 +118,19 @@ async function signIn(page: Page, who: 'Alex' | 'Sam') {
   await expect(page.getByRole('heading', { name: 'Chores and tasks', level: 1 })).toBeVisible();
 }
 
-const list = (page: Page) => page.getByRole('list', { name: 'Chores and tasks' });
+// [CHR-21] The list is four sections of two-line rows (WP-96): `list` is the page, `rowsOf` its
+// rows, `row` one of them by its title, `openItem` taps its name; a row's ⋯ holds Edit, Duplicate
+// and Archive.
+const list = (page: Page) => page.getByRole('main');
+const rowsOf = (page: Page) => page.locator('li.fw-row');
+const row = (page: Page, title: string) => rowsOf(page).filter({ hasText: title });
+const openItem = (page: Page, title: string) =>
+  page.locator('a.fw-row__name').getByText(title, { exact: true }).click();
+/** A row's ⋯, opened, and its menu. */
+async function menuOf(page: Page, title: string): Promise<Locator> {
+  await page.getByLabel(`More for ${title}`, { exact: true }).click();
+  return row(page, title).locator('.fw-row__menu');
+}
 
 /**
  * Picks an option in a picker whose radio is visually hidden (the icon grid, tag colors). [NFR-16-g]
@@ -214,11 +234,8 @@ test('[CHR-01][CHR-13] Alex sees the family list, but not Sam’s private gift',
     await expect(list(page)).toContainText(title);
   }
   await expect(list(page)).not.toContainText('Buy anniversary gift');
-  await expect(list(page).getByRole('listitem').filter({ hasText: 'Feed the dog' })).toContainText(
-    'Chore · Every day · 5:00 pm · 5 points',
-  );
-  await expect(list(page).getByRole('listitem').filter({ hasText: 'Feed the dog' })).toContainText(
-    'Maya and Alex',
+  await expect(row(page, 'Feed the dog')).toContainText(
+    'Chore Every day · 5:00 pm · Maya, Alex · +5',
   );
   await expectContrastOk(page);
 
@@ -231,9 +248,9 @@ test('[CHR-01][CHR-13] Alex sees the family list, but not Sam’s private gift',
 
 test('[CHR-13] Sam sees the gift they’re responsible for, marked private', async ({ page }) => {
   await signIn(page, 'Sam');
-  const gift = list(page).getByRole('listitem').filter({ hasText: 'Buy anniversary gift' });
+  const gift = row(page, 'Buy anniversary gift');
   await expect(gift).toContainText('Private');
-  await expect(gift).toContainText('Task · Due');
+  await expect(gift).toContainText('Task Due');
   await expectContrastOk(page);
 });
 
@@ -351,10 +368,10 @@ test('[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s 
 
   await test.step('[CHR-03][CHR-09] a new item has its next two weeks planned, for the people it’s for', async () => {
     await page.goto('/admin/chores');
-    await expect(list(page).getByRole('listitem').filter({ hasText: 'Tidy toys' })).toContainText(
-      'Next: Today',
-    );
-    await page.getByRole('link', { name: 'Edit Tidy toys' }).click();
+    await openItem(page, 'Tidy toys');
+    // [NFR-18] Coming up is folded to the next one (WP-96).
+    await expect(foldOf(page, 'Coming up')).toContainText('Next: today 7:00 pm, Leo');
+    await unfold(foldOf(page, 'Coming up'));
     const comingUp = page.getByRole('list', { name: 'Coming up' });
     await expect(comingUp.getByRole('listitem')).toHaveCount(15);
     await expect(comingUp.getByRole('listitem').first()).toContainText('Today');
@@ -369,7 +386,8 @@ test('[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s 
 
     // Saturdays only: the plan follows the schedule.
     await page.goto('/admin/chores');
-    await page.getByRole('link', { name: 'Edit Water the plants' }).click();
+    await openItem(page, 'Water the plants');
+    await unfold(foldOf(page, 'Coming up'));
     const saturdays = Number(
       sql(
         `select count(*) from generate_series(${TODAY}, ${TODAY} + 14, interval '1 day') d where extract(isodow from d) = 6`,
@@ -381,7 +399,9 @@ test('[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s 
   });
 });
 
-test('[CHR-12] a task entered after its date is open and shows as overdue', async ({ page }) => {
+test('[CHR-12][CHR-21] a task entered after its date is open and shows as overdue', async ({
+  page,
+}) => {
   made.push('Return the library books');
   await signIn(page, 'Alex');
   await page.getByRole('link', { name: 'Add a task' }).click();
@@ -394,9 +414,13 @@ test('[CHR-12] a task entered after its date is open and shows as overdue', asyn
   });
   await form.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Saved Return the library books.');
+  // [CHR-21] Under Overdue in Scheduled, its date in the missed colour (WP-96).
   await expect(
-    list(page).getByRole('listitem').filter({ hasText: 'Return the library books' }),
-  ).toContainText('Overdue since');
+    page
+      .getByRole('list', { name: 'Overdue', exact: true })
+      .getByRole('listitem')
+      .filter({ hasText: 'Return the library books' }),
+  ).toContainText(`Due ${calendarDay(demoDate(-3))}`);
   expect(
     sql(`select o.due_date::text || ':' || o.status from public.chore_occurrence o join public.chore c on c.id = o.chore_id
           where c.household_id = '${HOUSEHOLD}' and c.title = 'Return the library books'`),
@@ -419,25 +443,32 @@ test('[CHR-11] the list filters by time of day, person and kind', async ({ page 
     onDate: demoDate(2),
   });
   await signIn(page, 'Alex');
-  const filters = page.getByRole('form', { name: 'Filter the list' });
-  await filters.getByLabel('Time of day').selectOption('Morning');
-  await filters.getByRole('button', { name: 'Filter' }).click();
-  // Chores by due time: 7:15, 7:30, 7:45.
-  await expect(list(page).getByRole('listitem')).toHaveText([
+  // [CHR-21] More filters, applied as tapped (WP-96).
+  await unfold(foldOf(page, 'More filters'));
+  await page
+    .getByRole('group', { name: 'Time of day' })
+    .getByRole('link', { name: 'Morning' })
+    .click();
+  await expect(foldOf(page, 'More filters')).toContainText('Time of day: Morning');
+  // Recurring by due time: 7:15, 7:30, 7:45.
+  await expect(rowsOf(page).locator('.fw-row__name')).toHaveText([
     /Pack school bag/,
     /Make bed/,
     /Brush teeth/,
   ]);
 
   await page.goto('/admin/chores');
-  await filters.getByLabel('Person').selectOption('Sam');
-  await filters.getByLabel('Kind').selectOption('Tasks');
-  await filters.getByRole('button', { name: 'Filter' }).click();
+  const sam = page.getByRole('group', { name: 'Whose' }).getByRole('button', { name: 'Sam' });
+  await sam.click();
+  await expect(sam).toHaveAttribute('aria-pressed', 'true');
+  await unfold(foldOf(page, 'More filters'));
+  await page.getByRole('group', { name: 'Kind' }).getByRole('link', { name: 'Tasks' }).click();
+  await expect(foldOf(page, 'More filters')).toContainText('Kind: Tasks');
   // Sam's private gift is not Alex's to see.
-  await expect(list(page).getByRole('listitem')).toHaveText([
-    /Book the dentist/,
-    /Order school uniform/,
-  ]);
+  const names = rowsOf(page).locator('.fw-row__name');
+  await expect(names).toHaveCount(2);
+  await expect(names.filter({ hasText: 'Book the dentist' })).toHaveCount(1);
+  await expect(names.filter({ hasText: /Order school uniform/ })).toHaveCount(1);
 });
 
 test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', async ({ page }) => {
@@ -463,7 +494,7 @@ test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', asy
 
   for (const title of [tidy, shoes, 'Make bed']) {
     await page.goto('/admin/chores');
-    await page.getByRole('link', { name: `Edit ${title}` }).click();
+    await openItem(page, title);
     const form = page.getByRole('form', { name: 'Edit item' });
     await form.getByRole('checkbox', { name: 'Tidy-up' }).check();
     await save(
@@ -476,46 +507,44 @@ test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', asy
   }
   report(`CHR-10 saves: ${times.join(', ')}`);
 
-  const filters = page.getByRole('form', { name: 'Filter the list' });
-  await filters.getByLabel('Tag').selectOption('Tidy-up');
-  await filters.getByRole('button', { name: 'Filter' }).click();
-  await expect(list(page).getByRole('listitem')).toHaveText([
+  // [CHR-21] More filters' Tag applies as it is picked (WP-96).
+  await unfold(foldOf(page, 'More filters'));
+  await page.getByRole('combobox', { name: 'Tag' }).selectOption({ label: 'Tidy-up' });
+  await expect(foldOf(page, 'More filters')).toContainText('Tag: Tidy-up');
+  await expect(rowsOf(page).locator('.fw-row__name')).toHaveText([
     /Make bed/,
     /Tidy toys/,
     /Put shoes away/,
   ]);
   const filtered = page.url();
 
-  // Renaming keeps the same three: items and filters hold the tag's id.
+  // Renaming keeps the same three: items and filters hold the tag's id. [NFR-18] Each tag's ⋯
+  // holds Edit and Archive (WP-96).
   await page.goto('/admin/tags');
-  const row = page
-    .getByRole('list', { name: 'Tags' })
-    .getByRole('listitem')
-    .filter({ hasText: 'Tidy-up' });
-  await unfold(foldOf(page, 'Edit Tidy-up'));
-  const edit = row.getByRole('form', { name: 'Edit Tidy-up' });
+  await (await menuOf(page, 'Tidy-up')).getByRole('link', { name: 'Edit Tidy-up' }).click();
+  const edit = page.getByRole('form', { name: 'Edit Tidy-up' });
   await edit.getByLabel('Name').fill('Tidy-up time');
   await edit.getByRole('button', { name: 'Save tag' }).click();
   await expect(page.getByRole('status')).toHaveText('Saved Tidy-up time.');
   await page.goto(filtered);
-  await expect(list(page).getByRole('listitem')).toHaveText([
+  await expect(rowsOf(page).locator('.fw-row__name')).toHaveText([
     /Make bed/,
     /Tidy toys/,
     /Put shoes away/,
   ]);
-  await expect(list(page)).toContainText('Tidy-up time');
+  // Tags are off the rows (Q6); More filters names it by its new name.
+  await expect(foldOf(page, 'More filters')).toContainText('Tag: Tidy-up time');
 
   // Archived: no longer offered on an item, but the items keep it for goals and history.
   await page.goto('/admin/tags');
-  const renamed = page
-    .getByRole('list', { name: 'Tags' })
-    .getByRole('listitem')
-    .filter({ hasText: 'Tidy-up time' });
-  await unfold(foldOf(page, 'Edit Tidy-up time'));
-  await renamed.getByRole('button', { name: 'Archive Tidy-up time' }).click();
+  await (
+    await menuOf(page, 'Tidy-up time')
+  )
+    .getByRole('button', { name: 'Archive Tidy-up time' })
+    .click();
   await expect(page.getByRole('list', { name: 'Archived tags' })).toContainText('Tidy-up time');
   await page.goto('/admin/chores');
-  await page.getByRole('link', { name: `Edit ${tidy}` }).click();
+  await openItem(page, tidy);
   await expect(
     page.getByRole('form', { name: 'Edit item' }).getByRole('checkbox', { name: 'Tidy-up time' }),
   ).toHaveCount(0);
@@ -552,9 +581,7 @@ test('[CHR-13][NFR-14-f] a private task stays with its creator, and reaches the 
         `Saved ${title}.`,
         times,
       );
-      await expect(list(alex).getByRole('listitem').filter({ hasText: title })).toContainText(
-        'Private',
-      );
+      await expect(row(alex, title)).toContainText('Private');
     }
     report(`CHR-13 saves: ${times.join(', ')}`);
 
@@ -569,7 +596,7 @@ test('[CHR-13][NFR-14-f] a private task stays with its creator, and reaches the 
 
     // Sam can't make a family item private: only its creator (Alex) is offered the switch.
     await sam.goto('/admin/chores');
-    await sam.getByRole('link', { name: 'Edit Make bed' }).click();
+    await openItem(sam, 'Make bed');
     await expect(sam.getByRole('switch', { name: 'Private' })).toHaveCount(0);
     await expect(
       sam.getByText('Only the person who created this item can make it private.'),
@@ -580,26 +607,27 @@ test('[CHR-13][NFR-14-f] a private task stays with its creator, and reaches the 
   }
 });
 
-test('[CHR-01] an item is archived and restored, never deleted', async ({ page }) => {
+test('[CHR-01][CHR-21] an item is archived and restored from its ⋯, never deleted', async ({
+  page,
+}) => {
   const piano = `Practice piano ${RUN}`;
   const id = fixture({ title: piano, people: ['Maya'], icon: 'chore-music', time: '16:30' });
   await signIn(page, 'Alex');
-  await page.getByRole('link', { name: `Edit ${piano}` }).click();
-  await page.getByRole('button', { name: `Archive ${piano}` }).click();
+  await (await menuOf(page, piano)).getByRole('button', { name: `Archive ${piano}` }).click();
   // Each action redirects when it has saved; wait for that before reading or moving on.
-  await page.waitForURL(/\/admin\/chores$/);
-  await expect(list(page)).not.toContainText(piano);
-
-  const filters = page.getByRole('form', { name: 'Filter the list' });
-  await filters.getByLabel('Show').selectOption('Archived');
-  await filters.getByRole('button', { name: 'Filter' }).click();
-  await expect(list(page).getByRole('listitem').filter({ hasText: piano })).toHaveCount(1);
-  await page.getByRole('link', { name: `Edit ${piano}` }).click();
-  await page.getByRole('button', { name: `Restore ${piano}` }).click();
-  await page.waitForURL(/\/admin\/chores\?status=archived$/);
-  await expect(page.getByRole('link', { name: `Edit ${piano}` })).toHaveCount(0);
-  await page.goto('/admin/chores');
-  await expect(list(page)).toContainText(piano);
+  await page.waitForURL(/\/admin\/chores\?archived=.*open=archived/);
+  await expect(page.getByRole('status')).toHaveText(`Archived ${piano}. It’s under Archived.`);
+  await expect(page.getByRole('list', { name: 'Recurring', exact: true })).not.toContainText(piano);
+  // [CHR-21] Under Archived, opened after the archive.
+  await expect(foldOf(page, 'Archived')).toHaveAttribute('open', '');
+  await expect(
+    page.getByRole('list', { name: 'Archived', exact: true }).getByRole('listitem').filter({
+      hasText: piano,
+    }),
+  ).toHaveCount(1);
+  await (await menuOf(page, piano)).getByRole('button', { name: `Restore ${piano}` }).click();
+  await page.waitForURL(/\/admin\/chores\?restored=/);
+  await expect(page.getByRole('list', { name: 'Recurring', exact: true })).toContainText(piano);
   expect(
     sql(`select count(*) from public.audit_log where household_id = '${HOUSEHOLD}' and entity_type = 'chore' and action = 'update'
           and diff ? 'archived_at' and chore_id = '${id}'`),
@@ -613,6 +641,8 @@ test('[CHR-07][CHR-18] an item’s page shows its last seven days: each child’
   // yesterday and Maya three days ago.
   await signIn(page, 'Alex');
   await page.goto(`/admin/chores/${family.own('0de00000-0000-4000-8000-0000000c0001')}`);
+  // [NFR-18] Folded to its counts (WP-96): opened by its header.
+  await unfold(foldOf(page, 'Last 7 days'));
   const week = page.getByRole('list', { name: 'Last 7 days', exact: true });
   await expect(week.getByRole('listitem')).toHaveCount(7);
   const yesterday = week.getByRole('listitem').first();
@@ -643,10 +673,9 @@ test('[CHR-18] several people: everyone does their own by default for a chore; s
           where o.chore_id = '${id}' and o.due_date between ${TODAY} and ${TODAY} + 14`);
   expect(perDay()).toBe('30:15');
   await signIn(page, 'Alex');
-  await expect(list(page).getByRole('listitem').filter({ hasText: shoes })).toContainText(
-    'each their own',
-  );
-  await page.getByRole('link', { name: `Edit ${shoes}` }).click();
+  await expect(row(page, shoes)).toContainText('each their own');
+  await openItem(page, shoes);
+  await unfold(foldOf(page, 'Coming up'));
   await expect(
     page.getByRole('list', { name: 'Coming up' }).getByRole('listitem').first(),
   ).toContainText('each their own');
@@ -656,12 +685,10 @@ test('[CHR-18] several people: everyone does their own by default for a chore; s
   await form.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByRole('status')).toHaveText(`Saved ${shoes}.`);
   expect(perDay()).toBe('15:15');
-  await expect(list(page).getByRole('listitem').filter({ hasText: shoes })).not.toContainText(
-    'each their own',
-  );
+  await expect(row(page, shoes)).not.toContainText('each their own');
 
   // With one person the question is not asked.
-  await page.getByRole('link', { name: `Edit ${tidy}` }).click();
+  await openItem(page, tidy);
   await expect(
     page.getByRole('form', { name: 'Edit item' }).getByRole('radio', { name: 'Any one of them' }),
   ).toHaveCount(0);
@@ -696,9 +723,7 @@ test('[CHR-19][US-321] a lunch-day item follows each child’s school lunch, and
     await expect(form.getByRole('radio', { name: 'Any one of them' })).toBeDisabled();
     await form.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(page.getByRole('status')).toHaveText(`Saved ${title}.`);
-    await expect(list(page).getByRole('listitem').filter({ hasText: title })).toContainText(
-      'on days they bring lunch',
-    );
+    await expect(row(page, title)).toContainText('on days they bring lunch');
 
     const chore = sql(
       `select id from public.chore where household_id = '${HOUSEHOLD}' and title = '${title}' and created_at >= '${since}'`,

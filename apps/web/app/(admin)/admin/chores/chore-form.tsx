@@ -4,6 +4,7 @@ import {
   Avatar,
   Banner,
   Button,
+  Fold,
   Icon,
   IconPicker,
   type AvatarKey,
@@ -29,6 +30,7 @@ import {
   type Kind,
   type LunchDays,
 } from '@/lib/chores';
+import { moreOptionsLine } from '@/lib/chore-sections';
 import { useFormAction } from '@/lib/forms';
 import { LEAD_CHOICES } from '@/lib/reminder-settings';
 import { saveChore } from './actions';
@@ -56,8 +58,9 @@ const FREQ_LABELS: Record<Freq, string> = {
 
 /**
  * [CHR-01][CHR-09][CHR-10][CHR-11][CHR-13] Add or edit a chore (a routine) or a task (a to-do).
- * Built for a phone: the common fields first, the rest under "More options". A new chore starts
- * daily at 5 points and a new task once, today, at 0 points, until the admin changes them.
+ * Built for a phone: the common fields first, the rest under "More options", folded to how it is set
+ * (NFR-18, WP-96). A new chore starts daily at 5 points and a new task once, today, at 0 points,
+ * until the admin changes them; a copy (CHR-22) starts as its original.
  */
 export function ChoreForm({
   id,
@@ -68,6 +71,7 @@ export function ChoreForm({
   tags,
   approvalMode,
   offerVisibility,
+  note,
 }: {
   id?: string;
   initial?: ChoreInput;
@@ -80,6 +84,8 @@ export function ChoreForm({
   approvalMode: 'on' | 'off';
   /** Only an item's creator changes who sees it. */
   offerVisibility: boolean;
+  /** [CHR-22] A line above the buttons: a copy's "starts fresh". */
+  note?: string;
 }) {
   const [state, onSubmit, pending] = useFormAction(saveChore, {} as FormState);
   const [kind, setKind] = useState<Kind>(initial?.kind ?? defaultKind);
@@ -381,8 +387,22 @@ export function ChoreForm({
         </>
       ) : null}
 
-      <details className="fw-more">
-        <summary>More options</summary>
+      <Fold
+        variant="inner"
+        title="More options"
+        summary={[
+          moreOptionsLine(
+            {
+              approval: initial?.approval ?? 'inherit',
+              dayTypes: initial?.dayTypes ?? [...DAY_TYPES],
+              lunchDays: initial?.lunchDays ?? null,
+            },
+            approvalMode,
+            (d) => DAY_TYPE_LABELS[d as (typeof DAY_TYPES)[number]],
+            (l) => LUNCH_DAYS_LABELS[l as LunchDays],
+          ),
+        ]}
+      >
         <div className="fw-form">
           <label className="fw-field">
             <span className="fw-field__label">Approval</span>
@@ -443,8 +463,9 @@ export function ChoreForm({
             </span>
           </label>
         </div>
-      </details>
+      </Fold>
 
+      {note ? <p className="fw-field__help">{note}</p> : null}
       {state.message ? <Banner kind="notice">{state.message}</Banner> : null}
       <div className="fw-actions">
         <Button type="submit" disabled={pending}>

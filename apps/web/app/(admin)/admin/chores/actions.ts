@@ -63,16 +63,67 @@ export async function saveChore(_prev: FormState, form: FormData): Promise<FormS
   redirect(`/admin/chores?saved=${saved}`);
 }
 
-/** [CHR-01] Archive (off the list and the board, history kept) or restore; never deleted. */
+/** Where to go back to on Chores: the page's own address, with its filters; anything else is the page. */
+function backTo(form: FormData): string {
+  const back = String(form.get('back') ?? '');
+  return /^\/admin\/chores(\?[^#]*)?$/.test(back) ? back : '/admin/chores';
+}
+const withParams = (href: string, params: Record<string, string>) => {
+  const u = new URL(href, 'http://x');
+  for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
+  return `${u.pathname}${u.search}`;
+};
+
+/**
+ * [CHR-01][CHR-21] Archive (off the list and the board, history kept) or restore; never deleted. Back
+ * to the page as it was (its filters kept), with Archived open after an archive (D-132).
+ */
 export async function setChoreArchived(form: FormData): Promise<void> {
   const { db, household } = await context();
   const archive = form.get('archive') === 'true';
-  const { error } = await db
+  const id = String(form.get('id') ?? '');
+  const { data, error } = await db
     .from('chore')
     .update({ archived_at: archive ? new Date().toISOString() : null })
-    .eq('id', String(form.get('id') ?? ''))
-    .eq('household_id', household.id);
+    .eq('id', id)
+    .eq('household_id', household.id)
+    .select('title')
+    .maybeSingle();
   if (error) log('warn', 'chore archive not saved', { code: error.code });
   revalidatePath('/admin/chores');
-  redirect(archive ? '/admin/chores' : '/admin/chores?status=archived');
+  const title = (data?.title as string | undefined) ?? '';
+  redirect(
+    archive
+      ? `${withParams(backTo(form), { archived: title, open: 'archived' })}#archived`
+      : withParams(backTo(form), { restored: title }),
+  );
+}
+
+/**
+ * [CHR-23][D-132] Do again (Q7): a new one-time item on the date picked (do_chore_again, under the
+ * admin's RLS); the original keeps its completion, points and goal credit. "Change more first" opens
+ * the form filled in with that date instead, and nothing is added until it is saved.
+ */
+export async function doChoreAgain(form: FormData): Promise<void> {
+  const { db, household } = await context();
+  const id = String(form.get('id') ?? '');
+  const on = String(form.get('on') ?? '');
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(on) ? on : null;
+  if (form.get('then') === 'form') {
+    redirect(`/admin/chores/new?from=${encodeURIComponent(id)}${date ? `&on=${date}` : ''}`);
+  }
+  const back = backTo(form);
+  if (!date) redirect(withParams(back, { again: id }));
+  const { error } = await db.rpc('do_chore_again', {
+    p_household_id: household.id,
+    p_chore_id: id,
+    p_on_date: date,
+  });
+  if (error) {
+    log('warn', 'chore not done again', { code: error.code, hint: error.hint });
+    redirect(withParams(back, { failed: 'again' }));
+  }
+  const { data } = await db.from('chore').select('title').eq('id', id).maybeSingle();
+  revalidatePath('/admin/chores');
+  redirect(withParams(back, { added: (data?.title as string | undefined) ?? '', on: date }));
 }

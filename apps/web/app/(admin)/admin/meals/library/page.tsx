@@ -7,11 +7,11 @@ import { MealLibraryView } from './view';
 
 export const metadata: Metadata = { title: 'Meal library' };
 
-/** [MEAL-02] The meal library. */
+/** [MEAL-02] The meal library; [D-132] ?edit= a meal's form open under its row, ?copy= Duplicate. */
 export default async function MealLibraryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ saved?: string; did?: string }>;
+  searchParams: Promise<{ saved?: string; did?: string; edit?: string; copy?: string }>;
 }) {
   const db = await serverClient();
   const user = await requireSignedIn(db, '/admin/meals/library');
@@ -32,6 +32,8 @@ export default async function MealLibraryPage({
       error={p.did === 'failed' ? 'That didn’t change. Try again in a moment.' : null}
       openArchived={p.did === 'archived'}
       householdId={household.id}
+      editing={p.edit ?? null}
+      copy={p.copy ?? null}
     />
   );
 }

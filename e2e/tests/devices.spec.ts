@@ -226,7 +226,8 @@ test('[CHR-04][CHR-09][PTS-01] the board checks off a shared chore; a replay rec
   expect(held()).toBe('5');
 
   // Alex sees it on the item: today is done by Maya.
-  await admin.goto(`/admin/chores/${FEED_THE_DOG}`);
+  // [NFR-18] Coming up opened: it is folded on the item's page (WP-96).
+  await admin.goto(`/admin/chores/${FEED_THE_DOG}?open=coming-up`);
   await expect(
     admin.getByRole('list', { name: 'Coming up', exact: true }).getByRole('listitem').first(),
   ).toContainText('Done by Maya');

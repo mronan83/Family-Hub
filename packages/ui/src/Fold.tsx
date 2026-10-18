@@ -32,6 +32,8 @@ export interface FoldProps {
   warning?: ReactNode;
   /** A count waiting for a parent on the header (invites waiting), in amber without the sign. */
   waiting?: ReactNode;
+  /** [CHR-21] How many it holds, on the header while open (Chores' sections, WP-96). */
+  count?: ReactNode;
   children: ReactNode;
 }
 
@@ -47,6 +49,7 @@ export function Fold({
   meta,
   warning,
   waiting,
+  count,
   children,
 }: FoldProps) {
   const H = `h${level ?? (variant === 'inner' ? 3 : 2)}` as 'h2' | 'h3';
@@ -74,6 +77,7 @@ export function Fold({
         ) : (
           <H id={headingId}>{title}</H>
         )}
+        {count !== undefined ? <span className="fw-fold__count">{count}</span> : null}
         {flag}
         {waiting ? <span className="fw-fold__wait">{waiting}</span> : null}
         {button ? (

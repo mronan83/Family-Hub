@@ -9,7 +9,7 @@ import { type MealRow, type PlanEntry, type Slot, weekDays } from '@/lib/meals';
 // The admin Meals pages (WP-25) with a made-up family and no database, for the UI suite and the
 // guide's pictures: the week in Day or Evening (?theme=evening), opened to add a Wednesday snack
 // (?add=1), an entry opened for editing (?edit=<its id>, WP-76), a day opened (?open=<day>, WP-75),
-// the week's Add to groceries (?groceries=1, WP-105), and the meal library (?page=library; &open=archived shows Archived open, as after an archive; &state=empty, none yet; &edit=Tacos, its form open). School lunch (WP-26): Thursday is a day off, Leo's Tuesday is changed to buy.
+// the week's Add to groceries (?groceries=1, WP-105), and the meal library (?page=library; &open=archived shows Archived open, as after an archive; &state=empty, none yet; &edit=Tacos, its form open; &menu=Tacos, its ⋯ open; &copy=Tacos, Duplicate's Add a meal, WP-96). School lunch (WP-26): Thursday is a day off, Leo's Tuesday is changed to buy.
 // School menus (WP-27): both have Maple Elementary's; a buy day shows it. The lunch week is a list of
 // days (WP-74): Leo's Wednesday (today) has nothing picked yet, so his face has a dot.
 export const metadata: Metadata = { title: 'Meals', robots: { index: false } };
@@ -227,6 +227,8 @@ export default async function DevMealsPage({
     page?: string;
     add?: string;
     edit?: string;
+    copy?: string;
+    menu?: string;
     open?: string;
     lunches?: string;
     state?: string;
@@ -241,6 +243,8 @@ export default async function DevMealsPage({
         <MealLibraryView
           householdId="f2a00000-0000-4000-8000-000000000001"
           editing={MEALS.find((m) => m.name === p.edit)?.id ?? null}
+          copy={MEALS.find((m) => m.name === p.copy)?.id ?? null}
+          menu={MEALS.find((m) => m.name === p.menu)?.id ?? null}
           meals={p.state === 'empty' ? [] : MEALS}
           notice={null}
           error={null}

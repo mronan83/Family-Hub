@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.56: Do again (WP-96, D-132, D-141): `do_chore_again()` adds a new one-time item from a done one, the original untouched (§3.2).
 > v0.8.55: the grocery list and meals → groceries (WP-104, WP-105, D-138, D-139): `grocery_list`, `grocery_category`, `grocery_store`, `grocery_item`, `grocery_item_reason`, `grocery_item_event`, `grocery_learned_word`; the one way in, `add_groceries()`; `board_groceries()`; `meal.ingredients` checked (§3.8).
 > v0.8.54: the goal form's live summaries (WP-101, D-128): `goal_preview_facts()` gains `closures`, the school calendar's closures on the weekdays around today for the goal's person or each child, from `private.goal_closures()` (§5).
 > v0.8.53: perfect periods, and a family goal every child meets (WP-82, D-103, D-126): `reward_goal.each_child`, the `PERIODS_WON` rule (`params.goal_id`, `in_a_row`), `reward_goal_period.children` and `reward_goal_progress.children`, the `payees_changed` event, `private.goal_children()`, `private.goal_sources()`, `private.goal_payees()`, `private.pay_goal_children()`, `private.mark_counting_goals_dirty()`; `goal_facts()` gives `members` and `sources`; `ENGINE_VERSION` 4.
@@ -448,6 +449,7 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 - `chore_assignee` and `chore_tag` carry `household_id` and reference `chore (household_id, id)`, `member (household_id, id)` and `tag (household_id, id)`, so a link never crosses households.
 - `tag.name` is unique per household ignoring case, archived tags included; `color` is one of the sixteen member colors (`member-1`…`member-16`, D-70); `icon` is optional, any name in the icon set.
 - An item, its assignees and its tags are saved by `public.save_chore()` (§4.8). Items and tags are archived, never deleted.
+- [CHR-23] `public.do_chore_again(household, chore, on_date)` (WP-96): a done one-time item done again is a new one-time item on `on_date`, with the original's title, icon, kind, points, approval, time, days, assignment, lunch days, reminder lead, `opens` and visibility, its people not archived since and its active tags; the admin who calls it is its creator. Security invoker, so RLS applies; a repeating item (`chore_not_once`), another household's (`chore_not_found`) and no date (`chore_needs_date`) are refused. The original's occurrences, points and goal credit are not touched.
 
 **As built (WP-09, D-45):**
 - Occurrences are made by the database for today and the next 14 days, household-local (`private.household_today()`). The hourly `occurrence_gen` job calls `generate_household_occurrences()` for tomorrow to 14 days ahead; triggers re-plan at once when an item, its assignees, a member, a school year, a closure or a school profile changes (§4.7).

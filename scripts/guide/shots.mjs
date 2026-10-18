@@ -442,6 +442,27 @@ const SHOTS = [
     url: '/dev/goals?form=preview',
     element: '.fw-goal-preview',
   },
+  // [CHR-21][CHR-23][NFR-18] Chores in four sections (WP-96): the page on a phone, an item's ⋯ on a
+  // laptop, Do again's date step, and an item's page folded.
+  { name: 'admin-chores-phone', device: 'phone', url: '/dev/chores', maxHeight: 1500, quality: 62 },
+  {
+    name: 'admin-chores-menu-laptop',
+    device: 'laptop',
+    url: '/dev/chores?menu=Wash%20the%20car',
+    maxHeight: 1100,
+  },
+  {
+    name: 'admin-chores-again-phone',
+    device: 'phone',
+    url: '/dev/chores?again=Clean%20out%20the%20garage',
+    element: '.fw-sheet__box',
+  },
+  {
+    name: 'admin-chores-item-phone',
+    device: 'phone',
+    url: '/dev/chores?page=item',
+    maxHeight: 1500,
+  },
   // Meals (WP-25): the week on a laptop, and the library on a phone.
   // [MEAL-14] The days folded, today opened (WP-75).
   {
