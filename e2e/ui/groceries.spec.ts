@@ -43,7 +43,7 @@ const section = (page: Page, name: string) => list(page).getByRole('region', { n
 
 test.describe('the admin app’s Groceries', () => {
   for (const theme of ['day', 'evening'] as const) {
-    test(`[MEAL-18-d] the list by category, A to Z, with amount, store and why; fits in ${theme}`, async ({
+    test(`[MEAL-18-d][US-714] the list by category, A to Z, with amount, store and why; fits in ${theme}`, async ({
       page,
     }) => {
       await open(page, `/dev/groceries?theme=${theme}`);
@@ -113,7 +113,7 @@ test.describe('the admin app’s Groceries', () => {
     ).toBeChecked();
   });
 
-  test('[MEAL-24-d] adding suggests the category and store before Add; one tap changes it', async ({
+  test('[MEAL-24-d][US-719] adding suggests the category and store before Add; one tap changes it', async ({
     page,
   }) => {
     await open(page, '/dev/groceries');
@@ -156,7 +156,7 @@ test.describe('the admin app’s Groceries', () => {
     await contrastOk(page);
   });
 
-  test('[MEAL-23-d] Select: tick several, then Move to…, Store… or Remove for all at once', async ({
+  test('[MEAL-23-d][US-718] Select: tick several, then Move to…, Store… or Remove for all at once', async ({
     page,
   }) => {
     await open(page, '/dev/groceries');

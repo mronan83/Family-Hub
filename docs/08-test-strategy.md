@@ -276,9 +276,9 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 117 of 145 |
+| Requirements built (a Done item builds them) | 125 of 145 |
 | Built requirements with no test | 0 |
-| Stories built | 104 of 129 |
+| Stories built | 110 of 129 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
 | Test cases | 183 (with a test: 183) |
@@ -397,7 +397,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-04 | M | Covered | US-703 | WP-26 | — | U 5 · DB 4 · UI 1 · E2E 1 |
 | MEAL-05 | M | Covered | US-704 | WP-27 | — | U 3 · DB 2 · E2E 1 |
 | MEAL-06 | M | Covered | US-705 | WP-28 | — | U 6 · DB 3 · UI 4 · E2E 3 |
-| MEAL-07 | S | Not built | US-706, US-715 | WP-105 | MEAL-07-a, MEAL-07-b | U 1 · DB 1 · UI 2 |
+| MEAL-07 | S | Covered | US-706, US-715 | WP-105 | MEAL-07-a, MEAL-07-b | U 1 · DB 1 · UI 2 |
 | MEAL-09 | S | Covered | US-707 | WP-49, WP-77 | — | U 9 · DB 13 · UI 6 · E2E 1 |
 | MEAL-08 | S | Covered | US-701 | WP-25 | — | U 2 · DB 1 · UI 2 · E2E 1 |
 | MEAL-10 | M | Covered | US-708 | WP-62 | — | U 3 · DB 5 · UI 2 · E2E 1 |
@@ -408,15 +408,15 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-15 | S | Covered | US-701 | WP-76 | — | DB 4 · UI 3 · E2E 1 |
 | MEAL-16 | S | Not built | US-712 | WP-103 | — | — |
 | MEAL-17 | S | Not built | US-713 | WP-103 | — | — |
-| MEAL-18 | S | Not built | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 4 · DB 6 · UI 7 · E2E 1 |
-| MEAL-19 | S | Not built | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 4 · DB 2 · UI 2 · E2E 1 |
-| MEAL-20 | S | Not built | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 · E2E 1 |
+| MEAL-18 | S | Covered | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 4 · DB 6 · UI 7 · E2E 1 |
+| MEAL-19 | S | Covered | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 4 · DB 2 · UI 2 · E2E 1 |
+| MEAL-20 | S | Covered | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 · E2E 1 |
 | MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
 | MEAL-22 | S | Not built | US-717 | WP-107 | — | — |
-| MEAL-23 | S | Not built | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | U 3 · DB 3 · UI 3 · E2E 1 |
-| MEAL-24 | S | Not built | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 4 · DB 1 · UI 1 |
-| MEAL-25 | S | Not built | US-720 | WP-105 | MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | U 10 · DB 2 · UI 1 |
-| MEAL-26 | S | Not built | US-720 | WP-105 | MEAL-26-a | U 1 · DB 1 · UI 1 |
+| MEAL-23 | S | Covered | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | U 3 · DB 3 · UI 3 · E2E 1 |
+| MEAL-24 | S | Covered | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 4 · DB 1 · UI 1 |
+| MEAL-25 | S | Covered | US-720 | WP-105 | MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | U 10 · DB 2 · UI 1 |
+| MEAL-26 | S | Covered | US-720 | WP-105 | MEAL-26-a | U 1 · DB 1 · UI 1 |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
 | MENU-03 | M | Covered | US-802 | WP-27 | — | U 6 · DB 3 · UI 2 · E2E 1 |
@@ -567,8 +567,8 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-101 | Done | NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | 9 of 9 | — |
 | WP-102 | Done | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | 8 of 8 | — |
 | WP-103 | Queued: | — | — | — |
-| WP-104 | Ready | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 16 of 16 | — |
-| WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 20 of 20 | — |
+| WP-104 | Done | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 16 of 16 | — |
+| WP-105 | Done | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 20 of 20 | — |
 | WP-106 | Queued | — | — | — |
 | WP-107 | Queued | — | — | — |
 | WP-108 | Done | NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r | 4 of 4 | — |
@@ -730,26 +730,26 @@ Test cases and the tests that prove them:
 | MEAL-18-a | WP-104 | The grocery list, its items, their reasons and their history are the household's own: another household's admin and board read none of them and write none; the household's board reads its list and writes nothing | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] not onto another family's list`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] nobody writes the list directly`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] the household's board reads its list, reasons and categories`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] board_groceries gives a board its household's open items, categories and stores` |
 | MEAL-18-b | WP-104 | Ticking an item records a tick with when and who, unticking puts it back on the list, and removing it is not a tick; every event stays in the history after the item is removed | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-b] ticking is a buy`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-b] unticking puts it back` |
 | MEAL-18-c | WP-104 | Got recently holds the items ticked in the last 7 days, newest first, and not one ticked 8 days ago; a ticked item is off the list at once | Unit | Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-18-c] Got recently: ticked in the last 7 days, newest first; not 8 days ago` |
-| MEAL-18-d | WP-104 | The admin app's Groceries on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: the add field open at the top, the list by category A to Z with each item's amount, store and why, an item's ⋯ (why it's on the list, Edit, Move to…, Store…, Select several, Remove), Got recently with Untick; nothing overflows, contrast is AA, targets are 44 px | UI | UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] the list by category, A to Z, with amount, store and why; fits in ${theme}`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an item’s ⋯ says why it is on the list and holds the rest`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] Got recently: what was got this week, with Untick`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an empty list says so` |
+| MEAL-18-d | WP-104 | The admin app's Groceries on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: the add field open at the top, the list by category A to Z with each item's amount, store and why, an item's ⋯ (why it's on the list, Edit, Move to…, Store…, Select several, Remove), Got recently with Untick; nothing overflows, contrast is AA, targets are 44 px | UI | UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d][US-714] the list by category, A to Z, with amount, store and why; fits in ${theme}`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an item’s ⋯ says why it is on the list and holds the rest`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] Got recently: what was got this week, with Untick`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an empty list says so` |
 | MEAL-18-e | WP-104 | The board's Groceries on the demo family, Day and Evening: the list by category A to Z with each item's picture, amount, and why for a meal; text 28 px or more; nothing on it changes the list; an empty list says "Nothing on the list right now."; Groceries is in the rail once the household has had its first item | UI | UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] the list by category, A to Z, with pictures, amounts and why, read-only, in ${theme}`<br>UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] store chips change only what the board shows`<br>UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] an emptied list says so; a household with none has no Groceries in the rail` |
 | MEAL-18-f | WP-104 | On the real preview, an admin adds an item, ticks it, finds it under Got recently and unticks it back onto the list | E2E | E2E `e2e/tests/groceries.spec.ts`: `[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at once` |
 | MEAL-23-a | WP-104 | The list groups by the household's categories in their order, Other last, with items A to Z inside, whatever their capitals; a store chip shows only that store's items, still by category; Any store shows the items with no store; the counts on the chips match | Unit | Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] groups by the household’s categories in their order, Other last, A to Z inside`<br>Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] a store chip shows only its items, still by category; Any store those with none`<br>Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] each item says what to buy and why, the meals once each` |
 | MEAL-23-b | WP-104 | Categories and stores are the household's own: added, renamed, ordered and removed only by its admins; removing a category moves its items to Other; Other can't be removed or renamed; a removed store leaves its items with no store | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-23-b] several items move to a category at once`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-23-b] a parent adds a category` |
 | MEAL-23-c | WP-104 | A new household starts with the made-up starter categories, Other, the six starter stores and its list | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-23-c] a new household starts with the starter categories, Other last` |
-| MEAL-23-d | WP-104 | Select, tick three items, Move to… a new category: all three move at once; Store… sets the store of several; Remove takes several off after asking; the store chips filter the list; Categories and stores adds, renames, reorders and removes, asking before a category with items goes | UI | UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-23-d] Select: tick several, then Move to…, Store… or Remove for all at once`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-23-d] the store chips filter the list, still by category`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-23-d] Categories and stores: in order, each to rename, move or remove; removing one with items asks` |
+| MEAL-23-d | WP-104 | Select, tick three items, Move to… a new category: all three move at once; Store… sets the store of several; Remove takes several off after asking; the store chips filter the list; Categories and stores adds, renames, reorders and removes, asking before a category with items goes | UI | UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-23-d][US-718] Select: tick several, then Move to…, Store… or Remove for all at once`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-23-d] the store chips filter the list, still by category`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-23-d] Categories and stores: in order, each to rename, move or remove; removing one with items asks` |
 | MEAL-23-e | WP-104 | On the real preview, an admin selects several items and moves them to another category at once | E2E | E2E `e2e/tests/groceries.spec.ts`: `[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at once` |
 | MEAL-24-a | WP-104 | The suggestion for an item had before is the category and store it had last time | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-a] an item had before gets the category and store it had last time` |
 | MEAL-24-b | WP-104 | An item never had before takes the category the household's own words point to, learned from earlier moves, before the starter list; a move teaches every word of its name | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-b] a new item takes the household’s learned words before the starter list` |
 | MEAL-24-c | WP-104 | An item neither had before nor learned takes the starter list's category, built from Open Food Facts' categories; a renamed starter category is still found; a removed one gives Other | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-c] an item nothing has taught takes the starter list’s category, renamed or not` |
-| MEAL-24-d | WP-104 | An item nothing knows goes to Other with any store; one tap changes the suggestion before Add | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-d] an item nothing knows goes to Other, with any store`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-24-d] adding suggests the category and store before Add; one tap changes it` |
+| MEAL-24-d | WP-104 | An item nothing knows goes to Other with any store; one tap changes the suggestion before Add | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-d] an item nothing knows goes to Other, with any store`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-24-d][US-719] adding suggests the category and store before Add; one tap changes it` |
 | MEAL-24-e | WP-104 | Moving items teaches their words to their own household only | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-24-e] the move teaches each word of their names` |
 | MEAL-07-a | WP-105 | A meal's ingredients are kept as rows of a name, an optional amount to buy and We usually have it; a row with no name, a name over 80 characters or more than 60 rows is refused | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-07-a] a meal keeps its ingredients: a name, an amount to buy, and we usually have it` |
-| MEAL-07-b | WP-105 | A meal's form shows its Ingredients, a row each with the amount, the name and We usually have it, the last row adding one and × removing one; saved and opened again, they are as typed | UI | UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-07-b] a meal’s Ingredients: amount, name and We usually have it; the last row adds one, × takes one away`<br>UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-07-b] a meal’s form with its ingredients fits a ${device} in ${theme}` |
+| MEAL-07-b | WP-105 | A meal's form shows its Ingredients, a row each with the amount, the name and We usually have it, the last row adding one and × removing one; saved and opened again, they are as typed | UI | UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-07-b][US-706] a meal’s Ingredients: amount, name and We usually have it; the last row adds one, × takes one away`<br>UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-07-b] a meal’s form with its ingredients fits a ${device} in ${theme}` |
 | MEAL-19-a | WP-105 | The week's review lists the planned library meals by meal in day order with their ingredients ticked; We usually have it starts unticked; a meal already added that week starts unticked, marked "Added Sun"; an item on the list says what it makes once merged; nothing is scaled | Unit | Unit `apps/web/lib/meal-groceries.test.ts`: `a week’s meals into groceries › [MEAL-19-a] lists the planned library meals by meal in day order, with their ingredients`<br>Unit `apps/web/lib/meal-groceries.test.ts`: `a week’s meals into groceries › [MEAL-19-a] what we usually have, and a meal already added that week, start unticked`<br>Unit `apps/web/lib/meal-groceries.test.ts`: `a week’s meals into groceries › [MEAL-19-a] a ticked row says what it makes once merged; nothing is scaled` |
 | MEAL-19-b | WP-105 | Adding the week's ingredients puts them on the household's list with each meal as a reason, merged into what is there; a meal of another household is refused | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-19-b] the week's ingredients go on the list, each meal a reason` |
 | MEAL-19-c | WP-105 | A meal taken off the plan, removed or changed to another meal, takes its share off the list: an item only it needed and not yet ticked is removed, a merged item loses its amount and reason, a ticked item is left as it is | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-19-c] Tuesday's tacos come off the plan` |
 | MEAL-19-d | WP-105 | Taking a meal's share off an item recomputes its amount from the reasons left: "Onions ×3" from Tacos (1) and Chili (2) becomes "Onions ×2" without Tacos | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-19-d] taking a meal’s share off recomputes the amount from the reasons left` |
-| MEAL-19-e | WP-105 | The week's review on Meals on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: by meal in day order, the notes, Add n to groceries and Cancel | UI | UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-19-e] the week’s Add to groceries: by meal in day order, the notes, Add n to groceries and Cancel`<br>UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-19-e] the week’s review fits a ${device} in ${theme}` |
+| MEAL-19-e | WP-105 | The week's review on Meals on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: by meal in day order, the notes, Add n to groceries and Cancel | UI | UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-19-e][US-715] the week’s Add to groceries: by meal in day order, the notes, Add n to groceries and Cancel`<br>UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-19-e] the week’s review fits a ${device} in ${theme}` |
 | MEAL-19-f | WP-105 | On the real preview, an admin adds a planned week's ingredients and finds each once on Groceries, two meals' onions merged into one item | E2E | E2E `e2e/tests/meal-groceries.spec.ts`: `[MEAL-19-f][MEAL-20] done-when: a week’s ingredients added once each, two meals merged` |
 | MEAL-20-a | WP-105 | "Onions", "onion", "2 onions" and "ONIONS ×2" are one thing; hummus, couscous and asparagus keep their s; extra spaces don't matter | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-a] "Onions", "onion", "2 onions" and "ONIONS ×2" are one thing`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-a] hummus, couscous and asparagus keep their s` |
 | MEAL-20-b | WP-105 | Counts add ("2 onions" and "1 onion" make ×3), the same unit adds ("1 lb" and "1 lb" make 2 lb), different units sit side by side ("1 lb + 500 g"), no amount takes the other's | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-b] counts add, the same unit adds, different units sit side by side`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-b] no amount takes the other’s, and a lone one says nothing`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `reading an item as typed › [MEAL-20-b] takes the amount off before or after the name`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `reading an item as typed › [MEAL-20-b] reads amounts as counts, units or words` |
@@ -761,8 +761,8 @@ Test cases and the tests that prove them:
 | MEAL-25-d | WP-105 | A made-up photo of an ingredient list is read into lines by Tesseract.js | Unit | Unit `apps/web/lib/recipe-read.test.ts`: `reading a made-up recipe file › [MEAL-25-d] reads a photo’s text with Tesseract.js into ingredient lines` |
 | MEAL-25-e | WP-105 | Fetching a recipe link takes only http and https to a public address, gives up after its time and size limits, and never follows a redirect to a private one | Unit | Unit `apps/web/lib/recipe-read.test.ts`: `fetching a recipe link › [MEAL-25-e] takes only http and https to a public address`<br>Unit `apps/web/lib/recipe-read.test.ts`: `fetching a recipe link › [MEAL-25-e] never follows a redirect to a private address, and follows at most three`<br>Unit `apps/web/lib/recipe-read.test.ts`: `fetching a recipe link › [MEAL-25-e] gives up past its size limit, on a page that isn’t a page, or when it can’t reach it` |
 | MEAL-25-f | WP-105 | A meal's recipe files are the household's own: up to 10 MB each, a photo or a PDF; another household's admin and board can't read or add them; the household's board reads them | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] a parent adds a photo to a meal's recipe`<br>DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] another family's board reads none of them` |
-| MEAL-25-g | WP-105 | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI | UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-25-g] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` |
-| MEAL-26-a | WP-105 | On the board's Meals, a tap on a meal with a recipe opens it full screen, read-only: its photos and PDFs with chips between them, its ingredients and the link's steps, text 28 px or more, and Close goes back | UI | UI `e2e/ui/board-recipe.spec.ts`: `[MEAL-26-a] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}` |
+| MEAL-25-g | WP-105 | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI | UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-25-g][US-720] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` |
+| MEAL-26-a | WP-105 | On the board's Meals, a tap on a meal with a recipe opens it full screen, read-only: its photos and PDFs with chips between them, its ingredients and the link's steps, text 28 px or more, and Close goes back | UI | UI `e2e/ui/board-recipe.spec.ts`: `[MEAL-26-a][US-720] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}` |
 
 ### 9.5 By user story
 
@@ -848,7 +848,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-703 | MEAL-04 | Covered | U 2 · DB 5 · E2E 1 |
 | US-704 | MEAL-05 | Covered | U 1 · DB 1 · E2E 1 |
 | US-705 | MEAL-06 | Covered | U 1 · DB 1 · UI 2 · E2E 2 |
-| US-706 | MEAL-07 | Not built | — |
+| US-706 | MEAL-07 | Covered | UI 1 |
 | US-708 | MEAL-10 | Covered | U 2 · DB 2 · UI 2 · E2E 1 |
 | US-707 | MEAL-09, MEAL-11 | Covered | U 2 · DB 3 · UI 4 · E2E 1 |
 | US-709 | MEAL-12 | Covered | UI 1 · E2E 1 |
@@ -856,13 +856,13 @@ Status as in §9.3, for tests that name the story itself.
 | US-711 | MEAL-14 | Covered | UI 1 · E2E 1 |
 | US-712 | MEAL-16 | Not built | — |
 | US-713 | MEAL-17 | Not built | — |
-| US-714 | MEAL-18 | Not built | — |
-| US-715 | MEAL-07, MEAL-19, MEAL-20 | Not built | — |
+| US-714 | MEAL-18 | Covered | UI 1 |
+| US-715 | MEAL-07, MEAL-19, MEAL-20 | Covered | UI 1 |
 | US-716 | MEAL-21 | Not built | — |
 | US-717 | MEAL-22 | Not built | — |
-| US-718 | MEAL-23 | Not built | — |
-| US-719 | MEAL-24 | Not built | — |
-| US-720 | MEAL-25, MEAL-26 | Not built | — |
+| US-718 | MEAL-23 | Covered | UI 1 |
+| US-719 | MEAL-24 | Covered | UI 1 |
+| US-720 | MEAL-25, MEAL-26 | Covered | UI 2 |
 | US-801 | MENU-01, MENU-02 | Covered | U 3 · UI 2 |
 | US-802 | MENU-03 | Covered | U 4 · DB 2 · UI 2 · E2E 1 |
 | US-803 | MENU-04, MENU-05 | Covered | U 3 · DB 1 · UI 1 · E2E 1 |
@@ -2591,7 +2591,7 @@ UI · 1 tests
 
 | Test | Names |
 |---|---|
-| `[MEAL-26-a] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}` | MEAL-26-a |
+| `[MEAL-26-a][US-720] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}` | MEAL-26-a, US-720 |
 
 #### `e2e/ui/board-repeating.spec.ts`
 
@@ -2810,10 +2810,10 @@ UI · 8 tests
 
 | Test | Names |
 |---|---|
-| `the admin app’s Groceries › [MEAL-18-d] the list by category, A to Z, with amount, store and why; fits in ${theme}` | MEAL-18-d |
+| `the admin app’s Groceries › [MEAL-18-d][US-714] the list by category, A to Z, with amount, store and why; fits in ${theme}` | MEAL-18-d, US-714 |
 | `the admin app’s Groceries › [MEAL-18-d] an item’s ⋯ says why it is on the list and holds the rest` | MEAL-18-d |
-| `the admin app’s Groceries › [MEAL-24-d] adding suggests the category and store before Add; one tap changes it` | MEAL-24-d |
-| `the admin app’s Groceries › [MEAL-23-d] Select: tick several, then Move to…, Store… or Remove for all at once` | MEAL-23-d |
+| `the admin app’s Groceries › [MEAL-24-d][US-719] adding suggests the category and store before Add; one tap changes it` | MEAL-24-d, US-719 |
+| `the admin app’s Groceries › [MEAL-23-d][US-718] Select: tick several, then Move to…, Store… or Remove for all at once` | MEAL-23-d, US-718 |
 | `the admin app’s Groceries › [MEAL-23-d] the store chips filter the list, still by category` | MEAL-23-d |
 | `the admin app’s Groceries › [MEAL-18-d] Got recently: what was got this week, with Untick` | MEAL-18-d |
 | `the admin app’s Groceries › [MEAL-23-d] Categories and stores: in order, each to rename, move or remove; removing one with items asks` | MEAL-23-d |
@@ -2927,11 +2927,11 @@ UI · 5 tests
 
 | Test | Names |
 |---|---|
-| `[MEAL-07-b] a meal’s Ingredients: amount, name and We usually have it; the last row adds one, × takes one away` | MEAL-07-b |
+| `[MEAL-07-b][US-706] a meal’s Ingredients: amount, name and We usually have it; the last row adds one, × takes one away` | MEAL-07-b, US-706 |
 | `[MEAL-07-b] a meal’s form with its ingredients fits a ${device} in ${theme}` | MEAL-07-b |
-| `[MEAL-19-e] the week’s Add to groceries: by meal in day order, the notes, Add n to groceries and Cancel` | MEAL-19-e |
+| `[MEAL-19-e][US-715] the week’s Add to groceries: by meal in day order, the notes, Add n to groceries and Cancel` | MEAL-19-e, US-715 |
 | `[MEAL-19-e] the week’s review fits a ${device} in ${theme}` | MEAL-19-e |
-| `[MEAL-25-g] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` | MEAL-25-g |
+| `[MEAL-25-g][US-720] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` | MEAL-25-g, US-720 |
 
 #### `e2e/ui/meals.spec.ts`
 

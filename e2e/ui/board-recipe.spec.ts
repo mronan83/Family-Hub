@@ -27,7 +27,7 @@ async function meals(page: Page, theme: string) {
 }
 
 for (const theme of ['day', 'evening'] as const) {
-  test(`[MEAL-26-a] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}`, async ({
+  test(`[MEAL-26-a][US-720] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}`, async ({
     page,
   }) => {
     await meals(page, theme);

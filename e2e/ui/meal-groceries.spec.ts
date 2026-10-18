@@ -44,7 +44,7 @@ async function tacos(page: Page) {
 const sent = async (form: ReturnType<Page['getByRole']>) =>
   JSON.parse(await form.locator('input[name="ingredients"]').inputValue()) as unknown[];
 
-test('[MEAL-07-b] a meal’s Ingredients: amount, name and We usually have it; the last row adds one, × takes one away', async ({
+test('[MEAL-07-b][US-706] a meal’s Ingredients: amount, name and We usually have it; the last row adds one, × takes one away', async ({
   page,
 }) => {
   const form = await tacos(page);
@@ -90,7 +90,7 @@ for (const [device, viewport] of [
   }
 }
 
-test('[MEAL-19-e] the week’s Add to groceries: by meal in day order, the notes, Add n to groceries and Cancel', async ({
+test('[MEAL-19-e][US-715] the week’s Add to groceries: by meal in day order, the notes, Add n to groceries and Cancel', async ({
   page,
 }) => {
   await open(page, '/dev/meals');
@@ -142,7 +142,7 @@ for (const [device, viewport] of [
   }
 }
 
-test('[MEAL-25-g] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check', async ({
+test('[MEAL-25-g][US-720] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check', async ({
   page,
 }) => {
   await open(page, '/dev/meals?page=library&edit=Tacos');

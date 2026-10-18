@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.83: the grocery list and meals → groceries as built (WP-104, WP-105, D-138, D-139): one way in for every source, the board's read beside its snapshot, recipes in Storage read for ingredients on the admin's own device, and a guarded fetch of a recipe link (§5.12, §10).
 > v0.8.82: the grocery list's logic from its approved mockup (WP-103 to WP-107, D-138): Groceries is FamilyWise's own list and works without the Mac; categories and stores are the household's own, mirrored to Apple's sections where SPIKE-08 allows; the store in a reminder's notes; recipe files in Supabase Storage; ingredients read from a link, a PDF or a photo by free open-source text reading on the device (§4, §5.11).
 > v0.8.81: each e2e spec its own made-up household (WP-111, D-137): a copy of the demo family's seed under the spec's own ids and sign-ins, made as the spec starts; nothing is loaded again after a failure; the run counts its Auth sign-ins (§9.5).
 > v0.8.80: the two e2e reds of 17 October night (WP-110, D-136): a board reads its snapshot at once after its own ask or call-off, and an ask the server took says "Waiting for a grown-up"; the goal form's live summaries come from `POST /api/goals/summaries`, not a server action, so a save never queues behind one.
@@ -635,6 +636,16 @@ sequenceDiagram
 
 Planned, not built. **Since D-138 (18 October):** Groceries is FamilyWise's own list first (WP-104) and the sync is an add-on (WP-103), so nothing but the sync waits on SPIKE-08. FamilyWise's categories are the truth: where the Groceries list's sections reach the program and can be set, they mirror the categories by name both ways; otherwise they live in FamilyWise only. An item's store goes to the reminder's notes as "Store: Costco" (or a tag, if tags are reachable), its why to the notes too, and its name and amount to the title. The Mac is late after the interval chosen when the sync is set up (2 min, 10 min, 30 min or 1 hour). Recipe photos and PDFs (WP-105) are kept in Supabase Storage, 10 MB each, within the free plan's 1 GB; a photo's text is read in the admin's browser by an open-source library, never by a paid service. SPIKE-08 records its findings here: two-way changes and the identifier that stays stable for an item; coming back by itself after a restart (automatic login, and FileVault); measured change latency each way, in seconds (counts only); whether the Groceries list's sections reach the sync program; whether Apple Reminders says when and by whom an item was ticked; the tooling and its one-time permission. Until then the intended shape is `MACSYNC` in §4: Apple Reminders stays the list, the Mac Studio's program syncs it, the newest change to an item wins, and the program's own key reaches only the grocery list.
 
+### 5.12 The grocery list and meals → groceries (MEAL-18 to MEAL-26, D-138)
+
+As built (WP-104, WP-105). FamilyWise's own list, with or without the Apple Reminders sync (§5.11, later).
+
+- **One way in.** Every source adds through `add_groceries()` (`02` §3.8): the admin app's add field, a week's meals, and later Apple Reminders, a staple and a child's ask. The app reads what was typed and gives each item its key (`lib/grocery-merge.ts`: capitals, spaces, a trailing plural and the amount set aside); the database joins an add to the open item of the same key, one change to a household's list at a time, so the same thing is on the list once. Each way it came is a reason with the amount it brought; the amount shown is those combined (counts add, the same unit adds, different units side by side).
+- **The suggestion.** On add, the admin's browser suggests the category and store from what it was last time, then the household's own learned words (taught by every move, `grocery_learned_word`), then the starter list (D-140), else Other. Items from a week's meals take the same suggestion on the server.
+- **The board** reads `board_groceries()` with each snapshot read and keeps it with the snapshot, so it shows the last list offline; the list's tables are in Realtime, so a change reaches it within seconds as any other (§7). The board never changes the list.
+- **A meal taken off the plan** (removed, copied over, or changed) takes its share off the list in the database (`trg_meal_off_plan_*`), whatever removed it.
+- **Recipes.** Photos and PDFs go from the admin's browser straight to the private Storage bucket `recipes` (10 MB each), in the household's folder; the app then records them. Reading their ingredients happens on the admin's own device with free open-source libraries: a PDF's text with pdf.js, a photo's with Tesseract.js (their worker and language files come from the jsdelivr and tessdata CDNs, version-pinned). A recipe link is read on the server (`POST /api/recipes/read`): only http and https to a public address, every redirect checked again, 8 seconds and 2 MB at most; the page's published schema.org Recipe gives its ingredients and steps. What is read is only ever filled in for the admin to check; nothing is saved until they save. The board opens a meal's recipe from `board_recipes()` and short-lived signed links to its files.
+
 ## 6. Security architecture
 
 ### 6.1 Principals
@@ -920,6 +931,8 @@ Every GitHub secret below is a repository secret, which any workflow run in the 
 | Day-close job skipped | history views lag | the job catches up all past dates on its next run; `fold_occurrence_status` also reports `missed` for any past-due unresolved occurrence on the next touch |
 | Device token revoked | board returns to pairing screen | by design |
 | Push service rejects a device, or a subscription expired | that device stops getting reminders | 404/410 deletes the subscription; the Reminders page shows when each device was last reached and has a test button; My tasks and the board still list everything |
+| A recipe page that can't be read (WP-105) | Read ingredients finds nothing: the page doesn't publish its recipe, isn't public, is too big or doesn't answer | The form says which, and nothing changes; the admin types the ingredients in, or adds a photo or PDF |
+| The jsdelivr or tessdata CDN unreachable (WP-105) | A photo or PDF can't be read on the device | The form says so; the file is kept, and the admin types the ingredients in |
 | Mac Studio off, asleep or not signed in (planned, D-134) | FamilyWise's grocery list and Apple Reminders stop syncing; each side still works on its own | Health shows when the Mac was last heard from; the program catches up when it is back; the newest change to an item wins |
 | Pi power loss | reboot to board in <2 min | SSD boot, auto-launch |
 
