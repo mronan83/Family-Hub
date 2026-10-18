@@ -248,7 +248,14 @@ test('[MENU-06][US-804] the school menu by section: the entree on one line, a ta
     'Green Beans',
     'Orange',
   ]);
-  await expect(rows.nth(2).locator('td').first()).toHaveText('–');
+  // [D-110] A day with nothing, on any weekday: the fixture's menus are today and two days either
+  // side, so the day before today, or after it when today begins the week (a Sunday), has none.
+  const milk = rows.nth(2).locator('td');
+  const todayAt = await milk.evaluateAll((tds) =>
+    tds.findIndex((td) => td.getAttribute('aria-current') === 'date'),
+  );
+  expect(todayAt, 'today is in the week').toBeGreaterThanOrEqual(0);
+  await expect(milk.nth(todayAt === 0 ? 1 : todayAt - 1)).toHaveText('–');
   expect(await spills(page)).toEqual([]);
 });
 
