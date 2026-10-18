@@ -8,6 +8,7 @@ import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { addDays } from '@/lib/board-calendar';
 import { isoDay } from '@/lib/format';
 import { log } from '@/lib/log';
+import { copyRecipeFiles } from '@/lib/meal-copy';
 import { parseUsualLunch } from '@/lib/lunch';
 import { parsePicksForm } from '@/lib/lunch-picks';
 import { mealRefusal, parseEntryForm, parseMealForm, weekDays, weekFrom } from '@/lib/meals';
@@ -160,7 +161,9 @@ export async function copyLastWeek(form: FormData): Promise<void> {
 
 /**
  * [MEAL-02] Adds a meal to the library, or changes one (the form carries its id): a name, a
- * description, what it's good for, a recipe link and an icon.
+ * description, what it's good for, a recipe link and an icon. [MEAL-25][D-132] A copy (the form
+ * carries `copyFrom`, Duplicate on the library, WP-96) also takes the original's photos and PDFs,
+ * copied as files of its own once the copy is saved.
  */
 export async function saveMeal(_prev: FormState, form: FormData): Promise<FormState> {
   const { db, household } = await context('/admin/meals/library');
@@ -177,15 +180,73 @@ export async function saveMeal(_prev: FormState, form: FormData): Promise<FormSt
     ingredients: v.ingredients ?? [],
     ...(v.recipeSteps ? { recipe_steps: v.recipeSteps } : {}),
   };
-  const { error } = GUID.test(id)
-    ? await db.from('meal').update(row).eq('id', id).eq('household_id', household.id)
-    : await db.from('meal').insert({ ...row, household_id: household.id });
+  const { data: saved, error } = GUID.test(id)
+    ? await db.from('meal').update(row).eq('id', id).eq('household_id', household.id).select('id')
+    : await db
+        .from('meal')
+        .insert({ ...row, household_id: household.id })
+        .select('id');
   if (error) {
     log('warn', 'meal not saved', { code: error.code, hint: error.hint });
     return { message: mealRefusal(error) };
   }
+  const copyFrom = String(form.get('copyFrom') ?? '');
+  const newId = (saved as { id: string }[] | null)?.[0]?.id;
+  let notCopied = 0;
+  if (!GUID.test(id) && GUID.test(copyFrom) && newId) {
+    notCopied = await copyFilesOf(db, household.id, copyFrom, newId);
+  }
   revalidatePath('/admin/meals', 'layout');
-  redirect(`/admin/meals/library?saved=${encodeURIComponent(v.name)}`);
+  redirect(
+    `/admin/meals/library?saved=${encodeURIComponent(v.name)}${notCopied ? `&notCopied=${notCopied}` : ''}`,
+  );
+}
+
+/** [MEAL-25] The original meal's photos and PDFs copied to its copy; how many could not be. */
+async function copyFilesOf(
+  db: Awaited<ReturnType<typeof context>>['db'],
+  householdId: string,
+  from: string,
+  to: string,
+): Promise<number> {
+  const { data, error } = await db
+    .from('meal_recipe_file')
+    .select('id, kind, name, path, size_bytes, sort_order')
+    .eq('household_id', householdId)
+    .eq('meal_id', from)
+    .order('sort_order');
+  if (error) {
+    log('warn', 'recipe files not read for a copy', { code: error.code });
+    return 1;
+  }
+  const files = (
+    data as { id: string; kind: 'photo' | 'pdf'; name: string; path: string; size_bytes: number }[]
+  ).map((f) => ({ id: f.id, kind: f.kind, name: f.name, path: f.path, sizeBytes: f.size_bytes }));
+  const bucket = db.storage.from('recipes');
+  const { failed } = await copyRecipeFiles(
+    files,
+    { householdId, mealId: to },
+    {
+      copy: async (src, dst) => !(await bucket.copy(src, dst)).error,
+      record: async (r) =>
+        !(
+          await db.from('meal_recipe_file').insert({
+            household_id: householdId,
+            meal_id: r.mealId,
+            kind: r.kind,
+            name: r.name,
+            path: r.path,
+            size_bytes: r.sizeBytes,
+            sort_order: r.sortOrder,
+          })
+        ).error,
+      remove: async (path) => {
+        await bucket.remove([path]);
+      },
+    },
+  );
+  if (failed.length) log('warn', 'recipe files not copied', { count: failed.length });
+  return failed.length;
 }
 
 /** [MEAL-02] Takes a meal out of the library (plans that use it keep its name), or puts it back. */

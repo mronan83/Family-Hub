@@ -406,7 +406,7 @@ test.describe('An item’s page, Duplicate, the Meal library and Tags', () => {
     await expect(page.getByLabel('Date', { exact: true })).toHaveValue('2026-10-17');
   });
 
-  test('[NFR-16-t] the Meal library: a meal a row with ⋯ (Edit, Duplicate, Archive); Duplicate opens Add a meal filled in', async ({
+  test('[NFR-16-t][MEAL-25-h] the Meal library: a meal a row with ⋯ (Edit, Duplicate, Archive); Duplicate opens Add a meal filled in', async ({
     page,
   }) => {
     await open(page, '/dev/meals?page=library');
@@ -423,6 +423,17 @@ test.describe('An item’s page, Duplicate, the Meal library and Tags', () => {
     await open(page, '/dev/meals?page=library&copy=Tacos');
     const add = page.getByRole('form', { name: 'Add a meal' });
     await expect(add.getByRole('textbox', { name: 'Name' })).toHaveValue('Tacos (copy)');
+    // [MEAL-25-h] Copy all (the owner's answer): ingredients, link, steps, and its files on save.
+    await expect(add.getByRole('textbox', { name: 'Ingredient 1' })).toHaveValue('Ground beef');
+    await expect(add.getByLabel('Recipe link')).toHaveValue('https://example.com/tacos');
+    await expect(add.locator('input[name="recipeSteps"]')).toHaveCount(1);
+    await expect(add.locator('input[name="copyFrom"]')).toHaveCount(1);
+    await expect(add).toContainText(
+      'Grandma’s card.jpg, Taco night.pdf are copied with it when you tap Add meal.',
+    );
+    // The original's files are not offered for removal from the copy's form.
+    await expect(add.getByRole('list', { name: 'Photos and PDFs' })).toHaveCount(0);
+    await expect(add.getByRole('button', { name: 'Remove Taco night.pdf' })).toHaveCount(0);
     await expect(add.getByRole('button', { name: 'Add meal' })).toBeVisible();
     await open(page, '/dev/meals?page=library&edit=Tacos');
     await expect(page.getByRole('form', { name: 'Edit Tacos' })).toBeVisible();

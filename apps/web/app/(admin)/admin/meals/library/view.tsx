@@ -1,4 +1,5 @@
 import { Banner, Button, Fold, Icon, type IconName } from '@familywise/ui';
+import { mealCopy } from '@/lib/meal-copy';
 import type { MealFormValue } from '@/lib/meals';
 import Link from 'next/link';
 import { type MealRow, SLOT_WORDS } from '@/lib/meals';
@@ -17,20 +18,6 @@ const goodFor = (m: MealRow) =>
         .replace(/, ([^,]*)$/, ' or $1');
 
 /** A meal as its form takes it. */
-/**
- * [D-132] Duplicate's Add a meal, filled in from the original (Q10), named "(copy)".
- */
-const copyOf = (m: MealRow): MealFormValue => ({
-  name: `${m.name.slice(0, 80 - ' (copy)'.length)} (copy)`,
-  description: m.description,
-  icon: m.icon,
-  mealTypes: [...m.mealTypes],
-  recipeUrl: null,
-  ingredients: [],
-  recipeSteps: [],
-  recipeFiles: [],
-});
-
 const formValue = (m: MealRow): MealFormValue => ({
   name: m.name,
   description: m.description,
@@ -108,7 +95,8 @@ export function MealLibraryView({
         <MealForm
           key={original?.id ?? 'new'}
           householdId={householdId}
-          copy={original ? copyOf(original) : undefined}
+          copy={original ? mealCopy(original) : undefined}
+          copyFrom={original?.id}
         />
       </Fold>
 

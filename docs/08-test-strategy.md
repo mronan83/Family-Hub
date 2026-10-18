@@ -273,7 +273,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2885** tests: Unit 905 · DB 1544 · UI 301 · E2E 135. 2363 name at least one ID; 522 name none.
+**2888** tests: Unit 908 · DB 1544 · UI 301 · E2E 135. 2366 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
@@ -282,7 +282,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 113 of 129 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 200 (with a test: 200) |
+| Test cases | 201 (with a test: 201) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -301,14 +301,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 93 | 61 | 47 | 13 | 214 |
+| Meals and lunch | 96 | 61 | 48 | 14 | 219 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
-| Platform | 189 | 167 | 62 | 17 | 435 |
+| Platform | 189 | 167 | 61 | 16 | 433 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **905** | **1544** | **301** | **135** | **2885** |
+| **Total** | **908** | **1544** | **301** | **135** | **2888** |
 
 ### 9.3 By requirement
 
@@ -416,7 +416,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-22 | S | Not built | US-717 | WP-107 | — | — |
 | MEAL-23 | S | Covered | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | U 3 · DB 3 · UI 3 · E2E 1 |
 | MEAL-24 | S | Covered | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 5 · DB 1 · UI 1 |
-| MEAL-25 | S | Covered | US-720 | WP-105 | MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | U 10 · DB 2 · UI 1 |
+| MEAL-25 | S | Covered | US-720 | WP-96, WP-105 | MEAL-25-h, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | U 13 · DB 2 · UI 2 · E2E 1 |
 | MEAL-26 | S | Covered | US-720 | WP-105 | MEAL-26-a | U 1 · DB 1 · UI 1 |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
@@ -560,7 +560,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-93 | Done | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j | 10 of 10 | — |
 | WP-94 | Done | NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x | 14 of 14 | — |
 | WP-95 | Ready | — | — | — |
-| WP-96 | Done | CHR-21-a, CHR-21-b, CHR-21-c, CHR-21-d, CHR-21-e, CHR-21-f, CHR-21-g, CHR-21-h, CHR-21-i, CHR-22-a, CHR-22-b, CHR-23-a, CHR-23-b, CHR-23-c, NFR-16-t, NFR-18-y, NFR-18-z | 17 of 17 | — |
+| WP-96 | Done | CHR-21-a, CHR-21-b, CHR-21-c, CHR-21-d, CHR-21-e, CHR-21-f, CHR-21-g, CHR-21-h, CHR-21-i, CHR-22-a, CHR-22-b, CHR-23-a, CHR-23-b, CHR-23-c, NFR-16-t, MEAL-25-h, NFR-18-y, NFR-18-z | 18 of 18 | — |
 | WP-97 | Ready | — | — | — |
 | WP-98 | Done | NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | 6 of 6 | — |
 | WP-99 | Queued: | — | — | — |
@@ -690,9 +690,10 @@ Test cases and the tests that prove them:
 | CHR-23-a | WP-96 | Do again's quick dates: Tomorrow, the next Saturday after tomorrow and In a week, a date already offered offered once (across a week's end, a month's end and DST); Change more first fills the form as a one-time item on that date under the item's own name; the sheet picks a date and says what the first one keeps | Unit, UI | Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-23-a] Do again › [CHR-23-a] its quick dates: Tomorrow, the next Saturday, In a week`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-23-a] Do again › [CHR-23-a] across a week’s end a date already offered is offered once`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-23-a] Do again › [CHR-23-a] Change more first fills the form as a one-time item on that date, under its own name`<br>UI `e2e/ui/chores.spec.ts`: `Chores in four sections › [CHR-23-a] Do again’s sheet: a date picked, what the first one keeps` |
 | CHR-23-b | WP-96 | Do again adds a new one-time item on the date picked, with the same name, icon, points, time, assignment, people and active tags, planned on its date and not done; the original keeps its completion, the points it paid and its goal credit; a repeating item, another household's item and no date are refused | DB | DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] Do again adds a new one-time item on the date picked, with the same name, icon, points, time and assignment`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] the new item is for the same people`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] the new item keeps the active tags, not one archived since`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] the new item is planned on its date, one for each person, not done`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] the original keeps its completion, the points it paid and its goal credit, and is not reopened`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] a repeating item is not done again`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] another household's item is not found`<br>DB `supabase/tests/560_do_chore_again.test.sql`: `[CHR-23-b] Do again needs a date` |
 | CHR-23-c | WP-96 | On the preview, Alex uses Do again on a completed one-time item and finds the new one under its date in Scheduled while the first stays done, then changes its icon and saves | E2E | E2E `e2e/tests/chore-sections.spec.ts`: `[CHR-23-c][US-325] Do again on a completed one-time item: a new one under its date in Scheduled, the first stays done; then its icon changed` |
-| NFR-16-t | WP-96 | The screens WP-96 changes besides Chores, in Chrome, as an iPhone in WebKit and as Safari on a Mac: an item's page with More options, Coming up, Last 7 days and Archive folded to their lines and each opened; Duplicate's form filled in; Do again's Change more first on its date; the Meal library's and Tags' rows with ⋯, a meal's Edit under its row and Duplicate's Add a meal | UI | UI `e2e/ui/chores.spec.ts`: `the ⋯ menus with no service worker › [NFR-16-t] ${title}’s ⋯ fits inside the screen and closes once a choice is made (${url})`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] an item’s page folded: the form open, More options, Coming up, Last 7 days and Archive folded…`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] Duplicate’s form filled in, "(copy)"; Do again’s Change more first on its date`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] the Meal library: a meal a row with ⋯ (Edit, Duplicate, Archive); Duplicate opens Add a meal…`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] Tags: a tag a row with ⋯ (Edit, Archive); Edit opens its form under the row` |
+| NFR-16-t | WP-96 | The screens WP-96 changes besides Chores, in Chrome, as an iPhone in WebKit and as Safari on a Mac: an item's page with More options, Coming up, Last 7 days and Archive folded to their lines and each opened; Duplicate's form filled in; Do again's Change more first on its date; the Meal library's and Tags' rows with ⋯, a meal's Edit under its row and Duplicate's Add a meal | UI | UI `e2e/ui/chores.spec.ts`: `the ⋯ menus with no service worker › [NFR-16-t] ${title}’s ⋯ fits inside the screen and closes once a choice is made (${url})`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] an item’s page folded: the form open, More options, Coming up, Last 7 days and Archive folded…`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] Duplicate’s form filled in, "(copy)"; Do again’s Change more first on its date`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t][MEAL-25-h] the Meal library: a meal a row with ⋯ (Edit, Duplicate, Archive); Duplicate opens…`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] Tags: a tag a row with ⋯ (Edit, Archive); Edit opens its form under the row` |
+| MEAL-25-h | WP-96 | Duplicate on the Meal library copies all of a meal (the owner's answer, 18 October): every field, its ingredients, recipe link and steps, named "(copy)"; its photos and PDFs become files of the copy's own, in order, under its folder, once the copy is saved; one that can't be copied is named and its stored copy taken away; the copy's form never offers the original's files for removal | Unit, UI | Unit `apps/web/lib/meal-copy.test.ts`: `[MEAL-25-h] Duplicate on the Meal library copies all of a meal › [MEAL-25-h] the copy takes every field, its ingredients, link, steps and files, named "(copy)"`<br>Unit `apps/web/lib/meal-copy.test.ts`: `[MEAL-25-h] Duplicate on the Meal library copies all of a meal › [MEAL-25-h] the photos and PDFs become files of the copy’s own, in order, under its folder`<br>Unit `apps/web/lib/meal-copy.test.ts`: `[MEAL-25-h] Duplicate on the Meal library copies all of a meal › [MEAL-25-h] one that can’t be copied or recorded is named, and its stored copy taken away`<br>E2E `e2e/tests/chore-sections.spec.ts`: `[NFR-18-z][MEAL-25-h] the Meal library from ⋯: a meal edited, duplicated and archived`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t][MEAL-25-h] the Meal library: a meal a row with ⋯ (Edit, Duplicate, Archive); Duplicate opens…` |
 | NFR-18-y | WP-96 | An item's page folded: More options reads approval, days and lunch as set; Coming up reads the next one, when and who, and how many in two weeks; Last 7 days reads how many done, missed and skipped | Unit | Unit `apps/web/lib/chore-sections.test.ts`: `[NFR-18-y] an item’s page folded › [NFR-18-y] More options reads how it is set: approval, days and lunch`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[NFR-18-y] an item’s page folded › [NFR-18-y] Coming up reads the next one, when and who, and how many in two weeks`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[NFR-18-y] an item’s page folded › [NFR-18-y] Last 7 days reads how many done, missed and skipped` |
-| NFR-18-z | WP-96 | On the preview, Alex edits, duplicates and archives a meal from its ⋯ on the Meal library, and edits and archives a tag from its ⋯ on Tags | E2E | E2E `e2e/tests/chore-sections.spec.ts`: `[NFR-18-z] the Meal library from ⋯: a meal edited, duplicated and archived`<br>E2E `e2e/tests/chore-sections.spec.ts`: `[NFR-18-z] Tags from ⋯: a tag edited and archived` |
+| NFR-18-z | WP-96 | On the preview, Alex edits, duplicates and archives a meal from its ⋯ on the Meal library, and edits and archives a tag from its ⋯ on Tags | E2E | E2E `e2e/tests/chore-sections.spec.ts`: `[NFR-18-z][MEAL-25-h] the Meal library from ⋯: a meal edited, duplicated and archived`<br>E2E `e2e/tests/chore-sections.spec.ts`: `[NFR-18-z] Tags from ⋯: a tag edited and archived` |
 | NFR-16-a | WP-100 | Every admin page's fields, lists, dates and times are the app's on Chrome and iPhone WebKit, in Day and Evening: no browser look, 44 px or taller, 10 px round, 16 px text; a field is filled with the page's background and shows the focus ring | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}`<br>UI `e2e/ui/controls.spec.ts`: `[NFR-16-a] a field is filled, 10 px round, with a 3:1 edge and the focus ring` |
 | NFR-16-b | WP-100 | Every radio and check box is the app's: 20 px, a soft edge, the primary colour when chosen, on both engines | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}` |
 | NFR-16-c | WP-100 | A photo is chosen with **Choose a photo**; the file's name shows; the browser's own file picker never shows | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-c] a photo is chosen with the app’s button, and its name shows` |
@@ -1763,6 +1764,16 @@ Unit · 7 tests
 | `[MEAL-04][D-98] the folded usual week › [MEAL-04] one line per child, Monday to Friday, Buy or Bring` | MEAL-04 |
 | `[MEAL-04][D-98] the folded usual week › [MEAL-04] a weekday without a choice reads Bring, as the form shows it` | MEAL-04 |
 
+#### `apps/web/lib/meal-copy.test.ts`
+
+Unit · 3 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-25-h] Duplicate on the Meal library copies all of a meal › [MEAL-25-h] the copy takes every field, its ingredients, link, steps and files, named "(copy)"` | MEAL-25-h |
+| `[MEAL-25-h] Duplicate on the Meal library copies all of a meal › [MEAL-25-h] the photos and PDFs become files of the copy’s own, in order, under its folder` | MEAL-25-h |
+| `[MEAL-25-h] Duplicate on the Meal library copies all of a meal › [MEAL-25-h] one that can’t be copied or recorded is named, and its stored copy taken away` | MEAL-25-h |
+
 #### `apps/web/lib/meal-groceries.test.ts`
 
 Unit · 3 tests
@@ -2238,7 +2249,7 @@ E2E · 5 tests
 | `[CHR-21-i][US-323] Maya’s chip filters every section; Completed opens and Show older brings the rest` | CHR-21-i, US-323 |
 | `[CHR-22-b][US-324] an item duplicated from its ⋯ and the copy saved; the original unchanged` | CHR-22-b, US-324 |
 | `[CHR-23-c][US-325] Do again on a completed one-time item: a new one under its date in Scheduled, the first stays done; then its icon changed` | CHR-23-c, US-325 |
-| `[NFR-18-z] the Meal library from ⋯: a meal edited, duplicated and archived` | NFR-18-z |
+| `[NFR-18-z][MEAL-25-h] the Meal library from ⋯: a meal edited, duplicated and archived` | MEAL-25-h, NFR-18-z |
 | `[NFR-18-z] Tags from ⋯: a tag edited and archived` | NFR-18-z |
 
 #### `e2e/tests/chores.spec.ts`
@@ -2767,7 +2778,7 @@ UI · 12 tests
 | `the ⋯ menus with no service worker › [NFR-16-t] ${title}’s ⋯ fits inside the screen and closes once a choice is made (${url})` | NFR-16-t |
 | `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] an item’s page folded: the form open, More options, Coming up, Last 7 days and Archive folded…` | NFR-16-t |
 | `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] Duplicate’s form filled in, "(copy)"; Do again’s Change more first on its date` | NFR-16-t |
-| `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] the Meal library: a meal a row with ⋯ (Edit, Duplicate, Archive); Duplicate opens Add a meal…` | NFR-16-t |
+| `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t][MEAL-25-h] the Meal library: a meal a row with ⋯ (Edit, Duplicate, Archive); Duplicate opens…` | MEAL-25-h, NFR-16-t |
 | `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t] Tags: a tag a row with ⋯ (Edit, Archive); Edit opens its form under the row` | NFR-16-t |
 
 #### `e2e/ui/controls.spec.ts`

@@ -198,7 +198,7 @@ test('[CHR-23-c][US-325] Do again on a completed one-time item: a new one under 
   });
 });
 
-test('[NFR-18-z] the Meal library from ⋯: a meal edited, duplicated and archived', async ({
+test('[NFR-18-z][MEAL-25-h] the Meal library from ⋯: a meal edited, duplicated and archived', async ({
   page,
 }) => {
   await signIn(page, 'Alex');
@@ -225,6 +225,13 @@ test('[NFR-18-z] the Meal library from ⋯: a meal edited, duplicated and archiv
       sql(`select array_to_string(meal_types, ',') from public.meal where household_id = '${HOUSEHOLD}'
             and name = 'Spaghetti (copy)'`),
     ).toBe(sql(`select array_to_string(meal_types, ',') from public.meal where id = '${MEAL}'`));
+    // [MEAL-25-h] Copy all (the owner's answer): the same ingredients and recipe.
+    expect(
+      sql(`select (c.ingredients = o.ingredients and c.recipe_steps = o.recipe_steps
+                   and c.recipe_url is not distinct from o.recipe_url)::text
+             from public.meal c, public.meal o
+            where c.household_id = '${HOUSEHOLD}' and c.name = 'Spaghetti (copy)' and o.id = '${MEAL}'`),
+    ).toBe('true');
   });
   await test.step('Archive takes it to Archived', async () => {
     await (
