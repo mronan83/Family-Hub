@@ -281,7 +281,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 104 of 129 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 147 (with a test: 147) |
+| Test cases | 183 (with a test: 147) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -397,7 +397,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-04 | M | Covered | US-703 | WP-26 | — | U 5 · DB 4 · UI 1 · E2E 1 |
 | MEAL-05 | M | Covered | US-704 | WP-27 | — | U 3 · DB 2 · E2E 1 |
 | MEAL-06 | M | Covered | US-705 | WP-28 | — | U 6 · DB 3 · UI 4 · E2E 3 |
-| MEAL-07 | S | Not built | US-706, US-715 | WP-105 | — | — |
+| MEAL-07 | S | Not built | US-706, US-715 | WP-105 | MEAL-07-a, MEAL-07-b | — |
 | MEAL-09 | S | Covered | US-707 | WP-49, WP-77 | — | U 9 · DB 13 · UI 6 · E2E 1 |
 | MEAL-08 | S | Covered | US-701 | WP-25 | — | U 2 · DB 1 · UI 2 · E2E 1 |
 | MEAL-10 | M | Covered | US-708 | WP-62 | — | U 3 · DB 5 · UI 2 · E2E 1 |
@@ -408,15 +408,15 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-15 | S | Covered | US-701 | WP-76 | — | DB 4 · UI 3 · E2E 1 |
 | MEAL-16 | S | Not built | US-712 | WP-103 | — | — |
 | MEAL-17 | S | Not built | US-713 | WP-103 | — | — |
-| MEAL-18 | S | Not built | US-714 | WP-104 | — | — |
-| MEAL-19 | S | Not built | US-715 | WP-105 | — | — |
-| MEAL-20 | S | Not built | US-715 | WP-105 | — | — |
+| MEAL-18 | S | Not built | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | — |
+| MEAL-19 | S | Not built | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | — |
+| MEAL-20 | S | Not built | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | — |
 | MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
 | MEAL-22 | S | Not built | US-717 | WP-107 | — | — |
-| MEAL-23 | S | Not built | US-718 | WP-104 | — | — |
-| MEAL-24 | S | Not built | US-719 | WP-104 | — | — |
-| MEAL-25 | S | Not built | US-720 | WP-105 | — | — |
-| MEAL-26 | S | Not built | US-720 | WP-105 | — | — |
+| MEAL-23 | S | Not built | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | — |
+| MEAL-24 | S | Not built | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | — |
+| MEAL-25 | S | Not built | US-720 | WP-105 | MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | — |
+| MEAL-26 | S | Not built | US-720 | WP-105 | MEAL-26-a | — |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
 | MENU-03 | M | Covered | US-802 | WP-27 | — | U 6 · DB 3 · UI 2 · E2E 1 |
@@ -567,8 +567,8 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-101 | Done | NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | 9 of 9 | — |
 | WP-102 | Done | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | 8 of 8 | — |
 | WP-103 | Queued: | — | — | — |
-| WP-104 | Ready | — | — | — |
-| WP-105 | Queued | — | — | — |
+| WP-104 | Ready | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 0 of 16 | — |
+| WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 0 of 20 | — |
 | WP-106 | Queued | — | — | — |
 | WP-107 | Queued | — | — | — |
 | WP-108 | Done | NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r | 4 of 4 | — |
@@ -727,6 +727,42 @@ Test cases and the tests that prove them:
 | NFR-14-l | WP-98 | A database connection string, password included, in a test's error, cause, title or re-run never reaches the findings log's comment or the run summary | Unit | Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-l] a connection string, password included, never reaches the findings log or the run summary` |
 | NFR-14-m | WP-98 | The first run with a failure opens the one "E2E findings log" issue and comments its entries; later runs comment on the same issue and count what earlier runs wrote; GitHub not answering is said in the summary and fails nothing | Unit | Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-m] the first red run opens "E2E findings log"; later runs comment on it and read it back`<br>Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-m] when GitHub cannot be reached, the summary says so and the run is not failed by it` |
 | NFR-14-n | WP-98 | `e2e.yml` can be started by hand (`workflow_dispatch`), on `main` only and only when no other e2e run is queued or going, so it never displaces one; it shares the one `demo-family` group with no other trigger, and the findings log runs after every run | Unit | Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] a run by hand starts on main when no other e2e run is queued or going`<br>Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] a run by hand never displaces or joins behind another run, and starts on main only`<br>Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] e2e.yml can be run by hand, guarded, in the one demo-family group, and logs every run` |
+| MEAL-18-a | WP-104 | The grocery list, its items, their reasons and their history are the household's own: another household's admin and board read none of them and write none; the household's board reads its list and writes nothing | DB | **none** |
+| MEAL-18-b | WP-104 | Ticking an item records a tick with when and who, unticking puts it back on the list, and removing it is not a tick; every event stays in the history after the item is removed | DB | **none** |
+| MEAL-18-c | WP-104 | Got recently holds the items ticked in the last 7 days, newest first, and not one ticked 8 days ago; a ticked item is off the list at once | Unit | **none** |
+| MEAL-18-d | WP-104 | The admin app's Groceries on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: the add field open at the top, the list by category A to Z with each item's amount, store and why, an item's ⋯ (why it's on the list, Edit, Move to…, Store…, Select several, Remove), Got recently with Untick; nothing overflows, contrast is AA, targets are 44 px | UI | **none** |
+| MEAL-18-e | WP-104 | The board's Groceries on the demo family, Day and Evening: the list by category A to Z with each item's picture, amount, and why for a meal; text 28 px or more; nothing on it changes the list; an empty list says "Nothing on the list right now."; Groceries is in the rail once the household has had its first item | UI | **none** |
+| MEAL-18-f | WP-104 | On the real preview, an admin adds an item, ticks it, finds it under Got recently and unticks it back onto the list | E2E | **none** |
+| MEAL-23-a | WP-104 | The list groups by the household's categories in their order, Other last, with items A to Z inside, whatever their capitals; a store chip shows only that store's items, still by category; Any store shows the items with no store; the counts on the chips match | Unit | **none** |
+| MEAL-23-b | WP-104 | Categories and stores are the household's own: added, renamed, ordered and removed only by its admins; removing a category moves its items to Other; Other can't be removed or renamed; a removed store leaves its items with no store | DB | **none** |
+| MEAL-23-c | WP-104 | A new household starts with the made-up starter categories, Other, the six starter stores and its list | DB | **none** |
+| MEAL-23-d | WP-104 | Select, tick three items, Move to… a new category: all three move at once; Store… sets the store of several; Remove takes several off after asking; the store chips filter the list; Categories and stores adds, renames, reorders and removes, asking before a category with items goes | UI | **none** |
+| MEAL-23-e | WP-104 | On the real preview, an admin selects several items and moves them to another category at once | E2E | **none** |
+| MEAL-24-a | WP-104 | The suggestion for an item had before is the category and store it had last time | Unit | **none** |
+| MEAL-24-b | WP-104 | An item never had before takes the category the household's own words point to, learned from earlier moves, before the starter list; a move teaches every word of its name | Unit | **none** |
+| MEAL-24-c | WP-104 | An item neither had before nor learned takes the starter list's category, built from Open Food Facts' categories; a renamed starter category is still found; a removed one gives Other | Unit | **none** |
+| MEAL-24-d | WP-104 | An item nothing knows goes to Other with any store; one tap changes the suggestion before Add | Unit | **none** |
+| MEAL-24-e | WP-104 | Moving items teaches their words to their own household only | DB | **none** |
+| MEAL-07-a | WP-105 | A meal's ingredients are kept as rows of a name, an optional amount to buy and We usually have it; a row with no name, a name over 80 characters or more than 60 rows is refused | DB | **none** |
+| MEAL-07-b | WP-105 | A meal's form shows its Ingredients, a row each with the amount, the name and We usually have it, the last row adding one and × removing one; saved and opened again, they are as typed | UI | **none** |
+| MEAL-19-a | WP-105 | The week's review lists the planned library meals by meal in day order with their ingredients ticked; We usually have it starts unticked; a meal already added that week starts unticked, marked "Added Sun"; an item on the list says what it makes once merged; nothing is scaled | Unit | **none** |
+| MEAL-19-b | WP-105 | Adding the week's ingredients puts them on the household's list with each meal as a reason, merged into what is there; a meal of another household is refused | DB | **none** |
+| MEAL-19-c | WP-105 | A meal taken off the plan, removed or changed to another meal, takes its share off the list: an item only it needed and not yet ticked is removed, a merged item loses its amount and reason, a ticked item is left as it is | DB | **none** |
+| MEAL-19-d | WP-105 | Taking a meal's share off an item recomputes its amount from the reasons left: "Onions ×3" from Tacos (1) and Chili (2) becomes "Onions ×2" without Tacos | Unit | **none** |
+| MEAL-19-e | WP-105 | The week's review on Meals on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: by meal in day order, the notes, Add n to groceries and Cancel | UI | **none** |
+| MEAL-19-f | WP-105 | On the real preview, an admin adds a planned week's ingredients and finds each once on Groceries, two meals' onions merged into one item | E2E | **none** |
+| MEAL-20-a | WP-105 | "Onions", "onion", "2 onions" and "ONIONS ×2" are one thing; hummus, couscous and asparagus keep their s; extra spaces don't matter | Unit | **none** |
+| MEAL-20-b | WP-105 | Counts add ("2 onions" and "1 onion" make ×3), the same unit adds ("1 lb" and "1 lb" make 2 lb), different units sit side by side ("1 lb + 500 g"), no amount takes the other's | Unit | **none** |
+| MEAL-20-c | WP-105 | "Milk", "milk 2%" and "oat milk" are never merged by themselves; a new name that contains an open one's, or is contained by it, offers Make it one | Unit | **none** |
+| MEAL-20-d | WP-105 | The one way in merges an add into the open item of the same name, one item with both reasons and a merged event; a ticked item is never merged into; two adds of the same thing at once make one item | DB | **none** |
+| MEAL-25-a | WP-105 | Read ingredients finds a made-up recipe page's published recipe data (a Recipe on its own, in a list or in a graph) with its ingredients and steps, and says so when a page has none | Unit | **none** |
+| MEAL-25-b | WP-105 | A recipe's lines become rows to check: an amount to buy is kept ("1 lb", "8", "2 cans"), a recipe's measure is left off ("2 tbsp", "1 cup"), and the name is cleaned | Unit | **none** |
+| MEAL-25-c | WP-105 | A made-up PDF's text is read into lines | Unit | **none** |
+| MEAL-25-d | WP-105 | A made-up photo of an ingredient list is read into lines by Tesseract.js | Unit | **none** |
+| MEAL-25-e | WP-105 | Fetching a recipe link takes only http and https to a public address, gives up after its time and size limits, and never follows a redirect to a private one | Unit | **none** |
+| MEAL-25-f | WP-105 | A meal's recipe files are the household's own: up to 10 MB each, a photo or a PDF; another household's admin and board can't read or add them; the household's board reads them | DB | **none** |
+| MEAL-25-g | WP-105 | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI | **none** |
+| MEAL-26-a | WP-105 | On the board's Meals, a tap on a meal with a recipe opens it full screen, read-only: its photos and PDFs with chips between them, its ingredients and the link's steps, text 28 px or more, and Close goes back | UI | **none** |
 
 ### 9.5 By user story
 

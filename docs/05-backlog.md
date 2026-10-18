@@ -2029,6 +2029,27 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 - **The suggestion:** the item's last category and store, then the household's own learned words (every move teaches them), then a starter list from open data (Open Food Facts' categories), then a small open-source model where it helps; no paid service. The worker measures the open options (how often each is right on a made-up list, and the cost on an iPhone) and brings the choice to the owner as a decision before building it.
 - **Board:** **Groceries** in the rail shows the list by category, A to Z, with each item's picture where one fits, its amount, and why when a meal needs it or a child asked; store chips change only what it shows. Text 28 px or more. It doesn't change the list; asking comes with WP-107 (D-134).
 - **Done when:** the side-by-side is in the PR (D-127); unit tests show the suggestion (last time's, a learned word, the starter list, Other) and the categories' order; pgTAP shows the tables within the household and a removed category's items moved to Other; the UI suite covers both screens on the demo family, Select and Move to, and the store chips; e2e adds, ticks, moves several and unticks on the real preview.
+- **Delivered with WP-105 in one branch and one pull request, at the owner's request on 18 October (D-139).**
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| MEAL-18-a | The grocery list, its items, their reasons and their history are the household's own: another household's admin and board read none of them and write none; the household's board reads its list and writes nothing | DB |
+| MEAL-18-b | Ticking an item records a tick with when and who, unticking puts it back on the list, and removing it is not a tick; every event stays in the history after the item is removed | DB |
+| MEAL-18-c | Got recently holds the items ticked in the last 7 days, newest first, and not one ticked 8 days ago; a ticked item is off the list at once | Unit |
+| MEAL-18-d | The admin app's Groceries on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: the add field open at the top, the list by category A to Z with each item's amount, store and why, an item's ⋯ (why it's on the list, Edit, Move to…, Store…, Select several, Remove), Got recently with Untick; nothing overflows, contrast is AA, targets are 44 px | UI |
+| MEAL-18-e | The board's Groceries on the demo family, Day and Evening: the list by category A to Z with each item's picture, amount, and why for a meal; text 28 px or more; nothing on it changes the list; an empty list says "Nothing on the list right now."; Groceries is in the rail once the household has had its first item | UI |
+| MEAL-18-f | On the real preview, an admin adds an item, ticks it, finds it under Got recently and unticks it back onto the list | E2E |
+| MEAL-23-a | The list groups by the household's categories in their order, Other last, with items A to Z inside, whatever their capitals; a store chip shows only that store's items, still by category; Any store shows the items with no store; the counts on the chips match | Unit |
+| MEAL-23-b | Categories and stores are the household's own: added, renamed, ordered and removed only by its admins; removing a category moves its items to Other; Other can't be removed or renamed; a removed store leaves its items with no store | DB |
+| MEAL-23-c | A new household starts with the made-up starter categories, Other, the six starter stores and its list | DB |
+| MEAL-23-d | Select, tick three items, Move to… a new category: all three move at once; Store… sets the store of several; Remove takes several off after asking; the store chips filter the list; Categories and stores adds, renames, reorders and removes, asking before a category with items goes | UI |
+| MEAL-23-e | On the real preview, an admin selects several items and moves them to another category at once | E2E |
+| MEAL-24-a | The suggestion for an item had before is the category and store it had last time | Unit |
+| MEAL-24-b | An item never had before takes the category the household's own words point to, learned from earlier moves, before the starter list; a move teaches every word of its name | Unit |
+| MEAL-24-c | An item neither had before nor learned takes the starter list's category, built from Open Food Facts' categories; a renamed starter category is still found; a removed one gives Other | Unit |
+| MEAL-24-d | An item nothing knows goes to Other with any store; one tap changes the suggestion before Add | Unit |
+| MEAL-24-e | Moving items teaches their words to their own household only | DB |
 
 ### WP-105 — Meals → groceries: ingredients and recipes on meals, duplicates merged
 **Phase:** P3 · **Size:** L · **Depends on:** WP-104, WP-25 · **Reqs:** MEAL-07, MEAL-19, MEAL-20, MEAL-25, MEAL-26
@@ -2038,6 +2059,31 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 - **Meals → groceries:** from a planned week, **Add to groceries** shows what the week's meals need, by meal in day order; what we usually have and meals already added that week start unticked; nothing is added until confirmed. No scaling by who eats. A meal taken off the plan takes its share off the list: an item only it needed and not yet ticked is removed, a merged item loses that meal's amount and reason.
 - **Duplicates merged:** an item added that is already on the list, open, is merged into it (the same thing whatever its capitals or plural; counts and same units added, different units side by side), whichever way it came: Apple Reminders, the admin app, a meal, a staple (WP-106) or a child's ask (WP-107). "Milk" and "milk 2%" are never merged by themselves; the admin app and the review offer **Make it one**.
 - **Done when:** the side-by-side is in the PR; unit tests show the merge (capitals, plurals, amounts that add and amounts that don't, "milk 2%" not merged) and a meal taken off the plan; unit tests read made-up recipe pages, a made-up PDF and a made-up photo; pgTAP shows ingredients, recipe files and the week's add within the household; the UI suite covers the recipe on the board; e2e adds a week's ingredients and finds them once each.
+- **Delivered with WP-104 in one branch and one pull request, at the owner's request on 18 October (D-139).**
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| MEAL-07-a | A meal's ingredients are kept as rows of a name, an optional amount to buy and We usually have it; a row with no name, a name over 80 characters or more than 60 rows is refused | DB |
+| MEAL-07-b | A meal's form shows its Ingredients, a row each with the amount, the name and We usually have it, the last row adding one and × removing one; saved and opened again, they are as typed | UI |
+| MEAL-19-a | The week's review lists the planned library meals by meal in day order with their ingredients ticked; We usually have it starts unticked; a meal already added that week starts unticked, marked "Added Sun"; an item on the list says what it makes once merged; nothing is scaled | Unit |
+| MEAL-19-b | Adding the week's ingredients puts them on the household's list with each meal as a reason, merged into what is there; a meal of another household is refused | DB |
+| MEAL-19-c | A meal taken off the plan, removed or changed to another meal, takes its share off the list: an item only it needed and not yet ticked is removed, a merged item loses its amount and reason, a ticked item is left as it is | DB |
+| MEAL-19-d | Taking a meal's share off an item recomputes its amount from the reasons left: "Onions ×3" from Tacos (1) and Chili (2) becomes "Onions ×2" without Tacos | Unit |
+| MEAL-19-e | The week's review on Meals on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: by meal in day order, the notes, Add n to groceries and Cancel | UI |
+| MEAL-19-f | On the real preview, an admin adds a planned week's ingredients and finds each once on Groceries, two meals' onions merged into one item | E2E |
+| MEAL-20-a | "Onions", "onion", "2 onions" and "ONIONS ×2" are one thing; hummus, couscous and asparagus keep their s; extra spaces don't matter | Unit |
+| MEAL-20-b | Counts add ("2 onions" and "1 onion" make ×3), the same unit adds ("1 lb" and "1 lb" make 2 lb), different units sit side by side ("1 lb + 500 g"), no amount takes the other's | Unit |
+| MEAL-20-c | "Milk", "milk 2%" and "oat milk" are never merged by themselves; a new name that contains an open one's, or is contained by it, offers Make it one | Unit |
+| MEAL-20-d | The one way in merges an add into the open item of the same name, one item with both reasons and a merged event; a ticked item is never merged into; two adds of the same thing at once make one item | DB |
+| MEAL-25-a | Read ingredients finds a made-up recipe page's published recipe data (a Recipe on its own, in a list or in a graph) with its ingredients and steps, and says so when a page has none | Unit |
+| MEAL-25-b | A recipe's lines become rows to check: an amount to buy is kept ("1 lb", "8", "2 cans"), a recipe's measure is left off ("2 tbsp", "1 cup"), and the name is cleaned | Unit |
+| MEAL-25-c | A made-up PDF's text is read into lines | Unit |
+| MEAL-25-d | A made-up photo of an ingredient list is read into lines by Tesseract.js | Unit |
+| MEAL-25-e | Fetching a recipe link takes only http and https to a public address, gives up after its time and size limits, and never follows a redirect to a private one | Unit |
+| MEAL-25-f | A meal's recipe files are the household's own: up to 10 MB each, a photo or a PDF; another household's admin and board can't read or add them; the household's board reads them | DB |
+| MEAL-25-g | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI |
+| MEAL-26-a | On the board's Meals, a tap on a meal with a recipe opens it full screen, read-only: its photos and PDFs with chips between them, its ingredients and the link's steps, text 28 px or more, and Close goes back | UI |
 
 ### WP-106 — Staples suggested by how often they run out
 **Phase:** P3 · **Size:** M · **Depends on:** WP-104 · **Reqs:** MEAL-21
