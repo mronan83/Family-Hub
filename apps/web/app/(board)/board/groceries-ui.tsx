@@ -3,7 +3,14 @@
 import { Avatar, Icon, type IconName } from '@familywise/ui';
 import { useMemo, useState } from 'react';
 import { type BoardGroceries, pictureOf } from '@/lib/board-groceries';
-import { forMeals, itemAmount, sections, storeChips, type StoreFilter } from '@/lib/groceries';
+import {
+  forMeals,
+  itemAmount,
+  sections,
+  storeChips,
+  type StoreFilter,
+  toGet,
+} from '@/lib/groceries';
 import type { BoardMember } from '@/lib/snapshot';
 
 /**
@@ -31,7 +38,7 @@ export function GroceriesBoard({
       <h2 id="bgroc-title" className="fw-bgroc__title">
         <Icon name="shopping-cart" size={56} />
         Groceries
-        <span className="fw-bgroc__sub">{items.length} to get</span>
+        <span className="fw-bgroc__sub">{toGet(items.length)}</span>
       </h2>
       {chips.length > 2 ? (
         <div className="fw-bgroc__chips" role="group" aria-label="Stores">
@@ -52,7 +59,7 @@ export function GroceriesBoard({
       {items.length === 0 ? (
         <div className="fw-bgroc__empty">
           <Icon name="shopping-cart" size={96} />
-          <p>Nothing on the list right now.</p>
+          <h3>Nothing on the list right now</h3>
         </div>
       ) : (
         <div className="fw-bgroc__cols">

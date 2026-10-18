@@ -105,7 +105,10 @@ test('[MEAL-18-e] an emptied list says so; a household with none has no Grocerie
   page,
 }) => {
   await openGroceries(page, 'groceries=empty');
-  await expect(screen(page)).toContainText('Nothing on the list right now.');
+  await expect(screen(page)).toContainText('Nothing to get');
+  await expect(
+    screen(page).getByRole('heading', { name: 'Nothing on the list right now' }),
+  ).toBeVisible();
   expect(await fit(page)).toEqual({ wide: 1920, small: [], tiny: [] });
   await contrastOk(page);
   await page.goto('/dev/board');

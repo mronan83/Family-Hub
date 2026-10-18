@@ -1579,10 +1579,10 @@ Messages: "Sent. A parent will look at it.", "Back as it was.", "That day can't 
 
 | Part | What it shows or does |
 |---|---|
-| **Groceries** | How many to get. |
+| **Groceries** | How many to get, or **Nothing to get**. |
 | Store chips | **All**, each store with things on the list, **Any store**: each shows only those, still by category. They change only what the board shows. |
 | Categories | A card each, in the household's order, its things A to Z: a picture where one fits, the name and amount, and **For** the meals that need it or the face of each child who asked. |
-| **Nothing on the list right now.** | When the list is empty. |
+| **Nothing on the list right now** | When the list is empty. |
 | Read-only | Nothing here changes the list: it is kept in the admin app. |
 
 ### B3 Rules and limits

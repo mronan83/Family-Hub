@@ -158,6 +158,11 @@ export type WhyLine =
  * Why an item is on the list, a line per way it came, in the order they came: each meal once, each
  * child who asked, a staple, and who added it (once each).
  */
+/** [MEAL-18] How many are on the list, in words: "19 to get", or "Nothing to get". */
+export function toGet(n: number): string {
+  return n === 0 ? 'Nothing to get' : `${n} to get`;
+}
+
 export function whyLines(item: GroceryItem, people: readonly Person[]): WhyLine[] {
   const lines: WhyLine[] = [];
   const seen = new Set<string>();

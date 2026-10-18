@@ -92,6 +92,7 @@ test.describe('the admin app’s Groceries', () => {
     await expect(menu).toContainText('Why it’s on the list');
     await expect(menu).toContainText('Tacos, Tue: 1');
     await expect(menu).toContainText('Chili, Wed: 2');
+    await expect(menu).toContainText('Merged from 2 meals');
     await expect(menu.getByRole('link', { name: 'Edit' })).toBeVisible();
     await expect(menu.getByRole('link', { name: /Move to…/ })).toContainText('Produce');
     await expect(menu.getByRole('link', { name: /Store…/ })).toContainText('Any store');
@@ -227,6 +228,7 @@ test.describe('the admin app’s Groceries', () => {
     await open(page, '/dev/groceries');
     const got = page.locator('#got');
     await expect(got).toContainText('Coffee, Sat 4:42 pm, and 3 more this week');
+    await expect(got.locator('.fw-groc__count')).toHaveText('4');
     await got.locator('summary').click();
     const rows = got.getByRole('list', { name: 'Got recently' }).getByRole('listitem');
     await expect(rows.locator('strong')).toHaveText(['Coffee', 'Pasta', 'Strawberries', 'Foil']);
@@ -280,7 +282,7 @@ test.describe('the admin app’s Groceries', () => {
   test('[MEAL-18-d] an empty list says so', async ({ page }) => {
     await open(page, '/dev/groceries?state=empty');
     await expect(list(page)).toContainText('Nothing on the list right now.');
-    await expect(page.getByText('0 to get')).toBeVisible();
+    await expect(page.getByText('Nothing to get')).toBeVisible();
     await fits(page);
   });
 });

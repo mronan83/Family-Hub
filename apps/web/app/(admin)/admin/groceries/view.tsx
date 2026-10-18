@@ -10,6 +10,7 @@ import {
   sections,
   storeChips,
   type StoreFilter,
+  toGet,
 } from '@/lib/groceries';
 import type { GroceriesData } from './data';
 import { AdminHeader } from '../header';
@@ -90,6 +91,11 @@ function whyDetail(item: GroceryItem, people: readonly Person[]): string[] {
     if (r.kind === 'staple') return `A staple${amount}`;
     return `Added by ${name(r)}${amount}`;
   });
+  const meals = item.reasons.filter((r) => r.kind === 'meal');
+  if (meals.length > 1) {
+    const by = people.find((p) => p.userId !== null && p.userId === meals[0]!.byUser)?.name;
+    lines.push(`Merged from ${meals.length} meals${by ? ` · added by ${by}` : ''}`);
+  }
   if (item.amount) lines.push(`Changed to ${item.amount}`);
   return lines;
 }
@@ -146,7 +152,7 @@ export function GroceriesView({
   const countWords = (n: number) => (n === 0 ? 'Empty' : `${n} on the list`);
 
   return (
-    <main className="fw-page fw-groc">
+    <main className="fw-page fw-page--wide fw-groc">
       <AdminHeader current="/admin/groceries" />
       {error || query.did === 'failed' ? (
         <Banner kind="notice">{error ?? 'That didn’t change. Try again in a moment.'}</Banner>
@@ -159,7 +165,7 @@ export function GroceriesView({
       <section className="fw-card fw-groc__head" aria-labelledby="groceries-heading">
         <div className="fw-bar">
           <h1 id="groceries-heading">Groceries</h1>
-          <span className="fw-muted">{open.length} to get</span>
+          <span className="fw-muted">{toGet(open.length)}</span>
         </div>
         <p className="fw-groc__state">
           <Icon name="info" size={16} />
@@ -378,7 +384,17 @@ export function GroceriesView({
 
       <Fold
         id="got"
-        title="Got recently"
+        title={
+          <>
+            Got recently
+            {got.length > 0 ? (
+              <>
+                {' '}
+                <span className="fw-groc__count">{got.length}</span>
+              </>
+            ) : null}
+          </>
+        }
         headingId="got-heading"
         open={query.open === 'got' || query.did === 'unticked'}
         summary={
