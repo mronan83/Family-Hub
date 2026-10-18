@@ -774,6 +774,38 @@ body {
   grid-column: 1 / -1;
   margin: 0;
 }
+/* [MEAL-27] Groceries, first among the cards (WP-112): its add field and the line under it across
+   the card, and two columns of the cards on a laptop, so the field's hint shows on one line. */
+.fw-quick__card--wide {
+  grid-column: span 2;
+}
+@media (max-width: 599px) {
+  .fw-quick__card--wide {
+    grid-column: auto;
+  }
+}
+.fw-quick__add {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--s-2);
+  min-width: 0;
+}
+.fw-quick__line {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-quick__line:empty {
+  display: none;
+}
+.fw-quick__line b {
+  color: var(--text);
+}
+.fw-quick__line .fw-icon {
+  margin-right: var(--s-1);
+  vertical-align: -3px;
+  color: var(--primary-text);
+}
 /* School today's Add a day off: an inner fold across the card (WP-94). */
 .fw-quick__card > .fw-fold--inner,
 .fw-quick__link {
@@ -5921,6 +5953,21 @@ textarea.fw-groc__addinput {
   margin-right: var(--s-2);
   font-weight: 600;
   font-size: var(--t-small);
+}
+/* [MEAL-28] New items go to (WP-112): a select as wide as the stores' names need, and the
+   preferred store's pill in the list of stores. */
+.fw-groc__pref select {
+  max-width: 330px;
+}
+.fw-groc__preferred {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-size: var(--t-small);
+  font-weight: 700;
 }
 .fw-groc__from {
   flex-basis: 100%;

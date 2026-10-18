@@ -19,6 +19,8 @@ export interface GroceriesData {
   people: Person[];
   past: PastItem[];
   learned: LearnedWord[];
+  /** [MEAL-28] New items go to: the household's preferred store, none for Any store. */
+  preferredStoreId: string | null;
 }
 
 const fail = (what: string, error: { message: string } | null) => {
@@ -31,7 +33,7 @@ export async function loadGroceries(
   now: number = Date.now(),
 ): Promise<GroceriesData> {
   const since = new Date(now - GOT_RECENTLY_DAYS * 86_400_000).toISOString();
-  const [cats, stores, items, people, past, learned] = await Promise.all([
+  const [cats, stores, items, people, past, learned, list] = await Promise.all([
     db
       .from('grocery_category')
       .select('id, name, icon, starter_key, is_other, sort_order')
@@ -59,6 +61,11 @@ export async function loadGroceries(
       .from('grocery_learned_word')
       .select('word, category_id, weight')
       .eq('household_id', householdId),
+    db
+      .from('grocery_list')
+      .select('preferred_store_id')
+      .eq('household_id', householdId)
+      .maybeSingle(),
   ]);
   fail('grocery categories', cats.error);
   fail('grocery stores', stores.error);
@@ -66,6 +73,7 @@ export async function loadGroceries(
   fail('people', people.error);
   fail('grocery history', past.error);
   fail('learned words', learned.error);
+  fail('the list', list.error);
   type ItemRow = {
     id: string;
     name: string;
@@ -138,5 +146,6 @@ export async function loadGroceries(
       categoryId: w.category_id as string,
       weight: w.weight as number,
     })),
+    preferredStoreId: (list.data?.preferred_store_id as string | null | undefined) ?? null,
   };
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { GroceryItem } from './groceries';
-import { rowNotes, startTicked, weekReview } from './meal-groceries';
+import type { GroceryCategory, GroceryItem } from './groceries';
+import { rowNotes, startTicked, weekGroceryItems, weekReview } from './meal-groceries';
 import type { MealRow, PlanEntry } from './meals';
 
 const meal = (id: string, name: string, ingredients: MealRow['ingredients']): MealRow => ({
@@ -117,5 +117,45 @@ describe('a week’s meals into groceries', () => {
     const less = new Set(ticked);
     less.delete(review.meals[0]!.rows[0]!.id);
     expect(rowNotes(review, less, []).get(review.meals[1]!.rows[0]!.id)).toBeUndefined();
+  });
+});
+
+describe('the week’s items for the list (WP-112)', () => {
+  const review = weekReview(WEEK, MEALS, new Map(), 'America/Chicago');
+  const cat = (id: string, starterKey: string): GroceryCategory => ({
+    id,
+    name: id,
+    icon: 'carrot',
+    starterKey,
+    isOther: starterKey === 'other',
+    sortOrder: 1,
+  });
+  const categories = [cat('meat', 'meat'), cat('produce', 'produce'), cat('other', 'other')];
+
+  it('[MEAL-28-d] each new item takes its suggested category and store: last time’s, else the preferred one', () => {
+    const chili = review.meals.find((m) => m.name === 'Chili')!;
+    const items = weekGroceryItems(review, new Set(chili.rows.map((r) => r.id)), {
+      categories,
+      // Ground beef was got at Kroger last time; onions at no store.
+      past: [
+        { key: 'ground beef', categoryId: 'meat', storeId: 'kroger', createdAt: '2026-10-01' },
+        { key: 'onion', categoryId: 'produce', storeId: null, createdAt: '2026-10-01' },
+      ],
+      learned: [],
+      starter: null,
+      preferredStoreId: 'costco',
+    });
+    expect(items.map((i) => [i.name, i.amount, i.category_id, i.store_id])).toEqual([
+      ['Ground beef', '1 lb', 'meat', 'kroger'],
+      ['Onions', '2', 'produce', 'costco'],
+      ['Kidney beans', '2 cans', 'other', 'costco'],
+    ]);
+    expect(items[0]!.reason).toEqual({
+      kind: 'meal',
+      meal_plan_entry_id: chili.entryId,
+      label: 'Chili, Wed',
+    });
+    // Rows not ticked are left out.
+    expect(weekGroceryItems(review, new Set(), { categories, past: [], learned: [] })).toEqual([]);
   });
 });

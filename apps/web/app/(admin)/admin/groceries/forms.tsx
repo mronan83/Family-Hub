@@ -3,7 +3,8 @@
 import { Banner, Button } from '@familywise/ui';
 import type { FormState } from '@/lib/auth/messages';
 import { useFormAction } from '@/lib/forms';
-import { addPlace, editGrocery, renamePlace } from './actions';
+import type { GroceryStore } from '@/lib/groceries';
+import { addPlace, editGrocery, renamePlace, setPreferredStore } from './actions';
 
 /** [MEAL-18] Edit an item: its name and the amount to get. */
 export function EditForm({
@@ -77,21 +78,80 @@ export function PlaceForm({
       <div className="fw-groc__addrow">
         <label className="fw-groc__addfield">
           <span className="fw-visually-hidden">{label}</span>
-          <input
-            className="fw-input"
-            name="name"
-            maxLength={40}
-            required
-            defaultValue={name ?? ''}
-            autoComplete="off"
-            placeholder={placeholder}
-          />
+          {id ? (
+            <input
+              className="fw-input"
+              name="name"
+              maxLength={40}
+              required
+              defaultValue={name ?? ''}
+              autoComplete="off"
+            />
+          ) : (
+            // [MEAL-28] As the add field: two lines on a phone, so the hint ("New store, like
+            // Trader Joe's") shows in full; Enter adds, and it takes no line breaks (WP-112).
+            <textarea
+              className="fw-input fw-groc__addinput"
+              name="name"
+              rows={2}
+              maxLength={40}
+              required
+              autoComplete="off"
+              placeholder={placeholder}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\s*\n\s*/g, ' ');
+                if (v !== e.target.value) e.target.value = v;
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter' || e.nativeEvent.isComposing) return;
+                e.preventDefault();
+                e.currentTarget.form?.requestSubmit();
+              }}
+            />
+          )}
         </label>
         <Button type="submit" variant="secondary" icon={id ? 'check' : 'plus'} disabled={pending}>
           {id ? 'Rename' : 'Add'}
         </Button>
       </div>
       {state.message ? <Banner kind="notice">{state.message}</Banner> : null}
+    </form>
+  );
+}
+
+/**
+ * [MEAL-28] New items go to: one of the household's stores, or Any store (D-142). Saved as soon as
+ * it is chosen.
+ */
+export function PreferredStoreForm({
+  stores,
+  preferredStoreId,
+}: {
+  stores: readonly GroceryStore[];
+  preferredStoreId: string | null;
+}) {
+  return (
+    <form action={setPreferredStore} className="fw-groc__pref" aria-label="New items go to">
+      <input type="hidden" name="store" value="all" />
+      <label className="fw-field">
+        <span className="fw-field__label">New items go to</span>
+        <select
+          className="fw-input"
+          name="storeId"
+          defaultValue={preferredStoreId ?? ''}
+          onChange={(e) => e.currentTarget.form?.requestSubmit()}
+        >
+          <option value="">Any store</option>
+          {stores.map((x) => (
+            <option key={x.id} value={x.id}>
+              {x.name}
+            </option>
+          ))}
+        </select>
+        <span className="fw-field__help">
+          A new item gets this store. One you’ve had before keeps the store it had last time.
+        </span>
+      </label>
     </form>
   );
 }

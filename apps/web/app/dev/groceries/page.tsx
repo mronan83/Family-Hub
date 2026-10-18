@@ -7,7 +7,7 @@ import { groceriesData, NOW, TZ } from './fixture';
 // into (?typed=greek yog); an item's ⋯ open (?menu=Onions); Select with three picked and Move to
 // open (?select=1&sel=Apples,Avocados,Bananas&panel=move); a store chip (?store=Costco); Got
 // recently or Categories and stores open (?open=got, ?open=places); a row's Edit, Move to or Store
-// (?edit=Onions, ?move=Onions, ?storeOf=Onions).
+// (?edit=Onions, ?move=Onions, ?storeOf=Onions); [MEAL-28] a preferred store (?preferred=Costco, WP-112).
 export const metadata: Metadata = { title: 'Groceries', robots: { index: false } };
 
 type Params = Record<string, string | undefined>;
@@ -19,7 +19,7 @@ export default async function DevGroceriesPage({
 }) {
   const p = await searchParams;
   const theme = p.theme === 'evening' ? 'theme-evening' : 'theme-day';
-  const data = groceriesData(p.state === 'empty' ? 'empty' : 'busy');
+  const data = groceriesData(p.state === 'empty' ? 'empty' : 'busy', p.preferred ?? null);
   const idOf = (name: string | undefined) =>
     name ? data.items.find((i) => i.name === name)?.id : undefined;
   const store = p.store

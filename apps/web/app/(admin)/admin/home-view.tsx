@@ -1,6 +1,8 @@
 import { Banner, Button, Fold, Icon, type IconName } from '@familywise/ui';
 import Link from 'next/link';
 import type { HomeAlert } from '@/lib/home-alerts';
+import { GroceriesQuick, type GroceriesQuickData } from './groceries-quick';
+import type { QuickAddState } from './groceries/actions';
 import { AdminHeader } from './header';
 import { noSchoolToday, refreshMenus, undoNoSchool } from './home-actions';
 import type { NavWho } from './nav';
@@ -76,7 +78,9 @@ function AlertRow({ a }: { a: HomeAlert }) {
  * each with where to deal with it, then one tap to add a chore, a task, a reward, a goal or a meal,
  * to call off school today or add a day off, and to fetch the school menus. The household's options
  * moved to Settings, Family options. [MEAL-12][US-709] Beside Add a meal, the school lunches card
- * opens the lunch week (WP-73, D-98); it shows only when a child has school lunch.
+ * opens the lunch week (WP-73, D-98); it shows only when a child has school lunch. [MEAL-27] First
+ * among the cards, Groceries adds to the list without leaving Home (WP-112, D-142); it shows when the
+ * list is empty too.
  */
 export function HomeView({
   name,
@@ -85,6 +89,8 @@ export function HomeView({
   school,
   menuFeeds,
   lunch,
+  groceries,
+  groceriesDev,
   notice,
   waiting,
   who,
@@ -97,6 +103,9 @@ export function HomeView({
   menuFeeds: number;
   /** None when no child has school lunch. */
   lunch?: LunchQuick | null;
+  groceries: GroceriesQuickData;
+  /** For the dev page only: Groceries' field typed into, or its line after an Add. */
+  groceriesDev?: { typed?: string; added?: QuickAddState['added'] };
   notice?: string | null;
   waiting?: number;
   who?: NavWho | null;
@@ -148,6 +157,7 @@ export function HomeView({
           <Tile icon="target" href="/admin/goals/new" label="Add a goal" />
         </ul>
         <ul className="fw-quick fw-quick--cards" aria-label="More quick actions">
+          <GroceriesQuick data={groceries} dev={groceriesDev} />
           <li className="fw-quick__card" aria-labelledby="meal-heading">
             <span className="fw-quick__icon">
               <Icon name="utensils" size={24} />

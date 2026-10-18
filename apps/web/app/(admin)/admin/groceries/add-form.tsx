@@ -28,7 +28,8 @@ const FROM_WORDS = {
 /**
  * [MEAL-18][MEAL-24][MEAL-20] The add field, open at the top of Groceries (D-138 (10)): what to get,
  * then, as it is typed, the category and store suggested (last time's, the household's own words,
- * the starter list, else Other), each one tap to change; an open item it may be offers Make it one.
+ * the starter list, else Other; [MEAL-28] the store last time's, then the preferred store, D-142),
+ * each one tap to change; an open item it may be offers Make it one.
  * Adding under a category's + fixes the category and skips the suggestion.
  */
 export function AddForm({
@@ -88,8 +89,14 @@ export function AddForm({
     .map((id) => ordered.find((c) => c.id === id))
     .filter((c): c is GroceryCategory => !!c);
   const rest = ordered.filter((c) => !catChips.includes(c));
+  // Last time's store comes first; otherwise Any store, then the stores in order with the one picked
+  // (the preferred store, D-142) among the first.
   const storeChips = [
-    ...new Set([chosenStore, s?.storeId ?? '', '', ...stores.map((x) => x.id)]),
+    ...new Set(
+      s?.storeFrom === 'last'
+        ? [chosenStore, s.storeId ?? '', '', ...stores.map((x) => x.id)]
+        : ['', chosenStore, ...stores.map((x) => x.id)],
+    ),
   ].slice(0, 4);
   const moreStores = stores.filter((x) => !storeChips.includes(x.id));
   const storeName = (id: string) => stores.find((x) => x.id === id)?.name ?? 'Any store';
@@ -210,8 +217,10 @@ export function AddForm({
                 </div>
               </details>
             ) : null}
-            {s?.from === 'last' && s.storeId && store === null ? (
+            {s?.storeFrom === 'last' && store === null ? (
               <span className="fw-groc__from">where it was bought last time</span>
+            ) : s?.storeFrom === 'preferred' && s.storeId && store === null ? (
+              <span className="fw-groc__from">{storeName(s.storeId)} is your preferred store.</span>
             ) : null}
           </fieldset>
         </>

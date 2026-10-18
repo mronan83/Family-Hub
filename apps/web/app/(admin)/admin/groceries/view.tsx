@@ -23,7 +23,7 @@ import {
   tickGrocery,
 } from './actions';
 import { AddForm } from './add-form';
-import { EditForm, PlaceForm } from './forms';
+import { EditForm, PlaceForm, PreferredStoreForm } from './forms';
 import { ItemWords, SectionHead } from './rows';
 import { MoreMenu } from './more-menu';
 import { SelectList } from './select-list';
@@ -43,6 +43,8 @@ export interface GroceriesQuery {
   ask?: string;
   rename?: string;
   t?: string;
+  /** [MEAL-27] An item's ⋯ open: Home's Change after Add (WP-112). */
+  item?: string;
 }
 
 const NOTICES: Record<string, (name: string) => string> = {
@@ -59,6 +61,7 @@ const NOTICES: Record<string, (name: string) => string> = {
   'store-renamed': () => 'Store renamed.',
   'store-moved': () => 'Moved.',
   'store-removed': () => 'Store removed. Its items can be got anywhere.',
+  'preferred-set': () => 'Saved. New items go there.',
 };
 
 function noticeOf(did: string | undefined, name: string): string | null {
@@ -146,7 +149,8 @@ export function GroceriesView({
       <input type="hidden" name="store" value={store} />
     </>
   );
-  const placesOpen = query.open === 'places' || /^(category|store)-/.test(query.did ?? '');
+  const placesOpen =
+    query.open === 'places' || /^(category|store|preferred)-/.test(query.did ?? '');
   const placeAsk = query.ask ?? null;
   const onList = (catId: string) => open.filter((i) => i.categoryId === catId).length;
   const atStore = (storeId: string) => open.filter((i) => i.storeId === storeId).length;
@@ -178,7 +182,12 @@ export function GroceriesView({
           stores={stores}
           open={open}
           people={people}
-          ctx={{ categories, past: data.past, learned: data.learned }}
+          ctx={{
+            categories,
+            past: data.past,
+            learned: data.learned,
+            preferredStoreId: data.preferredStoreId,
+          }}
           fixedCategory={query.cat ?? null}
           storeFilter={store}
           initial={dev?.typed}
@@ -260,7 +269,10 @@ export function GroceriesView({
                       />
                     </form>
                     <ItemWords item={item} stores={stores} people={people} />
-                    <MoreMenu label={`More for ${item.name}`} open={dev?.menu === item.id}>
+                    <MoreMenu
+                      label={`More for ${item.name}`}
+                      open={dev?.menu === item.id || query.item === item.id}
+                    >
                       <div className="fw-groc__mh">
                         <b>Why it’s on the list</b>
                         {whyDetail(item, people).map((l, i) => (
@@ -571,6 +583,11 @@ export function GroceriesView({
           <h3>Stores</h3>
           <span className="fw-groc__n">{stores.length}</span>
         </div>
+        <PreferredStoreForm
+          key={data.preferredStoreId ?? 'any'}
+          stores={[...stores].sort((a, b) => a.sortOrder - b.sortOrder)}
+          preferredStoreId={data.preferredStoreId}
+        />
         <ul className="fw-groc__rows" aria-label="Stores">
           {[...stores]
             .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -580,7 +597,12 @@ export function GroceriesView({
                   <Icon name="store" size={20} />
                 </span>
                 <span className="fw-groc__words">
-                  <strong>{s.name}</strong>
+                  <span className="fw-groc__l1">
+                    <strong>{s.name}</strong>
+                    {s.id === data.preferredStoreId ? (
+                      <span className="fw-groc__preferred">Preferred</span>
+                    ) : null}
+                  </span>
                   <span className="fw-groc__l2">
                     {atStore(s.id) === 0 ? 'None on the list' : `${atStore(s.id)} on the list`}
                   </span>

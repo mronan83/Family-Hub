@@ -11,6 +11,11 @@ import {
   sections,
   storeChips,
   suggest,
+  addedLine,
+  alreadyLine,
+  onTheList,
+  whereLine,
+  type GroceryStore,
   type SuggestContext,
   whyLines,
 } from './groceries';
@@ -184,6 +189,7 @@ describe('the suggestion', () => {
       categoryId: DAIRY.id,
       storeId: 's2',
       from: 'last',
+      storeFrom: 'last',
     });
   });
 
@@ -196,6 +202,7 @@ describe('the suggestion', () => {
       categoryId: SNACKS.id,
       storeId: null,
       from: 'learned',
+      storeFrom: 'any',
     });
     // The thing itself, the last word, counts most.
     expect(suggest('greek yogurt', ctx({ learned }))?.categoryId).toBe(SNACKS.id);
@@ -204,7 +211,7 @@ describe('the suggestion', () => {
   it('[MEAL-24-c] an item nothing has taught takes the starter list’s category, renamed or not', () => {
     const renamed = { ...DAIRY, name: 'Fridge' };
     expect(suggest('Greek yogurt', ctx({ categories: [PRODUCE, renamed, SNACKS, OTHER] }))).toEqual(
-      { categoryId: DAIRY.id, storeId: null, from: 'starter' },
+      { categoryId: DAIRY.id, storeId: null, from: 'starter', storeFrom: 'any' },
     );
     expect(suggest('popcorn', ctx())?.categoryId).toBe(SNACKS.id);
     expect(suggest('Apples', ctx())?.categoryId).toBe(PRODUCE.id);
@@ -213,6 +220,7 @@ describe('the suggestion', () => {
       categoryId: OTHER.id,
       storeId: null,
       from: 'other',
+      storeFrom: 'any',
     });
   });
 
@@ -237,7 +245,136 @@ describe('the suggestion', () => {
       categoryId: OTHER.id,
       storeId: null,
       from: 'other',
+      storeFrom: 'any',
     });
     expect(suggest('   ', ctx())).toBeNull();
+  });
+});
+
+describe('the store suggested, and Home’s card (WP-112)', () => {
+  const KROGER: GroceryStore = { id: 's-kroger', name: 'Kroger', sortOrder: 1 };
+  const COSTCO: GroceryStore = { id: 's-costco', name: 'Costco', sortOrder: 2 };
+  const STORES = [KROGER, COSTCO];
+  const ctx = (o: Partial<SuggestContext> = {}): SuggestContext => ({
+    categories: CATEGORIES,
+    past: [],
+    learned: [],
+    starter: new Map([
+      ['apple', 'produce'],
+      ['yogurt', 'dairy'],
+    ]),
+    preferredStoreId: COSTCO.id,
+    ...o,
+  });
+  const had = (key: string, storeId: string | null, categoryId = PRODUCE.id) => ({
+    key,
+    categoryId,
+    storeId,
+    createdAt: '2026-10-10T00:00:00Z',
+  });
+
+  it('[MEAL-28-c] last time’s store, then the preferred store, then Any store', () => {
+    // Had before at Kroger: keeps Kroger, whatever is preferred.
+    expect(suggest('apples', ctx({ past: [had('apple', KROGER.id)] }))).toMatchObject({
+      storeId: KROGER.id,
+      storeFrom: 'last',
+    });
+    // Had before with no store, or at a store since removed (its store cleared): the preferred one.
+    expect(suggest('apples', ctx({ past: [had('apple', null)] }))).toMatchObject({
+      categoryId: PRODUCE.id,
+      from: 'last',
+      storeId: COSTCO.id,
+      storeFrom: 'preferred',
+    });
+    // Never had: the preferred store, its category from the starter list as before.
+    expect(suggest('greek yogurt', ctx())).toMatchObject({
+      categoryId: DAIRY.id,
+      from: 'starter',
+      storeId: COSTCO.id,
+      storeFrom: 'preferred',
+    });
+    // No preferred store: Any store.
+    expect(suggest('greek yogurt', ctx({ preferredStoreId: null }))).toMatchObject({
+      storeId: null,
+      storeFrom: 'any',
+    });
+    expect(suggest('greek yogurt', ctx({ preferredStoreId: undefined }))?.storeId).toBeNull();
+  });
+
+  it('[MEAL-27-a] the card’s count and its line as an item is typed', () => {
+    expect(onTheList(8)).toBe('8 on the list');
+    expect(onTheList(1)).toBe('1 on the list');
+    expect(onTheList(0)).toBe('Nothing on the list');
+
+    const MEAT = cat('c4', 'Meat & Seafood', 4, 'meat');
+    const PANTRY = cat('c5', 'Pantry', 5, 'pantry');
+    const cats = [...CATEGORIES, MEAT, PANTRY];
+    const where = (text: string, o: Partial<SuggestContext> = {}) =>
+      whereLine(suggest(text, ctx({ categories: cats, ...o }))!, cats, STORES);
+    expect(where('2 lb ground beef', { past: [had('ground beef', KROGER.id, MEAT.id)] })).toEqual({
+      category: 'Meat & Seafood',
+      store: 'Kroger, where it went last time',
+    });
+    expect(where('olive oil', { starter: new Map([['olive oil', 'pantry']]) })).toEqual({
+      category: 'Pantry',
+      store: 'Costco, your preferred store',
+    });
+    expect(where('flux capacitor', { preferredStoreId: null })).toEqual({
+      category: 'Other',
+      store: 'Any store',
+    });
+
+    const onions = item('Onions', PRODUCE.id, {
+      reasons: [
+        {
+          kind: 'meal',
+          byUser: null,
+          memberId: null,
+          mealPlanEntryId: 'e1',
+          label: 'Tacos, Tue',
+          amount: '1',
+          createdAt: '2026-10-17T12:00:00Z',
+        },
+        {
+          kind: 'meal',
+          byUser: null,
+          memberId: null,
+          mealPlanEntryId: 'e2',
+          label: 'Chili, Wed',
+          amount: '2',
+          createdAt: '2026-10-17T12:00:00Z',
+        },
+      ],
+    });
+    const beef = item('Ground beef', 'c4', { amount: '2 lb' });
+    const milk = item('Milk', DAIRY.id);
+    const gone = item('Apples', PRODUCE.id, { status: 'ticked', tickedAt: '2026-10-17T12:00:00Z' });
+    const open = [onions, beef, milk, gone];
+    expect(alreadyLine('1 onion', open)).toMatchObject({
+      has: 'Onions ×3',
+      are: true,
+      makes: '×4',
+    });
+    expect(alreadyLine('ONIONS', open)).toMatchObject({ has: 'Onions ×3', makes: null });
+    expect(alreadyLine('1 lb ground beef', open)).toMatchObject({
+      has: 'Ground beef 2 lb',
+      are: false,
+      makes: '3 lb',
+    });
+    expect(alreadyLine('milk', open)).toMatchObject({ has: 'Milk', are: false, makes: null });
+    // Not on the list: nothing to say; a ticked one is not on the list.
+    expect(alreadyLine('apples', open)).toBeNull();
+    expect(alreadyLine('olive oil', open)).toBeNull();
+    expect(alreadyLine('   ', open)).toBeNull();
+  });
+
+  it('[MEAL-27-b] after Add, the item as the list now has it', () => {
+    expect(addedLine('Ground beef', '2 lb', 'Meat & Seafood')).toEqual({
+      what: 'Ground beef 2 lb',
+      category: 'Meat & Seafood',
+      text: 'Added Ground beef 2 lb to Meat & Seafood.',
+    });
+    expect(addedLine('Onions', '×4', 'Produce').text).toBe('Added Onions ×4 to Produce.');
+    expect(addedLine('Olive oil', null, 'Pantry').text).toBe('Added Olive oil to Pantry.');
   });
 });

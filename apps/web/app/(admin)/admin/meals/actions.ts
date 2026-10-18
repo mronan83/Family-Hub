@@ -13,9 +13,8 @@ import { parseUsualLunch } from '@/lib/lunch';
 import { parsePicksForm } from '@/lib/lunch-picks';
 import { mealRefusal, parseEntryForm, parseMealForm, weekDays, weekFrom } from '@/lib/meals';
 import { serverClient } from '@/lib/supabase/server';
-import { suggest } from '@/lib/groceries';
 import { starterList } from '@/lib/grocery-starter';
-import { weekReview } from '@/lib/meal-groceries';
+import { weekGroceryItems, weekReview } from '@/lib/meal-groceries';
 import { loadGroceries } from '../groceries/data';
 import { loadMeals, loadPlan } from './data';
 
@@ -349,7 +348,8 @@ export async function setLunchPicks(form: FormData): Promise<void> {
  * [MEAL-19][MEAL-20] Adds the rows ticked in the week's review to the grocery list (WP-105): read
  * again here from the week's plan and the meals' ingredients (the form sends only which rows), each
  * with its meal as the reason, through the one way in, which merges what is already on the list.
- * New items take the suggested category and store. Back to the week, saying how many.
+ * New items take the suggested category and store (last time's, then the preferred store, D-142).
+ * Back to the week, saying how many.
  */
 export async function addWeekToGroceries(form: FormData): Promise<void> {
   const { db, household } = await context('/admin/meals');
@@ -367,27 +367,13 @@ export async function addWeekToGroceries(form: FormData): Promise<void> {
     loadGroceries(db, household.id),
   ]);
   const review = weekReview(entries, meals, new Map(), household.timezone);
-  const ctx = {
+  const items = weekGroceryItems(review, ids, {
     categories: groceries.categories,
     past: groceries.past,
     learned: groceries.learned,
     starter: starterList,
-  };
-  const items = review.meals.flatMap((m) =>
-    m.rows
-      .filter((r) => ids.has(r.id))
-      .map((r) => {
-        const s = suggest(r.name, ctx);
-        return {
-          name: r.name.charAt(0).toUpperCase() + r.name.slice(1),
-          key: r.key,
-          amount: r.amount,
-          category_id: s?.categoryId ?? null,
-          store_id: s?.storeId ?? null,
-          reason: { kind: 'meal', meal_plan_entry_id: m.entryId, label: `${m.name}, ${m.day}` },
-        };
-      }),
-  );
+    preferredStoreId: groceries.preferredStoreId,
+  });
   if (items.length === 0) redirect(`/admin/meals?week=${week}&did=nothing`);
   const { error } = await db.rpc('add_groceries', { p_household: household.id, p_items: items });
   if (error) {
