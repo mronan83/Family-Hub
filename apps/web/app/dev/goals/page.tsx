@@ -9,7 +9,6 @@ import { WeeksFold } from '../../(admin)/admin/goals/repeating';
 import { GoalHead, GoalStatusPill, GoalsView } from '../../(admin)/admin/goals/view';
 import { goalSteps } from '@/lib/goal-steps';
 import { DEV } from './facts';
-import { devLiveGoal } from './live';
 
 // The admin Goals page and goal form (WP-19, WP-39) with a made-up family and no database, for the UI
 // suite: the list in Day or Evening (?theme=evening), the form for a new goal (?form=new), for one
@@ -542,7 +541,7 @@ export default async function DevGoalsPage({
               tags={TAGS}
               items={ITEMS}
               prizes={PRIZES}
-              live={devLiveGoal}
+              livePath="/dev/goals/summaries"
               today={TODAY}
               lock={params.form === 'family-weeks' ? 'started' : 'none'}
               countable={[
@@ -741,7 +740,7 @@ export default async function DevGoalsPage({
               tags={TAGS}
               items={ITEMS}
               prizes={PRIZES}
-              live={devLiveGoal}
+              livePath="/dev/goals/summaries"
               today={TODAY}
               lock={params.form === 'steps' ? 'started' : 'none'}
               initial={initial}
@@ -777,7 +776,7 @@ export default async function DevGoalsPage({
               items={ITEMS}
               prizes={PRIZES}
               today="2026-10-12"
-              live={devLiveGoal}
+              livePath="/dev/goals/summaries"
               draft={{
                 title: 'Homework home every school day',
                 description: null,
@@ -825,7 +824,7 @@ export default async function DevGoalsPage({
               tags={TAGS}
               items={ITEMS}
               prizes={PRIZES}
-              live={devLiveGoal}
+              livePath="/dev/goals/summaries"
               today={TODAY}
               lock="started"
               preview={{
@@ -915,7 +914,7 @@ export default async function DevGoalsPage({
               tags={TAGS}
               items={ITEMS}
               prizes={PRIZES}
-              live={devLiveGoal}
+              livePath="/dev/goals/summaries"
               today="2026-10-10"
               lock={params.form === 'reached' ? 'finished' : started ? 'started' : 'none'}
               preview={

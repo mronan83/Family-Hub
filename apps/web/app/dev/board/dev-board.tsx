@@ -33,6 +33,7 @@ import {
   withPerfect,
   withSteps,
   TZ,
+  unreadChanges,
 } from './fixture';
 
 /**
@@ -63,6 +64,7 @@ export function DevBoard({
   repeating,
   steps,
   perfect,
+  missed = false,
 }: {
   theme: Theme;
   stale: boolean;
@@ -92,6 +94,8 @@ export function DevBoard({
   steps?: 'going' | 'won' | 'weighted';
   /** [RWD-19][RWD-20] The family's every-child goal and Maya's perfect weeks (WP-82). */
   perfect?: 'going' | 'missed' | 'won';
+  /** [WP-110] Realtime never says a request was stored: only the board's own read shows it. */
+  missed?: boolean;
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
@@ -151,7 +155,13 @@ export function DevBoard({
   );
   const pinWish = useMemo(() => fixturePin(snapshot), [snapshot]);
   const [lunches] = useState(() => fixtureLunches(snapshot.today));
-  const ask = useMemo(() => fixtureAsk(snapshot, setSnapshot), [snapshot]);
+  // [WP-110] What the database holds that this board hasn't read (?missed=1), applied by its read.
+  const [unread] = useState(unreadChanges);
+  const ask = useMemo(
+    () => fixtureAsk(snapshot, setSnapshot, missed ? unread.hold : setSnapshot),
+    [snapshot, missed, unread],
+  );
+  const refresh = useCallback(() => unread.read(setSnapshot), [unread]);
   const [cancelAsk] = useState(() => fixtureCancel(setSnapshot));
   const [markCelebrated] = useState(() => fixtureMark(setSnapshot));
   const [store] = useState(() =>
@@ -209,6 +219,7 @@ export function DevBoard({
           loadLunches={lunches.load}
           askLunch={lunches.ask}
           seenLunch={lunches.seen}
+          refresh={refresh}
         />
       </main>
       <SleepCover sleeping={sleeping} name={snapshot.device.name} />

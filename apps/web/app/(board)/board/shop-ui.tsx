@@ -19,14 +19,21 @@ import { iconOf, Picture, type PhotoUrl } from './picture';
  * [PTS-04][US-1104] Each child's requests with this board's own asks laid over the snapshot until the
  * snapshot shows them, so an ask answers at once; one the server didn't take is taken back and the
  * board says why. A cancel shows as under way until the snapshot shows it settled.
+ *
+ * [WP-110] An ask the server took is waiting for a grown-up from then on, not still sending, and the
+ * board reads its snapshot again at once (`refresh`) rather than waiting to hear of its own change
+ * through Realtime, which may never come.
  */
 export function useShop(
   snapshot: BoardSnapshot,
   ask: AskFor,
   cancelAsk: CancelAsk,
   say: (text: string) => void,
+  refresh: () => void = () => undefined,
 ) {
   const [asked, setAsked] = useState<Map<string, BoardRequest[]>>(() => new Map());
+  // The asks the server has taken that the snapshot doesn't show yet.
+  const [taken, setTaken] = useState<ReadonlySet<string>>(() => new Set());
   const [cancelling, setCancelling] = useState<ReadonlySet<string>>(() => new Set());
   // What the snapshot shows now: each request's status by id.
   const shown = useMemo(
@@ -51,6 +58,10 @@ export function useShop(
       const still = [...prev].filter((id) => shown.get(id) === 'requested');
       return still.length === prev.size ? prev : new Set(still);
     });
+    setTaken((prev) => {
+      const still = [...prev].filter((id) => !shown.has(id));
+      return still.length === prev.size ? prev : new Set(still);
+    });
   }
 
   const mine = useCallback((m: BoardMember) => asked.get(m.id) ?? [], [asked]);
@@ -58,8 +69,11 @@ export function useShop(
   /** What a child can spend: as the snapshot says, less this board's asks it doesn't show yet. */
   const availableOf = useCallback((m: BoardMember) => availableWith(m, mine(m)), [mine]);
   const sending = useMemo(
-    () => new Set([...asked.values()].flatMap((list) => list.map((r) => r.id))),
-    [asked],
+    () =>
+      new Set(
+        [...asked.values()].flatMap((list) => list.map((r) => r.id)).filter((id) => !taken.has(id)),
+      ),
+    [asked, taken],
   );
 
   const askFor = useCallback(
@@ -78,7 +92,9 @@ export function useShop(
       setAsked((prev) => new Map(prev).set(m.id, [r, ...(prev.get(m.id) ?? [])]));
       void ask(id, m.id, item.id).then((answer) => {
         if (answer.ok) {
+          setTaken((prev) => new Set(prev).add(id));
           say(`Asked for ${item.title}. A grown-up will say yes or not this time.`);
+          refresh();
           return;
         }
         setAsked((prev) => {
@@ -91,7 +107,7 @@ export function useShop(
         say('offline' in answer ? 'That didn’t send. Try again.' : refusedLine(answer.reason));
       });
     },
-    [ask, say],
+    [ask, say, refresh],
   );
 
   const cancel = useCallback(
@@ -100,6 +116,7 @@ export function useShop(
       void cancelAsk(r.id).then((answer) => {
         if (answer.ok) {
           say(`Called off ${r.title}. Those points are free again.`);
+          refresh();
           return;
         }
         setCancelling((prev) => {
@@ -110,10 +127,13 @@ export function useShop(
         say('offline' in answer ? 'That didn’t send. Try again.' : refusedLine(answer.reason));
       });
     },
-    [cancelAsk, say],
+    [cancelAsk, say, refresh],
   );
 
-  return { requestsOf, availableOf, sending, cancelling, askFor, cancel };
+  // Taken but not yet in the snapshot (one Realtime brought before the server answered isn't).
+  const unseen = useMemo(() => new Set([...taken].filter((id) => !shown.has(id))), [taken, shown]);
+
+  return { requestsOf, availableOf, sending, taken: unseen, cancelling, askFor, cancel };
 }
 
 /**
@@ -247,12 +267,15 @@ export function ShopDialog({
 export function RequestsCard({
   requests,
   sending,
+  taken = new Set(),
   cancelling,
   online,
   onCancel,
 }: {
   requests: BoardRequest[];
   sending: ReadonlySet<string>;
+  /** Asks the server took that the snapshot doesn't show yet: waiting, called off once it does. */
+  taken?: ReadonlySet<string>;
   cancelling: ReadonlySet<string>;
   online: boolean;
   onCancel: (r: BoardRequest) => void;
@@ -285,7 +308,7 @@ export function RequestsCard({
                 ) : null}
                 {busy ?? REQUEST_WORDS[r.status]}
               </span>
-              {r.status === 'requested' && !busy ? (
+              {r.status === 'requested' && !busy && !taken.has(r.id) ? (
                 <Button
                   variant="ghost"
                   icon="close"

@@ -376,6 +376,7 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
           pinWish={postWish}
           ask={postAsk}
           cancelAsk={postCancelAsk}
+          refresh={refresh}
           markCelebrated={postCelebrated}
           photoUrl={photoUrl}
           loadCalendar={loadCalendar}

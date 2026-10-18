@@ -1,5 +1,3 @@
-'use server';
-
 import type { OccurrenceFact } from '@familywise/rules-engine';
 import { ICON_NAMES } from '@familywise/ui';
 import { previewView } from '@/lib/goal-preview';
