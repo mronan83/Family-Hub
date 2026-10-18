@@ -4,6 +4,7 @@ import {
   Avatar,
   Banner,
   Button,
+  DatePick,
   Fold,
   Icon,
   IconPicker,
@@ -104,6 +105,11 @@ export function ChoreForm({
     assignment: Boolean(initial),
   });
   const s = initial?.schedule;
+  // [NFR-16][D-128] The date and the time written as the mockups write them (DatePick).
+  const [firstDate] = useState(s?.freq === 'once' ? s.on_date : today);
+  const [onDate, setOnDate] = useState(firstDate);
+  const [firstTime] = useState(initial?.dueTime ?? '');
+  const [dueTime, setDueTime] = useState(firstTime);
 
   function chooseKind(next: Kind) {
     setKind(next);
@@ -262,30 +268,39 @@ export function ChoreForm({
           </label>
         ) : null}
         {freq === 'once' ? (
-          <label className="fw-field">
-            <span className="fw-field__label">{kind === 'task' ? 'Due date' : 'Date'}</span>
-            <input
-              className="fw-input"
+          <div className="fw-field">
+            <span className="fw-field__label" aria-hidden="true">
+              {kind === 'task' ? 'Due date' : 'Date'}
+            </span>
+            <DatePick
               type="date"
               name="onDate"
-              defaultValue={s?.freq === 'once' ? s.on_date : today}
+              label={kind === 'task' ? 'Due date' : 'Date'}
+              value={onDate}
+              initial={firstDate}
+              onValue={setOnDate}
             />
-          </label>
+          </div>
         ) : null}
       </fieldset>
 
-      <label className="fw-field">
-        <span className="fw-field__label">Due time (optional)</span>
-        <input
-          className="fw-input"
+      <div className="fw-field">
+        <span className="fw-field__label" aria-hidden="true">
+          Due time (optional)
+        </span>
+        <DatePick
           type="time"
           name="dueTime"
-          defaultValue={initial?.dueTime ?? ''}
+          label="Due time (optional)"
+          value={dueTime}
+          initial={firstTime}
+          onValue={setDueTime}
+          empty="Anytime"
         />
         <span className="fw-field__help">
           Orders the day into morning, after school and evening. It never changes points.
         </span>
-      </label>
+      </div>
 
       <label className="fw-field">
         <span className="fw-field__label">Reminders</span>

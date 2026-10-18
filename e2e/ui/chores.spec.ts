@@ -398,6 +398,8 @@ test.describe('An item’s page, Duplicate, the Meal library and Tags', () => {
     await expect(form.getByRole('checkbox', { name: 'Maya', exact: true })).toBeChecked();
     await expect(form.getByRole('checkbox', { name: 'Leo', exact: true })).toBeChecked();
     await expect(form.getByRole('textbox', { name: /^Points/ })).toHaveValue('10');
+    // [NFR-16] The time written as the mockups write it, over the real time field (D-128).
+    await expect(form.locator('.fw-pick__words')).toHaveText('4:00 pm');
     await expect(form).toContainText('The copy starts fresh.');
     await expect(form.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
     await fits(page);
@@ -407,6 +409,7 @@ test.describe('An item’s page, Duplicate, the Meal library and Tags', () => {
     );
     await expect(page.getByRole('textbox', { name: 'Name' })).toHaveValue('Clean out the garage');
     await expect(page.getByLabel('Date', { exact: true })).toHaveValue('2026-10-17');
+    await expect(page.locator('.fw-pick__words').first()).toHaveText('Sat, Oct 17, 2026');
   });
 
   test('[NFR-16-t][MEAL-25-h] the Meal library: a meal a row with ⋯ (Edit, Duplicate, Archive); Duplicate opens Add a meal filled in', async ({
