@@ -3,7 +3,7 @@
 // the preview failed while the test ran:
 //
 //   - the error names one: a statement timeout, a refused or reset connection, a 5xx gateway answer;
-//   - the test's browser saw Supabase answer 5xx, or a statement timeout, or the demo family's day
+//   - the test's browser saw Supabase answer 5xx, or a statement timeout, or the spec's household's day
 //     turned after its data was loaded (e2e/support/test.ts records each as an "infra" annotation);
 //   - the run's probe of the test database or the preview saw it slow or down while the test ran
 //     (scripts/e2e-run.mjs).
@@ -145,4 +145,29 @@ export function failureOf(result, test) {
     start,
     end: start + (result.duration ?? 0),
   };
+}
+
+/** Supabase Auth's sign-ins per IP address in 5 minutes on the free plan (sign_in_sign_ups). */
+export const AUTH_SIGN_INS = 30;
+
+/**
+ * [NFR-14-z][D-137] The run's sign-ins to Supabase Auth, from the "sign-in" annotations e2e/support
+ * makes (signIn(), pairBoard(): "<ISO time> <whose>"), each counted once however many tests carry
+ * it: how many, and the most in any 5 minutes, against Auth's limit. Null when there were none.
+ */
+export function signInWords(annotations, limit = AUTH_SIGN_INS) {
+  const times = [
+    ...new Set(annotations.filter((a) => a.type === 'sign-in').map((a) => a.description)),
+  ]
+    .map((d) => Date.parse(d.split(' ')[0]))
+    .filter((t) => !Number.isNaN(t))
+    .sort((a, b) => a - b);
+  if (!times.length) return null;
+  let most = 0;
+  for (let i = 0, j = 0; j < times.length; j++) {
+    while (times[j] - times[i] >= 300_000) i++;
+    most = Math.max(most, j - i + 1);
+  }
+  const near = most * 3 > limit * 2 ? ', within a third of it' : '';
+  return `${times.length} by e2e/support; at most ${most} in any 5 minutes (Auth allows ${limit} per address${near})`;
 }

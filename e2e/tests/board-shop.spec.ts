@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '../support/test';
 import { pairBoard, retireBoard } from '../support/board';
 import { householdToday } from '../support/day';
+import { ownHousehold } from '../support/household';
 
 // [PTS-02][PTS-04][RWD-07][RWD-08] The board's shop, requests and goals on the preview (WP-20, D-59),
 // at the reference panel's 3840×2160 (the board-4k project). The done-when: Maya earns points on the
@@ -14,14 +15,15 @@ import { householdToday } from '../support/day';
 // Leo is left alone (goals.spec reads his goal's history). Afterwards the reward is refunded, the bed
 // and teeth put back, the test goal cancelled, and Maya's reached goals recorded as celebrated, so the
 // boards of later specs never open on a celebration from here.
+const family = ownHousehold('board-shop');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Shop e2e';
-const MAKE_BED = '0de00000-0000-4000-8000-0000000c0001';
-const BRUSH_TEETH = '0de00000-0000-4000-8000-0000000c0002';
-const STAY_UP = '0de00000-0000-4000-8000-0000000e0003';
+const MAKE_BED = family.own('0de00000-0000-4000-8000-0000000c0001');
+const BRUSH_TEETH = family.own('0de00000-0000-4000-8000-0000000c0002');
+const STAY_UP = family.own('0de00000-0000-4000-8000-0000000e0003');
 const STAY_UP_TITLE = 'Stay up 30 minutes late';
-const GOAL = '0de00000-0000-4000-8000-0000000620e2';
+const GOAL = family.own('0de00000-0000-4000-8000-0000000620e2');
 const GOAL_TITLE = 'E2E kite';
 // [D-110] The household's today, read once in beforeAll and used for the goal and the check-offs.
 let TODAY = '';
@@ -32,7 +34,9 @@ function sql(query: string): string {
   }).trim();
 }
 const memberId = (name: string) =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+  sql(
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+  );
 const balance = (member: string) =>
   Number(
     sql(`select coalesce(sum(amount), 0) from public.points_ledger where member_id = '${member}'`),
@@ -47,7 +51,7 @@ function putBack(chores?: string[]) {
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
        select gen_random_uuid(), o.id, 'admin_uncomplete', now()
          from public.chore_occurrence o
-        where o.household_id = '${DEMO}' and o.due_date = ${TODAY} and o.status <> 'scheduled'
+        where o.household_id = '${HOUSEHOLD}' and o.due_date = ${TODAY} and o.status <> 'scheduled'
           and (o.member_id = '${maya}' or '${maya}' = any (o.done_by))
           ${chores ? `and o.chore_id in (${chores.map((c) => `'${c}'`).join(', ')})` : ''}`);
 }
@@ -67,11 +71,11 @@ test.beforeAll(async ({ browser }, testInfo) => {
   // One thing done from today reaches it, ending tomorrow (so it is Maya's first goal on the board).
   sql(`insert into public.reward_goal (id, household_id, member_id, title, icon, start_date, end_date,
                                        rule_logic, status, created_at)
-       values ('${GOAL}', '${DEMO}', '${memberId('Maya')}', '${GOAL_TITLE}', 'star', ${TODAY}, ${TODAY} + 1,
+       values ('${GOAL}', '${HOUSEHOLD}', '${memberId('Maya')}', '${GOAL_TITLE}', 'star', ${TODAY}, ${TODAY} + 1,
                'all', 'active', now());
        insert into public.reward_rule (household_id, goal_id, rule_type, target, scope, params, sort_order)
-       values ('${DEMO}', '${GOAL}', 'COUNT', 1, '{"all": true}', '{}', 1);
-       insert into public.reward_goal_progress (goal_id, household_id) values ('${GOAL}', '${DEMO}');`);
+       values ('${HOUSEHOLD}', '${GOAL}', 'COUNT', 1, '{"all": true}', '{}', 1);
+       insert into public.reward_goal_progress (goal_id, household_id) values ('${GOAL}', '${HOUSEHOLD}');`);
   ({ admin, board } = await pairBoard(browser, BOARD, { board: { hasTouch: true } }));
 });
 
@@ -98,7 +102,7 @@ test.afterAll(async () => {
   // celebrated; Leo's are left as they are.
   sql(`update public.reward_goal set status = 'cancelled', archived_at = now() where id = '${GOAL}';
        update public.reward_goal set celebrated_at = coalesce(celebrated_at, now())
-        where household_id = '${DEMO}' and member_id = '${memberId('Maya')}' and status = 'achieved';`);
+        where household_id = '${HOUSEHOLD}' and member_id = '${memberId('Maya')}' and status = 'achieved';`);
   await retireBoard(board, BOARD);
 });
 
@@ -239,7 +243,7 @@ test('[RWD-08][US-404] a goal reached is celebrated once, by the board that show
     // Any board of the household may celebrate first (D-59), so name every one still paired.
     const boards =
       sql(`select coalesce(string_agg(name || ' (' || status || ')', ', ' order by name), 'none')
-                          from public.device where household_id = '${DEMO}'`);
+                          from public.device where household_id = '${HOUSEHOLD}'`);
     throw new Error(
       `no celebration on the board: the goal is ${goal}; the board is ${link}, heard ${heard} changes, last read at ${read}; the family's boards: ${boards}`,
       { cause: e },
@@ -247,7 +251,7 @@ test('[RWD-08][US-404] a goal reached is celebrated once, by the board that show
   }
   const uncelebrated = () =>
     sql(`select count(*) from public.reward_goal
-          where household_id = '${DEMO}' and status = 'achieved' and celebrated_at is null`);
+          where household_id = '${HOUSEHOLD}' and status = 'achieved' and celebrated_at is null`);
   const seen: string[] = [];
   for (;;) {
     const line = (await party.getByRole('heading').textContent()) ?? '';
@@ -266,7 +270,7 @@ test('[RWD-08][US-404] a goal reached is celebrated once, by the board that show
   await expect
     .poll(() =>
       sql(`select count(*) from public.reward_goal
-            where household_id = '${DEMO}' and status = 'achieved' and celebrated_at is null`),
+            where household_id = '${HOUSEHOLD}' and status = 'achieved' and celebrated_at is null`),
     )
     .toBe('0');
   // Read again from scratch: nothing left to celebrate.

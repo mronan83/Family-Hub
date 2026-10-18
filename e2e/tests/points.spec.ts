@@ -2,19 +2,23 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [PTS-01][PTS-02][PTS-07] Points on the preview, as Alex of the demo family (WP-16): each child's
 // balance on Members, their history on their page, and a parent adding and taking away points with a
 // reason. Expectations start from the database, so a retry or an earlier spec's check-offs still add
 // up. The database is read with psql to confirm what was posted.
+const family = ownHousehold('points');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
-const ALEX = '0de00000-0000-4000-8000-0000000000a1';
+const HOUSEHOLD = family.id;
+const ALEX = family.own('0de00000-0000-4000-8000-0000000000a1');
 
 const sql = (q: string) => query(db!, q);
 
 const memberId = (name: string) =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+  sql(
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+  );
 const balance = (id: string) =>
   Number(
     sql(`select coalesce(sum(amount), 0) from public.points_ledger where member_id = '${id}'`),

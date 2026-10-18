@@ -3,6 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '../support/test';
 import { pairBoard, retireBoard } from '../support/board';
 import { householdToday } from '../support/day';
+import { ownHousehold } from '../support/household';
 
 // [BRD-01][BRD-03][BRD-07][CHR-04][NFR-03][US-305] The board's Today on the preview (WP-11, D-50): a
 // board paired to the demo family opens on the family dashboard (WP-35, D-66), shows everyone's day
@@ -10,12 +11,13 @@ import { householdToday } from '../support/day';
 // balance once, undoes with a second tap, asks who did a shared item, and shows a check-off made
 // elsewhere live. Everything it checks off it puts back, so the specs after it find today as the seed
 // left it. The database is read with psql to confirm what was posted.
+const family = ownHousehold('board');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Hall e2e';
-const MAKE_BED = '0de00000-0000-4000-8000-0000000c0001';
-const BRUSH_TEETH = '0de00000-0000-4000-8000-0000000c0002';
-const FEED_THE_DOG = '0de00000-0000-4000-8000-0000000c0003';
+const MAKE_BED = family.own('0de00000-0000-4000-8000-0000000c0001');
+const BRUSH_TEETH = family.own('0de00000-0000-4000-8000-0000000c0002');
+const FEED_THE_DOG = family.own('0de00000-0000-4000-8000-0000000c0003');
 // [D-110] The household's today, read once in beforeAll (the board's snapshot is fixed at its load).
 let TODAY = '';
 
@@ -26,7 +28,9 @@ function sql(query: string): string {
 }
 
 const memberId = (name: string) =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+  sql(
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+  );
 /** Today's occurrence of a chore: a person's own (D-47), or the shared one. */
 const todayOf = (chore: string, member?: string) =>
   sql(`select id from public.chore_occurrence
@@ -47,7 +51,7 @@ const boardEvents = (occurrence: string) =>
   sql(`select coalesce(string_agg(e.event_type, ',' order by e.recorded_at, e.occurred_at), '')
          from public.chore_completion_event e
         where e.occurrence_id = '${occurrence}' and e.actor_type = 'device'
-          and e.actor_id = (select id from public.device where household_id = '${DEMO}' and name = '${BOARD}')`);
+          and e.actor_id = (select id from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}')`);
 const status = (occurrence: string) =>
   sql(`select status from public.chore_occurrence where id = '${occurrence}'`);
 
@@ -56,7 +60,7 @@ function putBack() {
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
        select gen_random_uuid(), o.id, 'admin_uncomplete', now()
          from public.chore_occurrence o
-        where o.household_id = '${DEMO}' and o.due_date = ${TODAY} and o.status <> 'scheduled'
+        where o.household_id = '${HOUSEHOLD}' and o.due_date = ${TODAY} and o.status <> 'scheduled'
           and o.chore_id in ('${MAKE_BED}', '${BRUSH_TEETH}', '${FEED_THE_DOG}')`);
 }
 

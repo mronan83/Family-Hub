@@ -5,6 +5,7 @@ import { pairBoard, retireBoard } from '../support/board';
 import { serviceRpc, sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf } from '../support/day';
 import { withSchoolDays } from '../support/school';
+import { ownHousehold } from '../support/household';
 
 // [MEAL-06][US-705] Meals on a board, on the preview (WP-28, D-80). The spec plans today's breakfast,
 // snacks (one for Maya, one for everyone), lunch and dinner. The done-when: the board's home screen
@@ -15,8 +16,9 @@ import { withSchoolDays } from '../support/school';
 // Nutrislice feed, fetched by the menu_import job's own code, is Leo's menu; his school day shows its
 // entree options on the home screen (a tap shows the whole menu), the Meals screen has its three
 // sections, and the long line is gone. Leo's menu and lunches are put back at the end.
+const family = ownHousehold('board-meals');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Meals e2e';
 const sql = (q: string) => query(db!, q);
 
@@ -49,15 +51,15 @@ const MEALS = [
 ];
 const clear = () =>
   sql(`delete from public.meal_plan_entry
-        where household_id = '${DEMO}' and free_text in (${MEALS.map((m) => `'${m}'`).join(', ')})`);
+        where household_id = '${HOUSEHOLD}' and free_text in (${MEALS.map((m) => `'${m}'`).join(', ')})`);
 /** Plans a meal today, written in: for everyone, or for the members named. */
 const plan = (slot: string, name: string, order = 9, members: string[] = []) =>
   sql(`with e as (
          insert into public.meal_plan_entry (id, household_id, plan_date, slot, sort_order, free_text)
-         values (gen_random_uuid(), '${DEMO}', ${TODAY}, '${slot}', ${order}, '${name}') returning id)
+         values (gen_random_uuid(), '${HOUSEHOLD}', ${TODAY}, '${slot}', ${order}, '${name}') returning id)
        insert into public.meal_plan_entry_member (household_id, entry_id, member_id)
-       select '${DEMO}', e.id, m.id from e, public.member m
-        where m.household_id = '${DEMO}'
+       select '${HOUSEHOLD}', e.id, m.id from e, public.member m
+        where m.household_id = '${HOUSEHOLD}'
           and m.display_name = any (array[${members.map((m) => `'${m}'`).join(', ')}]::text[])`);
 
 /**
@@ -67,7 +69,7 @@ const plan = (slot: string, name: string, order = 9, members: string[] = []) =>
 const lunches = () =>
   sql(`select d::date || '|' || m.display_name || '|' || coalesce(public.lunch_mode(m.id, d::date), '')
          from public.member m, generate_series(${WEEK}, ${WEEK} + 6, interval '1 day') d
-        where m.household_id = '${DEMO}' and m.role = 'child' and m.archived_at is null
+        where m.household_id = '${HOUSEHOLD}' and m.role = 'child' and m.archived_at is null
         order by d, m.display_name`)
     .split('\n')
     .map((l) => l.split('|') as [string, string, string]);
@@ -133,7 +135,7 @@ test('[MEAL-06][DEV-05] a dinner changed reaches the board at once', async () =>
   plan('dinner', 'Pie e2e', 11);
   await expect(meals().locator('[data-slot="dinner"]')).toContainText('Pie e2e');
   sql(`update public.meal_plan_entry set free_text = 'Fish pie e2e'
-        where household_id = '${DEMO}' and free_text = 'Pie e2e'`);
+        where household_id = '${HOUSEHOLD}' and free_text = 'Pie e2e'`);
   // From the change's commit (the update has returned) to the board.
   const changed = Date.now();
   await expect(meals().locator('[data-slot="dinner"]')).toContainText('Fish pie e2e');
@@ -234,7 +236,7 @@ test('[MENU-06][US-804][NFR-14-g] done-when: a feed’s day shows its entree opt
   await rail().getByRole('button', { name: 'Home', exact: true }).click();
   const FEED = 'Sections e2e';
   const leo = sql(
-    `select id from public.member where household_id = '${DEMO}' and display_name = 'Leo'`,
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Leo'`,
   );
   const change = sql(
     `select coalesce(mode, '') from public.lunch_override where member_id = '${leo}' and lunch_date = ${TODAY}`,
@@ -242,9 +244,9 @@ test('[MENU-06][US-804][NFR-14-g] done-when: a feed’s day shows its entree opt
   const before = sql(
     `select coalesce(menu_source_id::text, '') from public.member_lunch where member_id = '${leo}'`,
   );
-  sql(`delete from public.menu_source where household_id = '${DEMO}' and name = '${FEED}'`);
+  sql(`delete from public.menu_source where household_id = '${HOUSEHOLD}' and name = '${FEED}'`);
   sql(`insert into public.menu_source (household_id, name, adapter, config)
-       values ('${DEMO}', '${FEED}', 'nutrislice',
+       values ('${HOUSEHOLD}', '${FEED}', 'nutrislice',
                '{"district": "example-district", "school": "sections-e2e", "menu_type": "lunch"}')`);
   // [D-110] Every weekday of the board's week a school day of Leo's own, whatever the school calendar
   // says (summer, winter break): the home screen's half on a weekday, and the Meals screen's menu rows
@@ -253,7 +255,7 @@ test('[MENU-06][US-804][NFR-14-g] done-when: a feed’s day shows its entree opt
   try {
     const run = await runMenuImport(
       serviceRpc(db!) as unknown as Parameters<typeof runMenuImport>[0],
-      DEMO,
+      HOUSEHOLD,
       // From the board's week's first day: an import stores days from its today on, so one run on a
       // Saturday would store none of the week's school days and the Meals screen would show no menu.
       // Noon UTC is the same date in the family's zone.
@@ -266,17 +268,17 @@ test('[MENU-06][US-804][NFR-14-g] done-when: a feed’s day shows its entree opt
       sql(`select string_agg((i ->> 'name') || ':' || (i ->> 'option'), ' ' order by n)
              from public.school_menu_day d join public.menu_source s on s.id = d.source_id,
                   jsonb_array_elements(d.items) with ordinality x (i, n)
-            where s.household_id = '${DEMO}' and s.name = '${FEED}'
+            where s.household_id = '${HOUSEHOLD}' and s.name = '${FEED}'
               and i ->> 'section' = 'Choice of Entree'
             group by d.menu_date order by d.menu_date limit 1`),
     ).toBe('Tacos e2e:1 Wrap e2e:2 Chips e2e:2');
     sql(`insert into public.member_lunch (member_id, household_id, menu_source_id)
-         values ('${leo}', '${DEMO}', (select id from public.menu_source where household_id = '${DEMO}' and name = '${FEED}'))
+         values ('${leo}', '${HOUSEHOLD}', (select id from public.menu_source where household_id = '${HOUSEHOLD}' and name = '${FEED}'))
          on conflict (member_id) do update set menu_source_id = excluded.menu_source_id`);
     const school = sql(`select public.resolve_day_type('${leo}', ${TODAY}) = 'school_day'`) === 't';
     if (school) {
       sql(`insert into public.lunch_override (household_id, member_id, lunch_date, mode)
-           values ('${DEMO}', '${leo}', ${TODAY}, 'buy')
+           values ('${HOUSEHOLD}', '${leo}', ${TODAY}, 'buy')
            on conflict (member_id, lunch_date) do update set mode = 'buy'`);
       const line = meals().getByRole('button', { name: 'Show Leo’s whole lunch menu' });
       await expect(line).toHaveText('Tacos e2e or Wrap e2e with Chips e2e');
@@ -314,7 +316,7 @@ test('[MENU-06][US-804][NFR-14-g] done-when: a feed’s day shows its entree opt
     );
     sql(`update public.member_lunch set menu_source_id = ${before ? `'${before}'` : 'null'}
           where member_id = '${leo}'`);
-    sql(`delete from public.menu_source where household_id = '${DEMO}' and name = '${FEED}'`);
+    sql(`delete from public.menu_source where household_id = '${HOUSEHOLD}' and name = '${FEED}'`);
     await rail()
       .getByRole('button', { name: 'Home', exact: true })
       .click()

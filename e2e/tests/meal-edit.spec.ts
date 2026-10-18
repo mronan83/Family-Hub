@@ -3,14 +3,16 @@ import { sql as query } from '../support/db';
 import { addDays, householdToday, householdWeekStart, weekStartOf } from '../support/day';
 import { mealDay, unfold } from '../support/fold';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [MEAL-15][US-701] Edit on a planned meal (WP-76, D-111), as Alex of the demo family, on the preview.
 // The done-when: Alex taps Change on a planned dinner, chooses Edit, finds the form filled in, changes
 // the meal, the people and the note, saves, sees the change on the plan, and opens Edit again to find
 // the saved values. Its own week (five weeks ahead, clear of meals.spec.ts's two and three), its own
 // meal and two dinners, made in SQL and removed afterwards.
+const family = ownHousehold('meal-edit');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const MEAL = 'Tacos e2e-edit';
 const SOUP = 'e2e7e000-0000-4000-8000-000000000001';
 const PASTA = 'e2e7e000-0000-4000-8000-000000000002';
@@ -24,8 +26,8 @@ let week: string;
 let day: string;
 
 const clear = () =>
-  sql(`delete from public.meal_plan_entry where household_id = '${DEMO}' and id in ('${SOUP}', '${PASTA}');
-       delete from public.meal where household_id = '${DEMO}' and name = '${MEAL}'`);
+  sql(`delete from public.meal_plan_entry where household_id = '${HOUSEHOLD}' and id in ('${SOUP}', '${PASTA}');
+       delete from public.meal where household_id = '${HOUSEHOLD}' and name = '${MEAL}'`);
 
 /** The dinner as it reads: "1 Soup e2e-edit; 2 Tacos e2e-edit (Alex, Sam) Edited", by order. */
 const dinners = () =>
@@ -42,12 +44,12 @@ test.beforeAll(async ({ browser }) => {
   week = weekStartOf(addDays(householdToday(db!), 35), householdWeekStart(db!));
   day = addDays(week, 3);
   clear();
-  sql(`insert into public.meal (household_id, name, meal_types) values ('${DEMO}', '${MEAL}', '{dinner}');
+  sql(`insert into public.meal (household_id, name, meal_types) values ('${HOUSEHOLD}', '${MEAL}', '{dinner}');
        insert into public.meal_plan_entry (id, household_id, plan_date, slot, sort_order, free_text, notes) values
-         ('${SOUP}', '${DEMO}', '${day}', 'dinner', 1, 'Soup e2e-edit', null),
-         ('${PASTA}', '${DEMO}', '${day}', 'dinner', 2, 'Pasta e2e-edit', 'Mild');
+         ('${SOUP}', '${HOUSEHOLD}', '${day}', 'dinner', 1, 'Soup e2e-edit', null),
+         ('${PASTA}', '${HOUSEHOLD}', '${day}', 'dinner', 2, 'Pasta e2e-edit', 'Mild');
        insert into public.meal_plan_entry_member (household_id, entry_id, member_id)
-       select '${DEMO}', '${PASTA}', id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`);
+       select '${HOUSEHOLD}', '${PASTA}', id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Maya'`);
   admin = await browser.newPage();
   await signIn(admin);
 });

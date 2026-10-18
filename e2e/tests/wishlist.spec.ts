@@ -3,19 +3,21 @@ import { expect, test, type Page } from '../support/test';
 import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { addDays } from '../support/day';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [PTS-05][PTS-06] Bonus rules and the wishlist on the preview (WP-30, D-57), as Alex of the demo
 // family with a paired board. Leo's seeded last week (see insights.spec.ts) has runs good 2, bad 1,
 // good 3, bad 1: a "3 good days in a row" bonus counting from a week ago pays him once, for the run
-// that began 4 days ago, and paying again pays nothing. Those days count from the day the demo family
-// was loaded (its history is seeded from that day), not from today. On the board Leo chooses a wish and changes
+// that began 4 days ago, and paying again pays nothing. Those days count from the day the spec's
+// household was made (its history is seeded from that day), not from today. On the board Leo chooses a wish and changes
 // his mind; Maya's seeded wish shows her balance against its cost. The rule is archived and the
-// board removed at the end; the bonus stays in the ledger (it never changes) until the next reseed.
+// board removed at the end; the bonus stays in the ledger (it never changes) with the household.
+const family = ownHousehold('wishlist');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Wish e2e';
-const MOVIE_NIGHT = '0de00000-0000-4000-8000-0000000e0001';
-const STAY_UP = '0de00000-0000-4000-8000-0000000e0003';
+const MOVIE_NIGHT = family.own('0de00000-0000-4000-8000-0000000e0001');
+const STAY_UP = family.own('0de00000-0000-4000-8000-0000000e0003');
 const RULE = '7 points for 3 good days in a row';
 
 function sql(query: string): string {
@@ -24,7 +26,9 @@ function sql(query: string): string {
   }).trim();
 }
 const memberId = (name: string) =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+  sql(
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+  );
 const balance = (member: string) =>
   Number(
     sql(`select coalesce(sum(amount), 0) from public.points_ledger where member_id = '${member}'`),
@@ -39,14 +43,14 @@ const spendable = (member: string) =>
 /** The household's today, as YYYY-MM-DD. */
 const householdToday = () =>
   sql(`select to_char((now() at time zone timezone)::date, 'YYYY-MM-DD')
-         from public.household where id = '${DEMO}'`);
+         from public.household where id = '${HOUSEHOLD}'`);
 /**
- * [D-110] The day the demo family was loaded, which its seeded history counts from: Leo's runs are
+ * [D-110] The day the spec's household was made, which its seeded history counts from: Leo's runs are
  * that many days before it, whatever day it is now.
  */
 const seededDay = () =>
   sql(`select to_char((created_at at time zone timezone)::date, 'YYYY-MM-DD')
-         from public.household where id = '${DEMO}'`);
+         from public.household where id = '${HOUSEHOLD}'`);
 const pin = (member: string) =>
   sql(`select coalesce((select catalog_item_id || ':' || pinned_by_type from public.wishlist_pin
                          where member_id = '${member}'), 'none')`);
@@ -62,10 +66,10 @@ test.beforeAll(async ({ browser }, testInfo) => {
   testInfo.setTimeout(90_000);
   // A rule left by a failed attempt is archived, so a retry adds the only one (what it paid stays in
   // the ledger, which never changes).
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';
+  sql(`delete from public.device_pairing where household_id = '${HOUSEHOLD}' and device_name = '${BOARD}';
+       delete from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}';
        update public.points_rule set active = false, archived_at = now()
-        where household_id = '${DEMO}' and archived_at is null and streak_days = 3 and bonus_points = 7;`);
+        where household_id = '${HOUSEHOLD}' and archived_at is null and streak_days = 3 and bonus_points = 7;`);
   admin = await browser.newPage();
   await signIn(admin);
   await admin.goto('/admin/devices');
@@ -142,7 +146,7 @@ test('[PTS-05][US-1107] a streak bonus pays once for a run that reaches it, payi
     await expect(rules.getByRole('listitem').filter({ hasText: RULE })).toContainText(
       'counts from',
     );
-    ruleId = sql(`select id from public.points_rule where household_id = '${DEMO}'
+    ruleId = sql(`select id from public.points_rule where household_id = '${HOUSEHOLD}'
                     and archived_at is null and streak_days = 3 and bonus_points = 7`);
     expect(
       sql(`select created_by is not null from public.points_rule where id = '${ruleId}'`),
@@ -155,7 +159,7 @@ test('[PTS-05][US-1107] a streak bonus pays once for a run that reaches it, payi
     const expected = Number(
       sql(`select count(*) from public.streak_segment s
              join public.member m on m.id = s.member_id and m.earns_rewards and m.archived_at is null
-            where s.household_id = '${DEMO}' and s.kind = 'good' and s.length_days >= 3
+            where s.household_id = '${HOUSEHOLD}' and s.kind = 'good' and s.length_days >= 3
               and s.start_date + 2 >= '${countsFrom}'::date`),
     );
     await expect(admin.getByRole('status')).toHaveText(

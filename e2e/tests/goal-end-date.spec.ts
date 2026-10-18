@@ -2,6 +2,7 @@ import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [RWD-14] A goal's end date that can be cleared (WP-79, D-115), as Alex of the demo family on a
 // 390 px phone, on the preview. The done-when: Alex opens a goal of Maya's that has an end date,
@@ -9,9 +10,10 @@ import { signIn } from '../support/session';
 // date stored (so it can't expire on the old date: the engine's, rules-engine goal.test.ts); opening
 // it again shows the box unticked. Then a date is added back, as a started goal may. Its own goal,
 // made in SQL with a unique name (target 99, so nothing reaches it), removed afterwards.
+const family = ownHousehold('goal-end-date');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
-const ALEX = '0de00000-0000-4000-8000-0000000000a1';
+const HOUSEHOLD = family.id;
+const ALEX = family.own('0de00000-0000-4000-8000-0000000000a1');
 const GOAL = 'e2e79000-0000-4000-8000-000000000001';
 const TITLE = `Ends e2e ${Math.random().toString(36).slice(2, 6)}`;
 const sql = (q: string) => query(db!, q);
@@ -36,12 +38,12 @@ test.beforeAll(async ({ browser }) => {
   clear();
   sql(`insert into public.reward_goal (id, household_id, member_id, title, icon, start_date, end_date, rule_logic,
                                        status, created_by)
-       select '${GOAL}', '${DEMO}', id, '${TITLE}', 'trophy', '${addDays(today, -5)}', '${oldEnd}', 'all', 'active',
+       select '${GOAL}', '${HOUSEHOLD}', id, '${TITLE}', 'trophy', '${addDays(today, -5)}', '${oldEnd}', 'all', 'active',
               '${ALEX}'
-         from public.member where household_id = '${DEMO}' and display_name = 'Maya';
+         from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Maya';
        insert into public.reward_rule (household_id, goal_id, rule_type, target, scope, params, sort_order)
-       values ('${DEMO}', '${GOAL}', 'COUNT', 99, '{"all": true}', '{}', 1);
-       insert into public.reward_goal_progress (goal_id, household_id) values ('${GOAL}', '${DEMO}')`);
+       values ('${HOUSEHOLD}', '${GOAL}', 'COUNT', 99, '{"all": true}', '{}', 1);
+       insert into public.reward_goal_progress (goal_id, household_id) values ('${GOAL}', '${HOUSEHOLD}')`);
   admin = await browser.newPage();
   await signIn(admin);
 });

@@ -4,19 +4,21 @@ import { foldOf, unfold } from '../support/fold';
 import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { addDays, householdToday } from '../support/day';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [CHR-05][CHR-06][CHR-08][CHR-14] A parent's day on the preview (WP-12, D-52), as Alex of the demo
 // family: "Not actually done" on four of five check-offs is one batch, the board shows them open again
 // and exactly four reversals post, and Undo puts them back; late credit and skipping; the approval
 // switch and queue; My tasks with quick add, which reaches the board. Everything it changes it puts
 // back, so the specs after it find today as the seed left it. The database is read with psql.
+const family = ownHousehold('admin-day');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
+const HOUSEHOLD = family.id;
 const BOARD = 'Den e2e';
-const MAKE_BED = '0de00000-0000-4000-8000-0000000c0001';
-const BRUSH_TEETH = '0de00000-0000-4000-8000-0000000c0002';
-const FEED_THE_DOG = '0de00000-0000-4000-8000-0000000c0003';
-const SET_THE_TABLE = '0de00000-0000-4000-8000-0000000c0004';
+const MAKE_BED = family.own('0de00000-0000-4000-8000-0000000c0001');
+const BRUSH_TEETH = family.own('0de00000-0000-4000-8000-0000000c0002');
+const FEED_THE_DOG = family.own('0de00000-0000-4000-8000-0000000c0003');
+const SET_THE_TABLE = family.own('0de00000-0000-4000-8000-0000000c0004');
 // [D-110] The demo family's today, read once from the database in beforeAll.
 let today = '';
 
@@ -27,7 +29,9 @@ function sql(query: string): string {
 }
 
 const memberId = (name: string) =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`);
+  sql(
+    `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+  );
 const occ = (chore: string, member: string | null, day = today) =>
   sql(`select id from public.chore_occurrence where chore_id = '${chore}' and due_date = '${day}'
          and ${member ? `member_id = '${member}'` : 'member_id is null'}`);
@@ -50,15 +54,15 @@ function putBack() {
   sql(`insert into public.chore_completion_event (id, occurrence_id, event_type, occurred_at)
        select gen_random_uuid(), o.id, 'admin_uncomplete', now()
          from public.chore_occurrence o
-        where o.household_id = '${DEMO}' and o.due_date between '${today}' and '${addDays(today, 1)}'
+        where o.household_id = '${HOUSEHOLD}' and o.due_date between '${today}' and '${addDays(today, 1)}'
           and o.status <> 'scheduled' and o.chore_id in ${ITEMS};
-       update public.household_settings set approval_mode = 'off' where household_id = '${DEMO}';
+       update public.household_settings set approval_mode = 'off' where household_id = '${HOUSEHOLD}';
        update public.chore_occurrence o set requires_approval_snapshot = private.chore_requires_approval(o.chore_id)
-        where o.household_id = '${DEMO}' and o.due_date between '${today}' and '${addDays(today, 1)}'
+        where o.household_id = '${HOUSEHOLD}' and o.due_date between '${today}' and '${addDays(today, 1)}'
           and o.chore_id in ${ITEMS}
           and o.requires_approval_snapshot is distinct from private.chore_requires_approval(o.chore_id);
        update public.chore set archived_at = now()
-        where household_id = '${DEMO}' and title like 'Pick up the dry cleaning e2e%' and archived_at is null;`);
+        where household_id = '${HOUSEHOLD}' and title like 'Pick up the dry cleaning e2e%' and archived_at is null;`);
 }
 
 async function asAlex(page: Page, path: string) {
@@ -78,8 +82,8 @@ test.beforeAll(async ({ browser }, testInfo) => {
   today = householdToday(db!);
   putBack();
   started = sql(`select now()`);
-  sql(`delete from public.device_pairing where household_id = '${DEMO}' and device_name = '${BOARD}';
-       delete from public.device where household_id = '${DEMO}' and name = '${BOARD}';`);
+  sql(`delete from public.device_pairing where household_id = '${HOUSEHOLD}' and device_name = '${BOARD}';
+       delete from public.device where household_id = '${HOUSEHOLD}' and name = '${BOARD}';`);
   admin = await browser.newPage();
   await asAlex(admin, '/admin/devices');
   const form = await addBoardForm(admin);
@@ -251,7 +255,7 @@ test('[CHR-05][D-22][NFR-18-w] with approval on, a child’s check-off waits for
     await expect(foldOf(admin, other)).not.toHaveAttribute('open');
   }
   expect(
-    sql(`select approval_mode from public.household_settings where household_id = '${DEMO}'`),
+    sql(`select approval_mode from public.household_settings where household_id = '${HOUSEHOLD}'`),
   ).toBe('on');
 
   systemEvent(dog, 'complete', [maya]);
@@ -301,7 +305,7 @@ test('[CHR-14][US-316] My tasks: quick add makes a task for me today, on the boa
            from public.chore c
            join public.chore_occurrence o on o.chore_id = c.id
            join public.chore_occurrence_assignee a on a.occurrence_id = o.id
-          where c.household_id = '${DEMO}' and c.title = '${title}'
+          where c.household_id = '${HOUSEHOLD}' and c.title = '${title}'
           group by c.kind, c.visibility, o.due_date`),
   ).toBe(`task:family:${today}:${alex}`);
   await chores();
@@ -314,6 +318,6 @@ test('[CHR-14][US-316] My tasks: quick add makes a task for me today, on the boa
   expect(
     sql(`select o.status || ':' || array_to_string(o.done_by, ',')
            from public.chore_occurrence o join public.chore c on c.id = o.chore_id
-          where c.household_id = '${DEMO}' and c.title = '${title}'`),
+          where c.household_id = '${HOUSEHOLD}' and c.title = '${title}'`),
   ).toBe(`approved:${alex}`);
 });

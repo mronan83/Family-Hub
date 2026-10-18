@@ -1,7 +1,7 @@
 import { Banner, Button, Logo } from '@familywise/ui';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { DEMO_PERSONAS, demoSecret } from '@/lib/auth/demo';
+import { DEMO_PERSONAS, demoSecret, isE2eHousehold } from '@/lib/auth/demo';
 import { SIGN_IN_OFF } from '@/lib/auth/messages';
 import { safeNext } from '@/lib/auth/next';
 import { signedIn } from '@/lib/auth/session';
@@ -22,9 +22,11 @@ const NOTICES: Record<string, string> = {
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string; household?: string }>;
 }) {
   const params = await searchParams;
+  // [D-137] e2e signs in to its spec's own household (e2e/support/session.ts); nothing on the page changes.
+  const household = isE2eHousehold(params.household) ? params.household : null;
   const next = safeNext(params.next);
   const db = await serverClient();
   if (db && (await signedIn(db))) redirect(next);
@@ -52,6 +54,7 @@ export default async function SignInPage({
                 </span>
                 <form action={demoSignIn}>
                   <input type="hidden" name="persona" value={p.key} />
+                  {household ? <input type="hidden" name="household" value={household} /> : null}
                   <input type="hidden" name="next" value={next} />
                   <Button type="submit" variant="secondary">
                     Sign in as {p.name}

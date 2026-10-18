@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.9: each e2e spec its own made-up household (WP-111, NFR-14, D-137): rule 4 says how a spec gets it, and rule 11 that leftovers stay in it. Test cases NFR-14-u to NFR-14-z; the Test catalogue regenerated (§9).
 > v0.8.8: the two e2e reds of 17 October night (WP-110, PTS-04, NFR-16, D-136): both the app's bugs, each proved by a UI test that fails on `main`'s code (PTS-04-a, NFR-16-r) and a unit test (NFR-16-s); the Test catalogue regenerated (§9).
 > v0.8.7: the two e2e reds of 17 October evening (WP-109, NFR-14): a change that folds a section opens it in every spec that uses what it holds; a clean-up skips each check-off its items made, so the children's good and bad runs are as before, and says why a leftover shows only once its spec passes (§7 rules 10 and 11).
 > v0.8.6: the three e2e reds of 17 October (WP-108, NFR-14, D-135): a late change's evidence is the read or page load that would show it, and every one over 2 s; the preview's `/api/health` over 2 s is a slow reading (§8). Test cases NFR-14-o to NFR-14-r; the Test catalogue regenerated (§9).
@@ -230,16 +231,16 @@ Gaps that existed when the catalogue was made are **known gaps**, listed in `doc
 The test standard is in `CLAUDE.md` ("Tests", D-110). In short:
 
 1. **Wait for a signal, never a time.** A role or text, `aria-busy`, a status, a response, or `expect.poll` on the database; after a page load, wait until React has hydrated it (`<html data-hydrated>`).
-2. **Sign in once, not per test.** `signIn(page, 'Alex')` (`e2e/support/session.ts`) signs each worker in once per demo persona.
+2. **Sign in once, not per test.** `signIn(page, 'Alex')` (`e2e/support/session.ts`) signs each worker in once per persona of the spec's own household.
 3. **Own the clock.** Read the household's today from the database once (`e2e/support/day.ts`); cover midnight UTC, a week boundary and DST in unit tests.
-4. **Own the data.** Unique names, no dependence on order; put back anything changed in the demo family.
+4. **Own the data.** Each spec that signs in or reaches the database has a made-up household of its own: `const family = ownHousehold('<spec>')` at its top (`e2e/support/household.ts`, WP-111, D-137), a copy of the demo family's seed made as the spec starts. Its ids are `family.id` and `family.own('0de00000-…')`, its sign-ins `family.email('alex')`; never the demo family's own, which is left to previews and `auth.spec.ts`. Within the spec, unique names, no dependence on order, and anything one test changes put back for the next.
 5. **Measure the limit.** A time limit comes from measured runs on the free test database, with at least 3× headroom; a latency budget that is a requirement stays exact, timed from the server's answer.
 6. **Lowest layer first.** §1, §5.
 7. **One reason to fail, named:** `[MEAL-11] a milk keeps the entree`. A test that fails says what it saw.
 8. **Made-up data only.** Never the real family's calendar, school identifiers or menu responses.
 9. **No live third parties.** Fixtures in tests; live checks only at night.
 10. **Follow the screen as it is drawn now.** A fold is opened only if it is closed (`unfold`, `e2e/support/fold.ts`): a tap on an open one closes it. A locator names the list it reads from, not a class another part of the page shares. The board drifts up to 2 px against burn-in, so where a part sits is judged against the board's own box (WP-102). A change that folds a section opens it in every spec that uses what it holds: search the specs for the section's labels and buttons, since e2e doesn't run on its PR (WP-109).
-11. **History is never deleted, and put back.** Check-offs are append-only: a clean-up removes an item's days with no check-off and archives the item (WP-102). An item's check-offs stay in the child's history, so the clean-up also skips each day it checked off, once the spec's goals are cancelled: a skipped routine makes a day neither good nor bad, so the child's runs are as before (`retireItems`, `e2e/support/history.ts`, WP-109). A spec that leaves something behind is first seen when it passes: after a failed test the next file starts from a freshly loaded demo family.
+11. **History is never deleted, and put back.** Check-offs are append-only: a clean-up removes an item's days with no check-off and archives the item (WP-102). An item's check-offs stay in the child's history, so the clean-up also skips each day it checked off, once the spec's goals are cancelled: a skipped routine makes a day neither good nor bad, so the child's runs are as before (`retireItems`, `e2e/support/history.ts`, WP-109). Since WP-111 a spec's leftovers stay in its own household, so no other spec reads them.
 12. **Any day of the week.** A spec that reads a week's data sets it up for the whole week, so it passes on a Saturday and a Sunday too (WP-102).
 
 ---
@@ -270,7 +271,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2685** tests: Unit 831 · DB 1455 · UI 272 · E2E 127. 2224 name at least one ID; 461 name none.
+**2695** tests: Unit 840 · DB 1455 · UI 272 · E2E 128. 2234 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
@@ -279,7 +280,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 104 of 126 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 141 (with a test: 141) |
+| Test cases | 147 (with a test: 147) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -303,9 +304,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
-| Platform | 177 | 167 | 57 | 14 | 415 |
+| Platform | 186 | 167 | 57 | 15 | 425 |
 | Not named | 58 | 438 | 10 | 1 | 507 |
-| **Total** | **831** | **1455** | **272** | **127** | **2685** |
+| **Total** | **840** | **1455** | **272** | **128** | **2695** |
 
 ### 9.3 By requirement
 
@@ -452,7 +453,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101, WP-110 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s | U 20 · DB 10 · UI 18 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Covered | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j, NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x | U 31 · UI 15 · E2E 3 |
-| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102, WP-108, WP-109 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r, NFR-14-s, NFR-14-t, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 37 · DB 14 · UI 1 · E2E 18 |
+| NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102, WP-108, WP-109, WP-111 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r, NFR-14-s, NFR-14-t, NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 46 · DB 14 · UI 1 · E2E 19 |
 | NFR-19 | M | Covered | US-913 | WP-85, WP-86 | NFR-19-a, NFR-19-b, NFR-19-c, NFR-19-d, NFR-19-e, NFR-19-f | U 6 |
 
 ### 9.4 By backlog item
@@ -568,6 +569,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-108 | Done | NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r | 4 of 4 | — |
 | WP-109 | Done | NFR-14-s, NFR-14-t | 2 of 2 | — |
 | WP-110 | Done | PTS-04-a, NFR-16-r, NFR-16-s | 3 of 3 | — |
+| WP-111 | Done | NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z | 6 of 6 | — |
 
 Test cases and the tests that prove them:
 
@@ -699,6 +701,12 @@ Test cases and the tests that prove them:
 | NFR-14-r | WP-108 | The preview answering `/api/health` in over 2 s, or with a 5xx, is a bad probe reading, and a test that failed while it was read is infrastructure | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-14-r][D-135] the preview answering /api/health in over 2 s, or with a 5xx, is a bad reading` |
 | NFR-14-s | WP-109 | Family options' The week, folded to its start day, is opened before its form is used; a new start day waits for the next week and Keep cancels it | E2E | E2E `e2e/tests/home.spec.ts`: `[NFR-14-s][ACC-08][US-110] the done-when: a new start day waits for the next week, and Keep cancels it` |
 | NFR-14-t | WP-109 | A spec whose items check off a child's days puts their history back: after its clean-up, Maya's and Leo's stored good and bad runs are as they were before it started | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][NFR-14-t][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row; thei…` |
+| NFR-14-u | WP-111 | A spec's household is the demo family's seed under its own ids and sign-ins: no demo family id or sign-in is left in it, it starts by taking away the household a try before left, no two specs share an id prefix, a bad key, seed id or persona is refused, and each sign-in gets the password the preview derives for it | Unit | Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] a spec household is the seed under its own ids and sign-ins, and nothing of the demo family`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] keys, ids and personas outside the rules are refused`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] each sign-in gets the password the preview derives for it, and only the spec’s` |
+| NFR-14-v | WP-111 | On Postgres with the migrations and the demo family: two spec households each hold what the demo family holds and only their own rows; making one again starts it afresh and leaves the other as it is; taking one away takes the household its Riley set up, and nothing of the demo family or the other spec | Unit | Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] two spec households, next to the demo family, each hold what it holds and only their own rows`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] making a spec household again starts it afresh, and leaves the others as they are`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] taking a spec household away takes what it set up, and nothing of the demo family or another spec` |
+| NFR-14-w | WP-111 | The preview's one-tap signs in to an e2e household's copy of a persona when the form names a valid key, with that email's derived password; a bad key is refused, and none of it works outside a preview | Unit | Unit `apps/web/app/(admin)/sign-in/actions.test.ts`: `sign-in actions › [NFR-14-w] demo sign-in into an e2e household uses its copy of the persona, and refuses a bad key` |
+| NFR-14-x | WP-111 | Every spec that signs in or reaches the database owns a household named after it, and no spec names a demo family id (outside `own()`) or sign-in; `auth.spec.ts` uses the demo family itself | Unit | Unit `scripts/e2e-household.test.mjs`: `[NFR-14-x] every spec that signs in or reaches the database owns a household, and none names the demo family’s ids or sign-ins` |
+| NFR-14-y | WP-111 | A spec signed in as Alex or Sam is in its own household: Family options' admins are its own copies of Alex and Sam, and no one else | E2E | E2E `e2e/tests/admin-menu.spec.ts`: `[NFR-14-y] a spec signs in to its own household: its admins are its own copies of Alex and Sam` |
+| NFR-14-z | WP-111 | The run counts its sign-ins once each, with the most in any 5 minutes against Auth's limit, and says when that is within a third of it | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-14-z] the run counts its sign-ins once each, and the most in any 5 minutes against Auth’s limit` |
 | PTS-04-a | WP-110 | A request the server took says "Waiting for a grown-up", never still "Sending…", and the board reads it back itself (Call off shows) when Realtime never says it changed | UI | UI `e2e/ui/board-shop.spec.ts`: `[PTS-04-a][US-1104] a request the server took waits for a grown-up, read back by the board itself when Realtime never says` |
 | NFR-16-r | WP-110 | "Set the goal" sends the save at once while a live summary is still being worked out | UI | UI `e2e/ui/goal-form-summary.spec.ts`: `with no service worker › [NFR-16-r] Set the goal goes at once while a live summary is still being worked out` |
 | NFR-16-s | WP-110 | The live summaries route: the form goes as JSON and comes back field for field, with its photo left out; anything else is refused; a refusal rejects | Unit | Unit `apps/web/lib/goal-live.test.ts`: `[NFR-16-s] the live summaries route › [NFR-16-s] the form goes as JSON and comes back field for field; a photo is left out`<br>Unit `apps/web/lib/goal-live.test.ts`: `[NFR-16-s] the live summaries route › [NFR-16-s] a body that is not the form is refused`<br>Unit `apps/web/lib/goal-live.test.ts`: `[NFR-16-s] the live summaries route › [NFR-16-s] posts JSON with the signal it is given; a refusal rejects` |
@@ -863,7 +871,7 @@ Each test once, by file, with the IDs it names (in its name or its `describe` bl
 
 #### `apps/web/app/(admin)/sign-in/actions.test.ts`
 
-Unit · 7 tests
+Unit · 8 tests
 
 | Test | Names |
 |---|---|
@@ -873,6 +881,7 @@ Unit · 7 tests
 | `sign-in actions › [ACC-02] a good password goes to a safe next only` | ACC-02 |
 | `sign-in actions › [ACC-02] demo sign-in does nothing outside a preview` | ACC-02 |
 | `sign-in actions › [ACC-02] demo sign-in on a preview uses the derived password, for personas only` | ACC-02 |
+| `sign-in actions › [NFR-14-w] demo sign-in into an e2e household uses its copy of the persona, and refuses a bad key` | NFR-14-w |
 | `sign-in actions › [ACC-02] demo sign-in asks Auth once more when it answers 5xx or not at all, never after a refusal` | ACC-02 |
 
 #### `apps/web/lib/admin-day.test.ts`
@@ -1930,11 +1939,12 @@ E2E · 4 tests
 
 #### `e2e/tests/admin-menu.spec.ts`
 
-E2E · 1 tests
+E2E · 2 tests
 
 | Test | Names |
 |---|---|
 | `[NFR-15][US-107] the menu, Today’s count, and Settings with Tags among its pages` | NFR-15, US-107 |
+| `[NFR-14-y] a spec signs in to its own household: its admins are its own copies of Alex and Sam` | NFR-14-y |
 
 #### `e2e/tests/auth.spec.ts`
 
@@ -3146,6 +3156,16 @@ Unit · 4 tests
 | `tile states › [NFR-13] uses the icons and words of the brand guide (06 §7.1)` | NFR-13 |
 | `tile states › [CHR-12][CHR-11][CHR-09] display states override the status: overdue, past its time, covered` | CHR-09, CHR-11, CHR-12 |
 
+#### `scripts/db-tests/e2e-household.test.mjs`
+
+Unit · 3 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-14-v] two spec households, next to the demo family, each hold what it holds and only their own rows` | NFR-14-v |
+| `[NFR-14-v] making a spec household again starts it afresh, and leaves the others as they are` | NFR-14-v |
+| `[NFR-14-v] taking a spec household away takes what it set up, and nothing of the demo family or another spec` | NFR-14-v |
+
 #### `scripts/deploy-gate.test.mjs`
 
 Unit · 12 tests
@@ -3188,9 +3208,20 @@ Unit · 3 tests
 | `[NFR-14-n] a run by hand never displaces or joins behind another run, and starts on main only` | NFR-14-n |
 | `[NFR-14-n] e2e.yml can be run by hand, guarded, in the one demo-family group, and logs every run` | NFR-14-n |
 
+#### `scripts/e2e-household.test.mjs`
+
+Unit · 4 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-14-u] a spec household is the seed under its own ids and sign-ins, and nothing of the demo family` | NFR-14-u |
+| `[NFR-14-u] keys, ids and personas outside the rules are refused` | NFR-14-u |
+| `[NFR-14-u] each sign-in gets the password the preview derives for it, and only the spec’s` | NFR-14-u |
+| `[NFR-14-x] every spec that signs in or reaches the database owns a household, and none names the demo family’s ids or sign-ins` | NFR-14-x |
+
 #### `scripts/e2e-infra.test.mjs`
 
-Unit · 10 tests
+Unit · 11 tests
 
 | Test | Names |
 |---|---|
@@ -3204,6 +3235,7 @@ Unit · 10 tests
 | `[NFR-14-p][D-129] a late change is the database slow only when every read of it took over 2 s` | NFR-14-p |
 | `[NFR-14-q][D-135] a missed page wait says each load, the one still loading included, and is evidence only if all were slow` | NFR-14-q |
 | `[NFR-14-r][D-135] the preview answering /api/health in over 2 s, or with a 5xx, is a bad reading` | NFR-14-r |
+| `[NFR-14-z] the run counts its sign-ins once each, and the most in any 5 minutes against Auth’s limit` | NFR-14-z |
 
 #### `scripts/e2e-run-fixture/assertion.spec.ts`
 

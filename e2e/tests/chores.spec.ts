@@ -7,15 +7,17 @@ import { foldOf, unfold } from '../support/fold';
 import { addDays, householdToday } from '../support/day';
 import { withSchoolDays } from '../support/school';
 import { signIn as signInAs } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [CHR-01][CHR-09][CHR-10][CHR-11][CHR-13] The family list on the preview, as the demo family
 // (D-37): the seeded list, entering a family's list on a phone, tags, time of day, archive, and
 // private items that the other parent never sees. The database is read with psql to confirm what
 // was saved.
+const family = ownHousehold('chores');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
-const SEEDED_CHORES = '0de00000-0000-4000-8000-0000000c%';
-const SEEDED_TAGS = '0de00000-0000-4000-8000-0000000a%';
+const HOUSEHOLD = family.id;
+const SEEDED_CHORES = family.own('0de00000-0000-4000-8000-0000000c%');
+const SEEDED_TAGS = family.own('0de00000-0000-4000-8000-0000000a%');
 
 function sql(query: string): string {
   return execFileSync('psql', [db!, '-X', '-A', '-t', '-q', '-v', 'ON_ERROR_STOP=1', '-c', query], {
@@ -33,7 +35,7 @@ const demoDate = (days: number) => addDays(today, days);
 // [D-110] Each test makes its own items and takes them away after itself, pass or fail (afterEach):
 // the ones it entered in the app (by title, made since it began) and any tag it added. Items a test
 // needs but doesn't test entering are put straight into the database, with a suffix of this run.
-const ALEX_USER = '0de00000-0000-4000-8000-0000000000a1';
+const ALEX_USER = family.own('0de00000-0000-4000-8000-0000000000a1');
 const RUN = Math.random().toString(36).slice(2, 6);
 let since = '';
 const made: string[] = [];
@@ -44,15 +46,15 @@ function removeMade() {
   made.length = 0;
   // An item with history is never deleted (D-46): it is archived, out of the lists.
   if (titles)
-    sql(`delete from public.chore c where c.household_id = '${DEMO}' and c.title in (${titles})
+    sql(`delete from public.chore c where c.household_id = '${HOUSEHOLD}' and c.title in (${titles})
             and c.created_at >= '${since}' and c.id::text not like '${SEEDED_CHORES}'
             and not exists (select from public.chore_occurrence o
                               join public.chore_completion_event e on e.occurrence_id = o.id
                              where o.chore_id = c.id);
          update public.chore set archived_at = now()
-          where household_id = '${DEMO}' and title in (${titles}) and created_at >= '${since}'
+          where household_id = '${HOUSEHOLD}' and title in (${titles}) and created_at >= '${since}'
             and id::text not like '${SEEDED_CHORES}' and archived_at is null;`);
-  sql(`delete from public.tag where household_id = '${DEMO}' and created_at >= '${since}'
+  sql(`delete from public.tag where household_id = '${HOUSEHOLD}' and created_at >= '${since}'
          and id::text not like '${SEEDED_TAGS}'`);
 }
 
@@ -79,14 +81,14 @@ function fixture(f: Fixture): string {
   return sql(`with c as (
                 insert into public.chore (household_id, title, icon, kind, points, schedule, due_time,
                                           created_by, start_date, assignment)
-                values ('${DEMO}', ${quoted(f.title)}, '${f.icon}', '${kind}', ${kind === 'task' ? 0 : 5},
+                values ('${HOUSEHOLD}', ${quoted(f.title)}, '${f.icon}', '${kind}', ${kind === 'task' ? 0 : 5},
                         '${JSON.stringify(schedule)}'::jsonb, ${f.time ? `'${f.time}'` : 'null'},
                         '${ALEX_USER}', ${TODAY}, '${f.assignment ?? (kind === 'task' ? 'shared' : 'each')}')
                 returning id),
               a as (
                 insert into public.chore_assignee (household_id, chore_id, member_id)
-                select '${DEMO}', c.id, m.id from c join public.member m
-                    on m.household_id = '${DEMO}' and m.display_name in (${f.people.map(quoted).join(', ')}))
+                select '${HOUSEHOLD}', c.id, m.id from c join public.member m
+                    on m.household_id = '${HOUSEHOLD}' and m.display_name in (${f.people.map(quoted).join(', ')}))
               select id from c`);
 }
 
@@ -176,21 +178,21 @@ test.beforeAll(() => {
   TODAY = `'${today}'::date`;
   // A retry starts from the seeded list (supabase/seed.sql). An item another spec made and checked
   // off has history, which is never deleted (D-46): it stays archived, out of the lists.
-  sql(`delete from public.chore c where c.household_id = '${DEMO}' and c.id::text not like '${SEEDED_CHORES}'
+  sql(`delete from public.chore c where c.household_id = '${HOUSEHOLD}' and c.id::text not like '${SEEDED_CHORES}'
           and not exists (select from public.chore_occurrence o
                             join public.chore_completion_event e on e.occurrence_id = o.id
                            where o.chore_id = c.id);
        update public.chore set archived_at = now()
-        where household_id = '${DEMO}' and id::text not like '${SEEDED_CHORES}' and archived_at is null;
-       delete from public.tag where household_id = '${DEMO}' and id::text not like '${SEEDED_TAGS}';
+        where household_id = '${HOUSEHOLD}' and id::text not like '${SEEDED_CHORES}' and archived_at is null;
+       delete from public.tag where household_id = '${HOUSEHOLD}' and id::text not like '${SEEDED_TAGS}';
        update public.tag set archived_at = null, name = case id::text
-           when '0de00000-0000-4000-8000-0000000a0001' then 'Morning'
-           when '0de00000-0000-4000-8000-0000000a0002' then 'Kitchen'
-           when '0de00000-0000-4000-8000-0000000a0003' then 'Bedroom'
+           when family.own('0de00000-0000-4000-8000-0000000a0001') then 'Morning'
+           when family.own('0de00000-0000-4000-8000-0000000a0002') then 'Kitchen'
+           when family.own('0de00000-0000-4000-8000-0000000a0003') then 'Bedroom'
            else 'School' end
-        where household_id = '${DEMO}';
+        where household_id = '${HOUSEHOLD}';
        update public.chore set archived_at = null
-        where household_id = '${DEMO}' and id::text like '${SEEDED_CHORES}';`);
+        where household_id = '${HOUSEHOLD}' and id::text like '${SEEDED_CHORES}';`);
 });
 
 test.beforeEach(() => {
@@ -221,7 +223,7 @@ test('[CHR-01][CHR-13] Alex sees the family list, but not Sam’s private gift',
   await expectContrastOk(page);
 
   const gift = sql(
-    `select id from public.chore where household_id = '${DEMO}' and title = 'Buy anniversary gift'`,
+    `select id from public.chore where household_id = '${HOUSEHOLD}' and title = 'Buy anniversary gift'`,
   );
   const response = await page.goto(`/admin/chores/${gift}`);
   expect(response?.status()).toBe(404);
@@ -322,7 +324,7 @@ test('[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s 
                                  from public.chore_assignee a join public.member m on m.id = a.member_id
                                 where a.chore_id = c.id), ',' order by c.title)
            from public.chore c
-          where c.household_id = '${DEMO}' and c.id::text not like '${SEEDED_CHORES}'
+          where c.household_id = '${HOUSEHOLD}' and c.id::text not like '${SEEDED_CHORES}'
             and c.archived_at is null and c.created_at >= '${since}'`),
   ).toBe(
     [
@@ -338,12 +340,12 @@ test('[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s 
   );
   expect(
     sql(
-      `select schedule::text from public.chore where household_id = '${DEMO}' and title = 'Pack school bag' and archived_at is null`,
+      `select schedule::text from public.chore where household_id = '${HOUSEHOLD}' and title = 'Pack school bag' and archived_at is null`,
     ),
   ).toBe('{"freq": "weekly", "by_weekday": [1, 2, 3, 4, 5]}');
   expect(
     sql(
-      `select schedule ->> 'on_date' from public.chore where household_id = '${DEMO}' and title = 'Order school uniform' and archived_at is null`,
+      `select schedule ->> 'on_date' from public.chore where household_id = '${HOUSEHOLD}' and title = 'Order school uniform' and archived_at is null`,
     ),
   ).toBe(demoDate(2));
 
@@ -361,7 +363,7 @@ test('[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s 
     expect(
       sql(`select count(*) || ':' || count(distinct o.due_date) || ':' || bool_or(o.due_date = ${TODAY}::date)::text
            from public.chore_occurrence o join public.chore c on c.id = o.chore_id
-          where c.household_id = '${DEMO}' and c.title = 'Tidy toys' and c.archived_at is null
+          where c.household_id = '${HOUSEHOLD}' and c.title = 'Tidy toys' and c.archived_at is null
             and o.due_date between ${TODAY} and ${TODAY} + 14`),
     ).toBe('15:15:true');
 
@@ -397,7 +399,7 @@ test('[CHR-12] a task entered after its date is open and shows as overdue', asyn
   ).toContainText('Overdue since');
   expect(
     sql(`select o.due_date::text || ':' || o.status from public.chore_occurrence o join public.chore c on c.id = o.chore_id
-          where c.household_id = '${DEMO}' and c.title = 'Return the library books'`),
+          where c.household_id = '${HOUSEHOLD}' and c.title = 'Return the library books'`),
   ).toBe(`${demoDate(-3)}:scheduled`);
 });
 
@@ -520,7 +522,7 @@ test('[CHR-10] a household tag: apply, filter, rename and archive (US-312)', asy
   await expect(page.getByText('Also tagged Tidy-up time (archived)')).toBeVisible();
   expect(
     sql(`select count(*) from public.chore_tag ct join public.tag t on t.id = ct.tag_id
-          where t.household_id = '${DEMO}' and t.name = 'Tidy-up time'`),
+          where t.household_id = '${HOUSEHOLD}' and t.name = 'Tidy-up time'`),
   ).toBe('3');
 });
 
@@ -560,7 +562,7 @@ test('[CHR-13][NFR-14-f] a private task stays with its creator, and reaches the 
     await expect(list(sam)).toContainText('Pick up the cake');
     await expect(list(sam)).not.toContainText('Plan the birthday surprise');
     const surprise = sql(
-      `select id from public.chore where household_id = '${DEMO}' and title = 'Plan the birthday surprise'
+      `select id from public.chore where household_id = '${HOUSEHOLD}' and title = 'Plan the birthday surprise'
           and created_at >= '${since}'`,
     );
     expect((await sam.goto(`/admin/chores/${surprise}`))?.status()).toBe(404);
@@ -599,7 +601,7 @@ test('[CHR-01] an item is archived and restored, never deleted', async ({ page }
   await page.goto('/admin/chores');
   await expect(list(page)).toContainText(piano);
   expect(
-    sql(`select count(*) from public.audit_log where household_id = '${DEMO}' and entity_type = 'chore' and action = 'update'
+    sql(`select count(*) from public.audit_log where household_id = '${HOUSEHOLD}' and entity_type = 'chore' and action = 'update'
           and diff ? 'archived_at' and chore_id = '${id}'`),
   ).toBe('2');
 });
@@ -610,7 +612,7 @@ test('[CHR-07][CHR-18] an item’s page shows its last seven days: each child’
   // The demo family's seeded week (supabase/seed.sql): each makes their own bed (D-47); Leo missed
   // yesterday and Maya three days ago.
   await signIn(page, 'Alex');
-  await page.goto('/admin/chores/0de00000-0000-4000-8000-0000000c0001');
+  await page.goto(`/admin/chores/${family.own('0de00000-0000-4000-8000-0000000c0001')}`);
   const week = page.getByRole('list', { name: 'Last 7 days', exact: true });
   await expect(week.getByRole('listitem')).toHaveCount(7);
   const yesterday = week.getByRole('listitem').first();
@@ -622,7 +624,7 @@ test('[CHR-07][CHR-18] an item’s page shows its last seven days: each child’
   expect(
     sql(`select string_agg(m.display_name || '=' || o.status, ',' order by o.due_date desc, m.display_name)
            from public.chore_occurrence o join public.member m on m.id = o.member_id
-          where o.chore_id = '0de00000-0000-4000-8000-0000000c0001' and o.due_date in (${TODAY} - 1, ${TODAY} - 3)`),
+          where o.chore_id = family.own('0de00000-0000-4000-8000-0000000c0001') and o.due_date in (${TODAY} - 1, ${TODAY} - 3)`),
   ).toBe('Leo=missed,Maya=completed,Leo=completed,Maya=missed');
   await expectContrastOk(page);
 });
@@ -671,7 +673,9 @@ test('[CHR-19][US-321] a lunch-day item follows each child’s school lunch, and
   const title = 'Pack lunch e2e';
   made.push(title);
   const [maya, leo] = ['Maya', 'Leo'].map((name) =>
-    sql(`select id from public.member where household_id = '${DEMO}' and display_name = '${name}'`),
+    sql(
+      `select id from public.member where household_id = '${HOUSEHOLD}' and display_name = '${name}'`,
+    ),
   ) as [string, string];
   // [D-110] School days of its own over the two weeks, so there are lunch days in summer and over
   // winter break too; taken away in the finally below, with Leo's lunch change.
@@ -697,18 +701,18 @@ test('[CHR-19][US-321] a lunch-day item follows each child’s school lunch, and
     );
 
     const chore = sql(
-      `select id from public.chore where household_id = '${DEMO}' and title = '${title}' and created_at >= '${since}'`,
+      `select id from public.chore where household_id = '${HOUSEHOLD}' and title = '${title}' and created_at >= '${since}'`,
     );
     expect(
       sql(`select assignment || ':' || lunch_days from public.chore where id = '${chore}'`),
     ).toBe('each:bring');
     // Over the next two weeks (to the 13th day, which a run just after midnight already has), for each
     // child and day: planned exactly when they bring lunch. In one statement, so it holds whatever
-    // another spec does to the demo family's lunches meanwhile.
+    // another test does to the household's lunches meanwhile.
     const mismatches = () =>
       sql(`select count(*) from public.member m
            cross join generate_series(${TODAY}, ${TODAY} + 13, interval '1 day') d
-          where m.household_id = '${DEMO}' and m.display_name in ('Maya', 'Leo')
+          where m.household_id = '${HOUSEHOLD}' and m.display_name in ('Maya', 'Leo')
             and (public.lunch_mode(m.id, d::date) is not distinct from 'bring')
                 <> exists (select from public.chore_occurrence o
                             where o.chore_id = '${chore}' and o.member_id = m.id and o.due_date = d::date)`);
@@ -723,7 +727,7 @@ test('[CHR-19][US-321] a lunch-day item follows each child’s school lunch, and
     expect(day, 'a school day for Leo in the next two weeks').not.toBe('');
     const was = sql(`select public.lunch_mode('${leo}', '${day}')`);
     sql(`insert into public.lunch_override (household_id, member_id, lunch_date, mode)
-       values ('${DEMO}', '${leo}', '${day}', '${was === 'bring' ? 'buy' : 'bring'}')
+       values ('${HOUSEHOLD}', '${leo}', '${day}', '${was === 'bring' ? 'buy' : 'bring'}')
        on conflict (member_id, lunch_date) do update set mode = excluded.mode`);
     expect(mismatches()).toBe('0');
     sql(`delete from public.lunch_override where member_id = '${leo}' and lunch_date = '${day}'`);

@@ -4,6 +4,7 @@ import { sql as query } from '../support/db';
 import { householdToday } from '../support/day';
 import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
+import { ownHousehold } from '../support/household';
 
 // [RWD-04][RWD-10][RWD-13] Goal payouts and the preview of a change on the preview (WP-39, D-75), as
 // Alex of the demo family. The done-when: a goal that pays 10 points posts one bonus when Maya's bed
@@ -14,9 +15,10 @@ import { signIn } from '../support/session';
 //
 // Leo is left alone (goals.spec reads his goal's history). Afterwards Maya's bed is put back (which
 // takes back achievement 2's points, so her balance is as it was) and the test goal is cancelled.
+const family = ownHousehold('goal-payouts');
 const db = process.env.SUPABASE_DB_URL;
-const DEMO = '0de00000-0000-4000-8000-000000000001';
-const MAKE_BED = '0de00000-0000-4000-8000-0000000c0001';
+const HOUSEHOLD = family.id;
+const MAKE_BED = family.own('0de00000-0000-4000-8000-0000000c0001');
 const TITLE = 'Payout e2e';
 const sql = (q: string) => query(db!, q);
 
@@ -26,9 +28,9 @@ function report(line: string) {
 }
 
 const maya = () =>
-  sql(`select id from public.member where household_id = '${DEMO}' and display_name = 'Maya'`);
+  sql(`select id from public.member where household_id = '${HOUSEHOLD}' and display_name = 'Maya'`);
 const goalId = () =>
-  sql(`select id from public.reward_goal where household_id = '${DEMO}' and title = '${TITLE}'
+  sql(`select id from public.reward_goal where household_id = '${HOUSEHOLD}' and title = '${TITLE}'
         and status <> 'cancelled' order by created_at desc limit 1`);
 /** The goal's ledger entries in posting order: "bonus 10 n1, reversal -10 n1". */
 const paid = () =>
@@ -66,7 +68,7 @@ test.beforeAll(async ({ browser }) => {
                    and due_date = '${householdToday(db!)}' and member_id = '${maya()}'`);
   putBackBed();
   sql(`update public.reward_goal set status = 'cancelled', archived_at = now()
-        where household_id = '${DEMO}' and title = '${TITLE}' and status <> 'cancelled'`);
+        where household_id = '${HOUSEHOLD}' and title = '${TITLE}' and status <> 'cancelled'`);
   admin = await browser.newPage();
   await signIn(admin);
 });
@@ -86,7 +88,7 @@ test.afterAll(async () => {
   } finally {
     // Whatever happened above, the test goal is not left in play for goals.spec and the boards.
     sql(`update public.reward_goal set status = 'cancelled', archived_at = now()
-          where household_id = '${DEMO}' and title = '${TITLE}' and status <> 'cancelled'`);
+          where household_id = '${HOUSEHOLD}' and title = '${TITLE}' and status <> 'cancelled'`);
     await admin?.context().close();
   }
 });
