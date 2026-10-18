@@ -2,6 +2,7 @@
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
 > v0.8.9: each e2e spec its own made-up household (WP-111, NFR-14, D-137): rule 4 says how a spec gets it, and rule 11 that leftovers stay in it. Test cases NFR-14-u to NFR-14-z; the Test catalogue regenerated (§9).
+> v0.8.8: the two e2e reds of 17 October night (WP-110, PTS-04, NFR-16, D-136): both the app's bugs, each proved by a UI test that fails on `main`'s code (PTS-04-a, NFR-16-r) and a unit test (NFR-16-s); the Test catalogue regenerated (§9).
 > v0.8.7: the two e2e reds of 17 October evening (WP-109, NFR-14): a change that folds a section opens it in every spec that uses what it holds; a clean-up skips each check-off its items made, so the children's good and bad runs are as before, and says why a leftover shows only once its spec passes (§7 rules 10 and 11).
 > v0.8.6: the three e2e reds of 17 October (WP-108, NFR-14, D-135): a late change's evidence is the read or page load that would show it, and every one over 2 s; the preview's `/api/health` over 2 s is a slow reading (§8). Test cases NFR-14-o to NFR-14-r; the Test catalogue regenerated (§9).
 > v0.8.5: WP-93's test cases (NFR-18-a to NFR-18-j, D-131): the Test catalogue regenerated (§9).
@@ -270,7 +271,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2690** tests: Unit 837 · DB 1455 · UI 270 · E2E 128. 2229 name at least one ID; 461 name none.
+**2695** tests: Unit 840 · DB 1455 · UI 272 · E2E 128. 2234 name at least one ID; 461 name none.
 
 | Measure | Count |
 |---|---|
@@ -279,7 +280,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 104 of 126 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 144 (with a test: 144) |
+| Test cases | 147 (with a test: 147) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -294,7 +295,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
 | Chores | 90 | 192 | 31 | 30 | 343 |
-| Points | 38 | 92 | 17 | 12 | 159 |
+| Points | 38 | 92 | 18 | 12 | 160 |
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
@@ -303,9 +304,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
-| Platform | 183 | 167 | 56 | 15 | 421 |
+| Platform | 186 | 167 | 57 | 15 | 425 |
 | Not named | 58 | 438 | 10 | 1 | 507 |
-| **Total** | **837** | **1455** | **270** | **128** | **2690** |
+| **Total** | **840** | **1455** | **272** | **128** | **2695** |
 
 ### 9.3 By requirement
 
@@ -442,14 +443,14 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-01 | M | Covered | US-309, US-1101, US-1106 | WP-16 | — | U 10 · DB 42 · E2E 5 |
 | PTS-02 | M | Covered | US-1102 | WP-11, WP-16, WP-20 | — | U 4 · DB 11 · UI 1 · E2E 2 |
 | PTS-03 | M | Covered | US-1103 | WP-18 | — | U 5 · DB 6 · UI 4 · E2E 1 |
-| PTS-04 | M | Covered | US-1104, US-1105 | WP-18, WP-20 | — | U 10 · DB 17 · UI 10 · E2E 3 |
+| PTS-04 | M | Covered | US-1104, US-1105 | WP-18, WP-20, WP-110 | PTS-04-a | U 10 · DB 17 · UI 11 · E2E 3 |
 | PTS-05 | S | Covered | US-1107 | WP-30 | — | U 7 · DB 4 · UI 2 · E2E 1 |
 | PTS-06 | S | Covered | US-1108 | WP-30 | — | U 5 · DB 2 · UI 7 · E2E 2 |
 | PTS-07 | M | Covered | US-1109 | WP-02, WP-04, WP-16 | — | U 2 · DB 15 · E2E 3 |
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85 | — | U 2 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
-| NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | U 17 · DB 10 · UI 17 |
+| NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-100, WP-101, WP-110 | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s | U 20 · DB 10 · UI 18 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Covered | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j, NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x | U 31 · UI 15 · E2E 3 |
 | NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102, WP-108, WP-109, WP-111 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r, NFR-14-s, NFR-14-t, NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 46 · DB 14 · UI 1 · E2E 19 |
@@ -567,6 +568,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-107 | Queued | — | — | — |
 | WP-108 | Done | NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r | 4 of 4 | — |
 | WP-109 | Done | NFR-14-s, NFR-14-t | 2 of 2 | — |
+| WP-110 | Done | PTS-04-a, NFR-16-r, NFR-16-s | 3 of 3 | — |
 | WP-111 | Done | NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z | 6 of 6 | — |
 
 Test cases and the tests that prove them:
@@ -705,6 +707,9 @@ Test cases and the tests that prove them:
 | NFR-14-x | WP-111 | Every spec that signs in or reaches the database owns a household named after it, and no spec names a demo family id (outside `own()`) or sign-in; `auth.spec.ts` uses the demo family itself | Unit | Unit `scripts/e2e-household.test.mjs`: `[NFR-14-x] every spec that signs in or reaches the database owns a household, and none names the demo family’s ids or sign-ins` |
 | NFR-14-y | WP-111 | A spec signed in as Alex or Sam is in its own household: Family options' admins are its own copies of Alex and Sam, and no one else | E2E | E2E `e2e/tests/admin-menu.spec.ts`: `[NFR-14-y] a spec signs in to its own household: its admins are its own copies of Alex and Sam` |
 | NFR-14-z | WP-111 | The run counts its sign-ins once each, with the most in any 5 minutes against Auth's limit, and says when that is within a third of it | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-14-z] the run counts its sign-ins once each, and the most in any 5 minutes against Auth’s limit` |
+| PTS-04-a | WP-110 | A request the server took says "Waiting for a grown-up", never still "Sending…", and the board reads it back itself (Call off shows) when Realtime never says it changed | UI | UI `e2e/ui/board-shop.spec.ts`: `[PTS-04-a][US-1104] a request the server took waits for a grown-up, read back by the board itself when Realtime never says` |
+| NFR-16-r | WP-110 | "Set the goal" sends the save at once while a live summary is still being worked out | UI | UI `e2e/ui/goal-form-summary.spec.ts`: `with no service worker › [NFR-16-r] Set the goal goes at once while a live summary is still being worked out` |
+| NFR-16-s | WP-110 | The live summaries route: the form goes as JSON and comes back field for field, with its photo left out; anything else is refused; a refusal rejects | Unit | Unit `apps/web/lib/goal-live.test.ts`: `[NFR-16-s] the live summaries route › [NFR-16-s] the form goes as JSON and comes back field for field; a photo is left out`<br>Unit `apps/web/lib/goal-live.test.ts`: `[NFR-16-s] the live summaries route › [NFR-16-s] a body that is not the form is refused`<br>Unit `apps/web/lib/goal-live.test.ts`: `[NFR-16-s] the live summaries route › [NFR-16-s] posts JSON with the signal it is given; a refusal rejects` |
 | NFR-19-a | WP-85 | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-a][US-913] a test traces to the IDs in its name and its describe blocks, in every layer` |
 | NFR-19-b | WP-85 | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-b][US-913] a test naming an unknown requirement, story, item or test case fails the check` |
 | NFR-19-c | WP-85 | A new gap (a built story with no test, a Done item with no test cases) fails the check; a known gap doesn't | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-c][US-913] a new gap fails the check, and a known gap does not` |
@@ -844,7 +849,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-1101 | PTS-01 | Gap | — |
 | US-1102 | PTS-02 | Gap | — |
 | US-1103 | PTS-03 | Covered | DB 1 · UI 1 · E2E 1 |
-| US-1104 | PTS-04 | Covered | U 3 · DB 5 · UI 3 · E2E 3 |
+| US-1104 | PTS-04 | Covered | U 3 · DB 5 · UI 4 · E2E 3 |
 | US-1105 | PTS-04 | Covered | DB 3 · UI 3 · E2E 3 |
 | US-1106 | PTS-01 | Gap | — |
 | US-1107 | PTS-05 | Covered | U 1 · UI 1 · E2E 1 |
@@ -1261,6 +1266,16 @@ Unit · 6 tests
 | `isDeviceClaims › [DEV-02] tells a board session from an admin one` | DEV-02 |
 | `format › writes dates and times the brand way, in the household timezone (06 §2)` | — |
 | `board theme › [DEV-05] a board follows the time of day unless an admin holds it on Day or Evening` | DEV-05 |
+
+#### `apps/web/lib/goal-live.test.ts`
+
+Unit · 3 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-16-s] the live summaries route › [NFR-16-s] the form goes as JSON and comes back field for field; a photo is left out` | NFR-16-s |
+| `[NFR-16-s] the live summaries route › [NFR-16-s] a body that is not the form is refused` | NFR-16-s |
+| `[NFR-16-s] the live summaries route › [NFR-16-s] posts JSON with the signal it is given; a refusal rejects` | NFR-16-s |
 
 #### `apps/web/lib/goal-perfect.test.ts`
 
@@ -2437,12 +2452,13 @@ UI · 5 tests
 
 #### `e2e/ui/board-shop.spec.ts`
 
-UI · 12 tests
+UI · 13 tests
 
 | Test | Names |
 |---|---|
 | `[PTS-03][PTS-04][US-1104] the shop says what can be asked for, and why not` | PTS-03, PTS-04, US-1104 |
 | `[PTS-04][US-1104] asking: once more to be sure, then pending at once; called off, the points are free` | PTS-04, US-1104 |
+| `[PTS-04-a][US-1104] a request the server took waits for a grown-up, read back by the board itself when Realtime never says` | PTS-04-a, US-1104 |
 | `[PTS-04][US-1104] what the shop refuses is taken back, and the board says why` | PTS-04, US-1104 |
 | `[PTS-04] once asked, what is left to spend is what the shop offers` | PTS-04 |
 | `[PTS-04][DEV-08] offline, asking waits for the internet; nothing is sent` | DEV-08, PTS-04 |
@@ -2569,7 +2585,7 @@ UI · 10 tests
 
 #### `e2e/ui/goal-form-summary.spec.ts`
 
-UI · 6 tests
+UI · 7 tests
 
 | Test | Names |
 |---|---|
@@ -2579,6 +2595,7 @@ UI · 6 tests
 | `[NFR-16-l] the live summaries show where the frames place them and change with the form` | NFR-16-l |
 | `[NFR-16-p] Starts, Ends and By show the written date or time over a real picker` | NFR-16-p |
 | `[NFR-16-q] every rule field keeps a name the form lists, however many forms the server drew` | NFR-16-q |
+| `with no service worker › [NFR-16-r] Set the goal goes at once while a live summary is still being worked out` | NFR-16-r |
 
 #### `e2e/ui/goal-perfect.spec.ts`
 

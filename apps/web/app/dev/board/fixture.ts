@@ -704,7 +704,7 @@ export function reachedBike(s: BoardSnapshot, now: Date): BoardSnapshot {
   };
 }
 
-type Change = (f: (s: BoardSnapshot) => BoardSnapshot) => void;
+export type Change = (f: (s: BoardSnapshot) => BoardSnapshot) => void;
 type Shop = {
   asks: { id: string; member: string; item: string }[];
   cancels: string[];
@@ -720,11 +720,28 @@ const withMember = (s: BoardSnapshot, id: string, f: (m: BoardMember) => BoardMe
 });
 
 /**
+ * [WP-110] Changes the stand-in's database holds that the board hasn't heard of (?missed=1): `hold`
+ * keeps one, and the board's own read (`read`) shows them all.
+ */
+export function unreadChanges() {
+  const held: ((s: BoardSnapshot) => BoardSnapshot)[] = [];
+  return {
+    hold: ((f) => void held.push(f)) as Change,
+    read(change: Change) {
+      const changes = held.splice(0);
+      if (changes.length) change((s) => changes.reduce((x, f) => f(x), s));
+    },
+  };
+}
+
+/**
  * Answers like POST /api/redemptions would (WP-20), a moment later, and then shows the request in the
  * snapshot as Realtime would. Each ask is kept on window.__fwShop; a reward none are left of is
  * refused (window.__fwRefuse refuses anything, with that reason), and offline nothing is sent.
+ * `stored` is where the request goes: the snapshot at once, or (WP-110, ?missed=1) only the
+ * board's next read of it, as when Realtime never says it changed.
  */
-export function fixtureAsk(snapshot: BoardSnapshot, change: Change): AskFor {
+export function fixtureAsk(snapshot: BoardSnapshot, change: Change, stored = change): AskFor {
   return async (id, memberId, itemId) => {
     if (!navigator.onLine) return { ok: false, offline: true };
     shopLog().asks.push({ id, member: memberId, item: itemId });
@@ -735,7 +752,7 @@ export function fixtureAsk(snapshot: BoardSnapshot, change: Change): AskFor {
     // The points are the board's to check: this stand-in's snapshot never hears of its check-offs.
     const item = snapshot.shop.find((i) => i.id === itemId)!;
     if (item.left === 0) return { ok: false, reason: 'out_of_stock' };
-    change((s) =>
+    stored((s) =>
       withMember(s, memberId, (x) => ({
         ...x,
         available: (x.available ?? 0) - item.cost,

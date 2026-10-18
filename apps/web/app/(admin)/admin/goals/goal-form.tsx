@@ -15,7 +15,7 @@ import {
   type MemberColor,
 } from '@familywise/ui';
 import Link from 'next/link';
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFormAction } from '@/lib/forms';
 import { periodWord, REPEAT_WORDS } from '@/lib/goal-periods';
 import { type LowerStep, type StepKind, stepKind } from '@/lib/goal-steps';
@@ -36,7 +36,8 @@ import {
   RULE_WORDS,
   type ScopeChoice,
 } from '@/lib/goals';
-import { type GoalFormState, type GoalPreviewView, liveGoal, saveGoal } from './actions';
+import { LIVE_PATH, liveFrom } from '@/lib/goal-live';
+import { type GoalFormState, type GoalPreviewView, saveGoal } from './actions';
 import { EndDateField } from './end-date-field';
 
 export interface GoalFormRule {
@@ -149,7 +150,7 @@ export function GoalForm({
   hasPhoto = false,
   preview,
   countable = [],
-  live = liveGoal,
+  livePath = LIVE_PATH,
   draft,
 }: {
   id: string;
@@ -169,10 +170,10 @@ export function GoalForm({
   /** A new goal's fields filled in already (the made-up /dev/goals page draws a mockup's frame). */
   draft?: GoalFormInitial;
   /**
-   * [NFR-16][D-128] Works out the live summaries from the form as it stands, as Preview does (the
-   * /dev pages give one on made-up facts).
+   * [NFR-16][D-128] Where the live summaries are worked out from the form as it stands, as Preview
+   * does (the /dev pages ask a stand-in on made-up facts).
    */
-  live?: (form: FormData) => Promise<GoalSummaries | null>;
+  livePath?: string;
 }) {
   const [state, onSubmit, pending] = useFormAction<GoalFormState>(saveGoal, { preview });
   const seed = initial ?? draft;
@@ -246,6 +247,10 @@ export function GoalForm({
   // Whether the first summaries have come back: the form says so (data-live), for its screenshots.
   const [answered, setAnswered] = useState(rulesLocked);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // [WP-110] Asked for with fetch, not a server action, so the save never waits behind one; the
+  // one still out when a newer is asked for is dropped.
+  const live = useMemo(() => liveFrom(livePath), [livePath]);
+  const out = useRef<AbortController | null>(null);
   const refresh = useCallback(() => {
     if (rulesLocked) return;
     if (timer.current) clearTimeout(timer.current);
@@ -255,7 +260,10 @@ export function GoalForm({
       const n = (asked.current += 1);
       const data = new FormData(form);
       data.delete('photo');
-      live(data).then(
+      out.current?.abort();
+      const request = new AbortController();
+      out.current = request;
+      live(data, request.signal).then(
         (out) => {
           if (n !== asked.current) return;
           setSummaries(out);
@@ -275,6 +283,7 @@ export function GoalForm({
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
+      out.current?.abort();
     },
     [],
   );
