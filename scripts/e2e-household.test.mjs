@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 import {
   checkKey,
   createSql,
@@ -18,6 +19,38 @@ import {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS = join(ROOT, 'e2e/tests');
+/**
+ * The text of a spec's strings and templates that names a demo family id or `family.`: a seed id
+ * belongs only as own()'s argument, and `family.own(…)` written inside SQL text is sent to the
+ * database as it is, never called (run 251: chores.spec.ts's tags, "schema family does not exist").
+ * Read with the TypeScript parser, so a quote inside a regex or a nested template can't mislead it.
+ */
+function strayText(file, text) {
+  const out = [];
+  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+  const visit = (node) => {
+    const literal =
+      ts.isStringLiteral(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node) ||
+      ts.isTemplateHead(node) ||
+      ts.isTemplateMiddle(node) ||
+      ts.isTemplateTail(node);
+    if (literal) {
+      const ownArg =
+        ts.isStringLiteral(node) &&
+        ts.isCallExpression(node.parent) &&
+        /\.own$/.test(node.parent.expression.getText(source));
+      if (/\bfamily\./.test(node.text) || (node.text.includes('0de00000') && !ownArg)) {
+        const line = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
+        out.push(`${file}:${line}`);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return out;
+}
+
 /** A demo family sign-in, `alex@demo.familywise.invalid`, and not a copy (`alex+chores@…`). */
 const DEMO_SIGN_IN = /(^|[^+\w-])[a-z]+@demo\.familywise\.invalid/;
 
@@ -104,10 +137,20 @@ test('[NFR-14-x] every spec that signs in or reaches the database owns a househo
       assert.ok(text.includes(`ownHousehold('${key}')`), `${file} has no ownHousehold('${key}')`);
       owners++;
     }
-    // A seed id appears only as an argument of own(), which turns it into the spec's copy.
-    const bare = text.replace(/\.own\(\s*'0de00000-[0-9a-f%-]*'\s*\)/g, '');
-    assert.ok(!bare.includes('0de00000'), `${file} names a demo family id outside own()`);
+    // A seed id appears only as an argument of own(), which turns it into the spec's copy, and
+    // never as text inside SQL.
+    assert.deepEqual(strayText(file, text), [], `${file} names a demo family id outside own()`);
     assert.ok(!DEMO_SIGN_IN.test(text), `${file} names a demo family sign-in`);
   }
   assert.ok(owners > 30, `only ${owners} specs own a household`);
+  // The check itself finds what run 251 found, past a quote in a regex earlier in the file.
+  const sample = [
+    "const quoted = (s: string) => `'${s.replace(/'/g, \"''\")}'`;",
+    'sql(`update public.tag set name = case id::text',
+    "  when family.own('0de00000-0000-4000-8000-0000000a0001') then 'Morning' end`);",
+    "sql(`select 1 where id = '${family.own('0de00000-0000-4000-8000-0000000a0001')}'`);",
+    "const BED = family.own('0de00000-0000-4000-8000-0000000c0001');",
+    "page.goto('/admin/chores/0de00000-0000-4000-8000-0000000c0001');",
+  ].join('\n');
+  assert.deepEqual(strayText('sample.spec.ts', sample), ['sample.spec.ts:2', 'sample.spec.ts:6']);
 });

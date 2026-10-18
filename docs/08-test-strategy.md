@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.10: WP-111's follow-up: NFR-14-x reads each spec with the TypeScript parser, so a seed id or `family.` inside SQL text fails it (run 251's `chores.spec.ts`); the UI suite's MENU-06 Meals check passes on a Sunday too.
 > v0.8.9: each e2e spec its own made-up household (WP-111, NFR-14, D-137): rule 4 says how a spec gets it, and rule 11 that leftovers stay in it. Test cases NFR-14-u to NFR-14-z; the Test catalogue regenerated (§9).
 > v0.8.8: the two e2e reds of 17 October night (WP-110, PTS-04, NFR-16, D-136): both the app's bugs, each proved by a UI test that fails on `main`'s code (PTS-04-a, NFR-16-r) and a unit test (NFR-16-s); the Test catalogue regenerated (§9).
 > v0.8.7: the two e2e reds of 17 October evening (WP-109, NFR-14): a change that folds a section opens it in every spec that uses what it holds; a clean-up skips each check-off its items made, so the children's good and bad runs are as before, and says why a leftover shows only once its spec passes (§7 rules 10 and 11).
