@@ -52,6 +52,7 @@ import { type Chip, CHIP_WORDS, familyList, type ListRow } from '@/lib/dashboard
 import { CalendarScreen, type LoadCalendar } from './calendar-ui';
 import { Dashboard } from './dashboard';
 import { GroceriesBoard } from './groceries-ui';
+import type { LoadRecipes, SignRecipeFiles } from '@/lib/board-recipes';
 import { MealsWeek, TodayMeals } from './meals-ui';
 import { type LoadLunches, LunchesScreen } from './lunches-ui';
 import { type AskLunch, type SeenLunch } from '@/lib/lunch-picks';
@@ -937,6 +938,8 @@ export function Today({
   markCelebrated = noMark,
   photoUrl,
   loadCalendar,
+  loadRecipes,
+  signRecipes,
   loadLunches,
   askLunch = noLunch,
   seenLunch = noSeen,
@@ -957,6 +960,9 @@ export function Today({
   photoUrl?: PhotoUrl;
   /** [CAL-04] Reads a range of the calendar the snapshot doesn't hold (WP-23). */
   loadCalendar?: LoadCalendar;
+  /** [MEAL-26] The week's recipes on the Meals screen (WP-105), and links to their files. */
+  loadRecipes?: LoadRecipes;
+  signRecipes?: SignRecipeFiles;
   /** [MEAL-09] Reads a week's lunches (lunch_week), for Lunches (WP-49). */
   loadLunches?: LoadLunches;
   /** [MEAL-09][MEAL-11] Asks for a child's day (POST /api/lunches), and says they saw their week. */
@@ -1433,6 +1439,8 @@ export function Today({
             today={today}
             members={members}
             onLunches={lunchKids.length ? () => openLunches(null) : undefined}
+            loadRecipes={loadRecipes}
+            signRecipes={signRecipes}
           />
         ) : view === 'calendar' ? (
           <CalendarScreen

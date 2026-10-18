@@ -8,6 +8,7 @@ import { day, isoDay, time } from '@/lib/format';
 import { boardTables, coalesce, readSoon } from '@/lib/live';
 import { postCompletions } from '@/lib/outbox';
 import { withGroceries } from '@/lib/board-groceries';
+import { type BoardRecipe, readRecipes } from '@/lib/board-recipes';
 import { readCalendar, readSnapshot, type BoardCalendar, type BoardSnapshot } from '@/lib/snapshot';
 import { browserClient } from '@/lib/supabase/browser';
 import { postCelebrated } from '@/lib/board-goals';
@@ -262,6 +263,27 @@ async function loadCalendar(from: string, to: string): Promise<BoardCalendar | n
 }
 
 /**
+ * [MEAL-26] The recipes of the meals planned from one date to another (board_recipes, WP-105), as
+ * this board may see them; null offline or on an error.
+ */
+async function loadRecipes(from: string, to: string): Promise<BoardRecipe[] | null> {
+  const db = browserClient();
+  if (!db) return null;
+  const { data, error } = await db.rpc('board_recipes', { p_from: from, p_to: to });
+  return error ? null : readRecipes(data);
+}
+
+/** [MEAL-26] Short-lived links to a recipe's photos and PDFs in the household's storage. */
+async function signRecipes(paths: string[]): Promise<Record<string, string>> {
+  const db = browserClient();
+  if (!db || paths.length === 0) return {};
+  const { data } = await db.storage.from('recipes').createSignedUrls(paths, 3600);
+  return Object.fromEntries(
+    (data ?? []).flatMap((d) => (d.signedUrl && d.path ? [[d.path, d.signedUrl]] : [])),
+  );
+}
+
+/**
  * [MEAL-09] Each child's lunches for the seven days from a date (lunch_week, WP-49), as this board
  * may see them; null offline or on an error.
  */
@@ -386,6 +408,8 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
           markCelebrated={postCelebrated}
           photoUrl={photoUrl}
           loadCalendar={loadCalendar}
+          loadRecipes={loadRecipes}
+          signRecipes={signRecipes}
           loadLunches={loadLunches}
           askLunch={postLunch}
           seenLunch={postLunchSeen}

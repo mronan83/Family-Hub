@@ -71,8 +71,8 @@ export const ADMIN = [
   ['meals-groceries', '/dev/meals?groceries=1'],
 ];
 /**
- * [name, query, person, whole] per board screen: Maya's goal cards; with `whole`, a screen of the
- * rail drawn as the board shows it (WP-104's Groceries).
+ * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of
+ * the rail drawn as the board shows it (WP-104's Groceries), after a tap on `then` if given (WP-105).
  */
 export const BOARD = [
   ['board-going', '?repeating=going', 'Maya'],
@@ -83,12 +83,14 @@ export const BOARD = [
   ['board-family', '?perfect=missed', 'Maya'],
   ['board-groceries', '?groceries=1', 'Groceries', 'whole'],
   ['board-groceries-empty', '?groceries=empty', 'Groceries', 'whole'],
+  // [MEAL-26] WP-105's recipe on the board: Meals, then a tap on Tacos.
+  ['board-recipe', '?x=1', 'Meals', 'whole', 'Tacos: open the recipe'],
 ];
 
 const only = arg('only', '');
 const wanted = (name) => !only || only.split(',').some((o) => name.startsWith(o));
 
-async function shoot(context, url, file, person, whole = false) {
+async function shoot(context, url, file, person, whole = false, then = null) {
   const page = await context.newPage();
   await page.clock.setFixedTime(THURSDAY);
   await page.goto(url);
@@ -101,7 +103,11 @@ async function shoot(context, url, file, person, whole = false) {
       .getByRole('list', { name: 'Family', exact: true })
       .getByRole('button', { name: person, exact: true })
       .click();
-    await page.getByRole('heading', { name: person, level: 2 }).waitFor();
+    await page.getByRole('heading', { name: person, level: 2 }).first().waitFor();
+    if (then) {
+      await page.getByRole('button', { name: then }).click();
+      await page.getByRole('dialog').waitFor();
+    }
   }
   await page.evaluate(() => document.fonts.ready);
   if (person && whole) {
@@ -146,9 +152,9 @@ for (const theme of ['day', 'evening']) {
     await context.close();
   }
   const board = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
-  for (const [name, query, person, whole] of BOARD.filter(([name]) => wanted(name))) {
+  for (const [name, query, person, whole, then] of BOARD.filter(([name]) => wanted(name))) {
     const url = `${base}/dev/board${query}&theme=${theme}`;
-    await shoot(board, url, `${out}/${name}-${theme}.png`, person, whole === 'whole');
+    await shoot(board, url, `${out}/${name}-${theme}.png`, person, whole === 'whole', then);
     n += 1;
   }
   await board.close();

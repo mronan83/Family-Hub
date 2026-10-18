@@ -188,7 +188,8 @@ test('[MEAL-06][US-705] the Meals screen: the week, today marked, each child’s
     await expect.poll(() => lunchLines(cells.nth(i)), { message: `lunches on ${d}` }).toEqual(want);
     if (!want.length) await expect(cells.nth(i).locator('.fw-mweek__empty')).toBeVisible();
   }
-  await expect(week.getByRole('button')).toHaveCount(0);
+  // Read-only: nothing in the week to tap but a meal's recipe, which opens it (WP-105).
+  await expect(week.locator('button:not(.fw-meals__recipe)')).toHaveCount(0);
   // Home again, for the board's next visitor.
   await rail().getByRole('button', { name: 'Home', exact: true }).click();
   await expect(meals()).toBeVisible();

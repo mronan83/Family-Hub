@@ -272,7 +272,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2804** tests: Unit 864 · DB 1523 · UI 287 · E2E 130. 2290 name at least one ID; 514 name none.
+**2828** tests: Unit 875 · DB 1534 · UI 289 · E2E 130. 2306 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
@@ -281,7 +281,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 104 of 129 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 183 (with a test: 175) |
+| Test cases | 183 (with a test: 183) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -300,14 +300,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 81 | 58 | 45 | 13 | 197 |
+| Meals and lunch | 92 | 61 | 47 | 13 | 213 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
 | Platform | 186 | 167 | 57 | 15 | 425 |
-| Not named | 58 | 491 | 10 | 1 | 560 |
-| **Total** | **864** | **1523** | **287** | **130** | **2804** |
+| Not named | 58 | 499 | 10 | 1 | 568 |
+| **Total** | **875** | **1534** | **289** | **130** | **2828** |
 
 ### 9.3 By requirement
 
@@ -415,8 +415,8 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-22 | S | Not built | US-717 | WP-107 | — | — |
 | MEAL-23 | S | Not built | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | U 3 · DB 3 · UI 3 · E2E 1 |
 | MEAL-24 | S | Not built | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 4 · DB 1 · UI 1 |
-| MEAL-25 | S | Not built | US-720 | WP-105 | MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | — |
-| MEAL-26 | S | Not built | US-720 | WP-105 | MEAL-26-a | — |
+| MEAL-25 | S | Not built | US-720 | WP-105 | MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | U 10 · DB 2 · UI 1 |
+| MEAL-26 | S | Not built | US-720 | WP-105 | MEAL-26-a | U 1 · DB 1 · UI 1 |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
 | MENU-03 | M | Covered | US-802 | WP-27 | — | U 6 · DB 3 · UI 2 · E2E 1 |
@@ -568,7 +568,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-102 | Done | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | 8 of 8 | — |
 | WP-103 | Queued: | — | — | — |
 | WP-104 | Ready | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 16 of 16 | — |
-| WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 12 of 20 | — |
+| WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 20 of 20 | — |
 | WP-106 | Queued | — | — | — |
 | WP-107 | Queued | — | — | — |
 | WP-108 | Done | NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r | 4 of 4 | — |
@@ -755,14 +755,14 @@ Test cases and the tests that prove them:
 | MEAL-20-b | WP-105 | Counts add ("2 onions" and "1 onion" make ×3), the same unit adds ("1 lb" and "1 lb" make 2 lb), different units sit side by side ("1 lb + 500 g"), no amount takes the other's | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-b] counts add, the same unit adds, different units sit side by side`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-b] no amount takes the other’s, and a lone one says nothing`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `reading an item as typed › [MEAL-20-b] takes the amount off before or after the name`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `reading an item as typed › [MEAL-20-b] reads amounts as counts, units or words` |
 | MEAL-20-c | WP-105 | "Milk", "milk 2%" and "oat milk" are never merged by themselves; a new name that contains an open one's, or is contained by it, offers Make it one | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-c] "Milk", "milk 2%" and "oat milk" are never merged by themselves`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-c] a name that contains an open one, or is contained by it, offers Make it one` |
 | MEAL-20-d | WP-105 | The one way in merges an add into the open item of the same name, one item with both reasons and a merged event; a ticked item is never merged into; two adds of the same thing at once make one item | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-20-d] the first add is a new item`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-20-d] a ticked item is never merged into: a new one` |
-| MEAL-25-a | WP-105 | Read ingredients finds a made-up recipe page's published recipe data (a Recipe on its own, in a list or in a graph) with its ingredients and steps, and says so when a page has none | Unit | **none** |
-| MEAL-25-b | WP-105 | A recipe's lines become rows to check: an amount to buy is kept ("1 lb", "8", "2 cans"), a recipe's measure is left off ("2 tbsp", "1 cup"), and the name is cleaned | Unit | **none** |
-| MEAL-25-c | WP-105 | A made-up PDF's text is read into lines | Unit | **none** |
-| MEAL-25-d | WP-105 | A made-up photo of an ingredient list is read into lines by Tesseract.js | Unit | **none** |
-| MEAL-25-e | WP-105 | Fetching a recipe link takes only http and https to a public address, gives up after its time and size limits, and never follows a redirect to a private one | Unit | **none** |
-| MEAL-25-f | WP-105 | A meal's recipe files are the household's own: up to 10 MB each, a photo or a PDF; another household's admin and board can't read or add them; the household's board reads them | DB | **none** |
-| MEAL-25-g | WP-105 | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI | **none** |
-| MEAL-26-a | WP-105 | On the board's Meals, a tap on a meal with a recipe opens it full screen, read-only: its photos and PDFs with chips between them, its ingredients and the link's steps, text 28 px or more, and Close goes back | UI | **none** |
+| MEAL-25-a | WP-105 | Read ingredients finds a made-up recipe page's published recipe data (a Recipe on its own, in a list or in a graph) with its ingredients and steps, and says so when a page has none | Unit | Unit `apps/web/lib/recipe-read.test.ts`: `a recipe link’s published recipe data › [MEAL-25-a] reads a Recipe on its own, with its ingredients and steps`<br>Unit `apps/web/lib/recipe-read.test.ts`: `a recipe link’s published recipe data › [MEAL-25-a] finds it in a list or a @graph, with steps in sections or one string`<br>Unit `apps/web/lib/recipe-read.test.ts`: `a recipe link’s published recipe data › [MEAL-25-a] says when a page publishes none` |
+| MEAL-25-b | WP-105 | A recipe's lines become rows to check: an amount to buy is kept ("1 lb", "8", "2 cans"), a recipe's measure is left off ("2 tbsp", "1 cup"), and the name is cleaned | Unit | Unit `apps/web/lib/recipe-read.test.ts`: `a recipe’s lines as rows to check › [MEAL-25-b] keeps an amount to buy, leaves a recipe’s measure off, cleans the name`<br>Unit `apps/web/lib/recipe-read.test.ts`: `a recipe’s lines as rows to check › [MEAL-25-b] takes the lines under Ingredients, up to the method` |
+| MEAL-25-c | WP-105 | A made-up PDF's text is read into lines | Unit | Unit `apps/web/lib/recipe-read.test.ts`: `reading a made-up recipe file › [MEAL-25-c] reads a PDF’s text into ingredient lines` |
+| MEAL-25-d | WP-105 | A made-up photo of an ingredient list is read into lines by Tesseract.js | Unit | Unit `apps/web/lib/recipe-read.test.ts`: `reading a made-up recipe file › [MEAL-25-d] reads a photo’s text with Tesseract.js into ingredient lines` |
+| MEAL-25-e | WP-105 | Fetching a recipe link takes only http and https to a public address, gives up after its time and size limits, and never follows a redirect to a private one | Unit | Unit `apps/web/lib/recipe-read.test.ts`: `fetching a recipe link › [MEAL-25-e] takes only http and https to a public address`<br>Unit `apps/web/lib/recipe-read.test.ts`: `fetching a recipe link › [MEAL-25-e] never follows a redirect to a private address, and follows at most three`<br>Unit `apps/web/lib/recipe-read.test.ts`: `fetching a recipe link › [MEAL-25-e] gives up past its size limit, on a page that isn’t a page, or when it can’t reach it` |
+| MEAL-25-f | WP-105 | A meal's recipe files are the household's own: up to 10 MB each, a photo or a PDF; another household's admin and board can't read or add them; the household's board reads them | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] a parent adds a photo to a meal's recipe`<br>DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] another family's board reads none of them` |
+| MEAL-25-g | WP-105 | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI | UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-25-g] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` |
+| MEAL-26-a | WP-105 | On the board's Meals, a tap on a meal with a recipe opens it full screen, read-only: its photos and PDFs with chips between them, its ingredients and the link's steps, text 28 px or more, and Close goes back | UI | UI `e2e/ui/board-recipe.spec.ts`: `[MEAL-26-a] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}` |
 
 ### 9.5 By user story
 
@@ -1086,6 +1086,14 @@ Unit · 8 tests
 | `meals on the board › [MEAL-06] why a day has no school lunch: the weekend, or no school` | MEAL-06 |
 | `meals on the board › [MEAL-06] the week’s days and their headings` | MEAL-06 |
 | `meals on the board › [MENU-06][US-804] by section: a buy day’s entree options, and the week’s menu a row a section` | MENU-06, US-804 |
+
+#### `apps/web/lib/board-recipes.test.ts`
+
+Unit · 1 tests
+
+| Test | Names |
+|---|---|
+| `recipes on the board › [MEAL-26] reads board_recipes(), skipping what it can’t read` | MEAL-26 |
 
 #### `apps/web/lib/board-sleep.test.ts`
 
@@ -1837,6 +1845,23 @@ Unit · 10 tests
 | `points in words › [PTS-01] describes each entry for a parent` | PTS-01 |
 | `points in words › [PTS-01] dates each entry by the household's day` | PTS-01 |
 
+#### `apps/web/lib/recipe-read.test.ts`
+
+Unit · 10 tests
+
+| Test | Names |
+|---|---|
+| `a recipe link’s published recipe data › [MEAL-25-a] reads a Recipe on its own, with its ingredients and steps` | MEAL-25-a |
+| `a recipe link’s published recipe data › [MEAL-25-a] finds it in a list or a @graph, with steps in sections or one string` | MEAL-25-a |
+| `a recipe link’s published recipe data › [MEAL-25-a] says when a page publishes none` | MEAL-25-a |
+| `a recipe’s lines as rows to check › [MEAL-25-b] keeps an amount to buy, leaves a recipe’s measure off, cleans the name` | MEAL-25-b |
+| `a recipe’s lines as rows to check › [MEAL-25-b] takes the lines under Ingredients, up to the method` | MEAL-25-b |
+| `reading a made-up recipe file › [MEAL-25-c] reads a PDF’s text into ingredient lines` | MEAL-25-c |
+| `reading a made-up recipe file › [MEAL-25-d] reads a photo’s text with Tesseract.js into ingredient lines` | MEAL-25-d |
+| `fetching a recipe link › [MEAL-25-e] takes only http and https to a public address` | MEAL-25-e |
+| `fetching a recipe link › [MEAL-25-e] never follows a redirect to a private address, and follows at most three` | MEAL-25-e |
+| `fetching a recipe link › [MEAL-25-e] gives up past its size limit, on a page that isn’t a page, or when it can’t reach it` | MEAL-25-e |
+
 #### `apps/web/lib/reminder-settings.test.ts`
 
 Unit · 6 tests
@@ -2560,6 +2585,14 @@ UI · 7 tests
 | `[MENU-06][US-804] the school menu by section: the entree on one line, a tap shows it all, a row a section on Meals` | MENU-06, US-804 |
 | `[BRD-03][NFR-11] meals in ${theme}: 56 px targets, 28 px text, AA contrast, no sideways scroll` | BRD-03, NFR-11 |
 
+#### `e2e/ui/board-recipe.spec.ts`
+
+UI · 1 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-26-a] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}` | MEAL-26-a |
+
 #### `e2e/ui/board-repeating.spec.ts`
 
 UI · 5 tests
@@ -2890,7 +2923,7 @@ UI · 7 tests
 
 #### `e2e/ui/meal-groceries.spec.ts`
 
-UI · 4 tests
+UI · 5 tests
 
 | Test | Names |
 |---|---|
@@ -2898,6 +2931,7 @@ UI · 4 tests
 | `[MEAL-07-b] a meal’s form with its ingredients fits a ${device} in ${theme}` | MEAL-07-b |
 | `[MEAL-19-e] the week’s Add to groceries: by meal in day order, the notes, Add n to groceries and Cancel` | MEAL-19-e |
 | `[MEAL-19-e] the week’s review fits a ${device} in ${theme}` | MEAL-19-e |
+| `[MEAL-25-g] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` | MEAL-25-g |
 
 #### `e2e/ui/meals.spec.ts`
 
@@ -5396,7 +5430,7 @@ DB · 51 tests
 
 #### `supabase/tests/550_meal_groceries.test.sql`
 
-DB · 17 tests
+DB · 28 tests
 
 | Test | Names |
 |---|---|
@@ -5417,5 +5451,16 @@ DB · 17 tests
 | `... leaves a ticked item as it is` | — |
 | `... Wednesday changed to something written in` | — |
 | `... takes the chili's onions off too` | — |
+| `[MEAL-25-f] a parent adds a photo to a meal's recipe` | MEAL-25-f |
+| `... and a PDF of 10 MB` | — |
+| `... not one over 10 MB` | — |
+| `... a photo or a PDF only` | — |
+| `... kept in its own household's folder only` | — |
+| `... and stores it in its household's folder` | — |
+| `... never in another family's` | — |
+| `... the household's board reads its files` | — |
+| `[MEAL-26] board_recipes gives a board each planned meal's recipe, with its files` | MEAL-26 |
+| `[MEAL-25-f] another family's board reads none of them` | MEAL-25-f |
+| `... and another family's parent adds none` | — |
 
 <!-- /catalogue -->
