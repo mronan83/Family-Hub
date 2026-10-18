@@ -187,7 +187,7 @@ test.describe('Chores in four sections', () => {
   }, testInfo) => {
     await open(page, '/dev/chores');
     const row = rows(page, 'Recurring').filter({ hasText: 'Feed the dog' });
-    const name = row.getByRole('link', { name: 'Feed the dog' });
+    const name = row.getByRole('link', { name: 'Feed the dog', exact: true });
     // What stops Safari's callout and link preview on a hold: no callout and no text selection.
     // -webkit-touch-callout exists only where the engine has touch callouts (WebKit built for iOS);
     // where it does, the row and its link read "none".
