@@ -276,12 +276,12 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 128 of 145 |
+| Requirements built (a Done item builds them) | 128 of 147 |
 | Built requirements with no test | 0 |
-| Stories built | 113 of 129 |
+| Stories built | 113 of 130 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 201 (with a test: 201) |
+| Test cases | 213 (with a test: 201) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -417,6 +417,8 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-24 | S | Covered | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 5 · DB 1 · UI 1 |
 | MEAL-25 | S | Covered | US-720 | WP-96, WP-105 | MEAL-25-h, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | U 13 · DB 2 · UI 2 · E2E 1 |
 | MEAL-26 | S | Covered | US-720 | WP-105 | MEAL-26-a | U 1 · DB 1 · UI 1 |
+| MEAL-27 | S | Not built | US-721 | WP-112 | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e | — |
+| MEAL-28 | S | Not built | US-721 | WP-112 | MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | — |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
 | MENU-03 | M | Covered | US-802 | WP-27 | — | U 6 · DB 3 · UI 2 · E2E 1 |
@@ -575,6 +577,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-109 | Done | NFR-14-s, NFR-14-t | 2 of 2 | — |
 | WP-110 | Done | PTS-04-a, NFR-16-r, NFR-16-s | 3 of 3 | — |
 | WP-111 | Done | NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z | 6 of 6 | — |
+| WP-112 | In | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e, MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | 0 of 12 | — |
 
 Test cases and the tests that prove them:
 
@@ -781,6 +784,18 @@ Test cases and the tests that prove them:
 | MEAL-25-f | WP-105 | A meal's recipe files are the household's own: up to 10 MB each, a photo or a PDF; another household's admin and board can't read or add them; the household's board reads them | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] a parent adds a photo to a meal's recipe`<br>DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] another family's board reads none of them` |
 | MEAL-25-g | WP-105 | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI | UI `e2e/ui/meal-groceries.spec.ts`: `with no service worker › [MEAL-25-g][US-720] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` |
 | MEAL-26-a | WP-105 | On the board's Meals, a tap on a meal with a recipe opens it full screen, read-only: its photos and PDFs with chips between them, its ingredients and the link's steps, text 28 px or more, and Close goes back | UI | UI `e2e/ui/board-recipe.spec.ts`: `[MEAL-26-a][US-720] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}` |
+| MEAL-27-a | WP-112 | Home's card says "8 on the list", "1 on the list" or "Nothing on the list"; as an item is typed its line says its category and its store with why ("Meat & Seafood · Kroger, where it went last time", "Pantry · Costco, your preferred store", "Other · Any store"); something already on the list says "Onions ×3 are on the list already. Adding makes ×4." | Unit | **none** |
+| MEAL-27-b | WP-112 | After Add the card says "Added Ground beef 2 lb to Meat & Seafood." with the item's name and amount as the list now has them, merged or new | Unit | **none** |
+| MEAL-27-c | WP-112 | Home on the demo family, on a phone and a laptop, Day and Evening: the Groceries card first among the cards, above Add a meal; its field two lines on a phone and one on a laptop; the line under it as typed; the merge line; the Added line with Change opening the item on Groceries; Open the list and This week's meals; two columns wide on a laptop; the card with an empty list; nothing overflows, 44 px targets, AA contrast; in Chrome, as an iPhone in WebKit and as Safari on a Mac | UI | **none** |
+| MEAL-27-d | WP-112 | Enter in Home's field adds and never makes a new line; Change opens the item's ⋯ on Groceries | UI | **none** |
+| MEAL-27-e | WP-112 | On the real preview, an admin adds an item from Home: the count goes up by one, the Added line names its category, and it is on Groceries there; adding the same thing again merges it | E2E | **none** |
+| MEAL-28-a | WP-112 | The preferred store is the household's own: set only through `set_grocery_preferred_store()` by its admins, to one of its own stores or none; another household's admin, a board, or a store of another household is refused; nobody writes the column directly | DB | **none** |
+| MEAL-28-b | WP-112 | Removing the preferred store sets New items go to back to Any store | DB | **none** |
+| MEAL-28-c | WP-112 | The store suggested is last time's store, then the preferred store, then Any store: an item had before at Kroger keeps Kroger; one had before with no store, or at a store since removed, takes the preferred store; a new item takes the preferred store; with none, Any store | Unit | **none** |
+| MEAL-28-d | WP-112 | Add this week to groceries gives each new item its suggested category and that store | Unit | **none** |
+| MEAL-28-e | WP-112 | Groceries' Categories and stores on the demo family: New items go to with Any store and each store, its help line, Preferred on the chosen store; the add field with the preferred store's chip picked and "Costco is your preferred store."; on an iPhone at 390 px the new-store hint shows in full | UI | **none** |
+| MEAL-28-f | WP-112 | On the real preview, an admin sets New items go to, adds something new and finds it at that store, then removes that store and New items go to says Any store | E2E | **none** |
+| MEAL-28-g | WP-112 | A new household's New items go to is Any store | DB | **none** |
 
 ### 9.5 By user story
 
@@ -881,6 +896,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-718 | MEAL-23 | Covered | UI 1 |
 | US-719 | MEAL-24 | Covered | UI 1 |
 | US-720 | MEAL-25, MEAL-26 | Covered | UI 2 |
+| US-721 | MEAL-27, MEAL-28 | Not built | — |
 | US-801 | MENU-01, MENU-02 | Covered | U 3 · UI 2 |
 | US-802 | MENU-03 | Covered | U 4 · DB 2 · UI 2 · E2E 1 |
 | US-803 | MENU-04, MENU-05 | Covered | U 3 · DB 1 · UI 1 · E2E 1 |

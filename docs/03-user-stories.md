@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.66: US-721 added at the owner's request (WP-112, D-142): adding to the grocery list from Home, and a preferred store that new items go to.
 > v0.8.65: US-718, US-719 and US-720 added at the owner's request, and US-712 to US-717 changed, from the grocery mockup the owner approved (WP-104, WP-105, WP-107, D-138): Groceries works without the sync; the household's own categories and stores, moving several at once; the category suggested on add; recipes as links, photos and PDFs, shown on the board; each child's parent OK.
 > v0.8.64: US-712 to US-717 added at the owner's request (SPIKE-08, WP-103 to WP-107, D-134): the grocery list kept in Apple Reminders and synced by the Mac Studio, on the board and in the admin app, meals → groceries with duplicates merged, staples, and children's asks. US-706 moves to WP-105.
 > v0.8.63: US-323, US-324 and US-325 added at the owner's request (WP-96, D-132): Chores in four sections with person chips, Duplicate, and Do again.
@@ -859,6 +860,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given a recipe link, when I tap **Read ingredients**, then the ingredients the page publishes fill the rows for me to check before I save.
 - Given a photo of Grandma's recipe card, when I tap **Read ingredients**, then the text read on my device fills the rows for me to check; nothing is saved unchecked.
 - Given Tacos has a recipe, when I tap Tacos on the board's Meals, then its photo or PDF, ingredients and steps open full screen, and **Close** goes back.
+
+### US-721 — Groceries from Home, at the store we use most
+**As a** parent **I want** to add to the grocery list from Home, and new things to go to the store we use most **so that** I can jot something down in a second and the list is already sorted by store (added at the owner's request).
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-27, MEAL-28
+- Given I'm on Home, when I type "2 lb ground beef" in the Groceries card, then one line says where it goes ("Meat & Seafood · Kroger, where it went last time"), and **Add** puts it there without leaving Home and says "Added Ground beef 2 lb to Meat & Seafood." with **Change**.
+- Given Onions ×3 are on the list, when I type "1 onion", then the card says "Onions ×3 are on the list already. Adding makes ×4.", and Add makes one item of ×4.
+- Given I chose Costco under **New items go to**, when I add olive oil, which we've never had, then it goes to Costco, on Home, on Groceries and from the week's meals; ground beef, last bought at Kroger, still goes to Kroger.
+- Given I remove Costco from our stores, then **New items go to** says Any store.
 
 ---
 
