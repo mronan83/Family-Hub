@@ -326,6 +326,91 @@ begin
     (v_demo, '0de00000-0000-4000-8000-000000072006', v_maya);
 end $$;
 
+-- [MEAL-18][MEAL-23] Groceries (WP-104): a made-up list in the starter categories (made when the
+-- household was), with stores, the reasons each thing is on it (Tuesday's tacos and Wednesday's
+-- spaghetti, the children's asks, who added the rest) and four things got in the last few days.
+do $$
+declare
+  v_demo constant uuid := '0de00000-0000-4000-8000-000000000001';
+  v_alex constant uuid := '0de00000-0000-4000-8000-0000000000a1';
+  v_sam  constant uuid := '0de00000-0000-4000-8000-0000000000a2';
+  v_list uuid := (select id from public.grocery_list where household_id = v_demo);
+  v_maya uuid := (select id from public.member where household_id = v_demo and display_name = 'Maya');
+  v_leo  uuid := (select id from public.member where household_id = v_demo and display_name = 'Leo');
+  v_tacos constant uuid := '0de00000-0000-4000-8000-000000072003';
+  v_spag  constant uuid := '0de00000-0000-4000-8000-000000072005';
+begin
+  insert into public.grocery_item (id, household_id, list_id, name, name_key, category_id, store_id, status,
+                                   ticked_at, ticked_by, created_by, created_at)
+  select ('0de00000-0000-4000-8000-0000000730' || lpad(i.n::text, 2, '0'))::uuid, v_demo, v_list, i.name, i.k,
+         (select c.id from public.grocery_category c where c.household_id = v_demo and c.starter_key = i.cat),
+         (select s.id from public.grocery_store s where s.household_id = v_demo and s.name = i.store),
+         case when i.got is null then 'open' else 'ticked' end,
+         now() - i.got, case when i.got is null then null else coalesce(i.by, v_sam) end,
+         coalesce(i.by, v_alex), now() - interval '3 days' + i.n * interval '1 minute'
+    from (values
+      (1, 'Apples', 'apple', 'produce', null, null::uuid, null::interval),
+      (2, 'Avocados', 'avocado', 'produce', 'Aldi', v_alex, null),
+      (3, 'Baby spinach', 'baby spinach', 'produce', null, v_sam, null),
+      (4, 'Bananas', 'banana', 'produce', 'Aldi', v_sam, null),
+      (5, 'Lettuce', 'lettuce', 'produce', null, null, null),
+      (6, 'Onions', 'onion', 'produce', null, null, null),
+      (7, 'Cheddar', 'cheddar', 'dairy', 'Kroger', null, null),
+      (8, 'Eggs', 'egg', 'dairy', 'Aldi', v_sam, null),
+      (9, 'Greek yogurt', 'greek yogurt', 'dairy', null, null, null),
+      (10, 'Milk', 'milk', 'dairy', 'Costco', v_alex, null),
+      (11, 'Sourdough', 'sourdough', 'bakery', null, v_alex, null),
+      (12, 'Tortillas', 'tortilla', 'bakery', 'Kroger', null, null),
+      (13, 'Ground beef', 'ground beef', 'meat', 'Kroger', null, null),
+      (14, 'Salmon fillets', 'salmon fillet', 'meat', 'Costco', v_alex, null),
+      (15, 'Peanut butter', 'peanut butter', 'pantry', null, v_sam, null),
+      (16, 'Rice', 'rice', 'pantry', null, v_sam, null),
+      (17, 'Dish soap', 'dish soap', 'household', 'Walmart', v_alex, null),
+      (18, 'Paper towels', 'paper towel', 'household', 'Costco', v_sam, null),
+      (19, 'Coffee', 'coffee', 'pantry', null, v_sam, interval '20 hours'),
+      (20, 'Pasta', 'pasta', 'pantry', null, v_sam, interval '20 hours 1 minute'),
+      (21, 'Strawberries', 'strawberry', 'produce', null, v_sam, interval '20 hours 2 minutes'),
+      (22, 'Foil', 'foil', 'household', null, v_alex, interval '2 days')
+    ) i (n, name, k, cat, store, by, got);
+
+  insert into public.grocery_item_reason (household_id, item_id, kind, by_user, member_id, meal_plan_entry_id,
+                                          label, amount)
+  select v_demo, ('0de00000-0000-4000-8000-0000000730' || lpad(r.n::text, 2, '0'))::uuid, r.kind,
+         case when r.kind = 'added' then coalesce(r.by, v_alex) end, r.member, r.entry, r.label, r.amount
+    from (values
+      (1, 'ask', null::uuid, v_leo, null::uuid, null, '×6'),
+      (2, 'added', v_alex, null, null, null, '×2'),
+      (3, 'added', v_sam, null, null, null, null),
+      (4, 'added', v_sam, null, null, null, null),
+      (5, 'meal', null, null, v_tacos, 'Tacos, Tue', '1'),
+      (6, 'meal', null, null, v_tacos, 'Tacos, Tue', '1'),
+      (6, 'meal', null, null, v_spag, 'Spaghetti, Wed', '2'),
+      (7, 'meal', null, null, v_tacos, 'Tacos, Tue', null),
+      (8, 'added', v_sam, null, null, null, '1 dozen'),
+      (9, 'ask', null, v_maya, null, null, null),
+      (10, 'added', v_alex, null, null, null, '×2'),
+      (11, 'added', v_alex, null, null, null, null),
+      (12, 'meal', null, null, v_tacos, 'Tacos, Tue', '8'),
+      (13, 'meal', null, null, v_tacos, 'Tacos, Tue', '1 lb'),
+      (13, 'meal', null, null, v_spag, 'Spaghetti, Wed', '1 lb'),
+      (14, 'added', v_alex, null, null, null, '×4'),
+      (15, 'added', v_sam, null, null, null, null),
+      (16, 'added', v_sam, null, null, null, null),
+      (17, 'added', v_alex, null, null, null, null),
+      (18, 'added', v_sam, null, null, null, null),
+      (19, 'added', v_sam, null, null, null, null),
+      (20, 'added', v_sam, null, null, null, '×2'),
+      (21, 'added', v_sam, null, null, null, null),
+      (22, 'added', v_alex, null, null, null, null)
+    ) r (n, kind, by, member, entry, label, amount);
+
+  insert into public.grocery_item_event (household_id, item_id, kind, at, by_user)
+  select v_demo, i.id, 'added', i.created_at, i.created_by from public.grocery_item i where i.household_id = v_demo
+  union all
+  select v_demo, i.id, 'ticked', i.ticked_at, i.ticked_by from public.grocery_item i
+   where i.household_id = v_demo and i.status = 'ticked';
+end $$;
+
 -- [MEAL-04] School lunch (WP-26): Leo buys on Wednesdays, Maya on Fridays; they bring the rest.
 insert into public.member_lunch (member_id, household_id, defaults)
 select m.id, m.household_id, case m.display_name when 'Leo' then '{"wed": "buy"}' else '{"fri": "buy"}' end::jsonb
