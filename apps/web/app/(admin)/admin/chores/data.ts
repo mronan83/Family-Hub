@@ -1,6 +1,7 @@
 import type { OccurrenceStatus } from '@familywise/rules-engine';
 import type { IconName, MemberColor } from '@familywise/ui';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { OnceOccurrence } from '@/lib/chore-sections';
 import type {
   Approval,
   Assignment,
@@ -231,4 +232,44 @@ export async function loadLastWeek(
     .order('member_id', { nullsFirst: true });
   if (error) throw new Error(`last week: ${error.message}`);
   return byDay(data as unknown as RawDay[]);
+}
+
+/**
+ * [CHR-21] The occurrences of the household's one-time items, whatever their date (RLS: private
+ * items' only for those who can see them), for which section each item is in: done, missed or still
+ * to do, and when it was finished.
+ */
+export async function loadOnceOccurrences(
+  db: SupabaseClient,
+  householdId: string,
+  choreIds: string[],
+): Promise<OnceOccurrence[]> {
+  type Raw = {
+    chore_id: string;
+    due_date: string;
+    member_id: string | null;
+    status: string;
+    status_changed_at: string | null;
+  };
+  // In batches, so a household with years of one-time items keeps each request's address short.
+  const batches: string[][] = [];
+  for (let i = 0; i < choreIds.length; i += 100) batches.push(choreIds.slice(i, i + 100));
+  const pages = await Promise.all(
+    batches.map(async (ids) => {
+      const { data, error } = await db
+        .from('chore_occurrence')
+        .select('chore_id, due_date, member_id, status, status_changed_at')
+        .eq('household_id', householdId)
+        .in('chore_id', ids);
+      if (error) throw new Error(`one-time occurrences: ${error.message}`);
+      return data as Raw[];
+    }),
+  );
+  return pages.flat().map((o) => ({
+    choreId: o.chore_id,
+    dueDate: o.due_date,
+    memberId: o.member_id,
+    status: o.status,
+    changedAt: o.status_changed_at,
+  }));
 }

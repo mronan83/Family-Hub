@@ -6824,3 +6824,322 @@ textarea.fw-groc__addinput {
   color: var(--primary-text);
   font-weight: 700;
 }
+
+/* [CHR-21][NFR-18][D-132] Two-line rows with a ⋯ menu (WP-96): Chores, the Meal library and Tags.
+   Line 1 the icon and name, line 2 the facts; ⋯ at the end opens Edit, Duplicate and Archive. The
+   row is held by touch or mouse for the same menu, so it never shows Safari's callout or selects
+   its text (Q5). */
+.fw-rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) var(--touch);
+  align-items: center;
+  gap: 2px var(--s-3);
+  padding: 10px 0;
+  border-bottom: var(--border-w) solid var(--line);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.fw-rows > .fw-row:last-child {
+  border-bottom: 0;
+}
+.fw-row__icon {
+  grid-row: 1 / span 2;
+  align-self: start;
+  padding-top: 1px;
+  color: var(--primary-text);
+}
+.fw-row--tile {
+  grid-template-columns: 36px minmax(0, 1fr) var(--touch);
+}
+.fw-row--tile > .fw-row__icon {
+  padding-top: 0;
+}
+.fw-row__tile {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-row__l1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+  min-width: 0;
+}
+.fw-row__name,
+.admin a.fw-row__name {
+  color: var(--text);
+  font-size: var(--t-body);
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  -webkit-touch-callout: none;
+}
+.admin a.fw-row__name:hover {
+  text-decoration: underline;
+}
+.fw-row__l2 {
+  grid-column: 2;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  overflow-wrap: anywhere;
+}
+.fw-row__l2 a {
+  font-weight: 600;
+  -webkit-touch-callout: none;
+}
+.fw-row__late {
+  color: var(--missed-text);
+  font-weight: 600;
+}
+.fw-row__done {
+  color: var(--success);
+  font-weight: 600;
+}
+.fw-row__pts {
+  color: var(--reward-text);
+  font-weight: 600;
+}
+.fw-kind {
+  display: inline-flex;
+  margin-right: 2px;
+  padding: 0 7px;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+  vertical-align: 1px;
+}
+.fw-row__more {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  position: static;
+}
+.fw-row__more > summary {
+  list-style: none;
+}
+.fw-row__more > summary::-webkit-details-marker {
+  display: none;
+}
+.fw-row__morebtn {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  border: var(--border-w) solid transparent;
+  border-radius: 12px;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+.fw-row__more[open] > .fw-row__morebtn {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-row__morebtn:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-row__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% - 6px);
+  z-index: 5;
+  display: grid;
+  box-sizing: border-box;
+  min-width: 220px;
+  max-width: calc(100vw - 2 * var(--s-4));
+  padding: 6px;
+  border: var(--border-w) solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.fw-row__more--up > .fw-row__menu {
+  top: auto;
+  bottom: calc(100% - 6px);
+}
+.fw-row__mi,
+.admin a.fw-row__mi {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.fw-row__mi:hover,
+.fw-row__mi:focus-visible {
+  background: var(--bg);
+  outline: none;
+}
+.fw-row__mi--first {
+  background: var(--bg);
+}
+.fw-row__mi .fw-icon {
+  color: var(--primary-text);
+}
+.fw-row__mi--arch .fw-icon {
+  color: var(--missed);
+}
+.fw-row__menu form {
+  margin: 0;
+}
+.fw-row__sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--line);
+}
+.fw-row__after {
+  grid-column: 1 / -1;
+  padding-top: var(--s-3);
+  -webkit-user-select: text;
+  user-select: text;
+}
+.fw-row__menu,
+.fw-row__after {
+  -webkit-touch-callout: default;
+}
+
+/* [CHR-21] Chores in four sections (WP-96): the person chips, Scheduled's date headings, the empty
+   lines and Completed's Show older. */
+.fw-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.fw-chip,
+.admin a.fw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch);
+  padding: 0 var(--s-3) 0 6px;
+  border: var(--border-w) solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.fw-chip[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-chip__tick {
+  display: none;
+}
+.fw-chip[aria-pressed='true'] .fw-chip__tick {
+  display: inline-flex;
+}
+.admin a.fw-chips__clear {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  padding: 0 6px;
+  font-weight: 600;
+}
+.admin a.fw-seg__item {
+  color: var(--text);
+  text-decoration: none;
+}
+.admin a.fw-seg__item[aria-current='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-dh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--s-3) 0 0;
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.fw-dh--late {
+  color: var(--missed-text);
+}
+.fw-dh__n {
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.fw-empty {
+  margin: 0;
+  padding: var(--s-3) 0 6px;
+  color: var(--text-soft);
+}
+.fw-older {
+  display: grid;
+  justify-items: start;
+  gap: var(--s-2);
+  padding-top: var(--s-3);
+}
+.fw-fold__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  padding: 1px var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--bg);
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+details:not([open]) > .fw-fold__head .fw-fold__count {
+  display: none;
+}
+/* Do again's sheet (Q7): narrower than Add to groceries', what the first one keeps in a box. */
+@media (min-width: 720px) {
+  .fw-sheet__box--narrow {
+    width: 460px;
+  }
+}
+.fw-keep {
+  display: flex;
+  gap: 10px;
+  padding: 10px var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-keep .fw-icon {
+  flex: none;
+  margin-top: 1px;
+  color: var(--success);
+}

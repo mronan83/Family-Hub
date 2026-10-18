@@ -37,8 +37,8 @@ async function fits(page: Page) {
 
 /** The Tacos form in the library, opened. */
 async function tacos(page: Page) {
-  await open(page, '/dev/meals?page=library');
-  await page.getByText('Edit Tacos').click();
+  // [D-132] ⋯ → Edit opens the meal's form in place under its row (WP-96).
+  await open(page, '/dev/meals?page=library&edit=Tacos');
   return page.getByRole('form', { name: 'Edit Tacos' });
 }
 const sent = async (form: ReturnType<Page['getByRole']>) =>
@@ -80,9 +80,9 @@ for (const [device, viewport] of [
       page,
     }) => {
       await page.setViewportSize(viewport);
-      await page.goto(`/dev/meals?page=library&theme=${theme}`);
+      // [D-132] Opened from ⋯ → Edit, under its row (WP-96).
+      await page.goto(`/dev/meals?page=library&edit=Tacos&theme=${theme}`);
       await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
-      await page.getByText('Edit Tacos').click();
       await expect(page.getByRole('group', { name: 'Ingredients' })).toBeVisible();
       await fits(page);
       await contrastOk(page);

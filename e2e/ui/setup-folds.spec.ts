@@ -206,22 +206,25 @@ test.describe('folded', () => {
     await expect(foldOf(page, 'Add a term')).toHaveAttribute('open', '');
   });
 
-  test('[NFR-18-s][CHR-10] Tags: Add a tag folded to its button, Our tags open, each Edit a fold, Archived folded to its count', async ({
+  test('[NFR-18-s][CHR-10] Tags: Add a tag folded to its button, Our tags open, each tag a row with ⋯, Archived folded to its count', async ({
     page,
   }) => {
     await open(page, '/dev/tags');
-    await folded(page, ['Add a tag', 'Archived', 'Edit Morning', 'Edit Kitchen']);
+    await folded(page, ['Add a tag', 'Archived']);
     await expect(head(foldOf(page, 'Add a tag')).getByText('Add a tag').last()).toBeVisible();
     await expect(
       page.getByRole('list', { name: 'Tags', exact: true }).getByRole('listitem'),
     ).toHaveCount(4);
     await expect(head(foldOf(page, 'Archived'))).toContainText('1 archived: Garden');
-    await unfold(foldOf(page, 'Edit Kitchen'));
+    // [D-132] Each tag's Edit and Archive are in its ⋯ (WP-96, replacing WP-94's Edit fold).
+    await page.getByLabel('More for Kitchen', { exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Archive Kitchen' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Edit Kitchen' })).toBeVisible();
+    await open(page, '/dev/tags?open=Kitchen');
     await expect(page.getByRole('form', { name: 'Edit Kitchen' }).getByLabel('Name')).toHaveValue(
       'Kitchen',
     );
-    await expect(page.getByRole('button', { name: 'Archive Kitchen' })).toBeVisible();
-    await expect(foldOf(page, 'Edit Morning')).not.toHaveAttribute('open');
+    await expect(page.getByRole('form', { name: 'Edit Morning' })).toHaveCount(0);
     await unfold(foldOf(page, 'Archived'));
     await expect(page.getByRole('button', { name: 'Restore Garden' })).toBeVisible();
   });
@@ -294,7 +297,7 @@ test.describe('open again', () => {
       ['/dev/school?page=year&open=terms', 'Terms', ['Breaks and days off']],
       ['/dev/school?page=year&open=followers', 'Who follows it', ['Terms']],
       ['/dev/school?page=year&open=dates', 'Dates and name', ['Who follows it', 'Archive']],
-      ['/dev/tags?open=Kitchen', 'Edit Kitchen', ['Edit Morning', 'Add a tag', 'Archived']],
+      ['/dev/tags?open=archived', 'Archived', ['Add a tag']],
       ['/dev/tags?open=archived', 'Archived', ['Add a tag']],
       ['/dev/reminders?open=when', 'When to remind me', ['My devices']],
       ['/dev/reminders?open=devices', 'My devices', ['When to remind me']],

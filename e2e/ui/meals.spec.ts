@@ -421,7 +421,9 @@ test('[MEAL-02] the library: each meal, what it’s good for and its recipe; arc
   await unfold(foldOf(page, 'Add a meal'));
   const add = page.getByRole('form', { name: 'Add a meal' });
   await expect(add.getByRole('group', { name: 'Good for' }).getByRole('checkbox')).toHaveCount(4);
-  await meals.getByText('Edit Tacos').click();
+  // [D-132] ⋯ holds Edit (WP-96); Edit opens the form under its row.
+  await expect(page.getByLabel('More for Tacos', { exact: true })).toBeVisible();
+  await open(page, '/dev/meals?page=library&edit=Tacos');
   await expect(
     page.getByRole('form', { name: 'Edit Tacos' }).getByRole('checkbox', { name: 'Dinner' }),
   ).toBeChecked();

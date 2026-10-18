@@ -5,7 +5,7 @@ import { TagsView } from '../../(admin)/admin/tags/view';
 // [CHR-10][NFR-18] Tags (WP-94) with the made-up family and no database, for the UI suite and the
 // side-by-side: Morning, Kitchen, Bedroom and School in use, Garden archived. ?open= a fold open, as
 // after a save in it (add, archived, or a tag's name for its Edit); ?state=empty for a household with
-// no tag yet; ?theme=evening.
+// no tag yet; ?menu= a tag's ⋯ open (WP-96); ?theme=evening.
 export const metadata: Metadata = { title: 'Tags', robots: { index: false } };
 
 const tag = (n: number, name: string, color: TagRow['color'], archived = false): TagRow => ({
@@ -26,7 +26,7 @@ const TAGS = [
 export default async function DevTagsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; open?: string; state?: string }>;
+  searchParams: Promise<{ theme?: string; open?: string; state?: string; menu?: string }>;
 }) {
   const p = await searchParams;
   const theme = p.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -39,6 +39,7 @@ export default async function DevTagsPage({
         uses={{ [TAGS[0]!.id]: 4, [TAGS[1]!.id]: 3, [TAGS[2]!.id]: 2, [TAGS[3]!.id]: 3 }}
         saved={null}
         open={open}
+        menu={tags.find((t) => t.name === p.menu)?.id ?? null}
         waiting={2}
         who={{ name: 'Alex', avatarKey: 'owl', color: 'member-1' }}
       />

@@ -15,23 +15,31 @@ import { RecipeField } from './recipe-field';
  */
 export function MealForm({
   id,
-  initial,
+  initial: editing,
+  copy,
+  copyFrom,
   householdId,
 }: {
   id?: string;
   initial?: MealFormValue;
+  /** [D-132] Duplicate: a new meal, filled in from another (WP-96). */
+  copy?: MealFormValue;
+  /** [MEAL-25] Duplicate's original: its photos and PDFs are copied once the copy is saved. */
+  copyFrom?: string;
   /** [MEAL-25] Where its photos and PDFs go in storage (WP-105). */
   householdId: string;
 }) {
   const [state, onSubmit, pending] = useFormAction(saveMeal, {} as FormState);
+  const initial = editing ?? copy;
   const [filled, setFilled] = useState<{ seq: number; rows: Ingredient[] } | null>(null);
   return (
     <form
       onSubmit={onSubmit}
       className="fw-form"
-      aria-label={initial ? `Edit ${initial.name}` : 'Add a meal'}
+      aria-label={editing ? `Edit ${editing.name}` : 'Add a meal'}
     >
       {id ? <input type="hidden" name="id" value={id} /> : null}
+      {copy && copyFrom ? <input type="hidden" name="copyFrom" value={copyFrom} /> : null}
       <label className="fw-field">
         <span className="fw-field__label">Name</span>
         <input
@@ -77,9 +85,20 @@ export function MealForm({
         mealId={id}
         householdId={householdId}
         url={initial?.recipeUrl ?? null}
-        files={initial?.recipeFiles ?? []}
+        files={editing?.recipeFiles ?? []}
         onRows={(rows) => setFilled((was) => ({ seq: (was?.seq ?? 0) + 1, rows }))}
       />
+      {/* [MEAL-25] A copy's steps and files come from its original (D-132). */}
+      {copy?.recipeSteps?.length ? (
+        <input type="hidden" name="recipeSteps" value={JSON.stringify(copy.recipeSteps)} />
+      ) : null}
+      {copy?.recipeFiles?.length ? (
+        <p className="fw-field__help">
+          {copy.recipeFiles.map((f) => f.name).join(', ')}{' '}
+          {copy.recipeFiles.length === 1 ? 'is' : 'are'} copied with it when you tap <b>Add meal</b>
+          .
+        </p>
+      ) : null}
       <IngredientsField initial={initial?.ingredients ?? []} rows={filled} />
       <IconPicker
         legend="Icon"
@@ -89,7 +108,7 @@ export function MealForm({
       {state.message ? <Banner kind="notice">{state.message}</Banner> : null}
       <div className="fw-actions">
         <Button type="submit" icon="check" disabled={pending}>
-          {initial ? 'Save changes' : 'Add meal'}
+          {editing ? 'Save changes' : 'Add meal'}
         </Button>
       </div>
     </form>

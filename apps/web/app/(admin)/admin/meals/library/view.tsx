@@ -1,7 +1,10 @@
 import { Banner, Button, Fold, Icon, type IconName } from '@familywise/ui';
+import { mealCopy } from '@/lib/meal-copy';
+import type { MealFormValue } from '@/lib/meals';
 import Link from 'next/link';
 import { type MealRow, SLOT_WORDS } from '@/lib/meals';
 import { AdminHeader } from '../../header';
+import { HoldRow } from '../../hold-row';
 import { setMealArchived } from '../actions';
 import { MealForm } from '../meal-form';
 
@@ -14,10 +17,24 @@ const goodFor = (m: MealRow) =>
         .join(m.mealTypes.length === 2 ? ' or ' : ', ')
         .replace(/, ([^,]*)$/, ' or $1');
 
+/** A meal as its form takes it. */
+const formValue = (m: MealRow): MealFormValue => ({
+  name: m.name,
+  description: m.description,
+  icon: m.icon,
+  mealTypes: m.mealTypes,
+  recipeUrl: m.recipeUrl,
+  ingredients: m.ingredients ?? [],
+  recipeSteps: m.recipeSteps ?? [],
+  recipeFiles: m.recipeFiles ?? [],
+});
+
 /**
  * [MEAL-02][NFR-18] The meal library: Add a meal folded to its button (WP-93); Our meals open, each
  * one with what it's good for and its recipe, to change or archive (plans that use it keep its
  * name); Archived folded to its count, to restore, and open again after a meal is archived (D-120).
+ * [D-132] Each meal is one two-line row with ⋯ (Edit, Duplicate, Archive), as Chores' rows (WP-96,
+ * Q10): Edit opens its form in place under the row; Duplicate opens Add a meal filled in, "(copy)".
  */
 export function MealLibraryView({
   meals,
@@ -26,6 +43,8 @@ export function MealLibraryView({
   openArchived = false,
   householdId,
   editing = null,
+  copy = null,
+  menu = null,
 }: {
   meals: MealRow[];
   notice: string | null;
@@ -34,9 +53,14 @@ export function MealLibraryView({
   openArchived?: boolean;
   /** [MEAL-25] Where the meals' photos and PDFs go in storage (WP-105). */
   householdId: string;
-  /** A meal's form shown open (the dev page's picture of one). */
+  /** A meal's form shown open under its row (?edit=). */
   editing?: string | null;
+  /** Duplicate: Add a meal opened, filled in from this meal (?copy=). */
+  copy?: string | null;
+  /** The dev page's picture of a meal's ⋯ open: its id. */
+  menu?: string | null;
 }) {
+  const original = copy ? meals.find((m) => m.id === copy) : undefined;
   const active = meals.filter((m) => !m.archivedAt);
   const archived = meals.filter((m) => m.archivedAt);
   return (
@@ -61,9 +85,19 @@ export function MealLibraryView({
         title="Add a meal"
         headingId="add-meal-heading"
         button={{ label: 'Add a meal', icon: 'plus' }}
-        open={meals.length === 0}
+        open={meals.length === 0 || Boolean(original)}
       >
-        <MealForm householdId={householdId} />
+        {original ? (
+          <Banner kind="info">
+            A copy of <b>{original.name}</b>. Nothing is saved until you tap <b>Add meal</b>.
+          </Banner>
+        ) : null}
+        <MealForm
+          key={original?.id ?? 'new'}
+          householdId={householdId}
+          copy={original ? mealCopy(original) : undefined}
+          copyFrom={original?.id}
+        />
       </Fold>
 
       <section className="fw-card" aria-labelledby="our-meals-heading">
@@ -71,54 +105,90 @@ export function MealLibraryView({
         {active.length === 0 ? (
           <p className="fw-muted">No meals yet. Add the ones you make most.</p>
         ) : (
-          <ul className="fw-list" aria-label="Meals">
+          <ul className="fw-rows" aria-label="Meals">
             {active.map((m) => (
-              <li key={m.id} className="fw-list__row fw-list__row--stack">
-                <span className="fw-item">
-                  <span className="fw-reward__icon" aria-hidden>
-                    <Icon name={m.icon as IconName} size={28} />
-                  </span>
-                  <span className="fw-item__body">
-                    <strong>{m.name}</strong>
-                    <span className="fw-muted">
-                      {goodFor(m)}
-                      {m.ingredients?.length
-                        ? ` · ${m.ingredients.length} ingredient${m.ingredients.length === 1 ? '' : 's'}`
-                        : ''}
-                      {m.description ? ` · ${m.description}` : ''}
-                    </span>
-                    {m.recipeUrl ? (
-                      <a href={m.recipeUrl} target="_blank" rel="noopener noreferrer">
-                        Recipe for {m.name}
-                      </a>
-                    ) : null}
+              <HoldRow
+                key={m.id}
+                id={`meal-${m.id}`}
+                className="fw-row--tile"
+                menuLabel={`More for ${m.name}`}
+                open={menu === m.id}
+                menu={
+                  <>
+                    <Link
+                      className="fw-row__mi"
+                      href={`/admin/meals/library?edit=${m.id}#meal-${m.id}`}
+                      aria-label={`Edit ${m.name}`}
+                    >
+                      <Icon name="edit" size={20} />
+                      Edit
+                    </Link>
+                    <Link
+                      className="fw-row__mi"
+                      href={`/admin/meals/library?copy=${m.id}#add-meal`}
+                      aria-label={`Duplicate ${m.name}`}
+                    >
+                      <Icon name="copy" size={20} />
+                      Duplicate
+                    </Link>
+                    <span className="fw-row__sep" aria-hidden />
+                    <form action={setMealArchived}>
+                      <input type="hidden" name="id" value={m.id} />
+                      <input type="hidden" name="archive" value="true" />
+                      <button
+                        type="submit"
+                        className="fw-row__mi fw-row__mi--arch"
+                        aria-label={`Archive ${m.name}`}
+                      >
+                        <Icon name="archive" size={20} />
+                        Archive
+                      </button>
+                    </form>
+                  </>
+                }
+                after={
+                  editing === m.id ? (
+                    <div className="fw-form">
+                      <MealForm householdId={householdId} id={m.id} initial={formValue(m)} />
+                      <Link href="/admin/meals/library">Cancel</Link>
+                    </div>
+                  ) : null
+                }
+              >
+                <span className="fw-row__icon">
+                  <span className="fw-row__tile" aria-hidden>
+                    <Icon name={m.icon as IconName} size={22} />
                   </span>
                 </span>
-                <details open={editing === m.id || undefined}>
-                  <summary>Edit {m.name}</summary>
-                  <MealForm
-                    householdId={householdId}
-                    id={m.id}
-                    initial={{
-                      name: m.name,
-                      description: m.description,
-                      icon: m.icon,
-                      mealTypes: m.mealTypes,
-                      recipeUrl: m.recipeUrl,
-                      ingredients: m.ingredients ?? [],
-                      recipeSteps: m.recipeSteps ?? [],
-                      recipeFiles: m.recipeFiles ?? [],
-                    }}
-                  />
-                  <form action={setMealArchived}>
-                    <input type="hidden" name="id" value={m.id} />
-                    <input type="hidden" name="archive" value="true" />
-                    <Button type="submit" variant="ghost" icon="minus-circle">
-                      Archive {m.name}
-                    </Button>
-                  </form>
-                </details>
-              </li>
+                <span className="fw-row__l1">
+                  <Link
+                    className="fw-row__name"
+                    href={`/admin/meals/library?edit=${m.id}#meal-${m.id}`}
+                  >
+                    {m.name}
+                  </Link>
+                </span>
+                <span className="fw-row__l2">
+                  {goodFor(m)}
+                  {m.ingredients?.length
+                    ? ` · ${m.ingredients.length} ingredient${m.ingredients.length === 1 ? '' : 's'}`
+                    : ''}
+                  {m.description ? ` · ${m.description}` : ''}
+                  {m.recipeUrl ? (
+                    <>
+                      {' · '}
+                      <a
+                        href={m.recipeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Recipe for ${m.name}`}
+                      >
+                        Recipe
+                      </a>
+                    </>
+                  ) : null}
+                </span>
+              </HoldRow>
             ))}
           </ul>
         )}

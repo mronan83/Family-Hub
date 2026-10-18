@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.42: Chores in four sections (WP-96, D-132, D-141): Scheduled, Recurring, Completed and Archived; the person chips and More filters; each item's ⋯ (Edit, Duplicate, Archive or Restore), or hold the row; Duplicate and Do again; an item's page folded; the meal library and Tags take the same ⋯ (A4, A15, B1.5, B1.15).
 > v0.41: the grocery list and meals → groceries (WP-104, WP-105, D-138): A17 The grocery list (adding with the category and store suggested, the list, Select, Got recently, your own categories and stores, Groceries on the board); in A15, a meal's recipe and ingredients and this week's meals onto the grocery list, and a recipe at the board; B1.17 Groceries and B2.11 Groceries; B1.15 and B2.9 updated.
 > v0.40: the set-up pages folded (WP-94, D-120, D-133): Family options, School and a school year's page, Tags, Reminders and Health fold each section set once to what it is set to; a failing weather read, the invites waiting, a device removed, a failing job and a limit near show on the folded header; the section saved in comes back open; Home's **Add a day off** a fold too (A1, A2, A3, A10, A13, B1.1, B1.4, B1.5, B1.10, B1.13, B1.16).
 > v0.39: Calendars, School menus and the meal library folded (WP-93, D-120, D-131): each calendar folded to its colour, name and facts with **Can't sync** on its header, each school menu to its facts with **Can't fetch** on its header; **Add a calendar**, **Add a school menu** and **Add a meal** folded to their buttons; the library's **Archived** to its count; a calendar or menu comes back open after a save in it (A9, A15, B1.11, B1.15).
@@ -359,12 +360,50 @@ Reminders come only for items you are on, at most once each, and never after the
 
 > **Tip:** Searching or choosing a group only changes which icons you see. The icon you chose stays chosen, even when it is out of sight, until you pick another.
 
-#### Change or archive an item
+#### The list in four sections
+<!-- covers: US-323 -->
 
-Choose **Edit** beside it. Its page shows the form, then **Coming up** (the next two weeks) and **Last 7 days** (what happened each day). The next two weeks are always planned ahead.
+**Chores** keeps everything in four sections, so a one-time item that is done never clutters the list.
+
+- **Scheduled**: one-time items not done yet (**How often**: **Once**), under **Overdue**, **Today**, **This week** and **Later**, each by its date and time. **Overdue** comes first, in purple.
+- **Recurring**: everything that repeats, by time of day (morning first), then name.
+- **Completed**: one-time items that are done, folded to how many ("12 done · 1 missed"). Open it for the newest 20, newest first; **Show older** brings 20 more. A one-time chore not done on its day is here too, marked **Missed**. A one-time task is never missed: it stays under **Overdue** until it's done.
+- **Archived**: anything archived, folded, newest first.
+
+All four always show, and an empty one says so. A one-time item for several people, each their own, stays in **Scheduled** with "1 of 2 done" until everyone has done theirs.
+
+Each item is two lines: its icon and name, then Chore or Task, when, its time, who and its points ("Every day · 7:30 am · Maya, Leo · +5").
+
+![Chores and tasks on a phone: Maya, Leo, Alex and Sam's chips, More filters folded, Scheduled under Overdue, Today, This week and Later, Recurring, then Completed folded to 12 done and 1 missed, and Archived folded to 3 archived.](guide/img/admin-chores-phone.jpg "Chores in four sections, on a phone")
+
+#### Find things on the list
+
+- Tap a face at the top to show only that person's items, in every section at once. Tap more faces to see what is any of theirs; tap a chosen face again to take it off, or **Clear** to show everyone.
+- **More filters** (folded) holds **Tag**, **Kind** and **Time of day**. Each applies as you tap it. Folded, it says what is set and how many show ("Tag: Kitchen · 4 of 23 show"), so a filtered list never looks like the whole list.
+
+#### Change, copy or archive an item
+<!-- covers: US-324 -->
+
+Tap an item's name to open its page, or tap **⋯** at the end of its row. You can also press and hold the row, with a finger or the mouse, for the same menu.
+
+- **Edit** opens its page.
+- **Duplicate** opens the form filled in from it, named "(copy)". Change what you need; nothing is saved until **Save**. The copy starts fresh: the original keeps its history, points and goal credit.
+- **Archive** takes it off the list and the board; its history stays, and it moves to **Archived**. On an archived item, **Restore** puts it back.
+
+![The ⋯ menu open on Wash the car, on a laptop: Edit, Duplicate and Archive.](guide/img/admin-chores-menu-laptop.jpg "An item's ⋯, on a laptop")
+
+**An item's page** has its form open. **More options** is folded to how it is set ("Approval: family setting (off) · every kind of day · any lunch day"). Below the form, **Coming up** is folded to the next one and how many in the next two weeks, **Last 7 days** to how many were done, missed and skipped, and **Archive** sits apart at the bottom. Tap any of them to open it.
 
 - A change applies from today. Today's item follows the change unless something has already happened to it, like a check-off or a skip; days already past keep what they were.
-- **Archive** takes it off the list and the board; its history stays. **Restore** puts it back.
+
+![Feed the dog's page on a phone: the form, More options folded, then Coming up, Last 7 days and Archive folded.](guide/img/admin-chores-item-phone.jpg "An item's page, on a phone")
+
+#### Do a one-time item again
+<!-- covers: US-325 -->
+
+On an item in **Completed**, **⋯** starts with **Do again…**. Pick **Tomorrow**, the next Saturday, **In a week** or any date, then **Add it**: a new one-time item on that day, with the same people, points and time. The first one stays done, and keeps its points and goal credit. **Change more first** opens the form filled in with that date instead. The page then says where the new one went ("It's in Scheduled, under This week").
+
+![Do again for Clean out the garage on a phone: When, with Tomorrow, Sat, Oct 17 and In a week, Or a date, the first one staying done with its 20 points, then Add it, Change more first and Cancel.](guide/img/admin-chores-again-phone.jpg "Do again, on a phone")
 
 #### Shared items and who did it
 
@@ -389,15 +428,11 @@ Tags group the list, like Morning or Kitchen. Use them to filter **Chores** and 
 1. Open **Settings** and choose **Tags** (or **Tags** under the list on **Chores**, or **Add or change tags** in an item's form).
 2. Enter a **Name** (up to 30 characters), pick a **Color** and, optionally, an **Icon** (**People and labels** comes first among the groups; **No icon** leaves it without one), then **Add tag**.
 
-Renaming a tag keeps every goal working. **Archive** a tag to stop offering it; goals and history that use it keep working, and **Restore** brings it back.
+Each tag is a row with how many items use it. Tap its name, or **⋯** then **Edit**, to change it in place. Renaming a tag keeps every goal working. **⋯** then **Archive** stops offering it; goals and history that use it keep working, and **Restore** under **Archived** brings it back.
 
 #### Private items
 
 Switch on **Private** for a surprise or a personal item. A private item never shows on the board. Only you, and the people it's for who sign in, can see it. Only the person who created an item can make it private or family-visible again.
-
-#### Find things on the list
-
-At the top of **Chores**, filter by **Person**, **Tag**, **Kind**, **Time of day**, and **Show** (**Active** or **Archived**), then choose **Filter**. **Clear** shows everything again. Each line shows how often it happens, its due time, its points, when it is next due ("Next: Today"), and "Overdue since" for an open task.
 
 ### A5 The family at the board
 <!-- covers: US-303 US-304 US-305 US-1001 US-1002 US-1005 US-1006 US-1008 US-905 US-705 US-708 US-804 -->
@@ -935,9 +970,9 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credi
 3. Tick what it's **Good for**: **Breakfast**, **Snack**, **Lunch**, **Dinner**. These meals are offered first when you plan that meal of the day; none ticked means any.
 4. Optionally add its **Recipe** (a link) and **Ingredients**, and pick an **Icon**, then choose **Add meal**. Photos and PDFs of the recipe are added once it is saved (see [Recipes and ingredients](#recipes-and-ingredients)).
 
-Choose **Edit** (the meal's name) to change one. **Archive** takes a meal out of the library: it isn't offered any more, and plans that used it keep its name. Archived meals are folded under **Archived**, which says how many; open it and **Restore** puts one back.
+Each meal is one row with what it's good for and its **Recipe**. Tap its name, or **⋯** then **Edit**, to change it: its form opens under the row. **⋯** then **Duplicate** opens **Add a meal** filled in from it, named "(copy)", with its ingredients, recipe link and steps; its photos and PDFs are copied as the copy's own when you tap **Add meal**, so removing one from the copy never touches the original. Nothing is added until **Add meal**. **⋯** then **Archive** takes a meal out of the library: it isn't offered any more, and plans that used it keep its name. Archived meals are folded under **Archived**, which says how many; open it and **Restore** puts one back.
 
-![The meal library on a phone: Add a meal folded to its button, then Our meals with what each is good for and a recipe link, then Archived folded to 1 archived.](guide/img/admin-meal-library-phone.jpg "The meal library, on a phone")
+![The meal library on a phone: Add a meal folded to its button, then Our meals, a row each with what it's good for, its ingredients and Recipe, and ⋯, then Archived folded to 1 archived.](guide/img/admin-meal-library-phone.jpg "The meal library, on a phone")
 
 #### Plan the week
 <!-- covers: US-711 -->
@@ -1212,13 +1247,20 @@ Messages: "Approved 2 lunch changes.", "Kept the day as it was.", "… was past 
 If a device can no longer get notifications, it is removed and the page says so, with **1 removed** on **My devices**' folded header: turn reminders on there again. The section you saved in, or acted on a device in, comes back open.
 
 #### B1.5 Chores
-<!-- covers: US-301 US-312 US-315 -->
+<!-- covers: US-301 US-312 US-315 US-323 US-324 US-325 -->
 
 | Part | What it shows or does |
 |---|---|
 | **Add a chore** / **Add a task** | Opens the form for a new item. |
-| Filters | **Person**, **Tag**, **Kind**, **Time of day**, **Show** (**Active** / **Archived**), **Filter**, **Clear**. |
-| The list | Chores first, then tasks, by due time. Each line: icon, name, a **Private** badge if private, kind, schedule, due time, points, **Next:** when, "Overdue since" for an open task, the people (", each their own" when everyone does their own) and tags. **Edit** opens it. |
+| Person chips | Each active member's face. Tapped, on or off; several show what is any of theirs; **Clear** takes them all off. They filter every section. |
+| **More filters** | Folded to what is set and how many show. **Tag** (a list), **Kind** (**Both**, **Chores**, **Tasks**), **Time of day** (**Any**, **Morning**, **After school**, **Evening**, **Anytime**), each applied as tapped; **Clear the filters**. |
+| **Scheduled** | Open. One-time items not done, under **Overdue**, **Today**, **This week** (to the end of the family's week) and **Later**, by date then time. |
+| **Recurring** | Open. Everything that repeats, by time of day then name; a task left open says "Overdue since". |
+| **Completed** | Folded to "12 done · 1 missed · latest Tue, Oct 13". One-time items done (or a chore missed), newest first, 20 at a time, **Show older**. |
+| **Archived** | Folded to how many. Newest archived first. |
+| A row | Line 1: icon, name, a **Private** badge if private. Line 2: **Chore** or **Task**, when ("Due today", "Once, Sat, Oct 17"), the time, who (", each their own"), "1 of 2 done", points ("+5"). The name opens the item's page. |
+| **⋯** (or hold the row) | **Edit**, **Duplicate**, **Archive**; **Do again…** first on a completed one; **Restore** and **Duplicate** on an archived one. |
+| **Do again** | **When**: **Tomorrow**, the next Saturday, **In a week**; **Or a date**; **Add it**, **Change more first**, **Cancel**. |
 | **Tags** | The tags page: add, edit, archive, restore. |
 
 **The item form** (also on an item's page):
@@ -1242,9 +1284,9 @@ If a device can no longer get notifications, it is removed and the page says so,
 | **More options**: **School lunch** | **Any day** (to start), **Days they bring lunch**, **Days they buy lunch**. Lunch days make the item **Everyone does their own**. |
 | Buttons | **Save**, **Save and add another**, **Cancel**; **Save changes** when editing. |
 
-**An item's page** also shows **Coming up** (the next two weeks, with who), **Last 7 days** (each day's result and who did it), and **Archive** / **Restore**.
+**An item's page:** **‹ Chores**, its name, the form (with **More options** folded to how it is set), then **Coming up** (folded to the next one and how many in two weeks; opened, the next two weeks with who), **Last 7 days** (folded to how many done, missed and skipped; opened, each day's result and who did it), and **Archive** / **Restore** apart at the bottom. **Duplicate** opens the same form for a new item, filled in and named "(copy)".
 
-**Tags page:** **Add a tag**, folded to its button (open while there is no tag): **Name** (up to 30), **Color**, **Icon (optional)**, **Add tag**; **Our tags**, open, with how many items use each (a link to them), each with **Edit** (name), a fold: **Save tag**, then **Archive** apart; **Archived**, folded to its count and names ("1 archived: Garden"), with **Restore**. A tag you saved comes back with its **Edit** open, and **Archived** comes back open after an archive.
+**Tags page:** **Add a tag**, folded to its button (open while there is no tag): **Name** (up to 30), **Color**, **Icon (optional)**, **Add tag**; **Our tags**, open, with how many items use each (a link to them), each a row with **⋯**: **Edit** (its form under the row: **Save tag**) and **Archive**; **Archived**, folded to its count and names ("1 archived: Garden"), with **Restore**. A tag you saved comes back with its form open, and **Archived** comes back open after an archive.
 
 #### B1.6 Members
 <!-- covers: US-104 US-1106 US-1109 -->
@@ -1378,7 +1420,7 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | **School lunch** | **School menus**. The children's faces (a dot: a day still to pick), then one child's Monday to Friday, each day closed: weekday, date, **Buy** or **Bring**, a check once set, **Today**, **Waiting** for a child's change; **No school**, greyed, on a day without. Opened: **Buy** · **Bring**, **Changed from the usual** or **Changed on the board**, **Buy? waiting** (or **New picks waiting**) linking to **Today**. **Usual week**, closed at first with a line per child ("Maya: Mon Bring · …"); opened, Monday to Friday and **School menu**, **Save** (name)**'s usual lunches**. |
 | Picks | A Buy day opened: its menu a section each (**pick one** or **any**), the picks ticked and highlighted (**Menu changed: look again** if the menu no longer has one), **Save** (name)**'s picks**; **No menu yet**, or the menu as text when it has nothing to pick. |
 
-**The meal library:** **Add a meal**, folded to its button (open while the library is empty) (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe** (its link and **Read ingredients**; photos and PDFs once saved), **Ingredients** (an amount, a name and **We usually have it** a row), **Icon**, **Add meal**); **Our meals**, each with what it's good for, how many ingredients and its recipe, **Edit** (the same form, with **Add a photo or PDF** and each file's **Read ingredients** and ×) and **Archive**; **Archived**, folded to how many, with **Restore** (open after an archive).
+**The meal library:** **Add a meal**, folded to its button (open while the library is empty) (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe** (its link and **Read ingredients**; photos and PDFs once saved), **Ingredients** (an amount, a name and **We usually have it** a row), **Icon**, **Add meal**); **Our meals**, a row each with what it's good for, how many ingredients and its **Recipe**, and **⋯**: **Edit** (the same form under its row, with **Add a photo or PDF** and each file's **Read ingredients** and ×), **Duplicate** (**Add a meal** filled in, "(copy)", with its ingredients, recipe and, on **Add meal**, copies of its photos and PDFs) and **Archive**; **Archived**, folded to how many, with **Restore** (open after an archive).
 
 **School menus:** each menu folded at first to where it comes from, whose lunch it is ("nobody yet"), for Nutrislice **Fetched** (the time today, else the day), and how many days it has in the next four weeks, with **Can't fetch** on its line, folded or open; opened, each menu with where it comes from (**From Nutrislice**, **From a file**, **Typed in**), whose lunch it is, and for Nutrislice **Fetched**, **Not fetched yet** or **Can't fetch** (why, and when it last worked); its next four weeks, each day's menu a line a section, each day with **Change** (**What's for lunch**: a section a line, "or" between options, "with" before a side; **No lunch that day**, **Note (optional)**, **Save the day**; a day you wrote is **Yours**, with **Use Nutrislice's menu again**, or **Remove** for a file's); **Load a file into** (name) (**Menu file (CSV)**, **Look at the file**, **Load** N **days**); **Add a day to** (name), both folded; then **Menu**, set apart: **Fetch** (name) **now**, **Rename** (its name and **Rename**) and **Remove** (name), which asks first. A menu comes back open after a save in it. **Add a school menu**, folded to **Add a menu** (open while there is no menu): **Name**, **Where the menu comes from**, and for Nutrislice **Your district on Nutrislice**, **Find the schools**, **School and menu**; **Add the menu**.
 

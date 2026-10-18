@@ -71,6 +71,26 @@ export const ADMIN = [
   ['meals-groceries', '/dev/meals?groceries=1'],
   // [MEAL-07][MEAL-25] WP-105's meal form: its ingredients and recipe.
   ['meals-recipe', '/dev/meals?page=library&edit=Tacos'],
+  // [CHR-21][CHR-22][CHR-23][NFR-18] WP-96's Chores in four sections, as its mockup draws them
+  // (D-132): busy, Maya chosen, More filters, a ⋯ menu, Duplicate's form, Do again's date step and
+  // after it, Show older, empty; an item's page; the Meal library's and Tags' ⋯ rows.
+  ['chores', '/dev/chores'],
+  ['chores-maya', '/dev/chores?who=Maya'],
+  ['chores-more', '/dev/chores?open=more'],
+  ['chores-more-set', '/dev/chores?tag=Kitchen'],
+  ['chores-menu', '/dev/chores?menu=Wash%20the%20car'],
+  ['chores-menu-completed', '/dev/chores?open=completed&menu=Clean%20out%20the%20garage'],
+  ['chores-menu-archived', '/dev/chores?open=archived&menu=Recorder%20practice'],
+  ['chores-copy', '/dev/chores?page=copy'],
+  ['chores-again', '/dev/chores?open=completed&again=Clean%20out%20the%20garage'],
+  ['chores-again-added', '/dev/chores?banner=again'],
+  ['chores-older', '/dev/chores?state=older&open=completed'],
+  ['chores-empty', '/dev/chores?state=empty'],
+  ['chores-filtered-empty', '/dev/chores?who=Alex&kind=chore'],
+  ['chores-item', '/dev/chores?page=item'],
+  ['chores-item-open', '/dev/chores?page=item&open=coming-up'],
+  ['meals-library-menu', '/dev/meals?page=library&menu=Spaghetti'],
+  ['tags-menu', '/dev/tags?menu=Kitchen'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of
