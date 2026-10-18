@@ -7,6 +7,7 @@ import { type BoardStore, openBoardStore } from '@/lib/board-store';
 import { day, isoDay, time } from '@/lib/format';
 import { boardTables, coalesce, readSoon } from '@/lib/live';
 import { postCompletions } from '@/lib/outbox';
+import { withGroceries } from '@/lib/board-groceries';
 import { readCalendar, readSnapshot, type BoardCalendar, type BoardSnapshot } from '@/lib/snapshot';
 import { browserClient } from '@/lib/supabase/browser';
 import { postCelebrated } from '@/lib/board-goals';
@@ -97,7 +98,11 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
         // Marked with its return, so a follow-up read that starts at once doesn't hide how long the
         // read that drew the change took (e2e's evidence of a slow database, D-129).
         const from = Date.now();
-        const { data, error } = await db.rpc('board_snapshot').abortSignal(signal);
+        // [MEAL-18] The grocery list beside it (WP-104); a failed read of it keeps the last list.
+        const [{ data, error }, groceries] = await Promise.all([
+          db.rpc('board_snapshot').abortSignal(signal),
+          db.rpc('board_groceries').abortSignal(signal),
+        ]);
         // Unmounted: stop. Given up at the deadline: readSoon has already moved on to the next read.
         if (cancelled) return true;
         if (signal.aborted) return false;
@@ -105,8 +110,9 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
           mark(status, 'data-read-failed', ++failed.current);
           return false;
         }
-        const next = readSnapshot(data);
-        if (next) setSnapshot(next);
+        const next = readSnapshot(withGroceries(data, groceries.error ? null : groceries.data));
+        if (next)
+          setSnapshot((was) => (groceries.error ? { ...next, groceries: was.groceries } : next));
         else leave();
         mark(status, 'data-read-from', from);
         mark(status, 'data-read-to', Date.now());

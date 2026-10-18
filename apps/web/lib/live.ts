@@ -47,6 +47,12 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     // Lunches picked on the board (WP-49): a child's changes and a day's picks.
     { table: 'lunch_request', filter: `household_id=eq.${householdId}` },
     { table: 'lunch_choice', filter: `household_id=eq.${householdId}` },
+    // Groceries (WP-104): the list's items, why each is on it, and the household's categories and
+    // stores; read with the snapshot (board_groceries).
+    { table: 'grocery_item', filter: `household_id=eq.${householdId}` },
+    { table: 'grocery_item_reason', filter: `household_id=eq.${householdId}` },
+    { table: 'grocery_category', filter: `household_id=eq.${householdId}` },
+    { table: 'grocery_store', filter: `household_id=eq.${householdId}` },
   ];
 }
 

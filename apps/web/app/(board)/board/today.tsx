@@ -51,6 +51,7 @@ import { calendarDay, clock, DAY_PART_LABELS, dayPart } from '@/lib/chores';
 import { type Chip, CHIP_WORDS, familyList, type ListRow } from '@/lib/dashboard';
 import { CalendarScreen, type LoadCalendar } from './calendar-ui';
 import { Dashboard } from './dashboard';
+import { GroceriesBoard } from './groceries-ui';
 import { MealsWeek, TodayMeals } from './meals-ui';
 import { type LoadLunches, LunchesScreen } from './lunches-ui';
 import { type AskLunch, type SeenLunch } from '@/lib/lunch-picks';
@@ -973,7 +974,7 @@ export function Today({
   const party = useCelebrations(snapshot.goals, markCelebrated);
   const online = useOnline();
   const { members, household, today } = snapshot;
-  // 'home' (the dashboard), 'chores', 'calendar', 'meals', 'lunches', or a member's id.
+  // 'home' (the dashboard), 'chores', 'calendar', 'meals', 'groceries', 'lunches', or a member's id.
   const [view, setView] = useState<string>('home');
   // [MEAL-09] Whose lunches show, the item that opened them (Done checks it off) and where Done goes.
   const [lunchFor, setLunchFor] = useState<{
@@ -1171,6 +1172,21 @@ export function Today({
             <span>Meals</span>
           </button>
         </li>
+        {/* [MEAL-18] The grocery list (WP-104), once the household has had its first item. */}
+        {snapshot.groceries?.ever ? (
+          <li>
+            <button
+              type="button"
+              className="fw-today__person fw-today__person--all"
+              data-rail="groceries"
+              aria-pressed={view === 'groceries'}
+              onClick={() => open('groceries')}
+            >
+              <Icon name="shopping-cart" size={64} />
+              <span>Groceries</span>
+            </button>
+          </li>
+        ) : null}
       </ul>
 
       <div className="fw-today__notice" aria-live="polite">
@@ -1409,6 +1425,8 @@ export function Today({
               open(back === 'lunches' ? 'home' : back);
             }}
           />
+        ) : view === 'groceries' ? (
+          <GroceriesBoard groceries={snapshot.groceries} members={members} />
         ) : view === 'meals' ? (
           <MealsWeek
             meals={snapshot.meals}

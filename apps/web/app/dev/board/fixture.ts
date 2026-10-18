@@ -1,3 +1,10 @@
+import type { BoardGroceries } from '@/lib/board-groceries';
+import {
+  CATEGORIES as GROCERY_CATEGORIES,
+  ITEMS as GROCERY_ITEMS,
+  PEOPLE as GROCERY_PEOPLE,
+  STORES as GROCERY_STORES,
+} from '../groceries/fixture';
 import type { Answer, CompletionEvent } from '@/lib/outbox';
 import type { MarkCelebrated } from '@/lib/board-goals';
 import type { AskFor, CancelAsk } from '@/lib/shop';
@@ -1424,4 +1431,28 @@ export function withPerfect(s: BoardSnapshot, kind: 'going' | 'missed' | 'won'):
     ...s,
     goals: [perfect, ...s.goals.filter((g) => g.memberId !== MAYA && g.memberId !== null), family],
   };
+}
+
+/**
+ * [MEAL-18] The made-up grocery list on the board (WP-104), as the admin page's fixture holds it,
+ * the children's asks pointed at this board's Maya and Leo: 'busy', 'empty' (had items, none now),
+ * or none (the household has never had one, so the rail has no Groceries).
+ */
+export function fixtureGroceries(which: string | undefined): BoardGroceries | null {
+  if (which !== '1' && which !== 'busy' && which !== 'empty') return null;
+  const people = new Map([
+    [GROCERY_PEOPLE.find((p) => p.name === 'Leo')!.id, LEO],
+    [GROCERY_PEOPLE.find((p) => p.name === 'Maya')!.id, MAYA],
+  ]);
+  const items =
+    which === 'empty'
+      ? []
+      : GROCERY_ITEMS.filter((i) => i.status === 'open').map((i) => ({
+          ...i,
+          reasons: i.reasons.map((r) => ({
+            ...r,
+            memberId: r.memberId ? (people.get(r.memberId) ?? r.memberId) : null,
+          })),
+        }));
+  return { ever: true, categories: GROCERY_CATEGORIES, stores: GROCERY_STORES, items };
 }

@@ -272,7 +272,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2768** tests: Unit 857 · DB 1502 · UI 280 · E2E 129. 2271 name at least one ID; 497 name none.
+**2775** tests: Unit 857 · DB 1506 · UI 283 · E2E 129. 2275 name at least one ID; 500 name none.
 
 | Measure | Count |
 |---|---|
@@ -281,7 +281,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 104 of 129 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 183 (with a test: 167) |
+| Test cases | 183 (with a test: 168) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -300,14 +300,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 74 | 54 | 38 | 12 | 178 |
+| Meals and lunch | 74 | 55 | 41 | 12 | 182 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
 | Platform | 186 | 167 | 57 | 15 | 425 |
-| Not named | 58 | 474 | 10 | 1 | 543 |
-| **Total** | **857** | **1502** | **280** | **129** | **2768** |
+| Not named | 58 | 477 | 10 | 1 | 546 |
+| **Total** | **857** | **1506** | **283** | **129** | **2775** |
 
 ### 9.3 By requirement
 
@@ -408,7 +408,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-15 | S | Covered | US-701 | WP-76 | — | DB 4 · UI 3 · E2E 1 |
 | MEAL-16 | S | Not built | US-712 | WP-103 | — | — |
 | MEAL-17 | S | Not built | US-713 | WP-103 | — | — |
-| MEAL-18 | S | Not built | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 1 · DB 5 · UI 4 · E2E 1 |
+| MEAL-18 | S | Not built | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 1 · DB 6 · UI 7 · E2E 1 |
 | MEAL-19 | S | Not built | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 1 |
 | MEAL-20 | S | Not built | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 |
 | MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
@@ -567,7 +567,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-101 | Done | NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q | 9 of 9 | — |
 | WP-102 | Done | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | 8 of 8 | — |
 | WP-103 | Queued: | — | — | — |
-| WP-104 | Ready | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 15 of 16 | — |
+| WP-104 | Ready | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 16 of 16 | — |
 | WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 5 of 20 | — |
 | WP-106 | Queued | — | — | — |
 | WP-107 | Queued | — | — | — |
@@ -727,11 +727,11 @@ Test cases and the tests that prove them:
 | NFR-14-l | WP-98 | A database connection string, password included, in a test's error, cause, title or re-run never reaches the findings log's comment or the run summary | Unit | Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-l] a connection string, password included, never reaches the findings log or the run summary` |
 | NFR-14-m | WP-98 | The first run with a failure opens the one "E2E findings log" issue and comments its entries; later runs comment on the same issue and count what earlier runs wrote; GitHub not answering is said in the summary and fails nothing | Unit | Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-m] the first red run opens "E2E findings log"; later runs comment on it and read it back`<br>Unit `scripts/e2e-findings.test.mjs`: `[NFR-14-m] when GitHub cannot be reached, the summary says so and the run is not failed by it` |
 | NFR-14-n | WP-98 | `e2e.yml` can be started by hand (`workflow_dispatch`), on `main` only and only when no other e2e run is queued or going, so it never displaces one; it shares the one `demo-family` group with no other trigger, and the findings log runs after every run | Unit | Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] a run by hand starts on main when no other e2e run is queued or going`<br>Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] a run by hand never displaces or joins behind another run, and starts on main only`<br>Unit `scripts/e2e-guard.test.mjs`: `[NFR-14-n] e2e.yml can be run by hand, guarded, in the one demo-family group, and logs every run` |
-| MEAL-18-a | WP-104 | The grocery list, its items, their reasons and their history are the household's own: another household's admin and board read none of them and write none; the household's board reads its list and writes nothing | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] not onto another family's list`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] nobody writes the list directly`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] the household's board reads its list, reasons and categories` |
+| MEAL-18-a | WP-104 | The grocery list, its items, their reasons and their history are the household's own: another household's admin and board read none of them and write none; the household's board reads its list and writes nothing | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] not onto another family's list`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] nobody writes the list directly`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] the household's board reads its list, reasons and categories`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] board_groceries gives a board its household's open items, categories and stores` |
 | MEAL-18-b | WP-104 | Ticking an item records a tick with when and who, unticking puts it back on the list, and removing it is not a tick; every event stays in the history after the item is removed | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-b] ticking is a buy`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-b] unticking puts it back` |
 | MEAL-18-c | WP-104 | Got recently holds the items ticked in the last 7 days, newest first, and not one ticked 8 days ago; a ticked item is off the list at once | Unit | Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-18-c] Got recently: ticked in the last 7 days, newest first; not 8 days ago` |
 | MEAL-18-d | WP-104 | The admin app's Groceries on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: the add field open at the top, the list by category A to Z with each item's amount, store and why, an item's ⋯ (why it's on the list, Edit, Move to…, Store…, Select several, Remove), Got recently with Untick; nothing overflows, contrast is AA, targets are 44 px | UI | UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] the list by category, A to Z, with amount, store and why; fits in ${theme}`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an item’s ⋯ says why it is on the list and holds the rest`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] Got recently: what was got this week, with Untick`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an empty list says so` |
-| MEAL-18-e | WP-104 | The board's Groceries on the demo family, Day and Evening: the list by category A to Z with each item's picture, amount, and why for a meal; text 28 px or more; nothing on it changes the list; an empty list says "Nothing on the list right now."; Groceries is in the rail once the household has had its first item | UI | **none** |
+| MEAL-18-e | WP-104 | The board's Groceries on the demo family, Day and Evening: the list by category A to Z with each item's picture, amount, and why for a meal; text 28 px or more; nothing on it changes the list; an empty list says "Nothing on the list right now."; Groceries is in the rail once the household has had its first item | UI | UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] the list by category, A to Z, with pictures, amounts and why, read-only, in ${theme}`<br>UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] store chips change only what the board shows`<br>UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] an emptied list says so; a household with none has no Groceries in the rail` |
 | MEAL-18-f | WP-104 | On the real preview, an admin adds an item, ticks it, finds it under Got recently and unticks it back onto the list | E2E | E2E `e2e/tests/groceries.spec.ts`: `[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at once` |
 | MEAL-23-a | WP-104 | The list groups by the household's categories in their order, Other last, with items A to Z inside, whatever their capitals; a store chip shows only that store's items, still by category; Any store shows the items with no store; the counts on the chips match | Unit | Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] groups by the household’s categories in their order, Other last, A to Z inside`<br>Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] a store chip shows only its items, still by category; Any store those with none`<br>Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] each item says what to buy and why, the meals once each` |
 | MEAL-23-b | WP-104 | Categories and stores are the household's own: added, renamed, ordered and removed only by its admins; removing a category moves its items to Other; Other can't be removed or renamed; a removed store leaves its items with no store | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-23-b] several items move to a category at once`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-23-b] a parent adds a category` |
@@ -2506,6 +2506,16 @@ UI · 8 tests
 | `text sizes on a 1080p screen before any app code › [BRD-08] the board starts at the text size it last had, before it has read anything` | BRD-08 |
 | `a swipe on a 4K panel at device scale 1 › [BRD-08][CAL-04] is measured in the board’s own px: the same reach turns the page` | BRD-08, CAL-04 |
 | `a swipe on a 4K panel at device scale 1 the home screen on ${screen} › [BRD-08][BRD-09][NFR-16] ${width}×${height} at ${size}, ${theme}: nothing over the next…` | BRD-08, BRD-09, NFR-16 |
+
+#### `e2e/ui/board-groceries.spec.ts`
+
+UI · 3 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-18-e] the list by category, A to Z, with pictures, amounts and why, read-only, in ${theme}` | MEAL-18-e |
+| `[MEAL-18-e] store chips change only what the board shows` | MEAL-18-e |
+| `[MEAL-18-e] an emptied list says so; a household with none has no Groceries in the rail` | MEAL-18-e |
 
 #### `e2e/ui/board-meals.spec.ts`
 
@@ -5288,7 +5298,7 @@ DB · 10 tests
 
 #### `supabase/tests/540_groceries.test.sql`
 
-DB · 47 tests
+DB · 51 tests
 
 | Test | Names |
 |---|---|
@@ -5339,5 +5349,9 @@ DB · 47 tests
 | `... a removed store` | — |
 | `... leaves its items with any store` | — |
 | `... and only the household's parents change them` | — |
+| `[MEAL-18-a] board_groceries gives a board its household's open items, categories and stores` | MEAL-18-a |
+| `... each with why it is on the list` | — |
+| `... another family's board gets none of it` | — |
+| `... and anyone but a board gets nothing` | — |
 
 <!-- /catalogue -->

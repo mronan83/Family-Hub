@@ -3,7 +3,7 @@
 -- tick, untick and remove with the history kept; moving several, which teaches the household's words;
 -- removing a category; and who may read and change what.
 begin;
-select plan(47);
+select plan(51);
 
 insert into auth.users (id, email) values
   ('54100000-0000-0000-0000-000000000001', 'parent@example.com'),
@@ -189,6 +189,20 @@ select set_config('t.produce', pg_temp.cat('produce')::text, true);
 select pg_temp.neighbour();
 select throws_ok($$ select public.rename_grocery_place('category', current_setting('t.produce')::uuid, 'Mine') $$, '42501', null,
                  '... and only the household''s parents change them');
+
+-- [MEAL-18-a] The board's read: its own household's open list, with categories and stores.
+select pg_temp.board();
+select ok((select (g ->> 'ever')::boolean and jsonb_array_length(g -> 'categories') = 9
+                  and jsonb_array_length(g -> 'stores') = 5
+                  and not exists (select from jsonb_array_elements(g -> 'items') x where x ->> 'name' = 'Mystery')
+             from (select public.board_groceries() g) s),
+          '[MEAL-18-a] board_groceries gives a board its household''s open items, categories and stores');
+select ok((select jsonb_array_length(x -> 'reasons') > 0 from jsonb_array_elements(public.board_groceries() -> 'items') x
+            where x ->> 'name' = 'Onions'), '... each with why it is on the list');
+select pg_temp.their_board();
+select is(jsonb_array_length(public.board_groceries() -> 'items'), 0, '... another family''s board gets none of it');
+select pg_temp.parent();
+select is(public.board_groceries(), null, '... and anyone but a board gets nothing');
 
 select * from finish();
 rollback;

@@ -1825,6 +1825,15 @@ html:has(.board) {
 .fw-today__person--all > span {
   max-width: 100%;
 }
+/* [MEAL-18] With Groceries in it too (WP-104), the rail's pages are a little shorter and their icons
+   smaller, so the family and every page still fit a 1080 px board without scrolling. */
+.fw-today__people:has([data-rail='groceries']) .fw-today__person--all {
+  min-height: 76px;
+}
+.fw-today__people:has([data-rail='groceries']) .fw-today__person--all svg {
+  width: 40px;
+  height: 40px;
+}
 .fw-today__people svg {
   width: 48px;
   height: 48px;
@@ -6305,4 +6314,150 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
 .fw-groc__placeacts {
   display: flex;
   align-items: center;
+}
+
+/* [MEAL-18][MEAL-23] Groceries on the board (WP-104, D-138): the list by category in columns, read
+   only; store chips change only what the board shows. Text 28 px or more. */
+.fw-bgroc {
+  display: grid;
+  gap: var(--s-4);
+  align-content: start;
+}
+.fw-bgroc__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0;
+  font-size: var(--t-title);
+}
+.fw-bgroc__title > svg {
+  color: var(--primary-text);
+}
+.fw-bgroc__sub {
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  font-weight: 600;
+}
+.fw-bgroc__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+}
+.fw-bgroc__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch);
+  padding: 0 var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--t-small);
+  font-weight: 600;
+  cursor: pointer;
+}
+.fw-bgroc__chip > svg {
+  color: var(--primary-text);
+}
+.fw-bgroc__chip[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-bgroc__chip:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-bgroc__cols {
+  columns: 4 340px;
+  column-gap: var(--s-6);
+}
+.fw-bgroc__sec {
+  display: grid;
+  break-inside: avoid;
+  margin-bottom: var(--s-6);
+  padding: var(--s-4) var(--s-4) var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.fw-bgroc__sec h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0 0 var(--s-1);
+  font-size: var(--t-heading);
+  line-height: 1.2;
+}
+.fw-bgroc__sec h3 > svg {
+  flex: none;
+  color: var(--primary-text);
+}
+.fw-bgroc__n {
+  margin-left: auto;
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+}
+.fw-bgroc__sec ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-bgroc__it {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 0 var(--s-3);
+  min-height: 56px;
+  padding: var(--s-1) 0;
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-bgroc__it > svg {
+  justify-self: center;
+  color: var(--primary-text);
+}
+.fw-bgroc__nm {
+  font-size: var(--t-body);
+  font-weight: 600;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.fw-bgroc__amt {
+  color: var(--text-soft);
+}
+.fw-bgroc__wy {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  line-height: 1.2;
+}
+.fw-bgroc__wy > svg {
+  flex: none;
+}
+.fw-bgroc__empty {
+  display: grid;
+  place-items: center;
+  gap: var(--s-4);
+  padding: var(--s-12) var(--s-6);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  text-align: center;
+}
+.fw-bgroc__empty > svg {
+  color: var(--primary-text);
+}
+.fw-bgroc__empty p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: var(--t-body);
 }

@@ -68,7 +68,10 @@ export const ADMIN = [
   ['groceries-got', '/dev/groceries?open=got'],
   ['groceries-empty', '/dev/groceries?state=empty'],
 ];
-/** [name, query, person] per board screen: Maya's goal cards. */
+/**
+ * [name, query, person, whole] per board screen: Maya's goal cards; with `whole`, a screen of the
+ * rail drawn as the board shows it (WP-104's Groceries).
+ */
 export const BOARD = [
   ['board-going', '?repeating=going', 'Maya'],
   ['board-missed', '?repeating=missed', 'Maya'],
@@ -76,12 +79,14 @@ export const BOARD = [
   ['board-steps', '?steps=going', 'Maya'],
   ['board-weighted', '?steps=weighted', 'Maya'],
   ['board-family', '?perfect=missed', 'Maya'],
+  ['board-groceries', '?groceries=1', 'Groceries', 'whole'],
+  ['board-groceries-empty', '?groceries=empty', 'Groceries', 'whole'],
 ];
 
 const only = arg('only', '');
 const wanted = (name) => !only || only.split(',').some((o) => name.startsWith(o));
 
-async function shoot(context, url, file, person) {
+async function shoot(context, url, file, person, whole = false) {
   const page = await context.newPage();
   await page.clock.setFixedTime(THURSDAY);
   await page.goto(url);
@@ -97,7 +102,9 @@ async function shoot(context, url, file, person) {
     await page.getByRole('heading', { name: person, level: 2 }).waitFor();
   }
   await page.evaluate(() => document.fonts.ready);
-  if (person) {
+  if (person && whole) {
+    await page.screenshot({ path: file });
+  } else if (person) {
     // The board is one screen that scrolls inside; the goal cards are its Goals section, drawn
     // whole by letting the parts around it grow.
     const goals = page.getByRole('region', { name: 'Goals' });
@@ -137,9 +144,9 @@ for (const theme of ['day', 'evening']) {
     await context.close();
   }
   const board = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
-  for (const [name, query, person] of BOARD.filter(([name]) => wanted(name))) {
+  for (const [name, query, person, whole] of BOARD.filter(([name]) => wanted(name))) {
     const url = `${base}/dev/board${query}&theme=${theme}`;
-    await shoot(board, url, `${out}/${name}-${theme}.png`, person);
+    await shoot(board, url, `${out}/${name}-${theme}.png`, person, whole === 'whole');
     n += 1;
   }
   await board.close();
