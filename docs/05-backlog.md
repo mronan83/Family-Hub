@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.157: WP-112 (Groceries on Home, and a preferred store) added at the owner's request and done in the same change (MEAL-27, MEAL-28, D-142), from the mockup the owner approved on 18 October ([Groceries Quick Action](https://claude.ai/artifact/WEFjdd1cFyGCqWKFie7i62)) with its three answers: a Groceries card first in Home's Quick actions, to add to the list without leaving Home; **New items go to**, the household's preferred store, in Groceries' Categories and stores; a store suggested as last time's, then the preferred store, then Any store, on Home, in Groceries' add field and in Add this week to groceries (D-142, which changes D-138 (4)); the Stores card's new-store hint fits an iPhone. Its test cases are MEAL-27-a to MEAL-27-e and MEAL-28-a to MEAL-28-g. D-141 (WP-96) and D-142 confirmed by the owner in this item's session. Found by the side-by-side, as a plain fact: in WebKit, Groceries' add field puts Goes in and Store above their chips rather than beside them, as since WP-104; left as it is.
 > v0.8.156: WP-96 (Chores in four sections, an item's page and the icon picker folded) done (CHR-21, CHR-22, CHR-23, NFR-16, NFR-18, D-132, D-141), from its approved mockup: Scheduled, Recurring, Completed and Archived; person chips and More filters; two-line rows with ⋯, held for the same menu; Duplicate and Do again (`do_chore_again()`); an item's page folded; the Meal library and Tags take the ⋯ row; checked in WebKit as an iPhone and as Safari on a Mac. A meal's Duplicate copies all of it, photos and PDFs as files of its own (the owner's answer). Its test cases are CHR-21-a to CHR-21-i, CHR-22-a and -b, CHR-23-a to -c, MEAL-25-h, NFR-16-t, NFR-18-y and NFR-18-z.
 > v0.8.155: WP-104 follow-up, from the owner's use on an iPhone (MEAL-18): an item's ⋯ keeps inside the screen and closes once a choice is made, on Escape or on a tap elsewhere; an item's Edit fits the screen.
 > v0.8.154: WP-104 (Groceries on the board and in the admin app, with our own categories and stores) and WP-105 (Meals → groceries: ingredients and recipes on meals, duplicates merged) done together in one branch and one PR at the owner's request (MEAL-07, MEAL-18 to MEAL-20, MEAL-23 to MEAL-26, D-138, D-139, D-140), from the approved mockup. Their test cases are MEAL-07-a and -b, MEAL-18-a to -f, MEAL-19-a to -f, MEAL-20-a to -d, MEAL-23-a to -e, MEAL-24-a to -e, MEAL-25-a to -g and MEAL-26-a.
@@ -311,13 +312,14 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-105 | Meals → groceries: ingredients and recipes on meals, duplicates merged | P3 | L | WP-104, WP-25 | Done |
 | WP-106 | Staples suggested by how often they run out | P3 | M | WP-104 | Queued (mockup approved) |
 | WP-107 | Children ask for groceries from the board, with an optional parent OK | P3 | M | WP-104, WP-63 | Queued (mockup approved) |
+| WP-112 | Groceries on Home, and a preferred store | P3 | M | WP-104 | Done |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
 | WP-36 | Closure import | P3 | M | WP-22 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107.
+**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October.
 
 ---
 
@@ -552,6 +554,7 @@ flowchart LR
     WP104 --> WP106[WP-106 Staples by how often they run out]
     WP104 --> WP107[WP-107 Children ask from the board]
     WP63 --> WP107
+    WP104 --> WP112[WP-112 Groceries on Home and a preferred store]
     WP85[WP-85 Test strategy and catalogue] --> WP86[WP-86 Close the known test gaps]
   end
 ```
@@ -2133,6 +2136,34 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 - **The parent OK**, set for each child in the **Apple Reminders sync** fold, on by default (D-138): on, the ask waits under **Asked for** on Groceries and as a count on Home's **Needs you**, and a parent with alerts on is told (WP-63); it reaches the list and Apple Reminders only once approved. Off, it goes straight on the list, marked as the child's ask. Either way it goes through WP-105's merge. The board's **Asked for** card says "Waiting for a grown-up", "On the list", and until the day ends "Got it!" or "Not this time".
 - **Done when:** the side-by-side is in the PR; pgTAP shows a board can ask only for its household and only approval puts a waiting ask on the list; the UI suite covers the ask on the board; e2e covers ask, approve and the item on the list.
 
+### WP-112 — Groceries on Home, and a preferred store
+**Phase:** P3 · **Size:** M · **Depends on:** WP-104 · **Reqs:** MEAL-27, MEAL-28
+- Added at the owner's request on 18 October, with its mockup ([Groceries Quick Action](https://claude.ai/artifact/WEFjdd1cFyGCqWKFie7i62)) approved the same day in the WP-104 and WP-105 worker session, and the owner's three answers: keep **This week's meals** on the card; show the card when the list is empty; an item keeps the last store it was given (D-142).
+- **Home:** a **Groceries** card first among Quick actions' cards, above **Add a meal**: how many are on the list ("8 on the list", "Nothing on the list"); Groceries' own add field (two lines on a phone, one on a laptop; Enter adds, no line breaks); one line under it saying where the item goes (its category, its store and why), or, for something already on the list, "Onions ×3 are on the list already. Adding makes ×4."; **Add** through the one way in (`add_groceries()`), with the suggested category and store; then "Added Ground beef 2 lb to Meat & Seafood. Change", **Change** opening the item on Groceries, and the count updated. Links: **Open the list** and **This week's meals** (`/admin/meals?groceries=1`). On a laptop the card spans two columns of the cards. It shows when the list is empty too.
+- **Preferred store:** Groceries → Categories and stores → **New items go to**, a select of the household's stores or **Any store** (the start), with "A new item gets this store. One you've had before keeps the store it had last time."; the store chosen shows **Preferred** in the list of stores. Data: `grocery_list.preferred_store_id`, set only through a function, cleared when its store is removed; RLS unchanged; pgTAP.
+- **The store suggested (D-142):** last time's store, then the preferred store, then Any store; on Home, in Groceries' add field (the store chip picked, and "Costco is your preferred store."), and in **Add this week to groceries**.
+- **Also:** on an iPhone at 390 px the Stores card's new-store hint ("New store, like Trader Joe's") was cut off; it fits.
+- **Done when:** the side-by-side is in the PR (D-127) for Home (busy, typing, preferred, merge, added, empty), the Stores setting and Groceries' add field, each on an iPhone in WebKit at 390 px and on a laptop, Day and Evening, the screens in `scripts/screen-shots.mjs`; unit tests show the store order and Home's lines; pgTAP shows the preferred store within the household, set only through its function and cleared with its store; the UI suite covers the Home card in Chrome, as an iPhone in WebKit and as Safari on a Mac, and the Stores setting; e2e adds from Home and sets the preferred store on the real preview.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| MEAL-27-a | Home's card says "8 on the list", "1 on the list" or "Nothing on the list"; as an item is typed its line says its category and its store with why ("Meat & Seafood · Kroger, where it went last time", "Pantry · Costco, your preferred store", "Other · Any store"); something already on the list says "Onions ×3 are on the list already. Adding makes ×4." | Unit |
+| MEAL-27-b | After Add the card says "Added Ground beef 2 lb to Meat & Seafood." with the item's name and amount as the list now has them, merged or new | Unit |
+| MEAL-27-c | Home on the demo family, on a phone and a laptop, Day and Evening: the Groceries card first among the cards, above Add a meal; its field two lines on a phone and one on a laptop; the line under it as typed; the merge line; the Added line with Change opening the item on Groceries; Open the list and This week's meals; two columns wide on a laptop; the card with an empty list; nothing overflows, 44 px targets, AA contrast; in Chrome, as an iPhone in WebKit and as Safari on a Mac | UI |
+| MEAL-27-d | Enter in Home's field adds and never makes a new line; Change opens the item's ⋯ on Groceries | UI |
+| MEAL-27-e | On the real preview, an admin adds an item from Home: the count goes up by one, the Added line names its category, and it is on Groceries there; adding the same thing again merges it | E2E |
+| MEAL-28-a | The preferred store is the household's own: set only through `set_grocery_preferred_store()` by its admins, to one of its own stores or none; another household's admin, a board, or a store of another household is refused; nobody writes the column directly | DB |
+| MEAL-28-b | Removing the preferred store sets New items go to back to Any store | DB |
+| MEAL-28-c | The store suggested is last time's store, then the preferred store, then Any store: an item had before at Kroger keeps Kroger; one had before with no store, or at a store since removed, takes the preferred store; a new item takes the preferred store; with none, Any store | Unit |
+| MEAL-28-d | Add this week to groceries gives each new item its suggested category and that store | Unit |
+| MEAL-28-e | Groceries' Categories and stores on the demo family: New items go to with Any store and each store, its help line, Preferred on the chosen store; the add field with the preferred store's chip picked and "Costco is your preferred store."; on an iPhone at 390 px the new-store hint shows in full | UI |
+| MEAL-28-f | On the real preview, an admin sets New items go to, adds something new and finds it at that store, then removes that store and New items go to says Any store | E2E |
+| MEAL-28-g | A new household's New items go to is Any store | DB |
+
+- **As built (D-142):** migration `20261018165556_grocery_preferred_store.sql` (`grocery_list.preferred_store_id`, cleared with its store by its foreign key; `set_grocery_preferred_store()`; `grocery_list` audited); `apps/web/lib/groceries.ts` (`suggest()` takes the preferred store and says where the store came from; `onTheList()`, `whereLine()`, `alreadyLine()`, `addedLine()`), `lib/meal-groceries.ts` (`weekGroceryItems()`, used by Add this week to groceries); Home's `groceries-quick.tsx` and the action `quickAddGrocery()`; Groceries' **New items go to** (`PreferredStoreForm`, `setPreferredStore()`), the **Preferred** pill, the add field's preferred chip and line, `?item=` opening an item's ⋯; the new-store and new-category fields two lines on a phone, as the add field; `/dev/home?groceries=&typed=`, `/dev/groceries?preferred=`; the screens in `scripts/screen-shots.mjs` and the guide's. Tests: Vitest `lib/groceries.test.ts` (MEAL-27-a, MEAL-27-b, MEAL-28-c) and `lib/meal-groceries.test.ts` (MEAL-28-d); pgTAP `570_grocery_preferred_store.test.sql` (MEAL-28-a, MEAL-28-b, MEAL-28-g); UI suite `e2e/ui/home-groceries.spec.ts` (MEAL-27-c, MEAL-27-d; in Chrome, as an iPhone in WebKit and as Safari on a Mac) and `e2e/ui/groceries.spec.ts` (MEAL-28-e); e2e `e2e/tests/home-groceries.spec.ts` (MEAL-27-e, MEAL-28-f), on its own household; it runs on a preview once the nightly run on `main` has migrated the test database. `home.spec.ts` in the UI suite follows Groceries first among the cards.
+- **Deferred, as plain facts:** nothing.
+
 ---
 
 ## 6. Size summary
@@ -2145,6 +2176,6 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82, WP-92 | Menu adapters, WP-49 and WP-80 are the Ls |
-| P3 | SPIKE-06, SPIKE-07, SPIKE-08, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-85, WP-86, WP-88 – WP-91, WP-93 – WP-99, WP-103 – WP-107 | WP-56, WP-58, WP-68, WP-72, WP-86, WP-99, WP-103, WP-104 and WP-105 are the Ls |
+| P3 | SPIKE-06, SPIKE-07, SPIKE-08, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-85, WP-86, WP-88 – WP-91, WP-93 – WP-99, WP-103 – WP-107, WP-112 | WP-56, WP-58, WP-68, WP-72, WP-86, WP-99, WP-103, WP-104 and WP-105 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

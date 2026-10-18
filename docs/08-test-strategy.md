@@ -272,16 +272,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2889** tests: Unit 908 · DB 1544 · UI 302 · E2E 135. 2367 name at least one ID; 522 name none.
+**2919** tests: Unit 912 · DB 1557 · UI 313 · E2E 137. 2397 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 128 of 145 |
+| Requirements built (a Done item builds them) | 130 of 147 |
 | Built requirements with no test | 0 |
-| Stories built | 113 of 129 |
+| Stories built | 114 of 130 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 201 (with a test: 201) |
+| Test cases | 213 (with a test: 213) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -300,14 +300,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 96 | 61 | 49 | 14 | 220 |
+| Meals and lunch | 100 | 74 | 60 | 16 | 250 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
 | Platform | 189 | 167 | 61 | 16 | 433 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **908** | **1544** | **302** | **135** | **2889** |
+| **Total** | **912** | **1557** | **313** | **137** | **2919** |
 
 ### 9.3 By requirement
 
@@ -417,6 +417,8 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-24 | S | Covered | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 5 · DB 1 · UI 1 |
 | MEAL-25 | S | Covered | US-720 | WP-96, WP-105 | MEAL-25-h, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | U 13 · DB 2 · UI 2 · E2E 1 |
 | MEAL-26 | S | Covered | US-720 | WP-105 | MEAL-26-a | U 1 · DB 1 · UI 1 |
+| MEAL-27 | S | Covered | US-721 | WP-112 | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e | U 2 · UI 7 · E2E 1 |
+| MEAL-28 | S | Covered | US-721 | WP-112 | MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | U 2 · DB 13 · UI 4 · E2E 1 |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
 | MENU-03 | M | Covered | US-802 | WP-27 | — | U 6 · DB 3 · UI 2 · E2E 1 |
@@ -575,6 +577,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-109 | Done | NFR-14-s, NFR-14-t | 2 of 2 | — |
 | WP-110 | Done | PTS-04-a, NFR-16-r, NFR-16-s | 3 of 3 | — |
 | WP-111 | Done | NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z | 6 of 6 | — |
+| WP-112 | Done | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e, MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | 12 of 12 | U 4 |
 
 Test cases and the tests that prove them:
 
@@ -781,6 +784,18 @@ Test cases and the tests that prove them:
 | MEAL-25-f | WP-105 | A meal's recipe files are the household's own: up to 10 MB each, a photo or a PDF; another household's admin and board can't read or add them; the household's board reads them | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] a parent adds a photo to a meal's recipe`<br>DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] another family's board reads none of them` |
 | MEAL-25-g | WP-105 | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI | UI `e2e/ui/meal-groceries.spec.ts`: `with no service worker › [MEAL-25-g][US-720] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` |
 | MEAL-26-a | WP-105 | On the board's Meals, a tap on a meal with a recipe opens it full screen, read-only: its photos and PDFs with chips between them, its ingredients and the link's steps, text 28 px or more, and Close goes back | UI | UI `e2e/ui/board-recipe.spec.ts`: `[MEAL-26-a][US-720] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}` |
+| MEAL-27-a | WP-112 | Home's card says "8 on the list", "1 on the list" or "Nothing on the list"; as an item is typed its line says its category and its store with why ("Meat & Seafood · Kroger, where it went last time", "Pantry · Costco, your preferred store", "Other · Any store"); something already on the list says "Onions ×3 are on the list already. Adding makes ×4." | Unit | Unit `apps/web/lib/groceries.test.ts`: `the store suggested, and Home’s card (WP-112) › [MEAL-27-a] the card’s count and its line as an item is typed` |
+| MEAL-27-b | WP-112 | After Add the card says "Added Ground beef 2 lb to Meat & Seafood." with the item's name and amount as the list now has them, merged or new | Unit | Unit `apps/web/lib/groceries.test.ts`: `the store suggested, and Home’s card (WP-112) › [MEAL-27-b] after Add, the item as the list now has it` |
+| MEAL-27-c | WP-112 | Home on the demo family, on a phone and a laptop, Day and Evening: the Groceries card first among the cards, above Add a meal; its field two lines on a phone and one on a laptop; the line under it as typed; the merge line; the Added line with Change opening the item on Groceries; Open the list and This week's meals; two columns wide on a laptop; the card with an empty list; nothing overflows, 44 px targets, AA contrast; in Chrome, as an iPhone in WebKit and as Safari on a Mac | UI | UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c][US-721] first among the cards, with the count, the field and both links, in ${theme}`<br>UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c] as an item is typed, the line says where it goes, or that it is on the list already`<br>UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c] after Add: what was added and where, with Change, and the count up, in ${theme}`<br>UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c] with nothing on the list the card still shows, in ${theme}` |
+| MEAL-27-d | WP-112 | Enter in Home's field adds and never makes a new line; Change opens the item's ⋯ on Groceries | UI | UI `e2e/ui/home-groceries.spec.ts`: `[MEAL-27-d] Enter adds from Home’s field and never makes a new line`<br>UI `e2e/ui/home-groceries.spec.ts`: `[MEAL-27-d] a line break pasted into Home’s field is a space`<br>UI `e2e/ui/home-groceries.spec.ts`: `[MEAL-27-d] Change opens the item’s ⋯ on Groceries` |
+| MEAL-27-e | WP-112 | On the real preview, an admin adds an item from Home: the count goes up by one, the Added line names its category, and it is on Groceries there; adding the same thing again merges it | E2E | E2E `e2e/tests/home-groceries.spec.ts`: `[MEAL-27-e] done-when: an admin adds from Home, finds it on the list, and the same again merges` |
+| MEAL-28-a | WP-112 | The preferred store is the household's own: set only through `set_grocery_preferred_store()` by its admins, to one of its own stores or none; another household's admin, a board, or a store of another household is refused; nobody writes the column directly | DB | DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] the parent sets the preferred store`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] it reads back as Costco`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] another household's store is refused`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] and leaves it as it was`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] none is Any store`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] it reads back as Any store`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] another household's admin can't set it`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] a board can't set it`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] the household's board reads its list and its preferred store`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] nobody writes the column directly` |
+| MEAL-28-b | WP-112 | Removing the preferred store sets New items go to back to Any store | DB | DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-b] Kroger is preferred`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-b] removing Kroger sets New items go to back to Any store` |
+| MEAL-28-c | WP-112 | The store suggested is last time's store, then the preferred store, then Any store: an item had before at Kroger keeps Kroger; one had before with no store, or at a store since removed, takes the preferred store; a new item takes the preferred store; with none, Any store | Unit | Unit `apps/web/lib/groceries.test.ts`: `the store suggested, and Home’s card (WP-112) › [MEAL-28-c] last time’s store, then the preferred store, then Any store` |
+| MEAL-28-d | WP-112 | Add this week to groceries gives each new item its suggested category and that store | Unit | Unit `apps/web/lib/meal-groceries.test.ts`: `the week’s items for the list (WP-112) › [MEAL-28-d] each new item takes its suggested category and store: last time’s, else the preferred one` |
+| MEAL-28-e | WP-112 | Groceries' Categories and stores on the demo family: New items go to with Any store and each store, its help line, Preferred on the chosen store; the add field with the preferred store's chip picked and "Costco is your preferred store."; on an iPhone at 390 px the new-store hint shows in full | UI | UI `e2e/ui/groceries.spec.ts`: `the preferred store › [MEAL-28-e] New items go to, its help line and Preferred on the chosen store, in ${theme}`<br>UI `e2e/ui/groceries.spec.ts`: `the preferred store › [MEAL-28-e] with no preferred store, New items go to says Any store and nothing is Preferred`<br>UI `e2e/ui/groceries.spec.ts`: `the preferred store › [MEAL-28-e] the add field picks the preferred store’s chip for a new item and says so`<br>UI `e2e/ui/groceries.spec.ts`: `the preferred store › [MEAL-28-e] the new-store hint shows in full on a phone` |
+| MEAL-28-f | WP-112 | On the real preview, an admin sets New items go to, adds something new and finds it at that store, then removes that store and New items go to says Any store | E2E | E2E `e2e/tests/home-groceries.spec.ts`: `[MEAL-28-f] done-when: New items go to a store, a new item goes there, and removing it says Any store` |
+| MEAL-28-g | WP-112 | A new household's New items go to is Any store | DB | DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-g] a new household's New items go to is Any store` |
 
 ### 9.5 By user story
 
@@ -881,6 +896,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-718 | MEAL-23 | Covered | UI 1 |
 | US-719 | MEAL-24 | Covered | UI 1 |
 | US-720 | MEAL-25, MEAL-26 | Covered | UI 2 |
+| US-721 | MEAL-27, MEAL-28 | Covered | UI 1 |
 | US-801 | MENU-01, MENU-02 | Covered | U 3 · UI 2 |
 | US-802 | MENU-03 | Covered | U 4 · DB 2 · UI 2 · E2E 1 |
 | US-803 | MENU-04, MENU-05 | Covered | U 3 · DB 1 · UI 1 · E2E 1 |
@@ -1498,7 +1514,7 @@ Unit · 26 tests
 
 #### `apps/web/lib/groceries.test.ts`
 
-Unit · 9 tests
+Unit · 12 tests
 
 | Test | Names |
 |---|---|
@@ -1511,6 +1527,9 @@ Unit · 9 tests
 | `the suggestion › [MEAL-24-c] an item nothing has taught takes the starter list’s category, renamed or not` | MEAL-24-c |
 | `the suggestion › [MEAL-24-c] the shipped starter list places made-up items in the starter categories` | MEAL-24-c |
 | `the suggestion › [MEAL-24-d] an item nothing knows goes to Other, with any store` | MEAL-24-d |
+| `the store suggested, and Home’s card (WP-112) › [MEAL-28-c] last time’s store, then the preferred store, then Any store` | MEAL-28-c, WP-112 |
+| `the store suggested, and Home’s card (WP-112) › [MEAL-27-a] the card’s count and its line as an item is typed` | MEAL-27-a, WP-112 |
+| `the store suggested, and Home’s card (WP-112) › [MEAL-27-b] after Add, the item as the list now has it` | MEAL-27-b, WP-112 |
 
 #### `apps/web/lib/grocery-merge.test.ts`
 
@@ -1775,13 +1794,14 @@ Unit · 3 tests
 
 #### `apps/web/lib/meal-groceries.test.ts`
 
-Unit · 3 tests
+Unit · 4 tests
 
 | Test | Names |
 |---|---|
 | `a week’s meals into groceries › [MEAL-19-a] lists the planned library meals by meal in day order, with their ingredients` | MEAL-19-a |
 | `a week’s meals into groceries › [MEAL-19-a] what we usually have, and a meal already added that week, start unticked` | MEAL-19-a |
 | `a week’s meals into groceries › [MEAL-19-a] a ticked row says what it makes once merged; nothing is scaled` | MEAL-19-a |
+| `the week’s items for the list (WP-112) › [MEAL-28-d] each new item takes its suggested category and store: last time’s, else the preferred one` | MEAL-28-d, WP-112 |
 
 #### `apps/web/lib/meals.test.ts`
 
@@ -2338,6 +2358,15 @@ E2E · 3 tests
 | `[NFR-18-x][NFR-07] a failing job is named on the folded header, shows with its message, and the household’s server errors are listed` | NFR-18-x, NFR-07 |
 | `[NFR-07] after a good run the job is fine again` | NFR-07 |
 | `[NFR-08] usage is listed against the Free-plan limits, the database size read live` | NFR-08 |
+
+#### `e2e/tests/home-groceries.spec.ts`
+
+E2E · 2 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-27-e] done-when: an admin adds from Home, finds it on the list, and the same again merges` | MEAL-27-e |
+| `[MEAL-28-f] done-when: New items go to a store, a new item goes there, and removing it says Any store` | MEAL-28-f |
 
 #### `e2e/tests/home.spec.ts`
 
@@ -2902,7 +2931,7 @@ UI · 14 tests
 
 #### `e2e/ui/groceries.spec.ts`
 
-UI · 9 tests
+UI · 13 tests
 
 | Test | Names |
 |---|---|
@@ -2915,6 +2944,10 @@ UI · 9 tests
 | `the admin app’s Groceries › [MEAL-18-d] Got recently: what was got this week, with Untick` | MEAL-18-d |
 | `the admin app’s Groceries › [MEAL-23-d] Categories and stores: in order, each to rename, move or remove; removing one with items asks` | MEAL-23-d |
 | `the admin app’s Groceries › [MEAL-18-d] an empty list says so` | MEAL-18-d |
+| `the preferred store › [MEAL-28-e] New items go to, its help line and Preferred on the chosen store, in ${theme}` | MEAL-28-e |
+| `the preferred store › [MEAL-28-e] with no preferred store, New items go to says Any store and nothing is Preferred` | MEAL-28-e |
+| `the preferred store › [MEAL-28-e] the add field picks the preferred store’s chip for a new item and says so` | MEAL-28-e |
+| `the preferred store › [MEAL-28-e] the new-store hint shows in full on a phone` | MEAL-28-e |
 
 #### `e2e/ui/help.spec.ts`
 
@@ -2926,6 +2959,20 @@ UI · 4 tests
 | `[D-72] the contents lead to their sections` | — |
 | `[D-72] Help leaves out what is only for the people building FamilyWise` | — |
 | `[D-72] the admin menu, sign-in and setup lead to Help` | — |
+
+#### `e2e/ui/home-groceries.spec.ts`
+
+UI · 7 tests
+
+| Test | Names |
+|---|---|
+| `Home’s Groceries card on ${device} › [MEAL-27-c][US-721] first among the cards, with the count, the field and both links, in ${theme}` | MEAL-27-c, US-721 |
+| `Home’s Groceries card on ${device} › [MEAL-27-c] as an item is typed, the line says where it goes, or that it is on the list already` | MEAL-27-c |
+| `Home’s Groceries card on ${device} › [MEAL-27-c] after Add: what was added and where, with Change, and the count up, in ${theme}` | MEAL-27-c |
+| `Home’s Groceries card on ${device} › [MEAL-27-c] with nothing on the list the card still shows, in ${theme}` | MEAL-27-c |
+| `[MEAL-27-d] Enter adds from Home’s field and never makes a new line` | MEAL-27-d |
+| `[MEAL-27-d] a line break pasted into Home’s field is a space` | MEAL-27-d |
+| `[MEAL-27-d] Change opens the item’s ⋯ on Groceries` | MEAL-27-d |
 
 #### `e2e/ui/home.spec.ts`
 
@@ -5576,5 +5623,25 @@ DB · 10 tests
 | `[CHR-23-b] a repeating item is not done again` | CHR-23-b |
 | `[CHR-23-b] another household's item is not found` | CHR-23-b |
 | `[CHR-23-b] Do again needs a date` | CHR-23-b |
+
+#### `supabase/tests/570_grocery_preferred_store.test.sql`
+
+DB · 13 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-28-g] a new household's New items go to is Any store` | MEAL-28-g |
+| `[MEAL-28-a] the parent sets the preferred store` | MEAL-28-a |
+| `[MEAL-28-a] it reads back as Costco` | MEAL-28-a |
+| `[MEAL-28-a] another household's store is refused` | MEAL-28-a |
+| `[MEAL-28-a] and leaves it as it was` | MEAL-28-a |
+| `[MEAL-28-a] none is Any store` | MEAL-28-a |
+| `[MEAL-28-a] it reads back as Any store` | MEAL-28-a |
+| `[MEAL-28-a] another household's admin can't set it` | MEAL-28-a |
+| `[MEAL-28-a] a board can't set it` | MEAL-28-a |
+| `[MEAL-28-a] the household's board reads its list and its preferred store` | MEAL-28-a |
+| `[MEAL-28-a] nobody writes the column directly` | MEAL-28-a |
+| `[MEAL-28-b] Kroger is preferred` | MEAL-28-b |
+| `[MEAL-28-b] removing Kroger sets New items go to back to Any store` | MEAL-28-b |
 
 <!-- /catalogue -->

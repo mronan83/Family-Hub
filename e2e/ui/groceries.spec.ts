@@ -340,6 +340,92 @@ test.describe('the admin app’s Groceries', () => {
   });
 });
 
+// [MEAL-28][US-721] The preferred store (WP-112, D-142): New items go to, the Preferred pill, the add
+// field's preferred chip, and the new-store hint in full on an iPhone at 390 px.
+test.describe('the preferred store', () => {
+  for (const theme of ['day', 'evening'] as const) {
+    test(`[MEAL-28-e] New items go to, its help line and Preferred on the chosen store, in ${theme}`, async ({
+      page,
+    }) => {
+      await open(page, `/dev/groceries?preferred=Costco&open=places&theme=${theme}`);
+      const places = page.locator('#places');
+      const choose = places.getByRole('combobox', { name: 'New items go to' });
+      await expect(choose).toHaveValue(
+        (await choose.locator('option', { hasText: 'Costco' }).getAttribute('value')) ?? '',
+      );
+      await expect(choose.locator('option')).toHaveText([
+        'Any store',
+        'Costco',
+        'Kroger',
+        'Aldi',
+        'Walmart',
+        'Meijer',
+        "Sam's Club",
+      ]);
+      await expect(places).toContainText(
+        'A new item gets this store. One you’ve had before keeps the store it had last time.',
+      );
+      const stores = places.getByRole('list', { name: 'Stores' }).getByRole('listitem');
+      await expect(stores.filter({ hasText: 'Preferred' })).toHaveCount(1);
+      await expect(stores.filter({ hasText: 'Preferred' }).locator('strong')).toHaveText('Costco');
+      expect((await choose.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      await fits(page);
+      await contrastOk(page);
+    });
+  }
+
+  test('[MEAL-28-e] with no preferred store, New items go to says Any store and nothing is Preferred', async ({
+    page,
+  }) => {
+    await open(page, '/dev/groceries?open=places');
+    await expect(page.getByRole('combobox', { name: 'New items go to' })).toHaveValue('');
+    await expect(page.locator('#places')).not.toContainText('Preferred');
+  });
+
+  test('[MEAL-28-e] the add field picks the preferred store’s chip for a new item and says so', async ({
+    page,
+  }) => {
+    await open(page, '/dev/groceries?preferred=Costco');
+    const add = page.getByRole('form', { name: 'Add to the list' });
+    await add.getByRole('textbox', { name: 'Add an item' }).fill('olive oil');
+    const store = add.getByRole('group', { name: 'Store' });
+    await expect(store.getByRole('radio', { name: 'Costco' })).toBeChecked();
+    await expect(store.locator(':scope > label.fw-groc__chip')).toHaveText([
+      'Any store',
+      'Costco',
+      'Kroger',
+      'Aldi',
+    ]);
+    await expect(add).toContainText('Costco is your preferred store.');
+    // Something had before keeps last time's store, whatever is preferred.
+    await add.getByRole('textbox', { name: 'Add an item' }).fill('tortillas');
+    await expect(store.getByRole('radio', { name: 'Kroger' })).toBeChecked();
+    await expect(add).toContainText('where it was bought last time');
+    await expect(add).not.toContainText('preferred store');
+    // One tap picks another store, and the line goes.
+    await add.getByRole('textbox', { name: 'Add an item' }).fill('olive oil');
+    await store.getByText('Any store').click();
+    await expect(store.getByRole('radio', { name: 'Any store' })).toBeChecked();
+    await expect(add).not.toContainText('preferred store');
+    await fits(page);
+  });
+
+  test('[MEAL-28-e] the new-store hint shows in full on a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await open(page, '/dev/groceries?open=places');
+    const field = page.getByRole('form', { name: 'New store' }).getByRole('textbox');
+    await expect(field).toHaveAttribute('placeholder', 'New store, like Trader Joe’s');
+    // The hint itself typed in: it fits the field, with nothing cut off or scrolled.
+    await field.fill('New store, like Trader Joe’s');
+    const over = await field.evaluate((t) => ({
+      down: t.scrollHeight - t.clientHeight,
+      across: t.scrollWidth - t.clientWidth,
+    }));
+    expect(over, 'the hint overflows its field').toEqual({ down: 0, across: 0 });
+    await fits(page);
+  });
+});
+
 /** An item's id on /dev/groceries, from its tick button's row. */
 async function idOf(page: Page, name: string): Promise<string> {
   const id = await page

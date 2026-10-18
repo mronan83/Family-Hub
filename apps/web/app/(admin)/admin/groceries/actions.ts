@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { FormState } from '@/lib/auth/messages';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
+import { addedLine, itemAmount, type GroceryReason } from '@/lib/groceries';
 import { itemKey, parseItem } from '@/lib/grocery-merge';
 import { log } from '@/lib/log';
 import { serverClient } from '@/lib/supabase/server';
@@ -218,4 +219,79 @@ export async function removePlace(form: FormData): Promise<void> {
   const { error } = await db.rpc('remove_grocery_place', { p_kind: kindOf(form), p_id: id });
   if (error) log('warn', 'grocery place not removed', { code: error.code, hint: error.hint });
   back(form, error ? 'failed' : `${kindOf(form)}-removed`, '#places');
+}
+
+/** [MEAL-28] New items go to: the household's preferred store, or none for Any store (D-142). */
+export async function setPreferredStore(form: FormData): Promise<void> {
+  const { db, household } = await context();
+  const { error } = await db.rpc('set_grocery_preferred_store', {
+    p_household: household.id,
+    p_store: guid(form.get('storeId')),
+  });
+  if (error) log('warn', 'preferred store not set', { code: error.code, hint: error.hint });
+  back(form, error ? 'failed' : 'preferred-set', '#places');
+}
+
+/** What Home's Groceries card shows after Add: the item as the list now has it. */
+export interface QuickAddState extends FormState {
+  added?: { id: string; what: string; category: string; at: number };
+}
+
+/**
+ * [MEAL-27] Home's Groceries card (WP-112): adds what was typed through the one way in, in the
+ * suggested category and store, and stays on Home, saying what was added and where. Something
+ * already on the list merges by itself.
+ */
+export async function quickAddGrocery(
+  _prev: QuickAddState,
+  form: FormData,
+): Promise<QuickAddState> {
+  const { db, household } = await context();
+  const typed = String(form.get('item') ?? '').trim();
+  const { name, amount } = parseItem(typed);
+  const key = itemKey(typed);
+  if (!name || !key) return { message: 'Type what to get, like 2 lb ground beef.' };
+  if (name.length > 80) return { message: 'That’s a long name. Keep it under 80 letters.' };
+  const { data, error } = await db.rpc('add_groceries', {
+    p_household: household.id,
+    p_items: [
+      {
+        name,
+        key,
+        amount,
+        category_id: guid(form.get('categoryId')),
+        store_id: guid(form.get('storeId')),
+        reason: { kind: 'added' },
+      },
+    ],
+  });
+  const id = (data as { id: string }[] | null)?.[0]?.id;
+  if (error || !id) {
+    log('warn', 'grocery not added from Home', { code: error?.code, hint: error?.hint });
+    return { message: error ? refusal(error) : 'That didn’t change. Try again in a moment.' };
+  }
+  revalidatePath('/admin');
+  revalidatePath(PATH);
+  const { data: row } = await db
+    .from('grocery_item')
+    .select('name, amount, grocery_category(name), grocery_item_reason(amount)')
+    .eq('id', id)
+    .maybeSingle();
+  const r = row as unknown as {
+    name: string;
+    amount: string | null;
+    grocery_category: { name: string } | null;
+    grocery_item_reason: Pick<GroceryReason, 'amount'>[];
+  } | null;
+  const line = r
+    ? addedLine(
+        r.name,
+        itemAmount({
+          amount: r.amount,
+          reasons: r.grocery_item_reason as GroceryReason[],
+        }),
+        r.grocery_category?.name ?? 'Other',
+      )
+    : addedLine(name, amount, 'the list');
+  return { added: { id, what: line.what, category: line.category, at: Date.now() } };
 }

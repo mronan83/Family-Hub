@@ -91,6 +91,18 @@ export const ADMIN = [
   ['chores-item-open', '/dev/chores?page=item&open=coming-up'],
   ['meals-library-menu', '/dev/meals?page=library&menu=Spaghetti'],
   ['tags-menu', '/dev/tags?menu=Kitchen'],
+  // [MEAL-27][MEAL-28] WP-112's Groceries on Home and the preferred store, as its mockup draws them
+  // (D-142): Home busy, typing something had before, something new, something on the list already,
+  // after Add, and with nothing on the list; New items go to; Groceries' add field with the
+  // preferred store picked.
+  ['home', '/dev/home'],
+  ['home-typing', '/dev/home?typed=2%20lb%20ground%20beef'],
+  ['home-preferred', '/dev/home?typed=olive%20oil'],
+  ['home-merge', '/dev/home?typed=1%20onion'],
+  ['home-added', '/dev/home?groceries=added'],
+  ['home-empty', '/dev/home?groceries=empty'],
+  ['groceries-stores', '/dev/groceries?preferred=Costco&open=places'],
+  ['groceries-preferred', '/dev/groceries?preferred=Costco&typed=olive%20oil'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of

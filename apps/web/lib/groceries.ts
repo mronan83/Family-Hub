@@ -1,7 +1,7 @@
 // [MEAL-18][MEAL-23][MEAL-24] Groceries (WP-104, D-138): the list as the admin app and the board show
 // it, and the category and store suggested on add. Pure: no I/O; "now" is passed in.
 
-import { combineAmounts, itemKey } from './grocery-merge';
+import { combineAmounts, itemKey, parseItem } from './grocery-merge';
 
 export interface GroceryCategory {
   id: string;
@@ -222,12 +222,16 @@ export interface SuggestContext {
   learned: readonly LearnedWord[];
   /** The starter list: an item key → a starter category's key (`grocery-starter.ts`). */
   starter?: ReadonlyMap<string, string> | null;
+  /** [MEAL-28] The household's preferred store (New items go to); none is Any store. */
+  preferredStoreId?: string | null;
 }
 
 export interface Suggestion {
   categoryId: string;
   storeId: string | null;
   from: 'last' | 'learned' | 'starter' | 'other';
+  /** [MEAL-28] Where the store came from: last time's, the preferred store, or none (Any store). */
+  storeFrom: 'last' | 'preferred' | 'any';
 }
 
 /** The words of a key, longest phrase first: "greek yogurt" → "greek yogurt", "yogurt", "greek". */
@@ -242,12 +246,23 @@ function phrases(key: string): string[] {
 }
 
 /**
- * [MEAL-24] The category and store suggested for an item typed without one: the category and store
- * it had last time; else the category the household's own words point to (learned from its moves);
- * else the starter list's; else Other, with any store. A starter category the household renamed is
- * still found by its key; one it removed gives Other.
+ * [MEAL-24][MEAL-28] The category and store suggested for an item typed without one. The category:
+ * the one it had last time; else the one the household's own words point to (learned from its
+ * moves); else the starter list's; else Other. A starter category the household renamed is still
+ * found by its key; one it removed gives Other. The store (D-142): the store it had last time; else
+ * the household's preferred store; else Any store. An item last had with no store, or at a store
+ * since removed (its store is cleared then), takes the preferred store.
  */
 export function suggest(text: string, ctx: SuggestContext): Suggestion | null {
+  const s = suggestCategory(text, ctx);
+  if (!s) return null;
+  const preferred = ctx.preferredStoreId ?? null;
+  return s.storeId
+    ? { ...s, storeFrom: 'last' }
+    : { ...s, storeId: preferred, storeFrom: preferred ? 'preferred' : 'any' };
+}
+
+function suggestCategory(text: string, ctx: SuggestContext): Omit<Suggestion, 'storeFrom'> | null {
   const key = itemKey(text);
   const other = ctx.categories.find((c) => c.isOther);
   if (!key || !other) return null;
@@ -286,4 +301,69 @@ export function suggest(text: string, ctx: SuggestContext): Suggestion | null {
     }
   }
   return { categoryId: other.id, storeId: null, from: 'other' };
+}
+
+// ---------------------------------------------------------------------------------------------
+// [MEAL-27] Home's Groceries card (WP-112): its count and its lines
+// ---------------------------------------------------------------------------------------------
+
+/** [MEAL-27] How many are on the list, as Home's card says it: "8 on the list", "Nothing on the list". */
+export function onTheList(n: number): string {
+  return n === 0 ? 'Nothing on the list' : `${n} on the list`;
+}
+
+/**
+ * [MEAL-27][MEAL-28] Where an item typed on Home goes: its category, then its store and why
+ * ("Kroger, where it went last time", "Costco, your preferred store", "Any store").
+ */
+export function whereLine(
+  s: Suggestion,
+  categories: readonly GroceryCategory[],
+  stores: readonly GroceryStore[],
+): { category: string; store: string } {
+  const category = categories.find((c) => c.id === s.categoryId)?.name ?? 'Other';
+  const name = stores.find((x) => x.id === s.storeId)?.name;
+  const store = !name
+    ? 'Any store'
+    : s.storeFrom === 'last'
+      ? `${name}, where it went last time`
+      : `${name}, your preferred store`;
+  return { category, store };
+}
+
+/**
+ * [MEAL-27] For something already on the list, what the card says before Add: the open item as the
+ * list has it ("Onions ×3") and what adding makes, by the one merge ("×4"); null when adding
+ * changes no amount. Null when it isn't on the list.
+ */
+export function alreadyLine(
+  typed: string,
+  open: readonly GroceryItem[],
+): { item: GroceryItem; has: string; are: boolean; makes: string | null } | null {
+  const key = itemKey(typed);
+  if (!key) return null;
+  const item = open.find((o) => o.status === 'open' && itemKey(o.name) === key);
+  if (!item) return null;
+  const now = itemAmount(item);
+  const makes = combineAmounts([now, parseItem(typed).amount]);
+  return {
+    item,
+    has: now ? `${item.name} ${now}` : item.name,
+    // "Onions ×3 are"; "Ground beef 2 lb is", "Milk is".
+    are: !!now && now.startsWith('×'),
+    makes: makes !== now ? makes : null,
+  };
+}
+
+/**
+ * [MEAL-27] After Add: "Added Ground beef 2 lb to Meat & Seafood.", the item as the list now has it
+ * (`what`, said in bold) and its category.
+ */
+export function addedLine(
+  name: string,
+  amount: string | null,
+  category: string,
+): { what: string; category: string; text: string } {
+  const what = amount ? `${name} ${amount}` : name;
+  return { what, category, text: `Added ${what} to ${category}.` };
 }

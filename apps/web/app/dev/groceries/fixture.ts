@@ -168,8 +168,14 @@ export const ITEMS: GroceryItem[] = [
   }),
 ];
 
-/** The page's data: busy (the mockup's list), or empty with nothing got either. */
-export function groceriesData(state: 'busy' | 'empty' = 'busy'): GroceriesData {
+/**
+ * The page's data: busy (the mockup's list), or empty with nothing got either; [MEAL-28] with a
+ * preferred store by name (WP-112), or none.
+ */
+export function groceriesData(
+  state: 'busy' | 'empty' = 'busy',
+  preferred: string | null = null,
+): GroceriesData {
   const items = state === 'empty' ? [] : ITEMS;
   return {
     categories: CATEGORIES,
@@ -187,5 +193,43 @@ export function groceriesData(state: 'busy' | 'empty' = 'busy'): GroceriesData {
       { word: 'greek', categoryId: CAT.dairy!, weight: 1 },
       { word: 'popcorn', categoryId: CAT.snacks!, weight: 2 },
     ],
+    preferredStoreId: (preferred && STORE[preferred]) || null,
   };
+}
+
+const HOME_LIST = [
+  'Apples',
+  'Avocados',
+  'Bananas',
+  'Onions',
+  'Eggs',
+  'Milk',
+  'Tortillas',
+  'Paper towels',
+];
+
+/**
+ * [MEAL-27] Home's Groceries card (WP-112), as its mockup draws it: 8 on the list (Onions ×3 among
+ * them), Ground beef had before at Kroger and not on the list now, Costco preferred; after Add, with
+ * Ground beef 2 lb on it; or nothing on the list. Everything the demo family has had is its history.
+ */
+export function homeGroceries(state: 'busy' | 'added' | 'empty' = 'busy'): GroceriesData {
+  const all = groceriesData('busy', 'Costco');
+  const beef = ITEMS.find((i) => i.name === 'Ground beef')!;
+  const open =
+    state === 'empty'
+      ? []
+      : [
+          ...ITEMS.filter((i) => HOME_LIST.includes(i.name)),
+          ...(state === 'added'
+            ? [
+                {
+                  ...beef,
+                  id: 'f3f00000-0000-4000-8000-0000000000b1',
+                  reasons: [added('Alex', '2 lb')],
+                },
+              ]
+            : []),
+        ];
+  return { ...all, items: open };
 }

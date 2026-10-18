@@ -12,6 +12,7 @@ import { homeAlerts } from '@/lib/home-alerts';
 import { daysToPick, lunchQuickWords, lunchWeekToOpen } from '@/lib/lunch-list';
 import { serverClient } from '@/lib/supabase/server';
 import { HomeView, type LunchQuick, type SchoolToday } from './home-view';
+import { loadGroceries } from './groceries/data';
 import { loadLunch } from './meals/data';
 
 export const metadata: Metadata = { title: 'Home' };
@@ -72,6 +73,7 @@ export default async function AdminHome({
     lunchChanges,
     lunchWeek,
     names,
+    groceries,
   ] = await Promise.all([
     db!
       .from('chore_occurrence')
@@ -127,6 +129,8 @@ export default async function AdminHome({
       .gt('open_until', new Date().toISOString()),
     loadLunch(db!, h.id, lunchMonday),
     db!.from('member').select('id, display_name').eq('household_id', h.id),
+    // [MEAL-27] Home's Groceries card (WP-112): the list and what the suggestion learns from.
+    loadGroceries(db!, h.id),
   ]);
   for (const r of [approvals, requests, boards, calendars, menus, jobs, years, closures, names]) {
     if (r.error) throw new Error(`home: ${r.error.message}`);
@@ -236,6 +240,14 @@ export default async function AdminHome({
       school={school}
       menuFeeds={feeds.length}
       lunch={lunch}
+      groceries={{
+        open: groceries.items.filter((i) => i.status === 'open'),
+        categories: groceries.categories,
+        stores: groceries.stores,
+        past: groceries.past,
+        learned: groceries.learned,
+        preferredStoreId: groceries.preferredStoreId,
+      }}
       notice={
         Object.keys(params).find((k) => k === 'welcome' || k === 'joined' || k === 'password') ??
         params.done ??

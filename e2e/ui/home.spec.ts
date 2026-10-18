@@ -186,8 +186,10 @@ test.describe('the school lunches card', () => {
   }) => {
     await page.goto('/dev/home');
     const cards = page.getByRole('list', { name: 'More quick actions' }).getByRole('listitem');
-    await expect(cards.nth(0)).toContainText('Add a meal');
-    const lunch = cards.nth(1);
+    // [MEAL-27] Groceries comes first (WP-112), then Add a meal and the lunches beside it.
+    await expect(cards.nth(0)).toContainText('Groceries');
+    await expect(cards.nth(1)).toContainText('Add a meal');
+    const lunch = cards.nth(2);
     await expect(lunch).toContainText('School lunches');
     await expect(lunch).toContainText('This week: Maya has 1 day to pick; Leo is all set.');
     await expect(lunch.getByRole('link', { name: 'Pick lunches' })).toBeVisible();

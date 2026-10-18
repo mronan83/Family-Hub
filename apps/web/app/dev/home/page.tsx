@@ -3,12 +3,15 @@ import { HomeView, type SchoolToday } from '../../(admin)/admin/home-view';
 import { isoDay } from '@/lib/format';
 import { type AlertFacts, homeAlerts } from '@/lib/home-alerts';
 import { lunchQuickWords, lunchWeekToOpen } from '@/lib/lunch-list';
+import { homeGroceries } from '../groceries/fixture';
 
 // [NFR-17][US-109] Home at a glance (WP-57) with the made-up family and no database, for the UI suite
 // and the guide: Alex signed in; two check-offs and a reward request waiting, the Den board quiet,
 // the School calendar failing, and no menu for next week. ?state=quiet for nothing to look at;
 // ?school=off (today's snow day, with Undo), weekend, none (no school year); ?menus=none for no feed;
 // ?lunch=none for no child with school lunch (WP-73); ?theme=evening; ?notice= one of Home's notices.
+// [MEAL-27] The Groceries card (WP-112): ?groceries=empty, or added (the line after adding Ground beef
+// 2 lb); ?typed= what is typed in its field ("2 lb ground beef", "olive oil", "1 onion").
 export const metadata: Metadata = { title: 'Home', robots: { index: false } };
 
 const TZ = 'America/New_York';
@@ -25,6 +28,8 @@ export default async function DevHomePage({
     menus?: string;
     lunch?: string;
     notice?: string;
+    groceries?: string;
+    typed?: string;
   }>;
 }) {
   const p = await searchParams;
@@ -55,6 +60,9 @@ export default async function DevHomePage({
     invites: [],
   };
   const year = 'd1000000-0000-4000-8000-000000000001';
+  const g = homeGroceries(
+    p.groceries === 'empty' ? 'empty' : p.groceries === 'added' ? 'added' : 'busy',
+  );
   const school: SchoolToday =
     p.school === 'off'
       ? {
@@ -90,6 +98,26 @@ export default async function DevHomePage({
                 ),
               }
         }
+        groceries={{
+          open: g.items,
+          categories: g.categories,
+          stores: g.stores,
+          past: g.past,
+          learned: g.learned,
+          preferredStoreId: g.preferredStoreId,
+        }}
+        groceriesDev={{
+          typed: p.typed,
+          added:
+            p.groceries === 'added'
+              ? {
+                  id: g.items[g.items.length - 1]!.id,
+                  what: 'Ground beef 2 lb',
+                  category: 'Meat & Seafood',
+                  at: 0,
+                }
+              : undefined,
+        }}
         notice={p.notice ?? null}
         waiting={quiet ? 0 : 2}
         who={{ name: 'Alex', avatarKey: 'owl', color: 'member-1' }}
