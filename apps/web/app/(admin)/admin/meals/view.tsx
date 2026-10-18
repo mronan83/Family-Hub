@@ -1,3 +1,6 @@
+import type { GroceryItem } from '@/lib/groceries';
+import type { WeekReview } from '@/lib/meal-groceries';
+import { WeekGroceries } from './week-groceries';
 import {
   type AvatarKey,
   Banner,
@@ -71,6 +74,8 @@ export interface MealsViewProps {
   menus?: { id: string; name: string }[];
   notice: string | null;
   error: string | null;
+  /** [MEAL-19] The week's Add to groceries, opened (WP-105): its review and what is on the list. */
+  groceries?: { review: WeekReview; open: GroceryItem[] } | null;
 }
 
 /**
@@ -102,6 +107,7 @@ export function MealsView({
   menus = [],
   notice,
   error,
+  groceries = null,
 }: MealsViewProps) {
   const plan = planByDay(entries, days);
   const mealsById = new Map(meals.map((m) => [m.id, m]));
@@ -149,7 +155,19 @@ export function MealsView({
             <Icon name="chevron-right" className="fw-btn__icon" />
           </Link>
         </nav>
-        <h2 id="week-heading">{weekLabel(week)}</h2>
+        <div className="fw-goals__head">
+          <h2 id="week-heading">{weekLabel(week)}</h2>
+          {/* [MEAL-19] What the week's meals need, onto the grocery list (WP-105). */}
+          {entries.length > 0 ? (
+            <Link
+              className="fw-btn fw-btn--secondary"
+              href={`/admin/meals?week=${week}&groceries=1`}
+            >
+              <Icon name="shopping-cart" className="fw-btn__icon" />
+              <span>Add to groceries</span>
+            </Link>
+          ) : null}
+        </div>
         <ol className="fw-meal-week" aria-labelledby="week-heading">
           {days.map((d) => {
             const slots = plan.get(d)!;
@@ -357,6 +375,14 @@ export function MealsView({
       </Fold>
 
       <LunchSection week={week} today={today} lunch={lunch} menus={menus} members={members} />
+      {groceries ? (
+        <WeekGroceries
+          review={groceries.review}
+          open={groceries.open}
+          week={week}
+          cancelHref={`/admin/meals?week=${week}`}
+        />
+      ) : null}
     </main>
   );
 }

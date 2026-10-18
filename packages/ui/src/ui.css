@@ -1825,6 +1825,15 @@ html:has(.board) {
 .fw-today__person--all > span {
   max-width: 100%;
 }
+/* [MEAL-18] With Groceries in it too (WP-104), the rail's pages are a little shorter and their icons
+   smaller, so the family and every page still fit a 1080 px board without scrolling. */
+.fw-today__people:has([data-rail='groceries']) .fw-today__person--all {
+  min-height: 76px;
+}
+.fw-today__people:has([data-rail='groceries']) .fw-today__person--all svg {
+  width: 40px;
+  height: 40px;
+}
 .fw-today__people svg {
   width: 48px;
   height: 48px;
@@ -5847,4 +5856,960 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
 .fw-goal__status[data-status='missed'] {
   background: var(--missed-tint);
   color: var(--missed-text);
+}
+
+/* [MEAL-18][MEAL-23][MEAL-24] Groceries in the admin app (WP-104, D-138): the add field open at the
+   top with its suggestion chips, the list by category with a tick, the row's words and ⋯, store
+   chips, Select's bar, Got recently, and the household's categories and stores. */
+.fw-groc__head h1 {
+  margin: 0;
+}
+.fw-groc__state {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-groc__add,
+.fw-groc__placeform {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-groc__addrow {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+}
+.fw-groc__addfield {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* [MEAL-18] The add field: one line on a laptop; on a phone two, so its hint shows in full. */
+textarea.fw-groc__addinput {
+  display: block;
+  width: 100%;
+  min-height: var(--touch);
+  height: var(--touch);
+  padding-block: calc((var(--touch) - 1.25em - 2 * var(--border-w)) / 2);
+  overflow: hidden;
+  resize: none;
+}
+@media (max-width: 520px) {
+  textarea.fw-groc__addinput {
+    height: auto;
+    padding-block: var(--s-2);
+  }
+}
+.fw-groc__addfield .fw-input {
+  width: 100%;
+}
+.fw-groc__sug {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.fw-groc__sug legend {
+  float: left;
+  min-width: 64px;
+  margin-right: var(--s-2);
+  font-weight: 600;
+  font-size: var(--t-small);
+}
+.fw-groc__from {
+  flex-basis: 100%;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-groc__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.fw-groc__more-chips {
+  display: contents;
+}
+.fw-groc__more-chips[open] > .fw-groc__chips {
+  flex-basis: 100%;
+}
+.fw-groc__more-chips > summary {
+  list-style: none;
+}
+.fw-groc__more-chips > summary::-webkit-details-marker {
+  display: none;
+}
+.fw-groc__chip,
+.admin a.fw-groc__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: var(--touch);
+  padding: 0 var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 600;
+  font-size: var(--t-small);
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+}
+.fw-groc__chip .fw-icon {
+  color: var(--primary-text);
+}
+.fw-groc__chip b {
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.fw-groc__chip:has(input:checked),
+.admin a.fw-groc__chip[aria-current='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-groc__chip:has(input:focus-visible),
+.fw-groc__chip:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-groc__also {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--primary-tint);
+  color: var(--text);
+}
+.fw-groc__also .fw-icon {
+  color: var(--primary-text);
+}
+.fw-groc__listhead {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.fw-groc__listhead h2 {
+  margin: 0;
+}
+.fw-groc__count,
+.fw-groc__n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  padding: 1px var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--bg);
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.fw-groc__n {
+  border: 0;
+  background: none;
+  min-width: 0;
+  padding: 0;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.fw-groc__grow {
+  flex: 1 1 auto;
+}
+.fw-groc__sech {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: var(--s-4) 0 var(--s-1);
+  color: var(--text-soft);
+}
+.fw-groc__sech h3 {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.fw-groc__sech .fw-icon {
+  color: var(--primary-text);
+}
+.admin a.fw-groc__secadd {
+  display: inline-grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--primary-text);
+}
+.fw-groc__rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-groc__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--touch) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 var(--s-2);
+  min-height: 56px;
+  padding: var(--s-1) 0;
+  border-bottom: var(--border-w) solid var(--line);
+}
+.fw-groc__row:last-child {
+  border-bottom: 0;
+}
+.fw-groc__row > .fw-groc__panel,
+.fw-groc__row > .fw-groc__placeform,
+.fw-groc__row > form.fw-form {
+  grid-column: 1 / -1;
+}
+.fw-groc__row--sel {
+  margin: 0 calc(-1 * var(--s-2));
+  padding-inline: var(--s-2);
+  border-radius: var(--r-sm);
+  background: var(--primary-tint);
+}
+.fw-groc__row--got,
+.fw-groc__place {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.fw-groc__place {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.fw-groc__tick {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  margin: 0;
+}
+.fw-groc__box {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.fw-groc__box::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--field-edge);
+  border-radius: 5px;
+}
+.fw-groc__box:hover::before {
+  border-color: var(--primary);
+}
+.fw-groc__box:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+  border-radius: var(--r-sm);
+}
+.fw-groc__words {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.fw-groc__l1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--s-2);
+  min-width: 0;
+}
+.fw-groc__l1 strong {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.fw-groc__amt {
+  color: var(--text-soft);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.fw-groc__l2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--s-1);
+  font-size: var(--t-small);
+  color: var(--text-soft);
+  overflow-wrap: anywhere;
+}
+.fw-groc__why {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.fw-groc__why .fw-icon {
+  color: var(--primary-text);
+}
+.fw-groc__why .fw-avatar {
+  width: 20px;
+  height: 20px;
+}
+.fw-groc__store {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 7px;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+}
+.fw-groc__store .fw-icon {
+  color: var(--primary-text);
+}
+.fw-groc__more {
+  position: relative;
+}
+.fw-groc__more > summary {
+  list-style: none;
+}
+.fw-groc__more > summary::-webkit-details-marker {
+  display: none;
+}
+.fw-groc__morebtn,
+.fw-groc__iconbtn {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  padding: 0;
+  border: var(--border-w) solid transparent;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+.fw-groc__iconbtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.fw-groc__more[open] > .fw-groc__morebtn {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-groc__morebtn:focus-visible,
+.fw-groc__iconbtn:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-groc__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 5;
+  display: grid;
+  min-width: 240px;
+  padding: var(--s-1);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.fw-groc__mh {
+  display: grid;
+  gap: 2px;
+  padding: var(--s-2) var(--s-3) var(--s-1);
+  border-bottom: var(--border-w) solid var(--line);
+  margin-bottom: var(--s-1);
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-groc__mh b {
+  color: var(--text);
+}
+.fw-groc__mi,
+.admin a.fw-groc__mi {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.fw-groc__mi:hover,
+.fw-groc__mi:focus-visible {
+  background: var(--primary-tint);
+}
+.fw-groc__mi .fw-icon {
+  color: var(--primary-text);
+}
+.fw-groc__mi--rm .fw-icon {
+  color: var(--missed);
+}
+.fw-groc__panel {
+  display: grid;
+  gap: var(--s-2);
+  margin: var(--s-2) 0;
+  padding: var(--s-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.fw-groc__panel-h {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-groc__opt {
+  min-height: var(--touch);
+}
+.fw-groc__editrow {
+  display: flex;
+  gap: var(--s-2);
+}
+.fw-groc__amtfield {
+  flex: 0 0 96px;
+}
+.fw-groc__selbar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-w) solid var(--primary);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.fw-groc__selbar > .fw-groc__panel {
+  flex-basis: 100%;
+}
+.fw-groc__select .fw-groc__row {
+  grid-template-columns: var(--touch) minmax(0, 1fr);
+}
+.fw-groc__empty {
+  margin: 0;
+  padding: var(--s-3) 0 var(--s-1);
+  color: var(--text-soft);
+}
+.fw-groc__tile {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-groc__placeacts {
+  display: flex;
+  align-items: center;
+}
+
+/* [MEAL-18][MEAL-23] Groceries on the board (WP-104, D-138): the list by category in columns, read
+   only; store chips change only what the board shows. Text 28 px or more. */
+.fw-bgroc {
+  display: grid;
+  gap: var(--s-4);
+  align-content: start;
+}
+.fw-bgroc__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0;
+  font-size: var(--t-title);
+}
+.fw-bgroc__title > svg {
+  color: var(--primary-text);
+}
+.fw-bgroc__sub {
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  font-weight: 600;
+}
+.fw-bgroc__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+}
+.fw-bgroc__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch);
+  padding: 0 var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--t-small);
+  font-weight: 600;
+  cursor: pointer;
+}
+.fw-bgroc__chip > svg {
+  color: var(--primary-text);
+}
+.fw-bgroc__chip[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-bgroc__chip:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-bgroc__cols {
+  columns: 4 340px;
+  column-gap: var(--s-6);
+}
+.fw-bgroc__sec {
+  display: grid;
+  break-inside: avoid;
+  margin-bottom: var(--s-6);
+  padding: var(--s-4) var(--s-4) var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.fw-bgroc__sec h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0 0 var(--s-1);
+  font-size: var(--t-heading);
+  line-height: 1.2;
+}
+.fw-bgroc__sec h3 > svg {
+  flex: none;
+  color: var(--primary-text);
+}
+.fw-bgroc__n {
+  margin-left: auto;
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+}
+.fw-bgroc__sec ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-bgroc__it {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 0 var(--s-3);
+  min-height: 56px;
+  padding: var(--s-1) 0;
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-bgroc__it > svg {
+  justify-self: center;
+  color: var(--primary-text);
+}
+.fw-bgroc__nm {
+  font-size: var(--t-body);
+  font-weight: 600;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.fw-bgroc__amt {
+  color: var(--text-soft);
+}
+.fw-bgroc__wy {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  line-height: 1.2;
+}
+.fw-bgroc__wy > svg {
+  flex: none;
+}
+.fw-bgroc__empty {
+  display: grid;
+  place-items: center;
+  gap: var(--s-4);
+  padding: var(--s-12) var(--s-6);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  text-align: center;
+}
+.fw-bgroc__empty > svg {
+  color: var(--primary-text);
+}
+.fw-bgroc__empty h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--t-title);
+  font-weight: 800;
+}
+
+/* [MEAL-07] A meal's ingredients in its form (WP-105): the amount to buy, the name and ×, then We
+   usually have it under the name. */
+.fw-ing__rows {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-ing__row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) var(--touch);
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+  padding-bottom: var(--s-2);
+  border-bottom: var(--border-w) solid var(--line);
+}
+.fw-ing__row:last-child {
+  border-bottom: 0;
+}
+.fw-ing__row .fw-input {
+  width: 100%;
+  min-width: 0;
+}
+.fw-ing__have {
+  grid-column: 2 / span 2;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+}
+.fw-ing__x {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+.fw-ing__x:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* [MEAL-19] The week's Add to groceries (WP-105): a sheet over Meals, from the bottom on a phone and
+   in the middle on a laptop, over a scrim that goes back. */
+.fw-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+}
+.fw-sheet__scrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--text) 45%, transparent);
+}
+.fw-sheet__box {
+  position: relative;
+  display: grid;
+  gap: var(--s-3);
+  width: 100%;
+  box-sizing: border-box;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: var(--s-4) var(--s-4) var(--s-6);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-2);
+}
+.fw-sheet__box:focus {
+  outline: none;
+}
+.fw-sheet__box h2 {
+  margin: 0;
+}
+@media (min-width: 720px) {
+  .fw-sheet {
+    align-items: start;
+    padding-top: var(--s-12);
+  }
+  .fw-sheet__box {
+    width: 560px;
+    max-height: calc(100vh - 2 * var(--s-12));
+    padding: var(--s-6);
+    border-radius: var(--r-lg);
+  }
+}
+.fw-wg {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-wg__meal {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.fw-wg__meal legend {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) 0 0;
+}
+.fw-wg__meal legend .fw-icon {
+  color: var(--primary-text);
+}
+.fw-wg__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-3);
+  min-height: var(--touch);
+}
+.fw-wg__amt {
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.fw-wg__note {
+  margin-left: auto;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+  text-align: right;
+}
+.fw-wg__note--merge {
+  color: var(--primary-text);
+  font-weight: 600;
+}
+
+/* [MEAL-25] A meal's Recipe in its form (WP-105): the link with Read ingredients, what was found, and
+   its photos and PDFs. */
+.fw-recipe {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-recipe__link {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+}
+.fw-recipe__url {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.fw-recipe__url .fw-input {
+  width: 100%;
+}
+.fw-recipe__status {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-1);
+  margin: 0;
+  font-size: var(--t-small);
+}
+.fw-recipe__status--ok {
+  color: var(--success);
+}
+.fw-recipe__status--warn {
+  color: var(--reward-text);
+}
+.fw-recipe__files {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-recipe__file {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) var(--touch);
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-1);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+}
+.fw-recipe__thumb {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-sm);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-recipe__about {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.fw-recipe__read {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fw-recipe__read:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* [MEAL-26] A meal's recipe on the board (WP-105): full screen, read only; its photos and PDFs with
+   chips between them, its ingredients, and the steps from its link. Text 28 px or more. */
+.fw-meals__recipe {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch);
+  padding: var(--s-1) var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fw-meals__recipe:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-meals__recipe-icon {
+  color: var(--primary-text);
+}
+.fw-recipe-sheet {
+  width: min(1400px, calc(100vw - 2 * var(--s-12)));
+  max-height: calc(100vh - 2 * var(--s-8));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--s-6);
+}
+.fw-recipe-sheet__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+.fw-recipe-sheet__head h2 {
+  margin: 0;
+  font-size: var(--t-title);
+}
+.fw-recipe-sheet__head .fw-btn {
+  margin-left: auto;
+}
+.fw-recipe-sheet__when {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-recipe-sheet__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--s-8);
+  min-height: 0;
+  overflow-y: auto;
+}
+.fw-recipe-sheet__body--words {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+}
+.fw-recipe-sheet__files {
+  display: grid;
+  align-content: start;
+  gap: var(--s-3);
+}
+.fw-recipe-sheet__view {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 4;
+  max-height: 60vh;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-recipe-sheet__view img,
+.fw-recipe-sheet__view object {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.fw-recipe-sheet__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.fw-recipe-sheet__col h3 {
+  margin: 0 0 var(--s-2);
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 500;
+}
+.fw-recipe-sheet__col ul,
+.fw-recipe-sheet__col ol {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-recipe-sheet__col li {
+  padding: var(--s-1) 0;
+  border-top: var(--border-w) solid var(--line);
+  font-size: var(--t-small);
+  line-height: 1.25;
+}
+.fw-recipe-sheet__col ul li {
+  font-weight: 700;
+}
+.fw-recipe-sheet__col ol {
+  counter-reset: step;
+}
+.fw-recipe-sheet__col ol li {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  counter-increment: step;
+}
+.fw-recipe-sheet__col ol li::before {
+  content: counter(step);
+  color: var(--primary-text);
+  font-weight: 700;
 }

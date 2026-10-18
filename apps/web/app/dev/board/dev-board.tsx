@@ -25,7 +25,10 @@ import {
   fixtureMark,
   fixturePin,
   fixturePost,
+  fixtureGroceries,
   fixtureMeals,
+  fixtureRecipes,
+  RECIPE_CARD,
   fixtureSnapshot,
   fixtureWeather,
   reachedBike,
@@ -65,6 +68,7 @@ export function DevBoard({
   steps,
   perfect,
   missed = false,
+  groceries,
 }: {
   theme: Theme;
   stale: boolean;
@@ -96,6 +100,8 @@ export function DevBoard({
   perfect?: 'going' | 'missed' | 'won';
   /** [WP-110] Realtime never says a request was stored: only the board's own read shows it. */
   missed?: boolean;
+  /** [MEAL-18] The grocery list (WP-104): see fixtureGroceries. */
+  groceries?: string;
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
@@ -137,6 +143,7 @@ export function DevBoard({
       };
     }
     if (lunchItem) s = withLunchItem(s);
+    s = { ...s, groceries: fixtureGroceries(groceries) };
     if (stale) s = { ...s, fetchedAt: new Date(opened.getTime() - 12 * 60_000).toISOString() };
     if (repeating) s = withRepeating(s, repeating, opened);
     if (steps) s = withSteps(s, steps);
@@ -154,6 +161,15 @@ export function DevBoard({
     [snapshot.today, opened, busy, full, withSchool],
   );
   const pinWish = useMemo(() => fixturePin(snapshot), [snapshot]);
+  // [MEAL-26] As board_recipes() would answer, and the files' pictures (WP-105).
+  const loadRecipes = useCallback(
+    async () => (navigator.onLine ? fixtureRecipes(snapshot.meals) : null),
+    [snapshot.meals],
+  );
+  const signRecipes = useCallback(
+    async (paths: string[]) => Object.fromEntries(paths.map((p) => [p, RECIPE_CARD])),
+    [],
+  );
   const [lunches] = useState(() => fixtureLunches(snapshot.today));
   // [WP-110] What the database holds that this board hasn't read (?missed=1), applied by its read.
   const [unread] = useState(unreadChanges);
@@ -216,6 +232,8 @@ export function DevBoard({
           cancelAsk={cancelAsk}
           markCelebrated={markCelebrated}
           loadCalendar={loadCalendar}
+          loadRecipes={loadRecipes}
+          signRecipes={signRecipes}
           loadLunches={lunches.load}
           askLunch={lunches.ask}
           seenLunch={lunches.seen}

@@ -139,8 +139,12 @@ test('[MEAL-06][US-705] the Meals screen: the week a day a column, today marked,
     'Maya brings lunch: Leftover spaghetti · Ham wraps',
   ]);
   await expect(school).toContainText('Weekend');
-  // [US-705] Read-only: nothing in the week to tap.
-  await expect(week(page).getByRole('button')).toHaveCount(0);
+  // [US-705] Read-only: nothing in the week changes it; a meal with a recipe opens it (WP-105).
+  await expect(week(page).getByRole('button')).toHaveCount(2);
+  for (const meal of ['Spaghetti', 'Tacos'])
+    await expect(week(page).getByRole('button', { name: `${meal}: open the recipe` })).toHaveCount(
+      1,
+    );
   await expect(week(page).getByRole('link')).toHaveCount(0);
   expect(await spills(page)).toEqual([]);
 });

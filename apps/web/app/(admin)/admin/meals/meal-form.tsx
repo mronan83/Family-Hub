@@ -3,15 +3,28 @@
 import { Banner, Button, IconPicker, type IconName } from '@familywise/ui';
 import type { FormState } from '@/lib/auth/messages';
 import { useFormAction } from '@/lib/forms';
-import { type MealFormValue, SLOT_WORDS, SLOTS } from '@/lib/meals';
+import { useState } from 'react';
+import { type Ingredient, type MealFormValue, SLOT_WORDS, SLOTS } from '@/lib/meals';
 import { saveMeal } from './actions';
+import { IngredientsField } from './ingredients-field';
+import { RecipeField } from './recipe-field';
 
 /**
- * [MEAL-02] Add a meal to the library, or change one: its name, a description, what it's good for
- * (offered first for those meals of the day), a recipe link and an icon.
+ * [MEAL-02][MEAL-07] Add a meal to the library, or change one: its name, a description, what it's good
+ * for (offered first for those meals of the day), a recipe link, its ingredients (WP-105) and an icon.
  */
-export function MealForm({ id, initial }: { id?: string; initial?: MealFormValue }) {
+export function MealForm({
+  id,
+  initial,
+  householdId,
+}: {
+  id?: string;
+  initial?: MealFormValue;
+  /** [MEAL-25] Where its photos and PDFs go in storage (WP-105). */
+  householdId: string;
+}) {
   const [state, onSubmit, pending] = useFormAction(saveMeal, {} as FormState);
+  const [filled, setFilled] = useState<{ seq: number; rows: Ingredient[] } | null>(null);
   return (
     <form
       onSubmit={onSubmit}
@@ -60,18 +73,14 @@ export function MealForm({ id, initial }: { id?: string; initial?: MealFormValue
           Offered first for these. None ticked: offered first for any.
         </span>
       </fieldset>
-      <label className="fw-field">
-        <span className="fw-field__label">Recipe link (optional)</span>
-        <input
-          className="fw-input"
-          name="recipeUrl"
-          type="url"
-          maxLength={500}
-          defaultValue={initial?.recipeUrl ?? ''}
-          autoComplete="off"
-          placeholder="https://"
-        />
-      </label>
+      <RecipeField
+        mealId={id}
+        householdId={householdId}
+        url={initial?.recipeUrl ?? null}
+        files={initial?.recipeFiles ?? []}
+        onRows={(rows) => setFilled((was) => ({ seq: (was?.seq ?? 0) + 1, rows }))}
+      />
+      <IngredientsField initial={initial?.ingredients ?? []} rows={filled} />
       <IconPicker
         legend="Icon"
         selected={(initial?.icon ?? 'utensils') as IconName}

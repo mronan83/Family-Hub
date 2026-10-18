@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { weekReview } from '@/lib/meal-groceries';
+import { ITEMS as GROCERY_ITEMS } from '../groceries/fixture';
 import { MealLibraryView } from '../../(admin)/admin/meals/library/view';
 import { MealsView } from '../../(admin)/admin/meals/view';
 import type { LunchChild, LunchMode } from '@/lib/lunch';
@@ -7,7 +9,7 @@ import { type MealRow, type PlanEntry, type Slot, weekDays } from '@/lib/meals';
 // The admin Meals pages (WP-25) with a made-up family and no database, for the UI suite and the
 // guide's pictures: the week in Day or Evening (?theme=evening), opened to add a Wednesday snack
 // (?add=1), an entry opened for editing (?edit=<its id>, WP-76), a day opened (?open=<day>, WP-75),
-// and the meal library (?page=library; &open=archived shows Archived open, as after an archive; &state=empty, none yet). School lunch (WP-26): Thursday is a day off, Leo's Tuesday is changed to buy.
+// the week's Add to groceries (?groceries=1, WP-105), and the meal library (?page=library; &open=archived shows Archived open, as after an archive; &state=empty, none yet; &edit=Tacos, its form open). School lunch (WP-26): Thursday is a day off, Leo's Tuesday is changed to buy.
 // School menus (WP-27): both have Maple Elementary's; a buy day shows it. The lunch week is a list of
 // days (WP-74): Leo's Wednesday (today) has nothing picked yet, so his face has a dot.
 export const metadata: Metadata = { title: 'Meals', robots: { index: false } };
@@ -31,13 +33,58 @@ const meal = (
     archivedAt: null,
     ...extra,
   }) satisfies MealRow;
+const ing = (amount: string | null, name: string, have = false) => ({ name, amount, have });
 const MEALS: MealRow[] = [
-  meal(1, 'Tacos', 'utensils', ['dinner'], { recipeUrl: 'https://example.com/tacos' }),
+  meal(1, 'Tacos', 'utensils', ['dinner'], {
+    recipeUrl: 'https://example.com/tacos',
+    // [MEAL-25] Its recipe's photo and PDF, and the steps its link publishes (WP-105).
+    recipeFiles: [
+      {
+        id: 'f2b10000-0000-4000-8000-000000000001',
+        kind: 'photo',
+        name: 'Grandma’s card.jpg',
+        path: 'f2a00000-0000-4000-8000-000000000001/f2d00000-0000-4000-8000-000000000001/card.jpg',
+        sizeBytes: 1_200_000,
+      },
+      {
+        id: 'f2b10000-0000-4000-8000-000000000002',
+        kind: 'pdf',
+        name: 'Taco night.pdf',
+        path: 'f2a00000-0000-4000-8000-000000000001/f2d00000-0000-4000-8000-000000000001/night.pdf',
+        sizeBytes: 340_000,
+      },
+    ],
+    recipeSteps: [
+      'Brown the beef with the onion, 8 minutes.',
+      'Stir in the seasoning and a splash of water.',
+      'Warm the tortillas.',
+      'Fill with beef, lettuce and cheese.',
+    ],
+    // [MEAL-07] What it needs to buy (WP-105), as the mockup's Tacos.
+    ingredients: [
+      ing('1 lb', 'Ground beef'),
+      ing('8', 'Tortillas'),
+      ing('1', 'Onion'),
+      ing('1', 'Lettuce'),
+      ing(null, 'Cheddar'),
+      ing(null, 'Taco seasoning', true),
+      ing(null, 'Olive oil', true),
+    ],
+  }),
   meal(2, 'Spaghetti', 'dinner', ['dinner'], {
     description: 'With the meat sauce from the freezer',
+    ingredients: [
+      ing('1 lb', 'Ground beef'),
+      ing('2', 'Onions'),
+      ing('1 box', 'Spaghetti'),
+      ing(null, 'Parmesan'),
+    ],
   }),
   meal(3, 'Porridge', 'breakfast', ['breakfast']),
-  meal(4, 'Pancakes', 'breakfast', ['breakfast'], { description: 'Saturdays' }),
+  meal(4, 'Pancakes', 'breakfast', ['breakfast'], {
+    description: 'Saturdays',
+    ingredients: [ing(null, 'Eggs'), ing(null, 'Milk'), ing(null, 'Flour', true)],
+  }),
   meal(5, 'Chicken soup', 'soup', ['lunch', 'dinner']),
   meal(6, 'Fish pie', 'dinner', ['dinner']),
   meal(7, 'Apple slices', 'apple', ['snack']),
@@ -183,6 +230,7 @@ export default async function DevMealsPage({
     open?: string;
     lunches?: string;
     state?: string;
+    groceries?: string;
   }>;
 }) {
   const p = await searchParams;
@@ -191,6 +239,8 @@ export default async function DevMealsPage({
     <div className={`admin ${theme}`}>
       {p.page === 'library' ? (
         <MealLibraryView
+          householdId="f2a00000-0000-4000-8000-000000000001"
+          editing={MEALS.find((m) => m.name === p.edit)?.id ?? null}
           meals={p.state === 'empty' ? [] : MEALS}
           notice={null}
           error={null}
@@ -216,6 +266,25 @@ export default async function DevMealsPage({
           menus={[{ id: MAPLE, name: 'Maple Elementary' }]}
           notice={null}
           error={null}
+          groceries={
+            p.groceries === '1'
+              ? {
+                  // [MEAL-19] The week's review (WP-105): Saturday's pancakes were added on Sunday.
+                  review: weekReview(
+                    ENTRIES,
+                    MEALS,
+                    new Map(
+                      ENTRIES.filter((e) => e.mealId === MEALS[3]!.id).map((e) => [
+                        e.id,
+                        '2026-10-11T15:00:00Z',
+                      ]),
+                    ),
+                    'America/Chicago',
+                  ),
+                  open: GROCERY_ITEMS.filter((i) => i.name === 'Cheddar'),
+                }
+              : null
+          }
         />
       )}
     </div>

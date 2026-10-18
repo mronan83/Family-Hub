@@ -21,7 +21,8 @@ import { KITCHEN_SLEEP } from './fixture';
 // repeating goals (WP-80: ?repeating=going|missed|won, Maya's homework this week, Leo's reading missed);
 // a goal done by a time and paid in steps (WP-81: ?steps=going|won|weighted, Maya's); a family goal
 // every child meets and Maya's perfect weeks (WP-82: ?perfect=going|missed|won); a request the server
-// took that Realtime never reports, shown by the board's own read (WP-110: ?missed=1).
+// took that Realtime never reports, shown by the board's own read (WP-110: ?missed=1); the grocery list
+// (WP-104: ?groceries=1, or ?groceries=empty for one emptied; none by default, no rail button).
 export const metadata: Metadata = { title: 'Board Today', robots: { index: false } };
 
 export default async function DevBoardPage({
@@ -47,6 +48,7 @@ export default async function DevBoardPage({
     steps?: string;
     perfect?: string;
     missed?: string;
+    groceries?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -114,6 +116,7 @@ export default async function DevBoardPage({
             : undefined
         }
         missed={params.missed === '1'}
+        groceries={params.groceries}
       />
     </div>
   );

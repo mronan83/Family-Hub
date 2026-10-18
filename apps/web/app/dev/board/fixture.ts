@@ -1,3 +1,11 @@
+import type { BoardGroceries } from '@/lib/board-groceries';
+import type { BoardRecipe } from '@/lib/board-recipes';
+import {
+  CATEGORIES as GROCERY_CATEGORIES,
+  ITEMS as GROCERY_ITEMS,
+  PEOPLE as GROCERY_PEOPLE,
+  STORES as GROCERY_STORES,
+} from '../groceries/fixture';
 import type { Answer, CompletionEvent } from '@/lib/outbox';
 import type { MarkCelebrated } from '@/lib/board-goals';
 import type { AskFor, CancelAsk } from '@/lib/shop';
@@ -1425,3 +1433,84 @@ export function withPerfect(s: BoardSnapshot, kind: 'going' | 'missed' | 'won'):
     goals: [perfect, ...s.goals.filter((g) => g.memberId !== MAYA && g.memberId !== null), family],
   };
 }
+
+/**
+ * [MEAL-18] The made-up grocery list on the board (WP-104), as the admin page's fixture holds it,
+ * the children's asks pointed at this board's Maya and Leo: 'busy', 'empty' (had items, none now),
+ * or none (the household has never had one, so the rail has no Groceries).
+ */
+export function fixtureGroceries(which: string | undefined): BoardGroceries | null {
+  if (which !== '1' && which !== 'busy' && which !== 'empty') return null;
+  const people = new Map([
+    [GROCERY_PEOPLE.find((p) => p.name === 'Leo')!.id, LEO],
+    [GROCERY_PEOPLE.find((p) => p.name === 'Maya')!.id, MAYA],
+  ]);
+  const items =
+    which === 'empty'
+      ? []
+      : GROCERY_ITEMS.filter((i) => i.status === 'open').map((i) => ({
+          ...i,
+          reasons: i.reasons.map((r) => ({
+            ...r,
+            memberId: r.memberId ? (people.get(r.memberId) ?? r.memberId) : null,
+          })),
+        }));
+  return { ever: true, categories: GROCERY_CATEGORIES, stores: GROCERY_STORES, items };
+}
+
+/**
+ * [MEAL-26] The week's recipes (WP-105), as board_recipes() would answer: Tacos with a photo of
+ * Grandma's card, a PDF, its ingredients and the steps its link publishes (the mockup's); tonight's
+ * Spaghetti with its ingredients only. Files are made-up pictures, no storage.
+ */
+export function fixtureRecipes(meals: BoardMeals | null): BoardRecipe[] {
+  const find = (name: string) => meals?.entries.find((e) => e.name === name);
+  const ing = (amount: string | null, name: string) => ({ name, amount, have: false });
+  const out: BoardRecipe[] = [];
+  const tacos = find('Tacos');
+  if (tacos)
+    out.push({
+      entryId: tacos.id,
+      mealId: 'meal-tacos',
+      name: 'Tacos',
+      date: tacos.date,
+      recipeUrl: 'https://tasty-tacos.example/recipe',
+      ingredients: [
+        ing('1 lb', 'Ground beef'),
+        ing('8', 'Tortillas'),
+        ing('1', 'Onion'),
+        ing('1', 'Lettuce'),
+        ing(null, 'Cheddar'),
+        ing(null, 'Taco seasoning'),
+        ing(null, 'Olive oil'),
+      ],
+      steps: [
+        'Brown the beef with the onion, 8 minutes.',
+        'Stir in the seasoning and a splash of water.',
+        'Warm the tortillas.',
+        'Fill with beef, lettuce and cheese.',
+      ],
+      files: [
+        { id: 'file-card', kind: 'photo', name: 'Grandma’s card.jpg', path: 'demo/tacos/card.jpg' },
+        { id: 'file-night', kind: 'pdf', name: 'Taco night.pdf', path: 'demo/tacos/night.pdf' },
+      ],
+    });
+  const spaghetti = find('Spaghetti');
+  if (spaghetti)
+    out.push({
+      entryId: spaghetti.id,
+      mealId: 'meal-spaghetti',
+      name: 'Spaghetti',
+      date: spaghetti.date,
+      recipeUrl: null,
+      ingredients: [ing('1 lb', 'Ground beef'), ing('2', 'Onions'), ing('1 box', 'Spaghetti')],
+      steps: [],
+      files: [],
+    });
+  return out;
+}
+
+/** A made-up photo of a recipe card, as a picture the board can show (no storage). */
+export const RECIPE_CARD = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400"><rect width="300" height="400" rx="16" fill="#FFF8E7"/><text x="24" y="56" font-family="serif" font-size="30" fill="#5B3A1E">Tacos</text><g stroke="#C9B48A" stroke-width="2"><path d="M24 100h252M24 140h252M24 180h252M24 220h252M24 260h252M24 300h252"/></g></svg>',
+)}`;

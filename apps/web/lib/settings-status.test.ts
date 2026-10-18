@@ -22,6 +22,7 @@ describe('the admin menu', () => {
       'Rewards',
       'Goals',
       'Meals',
+      'Groceries',
       'Insights',
       'Settings',
     ]);

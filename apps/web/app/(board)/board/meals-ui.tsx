@@ -21,6 +21,8 @@ import { type MenuOption, type MenuSection, sectionLabel, sidesWords } from '@/l
 import { peopleWords } from '@/lib/meals';
 import type { BoardMember } from '@/lib/snapshot';
 import { iconOf } from './picture';
+import { RecipeSheet } from './recipe-ui';
+import type { BoardRecipe, LoadRecipes, SignRecipeFiles } from '@/lib/board-recipes';
 
 type People = Map<string, BoardMember>;
 
@@ -40,11 +42,22 @@ function inOrder(ids: string[], people: People): BoardMember[] {
  * [US-705][MEAL-10] One planned meal: its picture (the library meal's icon, else the meal of the
  * day's), what it is, and whose (each person's face, in the family's order; none for everyone).
  */
-function Entry({ e, people, size }: { e: BoardMealEntry; people: People; size: number }) {
+function Entry({
+  e,
+  people,
+  size,
+  onRecipe,
+}: {
+  e: BoardMealEntry;
+  people: People;
+  size: number;
+  /** [MEAL-26] Opens its recipe (WP-105): only a meal that has one. */
+  onRecipe?: () => void;
+}) {
   const whose = inOrder(e.memberIds, people);
   const who = peopleWords(whose.map((m) => m.displayName));
-  return (
-    <li className="fw-meals__entry" aria-label={who ? `${e.name}, for ${who}` : undefined}>
+  const words = (
+    <>
       <Icon name={iconOf(e.icon, e.slot)} size={size} className="fw-meals__icon" />
       <span className="fw-meals__name">{e.name}</span>
       {whose.length ? (
@@ -54,6 +67,23 @@ function Entry({ e, people, size }: { e: BoardMealEntry; people: People; size: n
           ))}
         </span>
       ) : null}
+    </>
+  );
+  return (
+    <li className="fw-meals__entry" aria-label={who ? `${e.name}, for ${who}` : undefined}>
+      {onRecipe ? (
+        <button
+          type="button"
+          className="fw-meals__recipe"
+          aria-label={`${e.name}${who ? `, for ${who}` : ''}: open the recipe`}
+          onClick={onRecipe}
+        >
+          {words}
+          <Icon name="book-open" size={28} className="fw-meals__recipe-icon" />
+        </button>
+      ) : (
+        words
+      )}
     </li>
   );
 }
@@ -290,15 +320,40 @@ export function MealsWeek({
   today,
   members,
   onLunches,
+  loadRecipes,
+  signRecipes,
 }: {
   meals: BoardMeals | null;
   today: string;
   members: BoardMember[];
   /** [MEAL-09] Opens Lunches, where a child picks their coming week (WP-49). */
   onLunches?: () => void;
+  /** [MEAL-26] The week's recipes (WP-105), and links to their files. */
+  loadRecipes?: LoadRecipes;
+  signRecipes?: SignRecipeFiles;
 }) {
   const people = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
   const dates = weekDates(meals?.weekFrom ?? today);
+  const [recipes, setRecipes] = useState<Map<string, BoardRecipe>>(new Map());
+  const [open, setOpen] = useState<BoardRecipe | null>(null);
+  const from = dates[0]!;
+  const to = dates[6]!;
+  // Read again when the plan changes, so a meal planned or a recipe added opens too.
+  const plan = meals?.entries.map((e) => `${e.id}:${e.name}`).join(',') ?? '';
+  useEffect(() => {
+    if (!loadRecipes) return;
+    let live = true;
+    void loadRecipes(from, to).then((r) => {
+      if (live && r) setRecipes(new Map(r.map((x) => [x.entryId, x])));
+    });
+    return () => {
+      live = false;
+    };
+  }, [loadRecipes, from, to, plan]);
+  const recipeOf = (e: BoardMealEntry) => {
+    const r = recipes.get(e.id);
+    return r ? () => setOpen(r) : undefined;
+  };
   const days = dates.map((d) => mealDay(meals, d));
   const slots = weekSlots(days);
   const school = (meals?.lunch.length ?? 0) > 0;
@@ -348,7 +403,13 @@ export function MealsWeek({
                     {day.slots[slot].length ? (
                       <ul className="fw-meals__list">
                         {day.slots[slot].map((e) => (
-                          <Entry key={e.id} e={e} people={people} size={28} />
+                          <Entry
+                            key={e.id}
+                            e={e}
+                            people={people}
+                            size={28}
+                            onRecipe={recipeOf(e)}
+                          />
                         ))}
                       </ul>
                     ) : (
@@ -387,6 +448,20 @@ export function MealsWeek({
           </tbody>
         </table>
       </div>
+      {open ? (
+        <RecipeSheet
+          recipe={open}
+          when={
+            open.date === today
+              ? meals?.entries.find((e) => e.id === open.entryId)?.slot === 'dinner'
+                ? 'tonight'
+                : 'today'
+              : dayHead(open.date)
+          }
+          sign={signRecipes}
+          onClose={() => setOpen(null)}
+        />
+      ) : null}
     </section>
   );
 }

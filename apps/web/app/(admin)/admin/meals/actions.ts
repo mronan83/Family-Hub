@@ -12,6 +12,11 @@ import { parseUsualLunch } from '@/lib/lunch';
 import { parsePicksForm } from '@/lib/lunch-picks';
 import { mealRefusal, parseEntryForm, parseMealForm, weekDays, weekFrom } from '@/lib/meals';
 import { serverClient } from '@/lib/supabase/server';
+import { suggest } from '@/lib/groceries';
+import { starterList } from '@/lib/grocery-starter';
+import { weekReview } from '@/lib/meal-groceries';
+import { loadGroceries } from '../groceries/data';
+import { loadMeals, loadPlan } from './data';
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -169,6 +174,8 @@ export async function saveMeal(_prev: FormState, form: FormData): Promise<FormSt
     icon: v.icon,
     meal_types: v.mealTypes,
     recipe_url: v.recipeUrl,
+    ingredients: v.ingredients ?? [],
+    ...(v.recipeSteps ? { recipe_steps: v.recipeSteps } : {}),
   };
   const { error } = GUID.test(id)
     ? await db.from('meal').update(row).eq('id', id).eq('household_id', household.id)
@@ -275,4 +282,120 @@ export async function setLunchPicks(form: FormData): Promise<void> {
   revalidatePath('/admin/meals');
   revalidatePath('/admin/today');
   redirect(`/admin/meals?week=${week}&did=picks#lunch`);
+}
+
+/**
+ * [MEAL-19][MEAL-20] Adds the rows ticked in the week's review to the grocery list (WP-105): read
+ * again here from the week's plan and the meals' ingredients (the form sends only which rows), each
+ * with its meal as the reason, through the one way in, which merges what is already on the list.
+ * New items take the suggested category and store. Back to the week, saying how many.
+ */
+export async function addWeekToGroceries(form: FormData): Promise<void> {
+  const { db, household } = await context('/admin/meals');
+  const week = weekOf(form, household);
+  const days = weekDays(week);
+  let ids: Set<string>;
+  try {
+    ids = new Set((JSON.parse(String(form.get('rows') ?? '[]')) as unknown[]).map(String));
+  } catch {
+    redirect(`/admin/meals?week=${week}&did=failed`);
+  }
+  const [entries, meals, groceries] = await Promise.all([
+    loadPlan(db, household.id, days[0]!, days[6]!),
+    loadMeals(db, household.id),
+    loadGroceries(db, household.id),
+  ]);
+  const review = weekReview(entries, meals, new Map(), household.timezone);
+  const ctx = {
+    categories: groceries.categories,
+    past: groceries.past,
+    learned: groceries.learned,
+    starter: starterList,
+  };
+  const items = review.meals.flatMap((m) =>
+    m.rows
+      .filter((r) => ids.has(r.id))
+      .map((r) => {
+        const s = suggest(r.name, ctx);
+        return {
+          name: r.name.charAt(0).toUpperCase() + r.name.slice(1),
+          key: r.key,
+          amount: r.amount,
+          category_id: s?.categoryId ?? null,
+          store_id: s?.storeId ?? null,
+          reason: { kind: 'meal', meal_plan_entry_id: m.entryId, label: `${m.name}, ${m.day}` },
+        };
+      }),
+  );
+  if (items.length === 0) redirect(`/admin/meals?week=${week}&did=nothing`);
+  const { error } = await db.rpc('add_groceries', { p_household: household.id, p_items: items });
+  if (error) {
+    log('warn', 'week not added to groceries', { code: error.code, hint: error.hint });
+    redirect(`/admin/meals?week=${week}&did=failed`);
+  }
+  revalidatePath('/admin/groceries');
+  redirect(`/admin/meals?week=${week}&did=groceries&n=${items.length}`);
+}
+
+const RECIPE_KINDS = { photo: /^image\/(jpeg|png|webp|heic)$/, pdf: /^application\/pdf$/ } as const;
+
+/**
+ * [MEAL-25] Records a photo or PDF the admin's browser has just put in the household's storage
+ * (WP-105): under the household's folder and the meal's, up to 10 MB. Returns the file's id, or why
+ * not (the stored file is taken away again then).
+ */
+export async function addRecipeFile(file: {
+  mealId: string;
+  path: string;
+  name: string;
+  type: string;
+  size: number;
+}): Promise<{ id: string } | { error: string }> {
+  const { db, household } = await context('/admin/meals/library');
+  const kind = RECIPE_KINDS.pdf.test(file.type)
+    ? 'pdf'
+    : RECIPE_KINDS.photo.test(file.type)
+      ? 'photo'
+      : null;
+  const inFolder =
+    GUID.test(file.mealId) && file.path.startsWith(`${household.id}/${file.mealId}/`);
+  if (!kind || !inFolder || file.size < 1 || file.size > 10 * 1024 * 1024) {
+    if (inFolder) await db.storage.from('recipes').remove([file.path]);
+    return { error: 'A photo or a PDF, up to 10 MB.' };
+  }
+  const { data, error } = await db
+    .from('meal_recipe_file')
+    .insert({
+      household_id: household.id,
+      meal_id: file.mealId,
+      kind,
+      name: file.name.trim().slice(0, 120) || (kind === 'pdf' ? 'Recipe.pdf' : 'Photo'),
+      path: file.path,
+      size_bytes: file.size,
+    })
+    .select('id')
+    .single();
+  if (error || !data) {
+    log('warn', 'recipe file not added', { code: error?.code, hint: error?.hint });
+    await db.storage.from('recipes').remove([file.path]);
+    return { error: 'That didn’t save. Try again in a moment.' };
+  }
+  revalidatePath('/admin/meals', 'layout');
+  return { id: data.id as string };
+}
+
+/** [MEAL-25] Takes a photo or PDF off a meal's recipe, and out of the household's storage. */
+export async function removeRecipeFile(id: string): Promise<{ ok: boolean }> {
+  const { db, household } = await context('/admin/meals/library');
+  if (!GUID.test(id)) return { ok: false };
+  const { data } = await db
+    .from('meal_recipe_file')
+    .delete()
+    .eq('id', id)
+    .eq('household_id', household.id)
+    .select('path')
+    .maybeSingle();
+  if (data?.path) await db.storage.from('recipes').remove([data.path as string]);
+  revalidatePath('/admin/meals', 'layout');
+  return { ok: !!data };
 }

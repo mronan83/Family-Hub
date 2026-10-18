@@ -51,6 +51,8 @@ import { calendarDay, clock, DAY_PART_LABELS, dayPart } from '@/lib/chores';
 import { type Chip, CHIP_WORDS, familyList, type ListRow } from '@/lib/dashboard';
 import { CalendarScreen, type LoadCalendar } from './calendar-ui';
 import { Dashboard } from './dashboard';
+import { GroceriesBoard } from './groceries-ui';
+import type { LoadRecipes, SignRecipeFiles } from '@/lib/board-recipes';
 import { MealsWeek, TodayMeals } from './meals-ui';
 import { type LoadLunches, LunchesScreen } from './lunches-ui';
 import { type AskLunch, type SeenLunch } from '@/lib/lunch-picks';
@@ -936,6 +938,8 @@ export function Today({
   markCelebrated = noMark,
   photoUrl,
   loadCalendar,
+  loadRecipes,
+  signRecipes,
   loadLunches,
   askLunch = noLunch,
   seenLunch = noSeen,
@@ -956,6 +960,9 @@ export function Today({
   photoUrl?: PhotoUrl;
   /** [CAL-04] Reads a range of the calendar the snapshot doesn't hold (WP-23). */
   loadCalendar?: LoadCalendar;
+  /** [MEAL-26] The week's recipes on the Meals screen (WP-105), and links to their files. */
+  loadRecipes?: LoadRecipes;
+  signRecipes?: SignRecipeFiles;
   /** [MEAL-09] Reads a week's lunches (lunch_week), for Lunches (WP-49). */
   loadLunches?: LoadLunches;
   /** [MEAL-09][MEAL-11] Asks for a child's day (POST /api/lunches), and says they saw their week. */
@@ -973,7 +980,7 @@ export function Today({
   const party = useCelebrations(snapshot.goals, markCelebrated);
   const online = useOnline();
   const { members, household, today } = snapshot;
-  // 'home' (the dashboard), 'chores', 'calendar', 'meals', 'lunches', or a member's id.
+  // 'home' (the dashboard), 'chores', 'calendar', 'meals', 'groceries', 'lunches', or a member's id.
   const [view, setView] = useState<string>('home');
   // [MEAL-09] Whose lunches show, the item that opened them (Done checks it off) and where Done goes.
   const [lunchFor, setLunchFor] = useState<{
@@ -1171,6 +1178,21 @@ export function Today({
             <span>Meals</span>
           </button>
         </li>
+        {/* [MEAL-18] The grocery list (WP-104), once the household has had its first item. */}
+        {snapshot.groceries?.ever ? (
+          <li>
+            <button
+              type="button"
+              className="fw-today__person fw-today__person--all"
+              data-rail="groceries"
+              aria-pressed={view === 'groceries'}
+              onClick={() => open('groceries')}
+            >
+              <Icon name="shopping-cart" size={64} />
+              <span>Groceries</span>
+            </button>
+          </li>
+        ) : null}
       </ul>
 
       <div className="fw-today__notice" aria-live="polite">
@@ -1409,12 +1431,16 @@ export function Today({
               open(back === 'lunches' ? 'home' : back);
             }}
           />
+        ) : view === 'groceries' ? (
+          <GroceriesBoard groceries={snapshot.groceries} members={members} />
         ) : view === 'meals' ? (
           <MealsWeek
             meals={snapshot.meals}
             today={today}
             members={members}
             onLunches={lunchKids.length ? () => openLunches(null) : undefined}
+            loadRecipes={loadRecipes}
+            signRecipes={signRecipes}
           />
         ) : view === 'calendar' ? (
           <CalendarScreen

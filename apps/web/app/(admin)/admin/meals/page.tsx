@@ -8,6 +8,9 @@ import { loadMembers } from '../members/data';
 import { lunchRefusal } from '@/lib/lunch';
 import { loadLunch, loadMeals, loadMenuNames, loadPlan } from './data';
 import { MealsView } from './view';
+import type { GroceryItem } from '@/lib/groceries';
+import { weekReview, type WeekReview } from '@/lib/meal-groceries';
+import { loadGroceries } from '../groceries/data';
 
 export const metadata: Metadata = { title: 'Meals' };
 
@@ -19,6 +22,7 @@ const DID: Record<string, string> = {
   lunch: 'Lunch changed.',
   usual: 'Usual lunches saved.',
   picks: 'Lunch picks saved.',
+  nothing: 'Nothing ticked, so nothing was added to groceries.',
 };
 
 /** [MEAL-01][MEAL-03] The week's meals (`?week=` any day of it; this week by default). */
@@ -54,8 +58,37 @@ export default async function MealsPage({
           replaced: Number(p.replaced) || 0,
         })
       : null;
+  // [MEAL-19] The week's Add to groceries, opened (WP-105): when each entry was added, if it was.
+  let groceries: { review: WeekReview; open: GroceryItem[] } | null = null;
+  if (p.groceries === '1') {
+    const [list, added] = await Promise.all([
+      loadGroceries(db!, household.id),
+      db!
+        .from('grocery_item_reason')
+        .select('meal_plan_entry_id, created_at')
+        .eq('household_id', household.id)
+        .in(
+          'meal_plan_entry_id',
+          entries.map((e) => e.id),
+        ),
+    ]);
+    const when = new Map<string, string>();
+    for (const r of (added.data ?? []) as { meal_plan_entry_id: string; created_at: string }[]) {
+      const had = when.get(r.meal_plan_entry_id);
+      if (!had || r.created_at < had) when.set(r.meal_plan_entry_id, r.created_at);
+    }
+    groceries = {
+      review: weekReview(entries, meals, when, household.timezone),
+      open: list.items.filter((i) => i.status === 'open'),
+    };
+  }
+  const done =
+    p.did === 'groceries'
+      ? `Added ${Number(p.n) || 0} to groceries. Same things were merged.`
+      : null;
   return (
     <MealsView
+      groceries={groceries}
       week={week}
       today={today}
       days={days}
@@ -75,7 +108,7 @@ export default async function MealsPage({
       newId={crypto.randomUUID()}
       lunch={lunch}
       menus={menus}
-      notice={copied ?? (p.did ? (DID[p.did] ?? null) : null)}
+      notice={copied ?? done ?? (p.did ? (DID[p.did] ?? null) : null)}
       error={
         p.lunch
           ? lunchRefusal({ hint: p.lunch })

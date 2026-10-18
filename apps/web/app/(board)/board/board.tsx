@@ -7,6 +7,8 @@ import { type BoardStore, openBoardStore } from '@/lib/board-store';
 import { day, isoDay, time } from '@/lib/format';
 import { boardTables, coalesce, readSoon } from '@/lib/live';
 import { postCompletions } from '@/lib/outbox';
+import { withGroceries } from '@/lib/board-groceries';
+import { type BoardRecipe, readRecipes } from '@/lib/board-recipes';
 import { readCalendar, readSnapshot, type BoardCalendar, type BoardSnapshot } from '@/lib/snapshot';
 import { browserClient } from '@/lib/supabase/browser';
 import { postCelebrated } from '@/lib/board-goals';
@@ -97,7 +99,11 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
         // Marked with its return, so a follow-up read that starts at once doesn't hide how long the
         // read that drew the change took (e2e's evidence of a slow database, D-129).
         const from = Date.now();
-        const { data, error } = await db.rpc('board_snapshot').abortSignal(signal);
+        // [MEAL-18] The grocery list beside it (WP-104); a failed read of it keeps the last list.
+        const [{ data, error }, groceries] = await Promise.all([
+          db.rpc('board_snapshot').abortSignal(signal),
+          db.rpc('board_groceries').abortSignal(signal),
+        ]);
         // Unmounted: stop. Given up at the deadline: readSoon has already moved on to the next read.
         if (cancelled) return true;
         if (signal.aborted) return false;
@@ -105,8 +111,9 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
           mark(status, 'data-read-failed', ++failed.current);
           return false;
         }
-        const next = readSnapshot(data);
-        if (next) setSnapshot(next);
+        const next = readSnapshot(withGroceries(data, groceries.error ? null : groceries.data));
+        if (next)
+          setSnapshot((was) => (groceries.error ? { ...next, groceries: was.groceries } : next));
         else leave();
         mark(status, 'data-read-from', from);
         mark(status, 'data-read-to', Date.now());
@@ -256,6 +263,27 @@ async function loadCalendar(from: string, to: string): Promise<BoardCalendar | n
 }
 
 /**
+ * [MEAL-26] The recipes of the meals planned from one date to another (board_recipes, WP-105), as
+ * this board may see them; null offline or on an error.
+ */
+async function loadRecipes(from: string, to: string): Promise<BoardRecipe[] | null> {
+  const db = browserClient();
+  if (!db) return null;
+  const { data, error } = await db.rpc('board_recipes', { p_from: from, p_to: to });
+  return error ? null : readRecipes(data);
+}
+
+/** [MEAL-26] Short-lived links to a recipe's photos and PDFs in the household's storage. */
+async function signRecipes(paths: string[]): Promise<Record<string, string>> {
+  const db = browserClient();
+  if (!db || paths.length === 0) return {};
+  const { data } = await db.storage.from('recipes').createSignedUrls(paths, 3600);
+  return Object.fromEntries(
+    (data ?? []).flatMap((d) => (d.signedUrl && d.path ? [[d.path, d.signedUrl]] : [])),
+  );
+}
+
+/**
  * [MEAL-09] Each child's lunches for the seven days from a date (lunch_week, WP-49), as this board
  * may see them; null offline or on an error.
  */
@@ -380,6 +408,8 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
           markCelebrated={postCelebrated}
           photoUrl={photoUrl}
           loadCalendar={loadCalendar}
+          loadRecipes={loadRecipes}
+          signRecipes={signRecipes}
           loadLunches={loadLunches}
           askLunch={postLunch}
           seenLunch={postLunchSeen}

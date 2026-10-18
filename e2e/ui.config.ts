@@ -41,6 +41,8 @@ export default defineConfig({
         'forms.spec.ts',
         'admin-day.spec.ts',
         'admin-menu.spec.ts',
+        'groceries.spec.ts',
+        'meal-groceries.spec.ts',
       ],
     },
   ],

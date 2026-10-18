@@ -183,6 +183,8 @@ describe('board snapshot', () => {
           },
         ],
       },
+      // A snapshot read without board_groceries() beside it (WP-104) has none.
+      groceries: null,
       members: [
         {
           id: 'm1',
@@ -618,6 +620,10 @@ describe('notify, then refetch', () => {
       { table: 'school_menu_day', filter: 'household_id=eq.h1' },
       { table: 'lunch_request', filter: 'household_id=eq.h1' },
       { table: 'lunch_choice', filter: 'household_id=eq.h1' },
+      { table: 'grocery_item', filter: 'household_id=eq.h1' },
+      { table: 'grocery_item_reason', filter: 'household_id=eq.h1' },
+      { table: 'grocery_category', filter: 'household_id=eq.h1' },
+      { table: 'grocery_store', filter: 'household_id=eq.h1' },
     ]);
   });
 

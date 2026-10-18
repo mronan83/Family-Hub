@@ -85,6 +85,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
       { href: '/admin/rewards', label: 'Rewards', icon: 'gift' },
       { href: '/admin/goals', label: 'Goals', icon: 'target' },
       { href: '/admin/meals', label: 'Meals', icon: 'utensils' },
+      { href: '/admin/groceries', label: 'Groceries', icon: 'shopping-cart' },
       { href: '/admin/insights', label: 'Insights', icon: 'chart' },
     ],
   },

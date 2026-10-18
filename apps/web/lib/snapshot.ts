@@ -1,3 +1,4 @@
+import { type BoardGroceries, readGroceries } from './board-groceries';
 import {
   type AvatarKey,
   type MemberColor,
@@ -68,6 +69,8 @@ export interface BoardSnapshot {
   weather: BoardWeather | null;
   /** [MEAL-06] The household week's meals and each child's school lunch (WP-28); null before it. */
   meals: BoardMeals | null;
+  /** [MEAL-18] The grocery list (WP-104), read beside the snapshot (board_groceries); none before. */
+  groceries?: BoardGroceries | null;
 }
 
 /** [BRD-04] The temperature now, today's high and low, and the sky, in the household's unit. */
@@ -703,5 +706,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
     weather: readWeather(data.weather),
     // A snapshot from before WP-28 has no meals.
     meals: readMeals(data.meals),
+    // Read beside the snapshot by board_groceries() (WP-104), and kept with it.
+    groceries: readGroceries(data.groceries),
   };
 }

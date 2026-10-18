@@ -58,8 +58,24 @@ export const ADMIN = [
   ['health', '/dev/health'],
   ['settings', '/dev/settings'],
   ['insights', '/dev/insights'],
+  // [MEAL-18][MEAL-23][MEAL-24] WP-104's Groceries, as the smart grocery list mockup draws it (D-138):
+  // busy, an item's ⋯, adding with the suggestion, moving several, categories and stores, empty.
+  ['groceries', '/dev/groceries'],
+  ['groceries-menu', '/dev/groceries?menu=Onions'],
+  ['groceries-adding', '/dev/groceries?typed=greek%20yog'],
+  ['groceries-select', '/dev/groceries?select=1&sel=Apples,Avocados,Bananas&panel=move'],
+  ['groceries-places', '/dev/groceries?store=Costco&open=places'],
+  ['groceries-got', '/dev/groceries?open=got'],
+  ['groceries-empty', '/dev/groceries?state=empty'],
+  // [MEAL-19] WP-105's week into groceries.
+  ['meals-groceries', '/dev/meals?groceries=1'],
+  // [MEAL-07][MEAL-25] WP-105's meal form: its ingredients and recipe.
+  ['meals-recipe', '/dev/meals?page=library&edit=Tacos'],
 ];
-/** [name, query, person] per board screen: Maya's goal cards. */
+/**
+ * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of
+ * the rail drawn as the board shows it (WP-104's Groceries), after a tap on `then` if given (WP-105).
+ */
 export const BOARD = [
   ['board-going', '?repeating=going', 'Maya'],
   ['board-missed', '?repeating=missed', 'Maya'],
@@ -67,12 +83,16 @@ export const BOARD = [
   ['board-steps', '?steps=going', 'Maya'],
   ['board-weighted', '?steps=weighted', 'Maya'],
   ['board-family', '?perfect=missed', 'Maya'],
+  ['board-groceries', '?groceries=1', 'Groceries', 'whole'],
+  ['board-groceries-empty', '?groceries=empty', 'Groceries', 'whole'],
+  // [MEAL-26] WP-105's recipe on the board: Meals, then a tap on Tacos.
+  ['board-recipe', '?x=1', 'Meals', 'whole', 'Tacos: open the recipe'],
 ];
 
 const only = arg('only', '');
 const wanted = (name) => !only || only.split(',').some((o) => name.startsWith(o));
 
-async function shoot(context, url, file, person) {
+async function shoot(context, url, file, person, whole = false, then = null) {
   const page = await context.newPage();
   await page.clock.setFixedTime(THURSDAY);
   await page.goto(url);
@@ -85,10 +105,16 @@ async function shoot(context, url, file, person) {
       .getByRole('list', { name: 'Family', exact: true })
       .getByRole('button', { name: person, exact: true })
       .click();
-    await page.getByRole('heading', { name: person, level: 2 }).waitFor();
+    await page.getByRole('heading', { name: person, level: 2 }).first().waitFor();
+    if (then) {
+      await page.getByRole('button', { name: then }).click();
+      await page.getByRole('dialog').waitFor();
+    }
   }
   await page.evaluate(() => document.fonts.ready);
-  if (person) {
+  if (person && whole) {
+    await page.screenshot({ path: file });
+  } else if (person) {
     // The board is one screen that scrolls inside; the goal cards are its Goals section, drawn
     // whole by letting the parts around it grow.
     const goals = page.getByRole('region', { name: 'Goals' });
@@ -128,9 +154,9 @@ for (const theme of ['day', 'evening']) {
     await context.close();
   }
   const board = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
-  for (const [name, query, person] of BOARD.filter(([name]) => wanted(name))) {
+  for (const [name, query, person, whole, then] of BOARD.filter(([name]) => wanted(name))) {
     const url = `${base}/dev/board${query}&theme=${theme}`;
-    await shoot(board, url, `${out}/${name}-${theme}.png`, person);
+    await shoot(board, url, `${out}/${name}-${theme}.png`, person, whole === 'whole', then);
     n += 1;
   }
   await board.close();

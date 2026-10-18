@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { BOARD_CREDENTIAL_COOKIE, isDeviceClaims } from '@/lib/devices';
+import { withGroceries } from '@/lib/board-groceries';
 import { readSnapshot } from '@/lib/snapshot';
 import { serverClient } from '@/lib/supabase/server';
 import { Board } from './board';
@@ -19,12 +20,14 @@ export default async function BoardHome() {
     redirect(credential ? '/board/resume' : '/board/pair');
   }
 
-  const [snapshot] = await Promise.all([
+  const [snapshot, groceries] = await Promise.all([
     db.rpc('board_snapshot'),
+    // [MEAL-18] The grocery list, beside the snapshot (WP-104).
+    db.rpc('board_groceries'),
     db.rpc('device_heartbeat', { p_app_version: APP_VERSION }),
   ]);
   if (snapshot.error) throw new Error(`board snapshot: ${snapshot.error.message}`);
-  const initial = readSnapshot(snapshot.data);
+  const initial = readSnapshot(withGroceries(snapshot.data, groceries.data));
   // A board session with no snapshot was disconnected (RLS shows it nothing).
   if (!initial) redirect('/board/resume?revoked=1');
 

@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.41: the grocery list and meals → groceries (WP-104, WP-105, D-138): A17 The grocery list (adding with the category and store suggested, the list, Select, Got recently, your own categories and stores, Groceries on the board); in A15, a meal's recipe and ingredients and this week's meals onto the grocery list, and a recipe at the board; B1.17 Groceries and B2.11 Groceries; B1.15 and B2.9 updated.
 > v0.40: the set-up pages folded (WP-94, D-120, D-133): Family options, School and a school year's page, Tags, Reminders and Health fold each section set once to what it is set to; a failing weather read, the invites waiting, a device removed, a failing job and a limit near show on the folded header; the section saved in comes back open; Home's **Add a day off** a fold too (A1, A2, A3, A10, A13, B1.1, B1.4, B1.5, B1.10, B1.13, B1.16).
 > v0.39: Calendars, School menus and the meal library folded (WP-93, D-120, D-131): each calendar folded to its colour, name and facts with **Can't sync** on its header, each school menu to its facts with **Can't fetch** on its header; **Add a calendar**, **Add a school menu** and **Add a meal** folded to their buttons; the library's **Archived** to its count; a calendar or menu comes back open after a save in it (A9, A15, B1.11, B1.15).
 > v0.38: the goal form as its mockups draw it (WP-101, D-128): a rule folds to one line with its weight; summaries on the form say what this week asks ("This week Homework home is due 4 days for Maya (Friday, Oct 16 is a teacher planning day)…") and change as you fill it in; items with their picture; dates written "Mon, Oct 12, 2026" (A7, A7b, A7c).
@@ -932,7 +933,7 @@ Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). The credi
 1. On **Meals**, choose **Meal library**, then tap **Add a meal** to open it (it is open already while the library is empty).
 2. Enter a **Name** and, if you like, a **Description**.
 3. Tick what it's **Good for**: **Breakfast**, **Snack**, **Lunch**, **Dinner**. These meals are offered first when you plan that meal of the day; none ticked means any.
-4. Optionally add a **Recipe link** and pick an **Icon**, then choose **Add meal**.
+4. Optionally add its **Recipe** (a link) and **Ingredients**, and pick an **Icon**, then choose **Add meal**. Photos and PDFs of the recipe are added once it is saved (see [Recipes and ingredients](#recipes-and-ingredients)).
 
 Choose **Edit** (the meal's name) to change one. **Archive** takes a meal out of the library: it isn't offered any more, and plans that used it keep its name. Archived meals are folded under **Archived**, which says how many; open it and **Restore** puts one back.
 
@@ -1006,6 +1007,31 @@ FamilyWise reads a menu as the school writes it: each section's options, "or" be
 
 ![Adding a school menu on a phone: the district typed, then the school and its menu to choose.](guide/img/admin-menu-add-phone.jpg "Adding a school menu, on a phone")
 
+#### Recipes and ingredients
+<!-- covers: US-706 US-720 -->
+
+A library meal can hold its recipe and what it needs to buy, so the week's meals go onto the grocery list in one go and the recipe is at the kitchen board when you cook.
+
+1. In the **Meal library**, open a meal with **Edit**.
+2. Under **Recipe**, paste the recipe's web link and choose **Read ingredients**. Most recipe sites publish their recipe in a form FamilyWise can read: what it finds is filled in under **Ingredients** for you to check, and its steps are kept for the board. A page that doesn't publish its recipe says so, and nothing changes.
+3. **Add a photo or PDF** adds a photo of a recipe card or a PDF, up to 10 MB each, kept in your family's own storage. **Read ingredients** beside one reads its text on your own phone or laptop, with free open-source text reading, and fills in what it finds. × takes one away.
+4. Under **Ingredients**, each row is the **amount to buy** ("1 lb", "8", "2 cans", not the recipe's spoonfuls; leave it empty for "some") and the name. Tick **We usually have it** for things like salt and oil. The last row adds another as you type; × takes one away.
+5. Check what was read, then **Save changes**. Nothing read is ever saved until you save.
+
+![A meal's form on a laptop: the Recipe link with Read ingredients, Grandma's card (a photo) and Taco night (a PDF) each with Read ingredients and ×, Add a photo or PDF, then Ingredients: 1 lb ground beef, 8 tortillas, 1 onion and the rest, Taco seasoning and Olive oil ticked We usually have it.](guide/img/admin-meal-recipe-laptop.jpg "A meal's recipe and ingredients")
+
+#### This week's meals onto the grocery list
+<!-- covers: US-715 -->
+
+1. On **Meals**, choose **Add to groceries** beside the week.
+2. **Add this week to groceries** lists each planned meal that has ingredients, in day order, with its ingredients ticked. What you usually have starts unticked, and so does a meal you already added that week ("Added Sun"). Things written in, or meals with no ingredients yet, are named at the top.
+3. A row that joins something says what it makes: "With Tacos: 2 lb" when two meals need the same thing, "On the list: Kidney beans 1 can, makes 3 cans" or "On the list already" when it is on the list. Untick what you have.
+4. Choose **Add** N **to groceries**. Nothing is added before that, and amounts are never scaled by who eats.
+
+The same thing is only ever on the list once: "Onions" from two meals is one item, its amounts added and both meals its reasons. If you take a meal off the plan, or change it to another, it takes its share off the list: an item only it needed and not yet got goes, and an item it shared loses its amount and the meal.
+
+![Add this week to groceries over Meals on a laptop: Tacos Mon, Spaghetti Tue and Pancakes Sat, each with its ingredients; Taco seasoning and Olive oil unticked as We usually have it, Pancakes' eggs and milk unticked as Added Sun, Spaghetti's ground beef "With Tacos: 2 lb", and Add 9 to groceries.](guide/img/admin-meals-groceries-laptop.jpg "This week's meals onto the grocery list")
+
 #### Meals on the board
 
 What you plan shows on the boards within seconds; nothing about meals can be changed on a board.
@@ -1013,10 +1039,13 @@ What you plan shows on the boards within seconds; nothing about meals can be cha
 - **Home:** **Today's meals** above **Today's list**: today's breakfast, snacks, lunch and dinner, each with the face of each person it's for (none when it's for everyone), with each child's school lunch (**Buys** and the day's entree choices, or **Brings** and what you planned for their lunch, like "Leftover spaghetti" for that child). A tap on a buy day's choices shows the day's whole menu by section. A lunch planned for a child who brings theirs goes with them; if it's for others too, it stays under **Lunch** with their faces. A day with nothing planned and no school lunch shows nothing.
 - **Meals** in the rail: the whole week, a column a day (today marked) and a row for each meal of the day, then **School lunch**: who buys and who brings, each day; **Weekend** or **No school** when there is none. Under it, **School menu** and the menu's name, then a row a section (**Entree**, **Fruits & Vegetables**, **Milk**): each day's options a line each, what comes with one in grey after "with". The menu shows on every school day, whoever buys.
 - **A person's screen:** their part of today's meals: what's for everyone, and each thing they are one of the people for.
+- **A recipe:** on **Meals**, a meal with a recipe has a book on it. A tap opens its recipe full screen, to cook from: its photos and PDFs (tap a chip under it to switch), its ingredients, and the steps its link publishes. **Close** goes back. Nothing on it can be changed.
 
 ![The board's Meals screen: Meals this week, Sunday to Saturday with today marked; breakfast, snacks and lunch where planned, a dinner every day; School lunch with Leo buying and Maya bringing, No school tomorrow and the weekend.](guide/img/board-meals-week.jpg "Meals on the board: the week")
 
 ![The board's Meals screen scrolled down: School lunch, then School menu · Maple Elementary with a row for Entree, Fruits & Vegetables and Milk, each day's options a line each; today's entrees are Cheese Pizza and Turkey sandwich with Pretzels.](guide/img/board-meals-menu.jpg "Meals on the board: the school menu by section")
+
+![Tacos open full screen on the board: Grandma's card on the left with chips for it and Taco night.pdf, the Ingredients in the middle, and the steps From tasty-tacos.example on the right, with Close.](guide/img/board-recipe.jpg "A meal's recipe at the board")
 
 ![Leo's lunch menu open over the home screen: Leo buys lunch today, the Entree, Fruits & Vegetables and Milk sections each with their options, and Close.](guide/img/board-lunch-menu.jpg "A buy day's whole menu, from a tap on the home screen")
 
@@ -1056,6 +1085,47 @@ The family can pick the coming week's school lunches at the board, on a Sunday s
 **Turning the screen off on the Raspberry Pi.** A web page can't turn its screen off, so on an iPad or a laptop a sleeping board is just black (an iPad's own Auto-Lock still works as usual). On the Pi, a small helper turns the monitor off when the board sleeps and back on when it wakes. The Dell isn't switched off at its button: the Pi stops sending a picture, and the monitor goes into its own standby until the picture comes back. Install the helper once: on the Pi, in a terminal (or over SSH as the user the board runs as), type `curl -fsSL https://family-wise-topaz.vercel.app/api/kiosk/install | bash`, then `sudo reboot`. It needs no password or key, listens only on the Pi itself, and answers only FamilyWise; it starts with the Pi and again if it stops. Running the same command again updates it.
 
 > **Tip:** Moving the mouse wakes the Pi's monitor too. A monitor coming out of standby takes a second or two to show the picture.
+
+### A17 The grocery list
+<!-- covers: US-714 US-718 US-719 -->
+
+**What this is.** Your family's own grocery list, in your own categories and stores, on the kitchen board and in the admin app. It works on its own: no Mac and no Apple Reminders needed. **When.** Whenever you think of something, and when you plan the week's meals. **How.** On **Groceries** in the menu, after **Meals**.
+
+#### Add something
+
+1. At the top of **Groceries**, type what to get, with its amount if you like: "2 lb ground beef", "Onions ×3", "milk".
+2. As you type, FamilyWise suggests where it **Goes in** and its **Store**: where it went and where it was bought last time, else what your own moves have taught it, else **Other**. One tap on another chip changes it; **Other…** and **More…** show the rest.
+3. Choose **Add**. Something already on the list isn't added twice: "onion" joins "Onions", its amount added. If what you type might be something already on the list ("milk 2%" while "Milk" is on), it says **Also on the list** and offers **Make it one**.
+
+The **+** on a category's heading adds straight into it.
+
+![Groceries on a phone, adding "greek yog": Goes in Dairy & Eggs, from your own moves, the Store chips with Any store chosen, and Also on the list: Greek yogurt, Maya asked, with Make it one.](guide/img/admin-groceries-adding-phone.jpg "Adding, with the category and store suggested")
+
+#### The list
+
+- **By category**, in your order, then A to Z. Each thing has its amount, its store, and why it's on the list: a meal ("Tacos, Tue"), a child's ask, or who added it.
+- **The store chips** over it show one store's things (still by category), or **Any store** for things with no store.
+- **The box** gets it: it leaves the list at once and goes under **Got recently** for a week, where **Untick** puts it back.
+- **⋯** says why it's on the list (each meal and amount), and holds **Edit** (its name and amount), **Move to…** (another category, or a new one), **Store…**, **Select several** and **Remove** (off the list, not counted as bought).
+- **Select** turns the boxes into selection: tick several, then **Move to…**, **Store…** or **Remove** acts on them all at once. **Done** goes back.
+
+Each move teaches FamilyWise your words, so the next time it suggests the right category.
+
+![Groceries on a phone: the add field at the top, then On the list with Select and the store chips All 19, Costco 3, Kroger 3, Aldi 3, Walmart 1 and Any store 9, then Produce with Apples ×6 (Leo asked), Avocados ×2 at Aldi, Lettuce for Tacos, Tue, Onions ×3 for Tacos and Chili.](guide/img/admin-groceries-phone.jpg "The grocery list, on a phone")
+
+![Select on a phone: Apples, Avocados and Bananas ticked, 3 selected, and Move 3 items to open with each category and New category….](guide/img/admin-groceries-select-phone.jpg "Moving several at once")
+
+#### Your categories and stores
+
+Open **Categories and stores** at the foot of **Groceries**. Categories show in the order the list and the board use; the arrows move one up or down, and its **⋯** holds **Rename** and **Remove**. Removing a category with things in it asks first, then moves them to **Other**, which always stays, last. Stores have **Rename**, **Move up**, **Move down** and **Remove** (their things can then be got anywhere). Type a name and **Add** for a new one. You start with a made-up set of categories and six stores.
+
+![Categories and stores open on a laptop: Produce, Dairy & Eggs, Bakery, Meat & Seafood, Pantry, Frozen, Snacks, Household and Other, each with how many are on the list, then the stores.](guide/img/admin-groceries-places-laptop.jpg "Your own categories and stores")
+
+#### Groceries on the board
+
+**Groceries** is in the board's rail once your list has had its first thing. It shows the list by category, A to Z, each thing with its picture, its amount, and why when a meal needs it or a child asked. The store chips change only what the board shows. Nothing on the board changes the list.
+
+![The board's Groceries: 19 to get, the store chips, then Produce, Dairy & Eggs, Bakery, Meat & Seafood, Pantry and Household in columns, each thing with its picture, Apples ×6 with Leo asked, Onions ×3 For Tacos, Chili.](guide/img/board-groceries.jpg "Groceries on the board")
 
 ## Part B — User Manual
 
@@ -1303,11 +1373,12 @@ The jobs that matter most to the family: **Occurrence gen** plans the next two w
 | **Last week** · **This week** · **Next week** | Move between weeks. |
 | The week | Each day closed at first: weekday, date, **Today** (outlined), and "X of 4 set" or a check. Opened: **Breakfast**, **Snack**, **Lunch** and **Dinner**, what is planned in order, with each person it's for and its note; **Change** (**Earlier**, **Later**, **Edit**, **Remove**); **Add**, which opens **Add to the plan** filled in. |
 | **Add to the plan** | Closed at first: its header and **Add a meal**. Opened: **Day**, **Meal**, **What** (**From the library** or **Something else**), **For** (**Everyone**, or a tick per person; "For Maya and Leo." under it), **Note (optional)**, **Add to the plan**. |
+| **Add to groceries** | Beside the week, when something is planned: **Add this week to groceries**, each planned meal with ingredients by day, its rows ticked or not with what they make once merged, **Add** N **to groceries** and **Cancel**. |
 | **Copy last week** | Closed at first. Opened: **Keep it** or **Replace it with last week's**, **Copy last week here**. |
 | **School lunch** | **School menus**. The children's faces (a dot: a day still to pick), then one child's Monday to Friday, each day closed: weekday, date, **Buy** or **Bring**, a check once set, **Today**, **Waiting** for a child's change; **No school**, greyed, on a day without. Opened: **Buy** · **Bring**, **Changed from the usual** or **Changed on the board**, **Buy? waiting** (or **New picks waiting**) linking to **Today**. **Usual week**, closed at first with a line per child ("Maya: Mon Bring · …"); opened, Monday to Friday and **School menu**, **Save** (name)**'s usual lunches**. |
 | Picks | A Buy day opened: its menu a section each (**pick one** or **any**), the picks ticked and highlighted (**Menu changed: look again** if the menu no longer has one), **Save** (name)**'s picks**; **No menu yet**, or the menu as text when it has nothing to pick. |
 
-**The meal library:** **Add a meal**, folded to its button (open while the library is empty) (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe link (optional)**, **Icon**, **Add meal**); **Our meals**, each with what it's good for and its recipe, **Edit** and **Archive**; **Archived**, folded to how many, with **Restore** (open after an archive).
+**The meal library:** **Add a meal**, folded to its button (open while the library is empty) (**Name** up to 80, **Description (optional)** up to 300, **Good for**, **Recipe** (its link and **Read ingredients**; photos and PDFs once saved), **Ingredients** (an amount, a name and **We usually have it** a row), **Icon**, **Add meal**); **Our meals**, each with what it's good for, how many ingredients and its recipe, **Edit** (the same form, with **Add a photo or PDF** and each file's **Read ingredients** and ×) and **Archive**; **Archived**, folded to how many, with **Restore** (open after an archive).
 
 **School menus:** each menu folded at first to where it comes from, whose lunch it is ("nobody yet"), for Nutrislice **Fetched** (the time today, else the day), and how many days it has in the next four weeks, with **Can't fetch** on its line, folded or open; opened, each menu with where it comes from (**From Nutrislice**, **From a file**, **Typed in**), whose lunch it is, and for Nutrislice **Fetched**, **Not fetched yet** or **Can't fetch** (why, and when it last worked); its next four weeks, each day's menu a line a section, each day with **Change** (**What's for lunch**: a section a line, "or" between options, "with" before a side; **No lunch that day**, **Note (optional)**, **Save the day**; a day you wrote is **Yours**, with **Use Nutrislice's menu again**, or **Remove** for a file's); **Load a file into** (name) (**Menu file (CSV)**, **Look at the file**, **Load** N **days**); **Add a day to** (name), both folded; then **Menu**, set apart: **Fetch** (name) **now**, **Rename** (its name and **Rename**) and **Remove** (name), which asks first. A menu comes back open after a save in it. **Add a school menu**, folded to **Add a menu** (open while there is no menu): **Name**, **Where the menu comes from**, and for Nutrislice **Your district on Nutrislice**, **Find the schools**, **School and menu**; **Add the menu**.
 
@@ -1327,6 +1398,17 @@ In **Settings**, the first tile. It says the day the week starts on and how chec
 | **Weather on the boards** | Folded to the place, °F or °C and the last reading; "Not updated since" on the header when a read failed. The place the boards show the weather for, and the last reading (or why it failed). **Town or ZIP code** (or **Change the place**) and **Find**; **Use this** on a place found; **Show temperatures in**: **Fahrenheit (°F)** or **Celsius (°C)**, **Save**; **Stop showing the weather**. |
 | **Admins** | Folded to their names and roles. Everyone who can manage the household, as **Owner** or **Admin**, with their email. |
 | **Invite an admin** | Folded to its **Invite** button, with how many invites wait and when the first runs out. **Their email**, **Create invite link**, then **Copy link** or **Share**. **Waiting to join** lists open invites with when they expire, and **Cancel invite**. |
+
+#### B1.17 Groceries
+<!-- covers: US-714 US-718 US-719 -->
+
+| Part | What it shows or does |
+|---|---|
+| **Groceries** | How many to get; "FamilyWise's own list. Apple Reminders sync is off."; the add field and **Add**, open at the top. Typing shows **Goes in** and **Store** chips (**Other…**, **More…**) and, for something that may be on the list already, **Also on the list** with **Make it one**. |
+| **On the list** | Its count; **Select** (or **Done**); the store chips (**All**, each store with things, **Any store**); then each category with its count and **+**, its things A to Z: the box (**Got** it), the name and amount, the store and why; **⋯** (**Why it's on the list**, **Edit**, **Move to…**, **Store…**, **Select several**, **Remove**). **Nothing on the list right now.** when empty. |
+| Select | **N selected**; **Move to…** (each category and **New category…**), **Store…** (**Any store** and each store), **Remove** (asks first: **Remove** N **items** or **Keep them**). |
+| **Got recently** | Folded to the last thing got and how many more this week; opened, each with when and by whom, and **Untick**. |
+| **Categories and stores** | Folded to how many; opened, **Categories** in order with how many on the list, the arrows and **⋯** (**Rename**, **Remove**; with things in it, it asks first), **Other** always last; a new one's name and **Add**; **Stores** with how many on the list and **⋯** (**Rename**, **Move up**, **Move down**, **Remove**); a new one's name and **Add**. |
 
 ### B2 The board, screen by screen
 
@@ -1369,6 +1451,7 @@ Any screen can fall asleep: black, at the board's set times or when nobody touch
 | **Chores** | Everyone's day, a column each. |
 | **Calendar** | The family's calendar. |
 | **Meals** | The week's meals (see [B2.9](#b29-meals)). |
+| **Groceries** | The grocery list (see [B2.11](#b211-groceries)), once the list has had its first thing. With it in the rail, the rail's pages are a little shorter so everything still fits. |
 
 The board's name is beside the date.
 
@@ -1465,7 +1548,7 @@ Every state is an icon, a word and a color together, in both themes. The board u
 ![Tiles in every state: To do, Done!, Waiting for a parent, Approved, Try again, Skipped today, Missed, Overdue, Past its time, Done! by Maya, Covered by Maya, and a private item as the admin app shows it.](guide/img/tile-states.jpg "Every state, as a tile")
 
 #### B2.9 Meals
-<!-- covers: US-705 US-708 US-804 -->
+<!-- covers: US-705 US-708 US-804 US-720 -->
 
 | Part | What it shows or does |
 |---|---|
@@ -1475,6 +1558,7 @@ Every state is an icon, a word and a color together, in both themes. The board u
 | **School lunch** | Each child who has school that day: **Buys** (or **No menu yet**), or **Brings** and what is planned for their lunch. **Weekend**, **Break** or **No school** on a day none of them has school. On a buy day with picks, what the child picked instead (**Menu changed** if the menu no longer has one). |
 | **School menu** · (name) | The children's school menu, a row a section (**Entree**, **Fruits & Vegetables**, **Milk**): each day's options a line each, a side after "with"; "–" on a day it has nothing. A menu for each when the children's lunches come from different ones. |
 | **Lunches** | Opens [Lunches](#b210-lunches), where a child picks their week's school lunches. |
+| A recipe | A meal with a recipe has a book on it and opens it full screen at a tap: its photos and PDFs with a chip each, its **Ingredients**, and the steps **From** its link's site; **Close** (or Escape) goes back. |
 | Read-only | Otherwise nothing here is a button: meals are planned on **Meals** in the admin app. |
 
 #### B2.10 Lunches
@@ -1489,6 +1573,17 @@ Every state is an icon, a word and a color together, in both themes. The board u
 | **Done** | Checks off the item that opened it, for that child, and goes back. "Changes wait for a parent to say yes." beside it. |
 
 Messages: "Sent. A parent will look at it.", "Back as it was.", "That day can't change now.", "The menu changed. Pick again.", "Lunches need the internet." (a change needs the internet; nothing is queued).
+
+#### B2.11 Groceries
+<!-- covers: US-714 US-718 -->
+
+| Part | What it shows or does |
+|---|---|
+| **Groceries** | How many to get, or **Nothing to get**. |
+| Store chips | **All**, each store with things on the list, **Any store**: each shows only those, still by category. They change only what the board shows. |
+| Categories | A card each, in the household's order, its things A to Z: a picture where one fits, the name and amount, and **For** the meals that need it or the face of each child who asked. |
+| **Nothing on the list right now** | When the list is empty. |
+| Read-only | Nothing here changes the list: it is kept in the admin app. |
 
 ### B3 Rules and limits
 <!-- covers: US-907 US-1101 US-320 US-311 US-315 US-1109 -->

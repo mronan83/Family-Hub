@@ -174,6 +174,24 @@ const SHOTS = [
     url: '/dev/board',
     act: (page) => person(page, 'Meals').click(),
   },
+  // [MEAL-26] A meal's recipe on the board, full screen (WP-105): a tap on Tacos on Meals.
+  {
+    name: 'board-recipe',
+    device: 'board',
+    url: '/dev/board',
+    act: async (page) => {
+      await person(page, 'Meals').click();
+      await page.getByRole('button', { name: 'Tacos: open the recipe' }).click();
+      await page.getByRole('dialog').waitFor();
+    },
+  },
+  // [MEAL-18][MEAL-23] The grocery list on the board (WP-104), by category, with the store chips.
+  {
+    name: 'board-groceries',
+    device: 'board',
+    url: '/dev/board?groceries=1',
+    act: (page) => person(page, 'Groceries').click(),
+  },
   // [MENU-06] The school menu by section (WP-64): a buy day's whole menu at a tap, and the week's
   // menu a row a section under School lunch.
   {
@@ -491,6 +509,36 @@ const SHOTS = [
     device: 'phone',
     url: '/dev/meals?page=library',
     maxHeight: 1500,
+  },
+  // [MEAL-07][MEAL-25] A meal's Recipe and Ingredients in its form (WP-105).
+  {
+    name: 'admin-meal-recipe-laptop',
+    device: 'laptop',
+    url: '/dev/meals?page=library&edit=Tacos',
+    maxHeight: 1600,
+  },
+  // [MEAL-19] The week's Add to groceries (WP-105).
+  { name: 'admin-meals-groceries-laptop', device: 'laptop', url: '/dev/meals?groceries=1' },
+  // [MEAL-18][MEAL-23][MEAL-24] Groceries (WP-104): the list, adding with the suggestion, Select
+  // and Move to, and the household's categories and stores.
+  { name: 'admin-groceries-phone', device: 'phone', url: '/dev/groceries', maxHeight: 1500 },
+  {
+    name: 'admin-groceries-adding-phone',
+    device: 'phone',
+    url: '/dev/groceries?typed=greek%20yog',
+    maxHeight: 1000,
+  },
+  {
+    name: 'admin-groceries-select-phone',
+    device: 'phone',
+    url: '/dev/groceries?select=1&sel=Apples,Avocados,Bananas&panel=move',
+    maxHeight: 1100,
+  },
+  {
+    name: 'admin-groceries-places-laptop',
+    device: 'laptop',
+    url: '/dev/groceries?open=places',
+    maxHeight: 1900,
   },
   { name: 'admin-calendars-phone', device: 'phone', url: '/dev/calendars', maxHeight: 1330 },
   // [CAL-09] Who a calendar is for (WP-50): The whole family, or a tick a person.
