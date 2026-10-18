@@ -6507,3 +6507,90 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
+
+/* [MEAL-19] The week's Add to groceries (WP-105): a sheet over Meals, from the bottom on a phone and
+   in the middle on a laptop, over a scrim that goes back. */
+.fw-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+}
+.fw-sheet__scrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--text) 45%, transparent);
+}
+.fw-sheet__box {
+  position: relative;
+  display: grid;
+  gap: var(--s-3);
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: var(--s-4) var(--s-4) var(--s-6);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-2);
+}
+.fw-sheet__box:focus {
+  outline: none;
+}
+.fw-sheet__box h2 {
+  margin: 0;
+}
+@media (min-width: 720px) {
+  .fw-sheet {
+    align-items: start;
+    padding-top: var(--s-12);
+  }
+  .fw-sheet__box {
+    width: 560px;
+    max-height: calc(100vh - 2 * var(--s-12));
+    padding: var(--s-6);
+    border-radius: var(--r-lg);
+  }
+}
+.fw-wg {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-wg__meal {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.fw-wg__meal legend {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) 0 0;
+}
+.fw-wg__meal legend .fw-icon {
+  color: var(--primary-text);
+}
+.fw-wg__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-3);
+  min-height: var(--touch);
+}
+.fw-wg__amt {
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.fw-wg__note {
+  margin-left: auto;
+  font-size: var(--t-small);
+  color: var(--text-soft);
+  text-align: right;
+}
+.fw-wg__note--merge {
+  color: var(--primary-text);
+  font-weight: 600;
+}

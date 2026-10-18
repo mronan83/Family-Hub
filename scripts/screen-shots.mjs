@@ -67,6 +67,8 @@ export const ADMIN = [
   ['groceries-places', '/dev/groceries?store=Costco&open=places'],
   ['groceries-got', '/dev/groceries?open=got'],
   ['groceries-empty', '/dev/groceries?state=empty'],
+  // [MEAL-19] WP-105's week into groceries.
+  ['meals-groceries', '/dev/meals?groceries=1'],
 ];
 /**
  * [name, query, person, whole] per board screen: Maya's goal cards; with `whole`, a screen of the

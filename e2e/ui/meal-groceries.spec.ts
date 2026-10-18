@@ -89,3 +89,55 @@ for (const [device, viewport] of [
     });
   }
 }
+
+test('[MEAL-19-e] the week’s Add to groceries: by meal in day order, the notes, Add n to groceries and Cancel', async ({
+  page,
+}) => {
+  await open(page, '/dev/meals');
+  await expect(page.getByRole('link', { name: 'Add to groceries' })).toHaveAttribute(
+    'href',
+    '/admin/meals?week=2026-10-11&groceries=1',
+  );
+  await open(page, '/dev/meals?groceries=1');
+  const sheet = page.getByRole('dialog', { name: 'Add this week to groceries' });
+  await expect(sheet).toBeFocused();
+  await expect(sheet.locator('legend b')).toHaveText(['Tacos', 'Spaghetti', 'Pancakes']);
+  await expect(sheet.locator('legend')).toHaveText([
+    /Tacos\s+Mon/,
+    /Spaghetti\s+Tue/,
+    /Pancakes\s+Sat/,
+  ]);
+  await expect(sheet).toContainText('have no ingredients yet');
+  const row = (name: string, nth = 0) => sheet.locator('label').filter({ hasText: name }).nth(nth);
+  await expect(row('Taco seasoning')).toContainText('We usually have it');
+  await expect(row('Taco seasoning').getByRole('checkbox')).not.toBeChecked();
+  await expect(row('Eggs').getByRole('checkbox')).not.toBeChecked();
+  await expect(row('Eggs')).toContainText('Added Sun');
+  await expect(row('Cheddar')).toContainText('On the list already');
+  await expect(row('Ground beef', 1)).toContainText('With Tacos: 2 lb');
+  await expect(row('Onions')).toContainText('With Tacos: ×3');
+  await expect(sheet.getByRole('button', { name: 'Add 9 to groceries' })).toBeEnabled();
+  // Unticking changes the count and what merges with what.
+  await row('Ground beef').getByRole('checkbox').uncheck();
+  await expect(sheet.getByRole('button', { name: 'Add 8 to groceries' })).toBeVisible();
+  await expect(row('Ground beef', 1)).not.toContainText('With Tacos');
+  await expect(sheet.getByRole('link', { name: 'Cancel' })).toHaveAttribute(
+    'href',
+    '/admin/meals?week=2026-10-11',
+  );
+});
+
+for (const [device, viewport] of [
+  ['phone', { width: 390, height: 844 }],
+  ['laptop', { width: 1280, height: 800 }],
+] as const) {
+  for (const theme of ['day', 'evening'] as const) {
+    test(`[MEAL-19-e] the week’s review fits a ${device} in ${theme}`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await open(page, `/dev/meals?groceries=1&theme=${theme}`);
+      await expect(page.getByRole('dialog', { name: 'Add this week to groceries' })).toBeVisible();
+      await fits(page);
+      await contrastOk(page);
+    });
+  }
+}

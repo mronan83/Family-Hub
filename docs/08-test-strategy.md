@@ -272,7 +272,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2787** tests: Unit 861 · DB 1512 · UI 285 · E2E 129. 2282 name at least one ID; 505 name none.
+**2804** tests: Unit 864 · DB 1523 · UI 287 · E2E 130. 2290 name at least one ID; 514 name none.
 
 | Measure | Count |
 |---|---|
@@ -281,7 +281,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 104 of 129 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 183 (with a test: 170) |
+| Test cases | 183 (with a test: 175) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -300,14 +300,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 78 | 56 | 43 | 12 | 189 |
+| Meals and lunch | 81 | 58 | 45 | 13 | 197 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
 | Platform | 186 | 167 | 57 | 15 | 425 |
-| Not named | 58 | 482 | 10 | 1 | 551 |
-| **Total** | **861** | **1512** | **285** | **129** | **2787** |
+| Not named | 58 | 491 | 10 | 1 | 560 |
+| **Total** | **864** | **1523** | **287** | **130** | **2804** |
 
 ### 9.3 By requirement
 
@@ -409,8 +409,8 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-16 | S | Not built | US-712 | WP-103 | — | — |
 | MEAL-17 | S | Not built | US-713 | WP-103 | — | — |
 | MEAL-18 | S | Not built | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 4 · DB 6 · UI 7 · E2E 1 |
-| MEAL-19 | S | Not built | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 1 |
-| MEAL-20 | S | Not built | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 |
+| MEAL-19 | S | Not built | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 4 · DB 2 · UI 2 · E2E 1 |
+| MEAL-20 | S | Not built | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 · E2E 1 |
 | MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
 | MEAL-22 | S | Not built | US-717 | WP-107 | — | — |
 | MEAL-23 | S | Not built | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | U 3 · DB 3 · UI 3 · E2E 1 |
@@ -568,7 +568,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-102 | Done | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | 8 of 8 | — |
 | WP-103 | Queued: | — | — | — |
 | WP-104 | Ready | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 16 of 16 | — |
-| WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 7 of 20 | — |
+| WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 12 of 20 | — |
 | WP-106 | Queued | — | — | — |
 | WP-107 | Queued | — | — | — |
 | WP-108 | Done | NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r | 4 of 4 | — |
@@ -745,12 +745,12 @@ Test cases and the tests that prove them:
 | MEAL-24-e | WP-104 | Moving items teaches their words to their own household only | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-24-e] the move teaches each word of their names` |
 | MEAL-07-a | WP-105 | A meal's ingredients are kept as rows of a name, an optional amount to buy and We usually have it; a row with no name, a name over 80 characters or more than 60 rows is refused | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-07-a] a meal keeps its ingredients: a name, an amount to buy, and we usually have it` |
 | MEAL-07-b | WP-105 | A meal's form shows its Ingredients, a row each with the amount, the name and We usually have it, the last row adding one and × removing one; saved and opened again, they are as typed | UI | UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-07-b] a meal’s Ingredients: amount, name and We usually have it; the last row adds one, × takes one away`<br>UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-07-b] a meal’s form with its ingredients fits a ${device} in ${theme}` |
-| MEAL-19-a | WP-105 | The week's review lists the planned library meals by meal in day order with their ingredients ticked; We usually have it starts unticked; a meal already added that week starts unticked, marked "Added Sun"; an item on the list says what it makes once merged; nothing is scaled | Unit | **none** |
-| MEAL-19-b | WP-105 | Adding the week's ingredients puts them on the household's list with each meal as a reason, merged into what is there; a meal of another household is refused | DB | **none** |
-| MEAL-19-c | WP-105 | A meal taken off the plan, removed or changed to another meal, takes its share off the list: an item only it needed and not yet ticked is removed, a merged item loses its amount and reason, a ticked item is left as it is | DB | **none** |
+| MEAL-19-a | WP-105 | The week's review lists the planned library meals by meal in day order with their ingredients ticked; We usually have it starts unticked; a meal already added that week starts unticked, marked "Added Sun"; an item on the list says what it makes once merged; nothing is scaled | Unit | Unit `apps/web/lib/meal-groceries.test.ts`: `a week’s meals into groceries › [MEAL-19-a] lists the planned library meals by meal in day order, with their ingredients`<br>Unit `apps/web/lib/meal-groceries.test.ts`: `a week’s meals into groceries › [MEAL-19-a] what we usually have, and a meal already added that week, start unticked`<br>Unit `apps/web/lib/meal-groceries.test.ts`: `a week’s meals into groceries › [MEAL-19-a] a ticked row says what it makes once merged; nothing is scaled` |
+| MEAL-19-b | WP-105 | Adding the week's ingredients puts them on the household's list with each meal as a reason, merged into what is there; a meal of another household is refused | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-19-b] the week's ingredients go on the list, each meal a reason` |
+| MEAL-19-c | WP-105 | A meal taken off the plan, removed or changed to another meal, takes its share off the list: an item only it needed and not yet ticked is removed, a merged item loses its amount and reason, a ticked item is left as it is | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-19-c] Tuesday's tacos come off the plan` |
 | MEAL-19-d | WP-105 | Taking a meal's share off an item recomputes its amount from the reasons left: "Onions ×3" from Tacos (1) and Chili (2) becomes "Onions ×2" without Tacos | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-19-d] taking a meal’s share off recomputes the amount from the reasons left` |
-| MEAL-19-e | WP-105 | The week's review on Meals on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: by meal in day order, the notes, Add n to groceries and Cancel | UI | **none** |
-| MEAL-19-f | WP-105 | On the real preview, an admin adds a planned week's ingredients and finds each once on Groceries, two meals' onions merged into one item | E2E | **none** |
+| MEAL-19-e | WP-105 | The week's review on Meals on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: by meal in day order, the notes, Add n to groceries and Cancel | UI | UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-19-e] the week’s Add to groceries: by meal in day order, the notes, Add n to groceries and Cancel`<br>UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-19-e] the week’s review fits a ${device} in ${theme}` |
+| MEAL-19-f | WP-105 | On the real preview, an admin adds a planned week's ingredients and finds each once on Groceries, two meals' onions merged into one item | E2E | E2E `e2e/tests/meal-groceries.spec.ts`: `[MEAL-19-f][MEAL-20] done-when: a week’s ingredients added once each, two meals merged` |
 | MEAL-20-a | WP-105 | "Onions", "onion", "2 onions" and "ONIONS ×2" are one thing; hummus, couscous and asparagus keep their s; extra spaces don't matter | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-a] "Onions", "onion", "2 onions" and "ONIONS ×2" are one thing`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-a] hummus, couscous and asparagus keep their s` |
 | MEAL-20-b | WP-105 | Counts add ("2 onions" and "1 onion" make ×3), the same unit adds ("1 lb" and "1 lb" make 2 lb), different units sit side by side ("1 lb + 500 g"), no amount takes the other's | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-b] counts add, the same unit adds, different units sit side by side`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-b] no amount takes the other’s, and a lone one says nothing`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `reading an item as typed › [MEAL-20-b] takes the amount off before or after the name`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `reading an item as typed › [MEAL-20-b] reads amounts as counts, units or words` |
 | MEAL-20-c | WP-105 | "Milk", "milk 2%" and "oat milk" are never merged by themselves; a new name that contains an open one's, or is contained by it, offers Make it one | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-c] "Milk", "milk 2%" and "oat milk" are never merged by themselves`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-c] a name that contains an open one, or is contained by it, offers Make it one` |
@@ -1700,6 +1700,16 @@ Unit · 7 tests
 | `[MEAL-04][D-98] the folded usual week › [MEAL-04] one line per child, Monday to Friday, Buy or Bring` | MEAL-04 |
 | `[MEAL-04][D-98] the folded usual week › [MEAL-04] a weekday without a choice reads Bring, as the form shows it` | MEAL-04 |
 
+#### `apps/web/lib/meal-groceries.test.ts`
+
+Unit · 3 tests
+
+| Test | Names |
+|---|---|
+| `a week’s meals into groceries › [MEAL-19-a] lists the planned library meals by meal in day order, with their ingredients` | MEAL-19-a |
+| `a week’s meals into groceries › [MEAL-19-a] what we usually have, and a meal already added that week, start unticked` | MEAL-19-a |
+| `a week’s meals into groceries › [MEAL-19-a] a ticked row says what it makes once merged; nothing is scaled` | MEAL-19-a |
+
 #### `apps/web/lib/meals.test.ts`
 
 Unit · 15 tests
@@ -2316,6 +2326,14 @@ E2E · 1 tests
 |---|---|
 | `[MEAL-15][US-701][NFR-14-f] done-when: Alex edits a planned dinner in place, and Edit again shows what was saved` | NFR-14-f, MEAL-15, US-701 |
 
+#### `e2e/tests/meal-groceries.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-19-f][MEAL-20] done-when: a week’s ingredients added once each, two meals merged` | MEAL-19-f, MEAL-20 |
+
 #### `e2e/tests/meals.spec.ts`
 
 E2E · 2 tests
@@ -2872,12 +2890,14 @@ UI · 7 tests
 
 #### `e2e/ui/meal-groceries.spec.ts`
 
-UI · 2 tests
+UI · 4 tests
 
 | Test | Names |
 |---|---|
 | `[MEAL-07-b] a meal’s Ingredients: amount, name and We usually have it; the last row adds one, × takes one away` | MEAL-07-b |
 | `[MEAL-07-b] a meal’s form with its ingredients fits a ${device} in ${theme}` | MEAL-07-b |
+| `[MEAL-19-e] the week’s Add to groceries: by meal in day order, the notes, Add n to groceries and Cancel` | MEAL-19-e |
+| `[MEAL-19-e] the week’s review fits a ${device} in ${theme}` | MEAL-19-e |
 
 #### `e2e/ui/meals.spec.ts`
 
@@ -5376,7 +5396,7 @@ DB · 51 tests
 
 #### `supabase/tests/550_meal_groceries.test.sql`
 
-DB · 6 tests
+DB · 17 tests
 
 | Test | Names |
 |---|---|
@@ -5386,5 +5406,16 @@ DB · 6 tests
 | `... and a name over 80 characters` | — |
 | `... and more than 60 rows` | — |
 | `... and a we-usually-have-it that isn't true or false` | — |
+| `[MEAL-19-b] the week's ingredients go on the list, each meal a reason` | MEAL-19-b |
+| `... merged into one item, both meals its reasons` | — |
+| `... another family's meal is refused` | — |
+| `[MEAL-19-c] Tuesday's tacos come off the plan` | MEAL-19-c |
+| `... the onions lose the tacos' amount and reason` | — |
+| `... the beef only they needed is removed` | — |
+| `... each change in its history` | — |
+| `... Thursday changed to another meal` | — |
+| `... leaves a ticked item as it is` | — |
+| `... Wednesday changed to something written in` | — |
+| `... takes the chili's onions off too` | — |
 
 <!-- /catalogue -->

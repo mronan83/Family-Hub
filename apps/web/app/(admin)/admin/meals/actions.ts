@@ -12,6 +12,10 @@ import { parseUsualLunch } from '@/lib/lunch';
 import { parsePicksForm } from '@/lib/lunch-picks';
 import { mealRefusal, parseEntryForm, parseMealForm, weekDays, weekFrom } from '@/lib/meals';
 import { serverClient } from '@/lib/supabase/server';
+import { suggest } from '@/lib/groceries';
+import { weekReview } from '@/lib/meal-groceries';
+import { loadGroceries } from '../groceries/data';
+import { loadMeals, loadPlan } from './data';
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -276,4 +280,56 @@ export async function setLunchPicks(form: FormData): Promise<void> {
   revalidatePath('/admin/meals');
   revalidatePath('/admin/today');
   redirect(`/admin/meals?week=${week}&did=picks#lunch`);
+}
+
+/**
+ * [MEAL-19][MEAL-20] Adds the rows ticked in the week's review to the grocery list (WP-105): read
+ * again here from the week's plan and the meals' ingredients (the form sends only which rows), each
+ * with its meal as the reason, through the one way in, which merges what is already on the list.
+ * New items take the suggested category and store. Back to the week, saying how many.
+ */
+export async function addWeekToGroceries(form: FormData): Promise<void> {
+  const { db, household } = await context('/admin/meals');
+  const week = weekOf(form, household);
+  const days = weekDays(week);
+  let ids: Set<string>;
+  try {
+    ids = new Set((JSON.parse(String(form.get('rows') ?? '[]')) as unknown[]).map(String));
+  } catch {
+    redirect(`/admin/meals?week=${week}&did=failed`);
+  }
+  const [entries, meals, groceries] = await Promise.all([
+    loadPlan(db, household.id, days[0]!, days[6]!),
+    loadMeals(db, household.id),
+    loadGroceries(db, household.id),
+  ]);
+  const review = weekReview(entries, meals, new Map(), household.timezone);
+  const ctx = {
+    categories: groceries.categories,
+    past: groceries.past,
+    learned: groceries.learned,
+  };
+  const items = review.meals.flatMap((m) =>
+    m.rows
+      .filter((r) => ids.has(r.id))
+      .map((r) => {
+        const s = suggest(r.name, ctx);
+        return {
+          name: r.name.charAt(0).toUpperCase() + r.name.slice(1),
+          key: r.key,
+          amount: r.amount,
+          category_id: s?.categoryId ?? null,
+          store_id: s?.storeId ?? null,
+          reason: { kind: 'meal', meal_plan_entry_id: m.entryId, label: `${m.name}, ${m.day}` },
+        };
+      }),
+  );
+  if (items.length === 0) redirect(`/admin/meals?week=${week}&did=nothing`);
+  const { error } = await db.rpc('add_groceries', { p_household: household.id, p_items: items });
+  if (error) {
+    log('warn', 'week not added to groceries', { code: error.code, hint: error.hint });
+    redirect(`/admin/meals?week=${week}&did=failed`);
+  }
+  revalidatePath('/admin/groceries');
+  redirect(`/admin/meals?week=${week}&did=groceries&n=${items.length}`);
 }

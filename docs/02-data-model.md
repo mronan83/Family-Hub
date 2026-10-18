@@ -665,6 +665,11 @@ FamilyWise's own grocery list (D-138 (1)): it works with no Mac and no Apple Rem
 - `add_grocery_place(household, 'category' | 'store', name)`, `rename_grocery_place()`, `move_grocery_place(kind, id, ±1)` and `remove_grocery_place(kind, id)`: a removed category's items go to Other; a removed store leaves its items with any store (`on delete set null (store_id)`). Categories and stores are audited.
 - `board_groceries()` (a board only; null for anyone else): the household's categories, stores and open items with their reasons, and `ever` (whether it has had an item). `grocery_item`, `grocery_item_reason`, `grocery_category` and `grocery_store` are in Realtime; the board reads `board_groceries()` with each snapshot read and keeps it with the snapshot.
 
+**As built (WP-105, D-138 (6)).** Migrations `20261018104414_meal_ingredients.sql` and `20261018105509_meal_off_plan.sql`, pgTAP `550_meal_groceries.test.sql`:
+- `meal.ingredients` is checked (`meal_ingredients_shape`, `private.meal_ingredients_ok()`): an array of at most 60 rows, each `{name (1 to 80), amount? (up to 40: what to buy, "1 lb", "8", not the recipe's spoonfuls), have? (we usually have it)}` (MEAL-07).
+- The week's Add to groceries calls `add_groceries()` with one item per ticked ingredient, its reason `{kind: 'meal', meal_plan_entry_id, label: "Tacos, Tue"}`; a plan entry must be the household's (`meal_gone`). A meal already added that week is known by its reasons' `meal_plan_entry_id`.
+- `trg_meal_off_plan_delete` (before a plan entry is deleted) and `trg_meal_off_plan_change` (after its `meal_id` changes) call `private.take_meal_share(entry)`: each open item loses that entry's reasons and amounts (a `changed` event), and one left with no reason is removed (a `removed` event); a ticked item is left as it is, its reason's `meal_plan_entry_id` set to null by the foreign key. Nothing happens while the household itself is being deleted.
+
 ---
 
 ## 4. Key DDL
