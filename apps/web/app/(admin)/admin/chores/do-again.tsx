@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Icon } from '@familywise/ui';
+import { Button, DatePick, Icon } from '@familywise/ui';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { Outcome } from '@/lib/chore-sections';
@@ -39,6 +39,8 @@ export function DoAgainSheet({
 }) {
   const [date, setDate] = useState(choices[1]?.date ?? choices[0]!.date);
   const box = useRef<HTMLDivElement>(null);
+  const field = useRef<HTMLInputElement | null>(null);
+  const first = useRef(date).current;
   useEffect(() => box.current?.focus(), []);
   const what = kind === 'task' ? 'task' : 'chore';
   const kept =
@@ -79,24 +81,32 @@ export function DoAgainSheet({
                     name="pick"
                     value={c.date}
                     checked={date === c.date}
-                    onChange={() => setDate(c.date)}
+                    onChange={() => {
+                      setDate(c.date);
+                      if (field.current) field.current.value = c.date;
+                    }}
                   />
                   {c.label}
                 </label>
               ))}
             </div>
           </fieldset>
-          <label className="fw-field">
-            <span className="fw-field__label">Or a date</span>
-            <input
-              className="fw-input"
+          {/* The date in words, as the mockup writes it (D-128): "Sat, Oct 17, 2026". */}
+          <div className="fw-field">
+            <span className="fw-field__label" aria-hidden="true">
+              Or a date
+            </span>
+            <DatePick
               type="date"
               name="on"
-              required
+              label="Or a date"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              initial={first}
+              onValue={setDate}
+              required
+              inputRef={field}
             />
-          </label>
+          </div>
           <div className="fw-keep">
             <Icon name="check-circle" size={18} />
             <span>{kept}</span>

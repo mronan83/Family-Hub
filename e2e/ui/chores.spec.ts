@@ -286,8 +286,11 @@ test.describe('Chores in four sections', () => {
     const when = sheet.getByRole('group', { name: 'When' });
     await expect(when.getByRole('radio', { name: 'Sat, Oct 17' })).toBeChecked();
     await expect(sheet.getByLabel('Or a date')).toHaveValue('2026-10-17');
+    await expect(sheet.locator('.fw-pick__words')).toHaveText('Sat, Oct 17, 2026');
     await when.getByText('Tomorrow').click();
     await expect(sheet.getByLabel('Or a date')).toHaveValue('2026-10-15');
+    // Written as the mockup writes it, over the real date field (D-128).
+    await expect(sheet.locator('.fw-pick__words')).toHaveText('Thu, Oct 15, 2026');
     await expect(sheet).toContainText(
       'The first one stays done on Sun, Oct 11. Maya and Leo keep its 20 points and its goal credit.',
     );
