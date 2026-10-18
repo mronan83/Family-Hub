@@ -40,7 +40,7 @@ export function DoAgainSheet({
   const [date, setDate] = useState(choices[1]?.date ?? choices[0]!.date);
   const box = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLInputElement | null>(null);
-  const first = useRef(date).current;
+  const [first] = useState(date);
   useEffect(() => box.current?.focus(), []);
   const what = kind === 'task' ? 'task' : 'chore';
   const kept =
