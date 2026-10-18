@@ -8,12 +8,15 @@ import { type MealRow, type PlanEntry, readIngredients, type Slot } from '@/lib/
 export async function loadMeals(db: SupabaseClient, householdId: string): Promise<MealRow[]> {
   const { data, error } = await db
     .from('meal')
-    .select('id, name, description, icon, meal_types, recipe_url, archived_at, ingredients')
+    .select(
+      'id, name, description, icon, meal_types, recipe_url, archived_at, ingredients, recipe_steps, ' +
+        'meal_recipe_file(id, kind, name, path, size_bytes, sort_order, created_at)',
+    )
     .eq('household_id', householdId)
     .order('name');
   if (error) throw new Error(`meals: ${error.message}`);
   return (
-    data as {
+    data as unknown as {
       id: string;
       name: string;
       description: string | null;
@@ -22,6 +25,18 @@ export async function loadMeals(db: SupabaseClient, householdId: string): Promis
       recipe_url: string | null;
       archived_at: string | null;
       ingredients: unknown;
+      recipe_steps: unknown;
+      meal_recipe_file:
+        | {
+            id: string;
+            kind: 'photo' | 'pdf';
+            name: string;
+            path: string;
+            size_bytes: number;
+            sort_order: number;
+            created_at: string;
+          }[]
+        | null;
     }[]
   ).map((m) => ({
     id: m.id,
@@ -32,6 +47,18 @@ export async function loadMeals(db: SupabaseClient, householdId: string): Promis
     recipeUrl: m.recipe_url,
     archivedAt: m.archived_at,
     ingredients: readIngredients(m.ingredients),
+    recipeSteps: Array.isArray(m.recipe_steps)
+      ? m.recipe_steps.filter((x): x is string => typeof x === 'string')
+      : [],
+    recipeFiles: [...(m.meal_recipe_file ?? [])]
+      .sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at))
+      .map((f) => ({
+        id: f.id,
+        kind: f.kind,
+        name: f.name,
+        path: f.path,
+        sizeBytes: f.size_bytes,
+      })),
   }));
 }
 

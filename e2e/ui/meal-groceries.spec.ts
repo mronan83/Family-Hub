@@ -141,3 +141,66 @@ for (const [device, viewport] of [
     });
   }
 }
+
+test('[MEAL-25-g] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check', async ({
+  page,
+}) => {
+  await open(page, '/dev/meals?page=library&edit=Tacos');
+  const form = page.getByRole('form', { name: 'Edit Tacos' });
+  const recipe = form.getByRole('group', { name: 'Recipe' });
+  await expect(recipe.getByRole('textbox', { name: 'Recipe link' })).toHaveValue(
+    'https://example.com/tacos',
+  );
+  const files = recipe.getByRole('list', { name: 'Photos and PDFs' }).getByRole('listitem');
+  await expect(files).toHaveCount(2);
+  await expect(files.first()).toContainText('Grandma’s card.jpg');
+  await expect(files.first()).toContainText('Photo · 1.2 MB');
+  await expect(files.nth(1)).toContainText('PDF · 340 KB');
+  await expect(
+    recipe.getByRole('button', { name: 'Read ingredients from Taco night.pdf' }),
+  ).toBeVisible();
+  await expect(recipe.getByRole('button', { name: 'Remove Taco night.pdf' })).toBeVisible();
+  await expect(recipe.getByRole('button', { name: 'Add a photo or PDF' })).toBeVisible();
+  // Read ingredients from the link: the server reads the page; here it answers as the route would.
+  await page.route('**/api/recipes/read', (route) =>
+    route.fulfill({
+      json: {
+        ok: true,
+        site: 'example.com',
+        ingredients: [
+          { name: 'Ground beef', amount: '1 lb', have: false },
+          { name: 'Corn tortillas', amount: '8', have: false },
+          { name: 'Chili powder', amount: null, have: false },
+        ],
+        steps: ['Brown the beef.', 'Warm the tortillas.'],
+      },
+    }),
+  );
+  await recipe.getByRole('button', { name: 'Read ingredients', exact: true }).click();
+  await expect(recipe.getByRole('status')).toHaveText(
+    'Found 3 ingredients on the page. They are filled in below for you to check.',
+  );
+  // Filled in to check, never saved by themselves: the form still has Save.
+  expect(await sent(form)).toEqual([
+    { name: 'Ground beef', amount: '1 lb', have: false },
+    { name: 'Corn tortillas', amount: '8', have: false },
+    { name: 'Chili powder', amount: null, have: false },
+  ]);
+  await expect(form.locator('input[name="recipeSteps"]')).toHaveValue(
+    JSON.stringify(['Brown the beef.', 'Warm the tortillas.']),
+  );
+  // A page that publishes no recipe says so and changes nothing.
+  await page.route('**/api/recipes/read', (route) =>
+    route.fulfill({ json: { ok: false, why: 'no_recipe' } }),
+  );
+  await recipe.getByRole('button', { name: 'Read ingredients', exact: true }).click();
+  await expect(recipe.getByRole('status')).toContainText('doesn’t publish its recipe');
+  expect(await sent(form)).toHaveLength(3);
+  // A new meal adds photos and PDFs once it is saved.
+  await page.getByText('Add a meal', { exact: true }).first().click();
+  await expect(page.getByRole('form', { name: 'Add a meal' })).toContainText(
+    'Add photos and PDFs of the recipe once the meal is saved.',
+  );
+  await fits(page);
+  await contrastOk(page);
+});

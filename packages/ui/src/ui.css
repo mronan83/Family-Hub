@@ -6594,3 +6594,204 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   color: var(--primary-text);
   font-weight: 600;
 }
+
+/* [MEAL-25] A meal's Recipe in its form (WP-105): the link with Read ingredients, what was found, and
+   its photos and PDFs. */
+.fw-recipe {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-recipe__link {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+}
+.fw-recipe__url {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.fw-recipe__url .fw-input {
+  width: 100%;
+}
+.fw-recipe__status {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-1);
+  margin: 0;
+  font-size: var(--t-small);
+}
+.fw-recipe__status--ok {
+  color: var(--success);
+}
+.fw-recipe__status--warn {
+  color: var(--reward-text);
+}
+.fw-recipe__files {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-recipe__file {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) var(--touch);
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-1);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+}
+.fw-recipe__thumb {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-sm);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-recipe__about {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.fw-recipe__read {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fw-recipe__read:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* [MEAL-26] A meal's recipe on the board (WP-105): full screen, read only; its photos and PDFs with
+   chips between them, its ingredients, and the steps from its link. Text 28 px or more. */
+.fw-meals__recipe {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch);
+  padding: var(--s-1) var(--s-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fw-meals__recipe:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-meals__recipe-icon {
+  color: var(--primary-text);
+}
+.fw-recipe-sheet {
+  width: min(1400px, calc(100vw - 2 * var(--s-12)));
+  max-height: calc(100vh - 2 * var(--s-8));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--s-6);
+}
+.fw-recipe-sheet__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+.fw-recipe-sheet__head h2 {
+  margin: 0;
+  font-size: var(--t-title);
+}
+.fw-recipe-sheet__head .fw-btn {
+  margin-left: auto;
+}
+.fw-recipe-sheet__when {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-recipe-sheet__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--s-8);
+  min-height: 0;
+  overflow-y: auto;
+}
+.fw-recipe-sheet__body--words {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+}
+.fw-recipe-sheet__files {
+  display: grid;
+  align-content: start;
+  gap: var(--s-3);
+}
+.fw-recipe-sheet__view {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 4;
+  max-height: 60vh;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-recipe-sheet__view img,
+.fw-recipe-sheet__view object {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.fw-recipe-sheet__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.fw-recipe-sheet__col h3 {
+  margin: 0 0 var(--s-2);
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 500;
+}
+.fw-recipe-sheet__col ul,
+.fw-recipe-sheet__col ol {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-recipe-sheet__col li {
+  padding: var(--s-1) 0;
+  border-top: var(--border-w) solid var(--line);
+  font-size: var(--t-small);
+  line-height: 1.25;
+}
+.fw-recipe-sheet__col ul li {
+  font-weight: 700;
+}
+.fw-recipe-sheet__col ol {
+  counter-reset: step;
+}
+.fw-recipe-sheet__col ol li {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  counter-increment: step;
+}
+.fw-recipe-sheet__col ol li::before {
+  content: counter(step);
+  color: var(--primary-text);
+  font-weight: 700;
+}

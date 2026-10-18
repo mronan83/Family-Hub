@@ -174,6 +174,7 @@ export async function saveMeal(_prev: FormState, form: FormData): Promise<FormSt
     meal_types: v.mealTypes,
     recipe_url: v.recipeUrl,
     ingredients: v.ingredients ?? [],
+    ...(v.recipeSteps ? { recipe_steps: v.recipeSteps } : {}),
   };
   const { error } = GUID.test(id)
     ? await db.from('meal').update(row).eq('id', id).eq('household_id', household.id)
@@ -332,4 +333,67 @@ export async function addWeekToGroceries(form: FormData): Promise<void> {
   }
   revalidatePath('/admin/groceries');
   redirect(`/admin/meals?week=${week}&did=groceries&n=${items.length}`);
+}
+
+const RECIPE_KINDS = { photo: /^image\/(jpeg|png|webp|heic)$/, pdf: /^application\/pdf$/ } as const;
+
+/**
+ * [MEAL-25] Records a photo or PDF the admin's browser has just put in the household's storage
+ * (WP-105): under the household's folder and the meal's, up to 10 MB. Returns the file's id, or why
+ * not (the stored file is taken away again then).
+ */
+export async function addRecipeFile(file: {
+  mealId: string;
+  path: string;
+  name: string;
+  type: string;
+  size: number;
+}): Promise<{ id: string } | { error: string }> {
+  const { db, household } = await context('/admin/meals/library');
+  const kind = RECIPE_KINDS.pdf.test(file.type)
+    ? 'pdf'
+    : RECIPE_KINDS.photo.test(file.type)
+      ? 'photo'
+      : null;
+  const inFolder =
+    GUID.test(file.mealId) && file.path.startsWith(`${household.id}/${file.mealId}/`);
+  if (!kind || !inFolder || file.size < 1 || file.size > 10 * 1024 * 1024) {
+    if (inFolder) await db.storage.from('recipes').remove([file.path]);
+    return { error: 'A photo or a PDF, up to 10 MB.' };
+  }
+  const { data, error } = await db
+    .from('meal_recipe_file')
+    .insert({
+      household_id: household.id,
+      meal_id: file.mealId,
+      kind,
+      name: file.name.trim().slice(0, 120) || (kind === 'pdf' ? 'Recipe.pdf' : 'Photo'),
+      path: file.path,
+      size_bytes: file.size,
+    })
+    .select('id')
+    .single();
+  if (error || !data) {
+    log('warn', 'recipe file not added', { code: error?.code, hint: error?.hint });
+    await db.storage.from('recipes').remove([file.path]);
+    return { error: 'That didn’t save. Try again in a moment.' };
+  }
+  revalidatePath('/admin/meals', 'layout');
+  return { id: data.id as string };
+}
+
+/** [MEAL-25] Takes a photo or PDF off a meal's recipe, and out of the household's storage. */
+export async function removeRecipeFile(id: string): Promise<{ ok: boolean }> {
+  const { db, household } = await context('/admin/meals/library');
+  if (!GUID.test(id)) return { ok: false };
+  const { data } = await db
+    .from('meal_recipe_file')
+    .delete()
+    .eq('id', id)
+    .eq('household_id', household.id)
+    .select('path')
+    .maybeSingle();
+  if (data?.path) await db.storage.from('recipes').remove([data.path as string]);
+  revalidatePath('/admin/meals', 'layout');
+  return { ok: !!data };
 }

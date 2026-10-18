@@ -24,12 +24,18 @@ export function MealLibraryView({
   notice,
   error,
   openArchived = false,
+  householdId,
+  editing = null,
 }: {
   meals: MealRow[];
   notice: string | null;
   error: string | null;
   /** Archived shown open: just after a meal was archived. */
   openArchived?: boolean;
+  /** [MEAL-25] Where the meals' photos and PDFs go in storage (WP-105). */
+  householdId: string;
+  /** A meal's form shown open (the dev page's picture of one). */
+  editing?: string | null;
 }) {
   const active = meals.filter((m) => !m.archivedAt);
   const archived = meals.filter((m) => m.archivedAt);
@@ -57,7 +63,7 @@ export function MealLibraryView({
         button={{ label: 'Add a meal', icon: 'plus' }}
         open={meals.length === 0}
       >
-        <MealForm />
+        <MealForm householdId={householdId} />
       </Fold>
 
       <section className="fw-card" aria-labelledby="our-meals-heading">
@@ -88,9 +94,10 @@ export function MealLibraryView({
                     ) : null}
                   </span>
                 </span>
-                <details>
+                <details open={editing === m.id || undefined}>
                   <summary>Edit {m.name}</summary>
                   <MealForm
+                    householdId={householdId}
                     id={m.id}
                     initial={{
                       name: m.name,
@@ -99,6 +106,8 @@ export function MealLibraryView({
                       mealTypes: m.mealTypes,
                       recipeUrl: m.recipeUrl,
                       ingredients: m.ingredients ?? [],
+                      recipeSteps: m.recipeSteps ?? [],
+                      recipeFiles: m.recipeFiles ?? [],
                     }}
                   />
                   <form action={setMealArchived}>

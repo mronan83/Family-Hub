@@ -37,6 +37,25 @@ export interface MealRow {
   archivedAt: string | null;
   /** [MEAL-07] What it needs to buy (WP-105); none read on pages that don't use them. */
   ingredients?: Ingredient[];
+  /** [MEAL-25] The steps read from its link's recipe data, and its photos and PDFs (WP-105). */
+  recipeSteps?: string[];
+  recipeFiles?: RecipeFile[];
+}
+
+/** [MEAL-25] A photo or PDF of a meal's recipe, kept in the household's storage (WP-105). */
+export interface RecipeFile {
+  id: string;
+  kind: 'photo' | 'pdf';
+  name: string;
+  path: string;
+  sizeBytes: number;
+}
+
+/** "1.2 MB", "340 KB": a file's size as the form says it. */
+export function sizeWords(bytes: number): string {
+  return bytes >= 1_000_000
+    ? `${(Math.round(bytes / 100_000) / 10).toString()} MB`
+    : `${Math.max(1, Math.round(bytes / 1000))} KB`;
 }
 
 /**
@@ -164,6 +183,26 @@ export interface MealFormValue {
   recipeUrl: string | null;
   /** [MEAL-07] Its ingredients (WP-105). */
   ingredients?: Ingredient[];
+  /** [MEAL-25] The steps read from its link (WP-105); none sent leaves them as they are. */
+  recipeSteps?: string[];
+  recipeFiles?: RecipeFile[];
+}
+
+/** [MEAL-25] The steps read from a recipe link, when the form sends them (up to 60, 500 each). */
+function stepsOf(form: FormData): { recipeSteps?: string[] } {
+  const raw = form.get('recipeSteps');
+  if (raw === null) return {};
+  try {
+    const steps = JSON.parse(String(raw)) as unknown;
+    return {
+      recipeSteps: (Array.isArray(steps) ? steps : [])
+        .filter((x): x is string => typeof x === 'string' && x.trim() !== '')
+        .map((x) => x.trim().slice(0, 500))
+        .slice(0, 60),
+    };
+  } catch {
+    return {};
+  }
 }
 
 /** [MEAL-02] The library's form, or a line saying what to fix. */
@@ -216,6 +255,7 @@ export function parseMealForm(
       mealTypes: SLOTS.filter((s) => types.includes(s)),
       recipeUrl: recipe || null,
       ingredients: readIngredients(named),
+      ...stepsOf(form),
     },
   };
 }

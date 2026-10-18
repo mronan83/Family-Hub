@@ -656,6 +656,7 @@ FamilyWise's own grocery list (D-138 (1)): it works with no Mac and no Apple Rem
 | `grocery_item_reason` | `item_id`, `kind` (`added`/`meal`/`ask`/`staple`), `by_user?`, `member_id?`, `meal_plan_entry_id?`, `label?`, `amount?` | Why an item is on the list, a row per way it came, each with the amount it brought; the amount shown is the item's and its reasons' combined by the app. |
 | `grocery_item_event` | `item_id`, `kind` (`added`/`merged`/`changed`/`ticked`/`unticked`/`removed`), `at`, `by_user?`, `detail jsonb` | Each item's history, kept for good (D-138 (2)); what WP-106's staples learn from. |
 | `grocery_learned_word` | PK `(household_id, word, category_id)`, `weight` | The household's own words: every move teaches each word of the item's key its category (MEAL-24). |
+| `meal_recipe_file` | `meal_id`, `kind` (`photo`/`pdf`), `name`, `path` (unique), `size_bytes` (≤ 10 MB), `sort_order`, `created_by` | A library meal's recipe photos and PDFs (MEAL-25), in the private Storage bucket `recipes`, a folder per household then per meal. |
 
 **As built (WP-104, D-138).** Migrations `20261018101513_groceries.sql` and `20261018103755_board_groceries.sql`:
 - Every table has `household_id`, RLS and pgTAP (`540_groceries.test.sql`). The household's parents read all of them; its boards read the list, its items, reasons, categories and stores; nobody writes any of them but the functions below, each as a parent of the household (`private.grocery_access()`), one change to a household's list at a time (an advisory lock).
@@ -669,6 +670,12 @@ FamilyWise's own grocery list (D-138 (1)): it works with no Mac and no Apple Rem
 - `meal.ingredients` is checked (`meal_ingredients_shape`, `private.meal_ingredients_ok()`): an array of at most 60 rows, each `{name (1 to 80), amount? (up to 40: what to buy, "1 lb", "8", not the recipe's spoonfuls), have? (we usually have it)}` (MEAL-07).
 - The week's Add to groceries calls `add_groceries()` with one item per ticked ingredient, its reason `{kind: 'meal', meal_plan_entry_id, label: "Tacos, Tue"}`; a plan entry must be the household's (`meal_gone`). A meal already added that week is known by its reasons' `meal_plan_entry_id`.
 - `trg_meal_off_plan_delete` (before a plan entry is deleted) and `trg_meal_off_plan_change` (after its `meal_id` changes) call `private.take_meal_share(entry)`: each open item loses that entry's reasons and amounts (a `changed` event), and one left with no reason is removed (a `removed` event); a ticked item is left as it is, its reason's `meal_plan_entry_id` set to null by the foreign key. Nothing happens while the household itself is being deleted.
+
+**As built (WP-105, D-138 (6)): recipes.** Migration `20261018110649_meal_recipes.sql`, pgTAP `550_meal_groceries.test.sql`:
+- Storage bucket `recipes` (private, 10 MB a file; JPEG, PNG, WebP, HEIC and PDF). `storage.objects` policies: the household's admins add and remove in its folder (`<household>/…`); its admins and boards read (signed links).
+- `meal_recipe_file`: `household_id`, `meal_id` (the household's), `kind`, `name` (1 to 120), `path` (in the household's and the meal's folder: a check), `size_bytes` (1 to 10 MB), `sort_order`, `created_by`, `created_at`. RLS: the household's admins read, add and remove; its boards read. Audited. The admin's browser uploads the file, then the app records it (and removes the stored file if it can't).
+- `meal.recipe_steps` (jsonb, up to 60): the steps a recipe link's page publishes, kept when the admin saves the form after Read ingredients.
+- `board_recipes(from, to)` (a board only; at most 6 weeks): each planned library meal with a recipe (a link, ingredients, steps or files) with its link, ingredients, steps and files, for the board's Meals to open full screen.
 
 ---
 

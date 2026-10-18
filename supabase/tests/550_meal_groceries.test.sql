@@ -1,8 +1,8 @@
 -- [MEAL-07][MEAL-19] Meals → groceries (WP-105, D-138): a meal's ingredients, checked by the database;
 -- a week's meals added to the list through the one way in; a meal taken off the plan taking its share
--- off the list.
+-- off the list; a meal's recipe files, in the household's own storage; a board's recipes.
 begin;
-select plan(17);
+select plan(28);
 
 insert into auth.users (id, email) values ('55100000-0000-0000-0000-000000000001', 'parent@example.com');
 insert into public.household (id, name, timezone) values
@@ -11,6 +11,15 @@ insert into public.household (id, name, timezone) values
 insert into public.household_settings (household_id) values ('55000000-0000-0000-0000-000000000001');
 insert into public.household_user (household_id, user_id, role) values
   ('55000000-0000-0000-0000-000000000001', '55100000-0000-0000-0000-000000000001', 'owner');
+insert into auth.users (id, email) values
+  ('55300000-0000-0000-0000-000000000003', 'neighbour@example.com'),
+  ('55d00000-0000-0000-0000-00000000000d', null),
+  ('55d00000-0000-0000-0000-00000000000e', null);
+insert into public.household_user (household_id, user_id, role) values
+  ('55000000-0000-0000-0000-000000000002', '55300000-0000-0000-0000-000000000003', 'owner');
+insert into public.device (id, household_id, name, auth_user_id) values
+  ('55dd0000-0000-0000-0000-000000000001', '55000000-0000-0000-0000-000000000001', 'Kitchen', '55d00000-0000-0000-0000-00000000000d'),
+  ('55dd0000-0000-0000-0000-000000000002', '55000000-0000-0000-0000-000000000002', 'Theirs', '55d00000-0000-0000-0000-00000000000e');
 
 create function pg_temp.parent() returns void language plpgsql as $$
 begin
@@ -97,6 +106,54 @@ select lives_ok($$ select public.update_meal_entry(jsonb_build_object(
                 '... Wednesday changed to something written in');
 select is((select status from public.grocery_item where name_key = 'onion' order by created_at desc limit 1), 'removed',
           '... takes the chili''s onions off too');
+
+-- ---------------------------------------------------------------------------------------------
+-- [MEAL-25-f] A meal's recipe files, in the household's own storage
+-- ---------------------------------------------------------------------------------------------
+create function pg_temp.as_user(p_sub text) returns void language plpgsql as $$
+begin
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claims', json_build_object('sub', p_sub, 'role', 'authenticated')::text, true);
+end $$;
+create function pg_temp.file(p_id text, p_path text, p_kind text default 'photo', p_size integer default 1200000)
+returns void language sql as $$
+  insert into public.meal_recipe_file (id, household_id, meal_id, kind, name, path, size_bytes)
+  values (('55a00000-0000-0000-0000-0000000000' || p_id)::uuid, '55000000-0000-0000-0000-000000000001',
+          '55f00000-0000-0000-0000-000000000001', p_kind, 'Grandma''s card.jpg', p_path, p_size) $$;
+select pg_temp.parent();
+select lives_ok($$ select pg_temp.file('01', '55000000-0000-0000-0000-000000000001/55f00000-0000-0000-0000-000000000001/a.jpg') $$,
+                '[MEAL-25-f] a parent adds a photo to a meal''s recipe');
+select lives_ok($$ select pg_temp.file('02', '55000000-0000-0000-0000-000000000001/55f00000-0000-0000-0000-000000000001/b.pdf', 'pdf', 10485760) $$,
+                '... and a PDF of 10 MB');
+select throws_ok($$ select pg_temp.file('03', '55000000-0000-0000-0000-000000000001/55f00000-0000-0000-0000-000000000001/c.pdf', 'pdf', 10485761) $$,
+                 '23514', null, '... not one over 10 MB');
+select throws_ok($$ select pg_temp.file('04', '55000000-0000-0000-0000-000000000001/55f00000-0000-0000-0000-000000000001/d.doc', 'word') $$,
+                 '23514', null, '... a photo or a PDF only');
+select throws_ok($$ select pg_temp.file('05', '55000000-0000-0000-0000-000000000002/x/e.jpg') $$,
+                 '23514', null, '... kept in its own household''s folder only');
+select lives_ok($$ insert into storage.objects (bucket_id, name)
+                   values ('recipes', '55000000-0000-0000-0000-000000000001/55f00000-0000-0000-0000-000000000001/a.jpg') $$,
+                '... and stores it in its household''s folder');
+select throws_ok($$ insert into storage.objects (bucket_id, name)
+                    values ('recipes', '55000000-0000-0000-0000-000000000002/x/f.jpg') $$,
+                 '42501', null, '... never in another family''s');
+reset role;
+insert into public.meal_plan_entry (id, household_id, plan_date, slot, meal_id) values
+  ('55e00000-0000-0000-0000-000000000004', '55000000-0000-0000-0000-000000000001', '2026-10-24', 'dinner', '55f00000-0000-0000-0000-000000000001');
+select pg_temp.as_user('55d00000-0000-0000-0000-00000000000d');
+select is((select count(*)::int from public.meal_recipe_file) + (select count(*)::int from storage.objects where bucket_id = 'recipes'),
+          3, '... the household''s board reads its files');
+select is((select jsonb_array_length(x -> 'files') from jsonb_array_elements(public.board_recipes('2026-10-19', '2026-10-25')) x
+            where x ->> 'name' = 'Tacos'), 2,
+          '[MEAL-26] board_recipes gives a board each planned meal''s recipe, with its files');
+select pg_temp.as_user('55d00000-0000-0000-0000-00000000000e');
+select is((select count(*)::int from public.meal_recipe_file) + (select count(*)::int from storage.objects where bucket_id = 'recipes'),
+          0, '[MEAL-25-f] another family''s board reads none of them');
+select pg_temp.as_user('55300000-0000-0000-0000-000000000003');
+select throws_ok($$ insert into public.meal_recipe_file (household_id, meal_id, kind, name, path, size_bytes)
+                    values ('55000000-0000-0000-0000-000000000001', '55f00000-0000-0000-0000-000000000001', 'photo', 'x.jpg',
+                            '55000000-0000-0000-0000-000000000001/55f00000-0000-0000-0000-000000000001/x.jpg', 10) $$,
+                 '42501', null, '... and another family''s parent adds none');
 
 select * from finish();
 rollback;
