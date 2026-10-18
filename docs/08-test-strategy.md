@@ -272,7 +272,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2742** tests: Unit 840 · DB 1502 · UI 272 · E2E 128. 2245 name at least one ID; 497 name none.
+**2751** tests: Unit 849 · DB 1502 · UI 272 · E2E 128. 2254 name at least one ID; 497 name none.
 
 | Measure | Count |
 |---|---|
@@ -281,7 +281,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 104 of 129 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 183 (with a test: 153) |
+| Test cases | 183 (with a test: 157) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -300,14 +300,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 57 | 54 | 30 | 11 | 152 |
+| Meals and lunch | 66 | 54 | 30 | 11 | 161 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
 | Platform | 186 | 167 | 57 | 15 | 425 |
 | Not named | 58 | 474 | 10 | 1 | 543 |
-| **Total** | **840** | **1502** | **272** | **128** | **2742** |
+| **Total** | **849** | **1502** | **272** | **128** | **2751** |
 
 ### 9.3 By requirement
 
@@ -409,8 +409,8 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-16 | S | Not built | US-712 | WP-103 | — | — |
 | MEAL-17 | S | Not built | US-713 | WP-103 | — | — |
 | MEAL-18 | S | Not built | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | DB 5 |
-| MEAL-19 | S | Not built | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | — |
-| MEAL-20 | S | Not built | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | DB 2 |
+| MEAL-19 | S | Not built | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 1 |
+| MEAL-20 | S | Not built | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 |
 | MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
 | MEAL-22 | S | Not built | US-717 | WP-107 | — | — |
 | MEAL-23 | S | Not built | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | DB 3 |
@@ -568,7 +568,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-102 | Done | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h | 8 of 8 | — |
 | WP-103 | Queued: | — | — | — |
 | WP-104 | Ready | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 5 of 16 | — |
-| WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 1 of 20 | — |
+| WP-105 | Queued | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 5 of 20 | — |
 | WP-106 | Queued | — | — | — |
 | WP-107 | Queued | — | — | — |
 | WP-108 | Done | NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r | 4 of 4 | — |
@@ -748,12 +748,12 @@ Test cases and the tests that prove them:
 | MEAL-19-a | WP-105 | The week's review lists the planned library meals by meal in day order with their ingredients ticked; We usually have it starts unticked; a meal already added that week starts unticked, marked "Added Sun"; an item on the list says what it makes once merged; nothing is scaled | Unit | **none** |
 | MEAL-19-b | WP-105 | Adding the week's ingredients puts them on the household's list with each meal as a reason, merged into what is there; a meal of another household is refused | DB | **none** |
 | MEAL-19-c | WP-105 | A meal taken off the plan, removed or changed to another meal, takes its share off the list: an item only it needed and not yet ticked is removed, a merged item loses its amount and reason, a ticked item is left as it is | DB | **none** |
-| MEAL-19-d | WP-105 | Taking a meal's share off an item recomputes its amount from the reasons left: "Onions ×3" from Tacos (1) and Chili (2) becomes "Onions ×2" without Tacos | Unit | **none** |
+| MEAL-19-d | WP-105 | Taking a meal's share off an item recomputes its amount from the reasons left: "Onions ×3" from Tacos (1) and Chili (2) becomes "Onions ×2" without Tacos | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-19-d] taking a meal’s share off recomputes the amount from the reasons left` |
 | MEAL-19-e | WP-105 | The week's review on Meals on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: by meal in day order, the notes, Add n to groceries and Cancel | UI | **none** |
 | MEAL-19-f | WP-105 | On the real preview, an admin adds a planned week's ingredients and finds each once on Groceries, two meals' onions merged into one item | E2E | **none** |
-| MEAL-20-a | WP-105 | "Onions", "onion", "2 onions" and "ONIONS ×2" are one thing; hummus, couscous and asparagus keep their s; extra spaces don't matter | Unit | **none** |
-| MEAL-20-b | WP-105 | Counts add ("2 onions" and "1 onion" make ×3), the same unit adds ("1 lb" and "1 lb" make 2 lb), different units sit side by side ("1 lb + 500 g"), no amount takes the other's | Unit | **none** |
-| MEAL-20-c | WP-105 | "Milk", "milk 2%" and "oat milk" are never merged by themselves; a new name that contains an open one's, or is contained by it, offers Make it one | Unit | **none** |
+| MEAL-20-a | WP-105 | "Onions", "onion", "2 onions" and "ONIONS ×2" are one thing; hummus, couscous and asparagus keep their s; extra spaces don't matter | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-a] "Onions", "onion", "2 onions" and "ONIONS ×2" are one thing`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-a] hummus, couscous and asparagus keep their s` |
+| MEAL-20-b | WP-105 | Counts add ("2 onions" and "1 onion" make ×3), the same unit adds ("1 lb" and "1 lb" make 2 lb), different units sit side by side ("1 lb + 500 g"), no amount takes the other's | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-b] counts add, the same unit adds, different units sit side by side`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-b] no amount takes the other’s, and a lone one says nothing`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `reading an item as typed › [MEAL-20-b] takes the amount off before or after the name`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `reading an item as typed › [MEAL-20-b] reads amounts as counts, units or words` |
+| MEAL-20-c | WP-105 | "Milk", "milk 2%" and "oat milk" are never merged by themselves; a new name that contains an open one's, or is contained by it, offers Make it one | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-c] "Milk", "milk 2%" and "oat milk" are never merged by themselves`<br>Unit `apps/web/lib/grocery-merge.test.ts`: `the one merge › [MEAL-20-c] a name that contains an open one, or is contained by it, offers Make it one` |
 | MEAL-20-d | WP-105 | The one way in merges an add into the open item of the same name, one item with both reasons and a merged event; a ticked item is never merged into; two adds of the same thing at once make one item | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-20-d] the first add is a new item`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-20-d] a ticked item is never merged into: a new one` |
 | MEAL-25-a | WP-105 | Read ingredients finds a made-up recipe page's published recipe data (a Recipe on its own, in a list or in a graph) with its ingredients and steps, and says so when a page has none | Unit | **none** |
 | MEAL-25-b | WP-105 | A recipe's lines become rows to check: an amount to buy is kept ("1 lb", "8", "2 cans"), a recipe's measure is left off ("2 tbsp", "1 cup"), and the name is cleaned | Unit | **none** |
@@ -1422,6 +1422,22 @@ Unit · 26 tests
 | `repeating goals (WP-80) › [RWD-15-j] a goal without a repeat doesn’t repeat; an unknown one is read as none` | RWD-15-j, WP-80 |
 | `repeating goals (WP-80) › [RWD-16-i] every day it’s due on a goal that doesn’t repeat says what to fix` | RWD-16-i, WP-80 |
 | `repeating goals (WP-80) › [RWD-16] describes the rule, and a period’s events and a stop` | RWD-16, WP-80 |
+
+#### `apps/web/lib/grocery-merge.test.ts`
+
+Unit · 9 tests
+
+| Test | Names |
+|---|---|
+| `the one merge › [MEAL-20-a] "Onions", "onion", "2 onions" and "ONIONS ×2" are one thing` | MEAL-20-a |
+| `the one merge › [MEAL-20-a] hummus, couscous and asparagus keep their s` | MEAL-20-a |
+| `the one merge › [MEAL-20-b] counts add, the same unit adds, different units sit side by side` | MEAL-20-b |
+| `the one merge › [MEAL-20-b] no amount takes the other’s, and a lone one says nothing` | MEAL-20-b |
+| `the one merge › [MEAL-20-c] "Milk", "milk 2%" and "oat milk" are never merged by themselves` | MEAL-20-c |
+| `the one merge › [MEAL-20-c] a name that contains an open one, or is contained by it, offers Make it one` | MEAL-20-c |
+| `the one merge › [MEAL-19-d] taking a meal’s share off recomputes the amount from the reasons left` | MEAL-19-d |
+| `reading an item as typed › [MEAL-20-b] takes the amount off before or after the name` | MEAL-20-b |
+| `reading an item as typed › [MEAL-20-b] reads amounts as counts, units or words` | MEAL-20-b |
 
 #### `apps/web/lib/health.test.ts`
 
