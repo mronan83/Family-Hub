@@ -761,7 +761,7 @@ Test cases and the tests that prove them:
 | MEAL-25-d | WP-105 | A made-up photo of an ingredient list is read into lines by Tesseract.js | Unit | Unit `apps/web/lib/recipe-read.test.ts`: `reading a made-up recipe file › [MEAL-25-d] reads a photo’s text with Tesseract.js into ingredient lines` |
 | MEAL-25-e | WP-105 | Fetching a recipe link takes only http and https to a public address, gives up after its time and size limits, and never follows a redirect to a private one | Unit | Unit `apps/web/lib/recipe-read.test.ts`: `fetching a recipe link › [MEAL-25-e] takes only http and https to a public address`<br>Unit `apps/web/lib/recipe-read.test.ts`: `fetching a recipe link › [MEAL-25-e] never follows a redirect to a private address, and follows at most three`<br>Unit `apps/web/lib/recipe-read.test.ts`: `fetching a recipe link › [MEAL-25-e] gives up past its size limit, on a page that isn’t a page, or when it can’t reach it` |
 | MEAL-25-f | WP-105 | A meal's recipe files are the household's own: up to 10 MB each, a photo or a PDF; another household's admin and board can't read or add them; the household's board reads them | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] a parent adds a photo to a meal's recipe`<br>DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] another family's board reads none of them` |
-| MEAL-25-g | WP-105 | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI | UI `e2e/ui/meal-groceries.spec.ts`: `[MEAL-25-g][US-720] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` |
+| MEAL-25-g | WP-105 | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI | UI `e2e/ui/meal-groceries.spec.ts`: `with no service worker › [MEAL-25-g][US-720] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` |
 | MEAL-26-a | WP-105 | On the board's Meals, a tap on a meal with a recipe opens it full screen, read-only: its photos and PDFs with chips between them, its ingredients and the link's steps, text 28 px or more, and Close goes back | UI | UI `e2e/ui/board-recipe.spec.ts`: `[MEAL-26-a][US-720] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}` |
 
 ### 9.5 By user story
@@ -2932,7 +2932,7 @@ UI · 5 tests
 | `[MEAL-07-b] a meal’s form with its ingredients fits a ${device} in ${theme}` | MEAL-07-b |
 | `[MEAL-19-e][US-715] the week’s Add to groceries: by meal in day order, the notes, Add n to groceries and Cancel` | MEAL-19-e, US-715 |
 | `[MEAL-19-e] the week’s review fits a ${device} in ${theme}` | MEAL-19-e |
-| `[MEAL-25-g][US-720] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` | MEAL-25-g, US-720 |
+| `with no service worker › [MEAL-25-g][US-720] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` | MEAL-25-g, US-720 |
 
 #### `e2e/ui/meals.spec.ts`
 
