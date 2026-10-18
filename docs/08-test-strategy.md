@@ -700,7 +700,7 @@ Test cases and the tests that prove them:
 | NFR-14-s | WP-109 | Family options' The week, folded to its start day, is opened before its form is used; a new start day waits for the next week and Keep cancels it | E2E | E2E `e2e/tests/home.spec.ts`: `[NFR-14-s][ACC-08][US-110] the done-when: a new start day waits for the next week, and Keep cancels it` |
 | NFR-14-t | WP-109 | A spec whose items check off a child's days puts their history back: after its clean-up, Maya's and Leo's stored good and bad runs are as they were before it started | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][NFR-14-t][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row; thei…` |
 | PTS-04-a | WP-110 | A request the server took says "Waiting for a grown-up", never still "Sending…", and the board reads it back itself (Call off shows) when Realtime never says it changed | UI | UI `e2e/ui/board-shop.spec.ts`: `[PTS-04-a][US-1104] a request the server took waits for a grown-up, read back by the board itself when Realtime never says` |
-| NFR-16-r | WP-110 | "Set the goal" sends the save at once while a live summary is still being worked out | UI | UI `e2e/ui/goal-form-summary.spec.ts`: `[NFR-16-r] Set the goal goes at once while a live summary is still being worked out` |
+| NFR-16-r | WP-110 | "Set the goal" sends the save at once while a live summary is still being worked out | UI | UI `e2e/ui/goal-form-summary.spec.ts`: `with no service worker › [NFR-16-r] Set the goal goes at once while a live summary is still being worked out` |
 | NFR-16-s | WP-110 | The live summaries route: the form goes as JSON and comes back field for field, with its photo left out; anything else is refused; a refusal rejects | Unit | Unit `apps/web/lib/goal-live.test.ts`: `[NFR-16-s] the live summaries route › [NFR-16-s] the form goes as JSON and comes back field for field; a photo is left out`<br>Unit `apps/web/lib/goal-live.test.ts`: `[NFR-16-s] the live summaries route › [NFR-16-s] a body that is not the form is refused`<br>Unit `apps/web/lib/goal-live.test.ts`: `[NFR-16-s] the live summaries route › [NFR-16-s] posts JSON with the signal it is given; a refusal rejects` |
 | NFR-19-a | WP-85 | A test's IDs are read from its name and its `describe` blocks, in the Unit, DB, UI and E2E layers | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-a][US-913] a test traces to the IDs in its name and its describe blocks, in every layer` |
 | NFR-19-b | WP-85 | A test naming an unknown requirement, story, backlog item or test case fails the check | Unit | Unit `scripts/trace-catalogue.test.mjs`: `[NFR-19-b][US-913] a test naming an unknown requirement, story, item or test case fails the check` |
@@ -2585,7 +2585,7 @@ UI · 7 tests
 | `[NFR-16-l] the live summaries show where the frames place them and change with the form` | NFR-16-l |
 | `[NFR-16-p] Starts, Ends and By show the written date or time over a real picker` | NFR-16-p |
 | `[NFR-16-q] every rule field keeps a name the form lists, however many forms the server drew` | NFR-16-q |
-| `[NFR-16-r] Set the goal goes at once while a live summary is still being worked out` | NFR-16-r |
+| `with no service worker › [NFR-16-r] Set the goal goes at once while a live summary is still being worked out` | NFR-16-r |
 
 #### `e2e/ui/goal-perfect.spec.ts`
 
