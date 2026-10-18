@@ -215,7 +215,7 @@ export interface SuggestContext {
   /** Items the household has had, any status. */
   past: readonly PastItem[];
   learned: readonly LearnedWord[];
-  /** The starter list: a word or phrase → a starter category's key; null until it is built. */
+  /** The starter list: an item key → a starter category's key (`grocery-starter.ts`). */
   starter?: ReadonlyMap<string, string> | null;
 }
 
@@ -264,6 +264,14 @@ export function suggest(text: string, ctx: SuggestContext): Suggestion | null {
   if (best) return { categoryId: best[0], storeId: null, from: 'learned' };
 
   if (ctx.starter) {
+    // A frozen or canned thing goes with the frozen or the pantry, whatever it is.
+    const kind = words.includes('frozen')
+      ? 'frozen'
+      : words.includes('canned') || words.includes('tinned')
+        ? 'pantry'
+        : null;
+    const aisle = kind && ctx.categories.find((x) => x.starterKey === kind);
+    if (aisle) return { categoryId: aisle.id, storeId: null, from: 'starter' };
     for (const p of phrases(key)) {
       const starterKey = ctx.starter.get(p);
       if (!starterKey) continue;

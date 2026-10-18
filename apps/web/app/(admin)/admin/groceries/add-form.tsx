@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import type { FormState } from '@/lib/auth/messages';
 import { useFormAction } from '@/lib/forms';
 import { itemKey, makeItOne } from '@/lib/grocery-merge';
+import { starterList } from '@/lib/grocery-starter';
 import {
   categoryOrder,
   type GroceryCategory,
@@ -55,7 +56,10 @@ export function AddForm({
   const [category, setCategory] = useState<string | null>(fixedCategory);
   const [store, setStore] = useState<string | null>(null);
   const ordered = categoryOrder(categories);
-  const s = useMemo(() => (typed.trim() ? suggest(typed, ctx) : null), [typed, ctx]);
+  const s = useMemo(
+    () => (typed.trim() ? suggest(typed, { ...ctx, starter: starterList }) : null),
+    [typed, ctx],
+  );
   const chosenCategory = category ?? s?.categoryId ?? null;
   const chosenStore = store ?? s?.storeId ?? '';
   const second = useMemo(() => {

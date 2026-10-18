@@ -272,7 +272,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2828** tests: Unit 875 · DB 1534 · UI 289 · E2E 130. 2306 name at least one ID; 522 name none.
+**2829** tests: Unit 876 · DB 1534 · UI 289 · E2E 130. 2307 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
@@ -300,14 +300,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 92 | 61 | 47 | 13 | 213 |
+| Meals and lunch | 93 | 61 | 47 | 13 | 214 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
 | Platform | 186 | 167 | 57 | 15 | 425 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **875** | **1534** | **289** | **130** | **2828** |
+| **Total** | **876** | **1534** | **289** | **130** | **2829** |
 
 ### 9.3 By requirement
 
@@ -414,7 +414,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
 | MEAL-22 | S | Not built | US-717 | WP-107 | — | — |
 | MEAL-23 | S | Covered | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | U 3 · DB 3 · UI 3 · E2E 1 |
-| MEAL-24 | S | Covered | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 4 · DB 1 · UI 1 |
+| MEAL-24 | S | Covered | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 5 · DB 1 · UI 1 |
 | MEAL-25 | S | Covered | US-720 | WP-105 | MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | U 10 · DB 2 · UI 1 |
 | MEAL-26 | S | Covered | US-720 | WP-105 | MEAL-26-a | U 1 · DB 1 · UI 1 |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
@@ -740,7 +740,7 @@ Test cases and the tests that prove them:
 | MEAL-23-e | WP-104 | On the real preview, an admin selects several items and moves them to another category at once | E2E | E2E `e2e/tests/groceries.spec.ts`: `[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at once` |
 | MEAL-24-a | WP-104 | The suggestion for an item had before is the category and store it had last time | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-a] an item had before gets the category and store it had last time` |
 | MEAL-24-b | WP-104 | An item never had before takes the category the household's own words point to, learned from earlier moves, before the starter list; a move teaches every word of its name | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-b] a new item takes the household’s learned words before the starter list` |
-| MEAL-24-c | WP-104 | An item neither had before nor learned takes the starter list's category, built from Open Food Facts' categories; a renamed starter category is still found; a removed one gives Other | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-c] an item nothing has taught takes the starter list’s category, renamed or not` |
+| MEAL-24-c | WP-104 | An item neither had before nor learned takes the starter list's category, built from Open Food Facts' categories; a renamed starter category is still found; a removed one gives Other | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-c] an item nothing has taught takes the starter list’s category, renamed or not`<br>Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-c] the shipped starter list places made-up items in the starter categories` |
 | MEAL-24-d | WP-104 | An item nothing knows goes to Other with any store; one tap changes the suggestion before Add | Unit | Unit `apps/web/lib/groceries.test.ts`: `the suggestion › [MEAL-24-d] an item nothing knows goes to Other, with any store`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-24-d][US-719] adding suggests the category and store before Add; one tap changes it` |
 | MEAL-24-e | WP-104 | Moving items teaches their words to their own household only | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-24-e] the move teaches each word of their names` |
 | MEAL-07-a | WP-105 | A meal's ingredients are kept as rows of a name, an optional amount to buy and We usually have it; a row with no name, a name over 80 characters or more than 60 rows is refused | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-07-a] a meal keeps its ingredients: a name, an amount to buy, and we usually have it` |
@@ -1444,7 +1444,7 @@ Unit · 26 tests
 
 #### `apps/web/lib/groceries.test.ts`
 
-Unit · 8 tests
+Unit · 9 tests
 
 | Test | Names |
 |---|---|
@@ -1455,6 +1455,7 @@ Unit · 8 tests
 | `the suggestion › [MEAL-24-a] an item had before gets the category and store it had last time` | MEAL-24-a |
 | `the suggestion › [MEAL-24-b] a new item takes the household’s learned words before the starter list` | MEAL-24-b |
 | `the suggestion › [MEAL-24-c] an item nothing has taught takes the starter list’s category, renamed or not` | MEAL-24-c |
+| `the suggestion › [MEAL-24-c] the shipped starter list places made-up items in the starter categories` | MEAL-24-c |
 | `the suggestion › [MEAL-24-d] an item nothing knows goes to Other, with any store` | MEAL-24-d |
 
 #### `apps/web/lib/grocery-merge.test.ts`

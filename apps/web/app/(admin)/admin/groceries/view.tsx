@@ -171,7 +171,7 @@ export function GroceriesView({
           stores={stores}
           open={open}
           people={people}
-          ctx={{ categories, past: data.past, learned: data.learned, starter: null }}
+          ctx={{ categories, past: data.past, learned: data.learned }}
           fixedCategory={query.cat ?? null}
           storeFilter={store}
           initial={dev?.typed}

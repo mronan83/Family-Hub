@@ -13,6 +13,7 @@ import { parsePicksForm } from '@/lib/lunch-picks';
 import { mealRefusal, parseEntryForm, parseMealForm, weekDays, weekFrom } from '@/lib/meals';
 import { serverClient } from '@/lib/supabase/server';
 import { suggest } from '@/lib/groceries';
+import { starterList } from '@/lib/grocery-starter';
 import { weekReview } from '@/lib/meal-groceries';
 import { loadGroceries } from '../groceries/data';
 import { loadMeals, loadPlan } from './data';
@@ -309,6 +310,7 @@ export async function addWeekToGroceries(form: FormData): Promise<void> {
     categories: groceries.categories,
     past: groceries.past,
     learned: groceries.learned,
+    starter: starterList,
   };
   const items = review.meals.flatMap((m) =>
     m.rows

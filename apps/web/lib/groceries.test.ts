@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import items from './__fixtures__/grocery-items.json';
+import { starterList } from './grocery-starter';
 import {
   categoryOrder,
   forMeals,
@@ -212,6 +214,22 @@ describe('the suggestion', () => {
       storeId: null,
       from: 'other',
     });
+  });
+
+  it('[MEAL-24-c] the shipped starter list places made-up items in the starter categories', () => {
+    const KEYS = ['produce', 'dairy', 'bakery', 'meat', 'pantry', 'frozen', 'snacks', 'household'];
+    const all = [...KEYS.map((k, i) => cat(k, k, i, k)), cat('other', 'Other', 9, 'other')];
+    const at = (text: string) =>
+      suggest(text, { categories: all, past: [], learned: [], starter: starterList })?.categoryId;
+    expect(at('Bananas')).toBe('produce');
+    expect(at('2 lb ground beef')).toBe('meat');
+    expect(at('Greek yogurt')).toBe('dairy');
+    expect(at('paper towels')).toBe('household');
+    expect(at('frozen peas')).toBe('frozen');
+    expect(at('canned corn')).toBe('pantry');
+    // 200 made-up items, as measured for D-140: at least 84.5% placed right.
+    const right = (items as [string, string][]).filter(([text, want]) => at(text) === want).length;
+    expect(right, `${right} of ${items.length}`).toBeGreaterThanOrEqual(169);
   });
 
   it('[MEAL-24-d] an item nothing knows goes to Other, with any store', () => {
