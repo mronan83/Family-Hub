@@ -939,6 +939,7 @@ export function Today({
   loadLunches,
   askLunch = noLunch,
   seenLunch = noSeen,
+  refresh,
 }: {
   snapshot: BoardSnapshot;
   /** The current minute. */
@@ -963,10 +964,12 @@ export function Today({
   /** [DEV-06] Where the outbox and what the board shows ahead of the snapshot outlast a reload. */
   store?: BoardStore | null;
   onQueue?: (q: QueueState) => void;
+  /** [WP-110] Reads the snapshot again now, after this board's own change (an ask, a call-off). */
+  refresh?: () => void;
 }) {
   const t = useToday(snapshot, post, store, onQueue);
   const w = useWishes(snapshot, pinWish, t.say);
-  const shop = useShop(snapshot, ask, cancelAsk, t.say);
+  const shop = useShop(snapshot, ask, cancelAsk, t.say, refresh);
   const party = useCelebrations(snapshot.goals, markCelebrated);
   const online = useOnline();
   const { members, household, today } = snapshot;
@@ -1272,6 +1275,7 @@ export function Today({
                   <RequestsCard
                     requests={shop.requestsOf(member)}
                     sending={shop.sending}
+                    taken={shop.taken}
                     cancelling={shop.cancelling}
                     online={online}
                     onCancel={shop.cancel}

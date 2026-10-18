@@ -121,6 +121,33 @@ test('[PTS-04][US-1104] asking: once more to be sure, then pending at once; call
   expect(log.cancels).toEqual([log.asks[0]!.id]);
 });
 
+test('[PTS-04-a][US-1104] a request the server took waits for a grown-up, read back by the board itself when Realtime never says', async ({
+  page,
+}) => {
+  // ?missed=1: the stand-in stores the request but never tells the board, as when Realtime misses a
+  // change (#137, WP-110); only the board's own read shows it.
+  await open(page, 'Maya', '?missed=1');
+  await page.getByRole('button', { name: 'Shop', exact: true }).click();
+  const shop = page.getByRole('dialog', { name: 'Maya’s shop' });
+  const ice = shop.getByRole('listitem').filter({ hasText: 'Ice cream trip' });
+  await ice.getByRole('button', { name: /^Ask for this/ }).click();
+  await ice.getByRole('button', { name: 'Yes, ask' }).click();
+  await expect(page.locator('.fw-today__notice')).toContainText(
+    'Asked for Ice cream trip. A grown-up will say yes or not this time.',
+  );
+  // Hers is the newest (the made-up family's earlier one was a "not this time").
+  const row = page
+    .getByRole('region', { name: 'Asked for' })
+    .getByRole('listitem')
+    .filter({ hasText: 'Ice cream trip' })
+    .first();
+  // Taken, so never still "Sending…"; and read back, so it can be called off like any other.
+  await expect(row).toContainText('Waiting for a grown-up');
+  await expect(row.getByRole('button', { name: 'Call off Ice cream trip' })).toBeVisible();
+  await expect(row).not.toHaveAttribute('data-busy');
+  expect((await shopLog(page)).asks).toHaveLength(1);
+});
+
 test('[PTS-04][US-1104] what the shop refuses is taken back, and the board says why', async ({
   page,
 }) => {
