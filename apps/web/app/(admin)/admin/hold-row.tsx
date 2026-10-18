@@ -13,8 +13,8 @@ const SLOP_PX = 10;
  * library and Tags. ⋯ is the browser's own <details>, so it opens before the page hydrates; pressing
  * and holding the row, by touch or mouse, opens the same menu (Q5). The row is drawn without
  * Safari's callout and text selection, and its context menu is the row's own, so holding it in
- * Safari on an iPhone opens the menu, never Safari's link preview. A tap outside the menu, or
- * Escape, closes it.
+ * Safari on an iPhone opens the menu, never Safari's link preview. A choice in it, a tap outside it,
+ * or Escape closes it (as Groceries' ⋯, WP-104's follow-up).
  */
 export function HoldRow({
   menuLabel,
@@ -126,7 +126,18 @@ export function HoldRow({
         <summary className="fw-row__morebtn" aria-label={menuLabel}>
           <Icon name="more" />
         </summary>
-        <div className="fw-row__menu">{menu}</div>
+        <div
+          className="fw-row__menu"
+          onClick={(e) => {
+            // After the choice has done its work: the link's navigation or the form's submit.
+            if ((e.target as Element).closest('a, button'))
+              setTimeout(() => {
+                if (more.current) more.current.open = false;
+              });
+          }}
+        >
+          {menu}
+        </div>
       </details>
       {after ? <div className="fw-row__after">{after}</div> : null}
     </li>

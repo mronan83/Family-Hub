@@ -302,6 +302,58 @@ test.describe('Chores in four sections', () => {
   });
 });
 
+test.describe('the ⋯ menus with no service worker', () => {
+  // A page the service worker controls sends its fetches through it, and WebKit then doesn't route
+  // them to the test: a choice's page couldn't be held here (as Groceries' ⋯ test, WP-104).
+  test.use({ serviceWorkers: 'block' });
+
+  for (const [url, title] of [
+    ['/dev/chores', 'Feed the dog'],
+    ['/dev/chores?open=completed', 'Clean out the garage'],
+    ['/dev/meals?page=library', 'Spaghetti'],
+    ['/dev/tags', 'Kitchen'],
+  ] as const) {
+    test(`[NFR-16-t] ${title}’s ⋯ fits inside the screen and closes once a choice is made (${url})`, async ({
+      page,
+    }) => {
+      await open(page, url);
+      await moreFor(page, title).click();
+      const menu = menuOf(page, title);
+      await expect(menu).toBeVisible();
+      // Every choice and its words sit inside the menu, and the menu inside the screen.
+      const outside = await menu.evaluate((m) => {
+        const box = m.getBoundingClientRect();
+        const out = [...m.querySelectorAll('.fw-row__mi, .fw-row__mi > *')]
+          .filter((el) => {
+            const r = el.getBoundingClientRect();
+            return r.right > box.right + 0.5 || r.left < box.left - 0.5;
+          })
+          .map((el) => el.textContent?.trim());
+        if (box.left < 0 || box.right > document.documentElement.clientWidth) out.push('the menu');
+        return out;
+      });
+      expect(outside).toEqual([]);
+      // A choice closes it at once. Its page (signed in, under /admin) and a form's post are
+      // held, so this page stays to be looked at.
+      const held: unknown[] = [];
+      await page.route('**/admin/**', (route) => void held.push(route));
+      await page.route(
+        (u) => u.pathname.startsWith('/dev/'),
+        (route) => (route.request().method() === 'POST' ? void held.push(route) : route.fallback()),
+      );
+      const more = page
+        .locator('li', { has: moreFor(page, title) })
+        .locator('details.fw-row__more');
+      await menu.getByRole('link', { name: `Edit ${title}` }).click();
+      await expect(more).not.toHaveAttribute('open');
+      await moreFor(page, title).click();
+      await expect(menu).toBeVisible();
+      await menu.getByRole('button', { name: `Archive ${title}` }).click();
+      await expect(more).not.toHaveAttribute('open');
+    });
+  }
+});
+
 test.describe('An item’s page, Duplicate, the Meal library and Tags', () => {
   for (const theme of ['day', 'evening'] as const) {
     test(`[NFR-16-t] an item’s page folded: the form open, More options, Coming up, Last 7 days and Archive folded, each opened; ${theme}`, async ({
