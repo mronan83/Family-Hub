@@ -101,14 +101,22 @@ export function AddForm({
       <div className="fw-groc__addrow">
         <label className="fw-groc__addfield">
           <span className="fw-visually-hidden">Add an item</span>
-          <input
-            className="fw-input"
+          {/* A field of one line whose hint wraps on a phone, as the mockup draws it: a text area
+              that Enter adds from and that takes no line breaks. */}
+          <textarea
+            className="fw-input fw-groc__addinput"
             name="item"
+            rows={2}
             maxLength={100}
             autoComplete="off"
             placeholder="Add an item, like 2 lb ground beef"
             value={typed}
-            onChange={(e) => setTyped(e.target.value)}
+            onChange={(e) => setTyped(e.target.value.replace(/\s*\n\s*/g, ' '))}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter' || e.nativeEvent.isComposing) return;
+              e.preventDefault();
+              e.currentTarget.form?.requestSubmit();
+            }}
             required
           />
         </label>

@@ -5886,6 +5886,22 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   flex: 1 1 auto;
   min-width: 0;
 }
+/* [MEAL-18] The add field: one line on a laptop; on a phone two, so its hint shows in full. */
+textarea.fw-groc__addinput {
+  display: block;
+  width: 100%;
+  min-height: var(--touch);
+  height: var(--touch);
+  padding-block: calc((var(--touch) - 1.25em - 2 * var(--border-w)) / 2);
+  overflow: hidden;
+  resize: none;
+}
+@media (max-width: 520px) {
+  textarea.fw-groc__addinput {
+    height: auto;
+    padding-block: var(--s-2);
+  }
+}
 .fw-groc__addfield .fw-input {
   width: 100%;
 }
