@@ -69,6 +69,8 @@ export const ADMIN = [
   ['groceries-empty', '/dev/groceries?state=empty'],
   // [MEAL-19] WP-105's week into groceries.
   ['meals-groceries', '/dev/meals?groceries=1'],
+  // [MEAL-07][MEAL-25] WP-105's meal form: its ingredients and recipe.
+  ['meals-recipe', '/dev/meals?page=library&edit=Tacos'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of
