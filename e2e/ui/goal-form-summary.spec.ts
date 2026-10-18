@@ -283,25 +283,38 @@ test('[NFR-16-q] every rule field keeps a name the form lists, however many form
   }
 });
 
-test('[NFR-16-r] Set the goal goes at once while a live summary is still being worked out', async ({
-  page,
-}) => {
-  // Every live summary held unanswered, as on a slow database. Next runs a page's server actions one
-  // at a time, so a summary asked for through one held the save behind it (#138, WP-110).
-  const held: Route[] = [];
-  await page.route('**/dev/goals/summaries', (route) => void held.push(route));
-  await page.goto('/dev/goals?form=new');
-  await hydrated(page);
-  const form = page.getByRole('form', { name: 'Set a goal' });
-  await form.getByLabel('Name').fill('Reading every day');
-  await expect.poll(() => held.length, { message: 'a live summary asked for' }).toBeGreaterThan(0);
-  // The save is the page's one server action. 5 s is many times what it takes to leave.
-  const save = page.waitForRequest(
-    (r) => r.method() === 'POST' && r.headers()['next-action'] !== undefined,
-    { timeout: 5_000 },
-  );
-  await form.getByRole('button', { name: 'Set the goal' }).click();
-  await save;
-  expect(held.length, 'the summaries asked for are still unanswered').toBeGreaterThan(0);
-  for (const route of held) await route.abort().catch(() => undefined);
+test.describe('with no service worker', () => {
+  // A page the service worker controls sends its fetches through it, and WebKit then doesn't route
+  // them to the test: no summary could be held (WP-110).
+  test.use({ serviceWorkers: 'block' });
+
+  test('[NFR-16-r] Set the goal goes at once while a live summary is still being worked out', async ({
+    page,
+  }) => {
+    // Every live summary held unanswered, as on a slow database. Next runs a page's server actions one
+    // at a time, so a summary asked for through one held the save behind it (#138, WP-110).
+    const held: Route[] = [];
+    const sent: string[] = [];
+    page.on('request', (r) => {
+      if (r.url().endsWith('/dev/goals/summaries')) sent.push(r.method());
+    });
+    await page.route('**/dev/goals/summaries', (route) => void held.push(route));
+    await page.goto('/dev/goals?form=new');
+    await hydrated(page);
+    const form = page.getByRole('form', { name: 'Set a goal' });
+    await form.getByLabel('Name').fill('Reading every day');
+    // Says what it saw: a summary held, or how many were sent that the test couldn't hold.
+    await expect
+      .poll(() => (held.length > 0 ? 'held' : `none held, ${sent.length} sent`))
+      .toBe('held');
+    // The save is the page's one server action. 5 s is many times what it takes to leave.
+    const save = page.waitForRequest(
+      (r) => r.method() === 'POST' && r.headers()['next-action'] !== undefined,
+      { timeout: 5_000 },
+    );
+    await form.getByRole('button', { name: 'Set the goal' }).click();
+    await save;
+    expect(held.length, 'the summaries asked for are still unanswered').toBeGreaterThan(0);
+    for (const route of held) await route.abort().catch(() => undefined);
+  });
 });
