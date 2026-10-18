@@ -83,6 +83,50 @@ test.describe('the admin app’s Groceries', () => {
     });
   }
 
+  test.describe('with no service worker', () => {
+    // A page the service worker controls sends its fetches through it, and WebKit then doesn't route
+    // them to the test: the choice's page couldn't be held here.
+    test.use({ serviceWorkers: 'block' });
+
+    test('[MEAL-18-d] an item’s ⋯ fits inside the screen and closes once a choice is made', async ({
+      page,
+    }) => {
+      await open(page, '/dev/groceries');
+      const more = page.locator('#item-' + (await idOf(page, 'Onions')) + ' .fw-groc__more');
+      const menu = more.locator('.fw-groc__menu');
+      await page.getByLabel('More for Onions').click();
+      await expect(menu).toBeVisible();
+      // Every row and its words sit inside the menu, and the menu inside the screen.
+      const outside = await menu.evaluate((m) => {
+        const box = m.getBoundingClientRect();
+        const out = [...m.querySelectorAll('.fw-groc__mi, .fw-groc__mi > *')]
+          .filter((el) => {
+            const r = el.getBoundingClientRect();
+            return r.right > box.right + 0.5 || r.left < box.left - 0.5;
+          })
+          .map((el) => el.textContent?.trim());
+        if (box.left < 0 || box.right > document.documentElement.clientWidth) out.push('the menu');
+        return out;
+      });
+      expect(outside).toEqual([]);
+      // A choice closes it at once. Its page (the signed-in /admin/groceries) is held, so this
+      // page stays to be looked at.
+      const held: unknown[] = [];
+      await page.route('**/admin/groceries**', (route) => void held.push(route));
+      await menu.getByRole('link', { name: 'Edit' }).click();
+      await expect(more).not.toHaveAttribute('open');
+      // So do Escape and a tap anywhere else.
+      await page.getByLabel('More for Onions').click();
+      await expect(menu).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(more).not.toHaveAttribute('open');
+      await page.getByLabel('More for Onions').click();
+      await expect(menu).toBeVisible();
+      await page.getByRole('heading', { name: 'Groceries', level: 1 }).click();
+      await expect(more).not.toHaveAttribute('open');
+    });
+  });
+
   test('[MEAL-18-d] an item’s ⋯ says why it is on the list and holds the rest', async ({
     page,
   }) => {
@@ -104,6 +148,15 @@ test.describe('the admin app’s Groceries', () => {
     const edit = page.getByRole('form', { name: 'Edit Onions' });
     await expect(edit.getByLabel('Amount')).toHaveValue('×3');
     await expect(edit.getByLabel('Name')).toHaveValue('Onions');
+    // On a phone both fields fit inside the form.
+    await page.setViewportSize({ width: 390, height: 844 });
+    const spill = await edit.evaluate((f) => {
+      const box = f.getBoundingClientRect();
+      return [...f.querySelectorAll('input:not([type=hidden])')]
+        .filter((i) => i.getBoundingClientRect().right > box.right + 0.5)
+        .map((i) => i.getAttribute('name'));
+    });
+    expect(spill).toEqual([]);
     await open(page, '/dev/groceries?move=Onions');
     await expect(
       page.getByRole('form', { name: 'Move Onions to' }).getByRole('radio', { name: 'Produce' }),

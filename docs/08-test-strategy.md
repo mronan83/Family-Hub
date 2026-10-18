@@ -1,7 +1,6 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.11: the UI suite runs WP-96's screens as Safari on a Mac too, desktop WebKit at 1280 px (the `mac` project, NFR-16, D-141).
 > v0.8.10: WP-111's follow-up: NFR-14-x reads each spec with the TypeScript parser, so a seed id or `family.` inside SQL text fails it (run 251's `chores.spec.ts`); the UI suite's MENU-06 Meals check passes on a Sunday too.
 > v0.8.9: each e2e spec its own made-up household (WP-111, NFR-14, D-137): rule 4 says how a spec gets it, and rule 11 that leftovers stay in it. Test cases NFR-14-u to NFR-14-z; the Test catalogue regenerated (§9).
 > v0.8.8: the two e2e reds of 17 October night (WP-110, PTS-04, NFR-16, D-136): both the app's bugs, each proved by a UI test that fails on `main`'s code (PTS-04-a, NFR-16-r) and a unit test (NFR-16-s); the Test catalogue regenerated (§9).
@@ -56,7 +55,7 @@ Each type, with what it proves, where it runs, when, and how fast.
 | Static checks | Format, lint, types, traceability (`check_traceability.py`), the docs build and its layout on 13 devices | CI `checks` and `docs` jobs | Every PR, and the merge commit on `main` | About a minute each |
 | Unit (Vitest, node:test) | Pure logic: the rules engine, dates, menu reading, lunch picks, the board's layout choice, sleep and wake, the scripts CI runs | CI `checks` (`pnpm test`) | Every PR | Seconds |
 | Database (pgTAP) | Tables, functions and access rules; household isolation (RLS) | CI `database`, on native Postgres (`scripts/db-test.sh`) | Every PR | About a minute |
-| UI suite (Playwright) | Screens on made-up data with no shared database: every size, theme and text size; the 28 px and 56 px floors; a page's own interactions. Desktop Chrome, and an iPhone in WebKit (Safari's engine) for the controls, goal, form and admin layout specs (the `iphone` project, D-127); the screens WP-96 changes also run as Safari on a Mac, desktop WebKit at 1280 px (the `mac` project, D-141) | CI `build` (`pnpm test:ui`) | Every PR | Minutes |
+| UI suite (Playwright) | Screens on made-up data with no shared database: every size, theme and text size; the 28 px and 56 px floors; a page's own interactions. Desktop Chrome, and an iPhone in WebKit (Safari's engine) for the controls, goal, form and admin layout specs (the `iphone` project, D-127) | CI `build` (`pnpm test:ui`) | Every PR | Minutes |
 | Visual and accessibility | Tile style snapshots, axe contrast, manifests, fonts, keyboard | CI `build`, in the UI suite | Every PR | In the UI suite's time |
 | E2E (Playwright) | Real flows across the board, the admin app, the database and the jobs, as the demo family | A preview of `main` that the run builds, on the test database (`e2e.yml`) | Nightly at 07:17 UTC; never on a PR, never after a deploy (D-108) | 22–34 min for the last four green full runs before D-108 (225, 228, 229, 234), one worker; 40 spec files |
 | Burn-in | A new or changed e2e spec passes 5 runs in a row | The nightly run (`node scripts/e2e-run.mjs --burn-in <spec>`) | Optional, after the spec is on `main` (D-110) | 5 × the spec's time |
@@ -273,7 +272,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2888** tests: Unit 908 · DB 1544 · UI 301 · E2E 135. 2366 name at least one ID; 522 name none.
+**2889** tests: Unit 908 · DB 1544 · UI 302 · E2E 135. 2367 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
@@ -301,14 +300,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 182 | 140 | 42 | 8 | 372 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 96 | 61 | 48 | 14 | 219 |
+| Meals and lunch | 96 | 61 | 49 | 14 | 220 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 79 | 14 | 13 | 173 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
 | Platform | 189 | 167 | 61 | 16 | 433 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **908** | **1544** | **301** | **135** | **2888** |
+| **Total** | **908** | **1544** | **302** | **135** | **2889** |
 
 ### 9.3 By requirement
 
@@ -409,7 +408,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-15 | S | Covered | US-701 | WP-76 | — | DB 4 · UI 3 · E2E 1 |
 | MEAL-16 | S | Not built | US-712 | WP-103 | — | — |
 | MEAL-17 | S | Not built | US-713 | WP-103 | — | — |
-| MEAL-18 | S | Covered | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 4 · DB 6 · UI 7 · E2E 1 |
+| MEAL-18 | S | Covered | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 4 · DB 6 · UI 8 · E2E 1 |
 | MEAL-19 | S | Covered | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 4 · DB 2 · UI 2 · E2E 1 |
 | MEAL-20 | S | Covered | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 · E2E 1 |
 | MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
@@ -749,7 +748,7 @@ Test cases and the tests that prove them:
 | MEAL-18-a | WP-104 | The grocery list, its items, their reasons and their history are the household's own: another household's admin and board read none of them and write none; the household's board reads its list and writes nothing | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] not onto another family's list`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] nobody writes the list directly`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] the household's board reads its list, reasons and categories`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-a] board_groceries gives a board its household's open items, categories and stores` |
 | MEAL-18-b | WP-104 | Ticking an item records a tick with when and who, unticking puts it back on the list, and removing it is not a tick; every event stays in the history after the item is removed | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-b] ticking is a buy`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-b] unticking puts it back` |
 | MEAL-18-c | WP-104 | Got recently holds the items ticked in the last 7 days, newest first, and not one ticked 8 days ago; a ticked item is off the list at once | Unit | Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-18-c] Got recently: ticked in the last 7 days, newest first; not 8 days ago` |
-| MEAL-18-d | WP-104 | The admin app's Groceries on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: the add field open at the top, the list by category A to Z with each item's amount, store and why, an item's ⋯ (why it's on the list, Edit, Move to…, Store…, Select several, Remove), Got recently with Untick; nothing overflows, contrast is AA, targets are 44 px | UI | UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d][US-714] the list by category, A to Z, with amount, store and why; fits in ${theme}`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an item’s ⋯ says why it is on the list and holds the rest`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] Got recently: what was got this week, with Untick`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an empty list says so` |
+| MEAL-18-d | WP-104 | The admin app's Groceries on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: the add field open at the top, the list by category A to Z with each item's amount, store and why, an item's ⋯ (why it's on the list, Edit, Move to…, Store…, Select several, Remove), Got recently with Untick; nothing overflows, contrast is AA, targets are 44 px | UI | UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d][US-714] the list by category, A to Z, with amount, store and why; fits in ${theme}`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries with no service worker › [MEAL-18-d] an item’s ⋯ fits inside the screen and closes once a choice is made`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an item’s ⋯ says why it is on the list and holds the rest`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] Got recently: what was got this week, with Untick`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an empty list says so` |
 | MEAL-18-e | WP-104 | The board's Groceries on the demo family, Day and Evening: the list by category A to Z with each item's picture, amount, and why for a meal; text 28 px or more; nothing on it changes the list; an empty list says "Nothing on the list right now."; Groceries is in the rail once the household has had its first item | UI | UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] the list by category, A to Z, with pictures, amounts and why, read-only, in ${theme}`<br>UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] store chips change only what the board shows`<br>UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] an emptied list says so; a household with none has no Groceries in the rail` |
 | MEAL-18-f | WP-104 | On the real preview, an admin adds an item, ticks it, finds it under Got recently and unticks it back onto the list | E2E | E2E `e2e/tests/groceries.spec.ts`: `[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at once` |
 | MEAL-23-a | WP-104 | The list groups by the household's categories in their order, Other last, with items A to Z inside, whatever their capitals; a store chip shows only that store's items, still by category; Any store shows the items with no store; the counts on the chips match | Unit | Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] groups by the household’s categories in their order, Other last, A to Z inside`<br>Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] a store chip shows only its items, still by category; Any store those with none`<br>Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] each item says what to buy and why, the meals once each` |
@@ -2903,11 +2902,12 @@ UI · 14 tests
 
 #### `e2e/ui/groceries.spec.ts`
 
-UI · 8 tests
+UI · 9 tests
 
 | Test | Names |
 |---|---|
 | `the admin app’s Groceries › [MEAL-18-d][US-714] the list by category, A to Z, with amount, store and why; fits in ${theme}` | MEAL-18-d, US-714 |
+| `the admin app’s Groceries with no service worker › [MEAL-18-d] an item’s ⋯ fits inside the screen and closes once a choice is made` | MEAL-18-d |
 | `the admin app’s Groceries › [MEAL-18-d] an item’s ⋯ says why it is on the list and holds the rest` | MEAL-18-d |
 | `the admin app’s Groceries › [MEAL-24-d][US-719] adding suggests the category and store before Add; one tap changes it` | MEAL-24-d, US-719 |
 | `the admin app’s Groceries › [MEAL-23-d][US-718] Select: tick several, then Move to…, Store… or Remove for all at once` | MEAL-23-d, US-718 |

@@ -67,17 +67,18 @@ test('[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at 
     await add(`2 lb ${names.quince}`, names.quince);
     const row = admin.getByRole('listitem').filter({ hasText: names.quince });
     await expect(row).toContainText('2 lb');
-    await expect.poll(() => stored(names.quince)).toBe('open Other');
+    // The starter list (D-140) puts a quince in Produce.
+    await expect.poll(() => stored(names.quince)).toBe('open Produce');
     await row.getByRole('button', { name: `Got ${names.quince}` }).click();
     await expect(admin.getByText('Got it. It’s under Got recently for a week.')).toBeVisible();
     await expect(admin.getByRole('button', { name: `Got ${names.quince}` })).toHaveCount(0);
-    await expect.poll(() => stored(names.quince)).toBe('ticked Other');
+    await expect.poll(() => stored(names.quince)).toBe('ticked Produce');
     const got = admin.locator('#got');
     await got.locator('summary').click();
     await got.getByRole('button', { name: `Untick ${names.quince}` }).click();
     await expect(admin.getByText('Back on the list.')).toBeVisible();
     await expect(admin.getByRole('button', { name: `Got ${names.quince}` })).toBeVisible();
-    await expect.poll(() => stored(names.quince)).toBe('open Other');
+    await expect.poll(() => stored(names.quince)).toBe('open Produce');
   });
 
   await test.step('[MEAL-23-e] select several and move them to another category at once', async () => {
@@ -95,12 +96,12 @@ test('[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at 
     await expect(bar).toContainText('3 selected');
     await bar.getByRole('button', { name: 'Move to…' }).click();
     const move = admin.getByRole('form', { name: 'Move 3 items to' });
-    await move.getByText('Produce', { exact: true }).click();
+    await move.getByText('Pantry', { exact: true }).click();
     await move.getByRole('button', { name: 'Move 3 items' }).click();
     await expect(admin.getByText('Done: 3 items moved.')).toBeVisible();
-    for (const n of Object.values(names)) await expect.poll(() => stored(n)).toBe('open Produce');
-    const produce = admin.getByRole('region', { name: 'Produce', exact: true });
-    for (const n of Object.values(names)) await expect(produce).toContainText(n);
+    for (const n of Object.values(names)) await expect.poll(() => stored(n)).toBe('open Pantry');
+    const pantry = admin.getByRole('region', { name: 'Pantry', exact: true });
+    for (const n of Object.values(names)) await expect(pantry).toContainText(n);
   });
   report(`groceries: added, ticked, unticked and moved 3 items in ${HOUSEHOLD}`);
 });

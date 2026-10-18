@@ -25,6 +25,7 @@ import {
 import { AddForm } from './add-form';
 import { EditForm, PlaceForm } from './forms';
 import { ItemWords, SectionHead } from './rows';
+import { MoreMenu } from './more-menu';
 import { SelectList } from './select-list';
 
 /** What the page was opened with: the store chip, a row's open panel, Select, a notice. */
@@ -259,55 +260,50 @@ export function GroceriesView({
                       />
                     </form>
                     <ItemWords item={item} stores={stores} people={people} />
-                    <details className="fw-groc__more" open={dev?.menu === item.id || undefined}>
-                      <summary className="fw-groc__morebtn" aria-label={`More for ${item.name}`}>
-                        <Icon name="more" />
-                      </summary>
-                      <div className="fw-groc__menu">
-                        <div className="fw-groc__mh">
-                          <b>Why it’s on the list</b>
-                          {whyDetail(item, people).map((l, i) => (
-                            <span key={i}>{l}</span>
-                          ))}
-                        </div>
-                        <Link
-                          className="fw-groc__mi"
-                          href={`${q({ edit: item.id })}#item-${item.id}`}
-                        >
-                          <Icon name="edit" size={20} />
-                          Edit
-                        </Link>
-                        <Link
-                          className="fw-groc__mi"
-                          href={`${q({ move: item.id })}#item-${item.id}`}
-                        >
-                          <Icon name="chevron-right" size={20} />
-                          <span className="fw-groc__grow">Move to…</span>
-                          <span className="fw-muted">{s.category.name}</span>
-                        </Link>
-                        <Link
-                          className="fw-groc__mi"
-                          href={`${q({ storeOf: item.id })}#item-${item.id}`}
-                        >
-                          <Icon name="store" size={20} />
-                          <span className="fw-groc__grow">Store…</span>
-                          <span className="fw-muted">
-                            {stores.find((x) => x.id === item.storeId)?.name ?? 'Any store'}
-                          </span>
-                        </Link>
-                        <Link className="fw-groc__mi" href={q({ select: '1', sel: item.id })}>
-                          <Icon name="select-multiple" size={20} />
-                          Select several
-                        </Link>
-                        <form action={removeGroceries}>
-                          {hidden(item.id)}
-                          <button type="submit" className="fw-groc__mi fw-groc__mi--rm">
-                            <Icon name="trash" size={20} />
-                            Remove {item.name}
-                          </button>
-                        </form>
+                    <MoreMenu label={`More for ${item.name}`} open={dev?.menu === item.id}>
+                      <div className="fw-groc__mh">
+                        <b>Why it’s on the list</b>
+                        {whyDetail(item, people).map((l, i) => (
+                          <span key={i}>{l}</span>
+                        ))}
                       </div>
-                    </details>
+                      <Link
+                        className="fw-groc__mi"
+                        href={`${q({ edit: item.id })}#item-${item.id}`}
+                      >
+                        <Icon name="edit" size={20} />
+                        Edit
+                      </Link>
+                      <Link
+                        className="fw-groc__mi"
+                        href={`${q({ move: item.id })}#item-${item.id}`}
+                      >
+                        <Icon name="chevron-right" size={20} />
+                        <span className="fw-groc__grow">Move to…</span>
+                        <span className="fw-muted">{s.category.name}</span>
+                      </Link>
+                      <Link
+                        className="fw-groc__mi"
+                        href={`${q({ storeOf: item.id })}#item-${item.id}`}
+                      >
+                        <Icon name="store" size={20} />
+                        <span className="fw-groc__grow">Store…</span>
+                        <span className="fw-muted">
+                          {stores.find((x) => x.id === item.storeId)?.name ?? 'Any store'}
+                        </span>
+                      </Link>
+                      <Link className="fw-groc__mi" href={q({ select: '1', sel: item.id })}>
+                        <Icon name="select-multiple" size={20} />
+                        Select several
+                      </Link>
+                      <form action={removeGroceries}>
+                        {hidden(item.id)}
+                        <button type="submit" className="fw-groc__mi fw-groc__mi--rm">
+                          <Icon name="trash" size={20} />
+                          Remove {item.name}
+                        </button>
+                      </form>
+                    </MoreMenu>
                     {query.edit === item.id ? (
                       <EditForm
                         id={item.id}
