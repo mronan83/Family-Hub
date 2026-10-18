@@ -2,7 +2,7 @@
 
 import { Banner, Button, Icon } from '@familywise/ui';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useFormAction } from '@/lib/forms';
 import { starterList } from '@/lib/grocery-starter';
 import {
@@ -47,10 +47,12 @@ export function GroceriesQuick({
     added: dev?.added,
   } as QuickAddState);
   const [typed, setTyped] = useState(dev?.typed ?? '');
-  // A new Add empties the field for the next thing.
-  useEffect(() => {
-    if (state.added && !dev?.added) setTyped('');
-  }, [state.added, dev?.added]);
+  // A new Add empties the field for the next thing (set while rendering, as React advises).
+  const [seen, setSeen] = useState(state.added);
+  if (state.added !== seen) {
+    setSeen(state.added);
+    setTyped('');
+  }
 
   const ctx = useMemo(
     () => ({
