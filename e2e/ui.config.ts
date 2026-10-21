@@ -16,6 +16,9 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['list']] : 'list',
   use: {
     baseURL: 'http://localhost:3100',
+    // [D-110] A failed test keeps its trace (CI uploads test-results as brand-checks), so a red that
+    // shows only in WebKit, where no one here can run it, says its own cause (WP-113).
+    trace: 'retain-on-failure',
   },
   projects: [
     {
