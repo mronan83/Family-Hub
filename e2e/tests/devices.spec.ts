@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Browser, type Page } from '../support/test';
+import { expect, test, type Browser, type Locator, type Page } from '../support/test';
 import { addBoardForm, boardFold, pairingCode, retireBoard } from '../support/board';
 import { householdToday } from '../support/day';
 import { networkSwitch, type NetworkSwitch } from '../support/network';
@@ -58,6 +58,19 @@ async function expectContrastOk(page: Page) {
 function percentile(samples: number[], p: number): number {
   const sorted = [...samples].sort((a, b) => a - b);
   return sorted[Math.ceil((p / 100) * sorted.length) - 1]!;
+}
+
+/**
+ * [D-129] The board's read of its snapshot that would show a change saved at `from`: the one still
+ * out when a wait ended, timed so far; else the last one back since the save; else null.
+ */
+async function boardRead(live: Locator, from: number): Promise<number | null> {
+  const n = async (name: string) => Number((await live.getAttribute(name)) ?? 0);
+  const since = await n('data-reading-since');
+  if (since > 0) return Date.now() - since;
+  return (await n('data-read-from')) >= from
+    ? (await n('data-read-to')) - (await n('data-read-from'))
+    : null;
 }
 
 /** A line for the DEV-05 latency report: the e2e workflow prints it to the log and the run summary. */
@@ -321,16 +334,6 @@ test('[DEV-05][NFR-14-p] a rename in the admin app reaches the board within 3 se
     const t = Number((await live.getAttribute(name)) ?? 0);
     return t >= from ? `+${t - from} ms` : 'never';
   };
-  // The board's read still out when a wait ended, timed so far; else the last one back since the
-  // save; else null.
-  const stillOut = async (from: number) => {
-    const n = async (name: string) => Number((await live.getAttribute(name)) ?? 0);
-    const since = await n('data-reading-since');
-    if (since > 0) return Date.now() - since;
-    return (await n('data-read-from')) >= from
-      ? (await n('data-read-to')) - (await n('data-read-from'))
-      : null;
-  };
   for (let i = 1; i <= 20; i++) {
     const name = `Leo ${i}`;
     const opened = Date.now();
@@ -371,7 +374,7 @@ test('[DEV-05][NFR-14-p] a rename in the admin app reaches the board within 3 se
     samples.push(shown);
     // Never shown: the read still out, timed so far; else the last read back since the save; else
     // none of its own to time.
-    const read = got ? got.read : await stillOut(from);
+    const read = got ? got.read : await boardRead(live, from);
     reads.push(read);
     await admin.waitForURL(/\/admin\/members\?saved=/);
     report(
@@ -442,11 +445,23 @@ test('[DEV-05] an admin holds the board on Evening or Day; it switches at once a
     report(
       `[DEV-05] theme ${theme}: save ${saved === null ? 'not seen, timed from the click' : `${saved - clicked} ms`}`,
     );
-    await expect(html, `the board on ${theme} within 5 s of the saved theme`).toHaveAttribute(
-      'data-theme',
-      theme,
-      { timeout: 5_000 },
-    );
+    // [D-129] A miss says the board's read that would have shown it; one that took over 2 s is the
+    // test database slow, and re-runs once (scripts/e2e-run.mjs). The 5 s stays as it is.
+    const missed = await expect(html)
+      .toHaveAttribute('data-theme', theme, { timeout: 5_000 })
+      .then(
+        () => null,
+        (e: unknown) => e,
+      );
+    if (missed) {
+      const read = await boardRead(board.getByRole('status'), saved ?? clicked);
+      const evidence = slowReads([read], "board's read of its snapshot");
+      if (evidence) test.info().annotations.push({ type: 'infra', description: evidence });
+      throw new Error(
+        `the board on ${theme} within 5 s of the saved theme; the board's read ${read === null ? 'not timed' : `${read} ms`}`,
+        { cause: missed },
+      );
+    }
     await expectContrastOk(board);
   }
   await admin.goto('/admin/devices');

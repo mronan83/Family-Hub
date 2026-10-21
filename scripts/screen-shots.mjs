@@ -175,9 +175,12 @@ const shapes = [
 let n = 0;
 for (const theme of ['day', 'evening']) {
   for (const [shape, options] of shapes) {
-    const context = await browser.newContext(
-      engine === chromium ? { ...options, isMobile: false, hasTouch: false } : options,
-    );
+    // No service worker: the pictures are of the pages, and under one WebKit's navigations can
+    // fail ("WebKit encountered an internal error", WP-113).
+    const context = await browser.newContext({
+      ...(engine === chromium ? { ...options, isMobile: false, hasTouch: false } : options),
+      serviceWorkers: 'block',
+    });
     for (const [name, path] of ADMIN.filter(([name]) => wanted(name))) {
       const url = `${base}${path}${path.includes('?') ? '&' : '?'}theme=${theme}`;
       await shoot(context, url, `${out}/${name}-${shape}-${theme}.png`);
@@ -185,7 +188,10 @@ for (const theme of ['day', 'evening']) {
     }
     await context.close();
   }
-  const board = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  const board = await browser.newContext({
+    viewport: { width: 1920, height: 1080 },
+    serviceWorkers: 'block',
+  });
   for (const [name, query, person, whole, then] of BOARD.filter(([name]) => wanted(name))) {
     const url = `${base}/dev/board${query}&theme=${theme}`;
     await shoot(board, url, `${out}/${name}-${theme}.png`, person, whole === 'whole', then);

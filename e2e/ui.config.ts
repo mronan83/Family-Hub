@@ -16,6 +16,9 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['list']] : 'list',
   use: {
     baseURL: 'http://localhost:3100',
+    // [D-110] A failed test keeps its trace (CI uploads test-results as brand-checks), so a red that
+    // shows only in WebKit, where no one here can run it, says its own cause (WP-113).
+    trace: 'retain-on-failure',
   },
   projects: [
     {
@@ -25,9 +28,14 @@ export default defineConfig({
         ...(executablePath ? { launchOptions: { executablePath } } : {}),
       },
     },
+    // [D-110] WebKit runs with the app's service worker blocked (WP-113). Once it controls a page,
+    // Playwright's WebKit neither routes that page's fetches to the test (a held save is answered)
+    // nor always survives a navigation under it ("WebKit encountered an internal error"), so the
+    // WebKit reds of 21 October came and went with when the worker took control. None of these
+    // specs tests the worker; the board's and offline specs that do run in Chrome.
     {
       name: 'iphone',
-      use: { ...devices['iPhone 13'] },
+      use: { ...devices['iPhone 13'], serviceWorkers: 'block' },
       // [D-110] Measured on CI's WebKit: the slowest, goals.spec's fit check (four pages, each with
       // axe's contrast scan), took 15 to 27 s and timed out past 30 s on a slower runner; 100 s
       // keeps more than 3× the slowest. Every other iPhone test took under 17 s.
@@ -53,7 +61,11 @@ export default defineConfig({
     // [MEAL-27] WP-112's Home Groceries card too.
     {
       name: 'mac',
-      use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 } },
+      use: {
+        ...devices['Desktop Safari'],
+        viewport: { width: 1280, height: 800 },
+        serviceWorkers: 'block',
+      },
       timeout: 100_000,
       testMatch: ['chores.spec.ts', 'home-groceries.spec.ts'],
     },

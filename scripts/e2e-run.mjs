@@ -3,8 +3,9 @@
 //
 // 1. Runs the chosen specs once (all of them when none is named), then each burnt-in spec five times
 //    in a row (--repeat-each=5): a burnt-in spec must pass all five.
-// 2. While they run, probes the test database every 5 s and the preview's /api/health every 15 s,
-//    and keeps each reading that was slow or failed.
+// 2. While they run, probes the test database every 5 s (saying how much of a slow reading was the
+//    database's own time) and the preview's /api/health and /api/health/db (its own way to the test
+//    database) every 15 s, and keeps each reading that was slow or failed.
 // 3. Classifies each failed test (scripts/e2e-infra.mjs). An infrastructure failure (a statement
 //    timeout, a refused or reset connection, a 5xx from Supabase or the preview's gateway, or the
 //    database or preview slow or down while it ran) re-runs once, that test only (its whole file when
@@ -39,11 +40,14 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   classify,
+  dbHealthReading,
   errorText,
   failureOf,
   healthReading,
+  probeReading,
   redact,
   signInWords,
+  waitingWords,
 } from './e2e-infra.mjs';
 import { entriesOf } from './e2e-findings.mjs';
 
@@ -84,7 +88,9 @@ export function startProbe({
         if (line.startsWith('probe') && pending !== null) {
           const ms = Date.now() - pending;
           pending = null;
-          if (ms > 2_000) bad(`the test database took ${ms} ms to answer a probe`);
+          // [NFR-12-a] The query's own time, from inside it: the rest is the way to the database.
+          const reading = probeReading(ms, Number(line.split(' ')[2]));
+          if (reading) bad(reading);
         }
       }
     });
@@ -113,7 +119,9 @@ export function startProbe({
           open();
         }
         pending = Date.now();
-        psql.stdin.write("select 'probe ' || count(*) from pg_class;\n");
+        psql.stdin.write(
+          "select 'probe ' || count(*) || ' ' || round(extract(epoch from clock_timestamp() - statement_timestamp()) * 1000) from pg_class;\n",
+        );
       }, 5_000),
     );
   } else notes.push('no test database probe (SUPABASE_DB_URL not set)');
@@ -136,6 +144,20 @@ export function startProbe({
         } catch (e) {
           bad(
             `the preview did not answer /api/health (${e.name === 'TimeoutError' ? 'in 10 s' : e.message})`,
+          );
+        }
+        // [NFR-12-c] The preview's own way to the test database, which every save takes (WP-113).
+        try {
+          const r = await fetch(new URL('/api/health/db', base), {
+            headers,
+            signal: AbortSignal.timeout(10_000),
+          });
+          const body = await r.json().catch(() => null);
+          const reading = dbHealthReading(r.status, body);
+          if (reading) bad(reading);
+        } catch (e) {
+          bad(
+            `the preview did not answer /api/health/db (${e.name === 'TimeoutError' ? 'in 10 s' : e.message})`,
           );
         }
       }, 15_000),
@@ -248,13 +270,28 @@ export function settle(failures, rerun, degraded) {
   return reds;
 }
 
-/** A failure's cause in words: the infrastructure it names, or the assertion's first line. */
-export const causeOf = (f) =>
-  f.verdict.kind === 'infra'
-    ? f.verdict.cause
-    : errorText(f.result.errors?.[0] ?? f.result.error)
-        .split('\n')[0]
-        .slice(0, 160);
+/**
+ * A failure's cause in words: the infrastructure it names, or the assertion's first line, with what
+ * the test's browser was still waiting for from the preview when it ended (NFR-12-d), if anything.
+ */
+export function causeOf(f) {
+  if (f.verdict.kind === 'infra') return f.verdict.cause;
+  const first = errorText(f.result.errors?.[0] ?? f.result.error)
+    .split('\n')[0]
+    .slice(0, 160);
+  const waiting = waitingWords(
+    [...(f.result.annotations ?? []), ...(f.test?.annotations ?? [])]
+      .filter((a) => a.type === 'waiting')
+      .flatMap((a) => {
+        try {
+          return [JSON.parse(a.description)];
+        } catch {
+          return [];
+        }
+      }),
+  );
+  return waiting ? `${first}; ${waiting}` : first;
+}
 
 async function main() {
   const specs = words(arg('--specs'));

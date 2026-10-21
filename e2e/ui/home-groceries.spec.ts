@@ -128,19 +128,26 @@ for (const [width, height, device] of [
   });
 }
 
-test('[MEAL-27-d] Enter adds from Home’s field and never makes a new line', async ({ page }) => {
-  await open(page, '/dev/home');
-  // The dev page has no database: hold the add itself (never answered), and see that Enter sent it.
-  await page.route('**/dev/home**', (route) =>
-    route.request().method() === 'POST' ? undefined : route.continue(),
-  );
-  await field(page).fill('olive oil');
-  const sent = page.waitForRequest((r) => r.method() === 'POST');
-  await field(page).press('Enter');
-  const body = (await sent).postData() ?? '';
-  expect(body).toContain('olive oil');
-  await expect(field(page)).toHaveValue('olive oil');
-  await expect(card(page).getByRole('button', { name: 'Add' })).toBeDisabled();
+test.describe('with no service worker', () => {
+  // A page the service worker controls sends its fetches through it, and WebKit then doesn't route
+  // them to the test: the add went to the dev page's server, which answered it, whenever the worker
+  // took control before Enter (WP-113, from the iPhone's trace; as Groceries' ⋯ test, WP-104).
+  test.use({ serviceWorkers: 'block' });
+
+  test('[MEAL-27-d] Enter adds from Home’s field and never makes a new line', async ({ page }) => {
+    await open(page, '/dev/home');
+    // The dev page has no database: hold the add itself (never answered), and see that Enter sent it.
+    await page.route('**/dev/home**', (route) =>
+      route.request().method() === 'POST' ? undefined : route.continue(),
+    );
+    await field(page).fill('olive oil');
+    const sent = page.waitForRequest((r) => r.method() === 'POST');
+    await field(page).press('Enter');
+    const body = (await sent).postData() ?? '';
+    expect(body).toContain('olive oil');
+    await expect(field(page)).toHaveValue('olive oil');
+    await expect(card(page).getByRole('button', { name: 'Add' })).toBeDisabled();
+  });
 });
 
 test('[MEAL-27-d] a line break pasted into Home’s field is a space', async ({ page }) => {

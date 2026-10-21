@@ -14,25 +14,7 @@ export function householdToday(db: string, household = currentHousehold().id): s
   );
 }
 
-const utc = (date: string, plus = 0): Date => {
-  const [y = NaN, m = NaN, d = NaN] = date.split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, d + plus));
-};
-
-/** A calendar date `n` days from `date` ('YYYY-MM-DD'), with no clock and no zone. */
-export function addDays(date: string, n: number): string {
-  return utc(date, n).toISOString().slice(0, 10);
-}
-
-/** The weekday of a calendar date: 0 is Sunday. */
-export function weekday(date: string): number {
-  return utc(date).getUTCDay();
-}
-
-/** The first day of the household's week holding `date`, for a week that starts on `weekStart` (0–6). */
-export function weekStartOf(date: string, weekStart: number): string {
-  return addDays(date, -((weekday(date) - weekStart + 7) % 7));
-}
+export { addDays, weekday, weekStartOf } from '../../scripts/e2e-dates.mjs';
 
 /** The household's week start (household.week_start: 0 is Sunday). */
 export function householdWeekStart(db: string, household = currentHousehold().id): number {

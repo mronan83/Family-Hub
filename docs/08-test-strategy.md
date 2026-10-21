@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.11: the e2e reds of 18 to 21 October (WP-113, D-143): a slow probe says how much was the database's own time; the run reads the preview's own way to the test database (`/api/health/db`); a failed test names the page load or save it was still waiting for; the specs' date maths (`scripts/e2e-dates.mjs`) unit-tested on every weekday, across DST and in any zone. Test cases DEV-05-a, DEV-05-b and NFR-12-a to NFR-12-e.
 > v0.8.10: WP-111's follow-up: NFR-14-x reads each spec with the TypeScript parser, so a seed id or `family.` inside SQL text fails it (run 251's `chores.spec.ts`); the UI suite's MENU-06 Meals check passes on a Sunday too.
 > v0.8.9: each e2e spec its own made-up household (WP-111, NFR-14, D-137): rule 4 says how a spec gets it, and rule 11 that leftovers stay in it. Test cases NFR-14-u to NFR-14-z; the Test catalogue regenerated (§9).
 > v0.8.8: the two e2e reds of 17 October night (WP-110, PTS-04, NFR-16, D-136): both the app's bugs, each proved by a UI test that fails on `main`'s code (PTS-04-a, NFR-16-r) and a unit test (NFR-16-s); the Test catalogue regenerated (§9).
@@ -252,12 +253,13 @@ The test standard is in `CLAUDE.md` ("Tests", D-110). In short:
 |---|---|
 | A fast check | Red on the PR: the PR waits until it is fixed, and the deploy gate won't ship it |
 | A wrong result in the nightly run | Red, never re-run; the issue "E2E red on main: <spec>" opens or gains the run, with the test's kind and cause; it blocks nothing and is fixed as the next item (D-108) |
-| Infrastructure in the nightly run: a statement timeout, a refused or reset connection, a Supabase or Auth 5xx, the preview not answering, the test database or preview slow or down (the probe, the preview's `/api/health` answering in over 2 s, or the reads that would show a late change all taking over 2 s: a board's read of it, D-129, or a reloaded page's loads, D-135), the demo family's day turned since its load | That test re-runs once by itself, on that evidence only, and its cause is labelled in the run summary; a second fault is red, with its cause (D-110) |
+| Infrastructure in the nightly run: a statement timeout, a refused or reset connection, a Supabase or Auth 5xx, the preview not answering, the test database or preview slow or down (the probe, the preview's `/api/health` answering in over 2 s, the preview taking over 2 s to reach the test database (`/api/health/db`, D-143), or the reads that would show a late change all taking over 2 s: a board's read of it, D-129, or a reloaded page's loads, D-135), the demo family's day turned since its load | That test re-runs once by itself, on that evidence only, and its cause is labelled in the run summary; a second fault is red, with its cause (D-110) |
 | A refused or failed deploy | The issue "Deploy refused: <commit>" opens or gains the run (D-108) |
 
 - Never skip, disable or quarantine a test, and never call a failure a flake without a cause.
 - The run summary and an issue never quote a database connection string: the run hides each one (`postgresql://***`) first, since GitHub masks secrets in a log but not in an issue the run opens (D-129).
 - A test with two infrastructure faults in two weeks gets a robustness fix. The findings log keeps the record that shows it (WP-98, D-130): the issue "E2E findings log" gains one comment per run with a failed test, an entry per test with its kind, cause and re-run, re-runs that passed included; each entry says how many of the last 30 runs the test failed in, and the run summary lists every test that failed in more than one of them.
+- A failed test's cause names the page load or save its browser was still waiting for from the preview when it ended, if any (D-143): where it stopped, so a save that never answered is seen as one. On its own it is no evidence of infrastructure, and never re-runs the test.
 - The worker who fixes a red test edits its entry's **Done** from "open" to the PR that fixed it.
 
 **Measured before and after:** push to green for a small change, and red nightly runs per week by kind (assertion or infrastructure).
@@ -272,7 +274,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2919** tests: Unit 912 · DB 1557 · UI 313 · E2E 137. 2397 name at least one ID; 522 name none.
+**2932** tests: Unit 920 · DB 1562 · UI 313 · E2E 137. 2410 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
@@ -281,7 +283,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 114 of 130 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 213 (with a test: 213) |
+| Test cases | 220 (with a test: 220) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -303,11 +305,11 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Meals and lunch | 100 | 74 | 60 | 16 | 250 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
-| Boards and devices | 67 | 79 | 14 | 13 | 173 |
+| Boards and devices | 67 | 84 | 14 | 13 | 178 |
 | Admin and members | 26 | 87 | 8 | 15 | 136 |
-| Platform | 189 | 167 | 61 | 16 | 433 |
+| Platform | 197 | 167 | 61 | 16 | 441 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **912** | **1557** | **313** | **137** | **2919** |
+| **Total** | **920** | **1562** | **313** | **137** | **2932** |
 
 ### 9.3 By requirement
 
@@ -327,7 +329,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | DEV-02 | M | Covered | US-201, US-202 | WP-05, WP-59 | — | U 4 · DB 26 · E2E 3 |
 | DEV-03 | M | Covered | US-202 | WP-05 | — | U 2 · DB 7 · UI 1 · E2E 1 |
 | DEV-04 | M | Not built | US-203 | WP-14 | — | U 1 |
-| DEV-05 | M | Covered | US-204 | WP-06, WP-70, WP-78 | — | U 12 · DB 21 · UI 3 · E2E 6 |
+| DEV-05 | M | Covered | US-204 | WP-06, WP-70, WP-78, WP-113 | DEV-05-a, DEV-05-b | U 12 · DB 26 · UI 3 · E2E 6 |
 | DEV-06 | M | Covered | US-205 | WP-13 | — | U 5 · UI 1 · E2E 1 |
 | DEV-07 | S | Not built | US-207 | WP-34 | — | U 41 · DB 17 · UI 4 · E2E 1 |
 | DEV-08 | S | Covered | US-206 | WP-13 | — | U 3 · UI 3 · E2E 1 |
@@ -409,7 +411,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-16 | S | Not built | US-712 | WP-103 | — | — |
 | MEAL-17 | S | Not built | US-713 | WP-103 | — | — |
 | MEAL-18 | S | Covered | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 4 · DB 6 · UI 8 · E2E 1 |
-| MEAL-19 | S | Covered | US-715 | WP-105 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 4 · DB 2 · UI 2 · E2E 1 |
+| MEAL-19 | S | Covered | US-715 | WP-105, WP-113 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 4 · DB 2 · UI 2 · E2E 1 |
 | MEAL-20 | S | Covered | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 · E2E 1 |
 | MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
 | MEAL-22 | S | Not built | US-717 | WP-107 | — | — |
@@ -454,7 +456,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-05 | S | Covered | US-1107 | WP-30 | — | U 7 · DB 4 · UI 2 · E2E 1 |
 | PTS-06 | S | Covered | US-1108 | WP-30 | — | U 5 · DB 2 · UI 7 · E2E 2 |
 | PTS-07 | M | Covered | US-1109 | WP-02, WP-04, WP-16 | — | U 2 · DB 15 · E2E 3 |
-| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85 | — | U 2 |
+| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | U 10 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110 | NFR-16-t, NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s | U 20 · DB 10 · UI 23 |
@@ -578,6 +580,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-110 | Done | PTS-04-a, NFR-16-r, NFR-16-s | 3 of 3 | — |
 | WP-111 | Done | NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z | 6 of 6 | — |
 | WP-112 | Done | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e, MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | 12 of 12 | U 4 |
+| WP-113 | Done | DEV-05-a, DEV-05-b, NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | 7 of 7 | — |
 
 Test cases and the tests that prove them:
 
@@ -727,6 +730,13 @@ Test cases and the tests that prove them:
 | NFR-14-r | WP-108 | The preview answering `/api/health` in over 2 s, or with a 5xx, is a bad probe reading, and a test that failed while it was read is infrastructure | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-14-r][D-135] the preview answering /api/health in over 2 s, or with a 5xx, is a bad reading` |
 | NFR-14-s | WP-109 | Family options' The week, folded to its start day, is opened before its form is used; a new start day waits for the next week and Keep cancels it | E2E | E2E `e2e/tests/home.spec.ts`: `[NFR-14-s][ACC-08][US-110] the done-when: a new start day waits for the next week, and Keep cancels it` |
 | NFR-14-t | WP-109 | A spec whose items check off a child's days puts their history back: after its clean-up, Maya's and Leo's stored good and bad runs are as they were before it started | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][NFR-14-t][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row; thei…` |
+| DEV-05-a | WP-113 | `lunch_week()` works out each child's day type once: a week of two children is 14, not the 112 of `main` | DB | DB `supabase/tests/580_lunch_week_once.test.sql`: `[DEV-05-a] lunch_week() works out each child's day once: 2 children × 7 days` |
+| DEV-05-b | WP-113 | `lunch_week()` says for each child and day the type, mode and change that `resolve_day_type()`, `lunch_mode()` and `lunch_override` say, over a break, a child on their own school's year, a weekend, a day's change and a usual buy day | DB | DB `supabase/tests/580_lunch_week_once.test.sql`: `[DEV-05-b] each child, each day of the week`<br>DB `supabase/tests/580_lunch_week_once.test.sql`: `[DEV-05-b] each day's type, mode and change as resolve_day_type(), lunch_mode() and lunch_override say`<br>DB `supabase/tests/580_lunch_week_once.test.sql`: `[DEV-05-b] Maya: her Monday change to bring, a usual bring, the break with no lunch, the weekend`<br>DB `supabase/tests/580_lunch_week_once.test.sql`: `[DEV-05-b] Leo, on his own school's year: school all week, his Wednesday change to buy` |
+| NFR-12-a | WP-113 | A slow probe says how much of it the database spent on the query; one within 2 s is no reading | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-a] a slow probe says how much of it the database spent on the query` |
+| NFR-12-b | WP-113 | `GET /api/health/db` on a preview times one call to the database and answers 200, or 503 with the error and its time; nowhere but a preview | Unit | Unit `apps/web/lib/health-db.test.ts`: `[NFR-12-b] GET /api/health/db: the preview’s own path to the database, timed › [NFR-12-b] on a preview: one call, its time, 200 when it answered`<br>Unit `apps/web/lib/health-db.test.ts`: `[NFR-12-b] GET /api/health/db: the preview’s own path to the database, timed › [NFR-12-b] a call that fails, or throws, is 503 with its error and its time`<br>Unit `apps/web/lib/health-db.test.ts`: `[NFR-12-b] GET /api/health/db: the preview’s own path to the database, timed › [NFR-12-b] nowhere but a preview, and off without the database settings` |
+| NFR-12-c | WP-113 | The preview taking over 2 s to reach the test database, or not reaching it, is a bad reading (a preview without the route, none), and a test that failed while it was read is infrastructure | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-c] the preview slow to reach the test database, or not reaching it, is a bad reading; a failure while it was is infrastructure` |
+| NFR-12-d | WP-113 | A failed test still waiting for a page load or a save says which and for how long in its cause, and stays an assertion failure | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-d] a failed test still waiting for a page load or a save says which in its cause, and stays an assertion failure` |
+| NFR-12-e | WP-113 | The specs' calendar-date maths on every weekday and week start, across DST, month and year ends and a leap day, the same in any zone | Unit | Unit `scripts/e2e-dates.test.mjs`: `[NFR-12-e] each weekday of a week, and the week holding it for every week start`<br>Unit `scripts/e2e-dates.test.mjs`: `[NFR-12-e] across DST, month and year ends and a leap day, a day is one calendar day` |
 | NFR-14-u | WP-111 | A spec's household is the demo family's seed under its own ids and sign-ins: no demo family id or sign-in is left in it, it starts by taking away the household a try before left, no two specs share an id prefix, a bad key, seed id or persona is refused, and each sign-in gets the password the preview derives for it | Unit | Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] a spec household is the seed under its own ids and sign-ins, and nothing of the demo family`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] keys, ids and personas outside the rules are refused`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] each sign-in gets the password the preview derives for it, and only the spec’s` |
 | NFR-14-v | WP-111 | On Postgres with the migrations and the demo family: two spec households each hold what the demo family holds and only their own rows; making one again starts it afresh and leaves the other as it is; taking one away takes the household its Riley set up, and nothing of the demo family or the other spec | Unit | Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] two spec households, next to the demo family, each hold what it holds and only their own rows`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] making a spec household again starts it afresh, and leaves the others as they are`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] taking a spec household away takes what it set up, and nothing of the demo family or another spec` |
 | NFR-14-w | WP-111 | The preview's one-tap signs in to an e2e household's copy of a persona when the form names a valid key, with that email's derived password; a bad key is refused, and none of it works outside a preview | Unit | Unit `apps/web/app/(admin)/sign-in/actions.test.ts`: `sign-in actions › [NFR-14-w] demo sign-in into an e2e household uses its copy of the persona, and refuses a bad key` |
@@ -787,7 +797,7 @@ Test cases and the tests that prove them:
 | MEAL-27-a | WP-112 | Home's card says "8 on the list", "1 on the list" or "Nothing on the list"; as an item is typed its line says its category and its store with why ("Meat & Seafood · Kroger, where it went last time", "Pantry · Costco, your preferred store", "Other · Any store"); something already on the list says "Onions ×3 are on the list already. Adding makes ×4." | Unit | Unit `apps/web/lib/groceries.test.ts`: `the store suggested, and Home’s card (WP-112) › [MEAL-27-a] the card’s count and its line as an item is typed` |
 | MEAL-27-b | WP-112 | After Add the card says "Added Ground beef 2 lb to Meat & Seafood." with the item's name and amount as the list now has them, merged or new | Unit | Unit `apps/web/lib/groceries.test.ts`: `the store suggested, and Home’s card (WP-112) › [MEAL-27-b] after Add, the item as the list now has it` |
 | MEAL-27-c | WP-112 | Home on the demo family, on a phone and a laptop, Day and Evening: the Groceries card first among the cards, above Add a meal; its field two lines on a phone and one on a laptop; the line under it as typed; the merge line; the Added line with Change opening the item on Groceries; Open the list and This week's meals; two columns wide on a laptop; the card with an empty list; nothing overflows, 44 px targets, AA contrast; in Chrome, as an iPhone in WebKit and as Safari on a Mac | UI | UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c][US-721] first among the cards, with the count, the field and both links, in ${theme}`<br>UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c] as an item is typed, the line says where it goes, or that it is on the list already`<br>UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c] after Add: what was added and where, with Change, and the count up, in ${theme}`<br>UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c] with nothing on the list the card still shows, in ${theme}` |
-| MEAL-27-d | WP-112 | Enter in Home's field adds and never makes a new line; Change opens the item's ⋯ on Groceries | UI | UI `e2e/ui/home-groceries.spec.ts`: `[MEAL-27-d] Enter adds from Home’s field and never makes a new line`<br>UI `e2e/ui/home-groceries.spec.ts`: `[MEAL-27-d] a line break pasted into Home’s field is a space`<br>UI `e2e/ui/home-groceries.spec.ts`: `[MEAL-27-d] Change opens the item’s ⋯ on Groceries` |
+| MEAL-27-d | WP-112 | Enter in Home's field adds and never makes a new line; Change opens the item's ⋯ on Groceries | UI | UI `e2e/ui/home-groceries.spec.ts`: `with no service worker › [MEAL-27-d] Enter adds from Home’s field and never makes a new line`<br>UI `e2e/ui/home-groceries.spec.ts`: `[MEAL-27-d] a line break pasted into Home’s field is a space`<br>UI `e2e/ui/home-groceries.spec.ts`: `[MEAL-27-d] Change opens the item’s ⋯ on Groceries` |
 | MEAL-27-e | WP-112 | On the real preview, an admin adds an item from Home: the count goes up by one, the Added line names its category, and it is on Groceries there; adding the same thing again merges it | E2E | E2E `e2e/tests/home-groceries.spec.ts`: `[MEAL-27-e] done-when: an admin adds from Home, finds it on the list, and the same again merges` |
 | MEAL-28-a | WP-112 | The preferred store is the household's own: set only through `set_grocery_preferred_store()` by its admins, to one of its own stores or none; another household's admin, a board, or a store of another household is refused; nobody writes the column directly | DB | DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] the parent sets the preferred store`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] it reads back as Costco`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] another household's store is refused`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] and leaves it as it was`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] none is Any store`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] it reads back as Any store`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] another household's admin can't set it`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] a board can't set it`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] the household's board reads its list and its preferred store`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-a] nobody writes the column directly` |
 | MEAL-28-b | WP-112 | Removing the preferred store sets New items go to back to Any store | DB | DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-b] Kroger is preferred`<br>DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-b] removing Kroger sets New items go to back to Any store` |
@@ -1546,6 +1556,16 @@ Unit · 9 tests
 | `the one merge › [MEAL-19-d] taking a meal’s share off recomputes the amount from the reasons left` | MEAL-19-d |
 | `reading an item as typed › [MEAL-20-b] takes the amount off before or after the name` | MEAL-20-b |
 | `reading an item as typed › [MEAL-20-b] reads amounts as counts, units or words` | MEAL-20-b |
+
+#### `apps/web/lib/health-db.test.ts`
+
+Unit · 3 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-12-b] GET /api/health/db: the preview’s own path to the database, timed › [NFR-12-b] on a preview: one call, its time, 200 when it answered` | NFR-12-b |
+| `[NFR-12-b] GET /api/health/db: the preview’s own path to the database, timed › [NFR-12-b] a call that fails, or throws, is 503 with its error and its time` | NFR-12-b |
+| `[NFR-12-b] GET /api/health/db: the preview’s own path to the database, timed › [NFR-12-b] nowhere but a preview, and off without the database settings` | NFR-12-b |
 
 #### `apps/web/lib/health.test.ts`
 
@@ -2970,7 +2990,7 @@ UI · 7 tests
 | `Home’s Groceries card on ${device} › [MEAL-27-c] as an item is typed, the line says where it goes, or that it is on the list already` | MEAL-27-c |
 | `Home’s Groceries card on ${device} › [MEAL-27-c] after Add: what was added and where, with Change, and the count up, in ${theme}` | MEAL-27-c |
 | `Home’s Groceries card on ${device} › [MEAL-27-c] with nothing on the list the card still shows, in ${theme}` | MEAL-27-c |
-| `[MEAL-27-d] Enter adds from Home’s field and never makes a new line` | MEAL-27-d |
+| `with no service worker › [MEAL-27-d] Enter adds from Home’s field and never makes a new line` | MEAL-27-d |
 | `[MEAL-27-d] a line break pasted into Home’s field is a space` | MEAL-27-d |
 | `[MEAL-27-d] Change opens the item’s ⋯ on Groceries` | MEAL-27-d |
 
@@ -3511,6 +3531,15 @@ Unit · 12 tests
 | `[NFR-14] reads no e2e result (D-108)` | NFR-14 |
 | `[NFR-14] refuses when GitHub cannot be read` | NFR-14 |
 
+#### `scripts/e2e-dates.test.mjs`
+
+Unit · 2 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-12-e] each weekday of a week, and the week holding it for every week start` | NFR-12-e |
+| `[NFR-12-e] across DST, month and year ends and a leap day, a day is one calendar day` | NFR-12-e |
+
 #### `scripts/e2e-findings.test.mjs`
 
 Unit · 6 tests
@@ -3547,7 +3576,7 @@ Unit · 4 tests
 
 #### `scripts/e2e-infra.test.mjs`
 
-Unit · 11 tests
+Unit · 14 tests
 
 | Test | Names |
 |---|---|
@@ -3562,6 +3591,9 @@ Unit · 11 tests
 | `[NFR-14-q][D-135] a missed page wait says each load, the one still loading included, and is evidence only if all were slow` | NFR-14-q |
 | `[NFR-14-r][D-135] the preview answering /api/health in over 2 s, or with a 5xx, is a bad reading` | NFR-14-r |
 | `[NFR-14-z] the run counts its sign-ins once each, and the most in any 5 minutes against Auth’s limit` | NFR-14-z |
+| `[NFR-12-a] a slow probe says how much of it the database spent on the query` | NFR-12-a |
+| `[NFR-12-c] the preview slow to reach the test database, or not reaching it, is a bad reading; a failure while it was is infrastructure` | NFR-12-c |
+| `[NFR-12-d] a failed test still waiting for a page load or a save says which in its cause, and stays an assertion failure` | NFR-12-d |
 
 #### `scripts/e2e-run-fixture/assertion.spec.ts`
 
@@ -5643,5 +5675,17 @@ DB · 13 tests
 | `[MEAL-28-a] nobody writes the column directly` | MEAL-28-a |
 | `[MEAL-28-b] Kroger is preferred` | MEAL-28-b |
 | `[MEAL-28-b] removing Kroger sets New items go to back to Any store` | MEAL-28-b |
+
+#### `supabase/tests/580_lunch_week_once.test.sql`
+
+DB · 5 tests
+
+| Test | Names |
+|---|---|
+| `[DEV-05-a] lunch_week() works out each child's day once: 2 children × 7 days` | DEV-05-a |
+| `[DEV-05-b] each child, each day of the week` | DEV-05-b |
+| `[DEV-05-b] each day's type, mode and change as resolve_day_type(), lunch_mode() and lunch_override say` | DEV-05-b |
+| `[DEV-05-b] Maya: her Monday change to bring, a usual bring, the break with no lunch, the weekend` | DEV-05-b |
+| `[DEV-05-b] Leo, on his own school's year: school all week, his Wednesday change to buy` | DEV-05-b |
 
 <!-- /catalogue -->

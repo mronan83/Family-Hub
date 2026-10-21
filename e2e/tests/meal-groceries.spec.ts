@@ -22,9 +22,13 @@ function report(line: string) {
   if (process.env.E2E_REPORT) appendFileSync(process.env.E2E_REPORT, `${line}\n`);
 }
 
-/** How many open items there are of a key, and the meals that are their reasons: "1 Spaghetti, Tacos". */
+/**
+ * How many open items there are of a key, and the meals that are their reasons: "1: Spaghetti, Tacos",
+ * or "1:" with none. sql() trims its answer, so the count and the reasons are joined by a colon, not a
+ * space alone that the trim would take off when there are no reasons.
+ */
 const onList = (key: string) =>
-  sql(`select count(distinct i.id) || ' ' || coalesce(string_agg(distinct split_part(r.label, ',', 1), ', '), '')
+  sql(`select count(distinct i.id) || ':' || coalesce(' ' || string_agg(distinct split_part(r.label, ',', 1), ', '), '')
          from public.grocery_item i
          left join public.grocery_item_reason r on r.item_id = i.id and r.meal_plan_entry_id in (${entries()})
         where i.household_id = '${HOUSEHOLD}' and i.name_key = '${key}' and i.status = 'open'`);
@@ -72,7 +76,7 @@ test('[MEAL-19-f][MEAL-20] done-when: a week’s ingredients added once each, tw
     await expect(spaghetti.locator('label').filter({ hasText: 'Onions' })).toContainText(
       'With Tacos',
     );
-    expect(onList('onion')).toMatch(/^1 $/);
+    expect(onList('onion')).toBe('1:');
   });
   await test.step('Add: each thing once on the list, both meals its reasons', async () => {
     const sheet = admin.getByRole('dialog', { name: 'Add this week to groceries' });
@@ -80,11 +84,11 @@ test('[MEAL-19-f][MEAL-20] done-when: a week’s ingredients added once each, tw
     await expect(add).toBeEnabled();
     await add.click();
     await expect(admin.getByText(/^Added \d+ to groceries\./)).toBeVisible();
-    await expect.poll(() => onList('onion')).toBe('1 Spaghetti, Tacos');
-    await expect.poll(() => onList('ground beef')).toBe('1 Spaghetti, Tacos');
-    await expect.poll(() => onList('tortilla')).toBe('1 Tacos');
+    await expect.poll(() => onList('onion')).toBe('1: Spaghetti, Tacos');
+    await expect.poll(() => onList('ground beef')).toBe('1: Spaghetti, Tacos');
+    await expect.poll(() => onList('tortilla')).toBe('1: Tacos');
     // What the family usually has wasn't added.
-    expect(onList('taco seasoning')).toBe('0 ');
+    expect(onList('taco seasoning')).toBe('0:');
     await admin.goto('/admin/groceries');
     await expect(admin.getByRole('button', { name: 'Got Onions' })).toHaveCount(1);
     await expect(admin.getByRole('button', { name: 'Got Ground beef' })).toHaveCount(1);

@@ -4,14 +4,18 @@ import assert from 'node:assert/strict';
 import {
   causeInText,
   classify,
+  dbHealthReading,
   errorText,
   failureOf,
   healthReading,
   loadWords,
+  probeReading,
   redact,
   signInWords,
   slowReads,
+  waitingWords,
 } from './e2e-infra.mjs';
+import { causeOf } from './e2e-run.mjs';
 
 const failure = (over = {}) => ({
   errors: [],
@@ -191,4 +195,99 @@ test('[NFR-14-z] the run counts its sign-ins once each, and the most in any 5 mi
   const busy = Array.from({ length: 21 }, (_, i) => at(i * 0.2, `alex+s${i}`));
   assert.match(signInWords(busy), /at most 21 in any 5 minutes .*within a third of it/);
   assert.equal(signInWords([{ type: 'infra', description: 'x' }]), null);
+});
+
+test('[NFR-12-a] a slow probe says how much of it the database spent on the query', () => {
+  assert.equal(probeReading(1_999, 3), null);
+  assert.equal(probeReading(2_000, 3), null);
+  assert.equal(
+    probeReading(3_571, 4),
+    'the test database took 3571 ms to answer a probe (4 ms of it in the database)',
+  );
+  assert.equal(
+    probeReading(2_664, 2_610),
+    'the test database took 2664 ms to answer a probe (2610 ms of it in the database)',
+  );
+  // An answer without the query's own time (an older probe line) still counts as slow.
+  assert.equal(probeReading(2_500, NaN), 'the test database took 2500 ms to answer a probe');
+  assert.equal(probeReading(2_500, null), 'the test database took 2500 ms to answer a probe');
+});
+
+test('[NFR-12-c] the preview slow to reach the test database, or not reaching it, is a bad reading; a failure while it was is infrastructure', () => {
+  assert.equal(dbHealthReading(200, { status: 'ok', ms: 40 }), null);
+  assert.equal(dbHealthReading(200, { status: 'ok', ms: 2_000 }), null);
+  assert.equal(
+    dbHealthReading(200, { status: 'ok', ms: 4_210 }),
+    'the preview took 4210 ms to reach the test database',
+  );
+  assert.equal(
+    dbHealthReading(503, {
+      status: 'failed',
+      ms: 8_001,
+      error: 'canceling statement due to statement timeout',
+    }),
+    'the preview could not reach the test database (503: canceling statement due to statement timeout)',
+  );
+  assert.equal(
+    dbHealthReading(503, {
+      status: 'failed',
+      error: 'at postgresql://u:secret@db.example/postgres',
+    }),
+    'the preview could not reach the test database (503: at postgresql://***)',
+  );
+  // No reading, not a bad one: a preview built before the route, the deployment's protection
+  // refusing, a preview without database settings, a gateway's own page (the preview probe's to say).
+  assert.equal(dbHealthReading(404, { error: 'not found' }), null);
+  assert.equal(dbHealthReading(401, null), null);
+  assert.equal(dbHealthReading(403, null), null);
+  assert.equal(dbHealthReading(503, { status: 'off', error: 'no database settings' }), null);
+  assert.equal(dbHealthReading(504, null), null);
+  // Such a reading during a save that never answered makes the failure infrastructure.
+  const at = 1_030_000;
+  assert.deepEqual(
+    classify(failure(), [{ at, what: 'the preview took 4210 ms to reach the test database' }]),
+    {
+      kind: 'infra',
+      cause: `the preview took 4210 ms to reach the test database at ${new Date(at).toISOString().slice(11, 19)} UTC, while the test ran`,
+    },
+  );
+});
+
+test('[NFR-12-d] a failed test still waiting for a page load or a save says which in its cause, and stays an assertion failure', () => {
+  assert.equal(waitingWords([]), null);
+  assert.equal(
+    waitingWords([{ what: 'a save (POST /admin/school/42)', ms: 15_312 }]),
+    'the preview had not answered a save (POST /admin/school/42) after 15.3 s',
+  );
+  assert.equal(
+    waitingWords([
+      { what: 'the page load of /board', ms: 2_000 },
+      { what: 'a save (POST /admin/goals/new)', ms: 16_049 },
+    ]),
+    'the preview had not answered a save (POST /admin/goals/new) after 16.0 s (and 1 more)',
+  );
+  const red = {
+    verdict: classify(failure()),
+    result: {
+      errors: [{ message: 'Error: expect(locator).toHaveText(expected) failed\n\nLocator: x' }],
+      annotations: [
+        {
+          type: 'waiting',
+          description: JSON.stringify({ what: 'a save (POST /admin/meals)', ms: 15_100 }),
+        },
+        { type: 'waiting', description: 'not JSON' },
+      ],
+    },
+    test: { annotations: [] },
+  };
+  assert.equal(red.verdict.kind, 'assertion');
+  assert.equal(
+    causeOf(red),
+    'Error: expect(locator).toHaveText(expected) failed; the preview had not answered a save (POST /admin/meals) after 15.1 s',
+  );
+  // Nothing waited for: the assertion's own first line, as before.
+  assert.equal(
+    causeOf({ ...red, result: { ...red.result, annotations: [] } }),
+    'Error: expect(locator).toHaveText(expected) failed',
+  );
 });

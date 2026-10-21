@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.58: `lunch_week()` works out each child's day once (WP-113, D-143), the same answer, about a third of `board_snapshot()`'s time before; `public.db_probe()`, for the preview's `GET /api/health/db` (§3.6).
 > v0.8.57: the household's preferred store (WP-112, D-142): `grocery_list.preferred_store_id`, cleared with its store; `set_grocery_preferred_store()`; `grocery_list` audited (§3.8).
 > v0.8.56: Do again (WP-96, D-132, D-141): `do_chore_again()` adds a new one-time item from a done one, the original untouched (§3.2).
 > v0.8.55: the grocery list and meals → groceries (WP-104, WP-105, D-138, D-139): `grocery_list`, `grocery_category`, `grocery_store`, `grocery_item`, `grocery_item_reason`, `grocery_item_event`, `grocery_learned_word`; the one way in, `add_groceries()`; `board_groceries()`; `meal.ingredients` checked (§3.8).
@@ -592,7 +593,7 @@ else coalesce(lunch_override(m, d).mode,
               member_school_profile.lunch_defaults[weekday(d)])
 ```
 
-**As built (WP-26, D-78).** The usual lunches live on the child, not the school profile: `member_lunch` (`member_id`, `defaults` `{mon … fri: 'buy' | 'bring'}`; none set is bring). `lunch_override` is as above (`lunch_date`, `mode`, `created_by`), and holds only differences from the usual. `public.lunch_mode(member, date)`: null for an adult or a day that isn't a school day for the child, else the change or the usual. `set_lunch(member, date, mode)` (a school day only; the usual removes the change) and `set_lunch_defaults(member, defaults)` (also removes later changes that now match) are a parent's; `lunch_week(household, from)` gives each child's seven days (day type, mode, changed) to a parent or a board.
+**As built (WP-26, D-78).** The usual lunches live on the child, not the school profile: `member_lunch` (`member_id`, `defaults` `{mon … fri: 'buy' | 'bring'}`; none set is bring). `lunch_override` is as above (`lunch_date`, `mode`, `created_by`), and holds only differences from the usual. `public.lunch_mode(member, date)`: null for an adult or a day that isn't a school day for the child, else the change or the usual. `set_lunch(member, date, mode)` (a school day only; the usual removes the change) and `set_lunch_defaults(member, defaults)` (also removes later changes that now match) are a parent's; `lunch_week(household, from)` gives each child's seven days (day type, mode, changed) to a parent or a board. Since WP-113 it works out each child's day type once a day, in a lateral that `offset 0` keeps from being copied into each use, and the mode from it as `lunch_mode()` would (D-143): before, Postgres pulled the call up into each of its seven uses, so a week of two children ran `resolve_day_type()` 112 times, not 14. `public.db_probe()` (`select 1`, callable by anyone) is only for the preview's `GET /api/health/db`, which times it.
 
 A chore can follow a child's lunch (WP-61, D-86): `chore.lunch_days` makes an `each` item due only on that person's bring days or buy days, and a change to their lunch re-plans it at once (§3.2).
 
