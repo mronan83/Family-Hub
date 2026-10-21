@@ -1,5 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { test as base, type BrowserContext, type Page, type Response } from '@playwright/test';
+import {
+  test as base,
+  type BrowserContext,
+  type Page,
+  type Request,
+  type Response,
+} from '@playwright/test';
 import { maybeCurrentHousehold } from './household';
 
 export * from '@playwright/test';
@@ -11,6 +17,33 @@ let sink: ((what: string) => void) | null = null;
 /** Bodies of Supabase 5xx answers still being read; a test's record waits for them (up to 5 s). */
 const reading = new Set<Promise<void>>();
 const watched = new WeakSet<BrowserContext>();
+/**
+ * [NFR-12-d] The page loads and saves the browser has sent to the preview and not yet had answered,
+ * with when each went: a failed test still waiting for one says which (WP-113).
+ */
+const outstanding = new Map<Request, { what: string; at: number }>();
+
+/** A request's frame; null for a service worker's own requests, which have none. */
+function frameOf(request: Request) {
+  try {
+    return request.frame();
+  } catch {
+    return null;
+  }
+}
+
+/** A page load or a save (a server action's POST) to the preview, in words; null for anything else. */
+function sent(request: Request): string | null {
+  const url = new URL(request.url());
+  if (url.hostname.endsWith('.supabase.co')) return null;
+  if (request.isNavigationRequest() && frameOf(request)?.parentFrame() === null) {
+    return `the page load of ${url.pathname}`;
+  }
+  if (request.method() === 'POST' && request.headers()['next-action'] !== undefined) {
+    return `a save (POST ${url.pathname})`;
+  }
+  return null;
+}
 
 /**
  * [NFR-14][D-110] Records, for the test running now, any sign that the infrastructure failed under it:
@@ -72,6 +105,18 @@ function watch(context: BrowserContext): void {
   watched.add(context);
   for (const page of context.pages()) watchPage(page);
   context.on('page', watchPage);
+  context.on('request', (request) => {
+    const what = sent(request);
+    if (what) outstanding.set(request, { what, at: Date.now() });
+  });
+  // Answered, or given up on (the page moved away, the context closed): no longer waited for.
+  context.on('requestfinished', (request) => outstanding.delete(request));
+  context.on('requestfailed', (request) => outstanding.delete(request));
+  context.on('close', () => {
+    for (const request of outstanding.keys()) {
+      if (frameOf(request)?.page().context() === context) outstanding.delete(request);
+    }
+  });
   context.on('response', (response) => {
     const status = response.status();
     if (status < 500) return;
@@ -157,6 +202,7 @@ export const test = base.extend<{ infraWatch: void }, { contextWatch: void }>({
     async ({ context }, use, testInfo) => {
       void context;
       const seen: string[] = [];
+      const started = Date.now();
       sink = (what) => {
         if (seen.length < 5) seen.push(what);
       };
@@ -179,6 +225,18 @@ export const test = base.extend<{ infraWatch: void }, { contextWatch: void }>({
           }
         }
         for (const what of seen) testInfo.annotations.push({ type: 'infra', description: what });
+        // [NFR-12-d] What the browser was still waiting for from the preview, for the failure's
+        // cause (scripts/e2e-run.mjs): evidence of where it stopped, not a reason to re-run.
+        if (testInfo.status !== testInfo.expectedStatus) {
+          const now = Date.now();
+          for (const { what, at } of outstanding.values()) {
+            if (at < started) continue;
+            testInfo.annotations.push({
+              type: 'waiting',
+              description: JSON.stringify({ what, ms: now - at }),
+            });
+          }
+        }
         testInfo.annotations.push({ type: 'limit', description: String(testInfo.timeout) });
       }
     },

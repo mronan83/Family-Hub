@@ -109,6 +109,53 @@ export function healthReading(status, ms) {
 }
 
 /**
+ * [NFR-12-a] A reading of the run's probe of the test database: null when it answered within the
+ * probe's 2 s bar, else in words, with how much of it the database spent on the query (`serverMs`,
+ * from inside the query, or null where it wasn't reported). A slow reading that was mostly the
+ * database's own time is the database busy; one that wasn't is the way to it (the network or the
+ * connection pooler), so the next look knows which.
+ */
+export function probeReading(ms, serverMs) {
+  if (ms <= SLOW_READ_MS) return null;
+  const inside =
+    serverMs === null || serverMs === undefined || Number.isNaN(serverMs)
+      ? ''
+      : ` (${serverMs} ms of it in the database)`;
+  return `the test database took ${ms} ms to answer a probe${inside}`;
+}
+
+/**
+ * [NFR-12-c] A reading of the preview's GET /api/health/db (WP-113): the preview's own way to the
+ * test database, which every save in the admin app takes. Its time as the preview measured it (`ms`
+ * in the body) over the probe's 2 s bar, or its call to the database failing (a 5xx), is a bad
+ * reading. Anything else is no reading: a 404 (a preview built before the route), a refusal by the
+ * deployment's protection, a preview without database settings ("off"), or a gateway's own page.
+ */
+export function dbHealthReading(status, body) {
+  const ms = typeof body?.ms === 'number' ? body.ms : null;
+  if (status >= 500 && body?.status === 'failed') {
+    const why = typeof body?.error === 'string' ? `: ${redact(body.error).slice(0, 120)}` : '';
+    return `the preview could not reach the test database (${status}${why})`;
+  }
+  if (status === 200 && body?.status === 'ok' && ms !== null && ms > SLOW_READ_MS) {
+    return `the preview took ${ms} ms to reach the test database`;
+  }
+  return null;
+}
+
+/**
+ * [NFR-12-d] The requests a failed test's browser was still waiting for from the preview when it
+ * ended (e2e/support/test.ts: page loads and saves), in words, for the failure's cause: what it was
+ * waiting for, not a reason to re-run. `waiting`: [{ what, ms }], the longest first. Null if none.
+ */
+export function waitingWords(waiting) {
+  if (!waiting.length) return null;
+  const [first, ...rest] = [...waiting].sort((a, b) => b.ms - a.ms);
+  const more = rest.length ? ` (and ${rest.length} more)` : '';
+  return `the preview had not answered ${first.what} after ${(first.ms / 1000).toFixed(1)} s${more}`;
+}
+
+/**
  * Text with every database connection string hidden. A failed psql call's error names its command,
  * the test database's URL and password with it, and the run summary and the "E2E red on main"
  * issue quote that error: GitHub masks a secret in a job's log, not in an issue it opens.
