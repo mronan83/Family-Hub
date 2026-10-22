@@ -283,7 +283,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 114 of 130 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 229 (with a test: 229) |
+| Test cases | 230 (with a test: 230) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -451,7 +451,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-11 | S | Covered | US-906 | WP-31, WP-46 | — | U 4 · UI 30 |
 | PTS-01 | M | Covered | US-309, US-1101, US-1106 | WP-16, WP-95 | PTS-01-a, PTS-01-b | U 12 · DB 42 · UI 1 · E2E 6 |
 | PTS-02 | M | Covered | US-1102 | WP-11, WP-16, WP-20 | — | U 4 · DB 11 · UI 1 · E2E 2 |
-| PTS-03 | M | Covered | US-1103 | WP-18, WP-95 | PTS-03-a, PTS-03-b | U 7 · DB 6 · UI 7 · E2E 1 |
+| PTS-03 | M | Covered | US-1103 | WP-18, WP-95 | PTS-03-a, PTS-03-b, PTS-03-c | U 7 · DB 6 · UI 7 · E2E 1 |
 | PTS-04 | M | Covered | US-1104, US-1105 | WP-18, WP-20, WP-95, WP-110 | PTS-04-b, PTS-04-a | U 12 · DB 17 · UI 12 · E2E 3 |
 | PTS-05 | S | Covered | US-1107 | WP-30, WP-95 | PTS-05-a | U 8 · DB 4 · UI 3 · E2E 1 |
 | PTS-06 | S | Covered | US-1108 | WP-30 | — | U 5 · DB 2 · UI 7 · E2E 2 |
@@ -562,7 +562,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-92 | Done | **No cases** | — | — |
 | WP-93 | Done | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j | 10 of 10 | — |
 | WP-94 | Done | NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x | 14 of 14 | — |
-| WP-95 | Done | PTS-03-a, PTS-04-b, PTS-05-a, PTS-01-a, ACC-04-a, PTS-03-b, ACC-04-b, PTS-01-b, RWD-09-a | 9 of 9 | — |
+| WP-95 | Done | PTS-03-a, PTS-04-b, PTS-05-a, PTS-01-a, ACC-04-a, PTS-03-b, ACC-04-b, PTS-03-c, PTS-01-b, RWD-09-a | 10 of 10 | — |
 | WP-96 | Done | CHR-21-a, CHR-21-b, CHR-21-c, CHR-21-d, CHR-21-e, CHR-21-f, CHR-21-g, CHR-21-h, CHR-21-i, CHR-22-a, CHR-22-b, CHR-23-a, CHR-23-b, CHR-23-c, NFR-16-t, MEAL-25-h, NFR-18-y, NFR-18-z | 18 of 18 | — |
 | WP-97 | Ready | — | — | — |
 | WP-98 | Done | NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | 6 of 6 | — |
@@ -688,6 +688,7 @@ Test cases and the tests that prove them:
 | ACC-04-a | WP-95 | Members' **Archived** folded to how many and who ("1 archived: Grandpa Joe", up to three names then "and 2 more") | Unit | Unit `apps/web/lib/reward-facts.test.ts`: `Members › [ACC-04-a] Members’ Archived: how many and who` |
 | PTS-03-b | WP-95 | Rewards on the demo family at 390 and 1280 px, Day and Evening, in Chrome, as an iPhone in WebKit and as Safari on a Mac in WebKit: the title above the cards, **Asked for** marked in amber, each request led by the child's avatar with its buttons beside it; **Asked for**, **To give** and **The shop** open; the shop's **Archived** (each with **Put back**), **Bonus points** (with **Add a bonus** folded to its button and **Archived bonuses** inside) and **Lately** folded to their headers; each opened by a tap after hydration; the fold a save comes back to open; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/reward-folds.spec.ts`: `on ${name} › [PTS-03-b][ACC-04-b][NFR-11] Rewards, Members and a member’s page fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/reward-folds.spec.ts`: `folded › [PTS-03-b][PTS-04][PTS-05] Rewards: Asked for, To give and the shop open; Archived, Bonus points and Lately folded to their headers`<br>UI `e2e/ui/reward-folds.spec.ts`: `open again › [PTS-03-b][ACC-04-b][D-120] the fold a save comes back to is open, the others folded` |
 | ACC-04-b | WP-95 | Members and a member's page at 390 and 1280 px, Day and Evening, in Chrome, as an iPhone and as Safari on a Mac: the title and **Add a member** above the list, **‹ Members** and the name above a member's form; the list open, each row its avatar, name and facts, **Archived** folded to who; the form open, **Points** folded to the balance and the last change, opening to **Change points** (folded to its button) and the history, open again after a change; **Archive** set apart at the bottom; **Archived** open after an archive; each opened by a tap after hydration; no sideways scroll, 44 px targets, AA contrast | UI | UI `e2e/ui/reward-folds.spec.ts`: `on ${name} › [PTS-03-b][ACC-04-b][NFR-11] Rewards, Members and a member’s page fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/reward-folds.spec.ts`: `folded › [ACC-04-b][PTS-01] Members: the list open, Archived folded to who; a member’s page: the form open, Points folded to the balance and the last change, A…`<br>UI `e2e/ui/reward-folds.spec.ts`: `open again › [PTS-03-b][ACC-04-b][D-120] the fold a save comes back to is open, the others folded` |
+| PTS-03-c | WP-95 | On the preview, Alex puts an archived reward back from the shop's **Archived**: it is in the shop again, and the page came back after the archive with **Archived** open | E2E | E2E `e2e/tests/rewards.spec.ts`: `[PTS-03][PTS-03-c][PTS-04][US-1103][US-1104][US-1105] a reward with a photo: added, asked for on the board, approved, given; then its photo removed, the reward…` |
 | PTS-01-b | WP-95 | On the preview, Alex changes Maya's points and finds **Points** open after the save, with **Change points**, the new balance and the change on top; Maya's balance is put back | E2E | E2E `e2e/tests/points.spec.ts`: `[PTS-01-b][NFR-18] Alex changes Maya’s points and finds Points open after the save` |
 | RWD-09-a | WP-95 | On the preview, Alex sees "needs a look" on Goals' folded **History** while a redeemed goal needs a look, and the goal flagged inside | E2E | E2E `e2e/tests/goals.spec.ts`: `[RWD-09-a][NFR-18] a redeemed goal that needs a look says so on Goals’ folded History` |
 | CHR-21-a | WP-96 | Which section an item is in: a one-time item not done is Scheduled, done is Completed; a one-time chore missed is Completed and marked missed; a one-time task past its date stays in Scheduled under Overdue; each their own with one done stays in Scheduled with "1 of 2 done", and is Completed once everyone has done theirs; a recurring item is never completed; anything archived is Archived; only the occurrences on the item's own date count | Unit | Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-a] which section an item is in › [CHR-21-a] a one-time item not done is Scheduled; done, it is Completed`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-a] which section an item is in › [CHR-21-a] a one-time chore missed is Completed and marked missed; a task stays Scheduled, overdue`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-a] which section an item is in › [CHR-21-a] each their own: Scheduled with "1 of 2 done" until everyone has done theirs`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-a] which section an item is in › [CHR-21-a] a recurring item is never completed; anything archived is Archived; one not planned yet is Scheduled`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[CHR-21-a] which section an item is in › [CHR-21-a] only the occurrences on its own date count, so a date moved later is Scheduled again` |
@@ -2607,7 +2608,7 @@ E2E · 3 tests
 
 | Test | Names |
 |---|---|
-| `[PTS-03][PTS-04][US-1103][US-1104][US-1105] a reward with a photo: added, asked for on the board, approved, given; then its photo removed and the reward archiv…` | PTS-03, PTS-04, US-1103, US-1104, US-1105 |
+| `[PTS-03][PTS-03-c][PTS-04][US-1103][US-1104][US-1105] a reward with a photo: added, asked for on the board, approved, given; then its photo removed, the reward…` | PTS-03-c, PTS-04, US-1103, US-1104, US-1105 |
 | `[PTS-04][US-1104] a waiting request cancelled on the board spends nothing; an approved one cancelled is refunded` | PTS-04, US-1104 |
 | `[US-1105] Leo’s seeded request turned down: nothing spent` | US-1105 |
 
