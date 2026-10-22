@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
+import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
 import { ownHousehold } from '../support/household';
 
@@ -36,6 +37,12 @@ async function asAlex(page: Page) {
   await expect(page.getByRole('heading', { name: 'Members', level: 1 })).toBeVisible();
 }
 
+/** Opens a member's Points and Change points: both folded until a change (D-120, WP-95). */
+async function openPoints(page: Page) {
+  await unfold(foldOf(page, 'Points'));
+  await unfold(foldOf(page, 'Change points'));
+}
+
 test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
@@ -46,9 +53,12 @@ test("[PTS-02] Members shows each child's balance; their page shows where it cam
   const points = balance(leo);
   expect(points).toBeGreaterThan(10); // last week's chores and Alex's thank-you (the seed)
   await asAlex(page);
-  await expect(page.getByRole('list', { name: 'Members', exact: true })).toContainText(
-    `Leo · Child · Earns rewards · ${points} points`,
-  );
+  await expect(
+    page
+      .getByRole('list', { name: 'Members', exact: true })
+      .getByRole('listitem')
+      .filter({ hasText: 'Leo' }),
+  ).toContainText(`Child · Earns rewards · ${points} points`);
   await page.getByRole('link', { name: 'Edit Leo' }).click();
   const section = page.getByRole('region', { name: 'Points' });
   await expect(shown(page)).toHaveText(points.toLocaleString('en-US'));
@@ -87,6 +97,7 @@ test('[PTS-01] a parent adds and takes away points with a reason; each is kept, 
   const reason = `Tidied the garage ${Date.now()}`;
   await asAlex(page);
   await page.getByRole('link', { name: 'Edit Leo' }).click();
+  await openPoints(page);
 
   let form = page.getByRole('form', { name: 'Change Leo’s points' });
   await form.getByLabel('Add', { exact: true }).check();
@@ -119,6 +130,53 @@ test('[PTS-01] a parent adds and takes away points with a reason; each is kept, 
   ).toBe('1');
 });
 
+test('[PTS-01-b][NFR-18] Alex changes Maya’s points and finds Points open after the save', async ({
+  page,
+}) => {
+  const maya = memberId('Maya');
+  const before = balance(maya);
+  const reason = `Watered the plants ${Date.now()}`;
+  await asAlex(page);
+  await page.getByRole('link', { name: 'Edit Maya' }).click();
+  // Folded, Points says the balance.
+  const points = foldOf(page, 'Points');
+  await expect(points).not.toHaveAttribute('open');
+  // As balanceText says it: no thousands separator, a true minus sign.
+  await expect(points.locator(':scope > summary')).toContainText(
+    `${before < 0 ? '−' : ''}${Math.abs(before)} ${Math.abs(before) === 1 ? 'point' : 'points'} · last:`,
+  );
+  await openPoints(page);
+  const change = async (direction: 'Add' | 'Take away', why: string) => {
+    const form = page.getByRole('form', { name: 'Change Maya’s points' });
+    await form.getByLabel(direction, { exact: true }).check();
+    await form.getByLabel('Points', { exact: true }).fill('4');
+    await form.getByLabel('Why').fill(why);
+    await form.getByRole('button', { name: `${direction} points` }).click();
+  };
+  try {
+    await change('Add', reason);
+    // The page comes back with Points open, and Change points with it; Archive stays folded.
+    await expect(page.getByRole('region', { name: 'Points' })).toContainText('Added 4 points.');
+    await expect(points).toHaveAttribute('open', '');
+    await expect(foldOf(page, 'Change points')).toHaveAttribute('open', '');
+    await expect(foldOf(page, 'Archive')).not.toHaveAttribute('open');
+    await expect(shown(page)).toHaveText((before + 4).toLocaleString('en-US'));
+    await expect(
+      page.getByRole('list', { name: 'Maya’s points' }).getByRole('listitem').first(),
+    ).toContainText(`Today ${reason} · by Alex`);
+  } finally {
+    // Maya's balance as it was: the ledger is never edited, so the 4 points are taken away again.
+    if (balance(maya) === before + 4) {
+      await openPoints(page);
+      await change('Take away', `${reason}, put back`);
+      await expect(page.getByRole('region', { name: 'Points' })).toContainText(
+        'Took away 4 points.',
+      );
+    }
+  }
+  expect(balance(maya)).toBe(before);
+});
+
 test('[PTS-01] a reason is required, and an empty one is caught before anything is posted', async ({
   page,
 }) => {
@@ -126,6 +184,7 @@ test('[PTS-01] a reason is required, and an empty one is caught before anything 
   const before = balance(leo);
   await asAlex(page);
   await page.getByRole('link', { name: 'Edit Leo' }).click();
+  await openPoints(page);
   const form = page.getByRole('form', { name: 'Change Leo’s points' });
   await form.getByLabel('Points', { exact: true }).fill('4');
   await form.getByLabel('Why').fill('   ');

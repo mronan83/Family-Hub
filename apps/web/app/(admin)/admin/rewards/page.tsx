@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
+import { rewardsOpen } from '@/lib/reward-facts';
 import { serverClient } from '@/lib/supabase/server';
 import { loadBalances, loadMembers } from '../members/data';
 import { loadBonusRules, loadCatalog, loadRedemptions, loadWishes } from './data';
@@ -41,6 +42,7 @@ export default async function RewardsPage({
     archived?: string;
     bonus?: string;
     posted?: string;
+    open?: string;
   }>;
 }) {
   const db = await serverClient();
@@ -81,6 +83,7 @@ export default async function RewardsPage({
       bonusRules={bonusRules}
       wishes={wishes}
       notice={notice}
+      open={rewardsOpen(params)}
       error={params.error ? (ERRORS[params.error] ?? 'That didn’t go through. Try again.') : null}
     />
   );

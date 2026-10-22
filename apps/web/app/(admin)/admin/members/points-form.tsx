@@ -29,7 +29,7 @@ export function PointsForm({
       <input type="hidden" name="memberId" value={memberId} />
       <input type="hidden" name="requestId" value={requestId} />
       <fieldset className="fw-field fw-fieldset">
-        <legend className="fw-field__label">Change points</legend>
+        <legend className="fw-field__label">Add or take away</legend>
         <div className="fw-actions">
           {(['add', 'take'] as const).map((d) => (
             <label key={d} className="fw-choice">

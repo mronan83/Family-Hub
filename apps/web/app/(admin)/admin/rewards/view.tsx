@@ -1,10 +1,19 @@
-import { Banner, Button, Icon, type IconName } from '@familywise/ui';
+import { Banner, Button, Fold, Icon, type IconName } from '@familywise/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { bonusFacts, describeBonus, type BonusRule } from '@/lib/bonus';
 import { dayAndTime } from '@/lib/format';
 import { pointsWord } from '@/lib/points';
+import {
+  archivedBonusesLine,
+  bonusLine,
+  latelyLine,
+  type RewardsOpen,
+  settledAt,
+  shopArchivedLine,
+} from '@/lib/reward-facts';
 import { itemFacts, STATUS_WORDS } from '@/lib/rewards';
+import { Line } from '../fold-line';
 import { AdminHeader } from '../header';
 import { applyBonusesNow, bonusRuleAction, redemptionAction } from './actions';
 import { BonusForm } from './bonus-form';
@@ -25,6 +34,8 @@ export interface RewardsViewProps {
   wishes: Map<string, string>;
   notice: string | null;
   error: string | null;
+  /** [NFR-18] The folds a save comes back to open (WP-95). */
+  open?: RewardsOpen;
 }
 
 function Picture({
@@ -53,7 +64,9 @@ function Picture({
 /**
  * [PTS-03][PTS-04] The rewards shop for a parent: what the children asked for (approve, or not this
  * time), what is approved and still to give (mark given, or cancel and refund), the shop itself (and
- * who is saving for what, PTS-06), the bonus rules (PTS-05), and what happened lately.
+ * who is saving for what, PTS-06), the bonus rules (PTS-05), and what happened lately. [NFR-18] Folded as
+ * the fold audit draws it (WP-95, D-120): what waits for a parent and the shop open; the shop's
+ * Archived, Bonus points (Add a bonus and Archived bonuses inside it) and Lately folded.
  */
 export function RewardsView({
   catalog,
@@ -66,13 +79,16 @@ export function RewardsView({
   wishes,
   notice,
   error,
+  open = { archived: false, bonus: false, archivedBonuses: false },
 }: RewardsViewProps) {
   const name = (id: string) => members.find((m) => m.id === id)?.displayName ?? 'Someone';
   const item = (id: string) => catalog.find((c) => c.id === id);
   const waiting = redemptions.filter((r) => r.status === 'requested').reverse();
   const toGive = redemptions.filter((r) => r.status === 'approved');
+  // Newest settled first, so Lately's folded header says the last one (WP-95).
   const lately = redemptions
     .filter((r) => r.status === 'fulfilled' || r.status === 'denied' || r.status === 'cancelled')
+    .sort((a, b) => settledAt(b).localeCompare(settledAt(a)))
     .slice(0, 10);
   const shop = catalog.filter((c) => !c.archivedAt);
   const archived = catalog.filter((c) => c.archivedAt);
@@ -211,13 +227,7 @@ export function RewardsView({
       ) : null}
 
       <section className="fw-card" aria-labelledby="shop-heading">
-        <div className="fw-bar">
-          <h2 id="shop-heading">The shop</h2>
-          <Link href="/admin/rewards/new" className="fw-btn fw-btn--secondary">
-            <Icon name="plus" className="fw-btn__icon" />
-            <span>Add a reward</span>
-          </Link>
-        </div>
+        <h2 id="shop-heading">The shop</h2>
         {shop.length === 0 ? (
           <p className="fw-muted">
             No rewards yet. Add the first one: a treat, an outing, a privilege.
@@ -250,9 +260,21 @@ export function RewardsView({
             ))}
           </ul>
         )}
+        <div className="fw-actions">
+          <Link href="/admin/rewards/new" className="fw-btn fw-btn--secondary">
+            <Icon name="plus" className="fw-btn__icon" />
+            <span>Add a reward</span>
+          </Link>
+        </div>
         {archived.length > 0 ? (
-          <details className="fw-more">
-            <summary>Archived ({archived.length})</summary>
+          <Fold
+            variant="inner"
+            id="shop-archived"
+            title="Archived"
+            headingId="shop-archived-heading"
+            open={open.archived}
+            summary={[<Line key="n" line={shopArchivedLine(archived.length)} />]}
+          >
             <ul className="fw-list" aria-label="Archived rewards">
               {archived.map((c) => (
                 <li key={c.id} className="fw-list__row">
@@ -263,12 +285,17 @@ export function RewardsView({
                 </li>
               ))}
             </ul>
-          </details>
+          </Fold>
         ) : null}
       </section>
 
-      <section className="fw-card" aria-labelledby="bonus-heading">
-        <h2 id="bonus-heading">Bonus points</h2>
+      <Fold
+        id="bonus"
+        title="Bonus points"
+        headingId="bonus-heading"
+        open={open.bonus}
+        summary={[<Line key="b" line={bonusLine(bonusRules)} />]}
+      >
         <p className="fw-muted">
           Extra points paid automatically, overnight once a day is over. Each bonus is paid once.
         </p>
@@ -321,10 +348,15 @@ export function RewardsView({
             </ul>
           </form>
         )}
-        <details className="fw-more">
-          <summary>Add a bonus</summary>
+        <Fold
+          variant="inner"
+          id="add-bonus"
+          title="Add a bonus"
+          headingId="add-bonus-heading"
+          button={{ label: 'Add a bonus', icon: 'plus' }}
+        >
           <BonusForm today={today} />
-        </details>
+        </Fold>
         {rules.some((r) => r.active) ? (
           <form action={applyBonusesNow} className="fw-actions">
             <Button type="submit" variant="secondary" icon="sync">
@@ -334,8 +366,14 @@ export function RewardsView({
           </form>
         ) : null}
         {oldRules.length > 0 ? (
-          <details className="fw-more">
-            <summary>Archived bonuses ({oldRules.length})</summary>
+          <Fold
+            variant="inner"
+            id="archived-bonuses"
+            title="Archived bonuses"
+            headingId="archived-bonuses-heading"
+            open={open.archivedBonuses}
+            summary={[<Line key="n" line={archivedBonusesLine(oldRules.length)} />]}
+          >
             <ul className="fw-list" aria-label="Archived bonuses">
               {oldRules.map((r) => (
                 <li key={r.id} className="fw-list__row">
@@ -343,17 +381,32 @@ export function RewardsView({
                 </li>
               ))}
             </ul>
-          </details>
+          </Fold>
         ) : null}
-      </section>
+      </Fold>
 
       {lately.length > 0 ? (
-        <section className="fw-card" aria-labelledby="lately-heading">
-          <h2 id="lately-heading">Lately</h2>
+        <Fold
+          id="lately"
+          title="Lately"
+          headingId="lately-heading"
+          summary={[
+            <Line
+              key="l"
+              line={latelyLine(
+                lately,
+                (id) => item(id)?.title ?? 'A reward',
+                name,
+                timezone,
+                today,
+              )}
+            />,
+          ]}
+        >
           <ul className="fw-list" aria-label="Lately">
             {lately.map((r) => row(r, null, STATUS_WORDS[r.status]))}
           </ul>
-        </section>
+        </Fold>
       ) : null}
     </main>
   );

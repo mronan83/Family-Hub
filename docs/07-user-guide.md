@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.44: Rewards and Members folded (WP-95, D-120, D-144): the shop's **Archived**, **Bonus points** (with **Add a bonus** and **Archived bonuses** inside) and **Lately** fold to what they hold; **Archived** on Members to who; a member's **Points** to the balance and the last change, with **Change points** inside, and **Archive** set apart; a save comes back with its fold open (A6, B1.6, B1.7).
 > v0.43: Groceries on Home and a preferred store (WP-112, D-142): Home's Groceries card (add without leaving Home, where it goes, Added with Change), **New items go to** in Categories and stores, and the store suggested as last time's, then the preferred one.
 > v0.42: Chores in four sections (WP-96, D-132, D-141): Scheduled, Recurring, Completed and Archived; the person chips and More filters; each item's ⋯ (Edit, Duplicate, Archive or Restore), or hold the row; Duplicate and Do again; an item's page folded; the meal library and Tags take the same ⋯ (A4, A15, B1.5, B1.15).
 > v0.41: the grocery list and meals → groceries (WP-104, WP-105, D-138): A17 The grocery list (adding with the category and store suggested, the list, Select, Got recently, your own categories and stores, Groceries on the board); in A15, a meal's recipe and ingredients and this week's meals onto the grocery list, and a recipe at the board; B1.17 Groceries and B2.11 Groceries; B1.15 and B2.9 updated.
@@ -567,14 +568,14 @@ flowchart LR
 
 #### Give or take away points by hand
 
-On **Members**, open a child and find **Points**:
+On **Members**, open a child and open **Points** (folded to their balance and the last change), then **Change points**:
 
 1. Choose **Add** or **Take away**.
 2. Enter the **Points** (1 to 10,000).
 3. Say **Why** (up to 200 characters).
 4. Choose **Add points** or **Take away points**.
 
-The board's points list shows the reason for points added. Points taken away read only "A parent changed your points": the reason stays in the admin app, so the board never tells a child off.
+The page comes back with **Points** open, the change on top of the history. The board's points list shows the reason for points added. Points taken away read only "A parent changed your points": the reason stays in the admin app, so the board never tells a child off.
 
 #### Build the shop
 
@@ -613,16 +614,16 @@ flowchart LR
 - **Not this time** spends nothing. The board says "Not this time".
 - Under **To give**: **Given** once it has happened ("You got it!"), or **Cancel and refund** to give the points back. A reward already given can't be cancelled.
 
-![The Rewards page on a laptop: Asked for with Approve and Not this time, To give with Given and Cancel and refund, the shop, Bonus points and Lately.](guide/img/admin-rewards-laptop.jpg "Rewards, on a laptop")
+![The Rewards page on a laptop: Asked for with Approve and Not this time, To give with Given and Cancel and refund, the shop with Archived folded, then Bonus points and Lately folded to their headers.](guide/img/admin-rewards-laptop.jpg "Rewards, on a laptop")
 
 #### Bonus points
 
-Bonuses pay extra points automatically, overnight once a day is over. On **Rewards**, under **Bonus points**, open **Add a bonus**:
+Bonuses pay extra points automatically, overnight once a day is over. On **Rewards**, open **Bonus points** (folded to how many are on and off, and the ones on: "1 on, 1 off · 7 days in a row +20"), then **Add a bonus**:
 
 - **A streak**: points once for each run of **Good days in a row** (2 to 365) that reaches the length. A run that goes on pays nothing more; a new run pays again.
 - **A perfect day**: points for each day with everything on the list done.
 
-Set the **Bonus points** (1 to 1,000) and **Counts from** (days before it never pay), then **Add bonus**. **Turn off** pauses a bonus; **Turn on** counts again from that day, so a pause never pays a backlog. **Archive** retires it; bonuses it paid stay. **Pay bonuses now** pays, for the days already over, what tonight would. A bonus once paid is never taken back.
+Set the **Bonus points** (1 to 1,000) and **Counts from** (days before it never pay), then **Add bonus**. **Turn off** pauses a bonus; **Turn on** counts again from that day, so a pause never pays a backlog. **Archive** retires it to **Archived bonuses**; bonuses it paid stay. After any of these the page comes back with **Bonus points** open. **Pay bonuses now** pays, for the days already over, what tonight would. A bonus once paid is never taken back.
 
 #### Wishes: saving up
 
@@ -1316,8 +1317,8 @@ If a device can no longer get notifications, it is removed and the page says so,
 
 | Part | What it shows or does |
 |---|---|
-| **Members** | Everyone still here: avatar, name, **Child** or **Adult**, "Earns rewards" with their points or "No rewards", and "Signs in as" for a linked adult. **Edit** opens them. **Add a member** adds one. |
-| **Archived** | Members archived, with **Restore**. |
+| **Members** | Everyone still here: avatar, name, and under it **Child** or **Adult**, "Earns rewards" with their points or "No rewards", and "Signs in as" for a linked adult. **Edit** opens them. **Add a member** adds one. |
+| **Archived** (folded) | Folded to how many and who ("1 archived: Grandpa Joe"); open, members archived, with **Restore**. Open after an archive. |
 
 **A member's page:**
 
@@ -1325,8 +1326,8 @@ If a device can no longer get notifications, it is removed and the page says so,
 |---|---|
 | The form | **Name** (up to 40), **Who they are**, **Avatar**, **Color**, **Birth year (optional)**, **Earns rewards**, and for an adult **Their sign-in** (**Not linked**, or an admin's email). **Save changes**. |
 | **Is this you?** | **This is me**: links your own sign-in to this adult. Shown when your sign-in isn't on anyone still here. |
-| **Points** | The balance, **Change points** (**Add** / **Take away**, **Points**, **Why**), and the history: day, what it was for (and who, for a change by hand), amount. |
-| **Archive** | **Archive** (name): off the board, chores and goals stop showing, history kept. |
+| **Points** (folded) | Folded to the balance and the last change ("142 points · last: +5 Make bed, today 7:10 am"). Open: the balance, **Change points** (folded to its button: **Add** / **Take away**, **Points**, **Why**), and the history: day, what it was for (and who, for a change by hand), amount. Open again, with **Change points**, after a change. |
+| **Archive** (folded, at the bottom) | **Archive** (name): off the board, chores and goals stop showing, history kept. |
 
 A member who doesn't earn rewards can't be given points; what they earned before stays.
 
@@ -1337,9 +1338,9 @@ A member who doesn't earn rewards can't be given points; what they earned before
 |---|---|
 | **Asked for** | Waiting requests: child, reward, cost, when, the child's points. **Approve** (spends the points) or **Not this time**. |
 | **To give** | Approved rewards: **Given** or **Cancel and refund**. |
-| **The shop** | Rewards with cost, how many are left, the weekly limit, "not in the shop now", and who is saving for it. **Add a reward**, **Edit**, **Archived**. |
-| **Bonus points** | Each bonus with when it counts from; **Turn off** / **Turn on**, **Archive**; **Add a bonus**; **Pay bonuses now**; **Archived bonuses**. |
-| **Lately** | The last ten settled requests: given, not this time, or cancelled. |
+| **The shop** | Rewards with cost, how many are left, the weekly limit, "not in the shop now", and who is saving for it; **Edit**; **Add a reward**; **Archived**, folded to its count ("1 archived"), open after an archive. |
+| **Bonus points** (folded) | Folded to how many are on and off and the ones on, by name and points. Open: each bonus with when it counts from; **Turn off** / **Turn on**, **Archive**; **Pay bonuses now**; **Add a bonus** (folded to its button); **Archived bonuses** (folded to its count). Open after a bonus is added, turned on or off, archived or paid. |
+| **Lately** (folded) | Folded to the last settled request and how many ("Last: Movie night given to Maya, today · 10 settled"). Open: the last ten settled requests, given, not this time, or cancelled. |
 
 **The reward form:** **Name** (up to 80), **Cost in points** (1 to 100,000), **Description (optional)** (up to 300), **Icon, shown when there's no photo**, **Photo (optional)** (JPEG, PNG or WebP, up to 2 MB), **How many there are (optional)** (blank for as many as are asked for), **Times each child may ask in a week (optional)** (1 to 100), **In the shop now**. **Add reward** or **Save changes**. A reward's page also has **Remove photo** and **Archive** / **Put back**.
 

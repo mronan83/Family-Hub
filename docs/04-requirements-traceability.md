@@ -173,7 +173,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | ACC-01 | US-101 | WP-02, WP-03 | ADM, DB | household, household_settings | DB, E2E | DB 14 · E2E 1 |
 | ACC-02 | US-102 | WP-03 | ADM, SAUTH | household_user | E2E, U | U 18 · DB 5 · UI 1 · E2E 4 |
 | ACC-03 | US-103 | WP-03 | ADM, API, SAUTH | invite, household_user | E2E, DB | U 1 · DB 19 · E2E 2 |
-| ACC-04 | US-104 | WP-04, WP-46 | ADM, DB | member | E2E, DB, U | U 5 · DB 16 · UI 3 · E2E 7 |
+| ACC-04 | US-104 | WP-04, WP-46, WP-95 | ADM, DB | member | E2E, DB, U | U 6 · DB 16 · UI 6 · E2E 7 |
 | ACC-05 | US-105 | WP-03, WP-32 | DB, ADM | audit_log | DB, E2E | DB 20 |
 | ACC-06 | US-106 | WP-38 | ADM, SAUTH | household_user | E2E | — |
 | ACC-07 | US-108 | WP-55 | ADM, API, VAULT | household_settings | U, DB, E2E | — |
@@ -218,7 +218,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | RWD-06 | US-405 | WP-19 | RULES, SCHED, API | reward_goal, reward_goal_event | U, INT | DB 2 · UI 1 · E2E 1 |
 | RWD-07 | US-403 | WP-20, WP-44 | BRD | reward_goal_progress | E2E | U 9 · DB 3 · UI 3 · E2E 1 |
 | RWD-08 | US-404 | WP-11, WP-20 | BRD | reward_goal | E2E | U 3 · DB 9 · UI 5 · E2E 1 |
-| RWD-09 | US-405 | WP-19 | ADM, API | reward_goal, reward_goal_event | E2E | U 1 · DB 2 · UI 1 · E2E 1 |
+| RWD-09 | US-405 | WP-19, WP-95 | ADM, API | reward_goal, reward_goal_event | E2E | U 1 · DB 2 · UI 1 · E2E 2 |
 | RWD-10 | US-406 | WP-39 | ADM, RULES | reward_goal, reward_rule | U, E2E | U 3 · DB 2 · UI 1 · E2E 1 |
 | RWD-11 | US-408 | WP-15, WP-17 | DB, SCHED, RULES | member_daily_summary, streak_segment | U, DB, INT, E2E | U 21 · DB 3 · E2E 2 |
 | RWD-12 | US-408 | WP-17 | ADM, RULES | member_daily_summary, streak_segment | E2E, U, DB | U 1 · DB 6 · UI 1 · E2E 1 |
@@ -301,12 +301,12 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-08 | US-909 | WP-01, WP-41, WP-42 | CICD, OBS | private.usage_sample | U, DB, E2E, REV | U 5 · DB 11 · UI 1 · E2E 1 |
 | NFR-09 | US-101, US-901 | WP-02 | DB | all tables | DB | DB 4 |
 | NFR-10 | US-903 | WP-24 | DB | — | REV | — |
-| NFR-11 | US-906 | WP-31, WP-46 | BRD, ADM, UI | — | E2E, REV | U 4 · UI 29 |
-| PTS-01 | US-309, US-1101, US-1106 | WP-16 | DB, API, ADM | points_ledger, chore_occurrence | DB, U, E2E | U 10 · DB 42 · E2E 5 |
+| NFR-11 | US-906 | WP-31, WP-46 | BRD, ADM, UI | — | E2E, REV | U 4 · UI 30 |
+| PTS-01 | US-309, US-1101, US-1106 | WP-16, WP-95 | DB, API, ADM | points_ledger, chore_occurrence | DB, U, E2E | U 12 · DB 42 · UI 1 · E2E 6 |
 | PTS-02 | US-1102 | WP-11, WP-16, WP-20 | BRD, DB | v_points_balance, points_ledger | E2E | U 4 · DB 11 · UI 1 · E2E 2 |
-| PTS-03 | US-1103 | WP-18 | ADM, API, BRD | reward_catalog_item | E2E, DB | U 5 · DB 6 · UI 4 · E2E 1 |
-| PTS-04 | US-1104, US-1105 | WP-18, WP-20, WP-110 | BRD, ADM, API, DB, OUTBOX | redemption, points_ledger, reward_catalog_item | E2E, DB, INT | U 10 · DB 17 · UI 11 · E2E 3 |
-| PTS-05 | US-1107 | WP-30 | SCHED, RULES, ADM, DB | points_rule, points_ledger, streak_segment, member_daily_summary | U, DB, E2E | U 7 · DB 4 · UI 2 · E2E 1 |
+| PTS-03 | US-1103 | WP-18, WP-95 | ADM, API, BRD | reward_catalog_item | E2E, DB | U 7 · DB 6 · UI 7 · E2E 1 |
+| PTS-04 | US-1104, US-1105 | WP-18, WP-20, WP-95, WP-110 | BRD, ADM, API, DB, OUTBOX | redemption, points_ledger, reward_catalog_item | E2E, DB, INT | U 12 · DB 17 · UI 12 · E2E 3 |
+| PTS-05 | US-1107 | WP-30, WP-95 | SCHED, RULES, ADM, DB | points_rule, points_ledger, streak_segment, member_daily_summary | U, DB, E2E | U 8 · DB 4 · UI 3 · E2E 1 |
 | PTS-06 | US-1108 | WP-30 | BRD, API, ADM, DB | wishlist_pin, reward_catalog_item, v_points_balance | U, DB, E2E | U 5 · DB 2 · UI 7 · E2E 2 |
 | PTS-07 | US-1109 | WP-02, WP-04, WP-16 | ADM, DB, RULES | member, points_ledger | DB, E2E | U 2 · DB 15 · E2E 3 |
 | NFR-12 | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113 | all | — | CI | U 10 |
@@ -315,7 +315,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-15 | US-107 | WP-51 | ADM, UI | chore_occurrence, tag, calendar_source, device, reminder_preference | U, E2E | U 2 · UI 6 · E2E 1 |
 | NFR-16 | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110 | ADM, BRD, UI | — | E2E, CI | U 20 · DB 10 · UI 23 |
 | NFR-17 | US-109 | WP-57 | ADM, DB, UI | chore_occurrence, redemption, device, calendar_source, menu_source, school_closure | U, DB, E2E | U 11 · DB 2 · UI 4 · E2E 2 |
-| NFR-18 | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | ADM, UI | — | U, E2E | U 34 · UI 15 · E2E 5 |
+| NFR-18 | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | ADM, UI | — | U, E2E | U 34 · UI 15 · E2E 7 |
 | NFR-19 | US-913 | WP-85, WP-86 | CICD | — | CI, U | U 6 |
 
 ---
@@ -332,7 +332,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 
 - Requirements: **147** · with at least one story: **147** · stories: **130** (P0: 12 · P1: 52 · P2: 30 · P3: 36).
 - With at least one work package: **147** · work packages: **110**.
-- Tests: **2932** (2364 name a requirement) · built requirements with a test: **130 of 130** · known test gaps: **104** (`08` §9.6).
+- Tests: **2946** (2378 name a requirement) · built requirements with a test: **130 of 130** · known test gaps: **104** (`08` §9.6).
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -497,6 +497,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.164 | WP-95 Rewards, Goals and Members folded (NFR-18, PTS-01, PTS-03, PTS-04, PTS-05, ACC-04, RWD-09, D-120, D-144): no migration; `lib/reward-facts.ts` (each folded header of Rewards and Members, and the fold a save comes back to); Rewards' shop **Archived**, **Bonus points** (with **Add a bonus** and **Archived bonuses**) and **Lately** folded; `MembersView` and `MemberView` with **Archived**, **Points** (with **Change points**) and **Archive** folded; `/dev/members`. Tests: Vitest `lib/reward-facts.test.ts`, UI suite `reward-folds.spec.ts` (Chrome, iPhone WebKit, desktop WebKit), e2e `points.spec.ts` and `goals.spec.ts`. |
 | 0.8.163 | WP-113 The e2e reds of 18 to 21 October (DEV-05, NFR-12, MEAL-19, D-143): `lunch_week()` works out each child's day once (`20261021144559_lunch_week_once_a_day.sql`), the board's snapshot about a third of its time; `public.db_probe()` and the preview-only `GET /api/health/db`, read by the e2e run every 15 s; a slow probe says the database's own time; a failed test names the page load or save it was waiting for; `meal-groceries.spec.ts`'s own bug (a trimmed answer) fixed; the theme test's evidence; the specs' date maths unit-tested. Tests: pgTAP 580, Vitest `health-db.test.ts`, node:test `e2e-infra.test.mjs`, `e2e-dates.test.mjs`. |
 | 0.8.162 | WP-112 Groceries on Home, and a preferred store (MEAL-27, MEAL-28, US-721, D-142): migration `20261018165556_grocery_preferred_store.sql` (`grocery_list.preferred_store_id`, `set_grocery_preferred_store()`); the store suggested as last time's, then the preferred store, then Any store (`suggest()`, `weekGroceryItems()`); Home's Groceries card (`groceries-quick.tsx`, `quickAddGrocery()`); Groceries' **New items go to** and the **Preferred** pill; the new-store hint fits an iPhone. Tests: Vitest `lib/groceries.test.ts`, `lib/meal-groceries.test.ts`; pgTAP `570_grocery_preferred_store.test.sql`; UI suite `home-groceries.spec.ts` (Chrome, iPhone WebKit, desktop WebKit) and `groceries.spec.ts`; e2e `home-groceries.spec.ts`. |
 | 0.8.161 | WP-96 Chores in four sections, an item's page and the icon picker folded (CHR-21, CHR-22, CHR-23, MEAL-25, NFR-16, NFR-18, US-323, US-324, US-325, D-132, D-141): migration `20261018132852_do_chore_again.sql` (`do_chore_again()`); `lib/chore-sections.ts` (which section, the date headings, the order, the chips and More filters, a row's second line, Duplicate's and Do again's forms, the item page's folded lines); the shared two-line row with ⋯ held for its menu (`hold-row.tsx`) on Chores, the Meal library and Tags; Do again's sheet; an item's page folded; a meal's Duplicate copies all of it, its photos and PDFs as files of the copy's own (`lib/meal-copy.ts`, MEAL-25, the owner's answer); a `mac` UI project in desktop WebKit. Tests: Vitest `lib/chore-sections.test.ts`, pgTAP `560_do_chore_again.test.sql`, UI suite `chores.spec.ts` (Chrome, iPhone WebKit, desktop WebKit), e2e `chore-sections.spec.ts`. |

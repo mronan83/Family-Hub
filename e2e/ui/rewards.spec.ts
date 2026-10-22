@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { foldOf, unfold } from '../support/fold';
 
 // [PTS-03][PTS-04] The rewards shop for a parent (WP-18) on /dev/rewards: a made-up family, no
 // database. The page's words, buttons and layout on a phone and a laptop, in Day and Evening. The same
@@ -59,6 +60,9 @@ test('[PTS-04][US-1105] approved rewards are to give: mark given, or cancel and 
   await expect(
     give.getByRole('button', { name: 'Cancel Ice cream trip for Maya and refund' }),
   ).toBeVisible();
+  // Lately is folded (WP-95).
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+  await unfold(foldOf(page, 'Lately'));
   await expect(page.getByRole('list', { name: 'Lately' })).toContainText('Given');
   await expect(page.getByRole('list', { name: 'Lately' })).toContainText('Not this time');
 });
@@ -97,7 +101,8 @@ test('[PTS-03][US-1103] the shop: each reward’s cost, what is left, its limit;
     'not in the shop now',
   );
   await expect(shop.locator('img')).toHaveCount(1);
-  await expect(page.getByText('Archived (1)', { exact: true })).toBeVisible();
+  // Archived is a fold inside the shop (WP-95).
+  await expect(foldOf(page, 'Archived').locator(':scope > summary')).toContainText('1 archived');
   await expect(page.getByRole('link', { name: 'Add a reward' })).toHaveAttribute(
     'href',
     '/admin/rewards/new',
@@ -117,6 +122,9 @@ test('[PTS-05][US-1107] bonus points: each rule in words, from when it counts, o
   page,
 }) => {
   await page.goto('/dev/rewards');
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+  // Bonus points is folded (WP-95).
+  await unfold(foldOf(page, 'Bonus points'));
   const rules = page.getByRole('list', { name: 'Bonus points' });
   await expect(rules.getByRole('listitem')).toHaveCount(2);
   const streak = rules
@@ -137,7 +145,7 @@ test('[PTS-05][US-1107] bonus points: each rule in words, from when it counts, o
     perfect.getByRole('button', { name: 'Turn on: 5 points for each day with everything done' }),
   ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Pay bonuses now' })).toBeVisible();
-  await page.getByText('Archived bonuses (1)').click();
+  await unfold(foldOf(page, 'Archived bonuses'));
   await expect(page.getByRole('list', { name: 'Archived bonuses' })).toContainText(
     '2 points for 3 good days in a row',
   );
@@ -145,7 +153,9 @@ test('[PTS-05][US-1107] bonus points: each rule in words, from when it counts, o
 
 test('[PTS-05] adding a bonus: a streak asks how long; a perfect day doesn’t', async ({ page }) => {
   await page.goto('/dev/rewards');
-  await page.getByText('Add a bonus', { exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+  await unfold(foldOf(page, 'Bonus points'));
+  await unfold(foldOf(page, 'Add a bonus'));
   const form = page.getByRole('form', { name: 'Add a bonus' });
   await expect(form.getByRole('radio', { name: 'A streak' })).toBeChecked();
   await expect(form.getByLabel('Good days in a row')).toHaveValue('7');

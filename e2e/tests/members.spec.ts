@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
+import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
 import { ownHousehold } from '../support/household';
 
@@ -110,9 +111,13 @@ test('[PTS-07] the switch can be changed for anyone', async ({ page }) => {
   const form = page.getByRole('form', { name: 'Edit member' });
   await form.getByRole('switch', { name: 'Earns rewards' }).check();
   await form.getByRole('button', { name: 'Save changes' }).click();
-  await expect(page.getByRole('list', { name: 'Members', exact: true })).toContainText(
-    `${ROBIN} · Adult · Earns rewards`,
-  );
+  // Each row: the name, then what they are under it (WP-95).
+  await expect(
+    page
+      .getByRole('list', { name: 'Members', exact: true })
+      .getByRole('listitem')
+      .filter({ hasText: ROBIN }),
+  ).toContainText('Adult · Earns rewards');
   expect(
     sql(
       `select earns_rewards from public.member where household_id = '${HOUSEHOLD}' and display_name = '${ROBIN}'`,
@@ -171,8 +176,12 @@ test('[ACC-04] archiving takes a member off the list and keeps them; restoring b
   const since = sql('select now()');
   await asAlex(page);
   await page.getByRole('link', { name: `Edit ${NOA}` }).click();
+  // Archive is set apart at the bottom of a member's page, folded (D-120, WP-95).
+  await unfold(foldOf(page, 'Archive'));
   await page.getByRole('button', { name: `Archive ${NOA}` }).click();
   await expect(page.getByRole('list', { name: 'Members', exact: true })).not.toContainText(NOA);
+  // Archived comes back open after the archive.
+  await expect(foldOf(page, 'Archived')).toHaveAttribute('open', '');
   await expect(page.getByRole('list', { name: 'Archived members' })).toContainText(NOA);
   expect(sql(`select archived_at is not null from public.member where id = '${noa}'`)).toBe('t');
 
