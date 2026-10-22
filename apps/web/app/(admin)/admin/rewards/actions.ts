@@ -118,7 +118,8 @@ export async function setRewardArchived(form: FormData): Promise<void> {
     .eq('household_id', household.id);
   if (error) log('warn', 'reward archive not saved', { code: error.code });
   revalidatePath('/admin/rewards');
-  redirect(archive ? '/admin/rewards?archived=1' : '/admin/rewards');
+  // [NFR-18] Back with the shop's Archived open, where a put back was tapped too (WP-95).
+  redirect(archive ? '/admin/rewards?archived=1' : '/admin/rewards?restored=1');
 }
 
 const ACTS = ['approve', 'deny', 'fulfil', 'cancel'] as const;

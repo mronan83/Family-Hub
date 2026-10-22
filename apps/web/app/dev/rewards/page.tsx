@@ -78,7 +78,13 @@ const BONUSES: BonusRule[] = [
 export default async function DevRewardsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; archived?: string; bonus?: string; error?: string }>;
+  searchParams: Promise<{
+    theme?: string;
+    archived?: string;
+    restored?: string;
+    bonus?: string;
+    error?: string;
+  }>;
 }) {
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -131,8 +137,8 @@ export default async function DevRewardsPage({
         catalog={catalog}
         redemptions={redemptions}
         members={[
-          { id: MAYA, displayName: 'Maya' },
-          { id: LEO, displayName: 'Leo' },
+          { id: MAYA, displayName: 'Maya', avatarKey: 'fox', color: 'member-3' },
+          { id: LEO, displayName: 'Leo', avatarKey: 'frog', color: 'member-4' },
         ]}
         balances={
           new Map([

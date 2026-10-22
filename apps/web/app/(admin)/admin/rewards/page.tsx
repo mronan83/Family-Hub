@@ -43,6 +43,7 @@ export default async function RewardsPage({
     bonus?: string;
     posted?: string;
     open?: string;
+    restored?: string;
   }>;
 }) {
   const db = await serverClient();
@@ -69,9 +70,11 @@ export default async function RewardsPage({
       ? `Saved ${params.saved}.`
       : params.archived
         ? 'Archived. It’s out of the shop.'
-        : params.did
-          ? (DID[params.did] ?? null)
-          : null;
+        : params.restored
+          ? 'Put back. It’s in the shop again.'
+          : params.did
+            ? (DID[params.did] ?? null)
+            : null;
   return (
     <RewardsView
       catalog={catalog}

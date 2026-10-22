@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { BonusRule } from './bonus';
 import {
   archivedBonusesLine,
+  archivedWhen,
   bonusLine,
   bonusName,
   latelyLine,
@@ -41,6 +42,9 @@ describe('Rewards', () => {
     expect(read(shopArchivedLine(3))).toBe('**3 archived**');
     expect(read(shopArchivedLine(1))).toBe('**1 archived**');
     expect(read(shopArchivedLine(0))).toBe('None archived');
+    // An archived reward's line says the month it left the shop, in the household's zone.
+    expect(archivedWhen('2026-09-14T15:00:00Z', NY)).toBe('Archived in September');
+    expect(archivedWhen('2026-10-01T02:00:00Z', NY)).toBe('Archived in September');
   });
 
   it('[PTS-03-a] which fold comes back open after a save', () => {
@@ -48,6 +52,7 @@ describe('Rewards', () => {
     expect(rewardsOpen({})).toEqual(none);
     expect(rewardsOpen({ saved: 'Movie night' } as never)).toEqual(none);
     expect(rewardsOpen({ archived: '1' })).toEqual({ ...none, archived: true });
+    expect(rewardsOpen({ restored: '1' })).toEqual({ ...none, archived: true });
     for (const bonus of ['added', 'on', 'off', 'paid'])
       expect(rewardsOpen({ bonus })).toEqual({ ...none, bonus: true });
     expect(rewardsOpen({ bonus: 'archive' })).toEqual({

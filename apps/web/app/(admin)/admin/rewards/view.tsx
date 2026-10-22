@@ -1,4 +1,13 @@
-import { Banner, Button, Fold, Icon, type IconName } from '@familywise/ui';
+import {
+  Avatar,
+  type AvatarKey,
+  Banner,
+  Button,
+  Fold,
+  Icon,
+  type IconName,
+  type MemberColor,
+} from '@familywise/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { bonusFacts, describeBonus, type BonusRule } from '@/lib/bonus';
@@ -6,6 +15,7 @@ import { dayAndTime } from '@/lib/format';
 import { pointsWord } from '@/lib/points';
 import {
   archivedBonusesLine,
+  archivedWhen,
   bonusLine,
   latelyLine,
   type RewardsOpen,
@@ -15,14 +25,14 @@ import {
 import { itemFacts, STATUS_WORDS } from '@/lib/rewards';
 import { Line } from '../fold-line';
 import { AdminHeader } from '../header';
-import { applyBonusesNow, bonusRuleAction, redemptionAction } from './actions';
+import { applyBonusesNow, bonusRuleAction, redemptionAction, setRewardArchived } from './actions';
 import { BonusForm } from './bonus-form';
 import type { RedemptionRow, RewardRow } from './data';
 
 export interface RewardsViewProps {
   catalog: RewardRow[];
   redemptions: RedemptionRow[];
-  members: { id: string; displayName: string }[];
+  members: { id: string; displayName: string; avatarKey: AvatarKey | null; color: MemberColor }[];
   /** Each child's balance now. */
   balances: Map<string, number>;
   timezone: string;
@@ -97,13 +107,23 @@ export function RewardsView({
   const rules = bonusRules.filter((r) => !r.archivedAt);
   const oldRules = bonusRules.filter((r) => r.archivedAt);
 
+  // [NFR-18] A request's row leads with the child's avatar, as the fold audit draws it (WP-95).
   const row = (r: RedemptionRow, buttons: React.ReactNode, extra?: string) => {
     const it = item(r.itemId);
     const title = it?.title ?? 'A reward';
+    const who = members.find((m) => m.id === r.memberId);
     return (
-      <li key={r.id} className="fw-list__row fw-reward__row">
+      <li key={r.id} className="fw-list__row fw-reward__row fw-reward__ask">
         <span className="fw-item">
-          {it ? <Picture item={it} /> : null}
+          {who ? (
+            <Avatar
+              name={who.displayName}
+              avatarKey={who.avatarKey}
+              color={who.color}
+              size={40}
+              decorative
+            />
+          ) : null}
           <span className="fw-item__body">
             <strong>
               {name(r.memberId)}: {title}
@@ -149,9 +169,16 @@ export function RewardsView({
         <Banner kind="info">{notice}</Banner>
       ) : null}
 
-      <section className="fw-card" aria-labelledby="asked-heading">
-        <h1 id="asked-heading">Rewards</h1>
-        <h2 className="fw-subhead">Asked for</h2>
+      <header className="fw-settings__head">
+        <h1>Rewards</h1>
+      </header>
+
+      {/* What waits for a parent is marked, as Home's Needs you is (the fold audit's frame). */}
+      <section
+        className={`fw-card${waiting.length ? ' fw-card--attn' : ''}`}
+        aria-labelledby="asked-heading"
+      >
+        <h2 id="asked-heading">Asked for</h2>
         {waiting.length === 0 ? (
           <p className="fw-muted">
             Nothing waiting. When a child asks for a reward on the board, it shows here.
@@ -277,11 +304,28 @@ export function RewardsView({
           >
             <ul className="fw-list" aria-label="Archived rewards">
               {archived.map((c) => (
-                <li key={c.id} className="fw-list__row">
-                  <span>{c.title}</span>
-                  <Link href={`/admin/rewards/${c.id}`} aria-label={`Edit ${c.title}`}>
-                    Edit
-                  </Link>
+                <li key={c.id} className="fw-list__row fw-reward__row">
+                  <span className="fw-item">
+                    <Picture item={c} />
+                    <span className="fw-item__body">
+                      <Link href={`/admin/rewards/${c.id}`}>
+                        <strong>{c.title}</strong>
+                      </Link>
+                      <span className="fw-muted">{archivedWhen(c.archivedAt!, timezone)}</span>
+                    </span>
+                  </span>
+                  <form action={setRewardArchived}>
+                    <input type="hidden" name="id" value={c.id} />
+                    <input type="hidden" name="archive" value="false" />
+                    <Button
+                      type="submit"
+                      variant="secondary"
+                      icon="undo"
+                      aria-label={`Put ${c.title} back`}
+                    >
+                      Put back
+                    </Button>
+                  </form>
                 </li>
               ))}
             </ul>

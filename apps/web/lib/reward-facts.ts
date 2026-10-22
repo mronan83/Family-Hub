@@ -20,6 +20,11 @@ export function shopArchivedLine(count: number): FoldLine {
   return count === 0 ? ['None archived'] : [{ b: `${count} archived` }];
 }
 
+/** [PTS-03] When an archived reward left the shop: "Archived in September", in the household's zone. */
+export function archivedWhen(at: string, timezone: string): string {
+  return `Archived in ${new Intl.DateTimeFormat('en-US', { month: 'long', timeZone: timezone }).format(new Date(at))}`;
+}
+
 /** [PTS-05] A bonus rule's short name and points: "7 days in a row +20", "Perfect day +5". */
 export function bonusName(r: Pick<BonusRule, 'ruleType' | 'streakDays' | 'bonusPoints'>): string {
   const name = r.ruleType === 'streak_bonus' ? `${r.streakDays} days in a row` : 'Perfect day';
@@ -123,12 +128,13 @@ export interface RewardsOpen {
 }
 
 /**
- * [PTS-03][PTS-05] An archived reward opens the shop's Archived; a bonus added, turned on or off,
+ * [PTS-03][PTS-05] An archived reward, or one put back from it, opens the shop's Archived; a bonus added, turned on or off,
  * archived or paid, or a bonus that was refused, opens Bonus points, and an archived one Archived
  * bonuses too. Nothing else opens a fold.
  */
 export function rewardsOpen(params: {
   archived?: string;
+  restored?: string;
   bonus?: string;
   error?: string;
   open?: string;
@@ -139,7 +145,7 @@ export function rewardsOpen(params: {
     params.error === 'bonus_gone' ||
     params.error === 'history';
   return {
-    archived: Boolean(params.archived),
+    archived: Boolean(params.archived || params.restored),
     bonus,
     archivedBonuses: params.bonus === 'archive',
   };

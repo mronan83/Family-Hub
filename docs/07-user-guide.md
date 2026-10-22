@@ -584,7 +584,7 @@ The page comes back with **Points** open, the change on top of the history. The 
 3. Optionally: a **Description**, an **Icon**, a **Photo** (JPEG, PNG or WebP, up to 2 MB), **How many there are**, and **Times each child may ask in a week**.
 4. Keep **In the shop now** ticked, and choose **Add reward**.
 
-A reward with none left shows "All gone for now" on the board. **Archive** takes a reward out of the shop; requests already made keep the cost they had.
+A reward with none left shows "All gone for now" on the board. **Archive** takes a reward out of the shop; requests already made keep the cost they had. Archived rewards wait under **Archived**, below the shop, each with the month it left; **Put back** returns one to the shop.
 
 #### A child asks for a reward
 
@@ -1317,10 +1317,10 @@ If a device can no longer get notifications, it is removed and the page says so,
 
 | Part | What it shows or does |
 |---|---|
-| **Members** | Everyone still here: avatar, name, and under it **Child** or **Adult**, "Earns rewards" with their points or "No rewards", and "Signs in as" for a linked adult. **Edit** opens them. **Add a member** adds one. |
+| **Members** | The title and **Add a member** above the list. Everyone still here: avatar, name, and under it **Child** or **Adult**, "Earns rewards" with their points or "No rewards", and "Signs in as" for a linked adult. **Edit** opens them. **Add a member** adds one. |
 | **Archived** (folded) | Folded to how many and who ("1 archived: Grandpa Joe"); open, members archived, with **Restore**. Open after an archive. |
 
-**A member's page:**
+**A member's page:** **‹ Members** and their name, then:
 
 | Part | What it shows or does |
 |---|---|
@@ -1336,9 +1336,9 @@ A member who doesn't earn rewards can't be given points; what they earned before
 
 | Part | What it shows or does |
 |---|---|
-| **Asked for** | Waiting requests: child, reward, cost, when, the child's points. **Approve** (spends the points) or **Not this time**. |
+| **Asked for** | Marked in amber while anything waits. Waiting requests: the child's avatar, child, reward, cost, when, the child's points. **Approve** (spends the points) or **Not this time**. |
 | **To give** | Approved rewards: **Given** or **Cancel and refund**. |
-| **The shop** | Rewards with cost, how many are left, the weekly limit, "not in the shop now", and who is saving for it; **Edit**; **Add a reward**; **Archived**, folded to its count ("1 archived"), open after an archive. |
+| **The shop** | Rewards with cost, how many are left, the weekly limit, "not in the shop now", and who is saving for it; **Edit**; **Add a reward**; **Archived**, folded to its count ("1 archived"): each reward with the month it left and **Put back**; open after an archive or a put back. |
 | **Bonus points** (folded) | Folded to how many are on and off and the ones on, by name and points. Open: each bonus with when it counts from; **Turn off** / **Turn on**, **Archive**; **Pay bonuses now**; **Add a bonus** (folded to its button); **Archived bonuses** (folded to its count). Open after a bonus is added, turned on or off, archived or paid. |
 | **Lately** (folded) | Folded to the last settled request and how many ("Last: Movie night given to Maya, today · 10 settled"). Open: the last ten settled requests, given, not this time, or cancelled. |
 

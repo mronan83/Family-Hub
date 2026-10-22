@@ -1,4 +1,4 @@
-import { Avatar, Banner, Button, Fold, PointsChip } from '@familywise/ui';
+import { Avatar, Banner, Button, Fold, Icon, PointsChip } from '@familywise/ui';
 import Link from 'next/link';
 import {
   balanceText,
@@ -42,13 +42,15 @@ export function MembersView({
     <main className="fw-page fw-page--wide">
       <AdminHeader current="/admin/members" />
       {saved ? <Banner kind="info">Saved {saved}.</Banner> : null}
+      {/* The title and Add a member above the list's card, as the fold audit draws them (WP-95). */}
+      <div className="fw-page-head">
+        <h1 id="members-heading">Members</h1>
+        <Link className="fw-btn fw-btn--primary" href="/admin/members/new">
+          <Icon name="plus" className="fw-btn__icon" />
+          <span>Add a member</span>
+        </Link>
+      </div>
       <section className="fw-card" aria-labelledby="members-heading">
-        <div className="fw-bar">
-          <h1 id="members-heading">Members</h1>
-          <Link className="fw-btn fw-btn--primary" href="/admin/members/new">
-            Add a member
-          </Link>
-        </div>
         {active.length === 0 ? (
           <p className="fw-muted">No members yet. Add the first one.</p>
         ) : (
@@ -166,13 +168,18 @@ export function MemberView({
   return (
     <main className="fw-page">
       <AdminHeader current="/admin/members" />
-      <section className="fw-card">
-        <h1>{member.displayName}</h1>
-        {linked ? (
-          <Banner kind="info">Linked: you’re {member.displayName} now.</Banner>
-        ) : linkError ? (
-          <Banner kind="notice">{linkError}</Banner>
-        ) : null}
+      {/* The way back to Members, then the name above the form's card (the fold audit's frame). */}
+      <Link href="/admin/members" className="fw-crumb">
+        <Icon name="chevron-left" size={18} />
+        Members
+      </Link>
+      <h1>{member.displayName}</h1>
+      {linked ? (
+        <Banner kind="info">Linked: you’re {member.displayName} now.</Banner>
+      ) : linkError ? (
+        <Banner kind="notice">{linkError}</Banner>
+      ) : null}
+      <section className="fw-card" aria-label={`About ${member.displayName}`}>
         <MemberForm id={member.id} initial={member} admins={admins} elsewhere={elsewhere} />
       </section>
       {offerMe ? (

@@ -96,6 +96,19 @@ test.describe('folded', () => {
     for (const list of ['Asked for', 'To give', 'The shop'])
       await expect(page.getByRole('list', { name: list, exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Add a reward' })).toBeVisible();
+    // The page's title above the cards; Asked for marked as waiting for a parent, each request
+    // led by the child's avatar, its buttons beside it (WP-95, as the fold audit draws them).
+    await expect(page.locator('main > .fw-settings__head h1')).toHaveText('Rewards');
+    await expect(
+      page.locator('section.fw-card--attn').getByRole('heading', { name: 'Asked for' }),
+    ).toBeVisible();
+    const ask = page.getByRole('list', { name: 'Asked for' }).getByRole('listitem').first();
+    await expect(ask.locator('.fw-avatar')).toBeVisible();
+    const words = await ask.locator('.fw-item').boundingBox();
+    const approve = await ask.getByRole('button', { name: /^Approve / }).boundingBox();
+    expect(approve!.x, 'Approve sits beside the request, not under it').toBeGreaterThan(
+      words!.x + words!.width - 1,
+    );
     await folded(page, ['Archived', 'Bonus points', 'Lately']);
     await expect(head(page, 'Archived')).toContainText('1 archived');
     await expect(head(page, 'Bonus points')).toContainText('1 on, 1 off · 7 days in a row +20');
@@ -121,13 +134,19 @@ test.describe('folded', () => {
     await head(page, 'Lately').click();
     await expect(page.getByRole('list', { name: 'Lately' }).getByRole('listitem')).toHaveCount(2);
     await head(page, 'Archived').click();
-    await expect(page.getByRole('list', { name: 'Archived rewards' })).toContainText('Old prize');
+    await expect(page.getByRole('list', { name: 'Archived rewards' })).toContainText(
+      'Old prizeArchived in September',
+    );
+    await expect(page.getByRole('button', { name: 'Put Old prize back' })).toBeVisible();
   });
 
   test('[ACC-04-b][PTS-01] Members: the list open, Archived folded to who; a member’s page: the form open, Points folded to the balance and the last change, Archive set apart', async ({
     page,
   }) => {
     await open(page, '/dev/members');
+    // The title and Add a member above the list's card.
+    await expect(page.locator('main > .fw-page-head h1')).toHaveText('Members');
+    await expect(page.locator('main > .fw-page-head').getByRole('link')).toHaveText('Add a member');
     await expect(page.getByRole('list', { name: 'Members', exact: true })).toBeVisible();
     await expect(
       page
@@ -141,6 +160,9 @@ test.describe('folded', () => {
     await expect(page.getByRole('button', { name: 'Restore Grandpa Joe' })).toBeVisible();
 
     await open(page, '/dev/members?page=member');
+    // The way back to Members and the name above the form's card.
+    await expect(page.locator('main > a.fw-crumb')).toHaveAttribute('href', '/admin/members');
+    await expect(page.locator('main > h1')).toHaveText('Maya');
     await expect(page.getByRole('form', { name: 'Edit member' })).toBeVisible();
     await folded(page, ['Points', 'Archive']);
     await expect(head(page, 'Points')).toContainText(
@@ -177,6 +199,10 @@ test.describe('open again', () => {
       await open(page, '/dev/rewards?archived=1');
       await expect(foldOf(page, 'Archived')).toHaveAttribute('open', '');
       await folded(page, ['Bonus points', 'Lately']);
+    });
+    await test.step('a reward put back: the shop’s Archived', async () => {
+      await open(page, '/dev/rewards?restored=1');
+      await expect(foldOf(page, 'Archived')).toHaveAttribute('open', '');
     });
     await test.step('a bonus turned off: Bonus points', async () => {
       await open(page, '/dev/rewards?bonus=off');
