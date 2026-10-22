@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import type { BonusRule } from '@/lib/bonus';
+import { rewardsOpen } from '@/lib/reward-facts';
 import type { RedemptionRow, RewardRow } from '../../(admin)/admin/rewards/data';
 import { RewardsView } from '../../(admin)/admin/rewards/view';
 
 // The rewards shop for a parent (WP-18) with a made-up family and no database, for the UI suite: the
 // page's layout on a phone and a laptop, in Day and Evening (?theme=evening). With bonus rules and
-// who is saving for what (WP-30).
+// who is saving for what (WP-30). [NFR-18] Folded as WP-95 built it; the address a save comes back to
+// opens its folds as on the real page (?archived=1, ?bonus=archive, ?error=bonus_gone).
 export const metadata: Metadata = { title: 'Rewards', robots: { index: false } };
 
 const MAYA = 'f1000000-0000-4000-8000-000000000001';
@@ -76,9 +78,16 @@ const BONUSES: BonusRule[] = [
 export default async function DevRewardsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string }>;
+  searchParams: Promise<{
+    theme?: string;
+    archived?: string;
+    restored?: string;
+    bonus?: string;
+    error?: string;
+  }>;
 }) {
-  const theme = (await searchParams).theme === 'evening' ? 'theme-evening' : 'theme-day';
+  const params = await searchParams;
+  const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
   const catalog = [
     reward({
       id: 'r1',
@@ -105,8 +114,22 @@ export default async function DevRewardsPage({
       cost: 0,
       goalTitle: 'Tidy week',
     }),
-    ask({ id: 'a4', memberId: LEO, itemId: 'r4', status: 'fulfilled', cost: 25 }),
-    ask({ id: 'a5', memberId: MAYA, itemId: 'r2', status: 'denied', cost: 40 }),
+    ask({
+      id: 'a4',
+      memberId: LEO,
+      itemId: 'r4',
+      status: 'fulfilled',
+      cost: 25,
+      fulfilledAt: '2026-10-10T14:30:00Z',
+    }),
+    ask({
+      id: 'a5',
+      memberId: MAYA,
+      itemId: 'r2',
+      status: 'denied',
+      cost: 40,
+      decidedAt: '2026-10-09T22:00:00Z',
+    }),
   ];
   return (
     <div className={`admin ${theme}`}>
@@ -114,8 +137,8 @@ export default async function DevRewardsPage({
         catalog={catalog}
         redemptions={redemptions}
         members={[
-          { id: MAYA, displayName: 'Maya' },
-          { id: LEO, displayName: 'Leo' },
+          { id: MAYA, displayName: 'Maya', avatarKey: 'fox', color: 'member-3' },
+          { id: LEO, displayName: 'Leo', avatarKey: 'frog', color: 'member-4' },
         ]}
         balances={
           new Map([
@@ -129,6 +152,7 @@ export default async function DevRewardsPage({
         wishes={new Map([[MAYA, 'r1']])}
         notice="Approved. The points are spent."
         error={null}
+        open={rewardsOpen(params)}
       />
     </div>
   );

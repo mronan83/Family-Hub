@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
+import { rewardsOpen } from '@/lib/reward-facts';
 import { serverClient } from '@/lib/supabase/server';
 import { loadBalances, loadMembers } from '../members/data';
 import { loadBonusRules, loadCatalog, loadRedemptions, loadWishes } from './data';
@@ -41,6 +42,8 @@ export default async function RewardsPage({
     archived?: string;
     bonus?: string;
     posted?: string;
+    open?: string;
+    restored?: string;
   }>;
 }) {
   const db = await serverClient();
@@ -67,9 +70,11 @@ export default async function RewardsPage({
       ? `Saved ${params.saved}.`
       : params.archived
         ? 'Archived. It’s out of the shop.'
-        : params.did
-          ? (DID[params.did] ?? null)
-          : null;
+        : params.restored
+          ? 'Put back. It’s in the shop again.'
+          : params.did
+            ? (DID[params.did] ?? null)
+            : null;
   return (
     <RewardsView
       catalog={catalog}
@@ -81,6 +86,7 @@ export default async function RewardsPage({
       bonusRules={bonusRules}
       wishes={wishes}
       notice={notice}
+      open={rewardsOpen(params)}
       error={params.error ? (ERRORS[params.error] ?? 'That didn’t go through. Try again.') : null}
     />
   );

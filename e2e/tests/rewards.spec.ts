@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '../support/test';
 import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
+import { foldOf } from '../support/fold';
 import { signIn } from '../support/session';
 import { ownHousehold } from '../support/household';
 
@@ -82,10 +83,11 @@ test.afterAll(async () => {
   await admin?.context().close();
 });
 
-test('[PTS-03][PTS-04][US-1103][US-1104][US-1105] a reward with a photo: added, asked for on the board, approved, given; then its photo removed and the reward archived', async () => {
-  // One story in four steps: about 12 server round trips (two saves with a photo, three asks, an
-  // approve, a board refetch, mark given, remove photo, archive), up to about 40 s; 3x that.
-  test.setTimeout(120_000);
+test('[PTS-03][PTS-03-c][PTS-04][US-1103][US-1104][US-1105] a reward with a photo: added, asked for on the board, approved, given; then its photo removed, the reward archived and put back from the shop’s Archived', async () => {
+  // One story in five steps: about 14 server round trips (two saves with a photo, three asks, an
+  // approve, a board refetch, mark given, remove photo, archive, put back, archive again), up to
+  // about 47 s; 3x that.
+  test.setTimeout(150_000);
   await test.step('a parent adds a reward with a photo; it is in the shop, the photo kept privately', async () => {
     // Maya can afford one, not two.
     const maya = memberId('Maya');
@@ -196,6 +198,26 @@ test('[PTS-03][PTS-04][US-1103][US-1104][US-1105] a reward with a photo: added, 
     await expect(admin.getByRole('list', { name: 'The shop', exact: true })).not.toContainText(
       title,
     );
+  });
+
+  await test.step('[PTS-03-c] put back from the shop’s Archived: in the shop again, Archived open', async () => {
+    // Back on Rewards after the archive, with Archived open (WP-95).
+    await expect(foldOf(admin, 'Archived')).toHaveAttribute('open', '');
+    const row = admin
+      .getByRole('list', { name: 'Archived rewards', exact: true })
+      .getByRole('listitem')
+      .filter({ hasText: title });
+    await expect(row).toContainText('Archived in');
+    await row.getByRole('button', { name: `Put ${title} back`, exact: true }).click();
+    await expect(admin.getByRole('status')).toHaveText('Put back. It’s in the shop again.');
+    await expect(admin.getByRole('list', { name: 'The shop', exact: true })).toContainText(title);
+    expect(
+      sql(`select archived_at is null from public.reward_catalog_item where id = '${itemId}'`),
+    ).toBe('t');
+    // Archived again, as the story left it before Put back, so the board's shop is as it was.
+    await admin.goto(`/admin/rewards/${itemId}`);
+    await admin.getByRole('button', { name: `Archive ${title}`, exact: true }).click();
+    await expect(admin.getByRole('status')).toHaveText('Archived. It’s out of the shop.');
   });
 });
 

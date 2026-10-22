@@ -103,6 +103,13 @@ export const ADMIN = [
   ['home-empty', '/dev/home?groceries=empty'],
   ['groceries-stores', '/dev/groceries?preferred=Costco&open=places'],
   ['groceries-preferred', '/dev/groceries?preferred=Costco&typed=olive%20oil'],
+  // [NFR-18] WP-95's Rewards, Members and a member's page folded, as the fold audit draws them; then
+  // opened as a save leaves them: Bonus points with Archived bonuses, the shop's Archived, Points.
+  ['rewards-open', '/dev/rewards?bonus=archive&archived=1'],
+  ['members', '/dev/members'],
+  ['members-archived', '/dev/members?archived=1'],
+  ['member', '/dev/members?page=member'],
+  ['member-points', '/dev/members?page=member&adjusted=5'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of

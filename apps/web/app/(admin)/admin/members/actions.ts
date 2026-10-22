@@ -58,7 +58,8 @@ export async function setArchived(form: FormData): Promise<void> {
     .eq('household_id', household.id);
   if (error) log('warn', 'member archive not saved', { code: error.code });
   revalidatePath('/admin/members');
-  redirect('/admin/members');
+  // [NFR-18] An archive comes back with Archived open (WP-95).
+  redirect(archive ? '/admin/members?archived=1' : '/admin/members');
 }
 
 /**

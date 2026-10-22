@@ -1529,6 +1529,37 @@ select.fw-input.fw-input--short {
   background: var(--reward-tint);
   color: var(--reward-text);
 }
+/* [NFR-18] A request's row (WP-95): the child's avatar, then its words, the buttons beside them;
+   on a phone the buttons stack at the right, as the fold audit draws them. */
+.fw-reward__ask {
+  flex-wrap: nowrap;
+}
+.fw-reward__ask > .fw-item {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.fw-reward__ask > .fw-actions {
+  flex: none;
+  justify-content: flex-end;
+}
+@media (max-width: 599px) {
+  .fw-reward__ask > .fw-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--s-1);
+  }
+  /* Without their icons, as the frame draws them, so the request's words keep their room. */
+  .fw-reward__ask .fw-btn__icon {
+    display: none;
+  }
+  .fw-reward__ask .fw-btn--ghost {
+    padding-inline: var(--s-2);
+  }
+}
+/* [NFR-18] A card holding what waits for a parent (Rewards' Asked for, WP-95). */
+.fw-card--attn {
+  border-color: var(--reward);
+}
 /* [PTS-06] Who is saving for a reward (WP-30). */
 .fw-reward__savers {
   display: inline-flex;
@@ -3065,14 +3096,16 @@ span.fw-heat__cell {
 
 /* Goals (WP-19): a parent's goals in play, each a card with its rules' meters, and the goal form's
    rule rows. Achieved reads in the reward colour with a trophy, never by colour alone. */
-.fw-goals__head {
+.fw-goals__head,
+.fw-page-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--s-3);
 }
-.fw-goals__head h1 {
+.fw-goals__head h1,
+.fw-page-head h1 {
   margin: 0;
 }
 .fw-goals {

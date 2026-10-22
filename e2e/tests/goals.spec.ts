@@ -196,6 +196,37 @@ test('[RWD-09][US-405] an achieved goal is marked redeemed: it moves to history 
   ).toContainText(/Redeemed .* by Alex/);
 });
 
+test('[RWD-09-a][NFR-18] a redeemed goal that needs a look says so on Goals’ folded History', async () => {
+  // A redeemed goal a reversal since put in doubt, made from Maya's goal for this test only.
+  const look = `Needs a look e2e ${Math.random().toString(36).slice(2, 6)}`;
+  const id = sql(`insert into public.reward_goal
+                    select (jsonb_populate_record(null::public.reward_goal, to_jsonb(g) || jsonb_build_object(
+                      'id', gen_random_uuid(), 'title', '${look}', 'status', 'redeemed', 'needs_review', true,
+                      'redeemed_at', now(), 'redeemed_by', null, 'archived_at', null))).*
+                      from public.reward_goal g where g.id = '${PARK}'
+                  returning id`);
+  try {
+    const toLook = Number(
+      sql(`select count(*) from public.reward_goal where household_id = '${HOUSEHOLD}'
+             and needs_review and status not in ('achieved', 'active', 'scheduled', 'draft')`),
+    );
+    expect(toLook, 'history goals needing a look, this one included').toBeGreaterThan(0);
+    await admin.goto('/admin/goals');
+    // Folded, the warning shows on History's header (D-120).
+    const history = foldOf(admin, 'History');
+    await expect(history).not.toHaveAttribute('open');
+    await expect(history.locator(':scope > summary .fw-fold__flag')).toHaveText(
+      `${toLook} ${toLook === 1 ? 'needs' : 'need'} a look`,
+    );
+    await unfold(history);
+    await expect(
+      admin.getByRole('list', { name: 'History' }).getByRole('listitem').filter({ hasText: look }),
+    ).toContainText('Needs a look');
+  } finally {
+    sql(`delete from public.reward_goal where id = '${id}'`);
+  }
+});
+
 test('[RWD-01][RWD-06] a parent sets a goal through the form, then cancels it', async () => {
   await admin.goto('/admin/goals');
   await admin.getByRole('link', { name: 'Set a goal' }).click();

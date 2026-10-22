@@ -118,7 +118,8 @@ export async function setRewardArchived(form: FormData): Promise<void> {
     .eq('household_id', household.id);
   if (error) log('warn', 'reward archive not saved', { code: error.code });
   revalidatePath('/admin/rewards');
-  redirect(archive ? '/admin/rewards?archived=1' : '/admin/rewards');
+  // [NFR-18] Back with the shop's Archived open, where a put back was tapped too (WP-95).
+  redirect(archive ? '/admin/rewards?archived=1' : '/admin/rewards?restored=1');
 }
 
 const ACTS = ['approve', 'deny', 'fulfil', 'cancel'] as const;
@@ -185,7 +186,8 @@ type BonusAct = (typeof BONUS_ACTS)[number];
 export async function bonusRuleAction(form: FormData): Promise<void> {
   const { db, household } = await context();
   const [act, id] = String(form.get('act') ?? '').split(':') as [BonusAct, string];
-  if (!BONUS_ACTS.includes(act) || !id || !GUID.test(id)) redirect('/admin/rewards?error=invalid');
+  if (!BONUS_ACTS.includes(act) || !id || !GUID.test(id))
+    redirect('/admin/rewards?error=invalid&open=bonus#bonus-heading');
   const { data: rule } = await db
     .from('points_rule')
     .select('counts_from')
@@ -210,7 +212,7 @@ export async function bonusRuleAction(form: FormData): Promise<void> {
     .eq('household_id', household.id);
   if (error) {
     log('warn', 'bonus rule not changed', { code: error.code });
-    redirect('/admin/rewards?error=invalid#bonus-heading');
+    redirect('/admin/rewards?error=invalid&open=bonus#bonus-heading');
   }
   revalidatePath('/admin/rewards');
   redirect(`/admin/rewards?bonus=${act}#bonus-heading`);
@@ -245,7 +247,7 @@ export async function applyBonusesNow(): Promise<void> {
   const { data, error } = await db.rpc('apply_points_rules', { p_household: household.id });
   if (error) {
     log('warn', 'bonus rules not applied', { code: error.code });
-    redirect('/admin/rewards?error=invalid#bonus-heading');
+    redirect('/admin/rewards?error=invalid&open=bonus#bonus-heading');
   }
   revalidatePath('/admin/rewards');
   redirect(`/admin/rewards?bonus=paid&posted=${(data as { posted: number }).posted}#bonus-heading`);

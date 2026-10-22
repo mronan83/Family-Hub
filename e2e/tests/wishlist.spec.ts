@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '../support/test';
 import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { addDays } from '../support/day';
+import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
 import { ownHousehold } from '../support/household';
 
@@ -132,7 +133,9 @@ test('[PTS-05][US-1107] a streak bonus pays once for a run that reaches it, payi
     const before = balance(leo);
 
     await admin.goto('/admin/rewards');
-    await admin.getByText('Add a bonus', { exact: true }).click();
+    // Bonus points is folded, and Add a bonus inside it (D-120, WP-95).
+    await unfold(foldOf(admin, 'Bonus points'));
+    await unfold(foldOf(admin, 'Add a bonus'));
     const form = admin.getByRole('form', { name: 'Add a bonus', exact: true });
     await form.getByRole('radio', { name: 'A streak', exact: true }).check();
     await form.getByLabel('Good days in a row', { exact: true }).fill('3');
@@ -208,8 +211,9 @@ test('[PTS-05][US-1107] a streak bonus pays once for a run that reaches it, payi
 
     await rules.getByRole('button', { name: `Archive: ${RULE}`, exact: true }).click();
     await expect(admin.getByRole('status')).toHaveText('Archived. Bonuses it paid stay.');
-    // Archived ones are folded away under their own disclosure.
-    await admin.getByText(/^Archived bonuses \(\d+\)$/).click();
+    // Archived ones are in their own fold, open after an archive (WP-95).
+    await expect(foldOf(admin, 'Bonus points')).toHaveAttribute('open', '');
+    await expect(foldOf(admin, 'Archived bonuses')).toHaveAttribute('open', '');
     await expect(admin.getByRole('list', { name: 'Archived bonuses', exact: true })).toContainText(
       RULE,
     );
