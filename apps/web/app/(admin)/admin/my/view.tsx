@@ -1,7 +1,9 @@
-import { Banner, Button } from '@familywise/ui';
+import { Banner, Button, Fold } from '@familywise/ui';
 import Link from 'next/link';
 import { myTaskGroups, type DayItem } from '@/lib/admin-day';
 import { relativeDay } from '@/lib/chores';
+import { comingUpLine } from '@/lib/day-folds';
+import { Line } from '../fold-line';
 import { AdminHeader } from '../header';
 import { type LinkCandidate, LinkMe } from '../link-me';
 import { setBell } from '../reminders/actions';
@@ -30,6 +32,8 @@ export interface MyTasksViewProps {
 /**
  * [CHR-14][US-316] My tasks, for a parent on their phone: what I'm on, overdue first, then today's
  * and the week ahead, shared items included; done in one tap, credited to me; and quick add.
+ * [NFR-18][D-120] As the fold audit draws it (WP-97): the title above the cards; Overdue and Today
+ * open; Coming up folded to how many in the next seven days and the next one.
  */
 export function MyTasksView({
   today,
@@ -77,31 +81,31 @@ export function MyTasksView({
       </Button>
     );
   };
+  const rows = (key: string, list: DayItem[], showDay: boolean) =>
+    list.length === 0 ? (
+      <p className="fw-muted">{key === 'today' ? 'Nothing for you today.' : 'Nothing yet.'}</p>
+    ) : (
+      <ul className="fw-list" aria-labelledby={`my-${key}`}>
+        {list.map((i) => (
+          <ItemRow
+            key={i.id}
+            item={i}
+            today={today}
+            people={people}
+            me={me}
+            only={['done', 'uncheck']}
+            tail={bell(i)}
+            extra={
+              showDay ? <span className="fw-muted">{relativeDay(i.dueDate, today)}</span> : null
+            }
+          />
+        ))}
+      </ul>
+    );
   const group = (key: string, heading: string, list: DayItem[], showDay: boolean) => (
-    <section key={key} aria-labelledby={`my-${key}`}>
-      <h2 id={`my-${key}`} className="fw-subhead">
-        {heading}
-      </h2>
-      {list.length === 0 ? (
-        <p className="fw-muted">{key === 'today' ? 'Nothing for you today.' : 'Nothing yet.'}</p>
-      ) : (
-        <ul className="fw-list" aria-labelledby={`my-${key}`}>
-          {list.map((i) => (
-            <ItemRow
-              key={i.id}
-              item={i}
-              today={today}
-              people={people}
-              me={me}
-              only={['done', 'uncheck']}
-              tail={bell(i)}
-              extra={
-                showDay ? <span className="fw-muted">{relativeDay(i.dueDate, today)}</span> : null
-              }
-            />
-          ))}
-        </ul>
-      )}
+    <section key={key} className="fw-card" aria-labelledby={`my-${key}`}>
+      <h2 id={`my-${key}`}>{heading}</h2>
+      {rows(key, list, showDay)}
     </section>
   );
 
@@ -113,23 +117,29 @@ export function MyTasksView({
       ) : notice ? (
         <Banner kind="info">{notice}</Banner>
       ) : null}
-      <section className="fw-card" aria-labelledby="my-heading">
+      <header className="fw-my__head">
         <h1 id="my-heading">My tasks</h1>
         <p className="fw-muted">
           {remindersOn ? 'Your reminders are on' : 'Your reminders are off'}:{' '}
           <Link href="/admin/reminders">Reminders</Link>.
         </p>
+      </header>
+      <section className="fw-card">
         <QuickAdd />
       </section>
-      <section className="fw-card">
-        <form action={dayAction} className="fw-form">
-          <input type="hidden" name="request" value={request} />
-          <input type="hidden" name="back" value="/admin/my" />
-          {groups.overdue.length > 0 ? group('overdue', 'Overdue', groups.overdue, true) : null}
-          {group('today', 'Today', groups.today, false)}
-          {group('upcoming', 'Coming up', groups.upcoming, true)}
-        </form>
-      </section>
+      <form action={dayAction} className="fw-my__groups">
+        <input type="hidden" name="request" value={request} />
+        <input type="hidden" name="back" value="/admin/my" />
+        {groups.overdue.length > 0 ? group('overdue', 'Overdue', groups.overdue, true) : null}
+        {group('today', 'Today', groups.today, false)}
+        <Fold
+          title="Coming up"
+          headingId="my-upcoming"
+          summary={[<Line key="l" line={comingUpLine(groups.upcoming, today)} />]}
+        >
+          {rows('upcoming', groups.upcoming, true)}
+        </Fold>
+      </form>
     </main>
   );
 }

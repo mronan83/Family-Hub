@@ -54,12 +54,14 @@ export default defineConfig({
         'chores.spec.ts',
         'home-groceries.spec.ts',
         'reward-folds.spec.ts',
+        'day-folds.spec.ts',
       ],
     },
     // [NFR-16][D-132] Safari on a Mac (WP-96): the screens WP-96 changes again in desktop WebKit at
     // 1280 px, as the laptop pictures of the side-by-side are. Desktop Safari's own chrome is not
     // drawn; WebKit is its engine, so its layout and form controls are. Limit as the iPhone's.
-    // [MEAL-27] WP-112's Home Groceries card too. [NFR-18] WP-95's Rewards and Members folds too.
+    // [MEAL-27] WP-112's Home Groceries card too. [NFR-18] WP-95's Rewards and Members folds too,
+    // and WP-97's Today, My tasks and Insights.
     {
       name: 'mac',
       use: {
@@ -68,7 +70,12 @@ export default defineConfig({
         serviceWorkers: 'block',
       },
       timeout: 100_000,
-      testMatch: ['chores.spec.ts', 'home-groceries.spec.ts', 'reward-folds.spec.ts'],
+      testMatch: [
+        'chores.spec.ts',
+        'home-groceries.spec.ts',
+        'reward-folds.spec.ts',
+        'day-folds.spec.ts',
+      ],
     },
   ],
   webServer: {

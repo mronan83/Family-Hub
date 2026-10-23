@@ -90,6 +90,7 @@ export default async function InsightsPage({
         notice={notice}
         basePath="/admin/insights"
         rebuild={rebuildHistory}
+        rebuilt={params.history === 'rebuilt' || params.history === 'failed'}
       />
     </main>
   );

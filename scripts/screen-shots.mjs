@@ -35,6 +35,9 @@ export const ADMIN = [
   ['admin-home', '/dev/admin'],
   ['admin-today', '/dev/admin?view=today'],
   ['admin-my', '/dev/admin?view=my'],
+  // [NFR-18] WP-97: Today just after a part's last item was marked done (D-145), Insights back from
+  // a rebuild with History open.
+  ['admin-today-changed', '/dev/admin?changed=1'],
   ['forms', '/dev/forms'],
   ['family', '/dev/family'],
   ['rewards', '/dev/rewards'],
@@ -58,6 +61,7 @@ export const ADMIN = [
   ['health', '/dev/health'],
   ['settings', '/dev/settings'],
   ['insights', '/dev/insights'],
+  ['insights-rebuilt', '/dev/insights?history=rebuilt'],
   // [MEAL-18][MEAL-23][MEAL-24] WP-104's Groceries, as the smart grocery list mockup draws it (D-138):
   // busy, an item's ⋯, adding with the suggestion, moving several, categories and stores, empty.
   ['groceries', '/dev/groceries'],

@@ -145,6 +145,8 @@ test('[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batc
 
   await admin.goto('/admin/today');
   const day = admin.getByRole('region', { name: 'Today' });
+  // [NFR-18] A part with everything done is folded (WP-97): open them all to tick.
+  for (const part of await day.locator('details.fw-fold').all()) await unfold(part);
   for (const name of [
     'Select Make bed (Maya)',
     'Select Make bed (Leo)',
@@ -190,6 +192,58 @@ test('[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batc
     sql(`select count(*) from public.points_ledger
           where occurrence_id in (${ids}) and entry_type = 'earn' and created_at >= '${started}'`),
   ).toBe('8');
+});
+
+test('[CHR-12-d][D-145] the last open item of a part marked done: open with its count, folded on the next load, opened to uncheck', async () => {
+  // [D-110] About 5 server round trips (two page loads, two saves, a reload): up to about 25 s on a
+  // slow preview, so 3x that.
+  test.setTimeout(75_000);
+  const bed = occ(MAKE_BED, memberId('Leo'));
+  const morning = `o.household_id = '${HOUSEHOLD}' and o.due_date = '${today}' and o.due_time < '12:00'`;
+  expect(
+    sql(`select count(*) from public.chore_occurrence o where ${morning} and o.id = '${bed}'`),
+  ).toBe('1');
+  // The rest of the morning skipped first, so Leo's bed is its last open item; put back after.
+  const rest = sql(`select coalesce(string_agg(o.id::text, ','), '')
+                      from public.chore_occurrence o join public.chore c on c.id = o.chore_id
+                     where ${morning} and c.archived_at is null and o.id <> '${bed}'
+                       and o.status in ('scheduled', 'rejected', 'missed', 'pending_approval')`)
+    .split(',')
+    .filter(Boolean);
+  try {
+    for (const id of rest) systemEvent(id, 'skip');
+    await admin.goto('/admin/today');
+    const part = foldOf(admin, 'Morning');
+    await expect(part).toHaveAttribute('open', '');
+    await test.step('marked done: the part stays open, with its count', async () => {
+      await admin.getByRole('button', { name: 'Mark Make bed (Leo) done', exact: true }).click();
+      await expect(admin.getByRole('status')).toHaveText('Marked Make bed (Leo) done.');
+      expect(status(bed)).toBe('approved');
+      await expect(part).toHaveAttribute('open', '');
+      await expect(part.locator(':scope > summary .fw-fold__count')).toHaveText(
+        /^(\d+) of \1 done$/,
+      );
+      await expect(
+        admin.getByRole('button', { name: 'Uncheck Make bed (Leo)', exact: true }),
+      ).toBeVisible();
+    });
+    await test.step('the next load: folded to its count, with the tick', async () => {
+      await admin.goto('/admin/today');
+      await expect(part).not.toHaveAttribute('open');
+      const head = part.locator(':scope > summary');
+      await expect(head.locator('.fw-fold__sum')).toContainText(/(\d+) of \1 done · /);
+      await expect(head.getByRole('img', { name: 'All done' })).toBeVisible();
+    });
+    await test.step('opened, and one unchecked', async () => {
+      await unfold(part);
+      await admin.getByRole('button', { name: 'Uncheck Make bed (Leo)', exact: true }).click();
+      await expect(admin.getByRole('status')).toContainText('Unchecked Make bed (Leo).');
+      expect(status(bed)).toBe('scheduled');
+      await expect(part).toHaveAttribute('open', '');
+    });
+  } finally {
+    for (const id of rest) systemEvent(id, 'admin_uncomplete');
+  }
 });
 
 test('[CHR-06] late credit for yesterday, then unchecked again; a day ahead skipped and put back', async () => {

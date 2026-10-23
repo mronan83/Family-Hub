@@ -1,10 +1,17 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { foldOf, unfold } from '../support/fold';
 
 // [RWD-12][US-408] The admin Insights page (WP-17) on /dev/insights: the 14 days of
 // supabase/tests/190_streak_history.test.sql with no database, on a phone and a laptop, in both
 // themes. The numbers are the pgTAP test's hand-computed ones; e2e/tests/insights.spec.ts reads a
 // real member's on the preview.
+
+/** [NFR-18] The detail sections are folded (WP-97): open them to read them. */
+async function openDetails(page: Page) {
+  for (const t of ['Day by day', 'Missed most', 'By tag', 'Checking'])
+    await unfold(foldOf(page, t));
+}
 
 async function contrastOk(page: Page) {
   const { violations } = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze();
@@ -28,6 +35,7 @@ test('[RWD-12][US-408] streaks, done rate, the day heatmap, most missed, tags an
   await expect(page.getByRole('region', { name: 'Done' })).toContainText(
     '86% 32 of 37 routines that counted',
   );
+  await openDetails(page);
   // The heatmap: every day, in words as well as colour.
   const heat = page.getByRole('table', { name: 'Day by day' });
   await expect(heat.locator('td[data-class="good"]')).toHaveCount(10);
@@ -51,6 +59,7 @@ test('[US-408] a member with no history yet says so, and a range can be chosen',
   await page.goto('/dev/insights?member=new&days=7');
   await expect(page.getByText('Leo has no days to show yet')).toBeVisible();
   await expect(page.getByRole('region', { name: 'Streaks' })).toContainText('Good run now0 days');
+  await openDetails(page);
   await expect(page.getByText('Nothing missed in these days.')).toBeVisible();
   await expect(
     page.getByRole('navigation', { name: 'Range' }).getByRole('link', { name: 'Last 7 days' }),

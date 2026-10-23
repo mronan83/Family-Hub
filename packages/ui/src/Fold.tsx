@@ -34,6 +34,8 @@ export interface FoldProps {
   waiting?: ReactNode;
   /** [CHR-21] How many it holds, on the header while open (Chores' sections, WP-96). */
   count?: ReactNode;
+  /** [CHR-12] Everything in it is done: a tick on the header, open or closed (Today's parts, WP-97). */
+  done?: string;
   children: ReactNode;
 }
 
@@ -50,6 +52,7 @@ export function Fold({
   warning,
   waiting,
   count,
+  done,
   children,
 }: FoldProps) {
   const H = `h${level ?? (variant === 'inner' ? 3 : 2)}` as 'h2' | 'h3';
@@ -78,6 +81,11 @@ export function Fold({
           <H id={headingId}>{title}</H>
         )}
         {count !== undefined ? <span className="fw-fold__count">{count}</span> : null}
+        {done ? (
+          <span className="fw-lunchday__check fw-fold__done" role="img" aria-label={done}>
+            <Icon name="check" />
+          </span>
+        ) : null}
         {flag}
         {waiting ? <span className="fw-fold__wait">{waiting}</span> : null}
         {button ? (
