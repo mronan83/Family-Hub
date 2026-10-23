@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.12: Today, My tasks and Insights folded (WP-97, D-145): test cases CHR-12-a to CHR-12-d, CHR-14-a, CHR-14-b, RWD-12-a and RWD-12-b; `day-folds.spec.ts` runs in Chrome, as an iPhone and as Safari on a Mac.
 > v0.8.11: the e2e reds of 18 to 21 October (WP-113, D-143): a slow probe says how much was the database's own time; the run reads the preview's own way to the test database (`/api/health/db`); a failed test names the page load or save it was still waiting for; the specs' date maths (`scripts/e2e-dates.mjs`) unit-tested on every weekday, across DST and in any zone. Test cases DEV-05-a, DEV-05-b and NFR-12-a to NFR-12-e.
 > v0.8.10: WP-111's follow-up: NFR-14-x reads each spec with the TypeScript parser, so a seed id or `family.` inside SQL text fails it (run 251's `chores.spec.ts`); the UI suite's MENU-06 Meals check passes on a Sunday too.
 > v0.8.9: each e2e spec its own made-up household (WP-111, NFR-14, D-137): rule 4 says how a spec gets it, and rule 11 that leftovers stay in it. Test cases NFR-14-u to NFR-14-z; the Test catalogue regenerated (§9).
@@ -274,7 +275,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2946** tests: Unit 928 · DB 1562 · UI 317 · E2E 139. 2424 name at least one ID; 522 name none.
+**2969** tests: Unit 945 · DB 1562 · UI 322 · E2E 140. 2447 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
@@ -283,7 +284,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 114 of 130 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 230 (with a test: 230) |
+| Test cases | 238 (with a test: 238) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -297,9 +298,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
-| Chores | 116 | 202 | 38 | 33 | 389 |
+| Chores | 127 | 202 | 42 | 34 | 405 |
 | Points | 45 | 92 | 19 | 12 | 168 |
-| Goals and rewards | 182 | 140 | 42 | 8 | 372 |
+| Goals and rewards | 188 | 140 | 43 | 8 | 379 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
 | Meals and lunch | 100 | 74 | 60 | 16 | 250 |
@@ -309,7 +310,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 197 | 167 | 61 | 18 | 443 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **928** | **1562** | **317** | **139** | **2946** |
+| **Total** | **945** | **1562** | **322** | **140** | **2969** |
 
 ### 9.3 By requirement
 
@@ -345,9 +346,9 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | CHR-09 | M | Covered | US-304, US-311, US-316, US-320 | WP-08, WP-09, WP-10, WP-43 | — | U 8 · DB 15 · UI 1 · E2E 3 |
 | CHR-10 | M | Covered | US-312 | WP-08, WP-15, WP-19, WP-46, WP-83 | — | U 9 · DB 8 · UI 3 · E2E 2 |
 | CHR-11 | M | Covered | US-313 | WP-08, WP-09, WP-11 | — | U 9 · DB 5 · UI 1 · E2E 2 |
-| CHR-12 | M | Covered | US-303, US-314 | WP-09, WP-10, WP-11 | — | U 5 · DB 9 · UI 2 · E2E 1 |
+| CHR-12 | M | Covered | US-303, US-314 | WP-09, WP-10, WP-11, WP-97 | CHR-12-a, CHR-12-b, CHR-12-c, CHR-12-d | U 13 · DB 9 · UI 5 · E2E 2 |
 | CHR-13 | M | Covered | US-315 | WP-08 | — | U 4 · DB 28 · E2E 3 |
-| CHR-14 | M | Covered | US-316 | WP-12 | — | U 4 · DB 7 · UI 6 · E2E 2 |
+| CHR-14 | M | Covered | US-316 | WP-12, WP-97 | CHR-14-a, CHR-14-b | U 7 · DB 7 · UI 8 · E2E 2 |
 | CHR-15 | M | Covered | US-317 | WP-40 | — | U 8 · DB 3 · UI 5 · E2E 4 |
 | CHR-16 | M | Covered | US-318 | WP-40 | — | U 5 · DB 6 · UI 2 · E2E 6 |
 | CHR-17 | M | Covered | US-319 | WP-40 | — | U 2 · DB 2 · UI 1 · E2E 2 |
@@ -368,7 +369,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | RWD-09 | M | Covered | US-405 | WP-19, WP-95 | RWD-09-a | U 1 · DB 2 · UI 1 · E2E 2 |
 | RWD-10 | S | Covered | US-406 | WP-39 | — | U 3 · DB 2 · UI 1 · E2E 1 |
 | RWD-11 | M | Covered | US-408 | WP-15, WP-17 | — | U 21 · DB 3 · E2E 2 |
-| RWD-12 | S | Covered | US-408 | WP-17 | — | U 1 · DB 6 · UI 1 · E2E 1 |
+| RWD-12 | S | Covered | US-408 | WP-17, WP-97 | RWD-12-a, RWD-12-b | U 7 · DB 6 · UI 3 · E2E 1 |
 | RWD-13 | S | Covered | US-409 | WP-39 | — | U 3 · DB 4 · UI 3 · E2E 1 |
 | RWD-14 | S | Covered | US-401 | WP-79 | — | U 5 · DB 5 · UI 3 · E2E 1 |
 | RWD-15 | S | Covered | US-410, US-411 | WP-80 | RWD-15-a, RWD-15-b, RWD-15-c, RWD-15-d, RWD-15-e, RWD-15-f, RWD-15-g, RWD-15-h, RWD-15-i, RWD-15-j, RWD-15-k, RWD-15-l, RWD-15-m | U 17 · DB 22 · UI 7 · E2E 1 |
@@ -448,7 +449,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-08 | S | Covered | US-909 | WP-01, WP-41, WP-42 | — | U 5 · DB 11 · UI 1 · E2E 1 |
 | NFR-09 | M | Covered | US-101, US-901 | WP-02 | — | DB 4 |
 | NFR-10 | M | Not built | US-903 | WP-24 | — | — |
-| NFR-11 | S | Covered | US-906 | WP-31, WP-46 | — | U 4 · UI 30 |
+| NFR-11 | S | Covered | US-906 | WP-31, WP-46 | — | U 4 · UI 31 |
 | PTS-01 | M | Covered | US-309, US-1101, US-1106 | WP-16, WP-95 | PTS-01-a, PTS-01-b | U 12 · DB 42 · UI 1 · E2E 6 |
 | PTS-02 | M | Covered | US-1102 | WP-11, WP-16, WP-20 | — | U 4 · DB 11 · UI 1 · E2E 2 |
 | PTS-03 | M | Covered | US-1103 | WP-18, WP-95 | PTS-03-a, PTS-03-b, PTS-03-c | U 7 · DB 6 · UI 7 · E2E 1 |
@@ -564,7 +565,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-94 | Done | NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x | 14 of 14 | — |
 | WP-95 | Done | PTS-03-a, PTS-04-b, PTS-05-a, PTS-01-a, ACC-04-a, PTS-03-b, ACC-04-b, PTS-03-c, PTS-01-b, RWD-09-a | 10 of 10 | — |
 | WP-96 | Done | CHR-21-a, CHR-21-b, CHR-21-c, CHR-21-d, CHR-21-e, CHR-21-f, CHR-21-g, CHR-21-h, CHR-21-i, CHR-22-a, CHR-22-b, CHR-23-a, CHR-23-b, CHR-23-c, NFR-16-t, MEAL-25-h, NFR-18-y, NFR-18-z | 18 of 18 | — |
-| WP-97 | Ready | — | — | — |
+| WP-97 | Done | CHR-12-a, CHR-12-b, CHR-14-a, RWD-12-a, CHR-12-c, CHR-14-b, RWD-12-b, CHR-12-d | 8 of 8 | — |
 | WP-98 | Done | NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | 6 of 6 | — |
 | WP-99 | Queued: | — | — | — |
 | WP-100 | Done | NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h | 8 of 8 | — |
@@ -709,6 +710,14 @@ Test cases and the tests that prove them:
 | MEAL-25-h | WP-96 | Duplicate on the Meal library copies all of a meal (the owner's answer, 18 October): every field, its ingredients, recipe link and steps, named "(copy)"; its photos and PDFs become files of the copy's own, in order, under its folder, once the copy is saved; one that can't be copied is named and its stored copy taken away; the copy's form never offers the original's files for removal | Unit, UI | Unit `apps/web/lib/meal-copy.test.ts`: `[MEAL-25-h] Duplicate on the Meal library copies all of a meal › [MEAL-25-h] the copy takes every field, its ingredients, link, steps and files, named "(copy)"`<br>Unit `apps/web/lib/meal-copy.test.ts`: `[MEAL-25-h] Duplicate on the Meal library copies all of a meal › [MEAL-25-h] the photos and PDFs become files of the copy’s own, in order, under its folder`<br>Unit `apps/web/lib/meal-copy.test.ts`: `[MEAL-25-h] Duplicate on the Meal library copies all of a meal › [MEAL-25-h] one that can’t be copied or recorded is named, and its stored copy taken away`<br>E2E `e2e/tests/chore-sections.spec.ts`: `[NFR-18-z][MEAL-25-h] the Meal library from ⋯: a meal edited, duplicated and archived`<br>UI `e2e/ui/chores.spec.ts`: `An item’s page, Duplicate, the Meal library and Tags › [NFR-16-t][MEAL-25-h] the Meal library: a meal a row with ⋯ (Edit, Duplicate, Archive); Duplicate opens…` |
 | NFR-18-y | WP-96 | An item's page folded: More options reads approval, days and lunch as set; Coming up reads the next one, when and who, and how many in two weeks; Last 7 days reads how many done, missed and skipped | Unit | Unit `apps/web/lib/chore-sections.test.ts`: `[NFR-18-y] an item’s page folded › [NFR-18-y] More options reads how it is set: approval, days and lunch`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[NFR-18-y] an item’s page folded › [NFR-18-y] Coming up reads the next one, when and who, and how many in two weeks`<br>Unit `apps/web/lib/chore-sections.test.ts`: `[NFR-18-y] an item’s page folded › [NFR-18-y] Last 7 days reads how many done, missed and skipped` |
 | NFR-18-z | WP-96 | On the preview, Alex edits, duplicates and archives a meal from its ⋯ on the Meal library, and edits and archives a tag from its ⋯ on Tags | E2E | E2E `e2e/tests/chore-sections.spec.ts`: `[NFR-18-z][MEAL-25-h] the Meal library from ⋯: a meal edited, duplicated and archived`<br>E2E `e2e/tests/chore-sections.spec.ts`: `[NFR-18-z] Tags from ⋯: a tag edited and archived` |
+| CHR-12-a | WP-97 | A part of the day's count and folded line: done, approved and skipped count as done; one sent back, waiting for a parent, missed or still to do keeps it from folding; a finished part's line names its first three items, each name once, then "and N more"; an empty part isn't done | Unit | Unit `apps/web/lib/day-folds.test.ts`: `[CHR-12-a] a part of the day’s done count, and when it folds › counts done, approved and skipped; folds once every item is one of them`<br>Unit `apps/web/lib/day-folds.test.ts`: `[CHR-12-a] a part of the day’s done count, and when it folds › one %s keeps it open and isn’t counted done`<br>Unit `apps/web/lib/day-folds.test.ts`: `[CHR-12-a] a part of the day’s done count, and when it folds › names the first three and how many more`<br>Unit `apps/web/lib/day-folds.test.ts`: `[CHR-12-a] a part of the day’s done count, and when it folds › an empty part is not done` |
+| CHR-12-b | WP-97 | Which parts show open: a finished part folded, one with anything to do open; the part holding the item just changed open until the next load (D-145), another part's change not; **Overdue** always open, with how many are open; the day's heading in full, the same across daylight saving and midnight UTC | Unit | Unit `apps/web/lib/day-folds.test.ts`: `[CHR-12-b] which parts show open, and Overdue’s count › a finished part folds; one with anything to do stays open`<br>Unit `apps/web/lib/day-folds.test.ts`: `[CHR-12-b] which parts show open, and Overdue’s count › [D-145] the part holding the item just changed stays open until the next load`<br>Unit `apps/web/lib/day-folds.test.ts`: `[CHR-12-b] which parts show open, and Overdue’s count › Overdue is always open, with how many are still open`<br>Unit `apps/web/lib/day-folds.test.ts`: `[CHR-12-b] which parts show open, and Overdue’s count › the day’s heading in full, the same at any hour and across daylight saving` |
+| CHR-14-a | WP-97 | My tasks' **Coming up** folded: how many in the next seven days and the next with its day and time (Tomorrow, else its date, over a month's end and daylight saving); nothing coming up | Unit | Unit `apps/web/lib/day-folds.test.ts`: `[CHR-14-a] My tasks’ Coming up, folded › how many in the next seven days, and the next with its day and time`<br>Unit `apps/web/lib/day-folds.test.ts`: `[CHR-14-a] My tasks’ Coming up, folded › a next one later in the week, over the month’s end and daylight saving, names its date`<br>Unit `apps/web/lib/day-folds.test.ts`: `[CHR-14-a] My tasks’ Coming up, folded › nothing coming up` |
+| RWD-12-a | WP-97 | Insights' folded findings: **Day by day**'s best and lowest weekday of what was done or missed (a tie to the first in the household's week, one weekday, all alike, none; each date's own weekday across daylight saving); **Missed most** (once, N times, none); **By tag** (three, most done first, "and N more", none); **Checking** (checked and sent back, else check-offs and unchecked, none) | Unit | Unit `apps/web/lib/insight-facts.test.ts`: `[RWD-12-a] Insights’ folded findings › Day by day: the best and lowest weekday, of what was done or missed`<br>Unit `apps/web/lib/insight-facts.test.ts`: `[RWD-12-a] Insights’ folded findings › Day by day: a tie goes to the first in the household’s week; one weekday; all alike; none`<br>Unit `apps/web/lib/insight-facts.test.ts`: `[RWD-12-a] Insights’ folded findings › Day by day: a date’s weekday is its own, whatever the hour or daylight saving`<br>Unit `apps/web/lib/insight-facts.test.ts`: `[RWD-12-a] Insights’ folded findings › Missed most: the most missed, once or how many times; none`<br>Unit `apps/web/lib/insight-facts.test.ts`: `[RWD-12-a] Insights’ folded findings › By tag: up to three, most done first, then how many more; none`<br>Unit `apps/web/lib/insight-facts.test.ts`: `[RWD-12-a] Insights’ folded findings › Checking: checked and sent back while check-offs wait; else check-offs and unchecked; none` |
+| CHR-12-c | WP-97 | Today on the demo family at 390 and 1280 px, Day and Evening, in Chrome, as an iPhone in WebKit and as Safari on a Mac in WebKit: the day's name above the cards; **Waiting for you** open in amber; **Overdue** open with "1 open"; open parts with their count; Morning, all done, folded to "3 of 3 done · Make bed and Brush teeth" with a tick, opened by a tap after hydration to **Uncheck**; just after its last item was marked done, Morning open with its count; no sideways scroll, 44 px targets, AA contrast, folded and opened | UI | UI `e2e/ui/day-folds.spec.ts`: `on ${name} › [CHR-12-c][CHR-14-b][RWD-12-b][NFR-11] Today, My tasks and Insights fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/day-folds.spec.ts`: `[CHR-12-c] Today: the title above the cards; a done part folded to its count and names, opened for Uncheck`<br>UI `e2e/ui/day-folds.spec.ts`: `[CHR-12-c][D-145] Today just after a part’s last item is marked done: that part open, with its count` |
+| CHR-14-b | WP-97 | My tasks at 390 and 1280 px, Day and Evening, in the three browsers: the title above the cards; **Overdue** and **Today** open; **Coming up** folded to "3 in the next 7 days · next: Leo's dentist, Tomorrow 3:30 pm", opened by a tap to its items | UI | UI `e2e/ui/day-folds.spec.ts`: `on ${name} › [CHR-12-c][CHR-14-b][RWD-12-b][NFR-11] Today, My tasks and Insights fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/day-folds.spec.ts`: `[CHR-14-b] My tasks: the title above the cards; Overdue and Today open, Coming up folded to how many and the next` |
+| RWD-12-b | WP-97 | Insights at 390 and 1280 px, Day and Evening, in the three browsers: **Streaks** and **Done** open; **Day by day**, **Missed most**, **By tag** and **Checking** folded to their findings; **History** folded to **Rebuild from history**, open after a rebuild; each opened by a tap | UI | UI `e2e/ui/day-folds.spec.ts`: `on ${name} › [CHR-12-c][CHR-14-b][RWD-12-b][NFR-11] Today, My tasks and Insights fit ${name} in ${theme}, folded and opened`<br>UI `e2e/ui/day-folds.spec.ts`: `[RWD-12-b] Insights: Streaks and Done open; the details folded to their findings; History to its button` |
+| CHR-12-d | WP-97 | On the preview, Alex marks the last open item of the Morning done: the part stays open with "N of N done"; on the next load it is folded with its count and the tick; opened, he unchecks it, and the part is open again; the morning is put back | E2E | E2E `e2e/tests/admin-day.spec.ts`: `[CHR-12-d][D-145] the last open item of a part marked done: open with its count, folded on the next load, opened to uncheck` |
 | NFR-16-a | WP-100 | Every admin page's fields, lists, dates and times are the app's on Chrome and iPhone WebKit, in Day and Evening: no browser look, 44 px or taller, 10 px round, 16 px text; a field is filled with the page's background and shows the focus ring | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}`<br>UI `e2e/ui/controls.spec.ts`: `[NFR-16-a] a field is filled, 10 px round, with a 3:1 edge and the focus ring` |
 | NFR-16-b | WP-100 | Every radio and check box is the app's: 20 px, a soft edge, the primary colour when chosen, on both engines | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-a][NFR-16-b] every admin page’s fields, lists, dates, radios and check boxes are the app’s, in ${theme}` |
 | NFR-16-c | WP-100 | A photo is chosen with **Choose a photo**; the file's name shows; the browser's own file picker never shows | UI | UI `e2e/ui/controls.spec.ts`: `[NFR-16-c] a photo is chosen with the app’s button, and its name shows` |
@@ -1407,6 +1416,24 @@ Unit · 8 tests
 | `the cards › [PTS-04][CHR-05] waiting for a parent: rewards asked for, then check-offs to approve` | CHR-05, PTS-04 |
 | `the cards › [CAL-04][D-66] coming up: all-day events after today within three weeks, soonest first` | CAL-04 |
 
+#### `apps/web/lib/day-folds.test.ts`
+
+Unit · 11 tests
+
+| Test | Names |
+|---|---|
+| `[CHR-12-a] a part of the day’s done count, and when it folds › counts done, approved and skipped; folds once every item is one of them` | CHR-12-a |
+| `[CHR-12-a] a part of the day’s done count, and when it folds › one %s keeps it open and isn’t counted done` | CHR-12-a |
+| `[CHR-12-a] a part of the day’s done count, and when it folds › names the first three and how many more` | CHR-12-a |
+| `[CHR-12-a] a part of the day’s done count, and when it folds › an empty part is not done` | CHR-12-a |
+| `[CHR-12-b] which parts show open, and Overdue’s count › a finished part folds; one with anything to do stays open` | CHR-12-b |
+| `[CHR-12-b] which parts show open, and Overdue’s count › [D-145] the part holding the item just changed stays open until the next load` | CHR-12-b |
+| `[CHR-12-b] which parts show open, and Overdue’s count › Overdue is always open, with how many are still open` | CHR-12-b |
+| `[CHR-12-b] which parts show open, and Overdue’s count › the day’s heading in full, the same at any hour and across daylight saving` | CHR-12-b |
+| `[CHR-14-a] My tasks’ Coming up, folded › how many in the next seven days, and the next with its day and time` | CHR-14-a |
+| `[CHR-14-a] My tasks’ Coming up, folded › a next one later in the week, over the month’s end and daylight saving, names its date` | CHR-14-a |
+| `[CHR-14-a] My tasks’ Coming up, folded › nothing coming up` | CHR-14-a |
+
 #### `apps/web/lib/devices.test.ts`
 
 Unit · 6 tests
@@ -1637,6 +1664,19 @@ Unit · 11 tests
 | `[NFR-17][US-109] Home alerts › notes weather that stopped updating, and an invite about to run out` | NFR-17, US-109 |
 | `[NFR-17][US-109] Home alerts › puts what needs you before heads-ups` | NFR-17, US-109 |
 | `[NFR-17][US-109] Home alerts › says how long in words` | NFR-17, US-109 |
+
+#### `apps/web/lib/insight-facts.test.ts`
+
+Unit · 6 tests
+
+| Test | Names |
+|---|---|
+| `[RWD-12-a] Insights’ folded findings › Day by day: the best and lowest weekday, of what was done or missed` | RWD-12-a |
+| `[RWD-12-a] Insights’ folded findings › Day by day: a tie goes to the first in the household’s week; one weekday; all alike; none` | RWD-12-a |
+| `[RWD-12-a] Insights’ folded findings › Day by day: a date’s weekday is its own, whatever the hour or daylight saving` | RWD-12-a |
+| `[RWD-12-a] Insights’ folded findings › Missed most: the most missed, once or how many times; none` | RWD-12-a |
+| `[RWD-12-a] Insights’ folded findings › By tag: up to three, most done first, then how many more; none` | RWD-12-a |
+| `[RWD-12-a] Insights’ folded findings › Checking: checked and sent back while check-offs wait; else check-offs and unchecked; none` | RWD-12-a |
 
 #### `apps/web/lib/jobs/goals.test.ts`
 
@@ -2179,11 +2219,12 @@ Unit · 4 tests
 
 #### `e2e/tests/admin-day.spec.ts`
 
-E2E · 4 tests
+E2E · 5 tests
 
 | Test | Names |
 |---|---|
 | `[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batch, open again on the board, four reversals; Undo puts them back` | CHR-08, PTS-01 |
+| `[CHR-12-d][D-145] the last open item of a part marked done: open with its count, folded on the next load, opened to uncheck` | CHR-12-d |
 | `[CHR-06] late credit for yesterday, then unchecked again; a day ahead skipped and put back` | CHR-06 |
 | `[CHR-05][D-22][NFR-18-w] with approval on, a child’s check-off waits for a parent: approved, or sent back to try again` | NFR-18-w, CHR-05 |
 | `[CHR-14][US-316] My tasks: quick add makes a task for me today, on the board at once; done credits me` | CHR-14, US-316 |
@@ -2892,6 +2933,18 @@ UI · 17 tests
 | `[CAL-04][BRD-09][US-1008][D-74] the calendar’s view is chosen on the board: Month, 7, 5 or 3 days` | BRD-09, CAL-04, US-1008 |
 | `[BRD-06][BRD-09][D-74] a screen scrolls inside itself, the rail and bar still; untouched, home, the top, and the board’s own view` | BRD-06, BRD-09 |
 | `[BRD-09][US-1008][D-74] a goal, a request and an event on the cards open what they are about` | BRD-09, US-1008 |
+
+#### `e2e/ui/day-folds.spec.ts`
+
+UI · 5 tests
+
+| Test | Names |
+|---|---|
+| `on ${name} › [CHR-12-c][CHR-14-b][RWD-12-b][NFR-11] Today, My tasks and Insights fit ${name} in ${theme}, folded and opened` | CHR-12-c, CHR-14-b, RWD-12-b, NFR-11 |
+| `[CHR-12-c] Today: the title above the cards; a done part folded to its count and names, opened for Uncheck` | CHR-12-c |
+| `[CHR-12-c][D-145] Today just after a part’s last item is marked done: that part open, with its count` | CHR-12-c |
+| `[CHR-14-b] My tasks: the title above the cards; Overdue and Today open, Coming up folded to how many and the next` | CHR-14-b |
+| `[RWD-12-b] Insights: Streaks and Done open; the details folded to their findings; History to its button` | RWD-12-b |
 
 #### `e2e/ui/forms.spec.ts`
 

@@ -303,7 +303,8 @@ const SHOTS = [
     url: '/dev/settings',
     act: (page) => page.getByRole('button', { name: /^Menu/ }).click(),
   },
-  { name: 'admin-today-laptop', device: 'laptop', url: '/dev/admin', full: true },
+  // [NFR-18] Today folded (WP-97): taller with After school, so more compressed to stay under 120 KB.
+  { name: 'admin-today-laptop', device: 'laptop', url: '/dev/admin', full: true, quality: 52 },
   { name: 'admin-not-done-phone', device: 'phone', url: '/dev/admin?notice=1', maxHeight: 1300 },
   { name: 'admin-my-tasks-phone', device: 'phone', url: '/dev/admin?view=my', full: true },
   // [NFR-18] My devices open, as after a device's action; When to remind me folded (WP-94).

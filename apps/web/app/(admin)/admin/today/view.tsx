@@ -1,9 +1,11 @@
-import { Banner, Button } from '@familywise/ui';
+import { Banner, Button, Fold } from '@familywise/ui';
 import Link from 'next/link';
 import { isDone, type DayItem } from '@/lib/admin-day';
-import { calendarDay, relativeDay } from '@/lib/chores';
+import { relativeDay } from '@/lib/chores';
+import { longDay, overdueWaiting, partFacts, partOpen } from '@/lib/day-folds';
 import { dayAndTime } from '@/lib/format';
 import { sections } from '@/lib/today';
+import { Line } from '../fold-line';
 import { AdminHeader } from '../header';
 import { dayAction, undoBatch } from './actions';
 import type { WaitingItem } from './data';
@@ -29,11 +31,17 @@ export interface TodayViewProps {
   undoBatchId: string | null;
   /** This page view's request id: a form sent twice records once. */
   request: string;
+  /** [D-145] The item a parent just changed: its part stays open, and folds on the next load. */
+  changed?: string | null;
 }
 
 /**
  * [CHR-05][CHR-06][CHR-08] A parent's day: check-offs waiting for a parent at the top, then a day's
  * items by part of day, each with what a parent can do, and "Not actually done" for the ticked ones.
+ * [NFR-18][D-120] Folded as the fold audit draws it (WP-97): Waiting for you and Overdue open; a part
+ * of the day folded to its count and first names once everything in it is done or skipped, a tick
+ * on its header; the part a parent just changed stays open with its count until the next load
+ * (D-145).
  */
 export function TodayView({
   date,
@@ -47,8 +55,10 @@ export function TodayView({
   error,
   undoBatchId,
   request,
+  changed = null,
 }: TodayViewProps) {
   const parts = sections(items, date);
+  const day = relativeDay(date, today);
   return (
     <main className="fw-page fw-page--wide">
       <AdminHeader current="/admin/today" />
@@ -69,8 +79,12 @@ export function TodayView({
         </Banner>
       ) : null}
 
+      <h1 id="day-heading" className="fw-day__title">
+        {day}
+      </h1>
+
       {waiting.length > 0 || lunches.length > 0 ? (
-        <section className="fw-card" aria-labelledby="waiting-heading">
+        <section className="fw-card fw-card--attn" aria-labelledby="waiting-heading">
           <h2 id="waiting-heading">Waiting for you</h2>
           <p className="fw-muted">
             {lunches.length > 0
@@ -108,39 +122,46 @@ export function TodayView({
         </section>
       ) : null}
 
-      <section className="fw-card" aria-labelledby="day-heading">
-        <div className="fw-bar">
-          <div>
-            <h1 id="day-heading">{relativeDay(date, today)}</h1>
-            {relativeDay(date, today) !== calendarDay(date) ? (
-              <p className="fw-muted">{calendarDay(date)}</p>
-            ) : null}
+      <section className="fw-day" aria-labelledby="day-heading">
+        <div className="fw-card">
+          <div className="fw-bar">
+            <h2 id="day-date">{longDay(date)}</h2>
+            <nav aria-label="Days" className="fw-actions">
+              <Link href={`/admin/today?date=${shift(date, -1)}`}>Day before</Link>
+              {date !== today ? <Link href="/admin/today">Today</Link> : null}
+              <Link href={`/admin/today?date=${shift(date, 1)}`}>Day after</Link>
+            </nav>
           </div>
-          <nav aria-label="Days" className="fw-actions">
-            <Link href={`/admin/today?date=${shift(date, -1)}`}>Day before</Link>
-            {date !== today ? <Link href="/admin/today">Today</Link> : null}
-            <Link href={`/admin/today?date=${shift(date, 1)}`}>Day after</Link>
-          </nav>
+          {parts.length === 0 ? <p className="fw-muted">Nothing is due on this day.</p> : null}
         </div>
 
-        {parts.length === 0 ? (
-          <p className="fw-muted">Nothing is due on this day.</p>
-        ) : (
-          <form action={dayAction} className="fw-form">
+        {parts.length > 0 ? (
+          <form action={dayAction} className="fw-day__parts">
             <input type="hidden" name="request" value={request} />
             <input type="hidden" name="date" value={date} />
-            {parts.map((p) => (
-              <section key={p.key} aria-labelledby={`part-${p.key}`}>
-                <h2 id={`part-${p.key}`} className="fw-subhead">
-                  {p.label}
-                </h2>
-                <ul className="fw-list" aria-labelledby={`part-${p.key}`}>
-                  {p.items.map((i) => (
-                    <ItemRow key={i.id} item={i} today={today} people={people} selectable />
-                  ))}
-                </ul>
-              </section>
-            ))}
+            {parts.map((p) => {
+              const facts = partFacts(p.items);
+              const overdue = p.key === 'overdue';
+              return (
+                <Fold
+                  key={p.key}
+                  id={`part-${p.key}`}
+                  headingId={`part-${p.key}-heading`}
+                  title={p.label}
+                  open={partOpen(p.key, p.items, changed)}
+                  count={overdue ? undefined : facts.count}
+                  waiting={overdue ? overdueWaiting(p.items) : undefined}
+                  done={!overdue && facts.finished ? 'All done' : undefined}
+                  summary={overdue ? undefined : [<Line key="l" line={facts.line} />]}
+                >
+                  <ul className="fw-list" aria-labelledby={`part-${p.key}-heading`}>
+                    {p.items.map((i) => (
+                      <ItemRow key={i.id} item={i} today={today} people={people} selectable />
+                    ))}
+                  </ul>
+                </Fold>
+              );
+            })}
             {items.some((i) => isDone(i.status)) ? (
               <div className="fw-actions">
                 <Button type="submit" variant="secondary" icon="undo" name="act" value="batch">
@@ -152,7 +173,7 @@ export function TodayView({
               </div>
             ) : null}
           </form>
-        )}
+        ) : null}
         <p className="fw-muted">
           Late credit for a past day counts as done by a parent. Skipping a day leaves it out of
           streaks and goals.

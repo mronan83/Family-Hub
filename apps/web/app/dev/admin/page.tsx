@@ -14,6 +14,8 @@ import type { MenuItem } from '@/lib/menu/nutrislice';
 // not linked to a member. [BRD-04] ?view=weather for Weather on the boards (WP-45; in Family options since WP-57), with
 // &state=none (no place yet), found (places to choose from), failing (the last read failed).
 // [MEAL-09] ?lunches=1: the children's lunch changes from the board waiting on Today (WP-49).
+// [NFR-18] Today folded (WP-97): Morning all done, so folded; ?changed=1 is the page just after its
+// last item was marked done, Morning open with "3 of 3 done" until the next load (D-145).
 export const metadata: Metadata = { title: 'Admin day', robots: { index: false } };
 
 const TZ = 'America/New_York';
@@ -129,6 +131,8 @@ function fixture(today: string) {
       dueTime: '07:30',
       memberId: LEO,
       assignees: [LEO],
+      status: 'completed',
+      doneBy: [LEO],
     }),
     item({
       title: 'Brush teeth',
@@ -138,6 +142,30 @@ function fixture(today: string) {
       assignees: [MAYA],
       status: 'approved',
       doneBy: [MAYA],
+    }),
+    // [NFR-18] After school: one waiting for a parent, two to do, so it stays open (WP-97).
+    item({
+      title: 'Reading, 20 minutes',
+      icon: 'chore-read',
+      dueTime: '15:30',
+      memberId: LEO,
+      assignees: [LEO],
+    }),
+    item({
+      title: 'Homework',
+      icon: 'chore-homework',
+      dueTime: '16:00',
+      assignees: [MAYA],
+      status: 'pending_approval',
+      doneBy: [MAYA],
+      points: 10,
+    }),
+    item({
+      title: 'Piano practice',
+      icon: 'list-check',
+      dueTime: '16:30',
+      memberId: MAYA,
+      assignees: [MAYA],
     }),
     item({ title: 'Feed the dog', icon: 'chore-pet', dueTime: '17:00', assignees: [ALEX, MAYA] }),
     item({
@@ -206,8 +234,25 @@ function fixture(today: string) {
       assignees: [ALEX],
       points: 0,
     }),
-    items[3]!,
-    items[7]!,
+    items[6]!,
+    items[10]!,
+    item({
+      title: 'Leo’s dentist',
+      icon: 'calendar',
+      kind: 'task',
+      dueDate: shift(today, 1),
+      dueTime: '15:30',
+      assignees: [ALEX],
+      points: 0,
+    }),
+    item({
+      title: 'Order Sam’s cake',
+      icon: 'buy',
+      kind: 'task',
+      dueDate: shift(today, 4),
+      assignees: [ALEX],
+      points: 0,
+    }),
     item({
       title: 'Pay the school trip fee',
       icon: 'buy',
@@ -238,6 +283,7 @@ export default async function DevAdminPage({
     notice?: string;
     state?: string;
     lunches?: string;
+    changed?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -331,6 +377,8 @@ export default async function DevAdminPage({
           error={null}
           undoBatchId={params.notice ? 'b1000000-0000-4000-8000-000000000001' : null}
           request={request}
+          // [D-145] ?changed=1: back from marking Leo's bed done, Morning open with its count.
+          changed={params.changed ? items[1]!.id : null}
         />
       )}
     </div>

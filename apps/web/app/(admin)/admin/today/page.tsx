@@ -103,6 +103,8 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
       }
       // One request id per page view: a form sent twice records once (and is one batch).
       request={crypto.randomUUID()}
+      // [D-145] The part holding what a parent just changed stays open until the next load.
+      changed={params.item && GUID.test(params.item) ? params.item : null}
     />
   );
 }

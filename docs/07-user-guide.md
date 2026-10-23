@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.45: Today, My tasks and Insights folded (WP-97, D-120, D-145): a part of the day folds to "6 of 6 done" and its first names once everything in it is done or skipped, the next time Today opens; **Overdue** and **Waiting for you** stay open; My tasks' **Coming up** folds to how many and the next one; Insights' **Day by day**, **Missed most**, **By tag** and **Checking** fold to their one-line finding, **History** to its button.
 > v0.44: Rewards and Members folded (WP-95, D-120, D-144): the shop's **Archived**, **Bonus points** (with **Add a bonus** and **Archived bonuses** inside) and **Lately** fold to what they hold; **Archived** on Members to who; a member's **Points** to the balance and the last change, with **Change points** inside, and **Archive** set apart; a save comes back with its fold open (A6, B1.6, B1.7).
 > v0.43: Groceries on Home and a preferred store (WP-112, D-142): Home's Groceries card (add without leaving Home, where it goes, Added with Change), **New items go to** in Categories and stores, and the store suggested as last time's, then the preferred one.
 > v0.42: Chores in four sections (WP-96, D-132, D-141): Scheduled, Recurring, Completed and Archived; the person chips and More filters; each item's ⋯ (Edit, Duplicate, Archive or Restore), or hold the row; Duplicate and Do again; an item's page folded; the meal library and Tags take the same ⋯ (A4, A15, B1.5, B1.15).
@@ -194,7 +195,7 @@ The board shows the family's day at once. From then on it keeps itself signed in
 
 **What this is.** The admin app's **Today** and **My tasks** pages. **When.** Whenever you want to see how the day is going, settle what's waiting for you, or put something right. **How.** Open **Today** from the menu.
 
-![The admin Today page on a laptop: "Waiting for you" lists Homework and Practice piano with Approve and Send back; below, today's items by part of the day with Mark done, Skip, Uncheck and Put back, and the Not actually done button at the end.](guide/img/admin-today-laptop.jpg "Today in the admin app, on a laptop")
+![The admin Today page on a laptop: "Waiting for you" lists Homework and Practice piano with Approve and Send back; below, Overdue open, Morning folded to "3 of 3 done" with a tick, After school, Evening and Anytime open with Mark done, Skip, Uncheck and Put back, and the Not actually done button at the end.](guide/img/admin-today-laptop.jpg "Today in the admin app, on a laptop")
 
 #### Home: what needs you, and quick actions
 
@@ -222,6 +223,8 @@ The board shows the family's day at once. From then on it keeps itself signed in
 **Today** shows the whole family's day, grouped like the board: **Overdue**, **Morning**, **After school**, **Evening** and **Anytime**. Each item says who it is for and how it stands, with an icon and a word: **Open**, **Done**, **Approved**, **Needs review**, **Sent back**, **Skipped**, **Missed**, **Overdue** or **Covered**. For an item everyone does their own, each person's line starts with their name ("Maya: done").
 
 Move between days with **Day before** and **Day after**; **Today** brings you back.
+
+**Parts fold when they're done.** Each part shows how many of its items are done ("1 of 4 done"). Once everything in a part is done or skipped, it gets a tick and, the next time you open Today, it is folded to one line: "6 of 6 done · Make bed, Brush teeth, Feed the dog and 3 more". So by evening the page is the few things still open. Tap a folded part to open it, for **Uncheck** or **Not actually done**. When you mark the last item of a part done yourself, the part stays open with its count, so the page doesn't move under your finger and **Uncheck** is still there. **Overdue** and **Waiting for you** never fold while they hold anything. Something waiting for a parent, sent back or missed keeps its part open.
 
 #### Approve or send back a check-off
 
@@ -288,13 +291,13 @@ They go back to open (or to missed, if their day is over), and their points are 
 
 - **Overdue**: your tasks from earlier days that are still open.
 - **Today**: everything due today.
-- **Coming up**: the next seven days.
+- **Coming up**: the next seven days, folded to how many and the next one ("5 in the next 7 days · next: Leo's dentist, Tuesday 3:30 pm"). Tap it to see them all.
 
 **Mark done** credits only you. **Uncheck** takes it back. The **Bell on** / **Bell off** button beside each open item says whether it reminds you (see [A3](#a3-reminders-on-your-phone)).
 
 **Quick add:** type under **Add a task for today** and choose **Add**. It becomes a task for you, due today, with no points, visible to the family. It shows on the board straight away.
 
-![My tasks on a phone: quick add at the top, then Overdue, Today and Coming up, each item with Bell on or Bell off and Mark done.](guide/img/admin-my-tasks-phone.jpg "My tasks, on a phone")
+![My tasks on a phone: quick add at the top, then Overdue and Today, each item with Bell on or Bell off and Mark done, and Coming up folded to how many and the next one.](guide/img/admin-my-tasks-phone.jpg "My tasks, on a phone")
 
 ### A3 Reminders on your phone
 <!-- covers: US-317 US-318 US-319 US-322 -->
@@ -786,13 +789,15 @@ On the goal's page, **Weeks** is folded to "Won 3 of the last 4 weeks" and the p
 |---|---|
 | **Streaks** | **Good run now**, **Best good run** and **Longest bad streak**, over all their history. |
 | **Done** | The share of routines that counted that were done. |
-| **Day by day** | A calendar of the days: **Good day**, **Bad day**, **Waiting for a parent**, **Nothing that counted**. |
-| **Missed most** | The routines missed most often. |
-| **By tag** | How much was done, tag by tag. |
-| **Checking** | Their **Check-offs**, how many were **Unchecked by a parent** or **Sent back**, and the **Time to check**. |
-| **History** | **Rebuild from history** reads every check-off again. It is kept up to date each hour, so you rarely need it. |
+| **Day by day** | Folded to the best and lowest weekday ("Best: Tuesdays, 96% · lowest: Saturdays, 61%"). Open: a calendar of the days: **Good day**, **Bad day**, **Waiting for a parent**, **Nothing that counted**. |
+| **Missed most** | Folded to the one missed most. Open: the routines missed most often. |
+| **By tag** | Folded to up to three tags, most done first ("School 94% · Kitchen 82% · Bedroom 64%"). Open: how much was done, tag by tag. |
+| **Checking** | Folded to how many a parent checked and sent back (or, while check-offs count straight away, how many a parent unchecked). Open: their **Check-offs**, how many were **Unchecked by a parent** or **Sent back**, and the **Time to check**. |
+| **History** | Folded to **Rebuild from history**, which reads every check-off again. It is kept up to date each hour, so you rarely need it. |
 
-![Insights for Maya on a laptop: streaks, 86% done, a calendar of good and bad days, missed most, by tag, and checking.](guide/img/admin-insights-laptop.jpg "Insights, on a laptop")
+**Streaks** and **Done** are always open; tap a folded section to open it.
+
+![Insights for Maya on a laptop: streaks and 86% done open; Day by day, Missed most, By tag, Checking and History folded to their findings.](guide/img/admin-insights-laptop.jpg "Insights, on a laptop")
 
 ### A9 Calendars
 <!-- covers: US-501 US-502 US-503 US-504 US-505 US-507 US-508 US-509 -->
@@ -1241,7 +1246,7 @@ Messages: "Added Ground beef 2 lb to Meat & Seafood.", "No school today. Today's
 | Part | What it shows or does |
 |---|---|
 | **Waiting for you** | **Lunch changes** from the board, a group a child (each day: what it usually is, the change, the picks; **Approve**, **Keep Bring** / **Keep Buy** / **Keep as it was**; **Approve both** or **Approve all**), until the morning cut-off. Then **Check-offs** that need a parent, from any day: **Approve** or **Send back**. Shown only when something waits. |
-| The day | The day's name and date, **Day before**, **Today**, **Day after**. Items by **Overdue**, **Morning**, **After school**, **Evening**, **Anytime**, each with who it is for, its status, and its buttons. |
+| The day | The day's name above, then its date in full, **Day before**, **Today**, **Day after**. Items by **Overdue**, **Morning**, **After school**, **Evening**, **Anytime**, each with who it is for, its status, and its buttons. Each part shows "N of M done"; one with everything done or skipped has a tick, and is folded to its count and first names the next time Today opens. **Overdue** stays open, with how many are open. |
 | Buttons per item | **Mark done** (or **Mark done…** with **Who did** it), **Skip**, **Put back**, **Uncheck**, **Approve**, **Send back**. See [Mark done, skip, uncheck](#mark-done-skip-uncheck). |
 | **Not actually done** | Unchecks every ticked done item together, then offers **Undo** in the banner. |
 
@@ -1254,7 +1259,7 @@ Messages: "Approved 2 lunch changes.", "Kept the day as it was.", "… was past 
 |---|---|
 | Reminders line | "Your reminders are on" or "off", with a link to **Reminders**. |
 | **Add a task for today** | Type a name, **Add**: a task for you today, no points, visible to the family. |
-| **Overdue**, **Today**, **Coming up** | Your items: open tasks from before today, today's items, the next seven days. |
+| **Overdue**, **Today**, **Coming up** | Your items: open tasks from before today, today's items, the next seven days. **Coming up** is folded to how many and the next one. |
 | Per item | **Mark done** (credits only you), **Uncheck**, and **Bell on** / **Bell off** on items still to do. |
 | **Which one is you?** | Shown instead when your sign-in isn't linked to a member: choose **I'm** (name). |
 
@@ -1361,7 +1366,7 @@ A member who doesn't earn rewards can't be given points; what they earned before
 #### B1.9 Insights
 <!-- covers: US-408 -->
 
-One member at a time, children first; **Last 7 days**, **Last 30 days** (default) or **Last 90 days**, up to yesterday. Sections: **Streaks**, **Done**, **Day by day**, **Missed most**, **By tag**, **Checking**, **History** with **Rebuild from history**. See [A8](#a8-streaks-and-insights).
+One member at a time, children first; **Last 7 days**, **Last 30 days** (default) or **Last 90 days**, up to yesterday. Sections: **Streaks** and **Done** open; **Day by day**, **Missed most**, **By tag** and **Checking** folded to their one-line finding; **History** folded to **Rebuild from history**, open after a rebuild. See [A8](#a8-streaks-and-insights).
 
 #### B1.10 School
 <!-- covers: US-601 US-602 -->

@@ -1,7 +1,9 @@
-import { Banner, Button, Icon, type IconName } from '@familywise/ui';
+import { Banner, Button, Fold, Icon, type IconName } from '@familywise/ui';
 import Link from 'next/link';
 import { day } from '@/lib/format';
 import { daysWord, duration, heatmapWeeks, type Insights, percent } from '@/lib/history';
+import { checkingLine, dayByDayLine, missedLine, tagLine } from '@/lib/insight-facts';
+import { Line } from '../fold-line';
 
 export const RANGES = [7, 30, 90] as const;
 export type Range = (typeof RANGES)[number];
@@ -22,7 +24,9 @@ const dateLabel = (iso: string) => day(`${iso}T12:00:00Z`, 'UTC');
  * [RWD-12][US-408] A parent's insights for one member (WP-17, D-55): their runs of good and bad days,
  * how much of what counted they did, a day heatmap, what they miss most, completion by tag, and how
  * often a parent unchecks or sends back their check-offs, to inform the approval switch. Parent
- * words: "bad" is allowed here (06 §2), never on the board.
+ * words: "bad" is allowed here (06 §2), never on the board. [NFR-18][D-120] Folded as the fold audit
+ * draws it (WP-97): Streaks and Done open; Day by day, Missed most, By tag and Checking folded to
+ * their one-line finding; History folded to its button, open after a rebuild.
  */
 export function InsightsView({
   members,
@@ -33,6 +37,7 @@ export function InsightsView({
   notice,
   basePath,
   rebuild,
+  rebuilt = false,
 }: {
   members: { id: string; name: string }[];
   memberId: string;
@@ -42,6 +47,8 @@ export function InsightsView({
   notice: string | null;
   basePath: string;
   rebuild?: (form: FormData) => Promise<void>;
+  /** After a rebuild: History comes back open. */
+  rebuilt?: boolean;
 }) {
   const name = members.find((m) => m.id === memberId)?.name ?? 'This member';
   const href = (member: string, days: Range) => `${basePath}?member=${member}&days=${days}`;
@@ -53,39 +60,41 @@ export function InsightsView({
 
   return (
     <>
-      <section className="fw-card" aria-labelledby="insights-heading">
+      <header className="fw-insights__head">
         <h1 id="insights-heading">Insights</h1>
-        <nav aria-label="Member" className="fw-insights__tabs">
-          {members.map((m) => (
-            <Link
-              key={m.id}
-              href={href(m.id, range)}
-              className="fw-insights__tab"
-              aria-current={m.id === memberId ? 'page' : undefined}
-            >
-              {m.name}
-            </Link>
-          ))}
-        </nav>
-        <nav aria-label="Range" className="fw-insights__tabs">
-          {RANGES.map((r) => (
-            <Link
-              key={r}
-              href={href(memberId, r)}
-              className="fw-insights__tab"
-              aria-current={r === range ? 'page' : undefined}
-            >
-              Last {r} days
-            </Link>
-          ))}
-        </nav>
+        <div className="fw-insights__bar">
+          <nav aria-label="Member" className="fw-insights__tabs">
+            {members.map((m) => (
+              <Link
+                key={m.id}
+                href={href(m.id, range)}
+                className="fw-insights__tab"
+                aria-current={m.id === memberId ? 'page' : undefined}
+              >
+                {m.name}
+              </Link>
+            ))}
+          </nav>
+          <nav aria-label="Range" className="fw-insights__tabs">
+            {RANGES.map((r) => (
+              <Link
+                key={r}
+                href={href(memberId, r)}
+                className="fw-insights__tab"
+                aria-current={r === range ? 'page' : undefined}
+              >
+                Last {r} days
+              </Link>
+            ))}
+          </nav>
+        </div>
         <p className="fw-muted">
           {s.through
             ? `${name}’s days from ${dateLabel(insights.from)} to ${dateLabel(insights.to)}. Today is added once it closes.`
             : `${name} has no days to show yet: history starts with their first routine.`}
         </p>
         {notice ? <Banner kind="notice">{notice}</Banner> : null}
-      </section>
+      </header>
 
       <section className="fw-card" aria-labelledby="streaks-heading">
         <h2 id="streaks-heading">Streaks</h2>
@@ -127,8 +136,11 @@ export function InsightsView({
         <p className="fw-muted">Skipped routines, and ones someone else did, don’t count.</p>
       </section>
 
-      <section className="fw-card" aria-labelledby="heat-heading">
-        <h2 id="heat-heading">Day by day</h2>
+      <Fold
+        title="Day by day"
+        headingId="heat-heading"
+        summary={[<Line key="l" line={dayByDayLine(insights.days, weekStart)} />]}
+      >
         <div className="fw-insights__heat-wrap">
           <table className="fw-heat" aria-labelledby="heat-heading">
             <thead>
@@ -180,10 +192,13 @@ export function InsightsView({
             </li>
           ))}
         </ul>
-      </section>
+      </Fold>
 
-      <section className="fw-card" aria-labelledby="missed-heading">
-        <h2 id="missed-heading">Missed most</h2>
+      <Fold
+        title="Missed most"
+        headingId="missed-heading"
+        summary={[<Line key="l" line={missedLine(insights.most_missed)} />]}
+      >
         {insights.most_missed.length === 0 ? (
           <p className="fw-muted">Nothing missed in these days.</p>
         ) : (
@@ -198,10 +213,13 @@ export function InsightsView({
             ))}
           </ul>
         )}
-      </section>
+      </Fold>
 
-      <section className="fw-card" aria-labelledby="tags-heading">
-        <h2 id="tags-heading">By tag</h2>
+      <Fold
+        title="By tag"
+        headingId="tags-heading"
+        summary={[<Line key="l" line={tagLine(insights.by_tag)} />]}
+      >
         {insights.by_tag.length === 0 ? (
           <p className="fw-muted">No tagged routines in these days.</p>
         ) : (
@@ -220,10 +238,13 @@ export function InsightsView({
             ))}
           </ul>
         )}
-      </section>
+      </Fold>
 
-      <section className="fw-card" aria-labelledby="trust-heading">
-        <h2 id="trust-heading">Checking</h2>
+      <Fold
+        title="Checking"
+        headingId="trust-heading"
+        summary={[<Line key="l" line={checkingLine(t)} />]}
+      >
         <dl className="fw-insights__stats">
           <div>
             <dt>Check-offs</dt>
@@ -250,13 +271,18 @@ export function InsightsView({
         <p className="fw-muted">
           {name}’s own check-offs in these days, and what a parent did next. Few unchecked or sent
           back suggests check-offs can count straight away; many suggests they should wait for a
-          parent (the switch is on Home).
+          parent (the switch is in Settings, Family options).
         </p>
-      </section>
+      </Fold>
 
       {rebuild ? (
-        <section className="fw-card" aria-labelledby="rebuild-heading">
-          <h2 id="rebuild-heading">History</h2>
+        <Fold
+          title="History"
+          headingId="rebuild-heading"
+          id="history"
+          open={rebuilt}
+          button={{ label: 'Rebuild from history', icon: 'sync' }}
+        >
           <p className="fw-muted">
             Kept up to date each hour from every check-off. Rebuilding reads it all again; the same
             check-offs always give the same history.
@@ -268,7 +294,7 @@ export function InsightsView({
               Rebuild from history
             </Button>
           </form>
-        </section>
+        </Fold>
       ) : null}
     </>
   );

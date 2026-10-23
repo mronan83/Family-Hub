@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { foldOf, unfold } from '../support/fold';
 
 // [CHR-05][CHR-06][CHR-08][CHR-14] A parent's day and My tasks (WP-12) on /dev/admin: a made-up family,
 // no database. The pages' layout, words and buttons on a phone and a laptop, in Day and Evening. The
@@ -55,14 +56,19 @@ test('[CHR-06][CHR-12] the day by part of day, overdue tasks first; each item of
 }) => {
   await page.goto('/dev/admin');
   const day = page.getByRole('region', { name: 'Today' });
-  await expect(day.getByRole('heading', { level: 2 })).toHaveText([
+  // [NFR-18] Each part a fold (WP-97); Morning, all done, folded until opened.
+  await expect(day.locator('details h2')).toHaveText([
     'Overdue',
     'Morning',
+    'After school',
     'Evening',
     'Anytime',
   ]);
+  await unfold(foldOf(page, 'Morning'));
   // Each person's own item names them (D-47).
-  await expect(day.getByRole('button', { name: 'Mark Make bed (Leo) done' })).toBeVisible();
+  await expect(
+    day.getByRole('button', { name: 'Mark Reading, 20 minutes (Leo) done' }),
+  ).toBeVisible();
   await expect(day.getByRole('button', { name: 'Uncheck Make bed (Maya)' })).toBeVisible();
   await expect(day.getByRole('button', { name: 'Skip Return library books' })).toBeVisible();
   await expect(day.getByRole('button', { name: 'Put Take out the bins back' })).toBeVisible();
@@ -77,10 +83,12 @@ test('[CHR-06][CHR-12] the day by part of day, overdue tasks first; each item of
 
 test('[CHR-08] only done items can be ticked for “Not actually done”', async ({ page }) => {
   await page.goto('/dev/admin');
+  await unfold(foldOf(page, 'Morning'));
   const ticks = page.getByRole('checkbox', { name: /^Select / });
-  await expect(ticks).toHaveCount(3);
+  await expect(ticks).toHaveCount(4);
   for (const name of [
     'Select Make bed (Maya)',
+    'Select Make bed (Leo)',
     'Select Brush teeth (Maya)',
     'Select Set the table',
   ]) {
@@ -120,6 +128,7 @@ test('[CHR-14][US-316] My tasks: overdue, today’s, then coming up; done credit
   ]);
   await expect(page.getByRole('list', { name: 'Overdue' })).toContainText('Book the dentist');
   await expect(page.getByRole('list', { name: 'Today' })).toContainText('Feed the dog');
+  await unfold(foldOf(page, 'Coming up'));
   await expect(page.getByRole('list', { name: 'Coming up' })).toContainText(
     'Pay the school trip fee',
   );

@@ -5,7 +5,8 @@ import { InsightsView, RANGES, type Range } from '../../(admin)/admin/insights/v
 
 // The admin Insights page with a made-up member and no database (WP-17), for the UI suite: the
 // 14 days of supabase/tests/190_streak_history.test.sql, in Day or Evening (?theme=evening), and a
-// member with no history yet (?member=new).
+// member with no history yet (?member=new). [NFR-18] ?history=rebuilt: back from a rebuild, History
+// open (WP-97).
 export const metadata: Metadata = { title: 'Insights', robots: { index: false } };
 
 const KID = '0de00000-0000-4000-8000-00000000d0a1';
@@ -82,10 +83,15 @@ function fixture(memberId: string): Insights {
   };
 }
 
+/** [NFR-18] History's button, here a no-op: the page has no history to rebuild. */
+async function rebuild() {
+  'use server';
+}
+
 export default async function DevInsightsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; member?: string; days?: string }>;
+  searchParams: Promise<{ theme?: string; member?: string; days?: string; history?: string }>;
 }) {
   const params = await searchParams;
   const theme: Theme = params.theme === 'evening' ? 'evening' : 'day';
@@ -93,20 +99,26 @@ export default async function DevInsightsPage({
   const days = Number(params.days);
   const range: Range = (RANGES as readonly number[]).includes(days) ? (days as Range) : 30;
   return (
-    <main className="fw-page fw-page--wide">
-      <ThemeLock theme={theme} />
-      <InsightsView
-        members={[
-          { id: KID, name: 'Maya' },
-          { id: NEW, name: 'Leo' },
-        ]}
-        memberId={memberId}
-        range={range}
-        insights={fixture(memberId)}
-        weekStart={0}
-        notice={null}
-        basePath="/dev/insights"
-      />
-    </main>
+    // [NFR-18] In the admin app's own scope, as the other /dev admin pages are (WP-97): without it the
+    // page had none of the admin's sizes (a button's 44 px).
+    <div className={`admin theme-${theme}`}>
+      <main className="fw-page fw-page--wide">
+        <ThemeLock theme={theme} />
+        <InsightsView
+          members={[
+            { id: KID, name: 'Maya' },
+            { id: NEW, name: 'Leo' },
+          ]}
+          memberId={memberId}
+          range={range}
+          insights={fixture(memberId)}
+          weekStart={0}
+          notice={null}
+          basePath="/dev/insights"
+          rebuild={rebuild}
+          rebuilt={params.history === 'rebuilt'}
+        />
+      </main>
+    </div>
   );
 }
