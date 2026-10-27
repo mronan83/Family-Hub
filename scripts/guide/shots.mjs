@@ -342,6 +342,13 @@ const SHOTS = [
       await page.locator('form[data-live="ready"]').waitFor();
     },
   },
+  // [RWD-21][D-146] A goal's Some items for its person, with a done and an archived item kept (WP-114).
+  {
+    name: 'admin-goal-items-phone',
+    device: 'phone',
+    url: '/dev/goals?form=items',
+    element: 'fieldset.fw-goal-rule',
+  },
   {
     name: 'admin-goal-rules-phone',
     device: 'phone',

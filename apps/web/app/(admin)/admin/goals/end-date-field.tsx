@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, DatePick } from '@familywise/ui';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { END_CHOICE_FIELD, ENDS_ON_DATE_FIELD } from '@/lib/goals';
 
 /**
@@ -15,12 +15,23 @@ import { END_CHOICE_FIELD, ENDS_ON_DATE_FIELD } from '@/lib/goals';
  * sets it as the value, and once hydrated the default is dropped (React 19 removes the attribute).
  * [NFR-16][D-128] The date is written as the mockups write it, "Mon, Oct 12, 2026" (DatePick).
  */
-export function EndDateField({ initial, min }: { initial: string | null; min?: string }) {
+export function EndDateField({
+  initial,
+  min,
+  onEnd,
+}: {
+  initial: string | null;
+  min?: string;
+  /** [RWD-21] The end date as it stands (null for none), for the items the goal lists. */
+  onEnd?: (end: string | null) => void;
+}) {
   const [ends, setEnds] = useState(Boolean(initial));
   const [date, setDate] = useState(initial ?? '');
   // Only the first field gets the saved date: ticked again after unticking, it starts empty.
   const [seed, setSeed] = useState(initial ?? '');
   const input = useRef<HTMLInputElement | null>(null);
+  const end = ends && date ? date : null;
+  useEffect(() => onEnd?.(end), [end, onEnd]);
 
   return (
     <fieldset className="fw-field fw-fieldset fw-end-date">

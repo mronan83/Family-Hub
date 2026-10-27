@@ -36,6 +36,7 @@ import {
   RULE_WORDS,
   type ScopeChoice,
 } from '@/lib/goals';
+import { type GoalItem, type ItemChoice, itemGroups, type ItemsFor } from '@/lib/goal-items';
 import { LIVE_PATH, liveFrom } from '@/lib/goal-live';
 import { type GoalFormState, type GoalPreviewView, saveGoal } from './actions';
 import { EndDateField } from './end-date-field';
@@ -82,12 +83,7 @@ export interface GoalFormInitial {
   payout: GoalPayout;
 }
 
-/** [NFR-16][D-128] An item a rule may count, with its picture. */
-export interface GoalItem {
-  id: string;
-  title: string;
-  icon?: IconName | null;
-}
+export type { GoalItem } from '@/lib/goal-items';
 
 /** A reward in the shop a goal can pay: those not removed, and the goal's own even if it was. */
 export interface GoalPrize {
@@ -105,6 +101,8 @@ export type GoalLock = 'none' | 'started' | 'finished';
 
 interface Row extends GoalFormRule {
   key: string;
+  /** [RWD-21] Every item ticked on this form: one unticked stays on it, so a slip can be undone. */
+  seen: string[];
 }
 
 const NEW_RULE: GoalFormRule = {
@@ -178,10 +176,14 @@ export function GoalForm({
   const [state, onSubmit, pending] = useFormAction<GoalFormState>(saveGoal, { preview });
   const seed = initial ?? draft;
   const [rows, setRows] = useState<Row[]>(() =>
-    (seed?.rules.length ? seed.rules : [NEW_RULE]).map((r, i) => ({ ...r, key: keyOf(i + 1) })),
+    (seed?.rules.length ? seed.rules : [NEW_RULE]).map((r, i) => ({
+      ...r,
+      key: keyOf(i + 1),
+      seen: r.itemIds,
+    })),
   );
   const added = useRef(rows.length);
-  const change = (key: string, patch: Partial<GoalFormRule>) =>
+  const change = (key: string, patch: Partial<Omit<Row, 'key'>>) =>
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   // [NFR-16][D-128] The rules open to their fields: a new goal's first rule, each one added, and each
   // one tapped, until its Done folds it; any number at once (the owner's choice). A rule with
@@ -197,6 +199,7 @@ export function GoalForm({
       return next;
     });
   const [start, setStart] = useState(seed?.startDate ?? today);
+  const [end, setEnd] = useState<string | null>(seed?.endDate ?? null);
   const rulesLocked = lock === 'finished';
   const whoLocked = lock !== 'none';
   const [who, setWho] = useState(seed ? (seed.memberId ?? 'family') : (members[0]?.id ?? 'family'));
@@ -288,6 +291,14 @@ export function GoalForm({
     [],
   );
   const names: SummaryNames = { tags, items, goals: countable };
+  // [RWD-21][D-146] Some items lists what can still count for who it's for, within its dates.
+  const itemsFor: ItemsFor = {
+    memberId: family ? null : who,
+    members,
+    start: whoLocked ? (seed?.startDate ?? today) : start,
+    end,
+    today,
+  };
   const points = seed?.payout.type === 'points' ? seed.payout.amount : 10;
   const prize = seed?.payout.type === 'catalog_item' ? seed.payout.item_id : prizes[0]?.id;
 
@@ -471,6 +482,7 @@ export function GoalForm({
           <EndDateField
             initial={seed?.endDate ?? null}
             min={lock === 'started' ? today : undefined}
+            onEnd={setEnd}
           />
         )}
       </div>
@@ -488,6 +500,7 @@ export function GoalForm({
           repeat={repeat}
           tags={tags}
           items={items}
+          itemsFor={itemsFor}
           countable={each ? [] : canCount}
           names={names}
           open={openKeys.has(r.key)}
@@ -506,7 +519,7 @@ export function GoalForm({
             onClick={() => {
               // A new rule opens to its fields; the others stay as they are.
               const key = keyOf((added.current += 1));
-              setRows((rs) => [...rs, { ...NEW_RULE, key }]);
+              setRows((rs) => [...rs, { ...NEW_RULE, key, seen: [] }]);
               setOpen(key, true);
             }}
           >
@@ -954,6 +967,8 @@ function PreviewPanel({ preview }: { preview: GoalPreviewView }) {
 interface RuleRowProps {
   /** [RWD-19] The repeating goals it may count. */
   countable: CountableGoal[];
+  /** [RWD-21] Who the goal is for and its dates, for the items Some items lists. */
+  itemsFor: ItemsFor;
   row: Row;
   n: number;
   /** [RWD-18] Its weight when the goal pays in steps with two or more rules; null otherwise. */
@@ -972,7 +987,7 @@ interface RuleRowProps {
   onOpen: (open: boolean) => void;
   /** [NFR-16][D-128] Its live summary: its days due this period, or the weeks it counts. */
   summary: string | null;
-  onChange: (patch: Partial<GoalFormRule>) => void;
+  onChange: (patch: Partial<Omit<Row, 'key'>>) => void;
   onRemove: () => void;
 }
 
@@ -1040,6 +1055,17 @@ function SummaryLine({ id, parts }: { id?: string; parts: readonly SummaryPart[]
         );
       })}
     </span>
+  );
+}
+
+/** [RWD-21] A group of Some items: its name, a help line if any, and its choices. */
+function ItemGroup({ head, help, children }: { head: string; help?: string; children: ReactNode }) {
+  return (
+    <>
+      <p className="fw-goal-items__head">{head}</p>
+      {help ? <p className="fw-field__help">{help}</p> : null}
+      <div className="fw-choices">{children}</div>
+    </>
   );
 }
 
@@ -1156,6 +1182,7 @@ function OpenRule({
   repeat,
   tags,
   items,
+  itemsFor,
   names,
   open,
   onOpen,
@@ -1173,6 +1200,34 @@ function OpenRule({
   const scopeOpen = !only || open || problem !== null;
   const toggle = (list: string[], id: string, on: boolean) =>
     on ? [...new Set([...list, id])] : list.filter((x) => x !== id);
+  // [RWD-21][D-146] Repeats, Once still to do, and Still counted: what it counts, never dropped.
+  const groups = itemGroups(items, itemsFor, [...new Set([...row.seen, ...row.itemIds])]);
+  const itemCount = groups.repeats.length + groups.once.length + groups.kept.length;
+  const itemChoice = ({ item, when, flags }: ItemChoice) => (
+    <label key={item.id} className="fw-choice">
+      <input
+        type="checkbox"
+        name={name('item')}
+        value={item.id}
+        checked={row.itemIds.includes(item.id)}
+        onChange={(e) =>
+          onChange({
+            itemIds: toggle(row.itemIds, item.id, e.target.checked),
+            seen: toggle(row.seen, item.id, true),
+          })
+        }
+      />
+      <span className="fw-goal-items__text">
+        <ItemName icon={item.icon} title={item.title} />
+        {when ? <span className="fw-goal-items__when">{when}</span> : null}
+        {flags?.map((f) => (
+          <span key={f} className="fw-pill">
+            {f}
+          </span>
+        ))}
+      </span>
+    </label>
+  );
   return (
     <fieldset className="fw-box fw-goal-rule">
       <legend>{only ? 'Rule' : weight !== null ? `Rule ${n} · weight` : `Rule ${n}`}</legend>
@@ -1290,7 +1345,7 @@ function OpenRule({
                   checked={row.scope === sc}
                   onChange={() => onChange({ scope: sc })}
                   disabled={
-                    (sc === 'tags' && tags.length === 0) || (sc === 'items' && items.length === 0)
+                    (sc === 'tags' && tags.length === 0) || (sc === 'items' && itemCount === 0)
                   }
                 />
                 {SCOPE_WORDS[sc]}
@@ -1316,21 +1371,26 @@ function OpenRule({
             </div>
           ) : null}
           {row.scope === 'items' ? (
-            <div className="fw-choices" role="group" aria-label={`Items for rule ${n}`}>
-              {items.map((t) => (
-                <label key={t.id} className="fw-choice">
-                  <input
-                    type="checkbox"
-                    name={name('item')}
-                    value={t.id}
-                    checked={row.itemIds.includes(t.id)}
-                    onChange={(e) =>
-                      onChange({ itemIds: toggle(row.itemIds, t.id, e.target.checked) })
-                    }
-                  />
-                  <ItemName icon={t.icon} title={t.title} />
-                </label>
-              ))}
+            <div className="fw-goal-items" role="group" aria-label={`Items for rule ${n}`}>
+              {groups.repeats.length > 0 ? (
+                <ItemGroup head="Repeats">{groups.repeats.map(itemChoice)}</ItemGroup>
+              ) : null}
+              {groups.once.length > 0 ? (
+                <ItemGroup head="Once, still to do">{groups.once.map(itemChoice)}</ItemGroup>
+              ) : null}
+              {groups.kept.length > 0 ? (
+                <ItemGroup
+                  head="Still counted"
+                  help="Ticked before, but not listed now. Each still counts until you untick it."
+                >
+                  {groups.kept.map(itemChoice)}
+                </ItemGroup>
+              ) : null}
+              {itemCount === 0 ? (
+                <p className="fw-field__help">
+                  Nothing that repeats or is still to do is for them.
+                </p>
+              ) : null}
             </div>
           ) : null}
           {only && !problem && open ? (

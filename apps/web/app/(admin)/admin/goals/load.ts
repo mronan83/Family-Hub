@@ -1,7 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { evaluateHouseholdGoals } from '@/lib/goals';
 import { log } from '@/lib/log';
-import { loadChores, loadTags } from '../chores/data';
+import { place } from '@/lib/chore-sections';
+import { isoDay } from '@/lib/format';
+import { type GoalItem, overFrom } from '@/lib/goal-items';
+import { loadChores, loadOnceOccurrences, loadTags } from '../chores/data';
 import { loadAdmins, loadMembers } from '../members/data';
 import { loadCatalog } from '../rewards/data';
 
@@ -31,8 +34,16 @@ export async function bringGoalsUpToDate(
 /**
  * What the goal pages need besides the goals: who earns rewards, names for tags and items, parents,
  * and the shop's rewards a goal can pay (those not removed; `keep` also keeps a goal's own prize).
+ * [RWD-21][D-146] Every item, archived ones included, with who it's for, whether it repeats or its
+ * day, and whether it is over (WP-96's Completed or Archived), so the form lists only those that can
+ * still count for the goal's person and keeps, flagged, any a goal already counts.
  */
-export async function loadGoalContext(db: SupabaseClient, householdId: string, keep?: string) {
+export async function loadGoalContext(
+  db: SupabaseClient,
+  household: { id: string; timezone: string; weekStart: number },
+  keep?: string,
+) {
+  const householdId = household.id;
   const [members, tags, chores, admins, catalog] = await Promise.all([
     loadMembers(db, householdId),
     loadTags(db, householdId),
@@ -40,6 +51,33 @@ export async function loadGoalContext(db: SupabaseClient, householdId: string, k
     loadAdmins(db, householdId),
     loadCatalog(db, householdId),
   ]);
+  const once = chores.filter((c) => !c.archivedAt && c.schedule.freq === 'once');
+  const occurrences = once.length
+    ? await loadOnceOccurrences(
+        db,
+        householdId,
+        once.map((c) => c.id),
+      )
+    : [];
+  const today = isoDay(household.timezone);
+  const items: GoalItem[] = place(
+    chores,
+    occurrences,
+    today,
+    household.weekStart,
+    household.timezone,
+  )
+    .map((p) => ({
+      id: p.item.id,
+      title: p.item.title,
+      icon: p.item.icon,
+      kind: p.item.kind,
+      assignees: p.item.assignees,
+      repeats: p.item.schedule.freq !== 'once',
+      day: p.item.schedule.freq === 'once' ? p.item.schedule.on_date : null,
+      over: overFrom(p.section, p.outcome),
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title));
   const earners = members.filter((m) => m.earnsRewards && !m.archivedAt);
   const adminNames = new Map(
     admins.map((a) => [
@@ -51,10 +89,7 @@ export async function loadGoalContext(db: SupabaseClient, householdId: string, k
     members,
     earners,
     tags: tags.filter((t) => !t.archivedAt).map((t) => ({ id: t.id, name: t.name })),
-    items: chores
-      .filter((c) => !c.archivedAt)
-      .map((c) => ({ id: c.id, title: c.title, icon: c.icon }))
-      .sort((a, b) => a.title.localeCompare(b.title)),
+    items,
     names: {
       tags: new Map(tags.map((t) => [t.id, t.name])),
       items: new Map(chores.map((c) => [c.id, c.title])),
