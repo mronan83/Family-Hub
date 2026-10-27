@@ -321,6 +321,13 @@ const SHOTS = [
     full: true,
     quality: 64,
   },
+  // [PTS-08] The points register (WP-115): its filters and the first two days.
+  {
+    name: 'admin-points-register-phone',
+    device: 'phone',
+    url: '/dev/rewards/points',
+    maxHeight: 1400,
+  },
   { name: 'admin-goals-laptop', device: 'laptop', url: '/dev/goals', maxHeight: 1430 },
   {
     name: 'admin-goal-form-phone',

@@ -275,16 +275,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2983** tests: Unit 955 · DB 1562 · UI 326 · E2E 140. 2461 name at least one ID; 522 name none.
+**3016** tests: Unit 967 · DB 1579 · UI 330 · E2E 140. 2494 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 131 of 148 |
+| Requirements built (a Done item builds them) | 132 of 149 |
 | Built requirements with no test | 0 |
-| Stories built | 114 of 130 |
+| Stories built | 115 of 131 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 248 (with a test: 248) |
+| Test cases | 261 (with a test: 261) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -299,7 +299,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
 | Chores | 127 | 202 | 42 | 34 | 405 |
-| Points | 45 | 92 | 19 | 12 | 168 |
+| Points | 57 | 109 | 23 | 12 | 201 |
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
@@ -310,7 +310,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 197 | 167 | 61 | 18 | 443 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **955** | **1562** | **326** | **140** | **2983** |
+| **Total** | **967** | **1579** | **330** | **140** | **3016** |
 
 ### 9.3 By requirement
 
@@ -458,6 +458,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-05 | S | Covered | US-1107 | WP-30, WP-95 | PTS-05-a | U 8 · DB 4 · UI 3 · E2E 1 |
 | PTS-06 | S | Covered | US-1108 | WP-30 | — | U 5 · DB 2 · UI 7 · E2E 2 |
 | PTS-07 | M | Covered | US-1109 | WP-02, WP-04, WP-16 | — | U 2 · DB 15 · E2E 3 |
+| PTS-08 | S | Covered | US-1110 | WP-115 | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | U 12 · DB 17 · UI 4 |
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | U 10 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
@@ -584,6 +585,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-112 | Done | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e, MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | 12 of 12 | U 4 |
 | WP-113 | Done | DEV-05-a, DEV-05-b, NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | 7 of 7 | — |
 | WP-114 | Done | RWD-21-a, RWD-21-b, RWD-21-c, RWD-21-d, RWD-21-e, RWD-21-f, RWD-21-g, RWD-21-h, RWD-21-i, RWD-21-j | 10 of 10 | — |
+| WP-115 | Done | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | 13 of 13 | — |
 
 Test cases and the tests that prove them:
 
@@ -768,6 +770,19 @@ Test cases and the tests that prove them:
 | RWD-21-h | WP-114 | The server accepts an item id a goal already counts, archived or done | Unit | Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-h] the server accepts an item id a goal already counts, archived or done` |
 | RWD-21-i | WP-114 | The live summary names a ticked item that isn't listed | UI | UI `e2e/ui/goal-items.spec.ts`: `[RWD-21-i] the rule’s folded line names the items it counts that aren’t listed` |
 | RWD-21-j | WP-114 | A one-time chore outside the goal's dates is not listed, and after the dates change a ticked one is flagged "after the goal ends" or "before it starts"; a one-time task still to do is listed whatever its day | Unit | Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-j] a one-time chore only within the goal’s dates; a task whatever its day`<br>UI `e2e/ui/goal-items.spec.ts`: `[RWD-21-j] a goal ending Oct 29 lists no chore after it; a ticked one is kept, "after the goal ends"` |
+| PTS-08-a | WP-115 | `points_register()` lists every entry of the household, every member's, newest first, and none of another household's | DB | DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-a] every entry of the household, every member's, newest first, none of another household's`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-a] a page of it: two, after the newest two` |
+| PTS-08-b | WP-115 | It filters by member, by type (a goal payout apart from a bonus), by bonus rule, and by a date range in the household's own days | DB | DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-b] one member's entries`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-b] a goal paid in points is a goal payout`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-b] bonuses and adjustments: a goal payout is not a bonus`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-b] one bonus rule's payouts`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-b] Mon Oct 26 in the household's own day: 05:00Z to 05:00Z, not the UTC day`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-b] a goal payout names its goal` |
+| PTS-08-c | WP-115 | An earn on a private item the parent may not see has no title, and the register says "A private item" (D-34) | DB, Unit | Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] an entry in words › [PTS-08-c] an earn on an item the parent may not see stays "A private item" (D-34)`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-c] Alex may not see Sam's private item, so its earn has no title`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-c] a family item's earn has its title`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-c] Sam, who made the private item, sees its title` |
+| PTS-08-d | WP-115 | `points_register_totals()` counts and adds up the same filtered entries, per member | DB | DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-d] each member's count, what was added and what was taken away`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-d] the same filters as the list, with each member's latest` |
+| PTS-08-e | WP-115 | `points_rule_payouts()` counts each bonus rule's payouts and its latest | DB | DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-e] each bonus rule's payouts and its latest; a rule that never paid is not there` |
+| PTS-08-f | WP-115 | Only a parent of the household reads it: a parent of another household gets nothing, and a signed-out caller is refused | DB | DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-f] a parent of another household reads nothing of this one`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-f] a signed-out caller is refused`<br>DB `supabase/tests/590_points_register.test.sql`: `[PTS-08-f] a signed-out caller is refused the payouts too` |
+| PTS-08-g | WP-115 | Each entry's words: what it was for and who or what issued it (by a parent, paid automatically, the goal, approved by, cancelled by, done, unchecked) | Unit | Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] an entry in words › [PTS-08-g] what each entry was for, and who or what issued it` |
+| PTS-08-h | WP-115 | The register's address: child, type, bonus, dates and Show older read and written back; anything not valid is left out; dates the wrong way round are swapped | Unit | Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] the register’s address › [PTS-08-h] reads every filter and writes it back`<br>Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] the register’s address › [PTS-08-h] leaves out what is not valid, and swaps dates the wrong way round`<br>Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] the register’s address › [PTS-08-h] a chip toggles and starts from the newest again`<br>Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] the register’s address › [PTS-08-h] More filters says the types and the days chosen` |
+| PTS-08-i | WP-115 | Day headings and times in the household's zone, across midnight UTC and a DST change | Unit | Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] day headings in the household’s zone › [PTS-08-i] an entry late in the evening there is that day, not the next UTC day`<br>Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] day headings in the household’s zone › [PTS-08-i] across a DST change, and on a day east of UTC` |
+| PTS-08-j | WP-115 | The total line, and a bonus's payouts line ("Paid 14 times, latest today", "Paid once", "Not paid yet") | Unit | Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] the total line and a bonus’s payouts › [PTS-08-j] how many match and what they add up to`<br>Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] the total line and a bonus’s payouts › [PTS-08-j] filtered to a bonus: how many times it paid, to whom, and the latest`<br>Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] the total line and a bonus’s payouts › [PTS-08-j] a bonus’s payouts beside it on Bonus points` |
+| PTS-08-k | WP-115 | Show older adds the next 50 below, read past the database's 1,000 rows a call | Unit, UI | Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] Show older › [PTS-08-k] each tap adds 50, read in parts the database answers whole`<br>UI `e2e/ui/points-register.spec.ts`: `[PTS-08-k] Show older adds the next 50 below, until the first entry` |
+| PTS-08-l | WP-115 | The register as drawn: a child's chip, a type and a bonus filter by link, More filters, Clear | UI | UI `e2e/ui/points-register.spec.ts`: `[PTS-08-l][US-1110] the register as drawn: every entry newest first under days, each with who, when, what, its type, who issued it and the amount`<br>UI `e2e/ui/points-register.spec.ts`: `[PTS-08-l] a child’s chip, a type, the dates and a bonus filter it; Clear and ✕ undo them` |
+| PTS-08-m | WP-115 | Rewards' Points card opens the register; each bonus's **See them** opens it filtered to that bonus; a child's Points on Members opens it filtered to them | UI | UI `e2e/ui/points-register.spec.ts`: `[PTS-08-m] Rewards’ Points card, each bonus’s payouts and a child’s Points open the register` |
 | NFR-14-u | WP-111 | A spec's household is the demo family's seed under its own ids and sign-ins: no demo family id or sign-in is left in it, it starts by taking away the household a try before left, no two specs share an id prefix, a bad key, seed id or persona is refused, and each sign-in gets the password the preview derives for it | Unit | Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] a spec household is the seed under its own ids and sign-ins, and nothing of the demo family`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] keys, ids and personas outside the rules are refused`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] each sign-in gets the password the preview derives for it, and only the spec’s` |
 | NFR-14-v | WP-111 | On Postgres with the migrations and the demo family: two spec households each hold what the demo family holds and only their own rows; making one again starts it afresh and leaves the other as it is; taking one away takes the household its Riley set up, and nothing of the demo family or the other spec | Unit | Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] two spec households, next to the demo family, each hold what it holds and only their own rows`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] making a spec household again starts it afresh, and leaves the others as they are`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] taking a spec household away takes what it set up, and nothing of the demo family or another spec` |
 | NFR-14-w | WP-111 | The preview's one-tap signs in to an e2e household's copy of a persona when the form names a valid key, with that email's derived password; a bad key is refused, and none of it works outside a preview | Unit | Unit `apps/web/app/(admin)/sign-in/actions.test.ts`: `sign-in actions › [NFR-14-w] demo sign-in into an e2e household uses its copy of the persona, and refuses a bad key` |
@@ -974,6 +989,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-1107 | PTS-05 | Covered | U 1 · UI 1 · E2E 1 |
 | US-1108 | PTS-06 | Covered | U 1 · UI 2 · E2E 1 |
 | US-1109 | PTS-07 | Gap | — |
+| US-1110 | PTS-08 | Covered | UI 1 |
 
 ### 9.6 Known gaps
 
@@ -2011,6 +2027,25 @@ Unit · 14 tests
 | `the board outbox › stops cleanly when the board leaves` | — |
 | `the board sender › [CHR-04] posts JSON to /api/completions and reads each answer` | CHR-04 |
 | `the board sender › [CHR-04] answers a refused batch as invalid (retrying cannot help); retries a server fault` | CHR-04 |
+
+#### `apps/web/lib/points-register.test.ts`
+
+Unit · 12 tests
+
+| Test | Names |
+|---|---|
+| `[PTS-08] an entry in words › [PTS-08-c] an earn on an item the parent may not see stays "A private item" (D-34)` | PTS-08-c |
+| `[PTS-08] an entry in words › [PTS-08-g] what each entry was for, and who or what issued it` | PTS-08-g |
+| `[PTS-08] the register’s address › [PTS-08-h] reads every filter and writes it back` | PTS-08-h |
+| `[PTS-08] the register’s address › [PTS-08-h] leaves out what is not valid, and swaps dates the wrong way round` | PTS-08-h |
+| `[PTS-08] the register’s address › [PTS-08-h] a chip toggles and starts from the newest again` | PTS-08-h |
+| `[PTS-08] the register’s address › [PTS-08-h] More filters says the types and the days chosen` | PTS-08-h |
+| `[PTS-08] day headings in the household’s zone › [PTS-08-i] an entry late in the evening there is that day, not the next UTC day` | PTS-08-i |
+| `[PTS-08] day headings in the household’s zone › [PTS-08-i] across a DST change, and on a day east of UTC` | PTS-08-i |
+| `[PTS-08] the total line and a bonus’s payouts › [PTS-08-j] how many match and what they add up to` | PTS-08-j |
+| `[PTS-08] the total line and a bonus’s payouts › [PTS-08-j] filtered to a bonus: how many times it paid, to whom, and the latest` | PTS-08-j |
+| `[PTS-08] the total line and a bonus’s payouts › [PTS-08-j] a bonus’s payouts beside it on Bonus points` | PTS-08-j |
+| `[PTS-08] Show older › [PTS-08-k] each tap adds 50, read in parts the database answers whole` | PTS-08-k |
 
 #### `apps/web/lib/points.test.ts`
 
@@ -3263,6 +3298,17 @@ UI · 3 tests
 | `[DEV-06][NFR-01][US-205] three check-offs offline outlast a reload with no network and are sent once each when it returns` | DEV-06, NFR-01, US-205 |
 | `[NFR-01] a day offline: the board keeps running on its cached page, then sends what waited once` | NFR-01 |
 | `[DEV-08][US-206] says when its data is old or a job is behind, in the bar, legible in ${theme}` | DEV-08, US-206 |
+
+#### `e2e/ui/points-register.spec.ts`
+
+UI · 4 tests
+
+| Test | Names |
+|---|---|
+| `[PTS-08-l][US-1110] the register as drawn: every entry newest first under days, each with who, when, what, its type, who issued it and the amount` | PTS-08-l, US-1110 |
+| `[PTS-08-l] a child’s chip, a type, the dates and a bonus filter it; Clear and ✕ undo them` | PTS-08-l |
+| `[PTS-08-k] Show older adds the next 50 below, until the first entry` | PTS-08-k |
+| `[PTS-08-m] Rewards’ Points card, each bonus’s payouts and a child’s Points open the register` | PTS-08-m |
 
 #### `e2e/ui/reminders.spec.ts`
 
@@ -5818,5 +5864,29 @@ DB · 5 tests
 | `[DEV-05-b] each day's type, mode and change as resolve_day_type(), lunch_mode() and lunch_override say` | DEV-05-b |
 | `[DEV-05-b] Maya: her Monday change to bring, a usual bring, the break with no lunch, the weekend` | DEV-05-b |
 | `[DEV-05-b] Leo, on his own school's year: school all week, his Wednesday change to buy` | DEV-05-b |
+
+#### `supabase/tests/590_points_register.test.sql`
+
+DB · 17 tests
+
+| Test | Names |
+|---|---|
+| `[PTS-08-a] every entry of the household, every member's, newest first, none of another household's` | PTS-08-a |
+| `[PTS-08-a] a page of it: two, after the newest two` | PTS-08-a |
+| `[PTS-08-b] one member's entries` | PTS-08-b |
+| `[PTS-08-b] a goal paid in points is a goal payout` | PTS-08-b |
+| `[PTS-08-b] bonuses and adjustments: a goal payout is not a bonus` | PTS-08-b |
+| `[PTS-08-b] one bonus rule's payouts` | PTS-08-b |
+| `[PTS-08-b] Mon Oct 26 in the household's own day: 05:00Z to 05:00Z, not the UTC day` | PTS-08-b |
+| `[PTS-08-b] a goal payout names its goal` | PTS-08-b |
+| `[PTS-08-c] Alex may not see Sam's private item, so its earn has no title` | PTS-08-c |
+| `[PTS-08-c] a family item's earn has its title` | PTS-08-c |
+| `[PTS-08-d] each member's count, what was added and what was taken away` | PTS-08-d |
+| `[PTS-08-d] the same filters as the list, with each member's latest` | PTS-08-d |
+| `[PTS-08-e] each bonus rule's payouts and its latest; a rule that never paid is not there` | PTS-08-e |
+| `[PTS-08-c] Sam, who made the private item, sees its title` | PTS-08-c |
+| `[PTS-08-f] a parent of another household reads nothing of this one` | PTS-08-f |
+| `[PTS-08-f] a signed-out caller is refused` | PTS-08-f |
+| `[PTS-08-f] a signed-out caller is refused the payouts too` | PTS-08-f |
 
 <!-- /catalogue -->

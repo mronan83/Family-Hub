@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.68: US-1110 added at the owner's request (WP-115, PTS-08, D-147): every points change in one register, filterable, with each bonus's payouts.
 > v0.8.67: US-401 gains the goal's Some items for the goal's person, still to do, with what it counts kept (added at the owner's request, WP-114, RWD-21, D-146).
 > v0.8.66: US-721 added at the owner's request (WP-112, D-142): adding to the grocery list from Home, and a preferred store that new items go to.
 > v0.8.65: US-718, US-719 and US-720 added at the owner's request, and US-712 to US-717 changed, from the grocery mockup the owner approved (WP-104, WP-105, WP-107, D-138): Groceries works without the sync; the household's own categories and stores, moving several at once; the category suggested on add; recipes as links, photos and PDFs, shown on the board; each child's parent OK.
@@ -1161,3 +1162,12 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given Dad has earns rewards off, when he completes a 5-point chore, then no ledger entry is posted and no approval is needed.
 - Given I turn earns rewards on for an adult for a family challenge, when they complete chores, then they earn points and can have goals.
 - Given I turn the switch off, when I view past history, then points already earned stay in the ledger.
+
+### US-1110 — See every points change in one place
+**As an** admin **I want** one register of every points change for every child, which I can filter, **so that** I can check what was paid, by whom and why, without opening each child. Added at the owner's request (WP-115, D-147).
+**Priority:** Should · **Phase:** P3 · **Reqs:** PTS-08
+- Given Maya and Leo have points, when I open Rewards → Points register, then I see every entry of both, newest first, each with the child, the time, what it was for, its type, the amount, and who or what issued it: "by Sam" for an adjustment, "paid automatically" for a bonus, the goal for a goal payout, who approved a spend or cancelled a refund.
+- Given a bonus "5 points for each day with everything done", when I tap **See them** beside it on Bonus points, then the register shows only what it paid, how many times and how much.
+- Given I choose Maya, By hand and Spent, and October, when the register shows, then it lists only those, and a line says how many there are and what they add up to.
+- Given more than 50 entries, when I tap **Show older**, then the next 50 are added below, back to the first entry ever.
+- Given Leo earned points on Sam's private item, when I (Alex) open the register, then that entry says "A private item".

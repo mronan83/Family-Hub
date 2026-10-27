@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.47: The points register (WP-115, D-147): every points change for every child on Rewards → **Points register**, filtered by child, type, bonus and days, with **Show older**; each bonus's payouts on **Bonus points**; **All of (name)'s points** on a child's Points (A6, B1.6, B1.7).
 > v0.46: A goal's **Some items** lists only what can still count for who it's for, items that repeat then one-time items still to do with their days, and keeps every item the goal counts under **Still counted**, flagged (WP-114, D-146).
 > v0.45: Today, My tasks and Insights folded (WP-97, D-120, D-145): a part of the day folds to "6 of 6 done" and its first names once everything in it is done or skipped, the next time Today opens; **Overdue** and **Waiting for you** stay open; My tasks' **Coming up** folds to how many and the next one; Insights' **Day by day**, **Missed most**, **By tag** and **Checking** fold to their one-line finding, **History** to its button.
 > v0.44: Rewards and Members folded (WP-95, D-120, D-144): the shop's **Archived**, **Bonus points** (with **Add a bonus** and **Archived bonuses** inside) and **Lately** fold to what they hold; **Archived** on Members to who; a member's **Points** to the balance and the last change, with **Change points** inside, and **Archive** set apart; a save comes back with its fold open (A6, B1.6, B1.7).
@@ -548,7 +549,7 @@ The board also tells you when what it shows may be old:
 Changes a parent makes in the admin app reach the board within seconds while it is connected.
 
 ### A6 Points, rewards, the shop and wishes
-<!-- covers: US-1101 US-1102 US-1103 US-1104 US-1105 US-1106 US-1107 US-1108 -->
+<!-- covers: US-1101 US-1102 US-1103 US-1104 US-1105 US-1106 US-1107 US-1108 US-1110 -->
 
 **What this is.** A points economy for children: points for things done, spent in a shop of rewards a parent keeps. **When.** Once your children have chores. **How.** Set up the shop on **Rewards**; children ask on the board; you decide in the admin app.
 
@@ -628,6 +629,19 @@ Bonuses pay extra points automatically, overnight once a day is over. On **Rewar
 - **A perfect day**: points for each day with everything on the list done.
 
 Set the **Bonus points** (1 to 1,000) and **Counts from** (days before it never pay), then **Add bonus**. **Turn off** pauses a bonus; **Turn on** counts again from that day, so a pause never pays a backlog. **Archive** retires it to **Archived bonuses**; bonuses it paid stay. After any of these the page comes back with **Bonus points** open. **Pay bonuses now** pays, for the days already over, what tonight would. A bonus once paid is never taken back.
+
+#### The points register
+
+Every points change for every child, in one list: on **Rewards**, choose **Points register** on the **Points** card (each child's balance). Newest first, under each day ("Today", "Yesterday", "Sun, Oct 25"), each entry shows the child, the time, what it was for, its type (**Earned**, **Bonus**, **Goal payout**, **By hand**, **Spent**, **Refunded**, **Reversed**), the points, and who or what gave them: "by Sam" for points changed by hand, "paid automatically" for a bonus, the goal for a goal payout, who approved a reward or cancelled it. An item someone else keeps private shows as "A private item", as it does everywhere else for you.
+
+- Tap a child's face to see only theirs (tap more than one to see several); **Clear** shows everyone again.
+- Under **More filters**: tap one or more types, and choose **From** and **To** days, then **Show these days**. **Any day** takes the dates off.
+- A line over the list says how many entries match and what they add up to ("4 entries · +10 · −155 · net −145").
+- It shows the newest 50. **Show older** adds the next 50 below, back to the first points ever.
+
+Each bonus on **Bonus points** says how many times it has paid and when last ("Paid 14 times, latest today"); **See them** opens the register with only that bonus's payouts, how many times and how much, to whom. A bonus's name in the register does the same. A child's **Points** on **Members** has **All of Maya's points**, the register for that child.
+
+![The points register on an iPhone: Maya and Leo's faces, More filters folded, "95 entries" with what they add up to, then Today's entries: Feed the dog +5 for Leo, Movie night −100 for Maya approved by Alex, Helped carry the groceries +10 by Sam, and two bonuses paid automatically.](guide/img/admin-points-register-phone.jpg "The points register, on an iPhone")
 
 #### Wishes: saving up
 
@@ -1338,20 +1352,21 @@ If a device can no longer get notifications, it is removed and the page says so,
 |---|---|
 | The form | **Name** (up to 40), **Who they are**, **Avatar**, **Color**, **Birth year (optional)**, **Earns rewards**, and for an adult **Their sign-in** (**Not linked**, or an admin's email). **Save changes**. |
 | **Is this you?** | **This is me**: links your own sign-in to this adult. Shown when your sign-in isn't on anyone still here. |
-| **Points** (folded) | Folded to the balance and the last change ("142 points · last: +5 Make bed, today 7:10 am"). Open: the balance, **Change points** (folded to its button: **Add** / **Take away**, **Points**, **Why**), and the history: day, what it was for (and who, for a change by hand), amount. Open again, with **Change points**, after a change. |
+| **Points** (folded) | Folded to the balance and the last change ("142 points · last: +5 Make bed, today 7:10 am"). Open: the balance, **Change points** (folded to its button: **Add** / **Take away**, **Points**, **Why**), and the history: day, what it was for (and who, for a change by hand), amount. Open again, with **Change points**, after a change. **All of (name)'s points** opens the points register for them. |
 | **Archive** (folded, at the bottom) | **Archive** (name): off the board, chores and goals stop showing, history kept. |
 
 A member who doesn't earn rewards can't be given points; what they earned before stays.
 
 #### B1.7 Rewards
-<!-- covers: US-1103 US-1105 US-1107 US-1108 -->
+<!-- covers: US-1103 US-1105 US-1107 US-1108 US-1110 -->
 
 | Part | What it shows or does |
 |---|---|
 | **Asked for** | Marked in amber while anything waits. Waiting requests: the child's avatar, child, reward, cost, when, the child's points. **Approve** (spends the points) or **Not this time**. |
 | **To give** | Approved rewards: **Given** or **Cancel and refund**. |
+| **Points** | Each child's balance, and **Points register**: every points change for every child, filtered by child, type, bonus and days (A6). |
 | **The shop** | Rewards with cost, how many are left, the weekly limit, "not in the shop now", and who is saving for it; **Edit**; **Add a reward**; **Archived**, folded to its count ("1 archived"): each reward with the month it left and **Put back**; open after an archive or a put back. |
-| **Bonus points** (folded) | Folded to how many are on and off and the ones on, by name and points. Open: each bonus with when it counts from; **Turn off** / **Turn on**, **Archive**; **Pay bonuses now**; **Add a bonus** (folded to its button); **Archived bonuses** (folded to its count). Open after a bonus is added, turned on or off, archived or paid. |
+| **Bonus points** (folded) | Folded to how many are on and off and the ones on, by name and points. Open: each bonus with when it counts from and how many times it has paid (**See them** opens the points register for it); **Turn off** / **Turn on**, **Archive**; **Pay bonuses now**; **Add a bonus** (folded to its button); **Archived bonuses** (folded to its count). Open after a bonus is added, turned on or off, archived or paid. |
 | **Lately** (folded) | Folded to the last settled request and how many ("Last: Movie night given to Maya, today · 10 settled"). Open: the last ten settled requests, given, not this time, or cancelled. |
 
 **The reward form:** **Name** (up to 80), **Cost in points** (1 to 100,000), **Description (optional)** (up to 300), **Icon, shown when there's no photo**, **Photo (optional)** (JPEG, PNG or WebP, up to 2 MB), **How many there are (optional)** (blank for as many as are asked for), **Times each child may ask in a week (optional)** (1 to 100), **In the shop now**. **Add reward** or **Save changes**. A reward's page also has **Remove photo** and **Archive** / **Put back**.

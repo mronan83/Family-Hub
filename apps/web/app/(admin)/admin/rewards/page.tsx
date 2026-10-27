@@ -6,6 +6,7 @@ import { rewardsOpen } from '@/lib/reward-facts';
 import { serverClient } from '@/lib/supabase/server';
 import { loadBalances, loadMembers } from '../members/data';
 import { loadBonusRules, loadCatalog, loadRedemptions, loadWishes } from './data';
+import { loadRulePayouts } from './register-data';
 import { RewardsView } from './view';
 
 export const metadata: Metadata = { title: 'Rewards' };
@@ -51,13 +52,14 @@ export default async function RewardsPage({
   const household = await adminHousehold(db!, user.userId);
   if (!household) redirect('/setup');
   const params = await searchParams;
-  const [catalog, redemptions, members, balances, bonusRules, wishes] = await Promise.all([
+  const [catalog, redemptions, members, balances, bonusRules, wishes, payouts] = await Promise.all([
     loadCatalog(db!, household.id),
     loadRedemptions(db!, household.id),
     loadMembers(db!, household.id),
     loadBalances(db!, household.id),
     loadBonusRules(db!, household.id),
     loadWishes(db!, household.id),
+    loadRulePayouts(db!, household.id),
   ]);
   const posted = Number(params.posted ?? 0);
   const notice = params.bonus
@@ -84,6 +86,8 @@ export default async function RewardsPage({
       timezone={household.timezone}
       today={isoDay(household.timezone)}
       bonusRules={bonusRules}
+      pointsPeople={members.filter((m) => (m.earnsRewards && !m.archivedAt) || balances.has(m.id))}
+      payouts={payouts}
       wishes={wishes}
       notice={notice}
       open={rewardsOpen(params)}

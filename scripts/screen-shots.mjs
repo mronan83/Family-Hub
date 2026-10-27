@@ -120,6 +120,15 @@ export const ADMIN = [
   ['goal-items', '/dev/goals?form=items'],
   ['goal-items-maya', '/dev/goals?form=items-maya'],
   ['goal-items-dates', '/dev/goals?form=items-dates'],
+  // [PTS-08] WP-115's points register, as its mockup's scenes draw it (D-147): everyone, one bonus's
+  // payouts, Maya's By hand and Spent in October; and Rewards with its Points card and payouts.
+  ['points-register', '/dev/rewards/points'],
+  ['points-register-bonus', '/dev/rewards/points?rule=f3000000-0000-4000-8000-000000000001'],
+  [
+    'points-register-filters',
+    '/dev/rewards/points?who=f1000000-0000-4000-8000-000000000001&type=adjustment,spend&from=2026-10-01&to=2026-10-31',
+  ],
+  ['rewards-bonus-open', '/dev/rewards?bonus=archive'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of
