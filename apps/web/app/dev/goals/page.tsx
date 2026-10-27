@@ -8,6 +8,8 @@ import { GoalForm } from '../../(admin)/admin/goals/goal-form';
 import { WeeksFold } from '../../(admin)/admin/goals/repeating';
 import { GoalHead, GoalStatusPill, GoalsView } from '../../(admin)/admin/goals/view';
 import { goalSteps } from '@/lib/goal-steps';
+import type { IconName } from '@familywise/ui';
+import type { GoalItem } from '@/lib/goal-items';
 import { DEV } from './facts';
 
 // The admin Goals page and goal form (WP-19, WP-39) with a made-up family and no database, for the UI
@@ -481,6 +483,55 @@ const TAGS = [
 // [NFR-16-n] Each item with its picture (WP-101).
 const ITEMS = DEV.items.map((i) => ({ ...i }));
 
+// [RWD-21] WP-114's items: who each is for, whether it repeats or its day, and whether it is over.
+const item114 = (
+  n: number,
+  title: string,
+  icon: IconName,
+  o: Partial<GoalItem> = {},
+): GoalItem => ({
+  id: `f2c10000-0000-4000-8000-${String(n).padStart(12, '0')}`,
+  title,
+  icon,
+  kind: 'chore',
+  assignees: [LEO],
+  repeats: true,
+  day: null,
+  over: null,
+  ...o,
+});
+const ITEMS_114: GoalItem[] = [
+  item114(1, 'Brush teeth', 'chore-teeth', { assignees: [LEO, MAYA] }),
+  item114(2, 'Feed the dog', 'chore-pet'),
+  item114(3, 'Homework', 'chore-homework', { assignees: [LEO, MAYA] }),
+  item114(4, 'Make bed', 'chore-bed'),
+  item114(5, 'Read 20 minutes', 'chore-read', { assignees: [MAYA] }),
+  item114(6, 'Set the table', 'chore-table', { assignees: [MAYA] }),
+  item114(7, 'Return library books', 'chore-read', {
+    kind: 'task',
+    repeats: false,
+    day: '2026-10-26',
+  }),
+  item114(8, 'Pack for the school trip', 'chore-pack', { repeats: false, day: '2026-10-30' }),
+  item114(9, 'Carve the pumpkin', 'chore-outdoors', { repeats: false, day: '2026-10-31' }),
+  item114(10, 'Write thank-you cards', 'chore-homework', {
+    kind: 'task',
+    repeats: false,
+    day: '2026-11-05',
+  }),
+  item114(11, 'Try on the costume', 'chore-laundry', {
+    assignees: [MAYA],
+    repeats: false,
+    day: '2026-10-31',
+  }),
+  item114(12, 'Clean out the car', 'chore-outdoors', {
+    repeats: false,
+    day: '2026-10-20',
+    over: 'done',
+  }),
+  item114(13, 'Water the plants', 'chore-plant', { over: 'archived' }),
+];
+
 export default async function DevGoalsPage({
   searchParams,
 }: {
@@ -762,6 +813,59 @@ export default async function DevGoalsPage({
   }
   // [NFR-16][D-128] homework: a new goal filled in as the WP-80 frame "Set a goal: Maya's homework,
   // each week" draws it, its rule open with its live summary (WP-101).
+  // [RWD-21][D-146] WP-114's mockup on the made-up family, Tuesday Oct 27: Some items for Leo
+  // (items-new), with a done and an archived item kept (items), changed to Maya (items-maya), and a
+  // goal ending Oct 29 (items-dates).
+  if (params.form?.startsWith('items')) {
+    const scene = params.form;
+    const ids = (...titles: string[]) =>
+      ITEMS_114.filter((i) => titles.includes(i.title)).map((i) => i.id);
+    const itemIds =
+      scene === 'items'
+        ? ids('Feed the dog', 'Clean out the car', 'Water the plants')
+        : scene === 'items-dates'
+          ? ids('Feed the dog', 'Homework', 'Carve the pumpkin')
+          : ids('Feed the dog', 'Homework');
+    return (
+      <div className={`admin ${theme}`}>
+        <main className="fw-page">
+          <AdminHeader current="/admin/goals" />
+          <GoalHead title="Set a goal" />
+          <section className="fw-card">
+            <GoalForm
+              id="f2e00000-0000-4000-8000-000000000040"
+              members={MEMBERS}
+              tags={TAGS}
+              items={ITEMS_114}
+              prizes={PRIZES}
+              today="2026-10-27"
+              livePath="/dev/goals/summaries"
+              draft={{
+                title: 'Dog week',
+                description: null,
+                icon: 'trophy',
+                memberId: scene === 'items-maya' ? MAYA : LEO,
+                startDate: '2026-10-27',
+                endDate: scene === 'items-dates' ? '2026-10-29' : null,
+                logic: 'all',
+                payout: { type: 'custom' },
+                rules: [
+                  {
+                    type: 'COUNT',
+                    target: 5,
+                    scope: 'items',
+                    tagIds: [],
+                    itemIds,
+                    grace: 1,
+                  },
+                ],
+              }}
+            />
+          </section>
+        </main>
+      </div>
+    );
+  }
   if (params.form === 'homework') {
     return (
       <div className={`admin ${theme}`}>

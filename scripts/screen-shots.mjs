@@ -114,6 +114,12 @@ export const ADMIN = [
   ['members-archived', '/dev/members?archived=1'],
   ['member', '/dev/members?page=member'],
   ['member-points', '/dev/members?page=member&adjusted=5'],
+  // [RWD-21] WP-114's goal Some items, as its mockup's four scenes draw them (D-146): a new goal for
+  // Leo, a done and an archived item kept, changed to Maya, and a goal ending Oct 29.
+  ['goal-items-new', '/dev/goals?form=items-new'],
+  ['goal-items', '/dev/goals?form=items'],
+  ['goal-items-maya', '/dev/goals?form=items-maya'],
+  ['goal-items-dates', '/dev/goals?form=items-dates'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of

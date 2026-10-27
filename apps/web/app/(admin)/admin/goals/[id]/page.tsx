@@ -42,7 +42,7 @@ export default async function GoalPage({
     loadGoalEvents(db!, id),
     loadGoalContext(
       db!,
-      household.id,
+      household,
       goal.payout.type === 'catalog_item' ? goal.payout.item_id : undefined,
     ),
   ]);

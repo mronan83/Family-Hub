@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.67: US-401 gains the goal's Some items for the goal's person, still to do, with what it counts kept (added at the owner's request, WP-114, RWD-21, D-146).
 > v0.8.66: US-721 added at the owner's request (WP-112, D-142): adding to the grocery list from Home, and a preferred store that new items go to.
 > v0.8.65: US-718, US-719 and US-720 added at the owner's request, and US-712 to US-717 changed, from the grocery mockup the owner approved (WP-104, WP-105, WP-107, D-138): Groceries works without the sync; the household's own categories and stores, moving several at once; the category suggested on add; recipes as links, photos and PDFs, shown on the board; each child's parent OK.
 > v0.8.64: US-712 to US-717 added at the owner's request (SPIKE-08, WP-103 to WP-107, D-134): the grocery list kept in Apple Reminders and synced by the Mac Studio, on the board and in the admin app, meals → groceries with duplicates merged, staples, and children's asks. US-706 moves to WP-105.
@@ -464,11 +465,12 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 
 ### US-401 — Create a reward goal
 **As an** admin **I want** to define a reward with start and end dates and rules **so that** my child works toward something specific.
-**Priority:** Must · **Phase:** P1 · **Reqs:** RWD-01, RWD-02, RWD-03, RWD-14
+**Priority:** Must · **Phase:** P1 · **Reqs:** RWD-01, RWD-02, RWD-03, RWD-14, RWD-21
 - Given I create a goal "Movie night" with a 14-day window and rules (COUNT ≥ 20 chores tagged Morning) AND (STREAK ≥ 5), when I save, then its status is `scheduled` or `active` depending on the start date.
 - Given the rule logic is `any`, when only one rule is met, then the goal is achieved.
 - Given a goal with an end date, when I untick **Ends on a date** or choose **Clear** on any device, an iPhone included, and save, then the goal has no end date and opens with the box unticked (added at the owner's request, WP-79, RWD-14, D-115).
 - Given a started goal, when I add an end date or move it, then it is today or later; given a reached goal, when I open it, then its rules and dates can't change, only its name, description and picture (added at the owner's request, D-115).
+- Given I choose **Some items** for Leo's goal, then I see only Leo's items that repeat or are one-time and still to do, not those done, missed or archived, nor Maya's; an item the goal already counts stays ticked, flagged with why it isn't listed, until I untick it (added at the owner's request, WP-114, RWD-21, D-146).
 
 ### US-402 — Streaks that forgive
 **As an** admin **I want** streaks to tolerate a limited number of misses and ignore non-chore days **so that** one bad day doesn't crush motivation.

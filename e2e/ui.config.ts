@@ -46,6 +46,7 @@ export default defineConfig({
         'goal-steps.spec.ts',
         'goal-perfect.spec.ts',
         'goal-form-summary.spec.ts',
+        'goal-items.spec.ts',
         'forms.spec.ts',
         'admin-day.spec.ts',
         'admin-menu.spec.ts',
@@ -61,7 +62,7 @@ export default defineConfig({
     // 1280 px, as the laptop pictures of the side-by-side are. Desktop Safari's own chrome is not
     // drawn; WebKit is its engine, so its layout and form controls are. Limit as the iPhone's.
     // [MEAL-27] WP-112's Home Groceries card too. [NFR-18] WP-95's Rewards and Members folds too,
-    // and WP-97's Today, My tasks and Insights.
+    // and WP-97's Today, My tasks and Insights. [RWD-21] WP-114's goal Some items.
     {
       name: 'mac',
       use: {
@@ -75,6 +76,7 @@ export default defineConfig({
         'home-groceries.spec.ts',
         'reward-folds.spec.ts',
         'day-folds.spec.ts',
+        'goal-items.spec.ts',
       ],
     },
   ],

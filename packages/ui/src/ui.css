@@ -3366,6 +3366,38 @@ span.fw-heat__cell {
 .fw-item-pic {
   white-space: nowrap;
 }
+/* [RWD-21][D-146] A goal's Some items in groups (WP-114): Repeats, Once still to do and Still
+   counted, each named in small soft type; a one-time item's day and a kept item's flags beside it. */
+.fw-goal-items {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-goal-items__head {
+  margin: var(--s-2) 0 0;
+  font-size: var(--t-small);
+  font-weight: 600;
+  color: var(--text-soft);
+}
+.fw-goal-items__head:first-child {
+  margin-top: 0;
+}
+/* A long name puts its day or flag on the next line, under the name, never broken over several. */
+.fw-goal-items__text {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--s-2);
+  min-width: 0;
+}
+.fw-goal-items__when {
+  font-size: var(--t-small);
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+.fw-goal-items .fw-pill {
+  padding: 0 var(--s-2);
+  white-space: nowrap;
+}
 .fw-item-pic .fw-icon {
   margin-right: 4px;
   vertical-align: -4px;

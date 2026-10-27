@@ -275,16 +275,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**2969** tests: Unit 945 · DB 1562 · UI 322 · E2E 140. 2447 name at least one ID; 522 name none.
+**2983** tests: Unit 955 · DB 1562 · UI 326 · E2E 140. 2461 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 130 of 147 |
+| Requirements built (a Done item builds them) | 131 of 148 |
 | Built requirements with no test | 0 |
 | Stories built | 114 of 130 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 238 (with a test: 238) |
+| Test cases | 248 (with a test: 248) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -300,7 +300,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 |---|---|---|---|---|---|
 | Chores | 127 | 202 | 42 | 34 | 405 |
 | Points | 45 | 92 | 19 | 12 | 168 |
-| Goals and rewards | 188 | 140 | 43 | 8 | 379 |
+| Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
 | Meals and lunch | 100 | 74 | 60 | 16 | 250 |
@@ -310,7 +310,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 197 | 167 | 61 | 18 | 443 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **945** | **1562** | **322** | **140** | **2969** |
+| **Total** | **955** | **1562** | **326** | **140** | **2983** |
 
 ### 9.3 By requirement
 
@@ -378,6 +378,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | RWD-18 | S | Covered | US-413 | WP-81 | RWD-18-a, RWD-18-b, RWD-18-c, RWD-18-d, RWD-18-e, RWD-18-f, RWD-18-g, RWD-18-h, RWD-18-i, RWD-18-j, RWD-18-k, RWD-18-l, RWD-18-m | U 16 · DB 19 · UI 9 · E2E 1 |
 | RWD-19 | S | Covered | US-414 | WP-82 | RWD-19-a, RWD-19-b, RWD-19-c, RWD-19-d, RWD-19-e, RWD-19-f, RWD-19-g, RWD-19-h, RWD-19-i, RWD-19-j | U 10 · DB 19 · UI 3 · E2E 1 |
 | RWD-20 | S | Covered | US-415 | WP-82 | RWD-20-a, RWD-20-b, RWD-20-c, RWD-20-d, RWD-20-e, RWD-20-f, RWD-20-g, RWD-20-h, RWD-20-i, RWD-20-j, RWD-20-k | U 12 · DB 19 · UI 8 · E2E 1 |
+| RWD-21 | S | Covered | US-401 | WP-114 | RWD-21-a, RWD-21-b, RWD-21-c, RWD-21-d, RWD-21-e, RWD-21-f, RWD-21-g, RWD-21-h, RWD-21-i, RWD-21-j | U 10 · UI 4 |
 | CAL-01 | M | Covered | US-501 | WP-22 | — | U 6 · DB 19 · UI 2 · E2E 1 |
 | CAL-02 | M | Covered | US-502 | WP-22 | — | U 5 · DB 11 · E2E 1 |
 | CAL-03 | M | Covered | US-501 | WP-22 | — | DB 3 · UI 1 |
@@ -564,7 +565,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-93 | Done | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j | 10 of 10 | — |
 | WP-94 | Done | NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x | 14 of 14 | — |
 | WP-95 | Done | PTS-03-a, PTS-04-b, PTS-05-a, PTS-01-a, ACC-04-a, PTS-03-b, ACC-04-b, PTS-03-c, PTS-01-b, RWD-09-a | 10 of 10 | — |
-| WP-96 | Done | CHR-21-a, CHR-21-b, CHR-21-c, CHR-21-d, CHR-21-e, CHR-21-f, CHR-21-g, CHR-21-h, CHR-21-i, CHR-22-a, CHR-22-b, CHR-23-a, CHR-23-b, CHR-23-c, NFR-16-t, MEAL-25-h, NFR-18-y, NFR-18-z | 18 of 18 | — |
+| WP-96 | Done | CHR-21-a, CHR-21-b, CHR-21-c, CHR-21-d, CHR-21-e, CHR-21-f, CHR-21-g, CHR-21-h, CHR-21-i, CHR-22-a, CHR-22-b, CHR-23-a, CHR-23-b, CHR-23-c, NFR-16-t, MEAL-25-h, NFR-18-y, NFR-18-z | 18 of 18 | U 1 |
 | WP-97 | Done | CHR-12-a, CHR-12-b, CHR-14-a, RWD-12-a, CHR-12-c, CHR-14-b, RWD-12-b, CHR-12-d | 8 of 8 | — |
 | WP-98 | Done | NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | 6 of 6 | — |
 | WP-99 | Queued: | — | — | — |
@@ -582,6 +583,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-111 | Done | NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z | 6 of 6 | — |
 | WP-112 | Done | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e, MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | 12 of 12 | U 4 |
 | WP-113 | Done | DEV-05-a, DEV-05-b, NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | 7 of 7 | — |
+| WP-114 | Done | RWD-21-a, RWD-21-b, RWD-21-c, RWD-21-d, RWD-21-e, RWD-21-f, RWD-21-g, RWD-21-h, RWD-21-i, RWD-21-j | 10 of 10 | — |
 
 Test cases and the tests that prove them:
 
@@ -756,6 +758,16 @@ Test cases and the tests that prove them:
 | NFR-12-c | WP-113 | The preview taking over 2 s to reach the test database, or not reaching it, is a bad reading (a preview without the route, none), and a test that failed while it was read is infrastructure | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-c] the preview slow to reach the test database, or not reaching it, is a bad reading; a failure while it was is infrastructure` |
 | NFR-12-d | WP-113 | A failed test still waiting for a page load or a save says which and for how long in its cause, and stays an assertion failure | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-d] a failed test still waiting for a page load or a save says which in its cause, and stays an assertion failure` |
 | NFR-12-e | WP-113 | The specs' calendar-date maths on every weekday and week start, across DST, month and year ends and a leap day, the same in any zone | Unit | Unit `scripts/e2e-dates.test.mjs`: `[NFR-12-e] each weekday of a week, and the week holding it for every week start`<br>Unit `scripts/e2e-dates.test.mjs`: `[NFR-12-e] across DST, month and year ends and a leap day, a day is one calendar day` |
+| RWD-21-a | WP-114 | An item only for another child is not listed for a child's goal | Unit | Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-a] leaves out an item only for another child` |
+| RWD-21-b | WP-114 | A one-time item done, skipped or missed is not listed; an archived item is not listed | Unit | Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-b] leaves out a one-time item done, skipped or missed, and an archived item`<br>Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-b] reads WP-96’s sections: Completed and Archived are over, Scheduled and Recurring not` |
+| RWD-21-c | WP-114 | A one-time item still to do, Overdue included, is listed under Once, still to do with its day | Unit | Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-c] lists a one-time item still to do, Overdue included, with its day` |
+| RWD-21-d | WP-114 | An item that repeats, for the goal's person, is listed under Repeats, before the one-time items | Unit | Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-d] lists an item that repeats under Repeats, with no day, before the one-time items` |
+| RWD-21-e | WP-114 | A family goal lists the items of every child who earns rewards, and not an item for a parent alone | Unit | Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-e] a family goal lists every child’s items, not a parent’s alone` |
+| RWD-21-f | WP-114 | An item an existing goal counts that is done or archived stays ticked under Still counted, flagged, and is sent on save | Unit, UI | Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-f] keeps an item the goal counts that is done or archived, flagged`<br>UI `e2e/ui/goal-items.spec.ts`: `[RWD-21-f] a done and an archived item the goal counts stay ticked under Still counted, and are sent` |
+| RWD-21-g | WP-114 | Changing who the goal is for flags an item no longer theirs ("not for Maya") and keeps it ticked; unticked, it stays on the form | Unit, UI | Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-g] changing who it’s for flags an item no longer theirs, still kept`<br>UI `e2e/ui/goal-items.spec.ts`: `[RWD-21-g] changing Leo to Maya flags Feed the dog "not for Maya", still ticked; unticked, it stays on the form` |
+| RWD-21-h | WP-114 | The server accepts an item id a goal already counts, archived or done | Unit | Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-h] the server accepts an item id a goal already counts, archived or done` |
+| RWD-21-i | WP-114 | The live summary names a ticked item that isn't listed | UI | UI `e2e/ui/goal-items.spec.ts`: `[RWD-21-i] the rule’s folded line names the items it counts that aren’t listed` |
+| RWD-21-j | WP-114 | A one-time chore outside the goal's dates is not listed, and after the dates change a ticked one is flagged "after the goal ends" or "before it starts"; a one-time task still to do is listed whatever its day | Unit | Unit `apps/web/lib/goal-items.test.ts`: `[RWD-21] the goal form’s Some items › [RWD-21-j] a one-time chore only within the goal’s dates; a task whatever its day`<br>UI `e2e/ui/goal-items.spec.ts`: `[RWD-21-j] a goal ending Oct 29 lists no chore after it; a ticked one is kept, "after the goal ends"` |
 | NFR-14-u | WP-111 | A spec's household is the demo family's seed under its own ids and sign-ins: no demo family id or sign-in is left in it, it starts by taking away the household a try before left, no two specs share an id prefix, a bad key, seed id or persona is refused, and each sign-in gets the password the preview derives for it | Unit | Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] a spec household is the seed under its own ids and sign-ins, and nothing of the demo family`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] keys, ids and personas outside the rules are refused`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] each sign-in gets the password the preview derives for it, and only the spec’s` |
 | NFR-14-v | WP-111 | On Postgres with the migrations and the demo family: two spec households each hold what the demo family holds and only their own rows; making one again starts it afresh and leaves the other as it is; taking one away takes the household its Riley set up, and nothing of the demo family or the other spec | Unit | Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] two spec households, next to the demo family, each hold what it holds and only their own rows`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] making a spec household again starts it afresh, and leaves the others as they are`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] taking a spec household away takes what it set up, and nothing of the demo family or another spec` |
 | NFR-14-w | WP-111 | The preview's one-tap signs in to an e2e household's copy of a persona when the form names a valid key, with that email's derived password; a bad key is refused, and none of it works outside a preview | Unit | Unit `apps/web/app/(admin)/sign-in/actions.test.ts`: `sign-in actions › [NFR-14-w] demo sign-in into an e2e household uses its copy of the persona, and refuses a bad key` |
@@ -876,7 +888,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-317 | CHR-15 | Covered | UI 1 · E2E 1 |
 | US-318 | CHR-16 | Covered | UI 1 · E2E 2 |
 | US-319 | CHR-17 | Covered | UI 1 · E2E 2 |
-| US-401 | RWD-01, RWD-02, RWD-03, RWD-14 | Covered | E2E 1 |
+| US-401 | RWD-01, RWD-02, RWD-03, RWD-14, RWD-21 | Covered | E2E 1 |
 | US-402 | RWD-05 | Gap | — |
 | US-408 | RWD-11, RWD-12 | Covered | UI 3 · E2E 2 |
 | US-409 | RWD-13 | Covered | U 1 · DB 5 · UI 2 · E2E 2 |
@@ -1446,6 +1458,23 @@ Unit · 6 tests
 | `isDeviceClaims › [DEV-02] tells a board session from an admin one` | DEV-02 |
 | `format › writes dates and times the brand way, in the household timezone (06 §2)` | — |
 | `board theme › [DEV-05] a board follows the time of day unless an admin holds it on Day or Evening` | DEV-05 |
+
+#### `apps/web/lib/goal-items.test.ts`
+
+Unit · 10 tests
+
+| Test | Names |
+|---|---|
+| `[RWD-21] the goal form’s Some items › [RWD-21-a] leaves out an item only for another child` | RWD-21-a |
+| `[RWD-21] the goal form’s Some items › [RWD-21-b] leaves out a one-time item done, skipped or missed, and an archived item` | RWD-21-b |
+| `[RWD-21] the goal form’s Some items › [RWD-21-b] reads WP-96’s sections: Completed and Archived are over, Scheduled and Recurring not` | RWD-21-b, WP-96 |
+| `[RWD-21] the goal form’s Some items › [RWD-21-c] lists a one-time item still to do, Overdue included, with its day` | RWD-21-c |
+| `[RWD-21] the goal form’s Some items › [RWD-21-d] lists an item that repeats under Repeats, with no day, before the one-time items` | RWD-21-d |
+| `[RWD-21] the goal form’s Some items › [RWD-21-e] a family goal lists every child’s items, not a parent’s alone` | RWD-21-e |
+| `[RWD-21] the goal form’s Some items › [RWD-21-f] keeps an item the goal counts that is done or archived, flagged` | RWD-21-f |
+| `[RWD-21] the goal form’s Some items › [RWD-21-g] changing who it’s for flags an item no longer theirs, still kept` | RWD-21-g |
+| `[RWD-21] the goal form’s Some items › [RWD-21-j] a one-time chore only within the goal’s dates; a task whatever its day` | RWD-21-j |
+| `[RWD-21] the goal form’s Some items › [RWD-21-h] the server accepts an item id a goal already counts, archived or done` | RWD-21-h |
 
 #### `apps/web/lib/goal-live.test.ts`
 
@@ -2976,6 +3005,17 @@ UI · 7 tests
 | `[NFR-16-p] Starts, Ends and By show the written date or time over a real picker` | NFR-16-p |
 | `[NFR-16-q] every rule field keeps a name the form lists, however many forms the server drew` | NFR-16-q |
 | `with no service worker › [NFR-16-r] Set the goal goes at once while a live summary is still being worked out` | NFR-16-r |
+
+#### `e2e/ui/goal-items.spec.ts`
+
+UI · 4 tests
+
+| Test | Names |
+|---|---|
+| `[RWD-21-f] a done and an archived item the goal counts stay ticked under Still counted, and are sent` | RWD-21-f |
+| `[RWD-21-g] changing Leo to Maya flags Feed the dog "not for Maya", still ticked; unticked, it stays on the form` | RWD-21-g |
+| `[RWD-21-i] the rule’s folded line names the items it counts that aren’t listed` | RWD-21-i |
+| `[RWD-21-j] a goal ending Oct 29 lists no chore after it; a ticked one is kept, "after the goal ends"` | RWD-21-j |
 
 #### `e2e/ui/goal-perfect.spec.ts`
 

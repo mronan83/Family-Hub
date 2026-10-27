@@ -18,7 +18,7 @@ export default async function NewGoalPage() {
   const household = await adminHousehold(db!, user.userId);
   if (!household) redirect('/setup');
   const [ctx, goals] = await Promise.all([
-    loadGoalContext(db!, household.id),
+    loadGoalContext(db!, household),
     loadGoals(db!, household.id),
   ]);
   return (

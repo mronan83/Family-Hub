@@ -31,7 +31,7 @@ export default async function GoalsPage({
   const stale = await bringGoalsUpToDate(db!, household.id);
   const [goals, ctx] = await Promise.all([
     loadGoals(db!, household.id),
-    loadGoalContext(db!, household.id),
+    loadGoalContext(db!, household),
   ]);
   const notice = params.saved
     ? `Saved ${params.saved}.`
