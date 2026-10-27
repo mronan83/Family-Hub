@@ -304,6 +304,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-110 | The two e2e reds of 17 October night: Maya's request on the board and the goal form's save | P3 | S | WP-20, WP-101, WP-109 | Done |
 | WP-111 | Each e2e spec on a made-up household of its own | P3 | M | WP-90, WP-109 | Done |
 | WP-113 | The e2e reds of 18 to 21 October: meal-groceries, the board's snapshot under load, five one-off reds | P3 | M | WP-105, WP-111 | Done |
+| WP-114 | A goal's Some items lists only what can still count, for the goal's person (a bug) | P3 | M | WP-96, WP-101 | In progress: mockup waiting for the owner's approval |
 | WP-93 | Calendars, school menus and the meal library folded | P3 | M | WP-91 | Done |
 | WP-94 | The set-up pages folded | P3 | M | WP-91 | Done |
 | WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Done |
@@ -520,6 +521,8 @@ flowchart LR
     WP109 --> WP111
     WP105 --> WP113[WP-113 e2e reds of 18 to 21 October]
     WP111 --> WP113
+    WP96 --> WP114[WP-114 Goal items for the goal's person]
+    WP101 --> WP114
     WP90 --> SP07[SPIKE-07 e2e specs audited by layer]
     WP90 --> WP98[WP-98 e2e findings log]
     SP07 --> WP99[WP-99 Lean e2e]
@@ -1981,6 +1984,28 @@ flowchart LR
 - **Proving it:** e2e doesn't run on a pull request (D-108). The pgTAP, Vitest and unit tests prove the snapshot's fix and the run's new readings. Only the next nightly run (or a run by hand on `main` after the merge) can show #152 green, whether #146's and #156's tests stay under their budgets on the free test project, and what the five one-off reds were when they come back.
 - **Found while its CI ran:** the `build` job's UI suite was red twice on this item's first commit, each time in one WebKit test that passed the other time and that nothing in this item reaches: `goals.spec.ts:347` as an iPhone (the Weeks fold's list empty after a click), then `home-groceries.spec.ts:131` on the Mac (the field gone after Enter). Chrome passed both. CI kept no trace of either, so the UI suite now keeps a failed test's trace (`e2e/ui.config.ts`), which the `brand-checks` artifact carries. The next run's red was `home-groceries.spec.ts:131` again, as the iPhone, and its trace gave the cause: the page's service worker had taken control before Enter, WebKit then doesn't route a controlled page's fetches to the test, so the add the test holds went to the dev page's server and was answered (`POST /dev/home` 200). The test now runs with the service worker blocked, as Groceries' ⋯ and the recipe tests already do; what it checks is unchanged. The run after was red in a third WebKit test, `controls.spec.ts:93` as the iPhone, `page.goto: WebKit encountered an internal error`, and its trace showed the same worker: WebKit refused `sw.js` and a fetch under it ("due to access control checks") and then aborted the navigation, as the screenshot step's WebKit had done once. So the service worker is blocked for the whole iPhone and Mac projects and for the screenshot pictures; none of their specs tests the worker, and the board's and offline specs that do run in Chrome, which keeps it. `goals.spec.ts:347` was red once, before traces were kept, on the same kind of page; the worker is its likely cause, not a proven one.
 - **Deferred, as plain facts:** `school_days()` (about 13 ms of the snapshot's 30, as the board under RLS) is left as it is. `wishlist.spec.ts` pairs its board with its own steps, not `pairBoard()`. The 60-second beat in the test project's slow readings is not explained. #153 to #155, #157 and #158 stay open until a nightly run on `main` shows them green, or names their cause.
+
+### WP-114 — A goal's Some items lists only what can still count, for the goal's person (a bug)
+**Phase:** P3 · **Size:** M · **Depends on:** WP-96, WP-101 · **Reqs:** RWD-21
+- Added at the owner's request on 27 October, as a bug, in the planner session: "When creating a goal and selecting specific things that count towards that goal all chores and tasks are displayed, even ones completed/archived. I'd expect only the active tasks and those that are relevant to the person(s) selected for the goal. I'd argue that only recurring tasks be available for selection." The owner then chose the planner's recommendation: "fix the goal items bug, as recommended". On `main` the goal form's **Some items** leaves out archived items only: it lists one-time items already done or missed (WP-96's Completed), and every item in the household, whoever it is for. An item an existing goal counts that is archived since isn't on the form at all, so saving the goal drops it without a word.
+- **What it lists (D-146):** only items for who the goal is for (an item's people): that child, or for the whole family any child who earns rewards. Items that repeat first, under **Repeats**; then one-time items still to do (WP-96's Scheduled, Overdue included), under **Once, still to do**, each with its day. One-time items done, skipped or missed, and archived items, are left out.
+- **Nothing a goal counts is dropped:** an item a goal already counts stays ticked, under **Still counted**, flagged with why it isn't listed (done, missed, skipped, archived, "not for Maya", "not for a child"). Changing who the goal is for after ticking items moves the ones that no longer apply there, flagged, still ticked; saving keeps them unless the parent unticks them. An item unticked there stays on the form until the page is left, so a slip can be undone. The server keeps accepting every item id it accepts now. The live summaries and Preview name every item the goal counts, listed or not.
+- **Mockup:** [Goal Items Mockup](https://claude.ai/artifact/PSkoJydKQT4Gfzv1MUxEaV), on the demo family, iPhone at 390 px and the laptop, Day and Evening; waiting for the owner's approval.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| RWD-21-a | An item only for another child is not listed for a child's goal | Unit |
+| RWD-21-b | A one-time item done, skipped or missed is not listed; an archived item is not listed | Unit |
+| RWD-21-c | A one-time item still to do, Overdue included, is listed under Once, still to do with its day | Unit |
+| RWD-21-d | An item that repeats, for the goal's person, is listed under Repeats, before the one-time items | Unit |
+| RWD-21-e | A family goal lists the items of every child who earns rewards, and not an item for a parent alone | Unit |
+| RWD-21-f | An item an existing goal counts that is done or archived stays ticked under Still counted, flagged, and is sent on save | Unit, UI |
+| RWD-21-g | Changing who the goal is for flags an item no longer theirs ("not for Maya") and keeps it ticked; unticked, it stays on the form | Unit, UI |
+| RWD-21-h | The server accepts an item id a goal already counts, archived or done | Unit |
+| RWD-21-i | The live summary names a ticked item that isn't listed | UI |
+
+- **Done when:** every case above has a test; on the preview, signed in as Alex, a goal for Leo lists only Leo's items that repeat or are still to do; the side-by-side (D-127) is in the PR; the fast checks are green.
 
 ### WP-111 — Each e2e spec on a made-up household of its own
 **Phase:** P3 · **Size:** M · **Depends on:** WP-90, WP-109 · **Reqs:** NFR-14

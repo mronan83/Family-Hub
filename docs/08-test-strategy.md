@@ -279,12 +279,12 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 130 of 147 |
+| Requirements built (a Done item builds them) | 130 of 148 |
 | Built requirements with no test | 0 |
 | Stories built | 114 of 130 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 238 (with a test: 238) |
+| Test cases | 247 (with a test: 238) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -378,6 +378,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | RWD-18 | S | Covered | US-413 | WP-81 | RWD-18-a, RWD-18-b, RWD-18-c, RWD-18-d, RWD-18-e, RWD-18-f, RWD-18-g, RWD-18-h, RWD-18-i, RWD-18-j, RWD-18-k, RWD-18-l, RWD-18-m | U 16 · DB 19 · UI 9 · E2E 1 |
 | RWD-19 | S | Covered | US-414 | WP-82 | RWD-19-a, RWD-19-b, RWD-19-c, RWD-19-d, RWD-19-e, RWD-19-f, RWD-19-g, RWD-19-h, RWD-19-i, RWD-19-j | U 10 · DB 19 · UI 3 · E2E 1 |
 | RWD-20 | S | Covered | US-415 | WP-82 | RWD-20-a, RWD-20-b, RWD-20-c, RWD-20-d, RWD-20-e, RWD-20-f, RWD-20-g, RWD-20-h, RWD-20-i, RWD-20-j, RWD-20-k | U 12 · DB 19 · UI 8 · E2E 1 |
+| RWD-21 | S | Not built | US-401 | WP-114 | RWD-21-a, RWD-21-b, RWD-21-c, RWD-21-d, RWD-21-e, RWD-21-f, RWD-21-g, RWD-21-h, RWD-21-i | — |
 | CAL-01 | M | Covered | US-501 | WP-22 | — | U 6 · DB 19 · UI 2 · E2E 1 |
 | CAL-02 | M | Covered | US-502 | WP-22 | — | U 5 · DB 11 · E2E 1 |
 | CAL-03 | M | Covered | US-501 | WP-22 | — | DB 3 · UI 1 |
@@ -582,6 +583,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-111 | Done | NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z | 6 of 6 | — |
 | WP-112 | Done | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e, MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | 12 of 12 | U 4 |
 | WP-113 | Done | DEV-05-a, DEV-05-b, NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | 7 of 7 | — |
+| WP-114 | In | RWD-21-a, RWD-21-b, RWD-21-c, RWD-21-d, RWD-21-e, RWD-21-f, RWD-21-g, RWD-21-h, RWD-21-i | 0 of 9 | — |
 
 Test cases and the tests that prove them:
 
@@ -756,6 +758,15 @@ Test cases and the tests that prove them:
 | NFR-12-c | WP-113 | The preview taking over 2 s to reach the test database, or not reaching it, is a bad reading (a preview without the route, none), and a test that failed while it was read is infrastructure | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-c] the preview slow to reach the test database, or not reaching it, is a bad reading; a failure while it was is infrastructure` |
 | NFR-12-d | WP-113 | A failed test still waiting for a page load or a save says which and for how long in its cause, and stays an assertion failure | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-d] a failed test still waiting for a page load or a save says which in its cause, and stays an assertion failure` |
 | NFR-12-e | WP-113 | The specs' calendar-date maths on every weekday and week start, across DST, month and year ends and a leap day, the same in any zone | Unit | Unit `scripts/e2e-dates.test.mjs`: `[NFR-12-e] each weekday of a week, and the week holding it for every week start`<br>Unit `scripts/e2e-dates.test.mjs`: `[NFR-12-e] across DST, month and year ends and a leap day, a day is one calendar day` |
+| RWD-21-a | WP-114 | An item only for another child is not listed for a child's goal | Unit | **none** |
+| RWD-21-b | WP-114 | A one-time item done, skipped or missed is not listed; an archived item is not listed | Unit | **none** |
+| RWD-21-c | WP-114 | A one-time item still to do, Overdue included, is listed under Once, still to do with its day | Unit | **none** |
+| RWD-21-d | WP-114 | An item that repeats, for the goal's person, is listed under Repeats, before the one-time items | Unit | **none** |
+| RWD-21-e | WP-114 | A family goal lists the items of every child who earns rewards, and not an item for a parent alone | Unit | **none** |
+| RWD-21-f | WP-114 | An item an existing goal counts that is done or archived stays ticked under Still counted, flagged, and is sent on save | Unit, UI | **none** |
+| RWD-21-g | WP-114 | Changing who the goal is for flags an item no longer theirs ("not for Maya") and keeps it ticked; unticked, it stays on the form | Unit, UI | **none** |
+| RWD-21-h | WP-114 | The server accepts an item id a goal already counts, archived or done | Unit | **none** |
+| RWD-21-i | WP-114 | The live summary names a ticked item that isn't listed | UI | **none** |
 | NFR-14-u | WP-111 | A spec's household is the demo family's seed under its own ids and sign-ins: no demo family id or sign-in is left in it, it starts by taking away the household a try before left, no two specs share an id prefix, a bad key, seed id or persona is refused, and each sign-in gets the password the preview derives for it | Unit | Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] a spec household is the seed under its own ids and sign-ins, and nothing of the demo family`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] keys, ids and personas outside the rules are refused`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] each sign-in gets the password the preview derives for it, and only the spec’s` |
 | NFR-14-v | WP-111 | On Postgres with the migrations and the demo family: two spec households each hold what the demo family holds and only their own rows; making one again starts it afresh and leaves the other as it is; taking one away takes the household its Riley set up, and nothing of the demo family or the other spec | Unit | Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] two spec households, next to the demo family, each hold what it holds and only their own rows`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] making a spec household again starts it afresh, and leaves the others as they are`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] taking a spec household away takes what it set up, and nothing of the demo family or another spec` |
 | NFR-14-w | WP-111 | The preview's one-tap signs in to an e2e household's copy of a persona when the form names a valid key, with that email's derived password; a bad key is refused, and none of it works outside a preview | Unit | Unit `apps/web/app/(admin)/sign-in/actions.test.ts`: `sign-in actions › [NFR-14-w] demo sign-in into an e2e household uses its copy of the persona, and refuses a bad key` |
@@ -876,7 +887,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-317 | CHR-15 | Covered | UI 1 · E2E 1 |
 | US-318 | CHR-16 | Covered | UI 1 · E2E 2 |
 | US-319 | CHR-17 | Covered | UI 1 · E2E 2 |
-| US-401 | RWD-01, RWD-02, RWD-03, RWD-14 | Covered | E2E 1 |
+| US-401 | RWD-01, RWD-02, RWD-03, RWD-14, RWD-21 | Covered | E2E 1 |
 | US-402 | RWD-05 | Gap | — |
 | US-408 | RWD-11, RWD-12 | Covered | UI 3 · E2E 2 |
 | US-409 | RWD-13 | Covered | U 1 · DB 5 · UI 2 · E2E 2 |
