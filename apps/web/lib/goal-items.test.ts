@@ -93,10 +93,10 @@ describe('[RWD-21] the goal form’s Some items', () => {
   it('[RWD-21-c] lists a one-time item still to do, Overdue included, with its day', () => {
     const g = itemGroups(ALL, forLeo, []);
     expect(g.once.map((c) => [c.item.title, c.when])).toEqual([
-      ['Return library books', 'Overdue 10/26/2026'],
-      ['Pack for the school trip', '10/30/2026'],
+      ['Return library books', 'Overdue, Mon, Oct 26'],
+      ['Pack for the school trip', 'Fri, Oct 30'],
     ]);
-    expect(shortDate('2027-01-05')).toBe('01/05/2027');
+    expect(shortDate('2027-01-05', TODAY)).toBe('Tue, Jan 5, 2027');
   });
 
   it('[RWD-21-d] lists an item that repeats under Repeats, with no day, before the one-time items', () => {

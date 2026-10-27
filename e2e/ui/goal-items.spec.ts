@@ -34,10 +34,10 @@ test('[RWD-21-f] a done and an archived item the goal counts stay ticked under S
     'Homework',
     'Make bed',
     'Once, still to do',
-    'Return library books Overdue 10/26/2026',
-    'Pack for the school trip 10/30/2026',
-    'Carve the pumpkin 10/31/2026',
-    'Write thank-you cards 11/05/2026',
+    'Return library books Overdue, Mon, Oct 26',
+    'Pack for the school trip Fri, Oct 30',
+    'Carve the pumpkin Sat, Oct 31',
+    'Write thank-you cards Thu, Nov 5',
     'Still counted',
     'Clean out the car done',
     'Water the plants archived',
@@ -62,7 +62,7 @@ test('[RWD-21-g] changing Leo to Maya flags Feed the dog "not for Maya", still t
       'Read 20 minutes',
       'Set the table',
       'Once, still to do',
-      'Try on the costume 10/31/2026',
+      'Try on the costume Sat, Oct 31',
       'Still counted',
       'Feed the dog not for Maya',
     ]);
@@ -101,8 +101,8 @@ test('[RWD-21-j] a goal ending Oct 29 lists no chore after it; a ticked one is k
   await page.goto('/dev/goals?form=items-dates');
   await hydrated(page);
   const all = await lines(page);
-  expect(all).not.toContain('Pack for the school trip 10/30/2026');
-  expect(all).toContain('Write thank-you cards 11/05/2026');
+  expect(all).not.toContain('Pack for the school trip Fri, Oct 30');
+  expect(all).toContain('Write thank-you cards Thu, Nov 5');
   await expect(
     page.getByRole('checkbox', { name: 'Carve the pumpkin after the goal ends' }),
   ).toBeChecked();

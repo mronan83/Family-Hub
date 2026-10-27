@@ -2,7 +2,7 @@
 // that can still count, items that repeat first, then one-time items still to do; and every item the
 // goal already counts, kept and flagged with why it isn't listed, so a goal never loses an item.
 // Dates are household-local "YYYY-MM-DD" calendar dates.
-import type { IconName } from '@familywise/ui';
+import { dateWords, type IconName } from '@familywise/ui';
 import type { Section } from './chore-sections';
 
 /** Why a one-time item is over (WP-96's Completed), or archived. */
@@ -37,7 +37,7 @@ export interface ItemsFor {
 
 export interface ItemChoice {
   item: GoalItem;
-  /** A one-time item's day, as the mockup writes it: "10/30/2026", "Overdue 10/26/2026". */
+  /** A one-time item's day, as the app writes it: "Fri, Oct 30", "Overdue, Mon, Oct 26". */
   when?: string;
   /** Still counted only: why it isn't listed ("done", "not for Maya", "after the goal ends"). */
   flags?: string[];
@@ -60,10 +60,13 @@ export function overFrom(
   return null;
 }
 
-/** "2026-10-30" → "10/30/2026" (the owner's choice for the mockup, 27 October). */
-export function shortDate(day: string): string {
-  const [y, m, d] = day.split('-');
-  return `${m}/${d}/${y}`;
+/**
+ * [NFR-16][D-128] A day as the app writes it, "Fri, Oct 30", with its year only when it isn't this
+ * year's ("Tue, Jan 5, 2027"): the owner's choice on 27 October, over mm/dd/yyyy.
+ */
+export function shortDate(day: string, today: string): string {
+  const words = dateWords(day);
+  return day.slice(0, 4) === today.slice(0, 4) ? words.replace(/, \d{4}$/, '') : words;
 }
 
 /**
@@ -97,8 +100,8 @@ const when = (item: GoalItem, today: string) =>
   item.repeats || !item.day
     ? undefined
     : item.day < today
-      ? `Overdue ${shortDate(item.day)}`
-      : shortDate(item.day);
+      ? `Overdue, ${shortDate(item.day, today)}`
+      : shortDate(item.day, today);
 
 /**
  * [RWD-21][D-146] The rule's Some items in three groups: Repeats (by name), Once, still to do (by
