@@ -56,6 +56,7 @@ const listed = (name: string, amount: string | null = null): GroceryItem => ({
   amount,
   categoryId: 'c',
   storeId: null,
+  brandId: null,
   status: 'open',
   tickedAt: null,
   tickedBy: null,
@@ -157,5 +158,29 @@ describe('the week’s items for the list (WP-112)', () => {
     });
     // Rows not ticked are left out.
     expect(weekGroceryItems(review, new Set(), { categories, past: [], learned: [] })).toEqual([]);
+  });
+
+  it('[MEAL-29-g] each item takes the brand it had last time, none if it had none', () => {
+    const chili = review.meals.find((m) => m.name === 'Chili')!;
+    const items = weekGroceryItems(review, new Set(chili.rows.map((r) => r.id)), {
+      categories,
+      past: [
+        {
+          key: 'kidney bean',
+          categoryId: 'pantry',
+          storeId: null,
+          brandId: 'bush',
+          createdAt: '2026-10-01',
+        },
+      ],
+      learned: [],
+      starter: null,
+      brands: [{ id: 'bush', name: "Bush's", archived: false }],
+    });
+    expect(items.map((i) => [i.name, i.brand_id])).toEqual([
+      ['Ground beef', null],
+      ['Onions', null],
+      ['Kidney beans', 'bush'],
+    ]);
   });
 });

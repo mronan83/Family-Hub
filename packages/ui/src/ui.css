@@ -6079,6 +6079,73 @@ textarea.fw-groc__addinput {
   font-size: var(--t-small);
   color: var(--text-soft);
 }
+/* [MEAL-29] The Brand field (WP-116): a label beside the field as Goes in and Store, the field as
+   wide as a brand's name needs, and the saved brands it offers in a list under it. */
+.fw-groc__brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+  min-width: 0;
+}
+.fw-groc__brandlabel {
+  min-width: 64px;
+  font-weight: 600;
+  font-size: var(--t-small);
+}
+.fw-groc__combo {
+  position: relative;
+  flex: 1 1 220px;
+  max-width: 330px;
+  min-width: 0;
+}
+.fw-groc__combo .fw-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+.fw-groc__offers {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 6;
+  display: grid;
+  margin: 0;
+  padding: var(--s-1);
+  list-style: none;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.fw-groc__offer {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 44px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+.fw-groc__offer .fw-icon {
+  color: var(--primary-text);
+}
+.fw-groc__offer:hover,
+.fw-groc__offer[aria-selected='true'] {
+  background: var(--primary-tint);
+}
+.fw-groc__offer--add {
+  color: var(--primary-text);
+  font-weight: 600;
+}
+.fw-groc__offer + .fw-groc__offer--add {
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-groc__brandname {
+  font-weight: 500;
+  color: var(--text-soft);
+}
 .fw-groc__chips {
   display: flex;
   flex-wrap: wrap;
@@ -6607,7 +6674,8 @@ textarea.fw-groc__addinput {
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
-.fw-bgroc__amt {
+.fw-bgroc__amt,
+.fw-bgroc__brand {
   color: var(--text-soft);
 }
 .fw-bgroc__wy {

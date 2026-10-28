@@ -109,7 +109,7 @@ select pg_temp.act_as_owner();
 select is(
   (select array_agg(tablename::text order by tablename::text) from pg_publication_tables
     where pubname = 'supabase_realtime' and schemaname = 'public'),
-  array['calendar_member', 'calendar_source', 'chore', 'chore_occurrence', 'device', 'device_calendar', 'grocery_category',
+  array['calendar_member', 'calendar_source', 'chore', 'chore_occurrence', 'device', 'device_calendar', 'grocery_brand', 'grocery_category',
         'grocery_item', 'grocery_item_reason', 'grocery_store', 'household',
         'household_settings', 'lunch_choice', 'lunch_override', 'lunch_request', 'meal', 'meal_plan_entry', 'member', 'member_lunch',
         'points_ledger', 'redemption', 'reward_catalog_item', 'reward_goal', 'reward_goal_period', 'reward_goal_progress',

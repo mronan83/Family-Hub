@@ -11,7 +11,9 @@ import { homeGroceries } from '../groceries/fixture';
 // ?school=off (today's snow day, with Undo), weekend, none (no school year); ?menus=none for no feed;
 // ?lunch=none for no child with school lunch (WP-73); ?theme=evening; ?notice= one of Home's notices.
 // [MEAL-27] The Groceries card (WP-112): ?groceries=empty, or added (the line after adding Ground beef
-// 2 lb); ?typed= what is typed in its field ("2 lb ground beef", "olive oil", "1 onion").
+// 2 lb); ?typed= what is typed in its field ("2 lb ground beef", "olive oil", "1 onion"). [MEAL-29]
+// WP-116's brands: ?brand= what is typed in the Brand field, its offers open; ?groceries=added-brand
+// (the line after adding Milk with Kirkland).
 export const metadata: Metadata = { title: 'Home', robots: { index: false } };
 
 const TZ = 'America/New_York';
@@ -30,6 +32,7 @@ export default async function DevHomePage({
     notice?: string;
     groceries?: string;
     typed?: string;
+    brand?: string;
   }>;
 }) {
   const p = await searchParams;
@@ -102,12 +105,14 @@ export default async function DevHomePage({
           open: g.items,
           categories: g.categories,
           stores: g.stores,
+          brands: g.brands,
           past: g.past,
           learned: g.learned,
           preferredStoreId: g.preferredStoreId,
         }}
         groceriesDev={{
           typed: p.typed,
+          brand: p.brand,
           added:
             p.groceries === 'added'
               ? {
@@ -116,7 +121,14 @@ export default async function DevHomePage({
                   category: 'Meat & Seafood',
                   at: 0,
                 }
-              : undefined,
+              : p.groceries === 'added-brand'
+                ? {
+                    id: g.items.find((i) => i.name === 'Milk')!.id,
+                    what: 'Milk · Kirkland ×3',
+                    category: 'Dairy & Eggs',
+                    at: 0,
+                  }
+                : undefined,
         }}
         notice={p.notice ?? null}
         waiting={quiet ? 0 : 2}

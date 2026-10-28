@@ -2,18 +2,21 @@
 
 import { Button, Icon, type IconName } from '@familywise/ui';
 import { useState } from 'react';
+import type { GroceryBrand } from '@/lib/grocery-brands';
 import type { GroceryCategory, GroceryStore, Person, Section } from '@/lib/groceries';
-import { moveGroceries, removeGroceries, setGroceriesStore } from './actions';
+import { moveGroceries, removeGroceries, setGroceriesBrand, setGroceriesStore } from './actions';
+import { BrandField } from './brand-field';
 import { ItemWords, SectionHead } from './rows';
 
 /**
  * [MEAL-23] Select (D-138 (3)): the boxes select instead of tick; Move to… (or a new category),
- * Store… and Remove act on every item selected at once; Remove asks first. Done goes back to ticking.
+ * Store…, [MEAL-29] Brand… (WP-116) and Remove act on every item selected at once; Remove asks first. Done goes back to ticking.
  */
 export function SelectList({
   sections,
   categories,
   stores,
+  brands,
   people,
   initial,
   storeFilter,
@@ -22,13 +25,15 @@ export function SelectList({
   sections: readonly Section[];
   categories: readonly GroceryCategory[];
   stores: readonly GroceryStore[];
+  brands: readonly GroceryBrand[];
   people: readonly Person[];
   initial: readonly string[];
   storeFilter: string;
-  initialPanel?: 'move' | null;
+  initialPanel?: 'move' | 'brand' | null;
 }) {
   const [chosen, setChosen] = useState<Set<string>>(new Set(initial));
-  const [panel, setPanel] = useState<'move' | 'store' | 'remove' | null>(initialPanel);
+  const [panel, setPanel] = useState<'move' | 'store' | 'brand' | 'remove' | null>(initialPanel);
+  const [brand, setBrand] = useState('');
   const toggle = (id: string) =>
     setChosen((was) => {
       const next = new Set(was);
@@ -70,6 +75,15 @@ export function SelectList({
           onClick={() => setPanel(panel === 'store' ? null : 'store')}
         >
           Store…
+        </Button>
+        <Button
+          variant="secondary"
+          icon="tag"
+          disabled={n === 0}
+          aria-expanded={panel === 'brand'}
+          onClick={() => setPanel(panel === 'brand' ? null : 'brand')}
+        >
+          Brand…
         </Button>
         <Button
           variant="ghost"
@@ -135,6 +149,25 @@ export function SelectList({
             </Button>
           </form>
         ) : null}
+        {panel === 'brand' && n > 0 ? (
+          <form
+            action={setGroceriesBrand}
+            className="fw-groc__panel"
+            aria-label={`Brand of ${what}`}
+          >
+            {hidden}
+            <p className="fw-groc__panel-h">Brand of {what}</p>
+            <BrandField
+              brands={brands}
+              value={brand}
+              onChange={setBrand}
+              hint="Empty is no brand."
+            />
+            <Button type="submit" icon="check">
+              Set the brand
+            </Button>
+          </form>
+        ) : null}
         {panel === 'remove' && n > 0 ? (
           <form action={removeGroceries} className="fw-groc__panel" aria-label={`Remove ${what}`}>
             {hidden}
@@ -168,7 +201,7 @@ export function SelectList({
                       aria-label={`Select ${item.name}`}
                     />
                   </label>
-                  <ItemWords item={item} stores={stores} people={people} />
+                  <ItemWords item={item} stores={stores} brands={brands} people={people} />
                 </li>
               );
             })}

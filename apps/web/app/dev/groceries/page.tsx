@@ -7,7 +7,10 @@ import { groceriesData, NOW, TZ } from './fixture';
 // into (?typed=greek yog); an item's ⋯ open (?menu=Onions); Select with three picked and Move to
 // open (?select=1&sel=Apples,Avocados,Bananas&panel=move); a store chip (?store=Costco); Got
 // recently or Categories and stores open (?open=got, ?open=places); a row's Edit, Move to or Store
-// (?edit=Onions, ?move=Onions, ?storeOf=Onions); [MEAL-28] a preferred store (?preferred=Costco, WP-112).
+// (?edit=Onions, ?move=Onions, ?storeOf=Onions); [MEAL-28] a preferred store (?preferred=Costco, WP-112);
+// [MEAL-29] WP-116's brands: the Brand field typed into with its offers open (?typed=milk&brand=kirk),
+// a row's Brand… (?brandOf=Milk), a brand's Merge into… (?merge=Kirkland%20Signature&open=places),
+// Rename (?renameBrand=Fairlife).
 export const metadata: Metadata = { title: 'Groceries', robots: { index: false } };
 
 type Params = Record<string, string | undefined>;
@@ -37,6 +40,9 @@ export default async function DevGroceriesPage({
           edit: idOf(p.edit),
           move: idOf(p.move),
           storeOf: idOf(p.storeOf),
+          brandOf: idOf(p.brandOf),
+          merge: data.brands.find((b) => b.name === p.merge)?.id,
+          rename: data.brands.find((b) => b.name === p.renameBrand)?.id ?? p.rename,
           sel: p.sel
             ?.split(',')
             .map((n) => idOf(n))
@@ -44,7 +50,7 @@ export default async function DevGroceriesPage({
             .join(','),
         }}
         error={null}
-        dev={{ typed: p.typed, menu: idOf(p.menu), panel: p.panel }}
+        dev={{ typed: p.typed, menu: idOf(p.menu), panel: p.panel, brand: p.brand }}
       />
     </div>
   );

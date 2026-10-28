@@ -1,6 +1,7 @@
 import { Banner, Button, Fold, Icon, type IconName } from '@familywise/ui';
 import Link from 'next/link';
 import { time } from '@/lib/format';
+import { brandOf, brandUse, mergeTarget, withBrand } from '@/lib/grocery-brands';
 import {
   categoryOrder,
   type GroceryItem,
@@ -15,6 +16,8 @@ import {
 import type { GroceriesData } from './data';
 import { AdminHeader } from '../header';
 import {
+  archiveBrand,
+  mergeBrands,
   moveGroceries,
   movePlace,
   removeGroceries,
@@ -23,7 +26,7 @@ import {
   tickGrocery,
 } from './actions';
 import { AddForm } from './add-form';
-import { EditForm, PlaceForm, PreferredStoreForm } from './forms';
+import { BrandForm, EditForm, PlaceForm, PreferredStoreForm } from './forms';
 import { ItemWords, SectionHead } from './rows';
 import { MoreMenu } from './more-menu';
 import { SelectList } from './select-list';
@@ -38,6 +41,9 @@ export interface GroceriesQuery {
   edit?: string;
   move?: string;
   storeOf?: string;
+  /** [MEAL-29] A row's Brand… open, or a brand's Merge into… (WP-116). */
+  brandOf?: string;
+  merge?: string;
   cat?: string;
   open?: string;
   ask?: string;
@@ -62,11 +68,17 @@ const NOTICES: Record<string, (name: string) => string> = {
   'store-moved': () => 'Moved.',
   'store-removed': () => 'Store removed. Its items can be got anywhere.',
   'preferred-set': () => 'Saved. New items go there.',
+  'brand-added': () => 'Brand added.',
+  'brand-renamed': () => 'Brand renamed. Every item with it says so.',
+  'brand-merged': (n) => `Merged. Those items are ${n} now, and adding them again fills ${n}.`,
+  'brand-archived': (n) => `Archived ${n}. Items that have it keep it; it isn’t offered any more.`,
+  'brand-restored': (n) => `${n} is back among your brands.`,
+  branded: () => 'Saved.',
 };
 
 function noticeOf(did: string | undefined, name: string): string | null {
   if (!did) return null;
-  const m = /^(removed|moved|stored)-(\d+)$/.exec(did);
+  const m = /^(removed|moved|stored|branded)-(\d+)$/.exec(did);
   if (m) {
     const n = Number(m[2]);
     const what = n === 1 ? 'Done: 1 item' : `Done: ${n} items`;
@@ -74,7 +86,9 @@ function noticeOf(did: string | undefined, name: string): string | null {
       ? `${what} taken off the list.`
       : m[1] === 'moved'
         ? `${what} moved.`
-        : `${what} given a store.`;
+        : m[1] === 'branded'
+          ? `${what} given a brand.`
+          : `${what} given a store.`;
   }
   if (did === 'name-taken') return null;
   return NOTICES[did]?.(name) ?? null;
@@ -125,9 +139,9 @@ export function GroceriesView({
   query: GroceriesQuery;
   error: string | null;
   /** For the dev page only: the add field typed into, an item's ⋯ open, Select's panel open. */
-  dev?: { typed?: string; menu?: string; panel?: string };
+  dev?: { typed?: string; menu?: string; panel?: string; brand?: string };
 }) {
-  const { categories, stores, items, people } = data;
+  const { categories, stores, brands, items, people } = data;
   const store: StoreFilter = query.store || 'all';
   const open = items.filter((i) => i.status === 'open');
   const chips = storeChips(items, stores);
@@ -150,10 +164,15 @@ export function GroceriesView({
     </>
   );
   const placesOpen =
-    query.open === 'places' || /^(category|store|preferred)-/.test(query.did ?? '');
+    query.open === 'places' || /^(category|store|preferred|brand)-/.test(query.did ?? '');
   const placeAsk = query.ask ?? null;
   const onList = (catId: string) => open.filter((i) => i.categoryId === catId).length;
   const atStore = (storeId: string) => open.filter((i) => i.storeId === storeId).length;
+  const withBrandOf = (brandId: string) => open.filter((i) => i.brandId === brandId).length;
+  const byName = (a: { name: string }, b: { name: string }) =>
+    a.name.localeCompare(b.name, 'en', { sensitivity: 'base' });
+  const liveBrands = brands.filter((b) => !b.archived).sort(byName);
+  const archivedBrands = brands.filter((b) => b.archived).sort(byName);
   const countWords = (n: number) => (n === 0 ? 'Empty' : `${n} on the list`);
 
   return (
@@ -180,6 +199,7 @@ export function GroceriesView({
           key={query.t ?? 'add'}
           categories={categories}
           stores={stores}
+          brands={brands}
           open={open}
           people={people}
           ctx={{
@@ -187,10 +207,12 @@ export function GroceriesView({
             past: data.past,
             learned: data.learned,
             preferredStoreId: data.preferredStoreId,
+            brands,
           }}
           fixedCategory={query.cat ?? null}
           storeFilter={store}
           initial={dev?.typed}
+          initialBrand={dev?.brand}
         />
       </section>
 
@@ -238,10 +260,11 @@ export function GroceriesView({
             sections={list}
             categories={ordered}
             stores={stores}
+            brands={brands}
             people={people}
             initial={query.sel ? query.sel.split(',') : []}
             storeFilter={store}
-            initialPanel={dev?.panel === 'move' ? 'move' : null}
+            initialPanel={dev?.panel === 'move' || dev?.panel === 'brand' ? dev.panel : null}
           />
         ) : (
           list.map((s) => (
@@ -268,7 +291,7 @@ export function GroceriesView({
                         aria-label={`Got ${item.name}`}
                       />
                     </form>
-                    <ItemWords item={item} stores={stores} people={people} />
+                    <ItemWords item={item} stores={stores} brands={brands} people={people} />
                     <MoreMenu
                       label={`More for ${item.name}`}
                       open={dev?.menu === item.id || query.item === item.id}
@@ -302,6 +325,16 @@ export function GroceriesView({
                         <span className="fw-groc__grow">Store…</span>
                         <span className="fw-muted">
                           {stores.find((x) => x.id === item.storeId)?.name ?? 'Any store'}
+                        </span>
+                      </Link>
+                      <Link
+                        className="fw-groc__mi"
+                        href={`${q({ brandOf: item.id })}#item-${item.id}`}
+                      >
+                        <Icon name="tag" size={20} />
+                        <span className="fw-groc__grow">Brand…</span>
+                        <span className="fw-muted">
+                          {brandOf(item.brandId, brands) ?? 'No brand'}
                         </span>
                       </Link>
                       <Link className="fw-groc__mi" href={q({ select: '1', sel: item.id })}>
@@ -382,6 +415,15 @@ export function GroceriesView({
                         </Button>
                       </form>
                     ) : null}
+                    {query.brandOf === item.id ? (
+                      <BrandForm
+                        id={item.id}
+                        name={item.name}
+                        brand={brandOf(item.brandId, brands)}
+                        brands={brands}
+                        storeFilter={store}
+                      />
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -427,7 +469,7 @@ export function GroceriesView({
                 <li key={item.id} className="fw-groc__row fw-groc__row--got">
                   <span className="fw-groc__words">
                     <span className="fw-groc__l1">
-                      <strong>{item.name}</strong>
+                      <strong>{withBrand(item.name, brandOf(item.brandId, brands))}</strong>
                       {amount ? <span className="fw-groc__amt">{amount}</span> : null}
                     </span>
                     <span className="fw-groc__l2">
@@ -459,10 +501,11 @@ export function GroceriesView({
         id="places"
         title="Categories and stores"
         headingId="places-heading"
-        open={placesOpen || !!query.rename || !!placeAsk}
+        open={placesOpen || !!query.rename || !!placeAsk || !!query.merge}
         summary={[
           <span key="s">
-            <b>{categories.length} categories</b> · {stores.length} stores
+            <b>{categories.length} categories</b> · {stores.length} stores ·{' '}
+            {liveBrands.length === 1 ? '1 brand' : `${liveBrands.length} brands`}
           </span>,
         ]}
       >
@@ -651,6 +694,130 @@ export function GroceriesView({
             ))}
         </ul>
         <PlaceForm kind="store" placeholder="New store, like Trader Joe’s" />
+
+        {/* [MEAL-29] The household's brands (WP-116, D-148): offered as a brand is typed, A to Z. */}
+        <div className="fw-groc__sech" id="brands">
+          <Icon name="tag" size={18} />
+          <h3>Brands</h3>
+          <span className="fw-groc__n">{liveBrands.length}</span>
+        </div>
+        <p className="fw-muted">
+          Offered as you type a brand. A brand typed that isn’t here is added when the item is. ⋯
+          holds Rename, Merge into and Archive.
+        </p>
+        {liveBrands.length === 0 ? (
+          <p className="fw-groc__empty">No brands yet. Type one when you add an item.</p>
+        ) : (
+          <ul className="fw-groc__rows" aria-label="Brands">
+            {liveBrands.map((b) => (
+              <li key={b.id} className="fw-groc__row fw-groc__place">
+                <span className="fw-groc__tile" aria-hidden>
+                  <Icon name="tag" size={20} />
+                </span>
+                <span className="fw-groc__words">
+                  <strong>{b.name}</strong>
+                  <span className="fw-groc__l2">{brandUse(withBrandOf(b.id))}</span>
+                </span>
+                <span className="fw-groc__placeacts">
+                  <details className="fw-groc__more">
+                    <summary className="fw-groc__morebtn" aria-label={`More for ${b.name}`}>
+                      <Icon name="more" />
+                    </summary>
+                    <div className="fw-groc__menu">
+                      <Link className="fw-groc__mi" href={`/admin/groceries?rename=${b.id}#brands`}>
+                        <Icon name="edit" size={20} />
+                        Rename
+                      </Link>
+                      {liveBrands.length > 1 ? (
+                        <Link
+                          className="fw-groc__mi"
+                          href={`/admin/groceries?merge=${b.id}#brands`}
+                        >
+                          <Icon name="chevron-right" size={20} />
+                          Merge into…
+                        </Link>
+                      ) : null}
+                      <form action={archiveBrand}>
+                        <input type="hidden" name="id" value={b.id} />
+                        <input type="hidden" name="archived" value="true" />
+                        <button type="submit" className="fw-groc__mi">
+                          <Icon name="archive" size={20} />
+                          Archive {b.name}
+                        </button>
+                      </form>
+                    </div>
+                  </details>
+                </span>
+                {query.rename === b.id ? <PlaceForm kind="brand" id={b.id} name={b.name} /> : null}
+                {query.merge === b.id ? (
+                  <form
+                    action={mergeBrands}
+                    className="fw-groc__panel"
+                    aria-label={`Merge ${b.name} into`}
+                  >
+                    <input type="hidden" name="from" value={b.id} />
+                    <p className="fw-groc__panel-h">Merge {b.name} into</p>
+                    {liveBrands
+                      .filter((x) => x.id !== b.id)
+                      .map((x) => (
+                        <label key={x.id} className="fw-choice fw-groc__opt">
+                          <input
+                            type="radio"
+                            name="into"
+                            value={x.id}
+                            required
+                            defaultChecked={x.id === mergeTarget(b, brands)}
+                          />
+                          {x.name}
+                        </label>
+                      ))}
+                    <p className="fw-muted">
+                      Every item with {b.name}, on the list or had before, gets the brand you pick,
+                      so adding it again fills that one. {b.name} is then removed.
+                    </p>
+                    <div className="fw-actions">
+                      <Button type="submit" icon="check">
+                        Merge
+                      </Button>
+                      <Link
+                        className="fw-btn fw-btn--ghost"
+                        href="/admin/groceries?open=places#brands"
+                      >
+                        Keep both
+                      </Link>
+                    </div>
+                  </form>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
+        <PlaceForm kind="brand" placeholder="New brand, like Kirkland" />
+        {archivedBrands.length > 0 ? (
+          <>
+            <p className="fw-groc__panel-h">Archived</p>
+            <ul className="fw-groc__rows" aria-label="Archived brands">
+              {archivedBrands.map((b) => (
+                <li key={b.id} className="fw-groc__row fw-groc__place">
+                  <span className="fw-groc__tile" aria-hidden>
+                    <Icon name="archive" size={20} />
+                  </span>
+                  <span className="fw-groc__words">
+                    <strong>{b.name}</strong>
+                    <span className="fw-groc__l2">{brandUse(withBrandOf(b.id))}</span>
+                  </span>
+                  <form action={archiveBrand}>
+                    <input type="hidden" name="id" value={b.id} />
+                    <input type="hidden" name="archived" value="false" />
+                    <Button type="submit" variant="ghost" icon="undo">
+                      Restore
+                    </Button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
       </Fold>
     </main>
   );

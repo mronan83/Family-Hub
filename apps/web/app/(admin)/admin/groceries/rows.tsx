@@ -1,5 +1,6 @@
 import { Avatar, type AvatarKey, Icon, type IconName, type MemberColor } from '@familywise/ui';
 import type { ReactNode } from 'react';
+import { brandOf, type GroceryBrand } from '@/lib/grocery-brands';
 import {
   type GroceryItem,
   type GroceryStore,
@@ -66,23 +67,29 @@ export function StoreTag({ store }: { store: GroceryStore | undefined }) {
   );
 }
 
-/** The row's name and amount, then its store and why. */
+/** The row's name, [MEAL-29] its brand ("Milk · Kirkland") and its amount, then its store and why. */
 export function ItemWords({
   item,
   stores,
+  brands,
   people,
 }: {
   item: GroceryItem;
   stores: readonly GroceryStore[];
+  brands: readonly GroceryBrand[];
   people: readonly Person[];
 }) {
   const amount = itemAmount(item);
+  const brand = brandOf(item.brandId, brands);
   const store = stores.find((s) => s.id === item.storeId);
   const why = whyLines(item, people);
   return (
     <span className="fw-groc__words">
       <span className="fw-groc__l1">
-        <strong>{item.name}</strong>
+        <strong>
+          {item.name}
+          {brand ? <span className="fw-groc__brandname"> · {brand}</span> : null}
+        </strong>
         {amount ? <span className="fw-groc__amt">{amount}</span> : null}
       </span>
       {store || why.length > 0 ? (

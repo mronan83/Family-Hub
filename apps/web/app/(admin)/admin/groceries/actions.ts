@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { FormState } from '@/lib/auth/messages';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
+import { BRAND_MAX, brandName } from '@/lib/grocery-brands';
 import { addedLine, itemAmount, type GroceryReason } from '@/lib/groceries';
 import { itemKey, parseItem } from '@/lib/grocery-merge';
 import { log } from '@/lib/log';
@@ -49,7 +50,15 @@ const refusal = (e: { code?: string; hint?: string | null }): string =>
       ? 'That name is taken. Try another.'
       : e.hint === 'other_fixed'
         ? 'Other stays, so nothing is ever without a category.'
-        : 'That didn’t change. Try again in a moment.';
+        : e.hint === 'brand_taken'
+          ? 'There’s a brand by that name already. Merge into it instead.'
+          : 'That didn’t change. Try again in a moment.';
+
+/** [MEAL-29] The brand typed with an item: a name to find among the household's or save; none. */
+const brandOfForm = (form: FormData): string | null => {
+  const b = brandName(String(form.get('brand') ?? ''));
+  return b ? b.slice(0, BRAND_MAX) : null;
+};
 
 /**
  * [MEAL-18][MEAL-20][MEAL-24] Adds what was typed ("2 lb ground beef"), in the category and store
@@ -73,6 +82,7 @@ export async function addGrocery(_prev: FormState, form: FormData): Promise<Form
         amount,
         category_id: guid(form.get('categoryId')),
         store_id: GUID.test(store) ? store : null,
+        brand: brandOfForm(form),
         into_id: guid(form.get('intoId')),
         reason: { kind: 'added' },
       },
@@ -163,39 +173,109 @@ export async function setGroceriesStore(form: FormData): Promise<void> {
   back(form, error ? 'failed' : `stored-${chosen.length}`);
 }
 
+/** [MEAL-29] An item's Brand…: a brand of the household's, a new one saved to them, or none. */
+export async function setGroceryBrand(_prev: FormState, form: FormData): Promise<FormState> {
+  const { db } = await context();
+  const id = guid(form.get('id'));
+  if (!id) return { message: 'That didn’t change. Try again in a moment.' };
+  const { error } = await db.rpc('set_groceries_brand', {
+    p_ids: [id],
+    p_brand: brandOfForm(form),
+  });
+  if (error) {
+    log('warn', 'grocery brand not set', { code: error.code, hint: error.hint });
+    return { message: refusal(error) };
+  }
+  back(form, 'branded');
+}
+
+/** [MEAL-29] Select's Brand…: the brand of the items selected, saved if new; empty is none. */
+export async function setGroceriesBrand(form: FormData): Promise<void> {
+  const { db } = await context();
+  const chosen = ids(form);
+  if (chosen.length === 0) back(form, 'failed');
+  const { error } = await db.rpc('set_groceries_brand', {
+    p_ids: chosen,
+    p_brand: brandOfForm(form),
+  });
+  if (error) log('warn', 'grocery brands not set', { code: error.code, hint: error.hint });
+  back(form, error ? 'failed' : `branded-${chosen.length}`);
+}
+
 // ---------------------------------------------------------------------------------------------
-// [MEAL-23] Categories and stores
+// [MEAL-23][MEAL-29] Categories, stores and brands
 // ---------------------------------------------------------------------------------------------
 
-const kindOf = (form: FormData) => (form.get('kind') === 'store' ? 'store' : 'category');
+const kindOf = (form: FormData) =>
+  form.get('kind') === 'store' ? 'store' : form.get('kind') === 'brand' ? 'brand' : 'category';
+const anchor = (form: FormData) => (kindOf(form) === 'brand' ? '#brands' : '#places');
 
 export async function addPlace(_prev: FormState, form: FormData): Promise<FormState> {
   const { db, household } = await context();
-  const name = String(form.get('name') ?? '').trim();
+  const name = brandName(String(form.get('name') ?? ''));
   if (!name) return { message: 'Give it a name.' };
   if (name.length > 40) return { message: 'Keep it under 40 letters.' };
-  const { error } = await db.rpc('add_grocery_place', {
-    p_household: household.id,
-    p_kind: kindOf(form),
-    p_name: name,
-  });
+  const { error } =
+    kindOf(form) === 'brand'
+      ? await db.rpc('add_grocery_brand', { p_household: household.id, p_name: name })
+      : await db.rpc('add_grocery_place', {
+          p_household: household.id,
+          p_kind: kindOf(form),
+          p_name: name,
+        });
   if (error) return { message: refusal(error) };
-  back(form, `${kindOf(form)}-added`, '#places');
+  back(form, `${kindOf(form)}-added`, anchor(form));
 }
 
 export async function renamePlace(_prev: FormState, form: FormData): Promise<FormState> {
   const { db } = await context();
   const id = guid(form.get('id'));
-  const name = String(form.get('name') ?? '').trim();
+  const name = brandName(String(form.get('name') ?? ''));
   if (!id || !name) return { message: 'Give it a name.' };
   if (name.length > 40) return { message: 'Keep it under 40 letters.' };
-  const { error } = await db.rpc('rename_grocery_place', {
-    p_kind: kindOf(form),
-    p_id: id,
-    p_name: name,
-  });
+  const { error } =
+    kindOf(form) === 'brand'
+      ? await db.rpc('rename_grocery_brand', { p_id: id, p_name: name })
+      : await db.rpc('rename_grocery_place', {
+          p_kind: kindOf(form),
+          p_id: id,
+          p_name: name,
+        });
   if (error) return { message: refusal(error) };
-  back(form, `${kindOf(form)}-renamed`, '#places');
+  back(form, `${kindOf(form)}-renamed`, anchor(form));
+}
+
+/** [MEAL-29] Archives a brand, or restores one; says its name back. */
+export async function archiveBrand(form: FormData): Promise<void> {
+  const { db } = await context();
+  const id = guid(form.get('id'));
+  const archived = form.get('archived') === 'true';
+  if (!id) back(form, 'failed', '#brands');
+  const { data, error } = await db.rpc('archive_grocery_brand', { p_id: id, p_archived: archived });
+  if (error) log('warn', 'grocery brand not archived', { code: error.code, hint: error.hint });
+  back(
+    form,
+    error ? 'failed' : archived ? 'brand-archived' : 'brand-restored',
+    `&name=${encodeURIComponent(String(data ?? ''))}#brands`,
+  );
+}
+
+/**
+ * [MEAL-29] Merges one brand into another (D-148): every item with it, on the list or had before,
+ * gets the brand kept, and the merged one is removed. Says the kept brand's name back.
+ */
+export async function mergeBrands(form: FormData): Promise<void> {
+  const { db } = await context();
+  const from = guid(form.get('from'));
+  const into = guid(form.get('into'));
+  if (!from || !into) back(form, 'failed', '#brands');
+  const { data, error } = await db.rpc('merge_grocery_brands', { p_from: from, p_into: into });
+  if (error) log('warn', 'grocery brands not merged', { code: error.code, hint: error.hint });
+  back(
+    form,
+    error ? 'failed' : 'brand-merged',
+    `&name=${encodeURIComponent(String(data ?? ''))}#brands`,
+  );
 }
 
 export async function movePlace(form: FormData): Promise<void> {
@@ -261,6 +341,7 @@ export async function quickAddGrocery(
         amount,
         category_id: guid(form.get('categoryId')),
         store_id: guid(form.get('storeId')),
+        brand: brandOfForm(form),
         reason: { kind: 'added' },
       },
     ],
@@ -274,13 +355,16 @@ export async function quickAddGrocery(
   revalidatePath(PATH);
   const { data: row } = await db
     .from('grocery_item')
-    .select('name, amount, grocery_category(name), grocery_item_reason(amount)')
+    .select(
+      'name, amount, grocery_category(name), grocery_brand(name), grocery_item_reason(amount)',
+    )
     .eq('id', id)
     .maybeSingle();
   const r = row as unknown as {
     name: string;
     amount: string | null;
     grocery_category: { name: string } | null;
+    grocery_brand: { name: string } | null;
     grocery_item_reason: Pick<GroceryReason, 'amount'>[];
   } | null;
   const line = r
@@ -291,6 +375,7 @@ export async function quickAddGrocery(
           reasons: r.grocery_item_reason as GroceryReason[],
         }),
         r.grocery_category?.name ?? 'Other',
+        r.grocery_brand?.name ?? null,
       )
     : addedLine(name, amount, 'the list');
   return { added: { id, what: line.what, category: line.category, at: Date.now() } };

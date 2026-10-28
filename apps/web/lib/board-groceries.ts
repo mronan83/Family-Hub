@@ -1,3 +1,4 @@
+import type { GroceryBrand } from './grocery-brands';
 import type { GroceryCategory, GroceryItem, GroceryStore } from './groceries';
 import { itemKey } from './grocery-merge';
 
@@ -9,6 +10,8 @@ export interface BoardGroceries {
   ever: boolean;
   categories: GroceryCategory[];
   stores: GroceryStore[];
+  /** [MEAL-29] The household's brands, archived ones too: an item keeps its brand (WP-116). */
+  brands: GroceryBrand[];
   /** The open items. */
   items: GroceryItem[];
 }
@@ -42,6 +45,11 @@ export function readGroceries(x: unknown): BoardGroceries | null {
       sortOrder: typeof s.sort_order === 'number' ? s.sort_order : 0,
     });
   }
+  const brands: GroceryBrand[] = [];
+  for (const b of Array.isArray(x.brands) ? x.brands : []) {
+    if (!isObject(b) || !str(b.id) || !str(b.name)) continue;
+    brands.push({ id: b.id as string, name: b.name as string, archived: b.archived === true });
+  }
   const items: GroceryItem[] = [];
   for (const i of Array.isArray(x.items) ? x.items : []) {
     if (!isObject(i) || !str(i.id) || !str(i.name) || !str(i.category_id)) continue;
@@ -51,6 +59,7 @@ export function readGroceries(x: unknown): BoardGroceries | null {
       amount: str(i.amount),
       categoryId: i.category_id as string,
       storeId: str(i.store_id),
+      brandId: str(i.brand_id),
       status: 'open',
       tickedAt: null,
       tickedBy: null,
@@ -66,7 +75,7 @@ export function readGroceries(x: unknown): BoardGroceries | null {
       })),
     });
   }
-  return { ever: x.ever === true || items.length > 0, categories, stores, items };
+  return { ever: x.ever === true || items.length > 0, categories, stores, brands, items };
 }
 
 /** The snapshot's answer with board_groceries()'s beside it, for readSnapshot. */

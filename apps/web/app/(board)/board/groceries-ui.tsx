@@ -3,6 +3,7 @@
 import { Avatar, Icon, type IconName } from '@familywise/ui';
 import { useMemo, useState } from 'react';
 import { type BoardGroceries, pictureOf } from '@/lib/board-groceries';
+import { brandOf } from '@/lib/grocery-brands';
 import {
   forMeals,
   itemAmount,
@@ -15,8 +16,8 @@ import type { BoardMember } from '@/lib/snapshot';
 
 /**
  * [MEAL-18][MEAL-23][US-714] Groceries on the board (WP-104, D-138): the list by the household's
- * categories, A to Z, each thing with its picture, its amount, and why when a meal needs it or a
- * child asked. Store chips change only what the board shows. Nothing here changes the list
+ * categories, A to Z, each thing with its picture, [MEAL-29] its brand ("Milk · Kirkland"), its
+ * amount, and why when a meal needs it or a child asked. Store chips change only what the board shows. Nothing here changes the list
  * (D-134 (12)); asking comes with WP-107.
  */
 export function GroceriesBoard({
@@ -77,6 +78,7 @@ export function GroceriesBoard({
               <ul>
                 {s.items.map((item) => {
                   const amount = itemAmount(item);
+                  const brand = brandOf(item.brandId, groceries?.brands ?? []);
                   const meals = forMeals(item);
                   const askers = [
                     ...new Set(
@@ -92,6 +94,7 @@ export function GroceriesBoard({
                       <Icon name={pictureOf(item.name, s.category) as IconName} size={40} />
                       <span className="fw-bgroc__nm">
                         {item.name}
+                        {brand ? <span className="fw-bgroc__brand"> · {brand}</span> : null}
                         {amount ? <span className="fw-bgroc__amt"> {amount}</span> : null}
                       </span>
                       {meals ? (

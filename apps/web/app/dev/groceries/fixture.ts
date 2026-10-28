@@ -1,3 +1,4 @@
+import type { GroceryBrand } from '@/lib/grocery-brands';
 import { itemKey } from '@/lib/grocery-merge';
 import type { GroceriesData } from '../../(admin)/admin/groceries/data';
 import type {
@@ -83,6 +84,27 @@ export const STORES: GroceryStore[] = [
 ].map((name, i) => ({ id: `f3d00000-0000-4000-8000-00000000000${i + 1}`, name, sortOrder: i + 1 }));
 const STORE = Object.fromEntries(STORES.map((s) => [s.name, s.id])) as Record<string, string>;
 
+/**
+ * [MEAL-29] The demo family's brands (WP-116), as the brands mockup draws them: Kirkland and Kirkland
+ * Signature the near-duplicates to merge, Horizon archived.
+ */
+export const BRANDS: GroceryBrand[] = [
+  ['Chobani', false],
+  ["Dave's Killer Bread", false],
+  ['Fairlife', false],
+  ['Horizon', true],
+  ['Jif', false],
+  ['Kirkland', false],
+  ['Kirkland Signature', false],
+  ['Mission', false],
+  ["Peet's", false],
+].map(([name, archived], i) => ({
+  id: `f3a10000-0000-4000-8000-00000000000${i + 1}`,
+  name: name as string,
+  archived: archived as boolean,
+}));
+const BRAND = Object.fromEntries(BRANDS.map((b) => [b.name, b.id])) as Record<string, string>;
+
 const at = (minutesAgo: number) => new Date(NOW - minutesAgo * 60_000).toISOString();
 const r = (kind: GroceryReason['kind'], o: Partial<GroceryReason> = {}): GroceryReason => ({
   kind,
@@ -116,6 +138,7 @@ const item = (
   amount: null,
   categoryId: CAT[cat]!,
   storeId: null,
+  brandId: null,
   status: 'open',
   tickedAt: null,
   tickedBy: null,
@@ -133,20 +156,30 @@ export const ITEMS: GroceryItem[] = [
   item('Onions', 'produce', [meal('Tacos, Tue', '1'), meal('Chili, Wed', '2')]),
   item('Cheddar', 'dairy', [meal('Tacos, Tue')], { storeId: STORE.Kroger! }),
   item('Eggs', 'dairy', [added('Sam', '1 dozen')], { storeId: STORE.Aldi! }),
-  item('Greek yogurt', 'dairy', [ask(MAYA!)]),
-  item('Milk', 'dairy', [added('Alex', '×2')], { storeId: STORE.Costco! }),
-  item('Sourdough', 'bakery', [added('Alex')]),
-  item('Tortillas', 'bakery', [meal('Tacos, Tue', '8')], { storeId: STORE.Kroger! }),
+  item('Greek yogurt', 'dairy', [ask(MAYA!)], { brandId: BRAND.Chobani! }),
+  item('Milk', 'dairy', [added('Alex', '×2')], {
+    storeId: STORE.Costco!,
+    brandId: BRAND.Kirkland!,
+  }),
+  item('Sourdough', 'bakery', [added('Alex')], { brandId: BRAND["Dave's Killer Bread"]! }),
+  item('Tortillas', 'bakery', [meal('Tacos, Tue', '8')], {
+    storeId: STORE.Kroger!,
+    brandId: BRAND.Mission!,
+  }),
   item('Ground beef', 'meat', [meal('Tacos, Tue', '1 lb'), meal('Chili, Wed', '1 lb')], {
     storeId: STORE.Kroger!,
   }),
   item('Salmon fillets', 'meat', [meal('Salmon and rice, Thu', '×4')], { storeId: STORE.Costco! }),
   item('Kidney beans', 'pantry', [meal('Chili, Wed', '2 cans')]),
-  item('Peanut butter', 'pantry', [added('Sam')]),
+  item('Peanut butter', 'pantry', [added('Sam')], { brandId: BRAND.Jif! }),
   item('Rice', 'pantry', [added('Sam'), meal('Salmon and rice, Thu')]),
   item('Dish soap', 'household', [added('Alex')], { storeId: STORE.Walmart! }),
-  item('Paper towels', 'household', [added('Sam')], { storeId: STORE.Costco! }),
+  item('Paper towels', 'household', [added('Sam')], {
+    storeId: STORE.Costco!,
+    brandId: BRAND['Kirkland Signature']!,
+  }),
   item('Coffee', 'pantry', [added('Sam')], {
+    brandId: BRAND["Peet's"]!,
     status: 'ticked',
     tickedAt: at(23 * 60 + 40),
     tickedBy: SAM_USER,
@@ -180,12 +213,14 @@ export function groceriesData(
   return {
     categories: CATEGORIES,
     stores: STORES,
+    brands: BRANDS,
     items,
     people: PEOPLE,
     past: items.map((i) => ({
       key: itemKey(i.name),
       categoryId: i.categoryId,
       storeId: i.storeId,
+      brandId: i.brandId,
       createdAt: i.createdAt,
     })),
     learned: [

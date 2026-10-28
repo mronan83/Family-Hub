@@ -94,7 +94,7 @@ test('[MEAL-18-e] store chips change only what the board shows', async ({ page }
   );
   await expect(screen(page).locator('.fw-bgroc__nm')).toHaveText([
     'Cheddar',
-    'Tortillas ×8',
+    'Tortillas · Mission ×8',
     'Ground beef 2 lb',
   ]);
   await chips.getByRole('button', { name: 'All 19' }).click();
@@ -115,4 +115,17 @@ test('[MEAL-18-e] an emptied list says so; a household with none has no Grocerie
   await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
   await expect(people(page).getByRole('button', { name: 'Meals' })).toBeVisible();
   await expect(people(page).getByRole('button', { name: 'Groceries' })).toHaveCount(0);
+});
+
+test('[MEAL-29-k] each thing shows its brand after its name, softer', async ({ page }) => {
+  await openGroceries(page, 'groceries=1');
+  const dairy = screen(page).getByRole('region', { name: /^Dairy & Eggs/ });
+  await expect(dairy.locator('.fw-bgroc__nm')).toHaveText([
+    'Cheddar',
+    'Eggs 1 dozen',
+    'Greek yogurt · Chobani',
+    'Milk · Kirkland ×2',
+  ]);
+  expect(await fit(page)).toEqual({ wide: 1920, small: [], tiny: [] });
+  await contrastOk(page);
 });

@@ -129,6 +129,21 @@ export const ADMIN = [
     '/dev/rewards/points?who=f1000000-0000-4000-8000-000000000001&type=adjustment,spend&from=2026-10-01&to=2026-10-31',
   ],
   ['rewards-bonus-open', '/dev/rewards?bonus=archive'],
+  // [MEAL-29] WP-116's grocery brands, as its mockup draws them (D-148): the list with brands, typing
+  // a brand, last time's brand, a new brand, an item's ⋯ and Brand…, Select's Brand…, Brands and a
+  // merge; Home last time's brand, typing a brand, and after Add.
+  ['brands-list', '/dev/groceries'],
+  ['brands-typing', '/dev/groceries?typed=milk&brand=kirk'],
+  ['brands-prefill', '/dev/groceries?typed=coffee'],
+  ['brands-new', '/dev/groceries?typed=sparkling%20water&brand=La%20Croix'],
+  ['brands-menu', '/dev/groceries?menu=Milk'],
+  ['brands-brandof', '/dev/groceries?brandOf=Milk'],
+  ['brands-select', '/dev/groceries?select=1&sel=Apples,Bananas&panel=brand'],
+  ['brands-places', '/dev/groceries?open=places'],
+  ['brands-merge', '/dev/groceries?merge=Kirkland%20Signature'],
+  ['brands-home-prefill', '/dev/home?typed=coffee'],
+  ['brands-home-typing', '/dev/home?typed=yogurt&brand=fair'],
+  ['brands-home-added', '/dev/home?groceries=added-brand'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of
@@ -142,6 +157,7 @@ export const BOARD = [
   ['board-weighted', '?steps=weighted', 'Maya'],
   ['board-family', '?perfect=missed', 'Maya'],
   ['board-groceries', '?groceries=1', 'Groceries', 'whole'],
+  // [MEAL-29] WP-116: the same board screen shows each thing's brand (board-groceries above).
   ['board-groceries-empty', '?groceries=empty', 'Groceries', 'whole'],
   // [MEAL-26] WP-105's recipe on the board: Meals, then a tap on Tacos.
   ['board-recipe', '?x=1', 'Meals', 'whole', 'Tacos: open the recipe'],

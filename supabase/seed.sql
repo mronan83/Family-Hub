@@ -425,6 +425,24 @@ begin
    where i.household_id = v_demo and i.status = 'ticked';
 end $$;
 
+-- [MEAL-29] Grocery brands (WP-116): the demo family's saved brands, Kirkland and Kirkland Signature
+-- the near-duplicates to merge, Horizon archived; some of the list's items with their brand.
+do $$
+declare
+  v_demo constant uuid := '0de00000-0000-4000-8000-000000000001';
+begin
+  insert into public.grocery_brand (id, household_id, name, archived_at)
+  select ('0de00000-0000-4000-8000-0000000740' || lpad(b.n::text, 2, '0'))::uuid, v_demo, b.name,
+         case when b.archived then now() - interval '30 days' end
+    from (values (1, 'Chobani', false), (2, 'Dave''s Killer Bread', false), (3, 'Fairlife', false),
+                 (4, 'Horizon', true), (5, 'Jif', false), (6, 'Kirkland', false),
+                 (7, 'Kirkland Signature', false), (8, 'Mission', false), (9, 'Peet''s', false)) b (n, name, archived);
+  update public.grocery_item i
+     set brand_id = ('0de00000-0000-4000-8000-0000000740' || lpad(x.brand::text, 2, '0'))::uuid
+    from (values (9, 1), (10, 6), (11, 2), (12, 8), (15, 5), (18, 7), (19, 9)) x (item, brand)
+   where i.id = ('0de00000-0000-4000-8000-0000000730' || lpad(x.item::text, 2, '0'))::uuid;
+end $$;
+
 -- [MEAL-04] School lunch (WP-26): Leo buys on Wednesdays, Maya on Fridays; they bring the rest.
 insert into public.member_lunch (member_id, household_id, defaults)
 select m.id, m.household_id, case m.display_name when 'Leo' then '{"wed": "buy"}' else '{"fri": "buy"}' end::jsonb

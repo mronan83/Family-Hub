@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.48: Grocery brands (WP-116, D-148): a **Brand** when adding, picked from your own brands as you type or added to them, filled in from last time; **Brand…** on an item and in Select; **Brands** in Categories and stores (rename, merge, archive); the brand on the list and the board.
 > v0.47: The points register (WP-115, D-147): every points change for every child on Rewards → **Points register**, filtered by child, type, bonus and days, with **Show older**; each bonus's payouts on **Bonus points**; **All of (name)'s points** on a child's Points (A6, B1.6, B1.7).
 > v0.46: A goal's **Some items** lists only what can still count for who it's for, items that repeat then one-time items still to do with their days, and keeps every item the goal counts under **Still counted**, flagged (WP-114, D-146).
 > v0.45: Today, My tasks and Insights folded (WP-97, D-120, D-145): a part of the day folds to "6 of 6 done" and its first names once everything in it is done or skipped, the next time Today opens; **Overdue** and **Waiting for you** stay open; My tasks' **Coming up** folds to how many and the next one; Insights' **Day by day**, **Missed most**, **By tag** and **Checking** fold to their one-line finding, **History** to its button.
@@ -1165,6 +1166,19 @@ The **+** on a category's heading adds straight into it.
 
 ![Groceries on a phone, adding "greek yog": Goes in Dairy & Eggs, from your own moves, the Store chips with Any store chosen, and Also on the list: Greek yogurt, Maya asked, with Make it one.](guide/img/admin-groceries-adding-phone.jpg "Adding, with the category and store suggested")
 
+#### A brand
+<!-- covers: US-722 -->
+
+Once you type something, a **Brand** field shows under **Store**, on **Groceries** and on Home's card. Leave it empty for no brand.
+
+1. Type a brand. Your saved brands that match are offered as you type, whatever the capitals or spaces ("kirk" finds Kirkland and Kirkland Signature). Tap one, or use the arrow keys and Enter.
+2. Not one of yours yet? The last offer is **Add "La Croix"**. It is saved to your brands when you add the item.
+3. Something you've had before fills in the brand it had last time ("its brand last time"). Change or clear it before **Add**.
+
+The list, Home and the board show the brand after the name: "Milk · Kirkland ×2". Adding something already on the list with another brand changes its brand; adding it with no brand keeps the one it has. An item's **⋯** has **Brand…**, and **Select** has **Brand…** for several at once.
+
+![Groceries on a phone, adding milk with "kirk" typed under Brand: Kirkland, Kirkland Signature and Add "kirk" offered.](guide/img/admin-groceries-brand-phone.jpg "Picking a brand as you type")
+
 #### Add from Home
 <!-- covers: US-721 -->
 
@@ -1176,7 +1190,7 @@ The **Groceries** card, first among Home's quick actions, says how many things a
 
 **Open the list** opens **Groceries**; **This week's meals** opens the week's **Add to groceries** on **Meals**.
 
-![Home's Groceries card on a phone, with "olive oil" typed: 8 on the list, the field and Add, then "Pantry · Costco, your preferred store", Open the list and This week's meals.](guide/img/admin-home-groceries-phone.jpg "Adding from Home")
+![Home's Groceries card on a phone, with "olive oil" typed: 8 on the list, the field and Add, an empty Brand field, then "Pantry · Costco, your preferred store", Open the list and This week's meals.](guide/img/admin-home-groceries-phone.jpg "Adding from Home")
 
 ![Home's Groceries card on a phone after Add: 9 on the list, the field empty, and "Added Ground beef 2 lb to Meat & Seafood. Change".](guide/img/admin-home-groceries-added-phone.jpg "After Add, on Home")
 
@@ -1204,11 +1218,13 @@ Each move teaches FamilyWise your words, so the next time it suggests the right 
 
 Open **Categories and stores** at the foot of **Groceries**. Categories show in the order the list and the board use; the arrows move one up or down, and its **⋯** holds **Rename** and **Remove**. Removing a category with things in it asks first, then moves them to **Other**, which always stays, last. Stores have **Rename**, **Move up**, **Move down** and **Remove** (their things can then be got anywhere). Type a name and **Add** for a new one. **New items go to** is above the stores. You start with a made-up set of categories and six stores.
 
-![Categories and stores open on a laptop: Produce, Dairy & Eggs, Bakery, Meat & Seafood, Pantry, Frozen, Snacks, Household and Other, each with how many are on the list; then Stores with New items go to set to Costco and its help line, Costco marked Preferred, Kroger, Aldi, Walmart, Meijer and Sam's Club, and a new store's field.](guide/img/admin-groceries-places-laptop.jpg "Your own categories and stores")
+**Brands** come last, A to Z, each with how many are on the list. Its **⋯** holds **Rename**, **Merge into…** and **Archive**. **Merge into…** makes near-duplicates one ("Kirkland Signature" into "Kirkland"): every item with it, on the list or had before, takes the brand you keep, so it's filled in next time too. An archived brand stays on the things that have it but isn't offered; **Restore** brings it back, and so does typing its exact name when you add something.
+
+![Categories and stores open on a laptop: Produce, Dairy & Eggs, Bakery, Meat & Seafood, Pantry, Frozen, Snacks, Household and Other, each with how many are on the list; then Stores with New items go to set to Costco and its help line, Costco marked Preferred, Kroger, Aldi, Walmart, Meijer and Sam's Club, and a new store's field; then Brands A to Z, Chobani to Peet's, each with how many are on the list, a new brand's field, and Horizon under Archived with Restore.](guide/img/admin-groceries-places-laptop.jpg "Your own categories and stores")
 
 #### Groceries on the board
 
-**Groceries** is in the board's rail once your list has had its first thing. It shows the list by category, A to Z, each thing with its picture, its amount, and why when a meal needs it or a child asked. The store chips change only what the board shows. Nothing on the board changes the list.
+**Groceries** is in the board's rail once your list has had its first thing. It shows the list by category, A to Z, each thing with its picture, its brand, its amount, and why when a meal needs it or a child asked. The store chips change only what the board shows. Nothing on the board changes the list.
 
 ![The board's Groceries: 19 to get, the store chips, then Produce, Dairy & Eggs, Bakery, Meat & Seafood, Pantry and Household in columns, each thing with its picture, Apples ×6 with Leo asked, Onions ×3 For Tacos, Chili.](guide/img/board-groceries.jpg "Groceries on the board")
 

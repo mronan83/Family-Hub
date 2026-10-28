@@ -244,6 +244,7 @@ export default async function AdminHome({
         open: groceries.items.filter((i) => i.status === 'open'),
         categories: groceries.categories,
         stores: groceries.stores,
+        brands: groceries.brands,
         past: groceries.past,
         learned: groceries.learned,
         preferredStoreId: groceries.preferredStoreId,

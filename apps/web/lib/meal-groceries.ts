@@ -143,13 +143,15 @@ export interface WeekGroceryItem {
   amount: string | null;
   category_id: string | null;
   store_id: string | null;
+  /** [MEAL-29] The brand it had last time, if any (WP-116). */
+  brand_id: string | null;
   reason: { kind: 'meal'; meal_plan_entry_id: string; label: string };
 }
 
 /**
- * [MEAL-19][MEAL-28] The rows ticked in the week's review as items for the list, each with its meal
- * as the reason. A new item takes the suggested category and store: last time's store, then the
- * preferred store, then Any store (D-142). What is already on the list merges in the database.
+ * [MEAL-19][MEAL-28][MEAL-29] The rows ticked in the week's review as items for the list, each with
+ * its meal as the reason. A new item takes the suggested category and store: last time's store, then
+ * the preferred store, then Any store (D-142); and the brand it had last time (D-148). What is already on the list merges in the database.
  */
 export function weekGroceryItems(
   review: WeekReview,
@@ -167,6 +169,7 @@ export function weekGroceryItems(
           amount: r.amount,
           category_id: s?.categoryId ?? null,
           store_id: s?.storeId ?? null,
+          brand_id: s?.brandId ?? null,
           reason: {
             kind: 'meal' as const,
             meal_plan_entry_id: m.entryId,
