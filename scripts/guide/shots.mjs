@@ -597,6 +597,13 @@ const SHOTS = [
     url: '/dev/groceries?preferred=Costco&typed=olive%20oil',
     maxHeight: 1000,
   },
+  // [MEAL-29] A brand typed when adding, its saved brands offered (WP-116).
+  {
+    name: 'admin-groceries-brand-phone',
+    device: 'phone',
+    url: '/dev/groceries?typed=milk&brand=kirk',
+    maxHeight: 1000,
+  },
   { name: 'admin-calendars-phone', device: 'phone', url: '/dev/calendars', maxHeight: 1330 },
   // [CAL-09] Who a calendar is for (WP-50): The whole family, or a tick a person.
   {

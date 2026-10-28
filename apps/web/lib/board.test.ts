@@ -624,6 +624,7 @@ describe('notify, then refetch', () => {
       { table: 'grocery_item_reason', filter: 'household_id=eq.h1' },
       { table: 'grocery_category', filter: 'household_id=eq.h1' },
       { table: 'grocery_store', filter: 'household_id=eq.h1' },
+      { table: 'grocery_brand', filter: 'household_id=eq.h1' },
     ]);
   });
 

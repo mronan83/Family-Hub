@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.69: US-722 added at the owner's request (WP-116, MEAL-29, D-148): an item's brand, from the household's own brands, remembered for next time.
 > v0.8.68: US-1110 added at the owner's request (WP-115, PTS-08, D-147): every points change in one register, filterable, with each bonus's payouts.
 > v0.8.67: US-401 gains the goal's Some items for the goal's person, still to do, with what it counts kept (added at the owner's request, WP-114, RWD-21, D-146).
 > v0.8.66: US-721 added at the owner's request (WP-112, D-142): adding to the grocery list from Home, and a preferred store that new items go to.
@@ -871,6 +872,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given Onions ×3 are on the list, when I type "1 onion", then the card says "Onions ×3 are on the list already. Adding makes ×4.", and Add makes one item of ×4.
 - Given I chose Costco under **New items go to**, when I add olive oil, which we've never had, then it goes to Costco, on Home, on Groceries and from the week's meals; ground beef, last bought at Kroger, still goes to Kroger.
 - Given I remove Costco from our stores, then **New items go to** says Any store.
+
+### US-722 — The brand we buy
+**As a** parent **I want** to say which brand of something to get, picked from our own list of brands as I type **so that** whoever shops buys the one we like, and next time it's filled in for me (added at the owner's request).
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-29
+- Given we've saved Kirkland, when I add milk and type "kirk" under **Brand**, then Kirkland and Kirkland Signature are offered, and one tap picks Kirkland; the list says "Milk · Kirkland", on the board too.
+- Given La Croix isn't one of our brands, when I type it and choose **Add "La Croix"**, then it is saved to our brands when the item is added, and offered next time.
+- Given coffee was Peet's last time, when I add coffee again, then **Brand** already says Peet's, and I can change it.
+- Given we have Kirkland and Kirkland Signature, when I merge Kirkland Signature into Kirkland, then every item with it says Kirkland, and adding those things again fills in Kirkland.
 
 ---
 

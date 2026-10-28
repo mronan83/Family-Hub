@@ -53,6 +53,8 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     { table: 'grocery_item_reason', filter: `household_id=eq.${householdId}` },
     { table: 'grocery_category', filter: `household_id=eq.${householdId}` },
     { table: 'grocery_store', filter: `household_id=eq.${householdId}` },
+    // [MEAL-29] A brand renamed on Groceries reads anew on the board (WP-116).
+    { table: 'grocery_brand', filter: `household_id=eq.${householdId}` },
   ];
 }
 

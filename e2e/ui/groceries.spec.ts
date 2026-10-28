@@ -271,9 +271,9 @@ test.describe('the admin app’s Groceries', () => {
       'Household',
     ]);
     await expect(list(page).locator('.fw-groc__l1 strong')).toHaveText([
-      'Milk',
+      'Milk · Kirkland',
       'Salmon fillets',
-      'Paper towels',
+      'Paper towels · Kirkland Signature',
     ]);
   });
 
@@ -284,7 +284,12 @@ test.describe('the admin app’s Groceries', () => {
     await expect(got.locator('.fw-groc__count')).toHaveText('4');
     await got.locator('summary').click();
     const rows = got.getByRole('list', { name: 'Got recently' }).getByRole('listitem');
-    await expect(rows.locator('strong')).toHaveText(['Coffee', 'Pasta', 'Strawberries', 'Foil']);
+    await expect(rows.locator('strong')).toHaveText([
+      "Coffee · Peet's",
+      'Pasta',
+      'Strawberries',
+      'Foil',
+    ]);
     await expect(rows.first()).toContainText('Got Sat 4:42 pm by Sam');
     await expect(got.getByRole('button', { name: 'Untick Foil' })).toBeVisible();
     await fits(page);

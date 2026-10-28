@@ -78,7 +78,7 @@ const NOTICES: Record<string, (name: string) => string> = {
 
 function noticeOf(did: string | undefined, name: string): string | null {
   if (!did) return null;
-  const m = /^(removed|moved|stored)-(\d+)$/.exec(did);
+  const m = /^(removed|moved|stored|branded)-(\d+)$/.exec(did);
   if (m) {
     const n = Number(m[2]);
     const what = n === 1 ? 'Done: 1 item' : `Done: ${n} items`;
@@ -86,7 +86,9 @@ function noticeOf(did: string | undefined, name: string): string | null {
       ? `${what} taken off the list.`
       : m[1] === 'moved'
         ? `${what} moved.`
-        : `${what} given a store.`;
+        : m[1] === 'branded'
+          ? `${what} given a brand.`
+          : `${what} given a store.`;
   }
   if (did === 'name-taken') return null;
   return NOTICES[did]?.(name) ?? null;
@@ -262,7 +264,7 @@ export function GroceriesView({
             people={people}
             initial={query.sel ? query.sel.split(',') : []}
             storeFilter={store}
-            initialPanel={dev?.panel === 'move' ? 'move' : null}
+            initialPanel={dev?.panel === 'move' || dev?.panel === 'brand' ? dev.panel : null}
           />
         ) : (
           list.map((s) => (

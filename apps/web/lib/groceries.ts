@@ -277,7 +277,10 @@ export function suggest(text: string, ctx: SuggestContext): Suggestion | null {
  * latest item of the same thing, if it had a brand and that brand is not archived; else none. A
  * brand merged into another is that other one by then (the merge moved its items).
  */
-export function lastBrand(text: string, ctx: Pick<SuggestContext, 'past' | 'brands'>): string | null {
+export function lastBrand(
+  text: string,
+  ctx: Pick<SuggestContext, 'past' | 'brands'>,
+): string | null {
   const key = itemKey(text);
   if (!key || !ctx.brands) return null;
   const last = ctx.past

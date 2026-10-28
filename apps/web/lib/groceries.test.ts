@@ -191,6 +191,7 @@ describe('the suggestion', () => {
       storeId: 's2',
       from: 'last',
       storeFrom: 'last',
+      brandId: null,
     });
   });
 
@@ -204,6 +205,7 @@ describe('the suggestion', () => {
       storeId: null,
       from: 'learned',
       storeFrom: 'any',
+      brandId: null,
     });
     // The thing itself, the last word, counts most.
     expect(suggest('greek yogurt', ctx({ learned }))?.categoryId).toBe(SNACKS.id);
@@ -212,7 +214,7 @@ describe('the suggestion', () => {
   it('[MEAL-24-c] an item nothing has taught takes the starter list’s category, renamed or not', () => {
     const renamed = { ...DAIRY, name: 'Fridge' };
     expect(suggest('Greek yogurt', ctx({ categories: [PRODUCE, renamed, SNACKS, OTHER] }))).toEqual(
-      { categoryId: DAIRY.id, storeId: null, from: 'starter', storeFrom: 'any' },
+      { categoryId: DAIRY.id, storeId: null, from: 'starter', storeFrom: 'any', brandId: null },
     );
     expect(suggest('popcorn', ctx())?.categoryId).toBe(SNACKS.id);
     expect(suggest('Apples', ctx())?.categoryId).toBe(PRODUCE.id);
@@ -222,6 +224,7 @@ describe('the suggestion', () => {
       storeId: null,
       from: 'other',
       storeFrom: 'any',
+      brandId: null,
     });
   });
 
@@ -247,6 +250,7 @@ describe('the suggestion', () => {
       storeId: null,
       from: 'other',
       storeFrom: 'any',
+      brandId: null,
     });
     expect(suggest('   ', ctx())).toBeNull();
   });

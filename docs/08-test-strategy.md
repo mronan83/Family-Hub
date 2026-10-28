@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.13: grocery brands (WP-116, D-148): test cases MEAL-29-a to MEAL-29-l; the catalogue regenerated.
 > v0.8.12: Today, My tasks and Insights folded (WP-97, D-145): test cases CHR-12-a to CHR-12-d, CHR-14-a, CHR-14-b, RWD-12-a and RWD-12-b; `day-folds.spec.ts` runs in Chrome, as an iPhone and as Safari on a Mac.
 > v0.8.11: the e2e reds of 18 to 21 October (WP-113, D-143): a slow probe says how much was the database's own time; the run reads the preview's own way to the test database (`/api/health/db`); a failed test names the page load or save it was still waiting for; the specs' date maths (`scripts/e2e-dates.mjs`) unit-tested on every weekday, across DST and in any zone. Test cases DEV-05-a, DEV-05-b and NFR-12-a to NFR-12-e.
 > v0.8.10: WP-111's follow-up: NFR-14-x reads each spec with the TypeScript parser, so a seed id or `family.` inside SQL text fails it (run 251's `chores.spec.ts`); the UI suite's MENU-06 Meals check passes on a Sunday too.
@@ -275,16 +276,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3017** tests: Unit 967 · DB 1579 · UI 331 · E2E 140. 2495 name at least one ID; 522 name none.
+**3076** tests: Unit 978 · DB 1616 · UI 341 · E2E 141. 2554 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 132 of 149 |
+| Requirements built (a Done item builds them) | 133 of 150 |
 | Built requirements with no test | 0 |
-| Stories built | 115 of 131 |
+| Stories built | 116 of 132 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 261 (with a test: 261) |
+| Test cases | 273 (with a test: 273) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -303,14 +304,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 100 | 74 | 60 | 16 | 250 |
+| Meals and lunch | 111 | 111 | 70 | 17 | 309 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 84 | 14 | 13 | 178 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 197 | 167 | 61 | 18 | 443 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **967** | **1579** | **331** | **140** | **3017** |
+| **Total** | **978** | **1616** | **341** | **141** | **3076** |
 
 ### 9.3 By requirement
 
@@ -423,6 +424,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-26 | S | Covered | US-720 | WP-105 | MEAL-26-a | U 1 · DB 1 · UI 1 |
 | MEAL-27 | S | Covered | US-721 | WP-112 | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e | U 2 · UI 7 · E2E 1 |
 | MEAL-28 | S | Covered | US-721 | WP-112 | MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | U 2 · DB 13 · UI 4 · E2E 1 |
+| MEAL-29 | S | Covered | US-722 | WP-116 | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | U 11 · DB 37 · UI 10 · E2E 1 |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
 | MENU-03 | M | Covered | US-802 | WP-27 | — | U 6 · DB 3 · UI 2 · E2E 1 |
@@ -582,10 +584,11 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-109 | Done | NFR-14-s, NFR-14-t | 2 of 2 | — |
 | WP-110 | Done | PTS-04-a, NFR-16-r, NFR-16-s | 3 of 3 | — |
 | WP-111 | Done | NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z | 6 of 6 | — |
-| WP-112 | Done | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e, MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | 12 of 12 | U 4 |
+| WP-112 | Done | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e, MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | 12 of 12 | U 5 |
 | WP-113 | Done | DEV-05-a, DEV-05-b, NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | 7 of 7 | — |
 | WP-114 | Done | RWD-21-a, RWD-21-b, RWD-21-c, RWD-21-d, RWD-21-e, RWD-21-f, RWD-21-g, RWD-21-h, RWD-21-i, RWD-21-j | 10 of 10 | — |
 | WP-115 | Done | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | 13 of 13 | — |
+| WP-116 | Done | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | 12 of 12 | — |
 
 Test cases and the tests that prove them:
 
@@ -852,6 +855,18 @@ Test cases and the tests that prove them:
 | MEAL-28-e | WP-112 | Groceries' Categories and stores on the demo family: New items go to with Any store and each store, its help line, Preferred on the chosen store; the add field with the preferred store's chip picked and "Costco is your preferred store."; on an iPhone at 390 px the new-store hint shows in full | UI | UI `e2e/ui/groceries.spec.ts`: `the preferred store › [MEAL-28-e] New items go to, its help line and Preferred on the chosen store, in ${theme}`<br>UI `e2e/ui/groceries.spec.ts`: `the preferred store › [MEAL-28-e] with no preferred store, New items go to says Any store and nothing is Preferred`<br>UI `e2e/ui/groceries.spec.ts`: `the preferred store › [MEAL-28-e] the add field picks the preferred store’s chip for a new item and says so`<br>UI `e2e/ui/groceries.spec.ts`: `the preferred store › [MEAL-28-e] the new-store hint shows in full on a phone` |
 | MEAL-28-f | WP-112 | On the real preview, an admin sets New items go to, adds something new and finds it at that store, then removes that store and New items go to says Any store | E2E | E2E `e2e/tests/home-groceries.spec.ts`: `[MEAL-28-f] done-when: New items go to a store, a new item goes there, and removing it says Any store` |
 | MEAL-28-g | WP-112 | A new household's New items go to is Any store | DB | DB `supabase/tests/570_grocery_preferred_store.test.sql`: `[MEAL-28-g] a new household's New items go to is Any store` |
+| MEAL-29-a | WP-116 | The household's brands are its own: added, renamed, merged, archived and restored only through their functions, by its parents; another household's parent or a board is refused; nobody writes the table directly; its parents and boards read it | DB | DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-a] the parent adds a brand`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-a] it is saved, trimmed`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-a] another household's parent can't add one`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-a] and doesn't read the household's brands`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-a] a board can't add one`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-a] the household's board reads its brands`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-a] a board can't rename one`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-a] nobody writes the table directly`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-a] nor updates it` |
+| MEAL-29-b | WP-116 | A brand's name is one per household ignoring case and spacing ("Kirkland", "kirk land"); adding a name that is saved gives that brand back, an archived one restored; renaming to another brand's name is refused | DB | DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-b] "kirk land" is Kirkland, already there`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-b] renaming to another brand's name is refused`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-b] a brand takes its own name in other capitals`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-b] archiving says the name back`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-b] Fairlife is archived`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-b] adding an archived brand's name brings it back`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-b] Fairlife is back, the same brand`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-b] still three brands` |
+| MEAL-29-c | WP-116 | `add_groceries()` takes a brand by id or a new one by name, saved to the household's brands; adding an open item again with another brand changes its brand; with no brand it keeps it | DB | DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-c] a brand by id`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-c] a new brand by name is saved`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-c] and is among the household's brands`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-c] a brand by name is found ignoring case`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-c] adding Milk again keeps one open Milk`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-c] with another brand, its brand changes`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-c] with no brand, it keeps its brand`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-c] another household's parent can't add to the list` |
+| MEAL-29-d | WP-116 | Merging moves every item with the brand (open, ticked, removed) to the brand kept and removes the merged one; merging into itself, an archived brand or another household's is refused | DB | DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-d] merging into itself is refused`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-d] merging into an archived brand is refused`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-d] merging Kirkland Signature into Kirkland says the kept name`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-d] every item with it, the ticked one too, is Kirkland now`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-d] and Kirkland Signature is gone`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-d] another household's parent can't merge them` |
+| MEAL-29-e | WP-116 | `set_groceries_brand()` sets, saves or clears an item's brand; `board_groceries()` gives the brands and each item's brand | DB | DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-e] Brand… sets one item's brand`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-e] a new brand, saved`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-e] empty is no brand`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-e] Milk has no brand`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-e] the board reads each item's brand`<br>DB `supabase/tests/600_grocery_brands.test.sql`: `[MEAL-29-e] and the household's brands` |
+| MEAL-29-f | WP-116 | The type-ahead's offers: ignoring case and spacing, those that start with what is typed first, then those that hold it, A to Z, up to six, archived ones never; Add "<typed>" only when none is the typed brand exactly; nothing typed offers nothing | Unit | Unit `apps/web/lib/grocery-brands.test.ts`: `the type-ahead › [MEAL-29-f] matches ignoring case and spacing, those starting with it first, then those holding it`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `the type-ahead › [MEAL-29-f] the exact brand comes first, and up to six are offered`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `the type-ahead › [MEAL-29-f] archived brands are never offered`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `the type-ahead › [MEAL-29-f] Add "<typed>" only when no brand is the one typed, tidied; nothing typed offers nothing`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `the type-ahead › [MEAL-29-f] the brand typed is a saved one (archived too) or a new name; empty is none` |
+| MEAL-29-g | WP-116 | The brand filled in is the one the item had the last time it was on the list, none when that time had none or its brand is archived; a week's meals into groceries give each item its last brand | Unit | Unit `apps/web/lib/grocery-brands.test.ts`: `the brand filled in › [MEAL-29-g] the brand the item had the last time it was on the list`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `the brand filled in › [MEAL-29-g] none when that time had none, its brand is archived, or it is new`<br>Unit `apps/web/lib/meal-groceries.test.ts`: `the week’s items for the list (WP-112) › [MEAL-29-g] each item takes the brand it had last time, none if it had none` |
+| MEAL-29-h | WP-116 | An item reads with its brand: "Milk · Kirkland", in Home's on-the-list line and its Added line ("Added Milk · Kirkland ×3 to Dairy & Eggs."); Merge into… picks the closest name first | Unit | Unit `apps/web/lib/grocery-brands.test.ts`: `an item with its brand › [MEAL-29-h] reads "Milk · Kirkland", and alone when it has none`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `an item with its brand › [MEAL-29-h] Home’s lines name the brand`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `an item with its brand › [MEAL-29-h] Merge into… picks the closest name first, else the first A to Z` |
+| MEAL-29-i | WP-116 | Groceries' add field on the demo family: the Brand field with its offers, Add "<typed>", the brand filled in from last time; up, down and Enter pick, Escape closes; an item's ⋯ Brand…; rows with their brand; in Chrome, as an iPhone in WebKit and as Safari on a Mac | UI | UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] typing a brand offers the saved ones and Add, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i][US-722] the Brand field shows once something is typed, filled with last time’s brand`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] up, down and Enter pick an offer; a tap picks one; Escape closes them`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] rows say their brand; an item’s ⋯ holds Brand…, which opens in place`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] Select: Brand… for all the items selected at once` |
+| MEAL-29-j | WP-116 | Brands in Categories and stores: the list A to Z, ⋯ Rename, Merge into… and Archive, Archived with Restore, the new-brand field | UI | UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Brands: A to Z with their use, ⋯ Rename, Merge into… and Archive, Archived with Restore, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Merge into… picks the closest name and says what it does` |
+| MEAL-29-k | WP-116 | Home's Groceries card: the Brand field as something is typed, filled in from last time, and the Added line with the brand; the board shows "Milk · Kirkland" | UI | UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-29-k] each thing shows its brand after its name, softer`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s card: the Brand field as an item is typed, last time’s brand, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s lines name the brand: on the list already, and after Add` |
+| MEAL-29-l | WP-116 | On the real preview, an admin adds an item with a new brand from Groceries and finds it among Brands; adding it again fills the brand in; merging two brands moves the item | E2E | E2E `e2e/tests/grocery-brands.spec.ts`: `[MEAL-29-l] done-when: a new brand is saved with its item, filled in next time, and a merge moves it` |
 
 ### 9.5 By user story
 
@@ -953,6 +968,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-719 | MEAL-24 | Covered | UI 1 |
 | US-720 | MEAL-25, MEAL-26 | Covered | UI 2 |
 | US-721 | MEAL-27, MEAL-28 | Covered | UI 1 |
+| US-722 | MEAL-29 | Covered | UI 1 |
 | US-801 | MENU-01, MENU-02 | Covered | U 3 · UI 2 |
 | US-802 | MENU-03 | Covered | U 4 · DB 2 · UI 2 · E2E 1 |
 | US-803 | MENU-04, MENU-05 | Covered | U 3 · DB 1 · UI 1 · E2E 1 |
@@ -1623,6 +1639,23 @@ Unit · 12 tests
 | `the store suggested, and Home’s card (WP-112) › [MEAL-27-a] the card’s count and its line as an item is typed` | MEAL-27-a, WP-112 |
 | `the store suggested, and Home’s card (WP-112) › [MEAL-27-b] after Add, the item as the list now has it` | MEAL-27-b, WP-112 |
 
+#### `apps/web/lib/grocery-brands.test.ts`
+
+Unit · 10 tests
+
+| Test | Names |
+|---|---|
+| `the type-ahead › [MEAL-29-f] matches ignoring case and spacing, those starting with it first, then those holding it` | MEAL-29-f |
+| `the type-ahead › [MEAL-29-f] the exact brand comes first, and up to six are offered` | MEAL-29-f |
+| `the type-ahead › [MEAL-29-f] archived brands are never offered` | MEAL-29-f |
+| `the type-ahead › [MEAL-29-f] Add "<typed>" only when no brand is the one typed, tidied; nothing typed offers nothing` | MEAL-29-f |
+| `the type-ahead › [MEAL-29-f] the brand typed is a saved one (archived too) or a new name; empty is none` | MEAL-29-f |
+| `the brand filled in › [MEAL-29-g] the brand the item had the last time it was on the list` | MEAL-29-g |
+| `the brand filled in › [MEAL-29-g] none when that time had none, its brand is archived, or it is new` | MEAL-29-g |
+| `an item with its brand › [MEAL-29-h] reads "Milk · Kirkland", and alone when it has none` | MEAL-29-h |
+| `an item with its brand › [MEAL-29-h] Home’s lines name the brand` | MEAL-29-h |
+| `an item with its brand › [MEAL-29-h] Merge into… picks the closest name first, else the first A to Z` | MEAL-29-h |
+
 #### `apps/web/lib/grocery-merge.test.ts`
 
 Unit · 9 tests
@@ -1909,7 +1942,7 @@ Unit · 3 tests
 
 #### `apps/web/lib/meal-groceries.test.ts`
 
-Unit · 4 tests
+Unit · 5 tests
 
 | Test | Names |
 |---|---|
@@ -1917,6 +1950,7 @@ Unit · 4 tests
 | `a week’s meals into groceries › [MEAL-19-a] what we usually have, and a meal already added that week, start unticked` | MEAL-19-a |
 | `a week’s meals into groceries › [MEAL-19-a] a ticked row says what it makes once merged; nothing is scaled` | MEAL-19-a |
 | `the week’s items for the list (WP-112) › [MEAL-28-d] each new item takes its suggested category and store: last time’s, else the preferred one` | MEAL-28-d, WP-112 |
+| `the week’s items for the list (WP-112) › [MEAL-29-g] each item takes the brand it had last time, none if it had none` | MEAL-29-g, WP-112 |
 
 #### `apps/web/lib/meals.test.ts`
 
@@ -2500,6 +2534,14 @@ E2E · 1 tests
 |---|---|
 | `[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at once` | MEAL-18-f, MEAL-23-e |
 
+#### `e2e/tests/grocery-brands.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-29-l] done-when: a new brand is saved with its item, filled in next time, and a merge moves it` | MEAL-29-l |
+
 #### `e2e/tests/health.spec.ts`
 
 E2E · 3 tests
@@ -2821,13 +2863,14 @@ UI · 8 tests
 
 #### `e2e/ui/board-groceries.spec.ts`
 
-UI · 3 tests
+UI · 4 tests
 
 | Test | Names |
 |---|---|
 | `[MEAL-18-e] the list by category, A to Z, with pictures, amounts and why, read-only, in ${theme}` | MEAL-18-e |
 | `[MEAL-18-e] store chips change only what the board shows` | MEAL-18-e |
 | `[MEAL-18-e] an emptied list says so; a household with none has no Groceries in the rail` | MEAL-18-e |
+| `[MEAL-29-k] each thing shows its brand after its name, softer` | MEAL-29-k |
 
 #### `e2e/ui/board-meals.spec.ts`
 
@@ -3123,6 +3166,22 @@ UI · 13 tests
 | `the preferred store › [MEAL-28-e] with no preferred store, New items go to says Any store and nothing is Preferred` | MEAL-28-e |
 | `the preferred store › [MEAL-28-e] the add field picks the preferred store’s chip for a new item and says so` | MEAL-28-e |
 | `the preferred store › [MEAL-28-e] the new-store hint shows in full on a phone` | MEAL-28-e |
+
+#### `e2e/ui/grocery-brands.spec.ts`
+
+UI · 9 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-29-i] typing a brand offers the saved ones and Add, in ${theme}` | MEAL-29-i |
+| `[MEAL-29-i][US-722] the Brand field shows once something is typed, filled with last time’s brand` | MEAL-29-i, US-722 |
+| `[MEAL-29-i] up, down and Enter pick an offer; a tap picks one; Escape closes them` | MEAL-29-i |
+| `[MEAL-29-i] rows say their brand; an item’s ⋯ holds Brand…, which opens in place` | MEAL-29-i |
+| `[MEAL-29-i] Select: Brand… for all the items selected at once` | MEAL-29-i |
+| `[MEAL-29-j] Brands: A to Z with their use, ⋯ Rename, Merge into… and Archive, Archived with Restore, in ${theme}` | MEAL-29-j |
+| `[MEAL-29-j] Merge into… picks the closest name and says what it does` | MEAL-29-j |
+| `[MEAL-29-k] Home’s card: the Brand field as an item is typed, last time’s brand, in ${theme}` | MEAL-29-k |
+| `[MEAL-29-k] Home’s lines name the brand: on the list already, and after Add` | MEAL-29-k |
 
 #### `e2e/ui/help.spec.ts`
 
@@ -5889,5 +5948,49 @@ DB · 17 tests
 | `[PTS-08-f] a parent of another household reads nothing of this one` | PTS-08-f |
 | `[PTS-08-f] a signed-out caller is refused` | PTS-08-f |
 | `[PTS-08-f] a signed-out caller is refused the payouts too` | PTS-08-f |
+
+#### `supabase/tests/600_grocery_brands.test.sql`
+
+DB · 37 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-29-a] the parent adds a brand` | MEAL-29-a |
+| `[MEAL-29-a] it is saved, trimmed` | MEAL-29-a |
+| `[MEAL-29-a] another household's parent can't add one` | MEAL-29-a |
+| `[MEAL-29-a] and doesn't read the household's brands` | MEAL-29-a |
+| `[MEAL-29-a] a board can't add one` | MEAL-29-a |
+| `[MEAL-29-a] the household's board reads its brands` | MEAL-29-a |
+| `[MEAL-29-a] a board can't rename one` | MEAL-29-a |
+| `[MEAL-29-a] nobody writes the table directly` | MEAL-29-a |
+| `[MEAL-29-a] nor updates it` | MEAL-29-a |
+| `[MEAL-29-b] "kirk land" is Kirkland, already there` | MEAL-29-b |
+| `[MEAL-29-b] renaming to another brand's name is refused` | MEAL-29-b |
+| `[MEAL-29-b] a brand takes its own name in other capitals` | MEAL-29-b |
+| `[MEAL-29-b] archiving says the name back` | MEAL-29-b |
+| `[MEAL-29-b] Fairlife is archived` | MEAL-29-b |
+| `[MEAL-29-b] adding an archived brand's name brings it back` | MEAL-29-b |
+| `[MEAL-29-b] Fairlife is back, the same brand` | MEAL-29-b |
+| `[MEAL-29-b] still three brands` | MEAL-29-b |
+| `[MEAL-29-c] a brand by id` | MEAL-29-c |
+| `[MEAL-29-c] a new brand by name is saved` | MEAL-29-c |
+| `[MEAL-29-c] and is among the household's brands` | MEAL-29-c |
+| `[MEAL-29-c] a brand by name is found ignoring case` | MEAL-29-c |
+| `[MEAL-29-c] adding Milk again keeps one open Milk` | MEAL-29-c |
+| `[MEAL-29-c] with another brand, its brand changes` | MEAL-29-c |
+| `[MEAL-29-c] with no brand, it keeps its brand` | MEAL-29-c |
+| `[MEAL-29-c] another household's parent can't add to the list` | MEAL-29-c |
+| `[MEAL-29-e] Brand… sets one item's brand` | MEAL-29-e |
+| `[MEAL-29-e] a new brand, saved` | MEAL-29-e |
+| `[MEAL-29-e] empty is no brand` | MEAL-29-e |
+| `[MEAL-29-e] Milk has no brand` | MEAL-29-e |
+| `[MEAL-29-e] the board reads each item's brand` | MEAL-29-e |
+| `[MEAL-29-e] and the household's brands` | MEAL-29-e |
+| `[MEAL-29-d] merging into itself is refused` | MEAL-29-d |
+| `[MEAL-29-d] merging into an archived brand is refused` | MEAL-29-d |
+| `[MEAL-29-d] merging Kirkland Signature into Kirkland says the kept name` | MEAL-29-d |
+| `[MEAL-29-d] every item with it, the ticked one too, is Kirkland now` | MEAL-29-d |
+| `[MEAL-29-d] and Kirkland Signature is gone` | MEAL-29-d |
+| `[MEAL-29-d] another household's parent can't merge them` | MEAL-29-d |
 
 <!-- /catalogue -->

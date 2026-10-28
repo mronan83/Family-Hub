@@ -189,6 +189,19 @@ export async function setGroceryBrand(_prev: FormState, form: FormData): Promise
   back(form, 'branded');
 }
 
+/** [MEAL-29] Select's Brand…: the brand of the items selected, saved if new; empty is none. */
+export async function setGroceriesBrand(form: FormData): Promise<void> {
+  const { db } = await context();
+  const chosen = ids(form);
+  if (chosen.length === 0) back(form, 'failed');
+  const { error } = await db.rpc('set_groceries_brand', {
+    p_ids: chosen,
+    p_brand: brandOfForm(form),
+  });
+  if (error) log('warn', 'grocery brands not set', { code: error.code, hint: error.hint });
+  back(form, error ? 'failed' : `branded-${chosen.length}`);
+}
+
 // ---------------------------------------------------------------------------------------------
 // [MEAL-23][MEAL-29] Categories, stores and brands
 // ---------------------------------------------------------------------------------------------
