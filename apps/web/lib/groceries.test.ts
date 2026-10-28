@@ -42,6 +42,7 @@ const item = (name: string, categoryId: string, o: Partial<GroceryItem> = {}): G
   amount: null,
   categoryId,
   storeId: null,
+  brandId: null,
   status: 'open',
   tickedAt: null,
   tickedBy: null,

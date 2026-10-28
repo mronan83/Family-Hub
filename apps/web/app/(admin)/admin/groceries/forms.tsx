@@ -1,10 +1,13 @@
 'use client';
 
 import { Banner, Button } from '@familywise/ui';
+import { useState } from 'react';
 import type { FormState } from '@/lib/auth/messages';
 import { useFormAction } from '@/lib/forms';
+import type { GroceryBrand } from '@/lib/grocery-brands';
 import type { GroceryStore } from '@/lib/groceries';
-import { addPlace, editGrocery, renamePlace, setPreferredStore } from './actions';
+import { addPlace, editGrocery, renamePlace, setGroceryBrand, setPreferredStore } from './actions';
+import { BrandField } from './brand-field';
 
 /** [MEAL-18] Edit an item: its name and the amount to get. */
 export function EditForm({
@@ -57,20 +60,26 @@ export function EditForm({
   );
 }
 
-/** [MEAL-23] Adds a category or a store, or renames one (given its id). */
+/** [MEAL-23][MEAL-29] Adds a category, a store or a brand, or renames one (given its id). */
 export function PlaceForm({
   kind,
   id,
   name,
   placeholder,
 }: {
-  kind: 'category' | 'store';
+  kind: 'category' | 'store' | 'brand';
   id?: string;
   name?: string;
   placeholder?: string;
 }) {
   const [state, onSubmit, pending] = useFormAction(id ? renamePlace : addPlace, {} as FormState);
-  const label = id ? `Rename ${name}` : kind === 'category' ? 'New category' : 'New store';
+  const label = id
+    ? `Rename ${name}`
+    : kind === 'category'
+      ? 'New category'
+      : kind === 'store'
+        ? 'New store'
+        : 'New brand';
   return (
     <form onSubmit={onSubmit} className="fw-groc__placeform" aria-label={label}>
       <input type="hidden" name="kind" value={kind} />
@@ -152,6 +161,41 @@ export function PreferredStoreForm({
           A new item gets this store. One you’ve had before keeps the store it had last time.
         </span>
       </label>
+    </form>
+  );
+}
+
+/**
+ * [MEAL-29] An item's Brand… (WP-116): the type-ahead over the household's brands; a brand not yet
+ * among them is saved to them; empty is no brand.
+ */
+export function BrandForm({
+  id,
+  name,
+  brand,
+  brands,
+  storeFilter,
+}: {
+  id: string;
+  name: string;
+  brand: string | null;
+  brands: readonly GroceryBrand[];
+  storeFilter: string;
+}) {
+  const [state, onSubmit, pending] = useFormAction(setGroceryBrand, {} as FormState);
+  const [value, setValue] = useState(brand ?? '');
+  return (
+    <form onSubmit={onSubmit} className="fw-form fw-groc__panel" aria-label={`Brand of ${name}`}>
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="store" value={storeFilter} />
+      <p className="fw-groc__panel-h">Brand of {name}</p>
+      <BrandField brands={brands} value={value} onChange={setValue} hint="Empty is no brand." />
+      {state.message ? <Banner kind="notice">{state.message}</Banner> : null}
+      <div className="fw-actions">
+        <Button type="submit" icon="check" disabled={pending}>
+          Set the brand
+        </Button>
+      </div>
     </form>
   );
 }

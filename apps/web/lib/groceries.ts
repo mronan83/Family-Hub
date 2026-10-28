@@ -1,6 +1,7 @@
 // [MEAL-18][MEAL-23][MEAL-24] Groceries (WP-104, D-138): the list as the admin app and the board show
 // it, and the category and store suggested on add. Pure: no I/O; "now" is passed in.
 
+import { brandOf, type GroceryBrand, withBrand } from './grocery-brands';
 import { combineAmounts, itemKey, parseItem } from './grocery-merge';
 
 export interface GroceryCategory {
@@ -41,6 +42,8 @@ export interface GroceryItem {
   amount: string | null;
   categoryId: string;
   storeId: string | null;
+  /** [MEAL-29] Its brand, if it has one (WP-116). */
+  brandId: string | null;
   status: 'open' | 'ticked';
   tickedAt: string | null;
   tickedBy: string | null;
@@ -206,6 +209,8 @@ export interface PastItem {
   key: string;
   categoryId: string;
   storeId: string | null;
+  /** [MEAL-29] The brand it had (WP-116). */
+  brandId?: string | null;
   createdAt: string;
 }
 
@@ -224,6 +229,8 @@ export interface SuggestContext {
   starter?: ReadonlyMap<string, string> | null;
   /** [MEAL-28] The household's preferred store (New items go to); none is Any store. */
   preferredStoreId?: string | null;
+  /** [MEAL-29] The household's brands, archived ones too (WP-116). */
+  brands?: readonly GroceryBrand[];
 }
 
 export interface Suggestion {
@@ -232,6 +239,8 @@ export interface Suggestion {
   from: 'last' | 'learned' | 'starter' | 'other';
   /** [MEAL-28] Where the store came from: last time's, the preferred store, or none (Any store). */
   storeFrom: 'last' | 'preferred' | 'any';
+  /** [MEAL-29] The brand it had last time, if that brand is still offered; else none (D-148). */
+  brandId: string | null;
 }
 
 /** The words of a key, longest phrase first: "greek yogurt" → "greek yogurt", "yogurt", "greek". */
@@ -257,12 +266,31 @@ export function suggest(text: string, ctx: SuggestContext): Suggestion | null {
   const s = suggestCategory(text, ctx);
   if (!s) return null;
   const preferred = ctx.preferredStoreId ?? null;
+  const brandId = lastBrand(text, ctx);
   return s.storeId
-    ? { ...s, storeFrom: 'last' }
-    : { ...s, storeId: preferred, storeFrom: preferred ? 'preferred' : 'any' };
+    ? { ...s, storeFrom: 'last', brandId }
+    : { ...s, storeId: preferred, storeFrom: preferred ? 'preferred' : 'any', brandId };
 }
 
-function suggestCategory(text: string, ctx: SuggestContext): Omit<Suggestion, 'storeFrom'> | null {
+/**
+ * [MEAL-29] The brand an item had the last time it was on the list (D-148, as the store, D-142): the
+ * latest item of the same thing, if it had a brand and that brand is not archived; else none. A
+ * brand merged into another is that other one by then (the merge moved its items).
+ */
+export function lastBrand(text: string, ctx: Pick<SuggestContext, 'past' | 'brands'>): string | null {
+  const key = itemKey(text);
+  if (!key || !ctx.brands) return null;
+  const last = ctx.past
+    .filter((p) => p.key === key)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+  const brand = last?.brandId ? ctx.brands.find((b) => b.id === last.brandId) : undefined;
+  return brand && !brand.archived ? brand.id : null;
+}
+
+function suggestCategory(
+  text: string,
+  ctx: SuggestContext,
+): Omit<Suggestion, 'storeFrom' | 'brandId'> | null {
   const key = itemKey(text);
   const other = ctx.categories.find((c) => c.isOther);
   if (!key || !other) return null;
@@ -339,6 +367,7 @@ export function whereLine(
 export function alreadyLine(
   typed: string,
   open: readonly GroceryItem[],
+  brands: readonly GroceryBrand[] = [],
 ): { item: GroceryItem; has: string; are: boolean; makes: string | null } | null {
   const key = itemKey(typed);
   if (!key) return null;
@@ -346,9 +375,11 @@ export function alreadyLine(
   if (!item) return null;
   const now = itemAmount(item);
   const makes = combineAmounts([now, parseItem(typed).amount]);
+  // [MEAL-29] With its brand: "Milk · Kirkland ×2".
+  const named = withBrand(item.name, brandOf(item.brandId, brands));
   return {
     item,
-    has: now ? `${item.name} ${now}` : item.name,
+    has: now ? `${named} ${now}` : named,
     // "Onions ×3 are"; "Ground beef 2 lb is", "Milk is".
     are: !!now && now.startsWith('×'),
     makes: makes !== now ? makes : null,
@@ -356,14 +387,16 @@ export function alreadyLine(
 }
 
 /**
- * [MEAL-27] After Add: "Added Ground beef 2 lb to Meat & Seafood.", the item as the list now has it
- * (`what`, said in bold) and its category.
+ * [MEAL-27][MEAL-29] After Add: "Added Ground beef 2 lb to Meat & Seafood.", the item as the list
+ * now has it (`what`, said in bold), with its brand ("Milk · Kirkland ×2"), and its category.
  */
 export function addedLine(
   name: string,
   amount: string | null,
   category: string,
+  brand: string | null = null,
 ): { what: string; category: string; text: string } {
-  const what = amount ? `${name} ${amount}` : name;
+  const named = withBrand(name, brand);
+  const what = amount ? `${named} ${amount}` : named;
   return { what, category, text: `Added ${what} to ${category}.` };
 }

@@ -56,6 +56,7 @@ const listed = (name: string, amount: string | null = null): GroceryItem => ({
   amount,
   categoryId: 'c',
   storeId: null,
+  brandId: null,
   status: 'open',
   tickedAt: null,
   tickedBy: null,

@@ -373,6 +373,7 @@ export async function addWeekToGroceries(form: FormData): Promise<void> {
     learned: groceries.learned,
     starter: starterList,
     preferredStoreId: groceries.preferredStoreId,
+    brands: groceries.brands,
   });
   if (items.length === 0) redirect(`/admin/meals?week=${week}&did=nothing`);
   const { error } = await db.rpc('add_groceries', { p_household: household.id, p_items: items });

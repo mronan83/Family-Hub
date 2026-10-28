@@ -4,6 +4,7 @@ import { Banner, Button, Icon } from '@familywise/ui';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useFormAction } from '@/lib/forms';
+import { brandOf, type GroceryBrand } from '@/lib/grocery-brands';
 import { starterList } from '@/lib/grocery-starter';
 import {
   alreadyLine,
@@ -17,12 +18,15 @@ import {
   whereLine,
 } from '@/lib/groceries';
 import { quickAddGrocery, type QuickAddState } from './groceries/actions';
+import { BrandField } from './groceries/brand-field';
 
 /** What Home's Groceries card needs: the list as it is, and what the suggestion learns from. */
 export interface GroceriesQuickData {
   open: GroceryItem[];
   categories: GroceryCategory[];
   stores: GroceryStore[];
+  /** [MEAL-29] The household's brands, archived ones too (WP-116). */
+  brands: GroceryBrand[];
   past: PastItem[];
   learned: LearnedWord[];
   preferredStoreId: string | null;
@@ -33,7 +37,8 @@ export interface GroceriesQuickData {
  * add field, and one line under it saying where the item goes (its category, its store and why) or
  * that it is on the list already and what adding makes. Add goes through the one way in with the
  * suggested category and store, stays on Home, and says what was added, with Change to move it on
- * Groceries. Open the list, and This week's meals (the week's Add to groceries review).
+ * Groceries. Open the list, and This week's meals (the week's Add to groceries review). [MEAL-29]
+ * As something is typed, its Brand: the brand it had last time, or one typed (WP-116, D-148).
  */
 export function GroceriesQuick({
   data,
@@ -41,17 +46,19 @@ export function GroceriesQuick({
 }: {
   data: GroceriesQuickData;
   /** For the dev page only: the field typed into, or the line after an Add. */
-  dev?: { typed?: string; added?: QuickAddState['added'] };
+  dev?: { typed?: string; added?: QuickAddState['added']; brand?: string };
 }) {
   const [state, onSubmit, pending] = useFormAction(quickAddGrocery, {
     added: dev?.added,
   } as QuickAddState);
   const [typed, setTyped] = useState(dev?.typed ?? '');
+  const [brand, setBrand] = useState<string | null>(dev?.brand ?? null);
   // A new Add empties the field for the next thing (set while rendering, as React advises).
   const [seen, setSeen] = useState(state.added);
   if (state.added !== seen) {
     setSeen(state.added);
     setTyped('');
+    setBrand(null);
   }
 
   const ctx = useMemo(
@@ -61,15 +68,17 @@ export function GroceriesQuick({
       learned: data.learned,
       starter: starterList,
       preferredStoreId: data.preferredStoreId,
+      brands: data.brands,
     }),
     [data],
   );
   const s = useMemo(() => (typed.trim() ? suggest(typed, ctx) : null), [typed, ctx]);
   const already = useMemo(
-    () => (typed.trim() ? alreadyLine(typed, data.open) : null),
-    [typed, data.open],
+    () => (typed.trim() ? alreadyLine(typed, data.open, data.brands) : null),
+    [typed, data.open, data.brands],
   );
   const where = s ? whereLine(s, data.categories, data.stores) : null;
+  const lastBrand = brandOf(s?.brandId, data.brands);
 
   return (
     <li className="fw-quick__card fw-quick__card--wide" aria-labelledby="groceries-quick-heading">
@@ -109,6 +118,15 @@ export function GroceriesQuick({
             Add
           </Button>
         </div>
+        {typed.trim() ? (
+          <BrandField
+            brands={data.brands}
+            value={brand ?? lastBrand ?? ''}
+            onChange={setBrand}
+            hint={brand === null && lastBrand ? 'its brand last time' : null}
+            initialOpen={dev?.brand !== undefined}
+          />
+        ) : null}
         <p className="fw-quick__line" role="status">
           {already ? (
             <>

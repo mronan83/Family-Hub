@@ -105,7 +105,7 @@ export function HomeView({
   lunch?: LunchQuick | null;
   groceries: GroceriesQuickData;
   /** For the dev page only: Groceries' field typed into, or its line after an Add. */
-  groceriesDev?: { typed?: string; added?: QuickAddState['added'] };
+  groceriesDev?: { typed?: string; added?: QuickAddState['added']; brand?: string };
   notice?: string | null;
   waiting?: number;
   who?: NavWho | null;

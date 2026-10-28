@@ -4,6 +4,7 @@ import { Banner, Button, Icon, type IconName } from '@familywise/ui';
 import { useMemo, useState } from 'react';
 import type { FormState } from '@/lib/auth/messages';
 import { useFormAction } from '@/lib/forms';
+import { brandOf, type GroceryBrand, withBrand } from '@/lib/grocery-brands';
 import { itemKey, makeItOne } from '@/lib/grocery-merge';
 import { starterList } from '@/lib/grocery-starter';
 import {
@@ -17,6 +18,7 @@ import {
   type Person,
 } from '@/lib/groceries';
 import { addGrocery } from './actions';
+import { BrandField } from './brand-field';
 
 const FROM_WORDS = {
   last: 'where it went last time',
@@ -29,21 +31,25 @@ const FROM_WORDS = {
  * [MEAL-18][MEAL-24][MEAL-20] The add field, open at the top of Groceries (D-138 (10)): what to get,
  * then, as it is typed, the category and store suggested (last time's, the household's own words,
  * the starter list, else Other; [MEAL-28] the store last time's, then the preferred store, D-142),
- * each one tap to change; an open item it may be offers Make it one.
+ * each one tap to change; an open item it may be offers Make it one; [MEAL-29] its Brand, a
+ * type-ahead over the household's brands, filled with the brand it had last time (D-148).
  * Adding under a category's + fixes the category and skips the suggestion.
  */
 export function AddForm({
   categories,
   stores,
+  brands,
   open,
   people,
   ctx,
   fixedCategory,
   storeFilter,
   initial = '',
+  initialBrand,
 }: {
   categories: readonly GroceryCategory[];
   stores: readonly GroceryStore[];
+  brands: readonly GroceryBrand[];
   open: readonly GroceryItem[];
   people: readonly Person[];
   ctx: SuggestContext;
@@ -51,11 +57,15 @@ export function AddForm({
   storeFilter: string;
   /** What is typed at first (the dev page's picture of adding). */
   initial?: string;
+  /** For the dev page only: the brand typed, with its offers open. */
+  initialBrand?: string;
 }) {
   const [state, onSubmit, pending] = useFormAction(addGrocery, {} as FormState);
   const [typed, setTyped] = useState(initial);
   const [category, setCategory] = useState<string | null>(fixedCategory);
   const [store, setStore] = useState<string | null>(null);
+  // [MEAL-29] The brand typed; until it is touched, the brand the item had last time.
+  const [brand, setBrand] = useState<string | null>(initialBrand ?? null);
   const ordered = categoryOrder(categories);
   const s = useMemo(
     () => (typed.trim() ? suggest(typed, { ...ctx, starter: starterList }) : null),
@@ -63,6 +73,8 @@ export function AddForm({
   );
   const chosenCategory = category ?? s?.categoryId ?? null;
   const chosenStore = store ?? s?.storeId ?? '';
+  const lastBrand = brandOf(s?.brandId, brands);
+  const brandValue = brand ?? lastBrand ?? '';
   const second = useMemo(() => {
     if (!s || s.from === 'other') return null;
     const key = itemKey(typed);
@@ -225,6 +237,15 @@ export function AddForm({
           </fieldset>
         </>
       ) : null}
+      {typed.trim() ? (
+        <BrandField
+          brands={brands}
+          value={brandValue}
+          onChange={setBrand}
+          hint={brand === null && lastBrand ? 'its brand last time' : null}
+          initialOpen={initialBrand !== undefined}
+        />
+      ) : null}
       {twins.map((t) => {
         const why = whyLines(t, people)
           .map((w) =>
@@ -241,7 +262,7 @@ export function AddForm({
           <div key={t.id} className="fw-groc__also" role="status">
             <Icon name="info" size={18} />
             <span>
-              Also on the list: <b>{t.name}</b>
+              Also on the list: <b>{withBrand(t.name, brandOf(t.brandId, brands))}</b>
               {why ? `, ${why}` : ''}. Adding it makes one item.
             </span>
             <Button type="submit" variant="ghost" name="intoId" value={t.id} disabled={pending}>

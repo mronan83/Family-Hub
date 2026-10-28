@@ -321,13 +321,14 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-106 | Staples suggested by how often they run out | P3 | M | WP-104 | Queued (mockup approved) |
 | WP-107 | Children ask for groceries from the board, with an optional parent OK | P3 | M | WP-104, WP-63 | Queued (mockup approved) |
 | WP-112 | Groceries on Home, and a preferred store | P3 | M | WP-104 | Done |
+| WP-116 | Grocery brands | P3 | M | WP-104, WP-112 | In progress: mockup waiting for the owner's approval |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
 | WP-36 | Closure import | P3 | M | WP-22 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October.
+**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October.
 
 ---
 
@@ -570,6 +571,7 @@ flowchart LR
     WP104 --> WP107[WP-107 Children ask from the board]
     WP63 --> WP107
     WP104 --> WP112[WP-112 Groceries on Home and a preferred store]
+    WP112 --> WP116[WP-116 Grocery brands]
     WP85[WP-85 Test strategy and catalogue] --> WP86[WP-86 Close the known test gaps]
   end
 ```
@@ -2300,6 +2302,30 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 
 - **As built (D-142):** migration `20261018165556_grocery_preferred_store.sql` (`grocery_list.preferred_store_id`, cleared with its store by its foreign key; `set_grocery_preferred_store()`; `grocery_list` audited); `apps/web/lib/groceries.ts` (`suggest()` takes the preferred store and says where the store came from; `onTheList()`, `whereLine()`, `alreadyLine()`, `addedLine()`), `lib/meal-groceries.ts` (`weekGroceryItems()`, used by Add this week to groceries); Home's `groceries-quick.tsx` and the action `quickAddGrocery()`; Groceries' **New items go to** (`PreferredStoreForm`, `setPreferredStore()`), the **Preferred** pill, the add field's preferred chip and line, `?item=` opening an item's ⋯; the new-store and new-category fields two lines on a phone, as the add field; `/dev/home?groceries=&typed=`, `/dev/groceries?preferred=`; the screens in `scripts/screen-shots.mjs` and the guide's. Tests: Vitest `lib/groceries.test.ts` (MEAL-27-a, MEAL-27-b, MEAL-28-c) and `lib/meal-groceries.test.ts` (MEAL-28-d); pgTAP `570_grocery_preferred_store.test.sql` (MEAL-28-a, MEAL-28-b, MEAL-28-g); UI suite `e2e/ui/home-groceries.spec.ts` (MEAL-27-c, MEAL-27-d; in Chrome, as an iPhone in WebKit and as Safari on a Mac) and `e2e/ui/groceries.spec.ts` (MEAL-28-e); e2e `e2e/tests/home-groceries.spec.ts` (MEAL-27-e, MEAL-28-f), on its own household; it runs on a preview once the nightly run on `main` has migrated the test database. `home.spec.ts` in the UI suite follows Groceries first among the cards.
 - **Deferred, as plain facts:** nothing.
+
+### WP-116 — Grocery brands
+**Phase:** P3 · **Size:** M · **Depends on:** WP-104, WP-112 · **Reqs:** MEAL-29
+- Added at the owner's request on 28 October, in the planner session ("Add grocery brands to the backlog, as recommended above. After it's in the backlog, start it immediately."): a grocery item can have a specific brand; brands are a configurable list; typing a brand searches the saved brands and completes it; one not in the list can be added, and is saved to it.
+- **What it is (D-148):** a **Brand** field when adding an item, on Groceries and on Home's Groceries card: a type-ahead over the household's saved brands, matching ignoring case and spacing; no exact match offers **Add "<typed>"**, which saves the new brand with the item; empty is no brand. **Brands** at Groceries → Categories and stores: add, rename, **Merge into…** (near-duplicates such as Kirkland and Kirkland Signature become one, every item and memory moving to the brand kept), archive and restore. Each item remembers its last brand: adding it again fills it in, changeable (as the store, D-142). One open item per name stays (`grocery_item_open_key`): adding an open item again with another brand changes its brand; an add with no brand keeps it. An item's ⋯ gains **Brand…**. The brand shows wherever the item does: the admin list, Got recently, Home's lines and the board ("Milk · Kirkland"). Apple Reminders (D-134): when the sync is built (SPIKE-08, WP-103), the brand goes into the reminder's title; nothing is built for it here. Not in this item: linking a brand to a store.
+- **Mockup:** [Grocery Brands Mockup](https://claude.ai/artifact/LkwM4dZDSHwb7E6zq392zf), on the demo family, iPhone at 390 px, the laptop and the board, Day and Evening; waiting for the owner's approval.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| MEAL-29-a | The household's brands are its own: added, renamed, merged, archived and restored only through their functions, by its parents; another household's parent or a board is refused; nobody writes the table directly; its parents and boards read it | DB |
+| MEAL-29-b | A brand's name is one per household ignoring case and spacing ("Kirkland", "kirk land"); adding a name that is saved gives that brand back, an archived one restored; renaming to another brand's name is refused | DB |
+| MEAL-29-c | `add_groceries()` takes a brand by id or a new one by name, saved to the household's brands; adding an open item again with another brand changes its brand; with no brand it keeps it | DB |
+| MEAL-29-d | Merging moves every item with the brand (open, ticked, removed) to the brand kept and removes the merged one; merging into itself, an archived brand or another household's is refused | DB |
+| MEAL-29-e | `set_groceries_brand()` sets, saves or clears an item's brand; `board_groceries()` gives the brands and each item's brand | DB |
+| MEAL-29-f | The type-ahead's offers: ignoring case and spacing, those that start with what is typed first, then those that hold it, A to Z, up to six, archived ones never; Add "<typed>" only when none is the typed brand exactly; nothing typed offers nothing | Unit |
+| MEAL-29-g | The brand filled in is the one the item had the last time it was on the list, none when that time had none or its brand is archived; a week's meals into groceries give each item its last brand | Unit |
+| MEAL-29-h | An item reads with its brand: "Milk · Kirkland", in Home's on-the-list line and its Added line ("Added Milk · Kirkland ×3 to Dairy & Eggs."); Merge into… picks the closest name first | Unit |
+| MEAL-29-i | Groceries' add field on the demo family: the Brand field with its offers, Add "<typed>", the brand filled in from last time; up, down and Enter pick, Escape closes; an item's ⋯ Brand…; rows with their brand; in Chrome, as an iPhone in WebKit and as Safari on a Mac | UI |
+| MEAL-29-j | Brands in Categories and stores: the list A to Z, ⋯ Rename, Merge into… and Archive, Archived with Restore, the new-brand field | UI |
+| MEAL-29-k | Home's Groceries card: the Brand field as something is typed, filled in from last time, and the Added line with the brand; the board shows "Milk · Kirkland" | UI |
+| MEAL-29-l | On the real preview, an admin adds an item with a new brand from Groceries and finds it among Brands; adding it again fills the brand in; merging two brands moves the item | E2E |
+
+- **Done when:** every case above has a test; the side-by-side (D-127) is in the PR; the fast checks are green.
 
 ---
 

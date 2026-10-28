@@ -2,6 +2,7 @@
 
 import { Button, Icon, type IconName } from '@familywise/ui';
 import { useState } from 'react';
+import type { GroceryBrand } from '@/lib/grocery-brands';
 import type { GroceryCategory, GroceryStore, Person, Section } from '@/lib/groceries';
 import { moveGroceries, removeGroceries, setGroceriesStore } from './actions';
 import { ItemWords, SectionHead } from './rows';
@@ -14,6 +15,7 @@ export function SelectList({
   sections,
   categories,
   stores,
+  brands,
   people,
   initial,
   storeFilter,
@@ -22,6 +24,7 @@ export function SelectList({
   sections: readonly Section[];
   categories: readonly GroceryCategory[];
   stores: readonly GroceryStore[];
+  brands: readonly GroceryBrand[];
   people: readonly Person[];
   initial: readonly string[];
   storeFilter: string;
@@ -168,7 +171,7 @@ export function SelectList({
                       aria-label={`Select ${item.name}`}
                     />
                   </label>
-                  <ItemWords item={item} stores={stores} people={people} />
+                  <ItemWords item={item} stores={stores} brands={brands} people={people} />
                 </li>
               );
             })}

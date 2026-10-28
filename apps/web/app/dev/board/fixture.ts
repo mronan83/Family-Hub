@@ -1,6 +1,7 @@
 import type { BoardGroceries } from '@/lib/board-groceries';
 import type { BoardRecipe } from '@/lib/board-recipes';
 import {
+  BRANDS as GROCERY_BRANDS,
   CATEGORIES as GROCERY_CATEGORIES,
   ITEMS as GROCERY_ITEMS,
   PEOPLE as GROCERY_PEOPLE,
@@ -1455,7 +1456,13 @@ export function fixtureGroceries(which: string | undefined): BoardGroceries | nu
             memberId: r.memberId ? (people.get(r.memberId) ?? r.memberId) : null,
           })),
         }));
-  return { ever: true, categories: GROCERY_CATEGORIES, stores: GROCERY_STORES, items };
+  return {
+    ever: true,
+    categories: GROCERY_CATEGORIES,
+    stores: GROCERY_STORES,
+    brands: GROCERY_BRANDS,
+    items,
+  };
 }
 
 /**

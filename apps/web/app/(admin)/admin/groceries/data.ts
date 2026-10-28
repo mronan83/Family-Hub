@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { GroceryBrand } from '@/lib/grocery-brands';
 import { GOT_RECENTLY_DAYS } from '@/lib/groceries';
 import type {
   GroceryCategory,
@@ -15,6 +16,8 @@ import type {
 export interface GroceriesData {
   categories: GroceryCategory[];
   stores: GroceryStore[];
+  /** [MEAL-29] The household's brands, archived ones too (WP-116). */
+  brands: GroceryBrand[];
   items: GroceryItem[];
   people: Person[];
   past: PastItem[];
@@ -33,16 +36,17 @@ export async function loadGroceries(
   now: number = Date.now(),
 ): Promise<GroceriesData> {
   const since = new Date(now - GOT_RECENTLY_DAYS * 86_400_000).toISOString();
-  const [cats, stores, items, people, past, learned, list] = await Promise.all([
+  const [cats, stores, brands, items, people, past, learned, list] = await Promise.all([
     db
       .from('grocery_category')
       .select('id, name, icon, starter_key, is_other, sort_order')
       .eq('household_id', householdId),
     db.from('grocery_store').select('id, name, sort_order').eq('household_id', householdId),
+    db.from('grocery_brand').select('id, name, archived_at').eq('household_id', householdId),
     db
       .from('grocery_item')
       .select(
-        'id, name, amount, category_id, store_id, status, ticked_at, ticked_by, created_at, ' +
+        'id, name, amount, category_id, store_id, brand_id, status, ticked_at, ticked_by, created_at, ' +
           'grocery_item_reason(kind, by_user, member_id, meal_plan_entry_id, label, amount, created_at)',
       )
       .eq('household_id', householdId)
@@ -53,7 +57,7 @@ export async function loadGroceries(
       .eq('household_id', householdId),
     db
       .from('grocery_item')
-      .select('name_key, category_id, store_id, created_at')
+      .select('name_key, category_id, store_id, brand_id, created_at')
       .eq('household_id', householdId)
       .order('created_at', { ascending: false })
       .limit(2000),
@@ -69,6 +73,7 @@ export async function loadGroceries(
   ]);
   fail('grocery categories', cats.error);
   fail('grocery stores', stores.error);
+  fail('grocery brands', brands.error);
   fail('groceries', items.error);
   fail('people', people.error);
   fail('grocery history', past.error);
@@ -80,6 +85,7 @@ export async function loadGroceries(
     amount: string | null;
     category_id: string;
     store_id: string | null;
+    brand_id: string | null;
     status: 'open' | 'ticked';
     ticked_at: string | null;
     ticked_by: string | null;
@@ -108,12 +114,18 @@ export async function loadGroceries(
       name: s.name as string,
       sortOrder: s.sort_order as number,
     })),
+    brands: (brands.data ?? []).map((b) => ({
+      id: b.id as string,
+      name: b.name as string,
+      archived: b.archived_at !== null,
+    })),
     items: ((items.data ?? []) as unknown as ItemRow[]).map((i) => ({
       id: i.id,
       name: i.name,
       amount: i.amount,
       categoryId: i.category_id,
       storeId: i.store_id,
+      brandId: i.brand_id,
       status: i.status,
       tickedAt: i.ticked_at,
       tickedBy: i.ticked_by,
@@ -139,6 +151,7 @@ export async function loadGroceries(
       key: p.name_key as string,
       categoryId: p.category_id as string,
       storeId: (p.store_id as string | null) ?? null,
+      brandId: (p.brand_id as string | null) ?? null,
       createdAt: p.created_at as string,
     })),
     learned: (learned.data ?? []).map((w) => ({
