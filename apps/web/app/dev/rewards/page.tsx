@@ -6,7 +6,8 @@ import { RewardsView } from '../../(admin)/admin/rewards/view';
 
 // The rewards shop for a parent (WP-18) with a made-up family and no database, for the UI suite: the
 // page's layout on a phone and a laptop, in Day and Evening (?theme=evening). With bonus rules and
-// who is saving for what (WP-30). [NFR-18] Folded as WP-95 built it; the address a save comes back to
+// who is saving for what (WP-30). [PTS-08] With each child's balance and the way to the points register,
+// and each bonus's payouts (WP-115). [NFR-18] Folded as WP-95 built it; the address a save comes back to
 // opens its folds as on the real page (?archived=1, ?bonus=archive, ?error=bonus_gone).
 export const metadata: Metadata = { title: 'Rewards', robots: { index: false } };
 
@@ -149,6 +150,16 @@ export default async function DevRewardsPage({
         timezone="America/New_York"
         today="2026-10-10"
         bonusRules={BONUSES}
+        pointsPeople={[
+          { id: MAYA, displayName: 'Maya', avatarKey: 'fox', color: 'member-3' },
+          { id: LEO, displayName: 'Leo', avatarKey: 'frog', color: 'member-4' },
+        ]}
+        payouts={
+          new Map([
+            ['b1', { times: 1, latest: '2026-10-10T07:05:00Z' }],
+            ['b2', { times: 14, latest: '2026-10-09T07:05:00Z' }],
+          ])
+        }
         wishes={new Map([[MAYA, 'r1']])}
         notice="Approved. The points are spent."
         error={null}

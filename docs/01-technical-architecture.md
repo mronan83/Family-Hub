@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.86: the household points register (WP-115, D-147): Rewards → Points register (`/admin/rewards/points`), read through RLS by `points_register()` and `points_register_totals()` in parts of up to 1,000 rows; each bonus's payouts from `points_rule_payouts()`; the filters are the address, so every view is a link.
 > v0.8.85: the e2e run's probes say where a slow reading's time went (WP-113, D-143): the database's own time in a slow probe, and the preview's own way to the test database (`GET /api/health/db`, previews only) every 15 s; a failed test names the page load or save it was still waiting for. `lunch_week()` works out each child's day once, a third of the board's snapshot time.
 > v0.8.84: Groceries on Home and a preferred store (WP-112, D-142): the store suggested is last time's, then the household's preferred store, then Any store; Home's Groceries card adds through the one way in.
 > v0.8.83: the grocery list and meals → groceries as built (WP-104, WP-105, D-138, D-139, D-140): one way in for every source, a starter list from Open Food Facts for the suggestion, the board's read beside its snapshot, recipes in Storage read for ingredients on the admin's own device, and a guarded fetch of a recipe link (§5.12, §10).

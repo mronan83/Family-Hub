@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.162: WP-115 (the household points register) added at the owner's request and done in the same change (PTS-08, US-1110, D-147), from the mockup the owner approved on 27 October ([Points Register Mockup](https://claude.ai/artifact/KFmgd2JRHALqHgn89vdS2o)) with every recommendation: Rewards → **Points register**, every points change for every child, newest first, filtered by child, type, bonus and days, each naming who or what issued it, with a total line and Show older; each bonus's payouts with **See them**; a child's Points opens it for them. Its test cases are PTS-08-a to PTS-08-m.
 > v0.8.161: WP-114 (a goal's Some items lists only what can still count, for the goal's person) added at the owner's request, as a bug, and done in the same change (RWD-21, D-146), from the mockup the owner approved on 27 October ([Goal Items Mockup](https://claude.ai/artifact/PSkoJydKQT4Gfzv1MUxEaV)): only the goal's person's items (every child's for a family goal) that repeat, then one-time items still to do with their day ("Fri, Oct 30"), a one-time chore only within the goal's dates; every item a goal counts kept under Still counted, flagged. Its test cases are RWD-21-a to RWD-21-j.
 > v0.8.160: WP-97 (Today, My tasks and Insights folded) done (NFR-18, CHR-12, CHR-14, RWD-12, D-120, D-145), from the fold audit's frames the owner approved on 16 October, with the owner's answer of 23 October: a part of the day with everything done or skipped folds to its count and first names the next time Today opens, and the part a parent just finished stays open with its count. My tasks' Coming up and Insights' Day by day, Missed most, By tag, Checking and History fold to what they hold. The Done when's preview line follows that answer: the part is open with its count after the tap, and folded on the next load. Its test cases are CHR-12-a to CHR-12-d, CHR-14-a, CHR-14-b, RWD-12-a and RWD-12-b, and those requirements join its Reqs line. D-145 confirmed by the owner in this item's session. That ends the fold audit's work packages (WP-91, WP-93 to WP-97).
 > v0.8.159: WP-95 (Rewards, Goals and Members folded) done (NFR-18, PTS-01, PTS-03, PTS-04, PTS-05, ACC-04, RWD-09, D-120, D-144), from the fold audit's Rewards and Members frames the owner approved on 16 October: the shop's Archived, Bonus points (Add a bonus and Archived bonuses inside), Lately, Members' Archived, a member's Points (Change points inside) and Archive folded, each to what it holds; a save comes back with its fold open; at the owner's request, the page parts around the folds follow the frames too. NFR-18's case letters were used up by WP-94 and WP-96, so its cases are PTS-01-a and -b, PTS-03-a and -b, PTS-04-b, PTS-05-a, ACC-04-a and -b and RWD-09-a, and those requirements join its Reqs line. Its Goals part was done with WP-80 (D-123); RWD-09-a adds the preview test of "needs a look" on Goals' folded History.
@@ -306,6 +307,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-111 | Each e2e spec on a made-up household of its own | P3 | M | WP-90, WP-109 | Done |
 | WP-113 | The e2e reds of 18 to 21 October: meal-groceries, the board's snapshot under load, five one-off reds | P3 | M | WP-105, WP-111 | Done |
 | WP-114 | A goal's Some items lists only what can still count, for the goal's person (a bug) | P3 | M | WP-96, WP-101 | Done |
+| WP-115 | The household points register | P3 | M | WP-30, WP-39, WP-95 | Done |
 | WP-93 | Calendars, school menus and the meal library folded | P3 | M | WP-91 | Done |
 | WP-94 | The set-up pages folded | P3 | M | WP-91 | Done |
 | WP-95 | Rewards, Goals and Members folded | P3 | M | WP-91 | Done |
@@ -325,7 +327,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October.
+**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October.
 
 ---
 
@@ -524,6 +526,9 @@ flowchart LR
     WP111 --> WP113
     WP96 --> WP114[WP-114 Goal items for the goal's person]
     WP101 --> WP114
+    WP30 --> WP115[WP-115 Points register]
+    WP39 --> WP115
+    WP95 --> WP115
     WP90 --> SP07[SPIKE-07 e2e specs audited by layer]
     WP90 --> WP98[WP-98 e2e findings log]
     SP07 --> WP99[WP-99 Lean e2e]
@@ -2009,6 +2014,32 @@ flowchart LR
 
 - **Done when:** every case above has a test; on the preview, signed in as Alex, a goal for Leo lists only Leo's items that repeat or are still to do; the side-by-side (D-127) is in the PR; the fast checks are green.
 - **As built:** no migration. `lib/goal-items.ts` (`itemGroups()`, `itemFlags()`, `overFrom()`, `shortDate()`); `loadGoalContext()` (`goals/load.ts`) reads every item with its people, whether it repeats or its day, and whether it is over by WP-96's `place()`, taking the household for its today; the goal form (`goal-form.tsx`) draws Some items in the three groups, keeps each rule's ticked items on the form (`seen`), and reads the end date as it stands (`EndDateField`'s `onEnd`); `ui.css` `.fw-goal-items`. `/dev/goals?form=items`, `items-new`, `items-maya` and `items-dates` draw the mockup's four scenes; `scripts/screen-shots.mjs` and the guide's `admin-goal-items-phone` take them. Tests: Vitest `lib/goal-items.test.ts` (RWD-21-a to RWD-21-h, RWD-21-j; `main`'s loader listed every item but the archived, which RWD-21-a and -b rule out); UI suite `e2e/ui/goal-items.spec.ts` (RWD-21-f, -g, -i, -j) as Chrome, the iPhone and the Mac.
+
+### WP-115 — The household points register
+**Phase:** P3 · **Size:** M · **Depends on:** WP-30, WP-39, WP-95 · **Reqs:** PTS-08
+- Added at the owner's request on 27 October, in the planner session ("Start the points register"). On `main` the only view of the points ledger is a child's own **Points** on Members (the last 30, `loadPoints()`), and a bonus rule never says what it has paid.
+- **What it is (D-147):** a page of its own, Rewards → **Points register**: every `points_ledger` entry for every child in one list, newest first, under day headings in the household's own days. Each entry shows the child, the time, what it was for, its type and the signed amount, and who or what issued it where known: an adjustment names the parent; a bonus says it was paid automatically, and its name links to the register filtered to its bonus (`points_ledger.points_rule_id`); a goal payout names the goal; a spend names the parent who approved it, a refund the parent who cancelled it. An earn on an item this parent may not see stays "A private item" (D-34). Filters: the child (the face chips Chores uses), and under **More filters** the type (Earned, Bonus, Goal payout, By hand, Spent, Refunded, Reversed; a goal paid in points is a Goal payout, not a Bonus) and a date range; a line over the list says how many entries match and what they add up to. 50 at a time; **Show older** adds the next 50 below, so the whole history is reachable. Each bonus on Rewards → **Bonus points** says how many times it has paid and when last, with **See them** to the register filtered to it; a **Points** card on Rewards shows each child's balance and opens the register; a child's **Points** on Members opens it filtered to them.
+- **Mockup:** [Points Register Mockup](https://claude.ai/artifact/KFmgd2JRHALqHgn89vdS2o), on the demo family, iPhone at 390 px and the laptop, Day and Evening; approved by the owner on 27 October with every recommendation: its own page reached from the three places, the total line, the type names, and Show older growing the list.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| PTS-08-a | `points_register()` lists every entry of the household, every member's, newest first, and none of another household's | DB |
+| PTS-08-b | It filters by member, by type (a goal payout apart from a bonus), by bonus rule, and by a date range in the household's own days | DB |
+| PTS-08-c | An earn on a private item the parent may not see has no title, and the register says "A private item" (D-34) | DB, Unit |
+| PTS-08-d | `points_register_totals()` counts and adds up the same filtered entries, per member | DB |
+| PTS-08-e | `points_rule_payouts()` counts each bonus rule's payouts and its latest | DB |
+| PTS-08-f | Only a parent of the household reads it: a parent of another household gets nothing, and a signed-out caller is refused | DB |
+| PTS-08-g | Each entry's words: what it was for and who or what issued it (by a parent, paid automatically, the goal, approved by, cancelled by, done, unchecked) | Unit |
+| PTS-08-h | The register's address: child, type, bonus, dates and Show older read and written back; anything not valid is left out; dates the wrong way round are swapped | Unit |
+| PTS-08-i | Day headings and times in the household's zone, across midnight UTC and a DST change | Unit |
+| PTS-08-j | The total line, and a bonus's payouts line ("Paid 14 times, latest today", "Paid once", "Not paid yet") | Unit |
+| PTS-08-k | Show older adds the next 50 below, read past the database's 1,000 rows a call | Unit, UI |
+| PTS-08-l | The register as drawn: a child's chip, a type and a bonus filter by link, More filters, Clear | UI |
+| PTS-08-m | Rewards' Points card opens the register; each bonus's **See them** opens it filtered to that bonus; a child's Points on Members opens it filtered to them | UI |
+
+- **Done when:** every case above has a test; on the preview, signed in as Alex, Rewards → Points register lists the demo family's entries, and a bonus's See them filters to it; the side-by-side (D-127) is in the PR; the fast checks are green.
+- **As built:** migration `20261027232230_points_register.sql` (`points_register()`, `points_register_totals()`, `points_rule_payouts()`, invoker functions through RLS; nothing new stored); `lib/points-register.ts` (the types and their words, `parseRegisterQuery()`, `registerHref()`, `entryWords()`, `byDay()`, `totalLine()`, `payoutLine()`, `readParts()`); `rewards/register-data.ts` (`loadRegister()`, read in parts of up to 1,000, and `loadRulePayouts()`); the page `rewards/points/page.tsx` with `register-view.tsx` and `register-dates.tsx`; Rewards' **Points** card and each bonus's payouts with **See them**; **All of (name)'s points** on a child's Points; `ui.css` `.fw-ledger`, `.fw-register__*`. `/dev/rewards/points` draws the mockup's scenes; `scripts/screen-shots.mjs` and the guide's `admin-points-register-phone` take them. Tests: pgTAP `590_points_register.test.sql` (PTS-08-a to -f), Vitest `lib/points-register.test.ts` (PTS-08-c, -g to -k), UI suite `e2e/ui/points-register.spec.ts` (PTS-08-k to -m) as Chrome, the iPhone and the Mac.
 
 ### WP-111 — Each e2e spec on a made-up household of its own
 **Phase:** P3 · **Size:** M · **Depends on:** WP-90, WP-109 · **Reqs:** NFR-14

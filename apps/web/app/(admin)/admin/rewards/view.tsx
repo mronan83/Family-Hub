@@ -7,12 +7,14 @@ import {
   Icon,
   type IconName,
   type MemberColor,
+  PointsChip,
 } from '@familywise/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { bonusFacts, describeBonus, type BonusRule } from '@/lib/bonus';
 import { dayAndTime } from '@/lib/format';
 import { pointsWord } from '@/lib/points';
+import { payoutLine, registerHref, seeWords } from '@/lib/points-register';
 import {
   archivedBonusesLine,
   archivedWhen,
@@ -40,6 +42,15 @@ export interface RewardsViewProps {
   today: string;
   /** [PTS-05] The bonus rules, archived ones included. */
   bonusRules: BonusRule[];
+  /** [PTS-08] Who the Points card shows: who earns rewards, and anyone with points. */
+  pointsPeople?: {
+    id: string;
+    displayName: string;
+    avatarKey: AvatarKey | null;
+    color: MemberColor;
+  }[];
+  /** [PTS-08] How many times each bonus rule has paid, and its latest (WP-115). */
+  payouts?: Map<string, { times: number; latest: string }>;
   /** [PTS-06] What each child is saving for: member id to reward id. */
   wishes: Map<string, string>;
   notice: string | null;
@@ -86,6 +97,8 @@ export function RewardsView({
   timezone,
   today,
   bonusRules,
+  pointsPeople = [],
+  payouts = new Map(),
   wishes,
   notice,
   error,
@@ -253,6 +266,39 @@ export function RewardsView({
         </section>
       ) : null}
 
+      {/* [PTS-08] Each child's balance, and the way to the points register (WP-115, D-147). */}
+      <section className="fw-card" aria-labelledby="points-heading">
+        <h2 id="points-heading">Points</h2>
+        {pointsPeople.length > 0 ? (
+          <ul className="fw-list" aria-label="Balances">
+            {pointsPeople.map((m) => (
+              <li key={m.id} className="fw-list__row">
+                <span className="fw-item fw-item--middle">
+                  <Avatar
+                    name={m.displayName}
+                    avatarKey={m.avatarKey}
+                    color={m.color}
+                    size={40}
+                    decorative
+                  />
+                  <strong>{m.displayName}</strong>
+                </span>
+                <PointsChip points={balances.get(m.id) ?? 0} size="admin" />
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <div className="fw-actions">
+          <Link href={registerHref()} className="fw-btn fw-btn--secondary">
+            <Icon name="list-check" className="fw-btn__icon" />
+            <span>Points register</span>
+          </Link>
+        </div>
+        <p className="fw-muted">
+          Every points change for every child: earned, bonuses, goals, by hand, spent and refunded.
+        </p>
+      </section>
+
       <section className="fw-card" aria-labelledby="shop-heading">
         <h2 id="shop-heading">The shop</h2>
         {shop.length === 0 ? (
@@ -362,6 +408,20 @@ export function RewardsView({
                       <span className="fw-item__body">
                         <strong>{words}</strong>
                         <span className="fw-muted">{bonusFacts(r, today)}</span>
+                        <span className="fw-muted fw-reward__paid">
+                          <Line line={payoutLine(payouts.get(r.id), timezone, today)} />
+                          {payouts.get(r.id)?.times ? (
+                            <>
+                              {' · '}
+                              <Link
+                                href={registerHref({ rule: r.id })}
+                                aria-label={`${seeWords(payouts.get(r.id)!.times)}: ${words}`}
+                              >
+                                {seeWords(payouts.get(r.id)!.times)}
+                              </Link>
+                            </>
+                          ) : null}
+                        </span>
                       </span>
                     </span>
                     <span className="fw-actions">

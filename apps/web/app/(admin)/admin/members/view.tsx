@@ -8,6 +8,7 @@ import {
   pointsWord,
   signed,
 } from '@/lib/points';
+import { registerHref } from '@/lib/points-register';
 import { membersArchivedLine, pointsLine } from '@/lib/reward-facts';
 import { Line } from '../fold-line';
 import { AdminHeader } from '../header';
@@ -258,6 +259,20 @@ export function MemberView({
               ))}
             </ul>
           )}
+          {points.entries.length > 0 ? (
+            <>
+              <div className="fw-actions">
+                <Link
+                  href={registerHref({ who: [member.id] })}
+                  className="fw-btn fw-btn--secondary"
+                >
+                  <Icon name="list-check" className="fw-btn__icon" />
+                  <span>All of {member.displayName}&rsquo;s points</span>
+                </Link>
+              </div>
+              <p className="fw-muted">The last 30 here; every one in the points register.</p>
+            </>
+          ) : null}
           <p className="fw-muted">
             Points are earned when a chore is done and given back if it&rsquo;s unchecked. Nothing
             here is ever edited or deleted: to correct a mistake, add or take away points.
