@@ -6,7 +6,9 @@ import { expect, test, type Page } from '@playwright/test';
 // archived. The Brand field's offers and keys, a row's Brand…, Select's Brand…, the Brands list, and
 // Home's card. It runs in Chrome, as an iPhone in WebKit and as Safari on a Mac (e2e/ui.config.ts).
 // Adding for real runs signed in against the database in e2e/tests/grocery-brands.spec.ts. Taps wait
-// for React to take the page over (D-110).
+// for React to take the page over (D-110). Each test loads one page: in WebKit, a second page.goto
+// while the first page's links are still being prefetched was aborted ("WebKit encountered an
+// internal error", CI run 40625961691), so a test never navigates again.
 
 async function open(page: Page, url: string) {
   await page.goto(url);
@@ -99,16 +101,25 @@ test('[MEAL-29-i] up, down and Enter pick an offer; a tap picks one; Escape clos
   await expect(brand(page)).toHaveAttribute('aria-expanded', 'false');
 });
 
-test('[MEAL-29-i] rows say their brand; an item’s ⋯ holds Brand…, which opens in place', async ({
-  page,
-}) => {
+test('[MEAL-29-i] rows say their brand, and those with none their name alone', async ({ page }) => {
   await open(page, '/dev/groceries');
-  const milk = page.locator('.fw-groc__row').filter({ hasText: 'Milk' }).first();
-  await expect(milk.locator('.fw-groc__l1')).toHaveText('Milk · Kirkland×2');
-  await open(page, '/dev/groceries?menu=Milk');
-  await expect(page.getByRole('link', { name: /Brand…/ })).toContainText('Kirkland');
-  await open(page, '/dev/groceries?menu=Onions');
-  await expect(page.getByRole('link', { name: /Brand…/ })).toContainText('No brand');
+  const row = (name: string) =>
+    page.locator('.fw-groc__row').filter({ hasText: name }).first().locator('.fw-groc__l1');
+  await expect(row('Milk')).toHaveText('Milk · Kirkland×2');
+  await expect(row('Onions')).toHaveText('Onions×3');
+});
+
+for (const [item, says] of [
+  ['Milk', 'Kirkland'],
+  ['Onions', 'No brand'],
+] as const) {
+  test(`[MEAL-29-i] an item’s ⋯ holds Brand…, saying ${says} for ${item}`, async ({ page }) => {
+    await open(page, `/dev/groceries?menu=${item}`);
+    await expect(page.getByRole('link', { name: /Brand…/ })).toContainText(says);
+  });
+}
+
+test('[MEAL-29-i] Brand… opens in place, filled with the item’s brand', async ({ page }) => {
   await open(page, '/dev/groceries?brandOf=Milk');
   const form = page.getByRole('form', { name: 'Brand of Milk' });
   await expect(form.getByRole('combobox', { name: 'Brand' })).toHaveValue('Kirkland');
@@ -164,11 +175,13 @@ for (const theme of ['day', 'evening'] as const) {
     await expect(archived.getByRole('button', { name: 'Restore' })).toBeVisible();
     await fits(page);
     await contrastOk(page);
-    // Folded, it counts the brands too.
-    await open(page, `/dev/groceries?theme=${theme}`);
-    await expect(page.locator('#places')).toContainText('9 categories · 6 stores · 8 brands');
   });
 }
+
+test('[MEAL-29-j] folded, Categories and stores counts the brands too', async ({ page }) => {
+  await open(page, '/dev/groceries');
+  await expect(page.locator('#places')).toContainText('9 categories · 6 stores · 8 brands');
+});
 
 test('[MEAL-29-j] Merge into… picks the closest name and says what it does', async ({ page }) => {
   await open(page, '/dev/groceries?merge=Kirkland%20Signature');
@@ -178,6 +191,9 @@ test('[MEAL-29-j] Merge into… picks the closest name and says what it does', a
   await expect(form).toContainText('Every item with Kirkland Signature, on the list or had before');
   await expect(form.getByRole('button', { name: 'Merge' })).toBeVisible();
   await expect(form.getByRole('link', { name: 'Keep both' })).toBeVisible();
+});
+
+test('[MEAL-29-j] Rename opens in place with the brand’s name', async ({ page }) => {
   await open(page, '/dev/groceries?renameBrand=Fairlife');
   await expect(
     page.getByRole('form', { name: 'Rename Fairlife' }).getByRole('textbox'),
@@ -206,13 +222,16 @@ for (const theme of ['day', 'evening'] as const) {
   });
 }
 
-test('[MEAL-29-k] Home’s lines name the brand: on the list already, and after Add', async ({
+test('[MEAL-29-k] Home’s line names the brand of something on the list already', async ({
   page,
 }) => {
   await open(page, '/dev/home?typed=1%20milk');
   await expect(homeCard(page).getByRole('status')).toContainText(
     'Milk · Kirkland ×2 are on the list already. Adding makes ×3.',
   );
+});
+
+test('[MEAL-29-k] Home’s Added line names the brand', async ({ page }) => {
   await open(page, '/dev/home?groceries=added-brand');
   await expect(homeCard(page).getByRole('status')).toContainText(
     'Added Milk · Kirkland ×3 to Dairy & Eggs.',

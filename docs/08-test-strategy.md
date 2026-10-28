@@ -276,7 +276,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3076** tests: Unit 978 · DB 1616 · UI 341 · E2E 141. 2554 name at least one ID; 522 name none.
+**3081** tests: Unit 978 · DB 1616 · UI 346 · E2E 141. 2559 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
@@ -304,14 +304,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 111 | 111 | 70 | 17 | 309 |
+| Meals and lunch | 111 | 111 | 75 | 17 | 314 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 84 | 14 | 13 | 178 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 197 | 167 | 61 | 18 | 443 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **978** | **1616** | **341** | **141** | **3076** |
+| **Total** | **978** | **1616** | **346** | **141** | **3081** |
 
 ### 9.3 By requirement
 
@@ -424,7 +424,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-26 | S | Covered | US-720 | WP-105 | MEAL-26-a | U 1 · DB 1 · UI 1 |
 | MEAL-27 | S | Covered | US-721 | WP-112 | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e | U 2 · UI 7 · E2E 1 |
 | MEAL-28 | S | Covered | US-721 | WP-112 | MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | U 2 · DB 13 · UI 4 · E2E 1 |
-| MEAL-29 | S | Covered | US-722 | WP-116 | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | U 11 · DB 37 · UI 10 · E2E 1 |
+| MEAL-29 | S | Covered | US-722 | WP-116 | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | U 11 · DB 37 · UI 15 · E2E 1 |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
 | MENU-03 | M | Covered | US-802 | WP-27 | — | U 6 · DB 3 · UI 2 · E2E 1 |
@@ -863,9 +863,9 @@ Test cases and the tests that prove them:
 | MEAL-29-f | WP-116 | The type-ahead's offers: ignoring case and spacing, those that start with what is typed first, then those that hold it, A to Z, up to six, archived ones never; Add "<typed>" only when none is the typed brand exactly; nothing typed offers nothing | Unit | Unit `apps/web/lib/grocery-brands.test.ts`: `the type-ahead › [MEAL-29-f] matches ignoring case and spacing, those starting with it first, then those holding it`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `the type-ahead › [MEAL-29-f] the exact brand comes first, and up to six are offered`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `the type-ahead › [MEAL-29-f] archived brands are never offered`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `the type-ahead › [MEAL-29-f] Add "<typed>" only when no brand is the one typed, tidied; nothing typed offers nothing`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `the type-ahead › [MEAL-29-f] the brand typed is a saved one (archived too) or a new name; empty is none` |
 | MEAL-29-g | WP-116 | The brand filled in is the one the item had the last time it was on the list, none when that time had none or its brand is archived; a week's meals into groceries give each item its last brand | Unit | Unit `apps/web/lib/grocery-brands.test.ts`: `the brand filled in › [MEAL-29-g] the brand the item had the last time it was on the list`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `the brand filled in › [MEAL-29-g] none when that time had none, its brand is archived, or it is new`<br>Unit `apps/web/lib/meal-groceries.test.ts`: `the week’s items for the list (WP-112) › [MEAL-29-g] each item takes the brand it had last time, none if it had none` |
 | MEAL-29-h | WP-116 | An item reads with its brand: "Milk · Kirkland", in Home's on-the-list line and its Added line ("Added Milk · Kirkland ×3 to Dairy & Eggs."); Merge into… picks the closest name first | Unit | Unit `apps/web/lib/grocery-brands.test.ts`: `an item with its brand › [MEAL-29-h] reads "Milk · Kirkland", and alone when it has none`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `an item with its brand › [MEAL-29-h] Home’s lines name the brand`<br>Unit `apps/web/lib/grocery-brands.test.ts`: `an item with its brand › [MEAL-29-h] Merge into… picks the closest name first, else the first A to Z` |
-| MEAL-29-i | WP-116 | Groceries' add field on the demo family: the Brand field with its offers, Add "<typed>", the brand filled in from last time; up, down and Enter pick, Escape closes; an item's ⋯ Brand…; rows with their brand; in Chrome, as an iPhone in WebKit and as Safari on a Mac | UI | UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] typing a brand offers the saved ones and Add, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i][US-722] the Brand field shows once something is typed, filled with last time’s brand`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] up, down and Enter pick an offer; a tap picks one; Escape closes them`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] rows say their brand; an item’s ⋯ holds Brand…, which opens in place`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] Select: Brand… for all the items selected at once` |
-| MEAL-29-j | WP-116 | Brands in Categories and stores: the list A to Z, ⋯ Rename, Merge into… and Archive, Archived with Restore, the new-brand field | UI | UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Brands: A to Z with their use, ⋯ Rename, Merge into… and Archive, Archived with Restore, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Merge into… picks the closest name and says what it does` |
-| MEAL-29-k | WP-116 | Home's Groceries card: the Brand field as something is typed, filled in from last time, and the Added line with the brand; the board shows "Milk · Kirkland" | UI | UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-29-k] each thing shows its brand after its name, softer`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s card: the Brand field as an item is typed, last time’s brand, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s lines name the brand: on the list already, and after Add` |
+| MEAL-29-i | WP-116 | Groceries' add field on the demo family: the Brand field with its offers, Add "<typed>", the brand filled in from last time; up, down and Enter pick, Escape closes; an item's ⋯ Brand…; rows with their brand; in Chrome, as an iPhone in WebKit and as Safari on a Mac | UI | UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] typing a brand offers the saved ones and Add, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i][US-722] the Brand field shows once something is typed, filled with last time’s brand`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] up, down and Enter pick an offer; a tap picks one; Escape closes them`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] rows say their brand, and those with none their name alone`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] an item’s ⋯ holds Brand…, saying ${says} for ${item}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] Brand… opens in place, filled with the item’s brand`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-i] Select: Brand… for all the items selected at once` |
+| MEAL-29-j | WP-116 | Brands in Categories and stores: the list A to Z, ⋯ Rename, Merge into… and Archive, Archived with Restore, the new-brand field | UI | UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Brands: A to Z with their use, ⋯ Rename, Merge into… and Archive, Archived with Restore, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] folded, Categories and stores counts the brands too`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Merge into… picks the closest name and says what it does`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Rename opens in place with the brand’s name` |
+| MEAL-29-k | WP-116 | Home's Groceries card: the Brand field as something is typed, filled in from last time, and the Added line with the brand; the board shows "Milk · Kirkland" | UI | UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-29-k] each thing shows its brand after its name, softer`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s card: the Brand field as an item is typed, last time’s brand, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s line names the brand of something on the list already`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s Added line names the brand` |
 | MEAL-29-l | WP-116 | On the real preview, an admin adds an item with a new brand from Groceries and finds it among Brands; adding it again fills the brand in; merging two brands moves the item | E2E | E2E `e2e/tests/grocery-brands.spec.ts`: `[MEAL-29-l] done-when: a new brand is saved with its item, filled in next time, and a merge moves it` |
 
 ### 9.5 By user story
@@ -3169,19 +3169,24 @@ UI · 13 tests
 
 #### `e2e/ui/grocery-brands.spec.ts`
 
-UI · 9 tests
+UI · 14 tests
 
 | Test | Names |
 |---|---|
 | `[MEAL-29-i] typing a brand offers the saved ones and Add, in ${theme}` | MEAL-29-i |
 | `[MEAL-29-i][US-722] the Brand field shows once something is typed, filled with last time’s brand` | MEAL-29-i, US-722 |
 | `[MEAL-29-i] up, down and Enter pick an offer; a tap picks one; Escape closes them` | MEAL-29-i |
-| `[MEAL-29-i] rows say their brand; an item’s ⋯ holds Brand…, which opens in place` | MEAL-29-i |
+| `[MEAL-29-i] rows say their brand, and those with none their name alone` | MEAL-29-i |
+| `[MEAL-29-i] an item’s ⋯ holds Brand…, saying ${says} for ${item}` | MEAL-29-i |
+| `[MEAL-29-i] Brand… opens in place, filled with the item’s brand` | MEAL-29-i |
 | `[MEAL-29-i] Select: Brand… for all the items selected at once` | MEAL-29-i |
 | `[MEAL-29-j] Brands: A to Z with their use, ⋯ Rename, Merge into… and Archive, Archived with Restore, in ${theme}` | MEAL-29-j |
+| `[MEAL-29-j] folded, Categories and stores counts the brands too` | MEAL-29-j |
 | `[MEAL-29-j] Merge into… picks the closest name and says what it does` | MEAL-29-j |
+| `[MEAL-29-j] Rename opens in place with the brand’s name` | MEAL-29-j |
 | `[MEAL-29-k] Home’s card: the Brand field as an item is typed, last time’s brand, in ${theme}` | MEAL-29-k |
-| `[MEAL-29-k] Home’s lines name the brand: on the list already, and after Add` | MEAL-29-k |
+| `[MEAL-29-k] Home’s line names the brand of something on the list already` | MEAL-29-k |
+| `[MEAL-29-k] Home’s Added line names the brand` | MEAL-29-k |
 
 #### `e2e/ui/help.spec.ts`
 
