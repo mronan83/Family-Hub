@@ -275,7 +275,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3016** tests: Unit 967 · DB 1579 · UI 330 · E2E 140. 2494 name at least one ID; 522 name none.
+**3017** tests: Unit 967 · DB 1579 · UI 331 · E2E 140. 2495 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
@@ -299,7 +299,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
 | Chores | 127 | 202 | 42 | 34 | 405 |
-| Points | 57 | 109 | 23 | 12 | 201 |
+| Points | 57 | 109 | 24 | 12 | 202 |
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
@@ -310,7 +310,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 197 | 167 | 61 | 18 | 443 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **967** | **1579** | **330** | **140** | **3016** |
+| **Total** | **967** | **1579** | **331** | **140** | **3017** |
 
 ### 9.3 By requirement
 
@@ -458,7 +458,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-05 | S | Covered | US-1107 | WP-30, WP-95 | PTS-05-a | U 8 · DB 4 · UI 3 · E2E 1 |
 | PTS-06 | S | Covered | US-1108 | WP-30 | — | U 5 · DB 2 · UI 7 · E2E 2 |
 | PTS-07 | M | Covered | US-1109 | WP-02, WP-04, WP-16 | — | U 2 · DB 15 · E2E 3 |
-| PTS-08 | S | Covered | US-1110 | WP-115 | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | U 12 · DB 17 · UI 4 |
+| PTS-08 | S | Covered | US-1110 | WP-115 | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | U 12 · DB 17 · UI 5 |
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | U 10 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
@@ -781,7 +781,7 @@ Test cases and the tests that prove them:
 | PTS-08-i | WP-115 | Day headings and times in the household's zone, across midnight UTC and a DST change | Unit | Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] day headings in the household’s zone › [PTS-08-i] an entry late in the evening there is that day, not the next UTC day`<br>Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] day headings in the household’s zone › [PTS-08-i] across a DST change, and on a day east of UTC` |
 | PTS-08-j | WP-115 | The total line, and a bonus's payouts line ("Paid 14 times, latest today", "Paid once", "Not paid yet") | Unit | Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] the total line and a bonus’s payouts › [PTS-08-j] how many match and what they add up to`<br>Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] the total line and a bonus’s payouts › [PTS-08-j] filtered to a bonus: how many times it paid, to whom, and the latest`<br>Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] the total line and a bonus’s payouts › [PTS-08-j] a bonus’s payouts beside it on Bonus points` |
 | PTS-08-k | WP-115 | Show older adds the next 50 below, read past the database's 1,000 rows a call | Unit, UI | Unit `apps/web/lib/points-register.test.ts`: `[PTS-08] Show older › [PTS-08-k] each tap adds 50, read in parts the database answers whole`<br>UI `e2e/ui/points-register.spec.ts`: `[PTS-08-k] Show older adds the next 50 below, until the first entry` |
-| PTS-08-l | WP-115 | The register as drawn: a child's chip, a type and a bonus filter by link, More filters, Clear | UI | UI `e2e/ui/points-register.spec.ts`: `[PTS-08-l][US-1110] the register as drawn: every entry newest first under days, each with who, when, what, its type, who issued it and the amount`<br>UI `e2e/ui/points-register.spec.ts`: `[PTS-08-l] a child’s chip, a type, the dates and a bonus filter it; Clear and ✕ undo them` |
+| PTS-08-l | WP-115 | The register as drawn: a child's chip, a type and a bonus filter by link, More filters, Clear | UI | UI `e2e/ui/points-register.spec.ts`: `[PTS-08-l][US-1110] the register as drawn: every entry newest first under days, each with who, when, what, its type, who issued it and the amount`<br>UI `e2e/ui/points-register.spec.ts`: `[PTS-08-l] a child’s chip, a type, the dates and a bonus filter it; Clear and ✕ undo them`<br>UI `e2e/ui/points-register.spec.ts`: `[PTS-08-l] on a phone, the chosen days are written whole, as the mockup wraps them` |
 | PTS-08-m | WP-115 | Rewards' Points card opens the register; each bonus's **See them** opens it filtered to that bonus; a child's Points on Members opens it filtered to them | UI | UI `e2e/ui/points-register.spec.ts`: `[PTS-08-m] Rewards’ Points card, each bonus’s payouts and a child’s Points open the register` |
 | NFR-14-u | WP-111 | A spec's household is the demo family's seed under its own ids and sign-ins: no demo family id or sign-in is left in it, it starts by taking away the household a try before left, no two specs share an id prefix, a bad key, seed id or persona is refused, and each sign-in gets the password the preview derives for it | Unit | Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] a spec household is the seed under its own ids and sign-ins, and nothing of the demo family`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] keys, ids and personas outside the rules are refused`<br>Unit `scripts/e2e-household.test.mjs`: `[NFR-14-u] each sign-in gets the password the preview derives for it, and only the spec’s` |
 | NFR-14-v | WP-111 | On Postgres with the migrations and the demo family: two spec households each hold what the demo family holds and only their own rows; making one again starts it afresh and leaves the other as it is; taking one away takes the household its Riley set up, and nothing of the demo family or the other spec | Unit | Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] two spec households, next to the demo family, each hold what it holds and only their own rows`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] making a spec household again starts it afresh, and leaves the others as they are`<br>Unit `scripts/db-tests/e2e-household.test.mjs`: `[NFR-14-v] taking a spec household away takes what it set up, and nothing of the demo family or another spec` |
@@ -3301,7 +3301,7 @@ UI · 3 tests
 
 #### `e2e/ui/points-register.spec.ts`
 
-UI · 4 tests
+UI · 5 tests
 
 | Test | Names |
 |---|---|
@@ -3309,6 +3309,7 @@ UI · 4 tests
 | `[PTS-08-l] a child’s chip, a type, the dates and a bonus filter it; Clear and ✕ undo them` | PTS-08-l |
 | `[PTS-08-k] Show older adds the next 50 below, until the first entry` | PTS-08-k |
 | `[PTS-08-m] Rewards’ Points card, each bonus’s payouts and a child’s Points open the register` | PTS-08-m |
+| `[PTS-08-l] on a phone, the chosen days are written whole, as the mockup wraps them` | PTS-08-l |
 
 #### `e2e/ui/reminders.spec.ts`
 

@@ -172,3 +172,20 @@ test('[PTS-08-m] Rewards’ Points card, each bonus’s payouts and a child’s 
     /^\/admin\/rewards\/points\?who=f2000000-0000-4000-8000-0000000000\d\d$/,
   );
 });
+
+test('[PTS-08-l] on a phone, the chosen days are written whole, as the mockup wraps them', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(
+    page,
+    `${REGISTER}?who=f1000000-0000-4000-8000-000000000001&type=adjustment,spend&from=2026-10-01&to=2026-10-31`,
+  );
+  const words = page.locator('.fw-register__dates .fw-pick__words');
+  await expect(words).toHaveText(['Thu, Oct 1, 2026', 'Sat, Oct 31, 2026']);
+  // Nothing cut off: each date's words fit their field.
+  const cut = await words.evaluateAll((els) =>
+    els.filter((e) => e.scrollWidth > e.clientWidth + 1).map((e) => e.textContent),
+  );
+  expect(cut).toEqual([]);
+});

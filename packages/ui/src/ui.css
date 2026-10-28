@@ -7308,6 +7308,14 @@ textarea.fw-groc__addinput {
 .fw-register__dates .fw-filters {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+/* A chosen day is written whole, on two lines if it must ("Thu, Oct 1, / 2026"), never cut off. */
+.fw-register__dates .fw-pick__face {
+  padding-block: 6px;
+}
+.fw-register__dates .fw-pick__words {
+  overflow: visible;
+  white-space: normal;
+}
 .fw-reward__paid a {
   font-weight: 600;
   white-space: nowrap;
