@@ -280,12 +280,12 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 133 of 150 |
+| Requirements built (a Done item builds them) | 134 of 150 |
 | Built requirements with no test | 0 |
-| Stories built | 116 of 132 |
+| Stories built | 117 of 132 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 273 (with a test: 273) |
+| Test cases | 281 (with a test: 281) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -333,7 +333,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | DEV-04 | M | Not built | US-203 | WP-14 | — | U 1 |
 | DEV-05 | M | Covered | US-204 | WP-06, WP-70, WP-78, WP-113 | DEV-05-a, DEV-05-b | U 12 · DB 26 · UI 3 · E2E 6 |
 | DEV-06 | M | Covered | US-205 | WP-13 | — | U 5 · UI 1 · E2E 1 |
-| DEV-07 | S | Not built | US-207 | WP-34 | — | U 41 · DB 17 · UI 4 · E2E 1 |
+| DEV-07 | S | Covered | US-207 | WP-34 | DEV-07-a, DEV-07-b, DEV-07-c, DEV-07-d, DEV-07-e, DEV-07-f, DEV-07-g, DEV-07-h | U 41 · DB 17 · UI 4 · E2E 1 |
 | DEV-08 | S | Covered | US-206 | WP-13 | — | U 3 · UI 3 · E2E 1 |
 | DEV-09 | S | Covered | US-208 | WP-91 | — | U 3 · UI 2 |
 | CHR-01 | M | Covered | US-301 | WP-08, WP-46, WP-83 | — | U 16 · DB 9 · UI 4 · E2E 4 |
@@ -509,7 +509,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-31 | Ready | — | — | — |
 | WP-32 | Ready | — | — | — |
 | WP-33 | Ready | — | — | — |
-| WP-34 | Merged; | — | — | U 37 · UI 4 · E2E 1 |
+| WP-34 | Done | DEV-07-a, DEV-07-b, DEV-07-c, DEV-07-d, DEV-07-e, DEV-07-f, DEV-07-g, DEV-07-h | 8 of 8 | U 37 · UI 4 · E2E 1 |
 | WP-35 | Done | **No cases** | — | — |
 | WP-36 | Queued | — | — | — |
 | WP-37 | Done | **No cases** | — | — |
@@ -594,6 +594,14 @@ Test cases and the tests that prove them:
 
 | Case | Item | Case | Layer | Tests |
 |---|---|---|---|---|
+| DEV-07-a | WP-34 | A board sleeps and wakes at its set times: a school night's or a weekend night's by the day after it (a day off is a weekend), across midnight | Unit | Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-a][US-207] WP-34: school nights and weekend nights (D-117) › a school day by the school year, else Monday to Friday`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-a][US-207] WP-34: school nights and weekend nights (D-117) › a night takes its times from the day after it`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-a][US-207] WP-34: school nights and weekend nights (D-117) › the night before a day off is a weekend night, and the day off wakes late`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-a][US-207] WP-34: school nights and weekend nights (D-117) › across midnight, and a sleep time after midnight`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-a][US-207] WP-34: school nights and weekend nights (D-117) › says when it next sleeps, and when it wakes` |
+| DEV-07-b | WP-34 | Untouched for its idle time a board sleeps, and a touch wakes it; a touch in the night wakes it for its idle time (5 minutes without one), then it sleeps again | Unit | Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › sleeps once untouched for its idle time, and a touch wakes it`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › never sleeps untouched without an idle time, nor at all with no settings`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › a touch in the night wakes it for its idle time, then it sleeps again`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › for 5 minutes when it has no idle time (D-117)`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › wakes at its time for its idle time at least, untouched all night`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › sleeps at its time even if touched just before; opened in the night, it sleeps` |
+| DEV-07-c | WP-34 | Its times hold on the household's clock across a change of clocks, and across midnight UTC | Unit | Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-c] WP-34: across a change of clocks › wakes at 6:30 on the household’s clock either side of a change`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-c] WP-34: across a change of clocks › the night clocks change is an hour shorter or longer, at the same times`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-c] WP-34: across a change of clocks › a time the clocks skip falls into the new hour; one they repeat is the first`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-c] WP-34: across a change of clocks › holds in a time zone ahead of UTC too, across midnight UTC` |
+| DEV-07-d | WP-34 | Home lists a board as not seen by its choice: Always after a day, Only while awake after a day of hours awake and never while asleep, Never never | Unit | Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-d][US-207] WP-34: when Home lists a board as not seen › Always: after a day unseen, at any hour`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-d][US-207] WP-34: when Home lists a board as not seen › Only while awake: its hours asleep don’t count, and never while asleep`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-d][US-207] WP-34: when Home lists a board as not seen › counts the hours awake exactly`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-d][US-207] WP-34: when Home lists a board as not seen › Only while awake without set times is Always`<br>Unit `apps/web/lib/board-sleep.test.ts`: `[DEV-07][DEV-07-d][US-207] WP-34: when Home lists a board as not seen › Never: never listed; and a board never seen isn’t listed` |
+| DEV-07-e | WP-34 | On the preview, a board set to sleep now goes black, the touch that wakes it checks nothing off, and Home lists it as its choice says | E2E | E2E `e2e/tests/board-sleep.spec.ts`: `[DEV-07][DEV-07-e][US-207] WP-34: a board set to sleep now goes black; the touch that wakes it checks nothing off; Home lists it as its choice says` |
+| DEV-07-f | WP-34 | The UI suite shows the sleeping board: black at its time, the waking touch presses nothing, idle sleep, the mouse wakes it | UI | UI `e2e/ui/board-sleep.spec.ts`: `the board › [DEV-07][DEV-07-f][US-207] WP-34: asleep at its time, black; a touch wakes it and presses nothing; it sleeps again`<br>UI `e2e/ui/board-sleep.spec.ts`: `the board › [DEV-07][DEV-07-f][US-207] WP-34: opened in the night it stays asleep until touched, and wakes at 6:30`<br>UI `e2e/ui/board-sleep.spec.ts`: `the board › [DEV-07][DEV-07-f][US-207] WP-34: untouched for its idle time it sleeps; the mouse moving wakes it` |
+| DEV-07-g | WP-34 | The UI suite shows each board's Sleep and wake on Boards, on a phone and a laptop, in Day and Evening | UI | UI `e2e/ui/board-sleep.spec.ts`: `the board Boards on ${device} › [DEV-07][DEV-07-g][US-207] WP-34: each board’s sleep and wake, in ${theme}` |
+| DEV-07-h | WP-34 | On the Pi the screen turns off and on at its times: the board tells the helper, and the helper turns the monitor for the board's own site only; on the owner's Kitchen Pi 4 over 3 days, confirmed by the owner on 29 October | Unit, HW | Unit `apps/web/lib/kiosk-screen.test.ts`: `[DEV-07][DEV-07-h] WP-34: the Pi’s screen power › only a Chromium on Linux on ARM asks the Pi’s helper`<br>Unit `apps/web/lib/kiosk-screen.test.ts`: `[DEV-07][DEV-07-h] WP-34: the Pi’s screen power › tells the helper on or off, and carries on where there is none`<br>Unit `apps/web/lib/kiosk-scripts.test.ts`: `[DEV-07][DEV-07-h] WP-34: the Pi’s screen helper › turns the screen off and on for the board’s own site`<br>Unit `apps/web/lib/kiosk-scripts.test.ts`: `[DEV-07][DEV-07-h] WP-34: the Pi’s screen helper › answers no other site, and says Chromium may reach it from the board`<br>Unit `apps/web/lib/kiosk-scripts.test.ts`: `[DEV-07][DEV-07-h] WP-34: the Pi’s screen helper › the installer is a valid script for the site it came from` |
 | CAL-09-a | WP-50 | An admin gives a calendar any number of people, or none for the whole family; someone archived stays on it through a save, someone removed for good leaves it; another family's people and admins are refused | DB | DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] an admin gives a calendar two people`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] both are on it`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] a calendar added for two people`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] and both are on the new one`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] someone from another family can't be given a calendar`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] an archived person stays on a calendar saved without them`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] the whole family is no one on it`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] a person removed for good leaves the calendar`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] another family's admin can't change it`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-a] another family reads none of its people` |
 | CAL-09-b | WP-50 | A board reads each calendar's people still in the family, in its order; Coming up and an event's details show each of their faces | DB, Unit, UI | Unit `apps/web/lib/board-calendar.test.ts`: `reading the board’s calendar › [CAL-09-b] a calendar’s people as the database lists them, strings only`<br>UI `e2e/ui/board-calendar.spec.ts`: `[CAL-09-b][US-508] an event of a calendar for two people shows both their faces`<br>UI `e2e/ui/dashboard.spec.ts`: `[CAL-09-b][US-508] Coming up shows each of an event’s calendar’s people`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-b][US-508] a board reads a calendar's two people, Ivy then Zoe`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-b] and a calendar's one person`<br>DB `supabase/tests/490_calendar_people.test.sql`: `[CAL-09-b] a board leaves an archived person out` |
 | CAL-09-c | WP-50 | An existing calendar keeps its one person: the contract drops `calendar_source.member_id` only once every calendar's person is in `calendar_member`, and refuses while one isn't | DB | DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-c] with member_id gone, the guard is quiet`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-c] the guard refuses while a calendar's person (archived, here) is not in calendar_member`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-c] and lets the drop go on once every calendar's person is in calendar_member`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-c] the whole family's calendar needs no one`<br>DB `supabase/tests/500_calendar_people_contract.test.sql`: `[CAL-09-c] someone else on the calendar is not its person carried over` |
@@ -891,7 +899,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-204 | DEV-05 | Gap | — |
 | US-205 | DEV-06, NFR-01 | Covered | U 1 · UI 1 · E2E 2 |
 | US-206 | DEV-08 | Covered | U 1 · UI 1 |
-| US-207 | DEV-07 | Not built | U 25 · DB 4 · UI 4 · E2E 1 |
+| US-207 | DEV-07 | Covered | U 25 · DB 4 · UI 4 · E2E 1 |
 | US-208 | DEV-09 | Gap | — |
 | US-301 | CHR-01 | Gap | — |
 | US-302 | CHR-02, SCH-03 | Gap | — |
@@ -1211,26 +1219,26 @@ Unit · 28 tests
 | `[DEV-07][US-207] WP-34: reading a board’s sleep settings › reads what Boards saves, and back` | DEV-07, US-207, WP-34 |
 | `[DEV-07][US-207] WP-34: reading a board’s sleep settings › is Always, no set times and never idle until set, or for anything it doesn’t know` | DEV-07, US-207, WP-34 |
 | `[DEV-07][US-207] WP-34: reading a board’s sleep settings › reads the snapshot’s school days` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: school nights and weekend nights (D-117) › a school day by the school year, else Monday to Friday` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: school nights and weekend nights (D-117) › a night takes its times from the day after it` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: school nights and weekend nights (D-117) › the night before a day off is a weekend night, and the day off wakes late` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: school nights and weekend nights (D-117) › across midnight, and a sleep time after midnight` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: school nights and weekend nights (D-117) › says when it next sleeps, and when it wakes` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: idle sleep and a touch in the night › sleeps once untouched for its idle time, and a touch wakes it` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: idle sleep and a touch in the night › never sleeps untouched without an idle time, nor at all with no settings` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: idle sleep and a touch in the night › a touch in the night wakes it for its idle time, then it sleeps again` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: idle sleep and a touch in the night › for 5 minutes when it has no idle time (D-117)` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: idle sleep and a touch in the night › wakes at its time for its idle time at least, untouched all night` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: idle sleep and a touch in the night › sleeps at its time even if touched just before; opened in the night, it sleeps` | DEV-07, US-207, WP-34 |
-| `[DEV-07] WP-34: across a change of clocks › wakes at 6:30 on the household’s clock either side of a change` | DEV-07, WP-34 |
-| `[DEV-07] WP-34: across a change of clocks › the night clocks change is an hour shorter or longer, at the same times` | DEV-07, WP-34 |
-| `[DEV-07] WP-34: across a change of clocks › a time the clocks skip falls into the new hour; one they repeat is the first` | DEV-07, WP-34 |
-| `[DEV-07] WP-34: across a change of clocks › holds in a time zone ahead of UTC too, across midnight UTC` | DEV-07, WP-34 |
-| `[DEV-07][US-207] WP-34: when Home lists a board as not seen › Always: after a day unseen, at any hour` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: when Home lists a board as not seen › Only while awake: its hours asleep don’t count, and never while asleep` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: when Home lists a board as not seen › counts the hours awake exactly` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: when Home lists a board as not seen › Only while awake without set times is Always` | DEV-07, US-207, WP-34 |
-| `[DEV-07][US-207] WP-34: when Home lists a board as not seen › Never: never listed; and a board never seen isn’t listed` | DEV-07, US-207, WP-34 |
+| `[DEV-07][DEV-07-a][US-207] WP-34: school nights and weekend nights (D-117) › a school day by the school year, else Monday to Friday` | DEV-07-a, US-207, WP-34 |
+| `[DEV-07][DEV-07-a][US-207] WP-34: school nights and weekend nights (D-117) › a night takes its times from the day after it` | DEV-07-a, US-207, WP-34 |
+| `[DEV-07][DEV-07-a][US-207] WP-34: school nights and weekend nights (D-117) › the night before a day off is a weekend night, and the day off wakes late` | DEV-07-a, US-207, WP-34 |
+| `[DEV-07][DEV-07-a][US-207] WP-34: school nights and weekend nights (D-117) › across midnight, and a sleep time after midnight` | DEV-07-a, US-207, WP-34 |
+| `[DEV-07][DEV-07-a][US-207] WP-34: school nights and weekend nights (D-117) › says when it next sleeps, and when it wakes` | DEV-07-a, US-207, WP-34 |
+| `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › sleeps once untouched for its idle time, and a touch wakes it` | DEV-07-b, US-207, WP-34 |
+| `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › never sleeps untouched without an idle time, nor at all with no settings` | DEV-07-b, US-207, WP-34 |
+| `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › a touch in the night wakes it for its idle time, then it sleeps again` | DEV-07-b, US-207, WP-34 |
+| `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › for 5 minutes when it has no idle time (D-117)` | DEV-07-b, US-207, WP-34 |
+| `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › wakes at its time for its idle time at least, untouched all night` | DEV-07-b, US-207, WP-34 |
+| `[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night › sleeps at its time even if touched just before; opened in the night, it sleeps` | DEV-07-b, US-207, WP-34 |
+| `[DEV-07][DEV-07-c] WP-34: across a change of clocks › wakes at 6:30 on the household’s clock either side of a change` | DEV-07-c, WP-34 |
+| `[DEV-07][DEV-07-c] WP-34: across a change of clocks › the night clocks change is an hour shorter or longer, at the same times` | DEV-07-c, WP-34 |
+| `[DEV-07][DEV-07-c] WP-34: across a change of clocks › a time the clocks skip falls into the new hour; one they repeat is the first` | DEV-07-c, WP-34 |
+| `[DEV-07][DEV-07-c] WP-34: across a change of clocks › holds in a time zone ahead of UTC too, across midnight UTC` | DEV-07-c, WP-34 |
+| `[DEV-07][DEV-07-d][US-207] WP-34: when Home lists a board as not seen › Always: after a day unseen, at any hour` | DEV-07-d, US-207, WP-34 |
+| `[DEV-07][DEV-07-d][US-207] WP-34: when Home lists a board as not seen › Only while awake: its hours asleep don’t count, and never while asleep` | DEV-07-d, US-207, WP-34 |
+| `[DEV-07][DEV-07-d][US-207] WP-34: when Home lists a board as not seen › counts the hours awake exactly` | DEV-07-d, US-207, WP-34 |
+| `[DEV-07][DEV-07-d][US-207] WP-34: when Home lists a board as not seen › Only while awake without set times is Always` | DEV-07-d, US-207, WP-34 |
+| `[DEV-07][DEV-07-d][US-207] WP-34: when Home lists a board as not seen › Never: never listed; and a board never seen isn’t listed` | DEV-07-d, US-207, WP-34 |
 | `[DEV-07] WP-34: burn-in drift › moves at most 1 px every 5 minutes, within a 4 px square, and covers it` | DEV-07, WP-34 |
 | `[DEV-07][US-207] WP-34: Boards’ sleep and wake form › reads the form as Kitchen’s settings` | DEV-07, US-207, WP-34 |
 | `[DEV-07][US-207] WP-34: Boards’ sleep and wake form › keeps the times only with the box ticked, and refuses a bad time or idle` | DEV-07, US-207, WP-34 |
@@ -1836,8 +1844,8 @@ Unit · 2 tests
 
 | Test | Names |
 |---|---|
-| `[DEV-07] WP-34: the Pi’s screen power › only a Chromium on Linux on ARM asks the Pi’s helper` | DEV-07, WP-34 |
-| `[DEV-07] WP-34: the Pi’s screen power › tells the helper on or off, and carries on where there is none` | DEV-07, WP-34 |
+| `[DEV-07][DEV-07-h] WP-34: the Pi’s screen power › only a Chromium on Linux on ARM asks the Pi’s helper` | DEV-07-h, WP-34 |
+| `[DEV-07][DEV-07-h] WP-34: the Pi’s screen power › tells the helper on or off, and carries on where there is none` | DEV-07-h, WP-34 |
 
 #### `apps/web/lib/kiosk-scripts.test.ts`
 
@@ -1845,9 +1853,9 @@ Unit · 6 tests
 
 | Test | Names |
 |---|---|
-| `[DEV-07] WP-34: the Pi’s screen helper › turns the screen off and on for the board’s own site` | DEV-07, WP-34 |
-| `[DEV-07] WP-34: the Pi’s screen helper › answers no other site, and says Chromium may reach it from the board` | DEV-07, WP-34 |
-| `[DEV-07] WP-34: the Pi’s screen helper › the installer is a valid script for the site it came from` | DEV-07, WP-34 |
+| `[DEV-07][DEV-07-h] WP-34: the Pi’s screen helper › turns the screen off and on for the board’s own site` | DEV-07-h, WP-34 |
+| `[DEV-07][DEV-07-h] WP-34: the Pi’s screen helper › answers no other site, and says Chromium may reach it from the board` | DEV-07-h, WP-34 |
+| `[DEV-07][DEV-07-h] WP-34: the Pi’s screen helper › the installer is a valid script for the site it came from` | DEV-07-h, WP-34 |
 | `[DEV-07] WP-34 follow-up: the installer runs the helper as a systemd user service › on Wayland (labwc on Debian 13): the desktop’s own display, started now and…` | DEV-07, WP-34 |
 | `[DEV-07] WP-34 follow-up: the installer runs the helper as a systemd user service › on labwc with its socket not found, wayland-0` | DEV-07, WP-34 |
 | `[DEV-07] WP-34 follow-up: the installer runs the helper as a systemd user service › on X11: the first display` | DEV-07, WP-34 |
@@ -2414,7 +2422,7 @@ E2E · 1 tests
 
 | Test | Names |
 |---|---|
-| `[DEV-07][US-207] WP-34: a board set to sleep now goes black; the touch that wakes it checks nothing off; Home lists it as its choice says` | DEV-07, US-207, WP-34 |
+| `[DEV-07][DEV-07-e][US-207] WP-34: a board set to sleep now goes black; the touch that wakes it checks nothing off; Home lists it as its choice says` | DEV-07-e, US-207, WP-34 |
 
 #### `e2e/tests/board.spec.ts`
 
@@ -2932,10 +2940,10 @@ UI · 4 tests
 
 | Test | Names |
 |---|---|
-| `the board › [DEV-07][US-207] WP-34: asleep at its time, black; a touch wakes it and presses nothing; it sleeps again` | DEV-07, US-207, WP-34 |
-| `the board › [DEV-07][US-207] WP-34: opened in the night it stays asleep until touched, and wakes at 6:30` | DEV-07, US-207, WP-34 |
-| `the board › [DEV-07][US-207] WP-34: untouched for its idle time it sleeps; the mouse moving wakes it` | DEV-07, US-207, WP-34 |
-| `the board Boards on ${device} › [DEV-07][US-207] WP-34: each board’s sleep and wake, in ${theme}` | DEV-07, US-207, WP-34 |
+| `the board › [DEV-07][DEV-07-f][US-207] WP-34: asleep at its time, black; a touch wakes it and presses nothing; it sleeps again` | DEV-07-f, US-207, WP-34 |
+| `the board › [DEV-07][DEV-07-f][US-207] WP-34: opened in the night it stays asleep until touched, and wakes at 6:30` | DEV-07-f, US-207, WP-34 |
+| `the board › [DEV-07][DEV-07-f][US-207] WP-34: untouched for its idle time it sleeps; the mouse moving wakes it` | DEV-07-f, US-207, WP-34 |
+| `the board Boards on ${device} › [DEV-07][DEV-07-g][US-207] WP-34: each board’s sleep and wake, in ${theme}` | DEV-07-g, US-207, WP-34 |
 
 #### `e2e/ui/board-update.spec.ts`
 

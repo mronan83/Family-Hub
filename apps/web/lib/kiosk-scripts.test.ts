@@ -50,7 +50,7 @@ afterAll(() => {
   helper?.kill();
 });
 
-describe('[DEV-07] WP-34: the Pi’s screen helper', () => {
+describe('[DEV-07][DEV-07-h] WP-34: the Pi’s screen helper', () => {
   it('turns the screen off and on for the board’s own site', async () => {
     const off = await fetch(`${base}/screen/off`, { method: 'POST', headers: { Origin: ORIGIN } });
     expect(off.status).toBe(200);

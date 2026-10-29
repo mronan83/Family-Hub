@@ -41,7 +41,7 @@ async function middleOf(page: Page) {
 test.describe('the board', () => {
   test.use({ viewport: { width: 1920, height: 1080 }, hasTouch: true });
 
-  test('[DEV-07][US-207] WP-34: asleep at its time, black; a touch wakes it and presses nothing; it sleeps again', async ({
+  test('[DEV-07][DEV-07-f][US-207] WP-34: asleep at its time, black; a touch wakes it and presses nothing; it sleeps again', async ({
     page,
   }) => {
     // Thursday: school on Friday, so a school night from 9:30 pm.
@@ -84,7 +84,7 @@ test.describe('the board', () => {
     });
   });
 
-  test('[DEV-07][US-207] WP-34: opened in the night it stays asleep until touched, and wakes at 6:30', async ({
+  test('[DEV-07][DEV-07-f][US-207] WP-34: opened in the night it stays asleep until touched, and wakes at 6:30', async ({
     page,
   }) => {
     await open(page, '2026-10-16T02:00:00-04:00', 'kitchen');
@@ -96,7 +96,7 @@ test.describe('the board', () => {
     await expect(cover(page)).toHaveCount(0);
   });
 
-  test('[DEV-07][US-207] WP-34: untouched for its idle time it sleeps; the mouse moving wakes it', async ({
+  test('[DEV-07][DEV-07-f][US-207] WP-34: untouched for its idle time it sleeps; the mouse moving wakes it', async ({
     page,
   }) => {
     await open(page, '2026-10-15T12:00:00-04:00', 'idle');
@@ -151,7 +151,9 @@ for (const [width, height, device] of [
     test.use({ viewport: { width, height } });
 
     for (const theme of ['day', 'evening'] as const) {
-      test(`[DEV-07][US-207] WP-34: each board’s sleep and wake, in ${theme}`, async ({ page }) => {
+      test(`[DEV-07][DEV-07-g][US-207] WP-34: each board’s sleep and wake, in ${theme}`, async ({
+        page,
+      }) => {
         // Kitchen opened, as after a save there (WP-91).
         await page.goto(`/dev/boards?open=kitchen${theme === 'evening' ? '&theme=evening' : ''}`);
         const kitchen = page.getByRole('form', { name: 'Sleep and wake for Kitchen' });

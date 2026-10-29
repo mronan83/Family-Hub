@@ -47,7 +47,7 @@ const sent = () =>
           where actor_type = 'device' and actor_id = '${deviceId()}'`),
   );
 
-test('[DEV-07][US-207] WP-34: a board set to sleep now goes black; the touch that wakes it checks nothing off; Home lists it as its choice says', async () => {
+test('[DEV-07][DEV-07-e][US-207] WP-34: a board set to sleep now goes black; the touch that wakes it checks nothing off; Home lists it as its choice says', async () => {
   // Not yet measured (a new spec, D-110): saving, Realtime and the board's next look (every 15 s)
   // take seconds; three Home loads on a cold preview up to about 10 s each. The nightly run's
   // summary gives the time to set this from.
