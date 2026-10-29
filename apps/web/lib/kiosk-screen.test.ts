@@ -5,7 +5,7 @@ const browser = (platform: string, architecture: string) => ({
   userAgentData: { platform, getHighEntropyValues: async () => ({ architecture }) },
 });
 
-describe('[DEV-07] WP-34: the Pi’s screen power', () => {
+describe('[DEV-07][DEV-07-h] WP-34: the Pi’s screen power', () => {
   it('only a Chromium on Linux on ARM asks the Pi’s helper', async () => {
     expect(await onPi(browser('Linux', 'arm'))).toBe(true);
     expect(await onPi(browser('Linux', 'x86'))).toBe(false);

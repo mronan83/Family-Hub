@@ -78,7 +78,7 @@ describe('[DEV-07][US-207] WP-34: reading a board’s sleep settings', () => {
   });
 });
 
-describe('[DEV-07][US-207] WP-34: school nights and weekend nights (D-117)', () => {
+describe('[DEV-07][DEV-07-a][US-207] WP-34: school nights and weekend nights (D-117)', () => {
   it('a school day by the school year, else Monday to Friday', () => {
     expect(isSchoolDay('2030-10-11', OCTOBER)).toBe(true); // Friday
     expect(isSchoolDay('2030-10-12', OCTOBER)).toBe(false); // Saturday
@@ -144,7 +144,7 @@ describe('[DEV-07][US-207] WP-34: school nights and weekend nights (D-117)', () 
   });
 });
 
-describe('[DEV-07][US-207] WP-34: idle sleep and a touch in the night', () => {
+describe('[DEV-07][DEV-07-b][US-207] WP-34: idle sleep and a touch in the night', () => {
   it('sleeps once untouched for its idle time, and a touch wakes it', () => {
     const noon = at('2030-10-11', '12:00');
     expect(asleepAt('2030-10-11', '12:14', noon)).toBe(false);
@@ -190,7 +190,7 @@ describe('[DEV-07][US-207] WP-34: idle sleep and a touch in the night', () => {
   });
 });
 
-describe('[DEV-07] WP-34: across a change of clocks', () => {
+describe('[DEV-07][DEV-07-c] WP-34: across a change of clocks', () => {
   // 2030: clocks go forward on Sunday 10 March and back on Sunday 3 November in New York.
   it('wakes at 6:30 on the household’s clock either side of a change', () => {
     expect(new Date(at('2030-03-08', '06:30')).toISOString()).toBe('2030-03-08T11:30:00.000Z');
@@ -225,7 +225,7 @@ describe('[DEV-07] WP-34: across a change of clocks', () => {
   });
 });
 
-describe('[DEV-07][US-207] WP-34: when Home lists a board as not seen', () => {
+describe('[DEV-07][DEV-07-d][US-207] WP-34: when Home lists a board as not seen', () => {
   const seen = (date: string, time: string) => new Date(at(date, time)).toISOString();
   const missed = (s: BoardSleep, last: string | null, date: string, time: string) =>
     boardMissed(s, last, at(date, time), TZ, OCTOBER);

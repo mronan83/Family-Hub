@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.164: WP-34 (quiet hours and burn-in mitigation, with sleep and wake per board) done (DEV-07, D-116, D-117): the owner confirmed on 29 October that the sleep schedule works on the Kitchen Pi 4 ("Y-11 - sleep schedule is working fine"), its last done-when line. Y-11 removed from §0. Its test cases are DEV-07-a to DEV-07-h, proved by the tests built with it, now named with their IDs (D-107).
 > v0.8.163: WP-116 (grocery brands) added at the owner's request and done in the same change (MEAL-29, US-722, D-148), from the mockup the owner approved on 28 October ([Grocery Brands Mockup](https://claude.ai/artifact/LkwM4dZDSHwb7E6zq392zf)) with its three answers: a Brand type-ahead over the household's own brands when adding, on Groceries and on Home, with Add "<typed>"; Brands in Categories and stores (rename, merge, archive); each item's last brand filled in; Select's Brand…; the brand wherever the item shows. WP-103 records the brand in a reminder's title. Its test cases are MEAL-29-a to MEAL-29-l.
 > v0.8.162: WP-115 (the household points register) added at the owner's request and done in the same change (PTS-08, US-1110, D-147), from the mockup the owner approved on 27 October ([Points Register Mockup](https://claude.ai/artifact/KFmgd2JRHALqHgn89vdS2o)) with every recommendation: Rewards → **Points register**, every points change for every child, newest first, filtered by child, type, bonus and days, each naming who or what issued it, with a total line and Show older; each bonus's payouts with **See them**; a child's Points opens it for them. Its test cases are PTS-08-a to PTS-08-m.
 > v0.8.161: WP-114 (a goal's Some items lists only what can still count, for the goal's person) added at the owner's request, as a bug, and done in the same change (RWD-21, D-146), from the mockup the owner approved on 27 October ([Goal Items Mockup](https://claude.ai/artifact/PSkoJydKQT4Gfzv1MUxEaV)): only the goal's person's items (every child's for a family goal) that repeat, then one-time items still to do with their day ("Fri, Oct 30"), a one-time chore only within the goal's dates; every item a goal counts kept under Still counted, flagged. Its test cases are RWD-21-a to RWD-21-j.
@@ -182,7 +183,6 @@ Only the owner can do these. Each row names what it unblocks; everything else on
 |---|---|---|---|
 | Y-7 | The Pi 5 and the 32" 4K touch panel, with the exact panel model (OQ-05b) | Hardware | SPIKE-03, then WP-14; launch checks L-05 and L-08 |
 | Y-10 | The repository is public now (D-48), and three things from before are visible on it. (1) Rotate the deployment-protection bypass secret: Vercel → Settings → Deployment Protection → Protection Bypass for Automation, then put the new value in GitHub → Settings → Secrets → `VERCEL_AUTOMATION_BYPASS_SECRET`. The demo sign-ins' passwords follow it on the next e2e run. (2) Delete the four `playwright-report` artifacts (Actions → the failed e2e runs of Oct 9 whose reports were saved at 10:56, 15:03, 20:20 and 20:28 UTC), which hold the old value. (3) Delete the two `setup-code` runs of Oct 9 (10:54 and 11:03 UTC), whose pages show household codes; they expire 24 hours after issue | GitHub; Vercel | R-35 |
-| Y-11 | WP-34's screen power on the Kitchen Pi 4. (1) On the Pi, in a terminal or over SSH as the user the board runs as, type `curl -fsSL https://family-wise-topaz.vercel.app/api/kiosk/install \| bash` (again, if you installed it before the follow-up), then `sudo reboot`; after the restart, `curl -s http://127.0.0.1:8737/status` answers `{"on": true}` or `{"on": false}`. (2) On Settings → Boards, open **Sleep and wake** on the Pi's board, set its times and press **Save sleep and wake**. (3) Over the next 3 days, check the monitor goes off at the sleep time and comes on at the wake time, and that moving the mouse wakes it; then tell Claude Code "WP-34 Pi check passed", or what you saw | The Pi | WP-34's last done-when line (HW) |
 | Y-8 | Not before P3 (nothing earlier waits on it): choose the production domain after a trademark and domain check against "FamilyWize" (OQ-06b); join the Apple Developer Program when ready | Registrar; Apple | WP-38; custom SMTP for magic links beyond the Supabase team (`01` §9.10) |
 
 **Done**
@@ -254,7 +254,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-44 | Offline goal projection (board fallback) | P2 | M | WP-13, WP-15, WP-20 | Ready |
 | WP-32 | Audit log viewer and coverage | P3 | S | WP-03 | Ready |
 | WP-33 | Export and delete | P3 | M | WP-04 | Ready |
-| WP-34 | Quiet hours and burn-in mitigation, with sleep and wake per board | P3 | M | WP-06, WP-47 | Merged; 3 days on the owner's Pi 4 to check (Y-11) |
+| WP-34 | Quiet hours and burn-in mitigation, with sleep and wake per board | P3 | M | WP-06, WP-47 | Done |
 | WP-35 | Family dashboard and board layout | P3 | L | WP-23 | Done (PR #44) |
 | WP-45 | Weather on the board | P3 | S | WP-35 | Done (PR #45) |
 | WP-46 | More icons, one icon picker, sixteen colors | P3 | M | WP-08, WP-22, WP-37 | Done (PR #47) |
@@ -1087,7 +1087,19 @@ flowchart LR
   - **Boards:** **Sleep and wake** per board (`devices/sleep-form.tsx`, `setBoardSleep`), its summary line, and "Asleep · wakes at …" or "Awake · sleeps at …" on the board's row.
   - **The Pi's screen helper** (`lib/kiosk-scripts.ts`): `/api/kiosk/install` installs it (a Python helper on 127.0.0.1:8737 that answers only the board's site and turns the monitor with `wlopm` under Wayland or `xset dpms` under X11, Chromium's Local Network Access policy for the site, and a systemd user service, `familywise-screen.service`, that starts it with the Pi and again if it stops). Follow-up, at the owner's request: the first installer used the desktop's start-up folder, which labwc on the owner's Pi (Debian 13) doesn't read, so the helper didn't start after a restart; on the Pi, started by hand, the board turned the Dell off through it. The installer now finds the desktop's display itself (Wayland or X11), so it also works over SSH, and replaces the old start-up file.
   - **Tests:** `lib/board-sleep.test.ts`, `lib/kiosk-screen.test.ts`, `lib/kiosk-scripts.test.ts` (the helper run in Python), `lib/home-alerts.test.ts`; the UI suite's `board-sleep.spec.ts` (asleep at its time, the touch that wakes it checks nothing off, idle, the mouse, Boards on a phone and a laptop in Day and Evening); `e2e/tests/board-sleep.spec.ts` (nightly: set on Boards, black on the board, the waking touch sends nothing, Home for each choice).
-  - **Open:** the 3 days on the owner's Pi 4 (Y-11): the helper is built and tested here in its dry mode, not yet on the Pi's own screen.
+  - **On the owner's Pi 4:** the owner confirmed on 29 October that the sleep schedule works on the Kitchen Pi 4: "Y-11 - sleep schedule is working fine". That was the last done-when line (HW), so WP-34 is done and Y-11 is removed.
+- **Test cases** (D-107), written from the Done when once the item was done; each is proved by the tests already built, now named with its ID:
+
+| Case | Test case | Layer |
+|---|---|---|
+| DEV-07-a | A board sleeps and wakes at its set times: a school night's or a weekend night's by the day after it (a day off is a weekend), across midnight | Unit |
+| DEV-07-b | Untouched for its idle time a board sleeps, and a touch wakes it; a touch in the night wakes it for its idle time (5 minutes without one), then it sleeps again | Unit |
+| DEV-07-c | Its times hold on the household's clock across a change of clocks, and across midnight UTC | Unit |
+| DEV-07-d | Home lists a board as not seen by its choice: Always after a day, Only while awake after a day of hours awake and never while asleep, Never never | Unit |
+| DEV-07-e | On the preview, a board set to sleep now goes black, the touch that wakes it checks nothing off, and Home lists it as its choice says | E2E |
+| DEV-07-f | The UI suite shows the sleeping board: black at its time, the waking touch presses nothing, idle sleep, the mouse wakes it | UI |
+| DEV-07-g | The UI suite shows each board's Sleep and wake on Boards, on a phone and a laptop, in Day and Evening | UI |
+| DEV-07-h | On the Pi the screen turns off and on at its times: the board tells the helper, and the helper turns the monitor for the board's own site only; on the owner's Kitchen Pi 4 over 3 days, confirmed by the owner on 29 October | Unit, HW |
 
 ### WP-35 — Family dashboard and board layout
 **Phase:** P3 · **Size:** L · **Depends on:** WP-23 · **Reqs:** BRD-01, BRD-05, BRD-06, BRD-07
