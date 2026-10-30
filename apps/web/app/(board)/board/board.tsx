@@ -15,6 +15,7 @@ import { postCelebrated } from '@/lib/board-goals';
 import { postAsk, postCancelAsk } from '@/lib/shop';
 import { postWish } from '@/lib/wishes';
 import { lunchFromDb } from '@/lib/lunch';
+import { postGroceries } from '@/lib/grocery-asks';
 import { postLunch, postLunchSeen } from '@/lib/lunch-picks';
 import type { LoadLunches } from './lunches-ui';
 import { effectiveLayout } from '@/lib/board-layout';
@@ -413,6 +414,7 @@ export function Board({ initial, appVersion }: { initial: BoardSnapshot; appVers
           loadLunches={loadLunches}
           askLunch={postLunch}
           seenLunch={postLunchSeen}
+          postGroceries={postGroceries}
         />
       </main>
       <SleepCover sleeping={sleeping} name={device.name} />

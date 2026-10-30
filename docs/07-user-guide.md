@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.49: Asking, ticking off and taking off at the board (WP-107, D-149): the board's **Ask for something** (your face, a picture tile or **Something else** on the board's keyboard, the brand), **Asked for** and **Got today**; tapping a thing to **Got it** or **Take it off the list**, with **Undo**; Groceries' **Asked for** in the admin app with **Add it**, **Not this time**, **Add all** and each child's **Wait for a grown-up's OK**; Home's Needs you line; B1.17 and B2.11 updated.
 > v0.48: Grocery brands (WP-116, D-148): a **Brand** when adding, picked from your own brands as you type or added to them, filled in from last time; **Brand…** on an item and in Select; **Brands** in Categories and stores (rename, merge, archive); the brand on the list and the board.
 > v0.47: The points register (WP-115, D-147): every points change for every child on Rewards → **Points register**, filtered by child, type, bonus and days, with **Show older**; each bonus's payouts on **Bonus points**; **All of (name)'s points** on a child's Points (A6, B1.6, B1.7).
 > v0.46: A goal's **Some items** lists only what can still count for who it's for, items that repeat then one-time items still to do with their days, and keeps every item the goal counts under **Still counted**, flagged (WP-114, D-146).
@@ -1200,6 +1201,17 @@ In **Categories and stores**, **New items go to** sets the store something new g
 
 ![Groceries on a phone with "olive oil" typed and Costco preferred: Goes in Pantry, from the starter list; the Store chips Any store, Costco (chosen), Kroger, Aldi and More…, and "Costco is your preferred store."](guide/img/admin-groceries-preferred-phone.jpg "The preferred store, picked for something new")
 
+#### Asked for
+<!-- covers: US-717 -->
+
+What the children ask for at the board waits under **Asked for**, at the top of **Groceries**, with a count on **Groceries** in the menu, a line on Home's **Needs you** ("2 grocery asks wait for you", **Review**), and an alert if you have approval alerts on ("Maya: 1 grocery ask waiting"). Each ask says who asked, at which board and when.
+
+- **Add it** puts it on the list, with the brand they picked, marked "Maya asked". **Add all** adds every one waiting.
+- **Not this time** turns it down; their card on the board says so until the day ends. No reason is given.
+- **Wait for a grown-up's OK**, at the foot of **Asked for**, has a switch for each child, on to start. Off, their asks go straight on the list. A grown-up's ask never waits.
+
+![Groceries on a phone with Asked for open: Popcorn, Maya asked at the Kitchen board, and Orange juice · Kirkland, Leo asked, each with Add it and Not this time, Add all, then Wait for a grown-up's OK with Maya and Leo both on.](guide/img/admin-groceries-asked-phone.jpg "Asked for")
+
 #### The list
 
 - **By category**, in your order, then A to Z. Each thing has its amount, its store, and why it's on the list: a meal ("Tacos, Tue"), a child's ask, or who added it.
@@ -1210,7 +1222,7 @@ In **Categories and stores**, **New items go to** sets the store something new g
 
 Each move teaches FamilyWise your words, so the next time it suggests the right category.
 
-![Groceries on a phone: the add field at the top, then On the list with Select and the store chips All 19, Costco 3, Kroger 3, Aldi 3, Walmart 1 and Any store 9, then Produce with Apples ×6 (Leo asked), Avocados ×2 at Aldi, Lettuce for Tacos, Tue, Onions ×3 for Tacos and Chili.](guide/img/admin-groceries-phone.jpg "The grocery list, on a phone")
+![Groceries on a phone: the add field at the top, Asked for with two waiting, then On the list with Select and the store chips All 19, Costco 3, Kroger 3, Aldi 3, Walmart 1 and Any store 9, then Produce with Apples ×6 (Leo asked), Avocados ×2 at Aldi, Lettuce for Tacos, Tue, Onions ×3 for Tacos and Chili.](guide/img/admin-groceries-phone.jpg "The grocery list, on a phone")
 
 ![Select on a phone: Apples, Avocados and Bananas ticked, 3 selected, and Move 3 items to open with each category and New category….](guide/img/admin-groceries-select-phone.jpg "Moving several at once")
 
@@ -1223,10 +1235,25 @@ Open **Categories and stores** at the foot of **Groceries**. Categories show in 
 ![Categories and stores open on a laptop: Produce, Dairy & Eggs, Bakery, Meat & Seafood, Pantry, Frozen, Snacks, Household and Other, each with how many are on the list; then Stores with New items go to set to Costco and its help line, Costco marked Preferred, Kroger, Aldi, Walmart, Meijer and Sam's Club, and a new store's field; then Brands A to Z, Chobani to Peet's, each with how many are on the list, a new brand's field, and Horizon under Archived with Restore.](guide/img/admin-groceries-places-laptop.jpg "Your own categories and stores")
 
 #### Groceries on the board
+<!-- covers: US-717 US-723 -->
 
-**Groceries** is in the board's rail once your list has had its first thing. It shows the list by category, A to Z, each thing with its picture, its brand, its amount, and why when a meal needs it or a child asked. The store chips change only what the board shows. Nothing on the board changes the list.
+**Groceries** is in the board's rail once your list has had its first thing, with how many asks wait for a grown-up. It shows the list by category, A to Z, each thing with its picture, its brand, its amount, and why when a meal needs it or someone asked. The store chips change only what the board shows. Beside the list, **Asked for** shows each ask in words, and **Got today** what was ticked off today.
 
-![The board's Groceries: 19 to get, the store chips, then Produce, Dairy & Eggs, Bakery, Meat & Seafood, Pantry and Household in columns, each thing with its picture, Apples ×6 with Leo asked, Onions ×3 For Tacos, Chili.](guide/img/board-groceries.jpg "Groceries on the board")
+![The board's Groceries: 19 to get and Ask for something, the store chips, the list in three columns each thing with its round tick, and beside it Asked for (Popcorn and Ice cream waiting for a grown-up with Call off, Greek yogurt on the list, Chocolate cereal Not this time), then Got today; the rail's Groceries shows 2 waiting.](guide/img/board-groceries.jpg "Groceries on the board")
+
+**Asking for something.**
+
+1. Tap **Ask for something**, then your face.
+2. Tap one of the pictures (the things your family buys most), or **Something else** to type it on the board's own keyboard; things you've had before show as you type.
+3. If it has had a brand, the brands show under the pictures with last time's picked. Pick another, or **No brand**, then **Ask for**.
+
+A grown-up's ask goes straight on the list. A child's waits for a grown-up when their OK is on (it is, to start): the board says "Asked for Popcorn, Maya. A grown-up will say OK.", and **Asked for** shows "Waiting for a grown-up" with **Call off** to take it back. Something on the list already says "Already on the list! We added that you asked." and never waits. A child can have 5 asks waiting at a time. Once a grown-up answers, the card says "On the list", and until the day ends "Got it!" when it's bought, or "Not this time".
+
+![Ask for something on the board: Maya picked, then 11 picture tiles, Milk, Bananas, Apples and others marked On the list, and Something else.](guide/img/board-ask.jpg "Asking at the board")
+
+**Ticking off and taking off.** Tap a thing on the list (or its round tick), then your face. **Got it** means it was bought: it leaves the list and shows on **Got today** with **Untick**, and under **Got recently** in the admin app ("Got by Sam at the Kitchen board"). **Take it off the list** is for something not needed after all (not a buy); the bar's **Undo** puts it back for 10 seconds. A grown-up can take off anything; a child only what they alone asked for. Your face stays picked for 2 minutes, so putting a bag of shopping away is two taps a thing.
+
+![A thing's sheet on the board: Paper towels · Kirkland Signature, Who's this? with Leo picked, Got it, Take it off the list greyed, and "Only a grown-up can take this off. You can still tick it: Got it."](guide/img/board-groceries-sheet.jpg "Got it, or take it off")
 
 ## Part B — User Manual
 
@@ -1509,14 +1536,15 @@ In **Settings**, the first tile. It says the day the week starts on and how chec
 | **Invite an admin** | Folded to its **Invite** button, with how many invites wait and when the first runs out. **Their email**, **Create invite link**, then **Copy link** or **Share**. **Waiting to join** lists open invites with when they expire, and **Cancel invite**. |
 
 #### B1.17 Groceries
-<!-- covers: US-714 US-718 US-719 US-721 -->
+<!-- covers: US-714 US-718 US-719 US-721 US-717 -->
 
 | Part | What it shows or does |
 |---|---|
 | **Groceries** | How many to get; "FamilyWise's own list. Apple Reminders sync is off."; the add field and **Add**, open at the top. Typing shows **Goes in** and **Store** chips (**Other…**, **More…**; the preferred store picked for something new, "Costco is your preferred store.") and, for something that may be on the list already, **Also on the list** with **Make it one**. |
 | **On the list** | Its count; **Select** (or **Done**); the store chips (**All**, each store with things, **Any store**); then each category with its count and **+**, its things A to Z: the box (**Got** it), the name and amount, the store and why; **⋯** (**Why it's on the list**, **Edit**, **Move to…**, **Store…**, **Select several**, **Remove**). **Nothing on the list right now.** when empty. |
 | Select | **N selected**; **Move to…** (each category and **New category…**), **Store…** (**Any store** and each store), **Remove** (asks first: **Remove** N **items** or **Keep them**). |
-| **Got recently** | Folded to the last thing got and how many more this week; opened, each with when and by whom, and **Untick**. |
+| **Asked for** | The children's asks waiting, with **N waiting**; each with who asked, at which board and when, **Add it** and **Not this time**; **Add all** when two or more wait; then **Wait for a grown-up's OK**, a switch for each child. Folded to **None waiting** when nothing waits. |
+| **Got recently** | Folded to the last thing got and how many more this week; opened, each with when and by whom (at which board, when it was ticked there), and **Untick**. |
 | **Categories and stores** | Folded to how many; opened, **Categories** in order with how many on the list, the arrows and **⋯** (**Rename**, **Remove**; with things in it, it asks first), **Other** always last; a new one's name and **Add**; **New items go to** (**Any store** or a store) with "A new item gets this store. One you've had before keeps the store it had last time."; **Stores** with how many on the list, **Preferred** on the chosen one, and **⋯** (**Rename**, **Move up**, **Move down**, **Remove**); a new one's name and **Add**. |
 
 ### B2 The board, screen by screen
@@ -1684,15 +1712,19 @@ Every state is an icon, a word and a color together, in both themes. The board u
 Messages: "Sent. A parent will look at it.", "Back as it was.", "That day can't change now.", "The menu changed. Pick again.", "Lunches need the internet." (a change needs the internet; nothing is queued).
 
 #### B2.11 Groceries
-<!-- covers: US-714 US-718 -->
+<!-- covers: US-714 US-718 US-717 US-723 -->
 
 | Part | What it shows or does |
 |---|---|
-| **Groceries** | How many to get, or **Nothing to get**. |
+| **Groceries** | How many to get, or **Nothing to get**; **Ask for something**. In the rail, how many asks wait for a grown-up. |
 | Store chips | **All**, each store with things on the list, **Any store**: each shows only those, still by category. They change only what the board shows. |
-| Categories | A card each, in the household's order, its things A to Z: a picture where one fits, the name and amount, and **For** the meals that need it or the face of each child who asked. |
-| **Nothing on the list right now** | When the list is empty. |
-| Read-only | Nothing here changes the list: it is kept in the admin app. |
+| Categories | A card each, in the household's order, its things A to Z: a picture where one fits, the name, brand and amount, **For** the meals that need it or the face of each one who asked, and a round tick. A tap opens the thing. |
+| A thing | **Who's this?** (the faces), **Got it**, **Take it off the list** (a child only for what they alone asked for, with why), **Cancel**. The face stays picked 2 minutes. |
+| **Ask for something** | **Who's asking?**, then 11 pictures (marked **On the list** or **Asked**) and **Something else** (the board's keyboard, with things you've had before as you type); the brand row with last time's picked and **No brand**; **Ask for**. With 5 waiting, a child's pictures grey out and say why. |
+| **Asked for** | Each ask: **Waiting for a grown-up** with **Call off**, **On the list**, and until the day ends **Got it!** or **Not this time**. |
+| **Got today** | What was ticked off today, newest first, with who and when, and **Untick**; 5, then "and 3 more". |
+| The bar | What happened ("Asked for Popcorn, Maya. A grown-up will say OK.", "Got Dish soap."); after taking a thing off, **Undo** for 10 seconds. |
+| **Nothing on the list right now** | When the list is empty, with **Ask for something**. |
 
 ### B3 Rules and limits
 <!-- covers: US-907 US-1101 US-320 US-311 US-315 US-1109 -->

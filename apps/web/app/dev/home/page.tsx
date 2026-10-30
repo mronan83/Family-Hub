@@ -13,7 +13,7 @@ import { homeGroceries } from '../groceries/fixture';
 // [MEAL-27] The Groceries card (WP-112): ?groceries=empty, or added (the line after adding Ground beef
 // 2 lb); ?typed= what is typed in its field ("2 lb ground beef", "olive oil", "1 onion"). [MEAL-29]
 // WP-116's brands: ?brand= what is typed in the Brand field, its offers open; ?groceries=added-brand
-// (the line after adding Milk with Kirkland).
+// (the line after adding Milk with Kirkland). [MEAL-22] ?asks=1: two grocery asks wait (WP-107).
 export const metadata: Metadata = { title: 'Home', robots: { index: false } };
 
 const TZ = 'America/New_York';
@@ -33,6 +33,7 @@ export default async function DevHomePage({
     groceries?: string;
     typed?: string;
     brand?: string;
+    asks?: string;
   }>;
 }) {
   const p = await searchParams;
@@ -46,6 +47,7 @@ export default async function DevHomePage({
     today,
     approvals: quiet ? 0 : 2,
     requests: quiet ? 0 : 1,
+    groceryAsks: p.asks === '1' ? 2 : 0,
     boards: [
       { name: 'Kitchen', lastSeenAt: ago(2), revoked: false },
       { name: 'Den', lastSeenAt: quiet ? ago(3) : ago(3 * 24 * 60), revoked: false },

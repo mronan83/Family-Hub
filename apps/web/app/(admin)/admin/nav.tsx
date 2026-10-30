@@ -30,11 +30,14 @@ function Count({ n }: { n: number }) {
 export function AdminNav({
   current,
   waiting,
+  asks = 0,
   who,
 }: {
   /** The menu item to mark (a page Settings holds marks Settings). */
   current: string;
   waiting: number;
+  /** [MEAL-22] Grocery asks waiting for a parent, counted on Groceries (WP-107). */
+  asks?: number;
   who: NavWho | null;
 }) {
   const [open, setOpen] = useState(false);
@@ -52,6 +55,10 @@ export function AdminNav({
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
   const count = waiting > 0 ? waiting : null;
+  const total = waiting + asks > 0 ? waiting + asks : null;
+  // Today counts check-offs and lunch changes; Groceries the grocery asks.
+  const countOf = (href: string) =>
+    href === '/admin/today' ? count : href === '/admin/groceries' && asks > 0 ? asks : null;
 
   return (
     <header className="fw-shell">
@@ -63,12 +70,12 @@ export function AdminNav({
           className="fw-shell__menu"
           aria-expanded={open}
           aria-controls="admin-menu"
-          aria-label={count ? `Menu, ${count} waiting for you` : undefined}
+          aria-label={total ? `Menu, ${total} waiting for you` : undefined}
           onClick={() => setOpen(true)}
         >
           <Icon name="menu" size={22} />
           Menu
-          {count ? <Count n={count} /> : null}
+          {total ? <Count n={total} /> : null}
         </button>
       </div>
       <nav
@@ -105,15 +112,13 @@ export function AdminNav({
                     className="fw-shell__link"
                     aria-current={p.href === current ? 'page' : undefined}
                     aria-label={
-                      p.href === '/admin/today' && count
-                        ? `${p.label}, ${count} waiting for you`
-                        : undefined
+                      countOf(p.href) ? `${p.label}, ${countOf(p.href)} waiting for you` : undefined
                     }
                     onClick={() => setOpen(false)}
                   >
                     <Icon name={p.icon} size={22} />
                     <span className="fw-shell__text">{p.label}</span>
-                    {p.href === '/admin/today' && count ? <Count n={count} /> : null}
+                    {countOf(p.href) ? <Count n={countOf(p.href)!} /> : null}
                   </Link>
                 </li>
               ))}

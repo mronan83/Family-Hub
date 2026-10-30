@@ -26,6 +26,7 @@ import {
   fixturePin,
   fixturePost,
   fixtureGroceries,
+  fixtureGroceriesPost,
   fixtureMeals,
   fixtureRecipes,
   RECIPE_CARD,
@@ -143,7 +144,7 @@ export function DevBoard({
       };
     }
     if (lunchItem) s = withLunchItem(s);
-    s = { ...s, groceries: fixtureGroceries(groceries) };
+    s = { ...s, groceries: fixtureGroceries(groceries, opened) };
     if (stale) s = { ...s, fetchedAt: new Date(opened.getTime() - 12 * 60_000).toISOString() };
     if (repeating) s = withRepeating(s, repeating, opened);
     if (steps) s = withSteps(s, steps);
@@ -171,6 +172,8 @@ export function DevBoard({
     [],
   );
   const [lunches] = useState(() => fixtureLunches(snapshot.today));
+  // [MEAL-22][MEAL-30] As POST /api/groceries would answer, shown on the list at once (WP-107).
+  const [postGroceries] = useState(() => fixtureGroceriesPost(setSnapshot, snapshot.members));
   // [WP-110] What the database holds that this board hasn't read (?missed=1), applied by its read.
   const [unread] = useState(unreadChanges);
   const ask = useMemo(
@@ -237,6 +240,7 @@ export function DevBoard({
           loadLunches={lunches.load}
           askLunch={lunches.ask}
           seenLunch={lunches.seen}
+          postGroceries={postGroceries}
           refresh={refresh}
         />
       </main>

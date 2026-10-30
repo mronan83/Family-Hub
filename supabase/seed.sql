@@ -443,6 +443,29 @@ begin
    where i.id = ('0de00000-0000-4000-8000-0000000730' || lpad(x.item::text, 2, '0'))::uuid;
 end $$;
 
+-- [MEAL-22][MEAL-30] The board's asks (WP-107): Maya's popcorn and Leo's ice cream wait for a parent,
+-- Leo's cereal was turned down today; Sam ticked the coffee, at a board.
+do $$
+declare
+  v_demo constant uuid := '0de00000-0000-4000-8000-000000000001';
+  -- A board paired to the demo family, if there is one yet (previews pair theirs as they start).
+  v_kitchen uuid := (select id from public.device where household_id = v_demo order by created_at limit 1);
+  v_alex constant uuid := '0de00000-0000-4000-8000-0000000000a1';
+  v_maya uuid := (select id from public.member where household_id = v_demo and display_name = 'Maya');
+  v_leo  uuid := (select id from public.member where household_id = v_demo and display_name = 'Leo');
+  v_sam  uuid := (select id from public.member where household_id = v_demo and display_name = 'Sam');
+  v_other uuid := (select id from public.grocery_category where household_id = v_demo and is_other);
+begin
+  insert into public.grocery_ask (household_id, member_id, name, name_key, category_id, status, asked_by,
+                                  asked_at, decided_by, decided_at)
+  values (v_demo, v_maya, 'Popcorn', 'popcorn', v_other, 'waiting', v_kitchen, now() - interval '40 minutes', null, null),
+         (v_demo, v_leo, 'Ice cream', 'ice cream', v_other, 'waiting', v_kitchen, now() - interval '10 minutes', null, null),
+         (v_demo, v_leo, 'Chocolate cereal', 'chocolate cereal', v_other, 'declined', v_kitchen,
+          now() - interval '3 hours', v_alex, now() - interval '5 minutes');
+  update public.grocery_item set ticked_member_id = v_sam, ticked_device_id = v_kitchen
+   where household_id = v_demo and name = 'Coffee';
+end $$;
+
 -- [MEAL-04] School lunch (WP-26): Leo buys on Wednesdays, Maya on Fridays; they bring the rest.
 insert into public.member_lunch (member_id, household_id, defaults)
 select m.id, m.household_id, case m.display_name when 'Leo' then '{"wed": "buy"}' else '{"fri": "buy"}' end::jsonb

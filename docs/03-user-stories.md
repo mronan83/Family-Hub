@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.70: US-723 added at the owner's request, and US-717 changed (WP-107, MEAL-30, D-149): ticking things off and taking them off at the board, as whoever's face is picked, with Undo; each child's OK now sits at the foot of Groceries' Asked for, and a board ask can pick a brand.
 > v0.8.69: US-722 added at the owner's request (WP-116, MEAL-29, D-148): an item's brand, from the household's own brands, remembered for next time.
 > v0.8.68: US-1110 added at the owner's request (WP-115, PTS-08, D-147): every points change in one register, filterable, with each bonus's payouts.
 > v0.8.67: US-401 gains the goal's Some items for the goal's person, still to do, with what it counts kept (added at the owner's request, WP-114, RWD-21, D-146).
@@ -842,6 +843,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given Leo's parent OK is off, when Leo asks for "Apples", then Apples goes straight on the list, marked as Leo's ask.
 - Given a parent turns an ask down, when Maya looks at the board, then they see "Not this time" until the day ends.
 - Given Alex asks for "Coffee" at the board, when the ask is saved, then it goes straight on the list: an adult's ask never waits.
+- Given milk was Kirkland last time, when Maya taps Milk, then Kirkland is picked under it and she can pick another brand or No brand before asking (D-149 (5)).
+- Given I open Groceries, when an ask waits, then Asked for shows it with **Add it** and **Not this time**, and at its foot I can turn each child's OK on or off (D-149 (4)).
 
 ### US-718 — Our own categories and stores
 **As a** parent **I want** to set up our own grocery categories and stores and move items between them **so that** the list is grouped the way we shop (added at the owner's request).
@@ -880,6 +883,14 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given La Croix isn't one of our brands, when I type it and choose **Add "La Croix"**, then it is saved to our brands when the item is added, and offered next time.
 - Given coffee was Peet's last time, when I add coffee again, then **Brand** already says Peet's, and I can change it.
 - Given we have Kirkland and Kirkland Signature, when I merge Kirkland Signature into Kirkland, then every item with it says Kirkland, and adding those things again fills in Kirkland.
+
+### US-723 — Ticking off and taking off at the board
+**As a** family member **I want** to tick things off the grocery list, or take them off, at the kitchen board **so that** the list is right as we put the shopping away, without finding a phone (added at the owner's request).
+**Priority:** Should · **Phase:** P3 · **Reqs:** MEAL-30
+- Given the board's Groceries, when Sam taps Paper towels, picks their face and taps **Got it**, then it leaves the list, shows on the board's Got today with Untick, and on Got recently in the admin app as "Got by Sam at the Kitchen board".
+- Given Sam picked their face a minute ago, when they tap the next thing, then their face is still picked, so it is two taps a thing.
+- Given Sam taps **Take it off the list**, when the Undo bar shows, then Undo within 10 seconds puts it back as it was.
+- Given Leo picks his face on Milk, which Alex added, when he looks at the sheet, then **Take it off the list** is greyed with "Only a grown-up can take this off." and **Got it** still works; on Apples, which only Leo asked for, both work.
 
 ---
 

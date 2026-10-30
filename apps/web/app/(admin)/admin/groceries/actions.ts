@@ -380,3 +380,35 @@ export async function quickAddGrocery(
     : addedLine(name, amount, 'the list');
   return { added: { id, what: line.what, category: line.category, at: Date.now() } };
 }
+
+/**
+ * [MEAL-22][US-717] A parent adds the children's waiting asks to the list (Add it, Add all), through
+ * the merge, or turns them down (Not this time) (WP-107, D-149 (8)).
+ */
+export async function decideGroceryAsks(form: FormData): Promise<void> {
+  const { db } = await context();
+  const chosen = ids(form);
+  const approve = form.get('approve') === 'true';
+  if (chosen.length === 0) back(form, 'failed');
+  const { data, error } = await db.rpc('decide_grocery_asks', {
+    p_ids: chosen,
+    p_approve: approve,
+  });
+  if (error) log('warn', 'grocery asks not decided', { code: error.code, hint: error.hint });
+  back(
+    form,
+    error ? 'failed' : `${approve ? 'asks-added' : 'asks-declined'}-${data ?? 0}`,
+    '#asked',
+  );
+}
+
+/** [MEAL-22] A child's OK (D-149 (4)): on, their asks wait for a parent; off, they go on the list. */
+export async function setGroceryAskOk(form: FormData): Promise<void> {
+  const { db } = await context();
+  const member = guid(form.get('member'));
+  const ok = form.get('ok') === 'true';
+  if (!member) back(form, 'failed');
+  const { error } = await db.rpc('set_grocery_ask_ok', { p_member: member, p_ok: ok });
+  if (error) log('warn', 'grocery OK not set', { code: error.code, hint: error.hint });
+  back(form, error ? 'failed' : ok ? 'ask-ok-on' : 'ask-ok-off', '#asked');
+}

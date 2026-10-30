@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.14: the board's grocery asks, ticks and removals (WP-107, D-149): test cases MEAL-22-a to MEAL-22-j and MEAL-30-a to MEAL-30-e; the catalogue regenerated.
 > v0.8.13: grocery brands (WP-116, D-148): test cases MEAL-29-a to MEAL-29-l; the catalogue regenerated.
 > v0.8.12: Today, My tasks and Insights folded (WP-97, D-145): test cases CHR-12-a to CHR-12-d, CHR-14-a, CHR-14-b, RWD-12-a and RWD-12-b; `day-folds.spec.ts` runs in Chrome, as an iPhone and as Safari on a Mac.
 > v0.8.11: the e2e reds of 18 to 21 October (WP-113, D-143): a slow probe says how much was the database's own time; the run reads the preview's own way to the test database (`/api/health/db`); a failed test names the page load or save it was still waiting for; the specs' date maths (`scripts/e2e-dates.mjs`) unit-tested on every weekday, across DST and in any zone. Test cases DEV-05-a, DEV-05-b and NFR-12-a to NFR-12-e.
@@ -276,16 +277,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3081** tests: Unit 978 · DB 1616 · UI 346 · E2E 141. 2559 name at least one ID; 522 name none.
+**3153** tests: Unit 991 · DB 1664 · UI 355 · E2E 143. 2631 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 134 of 150 |
+| Requirements built (a Done item builds them) | 136 of 151 |
 | Built requirements with no test | 0 |
-| Stories built | 117 of 132 |
+| Stories built | 119 of 133 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 281 (with a test: 281) |
+| Test cases | 296 (with a test: 296) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -304,14 +305,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 111 | 111 | 75 | 17 | 314 |
+| Meals and lunch | 124 | 159 | 84 | 19 | 386 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 84 | 14 | 13 | 178 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 197 | 167 | 61 | 18 | 443 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **978** | **1616** | **346** | **141** | **3081** |
+| **Total** | **991** | **1664** | **355** | **143** | **3153** |
 
 ### 9.3 By requirement
 
@@ -417,7 +418,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-19 | S | Covered | US-715 | WP-105, WP-113 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 4 · DB 2 · UI 2 · E2E 1 |
 | MEAL-20 | S | Covered | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 · E2E 1 |
 | MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
-| MEAL-22 | S | Not built | US-717 | WP-107 | — | — |
+| MEAL-22 | S | Covered | US-717 | WP-107 | MEAL-22-a, MEAL-22-b, MEAL-22-c, MEAL-22-d, MEAL-22-e, MEAL-22-f, MEAL-22-g, MEAL-22-h, MEAL-22-i, MEAL-22-j | U 9 · DB 34 · UI 6 · E2E 1 |
 | MEAL-23 | S | Covered | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | U 3 · DB 3 · UI 3 · E2E 1 |
 | MEAL-24 | S | Covered | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 5 · DB 1 · UI 1 |
 | MEAL-25 | S | Covered | US-720 | WP-96, WP-105 | MEAL-25-h, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | U 13 · DB 2 · UI 2 · E2E 1 |
@@ -425,6 +426,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-27 | S | Covered | US-721 | WP-112 | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e | U 2 · UI 7 · E2E 1 |
 | MEAL-28 | S | Covered | US-721 | WP-112 | MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | U 2 · DB 13 · UI 4 · E2E 1 |
 | MEAL-29 | S | Covered | US-722 | WP-116 | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | U 11 · DB 37 · UI 15 · E2E 1 |
+| MEAL-30 | S | Covered | US-723 | WP-107 | MEAL-30-a, MEAL-30-b, MEAL-30-c, MEAL-30-d, MEAL-30-e | U 4 · DB 14 · UI 3 · E2E 1 |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
 | MENU-03 | M | Covered | US-802 | WP-27 | — | U 6 · DB 3 · UI 2 · E2E 1 |
@@ -579,7 +581,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-104 | Done | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 16 of 16 | — |
 | WP-105 | Done | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 20 of 20 | — |
 | WP-106 | Queued | — | — | — |
-| WP-107 | Queued | — | — | — |
+| WP-107 | Done | MEAL-22-a, MEAL-22-b, MEAL-22-c, MEAL-22-d, MEAL-22-e, MEAL-22-f, MEAL-22-g, MEAL-22-h, MEAL-22-i, MEAL-22-j, MEAL-30-a, MEAL-30-b, MEAL-30-c, MEAL-30-d, MEAL-30-e | 15 of 15 | — |
 | WP-108 | Done | NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r | 4 of 4 | — |
 | WP-109 | Done | NFR-14-s, NFR-14-t | 2 of 2 | — |
 | WP-110 | Done | PTS-04-a, NFR-16-r, NFR-16-s | 3 of 3 | — |
@@ -819,7 +821,7 @@ Test cases and the tests that prove them:
 | MEAL-18-b | WP-104 | Ticking an item records a tick with when and who, unticking puts it back on the list, and removing it is not a tick; every event stays in the history after the item is removed | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-b] ticking is a buy`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-18-b] unticking puts it back` |
 | MEAL-18-c | WP-104 | Got recently holds the items ticked in the last 7 days, newest first, and not one ticked 8 days ago; a ticked item is off the list at once | Unit | Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-18-c] Got recently: ticked in the last 7 days, newest first; not 8 days ago` |
 | MEAL-18-d | WP-104 | The admin app's Groceries on the demo family, as an iPhone in WebKit and on a laptop, Day and Evening: the add field open at the top, the list by category A to Z with each item's amount, store and why, an item's ⋯ (why it's on the list, Edit, Move to…, Store…, Select several, Remove), Got recently with Untick; nothing overflows, contrast is AA, targets are 44 px | UI | UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d][US-714] the list by category, A to Z, with amount, store and why; fits in ${theme}`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries with no service worker › [MEAL-18-d] an item’s ⋯ fits inside the screen and closes once a choice is made`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an item’s ⋯ says why it is on the list and holds the rest`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] Got recently: what was got this week, with Untick`<br>UI `e2e/ui/groceries.spec.ts`: `the admin app’s Groceries › [MEAL-18-d] an empty list says so` |
-| MEAL-18-e | WP-104 | The board's Groceries on the demo family, Day and Evening: the list by category A to Z with each item's picture, amount, and why for a meal; text 28 px or more; nothing on it changes the list; an empty list says "Nothing on the list right now."; Groceries is in the rail once the household has had its first item | UI | UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] the list by category, A to Z, with pictures, amounts and why, read-only, in ${theme}`<br>UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] store chips change only what the board shows`<br>UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] an emptied list says so; a household with none has no Groceries in the rail` |
+| MEAL-18-e | WP-104 | The board's Groceries on the demo family, Day and Evening: the list by category A to Z with each item's picture, amount, and why for a meal; text 28 px or more; nothing on it changes the list; an empty list says "Nothing on the list right now."; Groceries is in the rail once the household has had its first item | UI | UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] the list by category, A to Z, with pictures, amounts and why, in ${theme}`<br>UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] store chips change only what the board shows`<br>UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-18-e] an emptied list says so; a household with none has no Groceries in the rail` |
 | MEAL-18-f | WP-104 | On the real preview, an admin adds an item, ticks it, finds it under Got recently and unticks it back onto the list | E2E | E2E `e2e/tests/groceries.spec.ts`: `[MEAL-18-f][MEAL-23-e] done-when: add, tick, untick; then move several at once` |
 | MEAL-23-a | WP-104 | The list groups by the household's categories in their order, Other last, with items A to Z inside, whatever their capitals; a store chip shows only that store's items, still by category; Any store shows the items with no store; the counts on the chips match | Unit | Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] groups by the household’s categories in their order, Other last, A to Z inside`<br>Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] a store chip shows only its items, still by category; Any store those with none`<br>Unit `apps/web/lib/groceries.test.ts`: `the list › [MEAL-23-a] each item says what to buy and why, the meals once each` |
 | MEAL-23-b | WP-104 | Categories and stores are the household's own: added, renamed, ordered and removed only by its admins; removing a category moves its items to Other; Other can't be removed or renamed; a removed store leaves its items with no store | DB | DB `supabase/tests/540_groceries.test.sql`: `[MEAL-23-b] several items move to a category at once`<br>DB `supabase/tests/540_groceries.test.sql`: `[MEAL-23-b] a parent adds a category` |
@@ -851,6 +853,21 @@ Test cases and the tests that prove them:
 | MEAL-25-f | WP-105 | A meal's recipe files are the household's own: up to 10 MB each, a photo or a PDF; another household's admin and board can't read or add them; the household's board reads them | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] a parent adds a photo to a meal's recipe`<br>DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] another family's board reads none of them` |
 | MEAL-25-g | WP-105 | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI | UI `e2e/ui/meal-groceries.spec.ts`: `with no service worker › [MEAL-25-g][US-720] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` |
 | MEAL-26-a | WP-105 | On the board's Meals, a tap on a meal with a recipe opens it full screen, read-only: its photos and PDFs with chips between them, its ingredients and the link's steps, text 28 px or more, and Close goes back | UI | UI `e2e/ui/board-recipe.spec.ts`: `[MEAL-26-a][US-720] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}` |
+| MEAL-22-a | WP-107 | A board asks only for its own household and as one of its own members (`ask_groceries()`); a board of another household, a member of another household, an admin's session or an archived member is refused; nobody writes `grocery_ask` directly | DB | Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-22] the brand row and the words › [MEAL-22-a] a board sends only what it may: a member, a name, a brand or none`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-a] another household's board can't ask as this household's child`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-a] a board can't ask as another household's child`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-a] a parent's session is not a board`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-a] nobody writes the asks directly`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-a] an archived member can't ask` |
+| MEAL-22-b | WP-107 | An adult's ask goes on the list at once, its reason the ask with the member; a child's waits when their OK is on and is not on the list; with it off it goes on at once; something open on the list already takes the asker as a reason and never waits ("already") | DB | DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] Pat's ask goes on the list`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] ... marked as Pat's ask`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] Maya's ask waits (her OK is on to start)`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] ... and is not on the list`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] asking again for the same thing is the same ask`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] ... not a second one`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] something on the list already: "already", never waits`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] ... Maya is a reason on Milk`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] with it off, Leo's ask goes straight on`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] ... Apples is on the list` |
+| MEAL-22-c | WP-107 | Only a parent of the household puts a waiting ask on the list (`decide_grocery_asks()`, through the merge, with its brand); Not this time turns it down; a board can't decide; Call off takes back only a waiting ask, from a board of the household; a child has at most 5 waiting, the 6th refused | DB | Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-22] the board’s Asked for card › [MEAL-22-c] counts a child’s waiting asks`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] a 6th waiting ask is refused`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] the board calls one off`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] ... and there is room again`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] another household's board can't call one off`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] a board can't decide`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] nor another household's parent`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] Pat adds two`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] ... through the merge, with the brand Maya picked`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] Not this time`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] ... Cookies is not on the list`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] a decided ask can't be called off`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] two still wait` |
+| MEAL-22-d | WP-107 | Each child's OK is set only by the household's parents (`set_grocery_ask_ok()`), for a child of the household, on to start | DB | DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-d] a board can't set a child's OK`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-d] another household's parent can't`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-d] it is a child's setting`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-d] Pat turns Leo's OK off` |
+| MEAL-22-e | WP-107 | A waiting ask counts in the approvals alert ("Maya: 1 grocery ask waiting"), which opens Groceries when only asks wait, and an ask calls the alert at once | DB | DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-e] a waiting ask calls the alert at once (once per transaction)`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-e] the alert counts them`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-e] with only asks waiting, it opens Groceries` |
+| MEAL-22-f | WP-107 | The board's Asked for card: "Waiting for a grown-up", "On the list", and until the household's day ends "Got it!" (its item ticked) or "Not this time"; a call-off goes; the 11 tiles are the most-bought things (a made-up starter set without history), each marked "On the list" or "Asked" | Unit | Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-22] the board’s Asked for card › [MEAL-22-f] says how each ask stands, in words, and leaves out what has gone`<br>Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-22] the board’s Asked for card › [MEAL-22-f] reads the asks, Got today and what the household has had from board_groceries()`<br>Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-22] the board’s Asked for card › [MEAL-22-f] the tiles: the most bought first, the starter set after, marked on the list or asked` |
+| MEAL-22-g | WP-107 | The brand row for a thing: the household's brands it has had, last time's first and picked, then No brand; none when it never had one; the answer's words: "Asked for Popcorn, Maya. A grown-up will say OK.", "Added Popcorn to the list.", "Already on the list! We added that you asked.", "You have 5 asks waiting." | Unit | Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-22] the brand row and the words › [MEAL-22-g] the household’s brands the thing has had, last time’s first and picked; none without`<br>Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-22] the brand row and the words › [MEAL-22-g] what the board says back`<br>Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-22] the brand row and the words › [MEAL-22-g] matches what is typed: starting with it first, then holding it, at most 3` |
+| MEAL-22-h | WP-107 | The board's Groceries on the demo family, Day and Evening: Ask for something; who, then the tiles; the brand row; Something else on the board's keyboard with matches; the Asked bar; 5 waiting greys the tiles; Call off; text 28 px or more and buttons 56 px or more | UI | UI `e2e/ui/board-grocery-asks.spec.ts`: `[MEAL-22-h] Ask for something, the Asked for card and Got today, 28 px and 56 px, in ${theme}`<br>UI `e2e/ui/board-grocery-asks.spec.ts`: `[MEAL-22-h] a tile with brands shows its brand row; asking says it waits; Call off takes it back`<br>UI `e2e/ui/board-grocery-asks.spec.ts`: `[MEAL-22-h] Something else on the board’s keyboard, with matches; an adult’s ask goes on the list`<br>UI `e2e/ui/board-grocery-asks.spec.ts`: `[MEAL-22-h] with 5 waiting, a child’s tiles grey out and say why` |
+| MEAL-22-i | WP-107 | The admin app's Groceries: Asked for with Add it, Not this time and Add all, and Wait for a grown-up's OK with a switch per child; Home's Needs you line; on a phone and a laptop, Day and Evening, nothing overflows | UI | Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-22] the brand row and the words › [MEAL-22-i] Home’s Needs you says how many grocery asks wait, and opens Groceries`<br>UI `e2e/ui/grocery-asks.spec.ts`: `grocery asks on ${device} › [MEAL-22-i] Asked for with Add it, Not this time, Add all and each child’s OK, in ${theme}`<br>UI `e2e/ui/grocery-asks.spec.ts`: `grocery asks on ${device} › [MEAL-22-i] Home’s Needs you counts the grocery asks and opens Asked for` |
+| MEAL-22-j | WP-107 | On the real preview, a child asks at a paired board, a parent adds it on Groceries, and the item is on the list with "Maya asked" | E2E | E2E `e2e/tests/board-grocery-asks.spec.ts`: `[MEAL-22-j][US-717] Maya asks at the board; it waits; Alex adds it; it is on the list as hers` |
+| MEAL-30-a | WP-107 | A board ticks, unticks and takes off only its own household's items, as one of its own members (`board_tick_groceries()`, `board_remove_groceries()`); each is recorded with the member and the board; a tick is a buy (Got recently), a removal isn't | DB | DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-a] another household's board can't tick this household's items`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-a] nor as another household's member`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-a] a parent's session is not a board`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-a] Leo ticks Rice`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-a] a buy, by Leo at the Kitchen board`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-a] Untick puts it back`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-a] the removal is Pat's, not a buy` |
+| MEAL-30-b | WP-107 | A child ticks anything but takes off only a thing every reason of which is their own ask; an adult takes off anything; Undo (`board_restore_groceries()`) puts back what that board took off in the last 10 minutes, folded into the same thing if it was added again meanwhile | DB | DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-b] Leo can't take off what Pat added`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-b] nor can Maya take off Milk, which she only joined`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-b] Leo takes off Apples, his own ask`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-b] Pat takes off Paper towels`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-b] another household's board can't undo it`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-b] Undo puts it back`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-30-b] ... once: the one added meanwhile is folded into it` |
+| MEAL-30-c | WP-107 | The face picked stays 2 minutes; Got today lists today's ticks newest first, 5 then "and 3 more"; Take it off is greyed for a child with "Only a grown-up can take this off." unless it is only their ask; Got recently says "Got by Leo at the Kitchen board" | Unit | Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-30] ticking off and taking off at the board › [MEAL-30-c] the face picked stays 2 minutes`<br>Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-30] ticking off and taking off at the board › [MEAL-30-c] a child takes off only what they alone asked for; an adult anything`<br>Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-30] ticking off and taking off at the board › [MEAL-30-c] Got today: newest first, 5, then how many more`<br>Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-30] ticking off and taking off at the board › [MEAL-30-c] Got recently says who got it, and at which board`<br>UI `e2e/ui/grocery-asks.spec.ts`: `grocery asks on ${device} › [MEAL-30-c] Got recently says who got a thing at the board` |
+| MEAL-30-d | WP-107 | The board's item sheet with Who's this?, Got it and Take it off the list; the Undo bar; Got today with Untick; Day and Evening, 56 px targets | UI | UI `e2e/ui/board-grocery-asks.spec.ts`: `[MEAL-30-d] a thing’s sheet: who, Got it, Take it off with Undo, Got today with Untick, in ${theme}`<br>UI `e2e/ui/board-grocery-asks.spec.ts`: `[MEAL-30-d] a child takes off what only they asked for` |
+| MEAL-30-e | WP-107 | On the real preview, at a paired board, an adult ticks a thing and takes another off and puts it back with Undo; the admin app's Got recently says who got it at that board | E2E | E2E `e2e/tests/board-grocery-asks.spec.ts`: `[MEAL-30-e][US-723] Sam ticks a thing off, takes another off and puts it back; Got recently says so` |
 | MEAL-27-a | WP-112 | Home's card says "8 on the list", "1 on the list" or "Nothing on the list"; as an item is typed its line says its category and its store with why ("Meat & Seafood · Kroger, where it went last time", "Pantry · Costco, your preferred store", "Other · Any store"); something already on the list says "Onions ×3 are on the list already. Adding makes ×4." | Unit | Unit `apps/web/lib/groceries.test.ts`: `the store suggested, and Home’s card (WP-112) › [MEAL-27-a] the card’s count and its line as an item is typed` |
 | MEAL-27-b | WP-112 | After Add the card says "Added Ground beef 2 lb to Meat & Seafood." with the item's name and amount as the list now has them, merged or new | Unit | Unit `apps/web/lib/groceries.test.ts`: `the store suggested, and Home’s card (WP-112) › [MEAL-27-b] after Add, the item as the list now has it` |
 | MEAL-27-c | WP-112 | Home on the demo family, on a phone and a laptop, Day and Evening: the Groceries card first among the cards, above Add a meal; its field two lines on a phone and one on a laptop; the line under it as typed; the merge line; the Added line with Change opening the item on Groceries; Open the list and This week's meals; two columns wide on a laptop; the card with an empty list; nothing overflows, 44 px targets, AA contrast; in Chrome, as an iPhone in WebKit and as Safari on a Mac | UI | UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c][US-721] first among the cards, with the count, the field and both links, in ${theme}`<br>UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c] as an item is typed, the line says where it goes, or that it is on the list already`<br>UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c] after Add: what was added and where, with Change, and the count up, in ${theme}`<br>UI `e2e/ui/home-groceries.spec.ts`: `Home’s Groceries card on ${device} › [MEAL-27-c] with nothing on the list the card still shows, in ${theme}` |
@@ -971,12 +988,13 @@ Status as in §9.3, for tests that name the story itself.
 | US-714 | MEAL-18 | Covered | UI 1 |
 | US-715 | MEAL-07, MEAL-19, MEAL-20 | Covered | UI 1 |
 | US-716 | MEAL-21 | Not built | — |
-| US-717 | MEAL-22 | Not built | — |
+| US-717 | MEAL-22 | Covered | E2E 1 |
 | US-718 | MEAL-23 | Covered | UI 1 |
 | US-719 | MEAL-24 | Covered | UI 1 |
 | US-720 | MEAL-25, MEAL-26 | Covered | UI 2 |
 | US-721 | MEAL-27, MEAL-28 | Covered | UI 1 |
 | US-722 | MEAL-29 | Covered | UI 1 |
+| US-723 | MEAL-30 | Covered | E2E 1 |
 | US-801 | MENU-01, MENU-02 | Covered | U 3 · UI 2 |
 | US-802 | MENU-03 | Covered | U 4 · DB 2 · UI 2 · E2E 1 |
 | US-803 | MENU-04, MENU-05 | Covered | U 3 · DB 1 · UI 1 · E2E 1 |
@@ -1646,6 +1664,26 @@ Unit · 12 tests
 | `the store suggested, and Home’s card (WP-112) › [MEAL-28-c] last time’s store, then the preferred store, then Any store` | MEAL-28-c, WP-112 |
 | `the store suggested, and Home’s card (WP-112) › [MEAL-27-a] the card’s count and its line as an item is typed` | MEAL-27-a, WP-112 |
 | `the store suggested, and Home’s card (WP-112) › [MEAL-27-b] after Add, the item as the list now has it` | MEAL-27-b, WP-112 |
+
+#### `apps/web/lib/grocery-asks.test.ts`
+
+Unit · 13 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-22] the board’s Asked for card › [MEAL-22-f] says how each ask stands, in words, and leaves out what has gone` | MEAL-22-f |
+| `[MEAL-22] the board’s Asked for card › [MEAL-22-f] reads the asks, Got today and what the household has had from board_groceries()` | MEAL-22-f |
+| `[MEAL-22] the board’s Asked for card › [MEAL-22-f] the tiles: the most bought first, the starter set after, marked on the list or asked` | MEAL-22-f |
+| `[MEAL-22] the board’s Asked for card › [MEAL-22-c] counts a child’s waiting asks` | MEAL-22-c |
+| `[MEAL-22] the brand row and the words › [MEAL-22-g] the household’s brands the thing has had, last time’s first and picked; none without` | MEAL-22-g |
+| `[MEAL-22] the brand row and the words › [MEAL-22-g] what the board says back` | MEAL-22-g |
+| `[MEAL-22] the brand row and the words › [MEAL-22-g] matches what is typed: starting with it first, then holding it, at most 3` | MEAL-22-g |
+| `[MEAL-22] the brand row and the words › [MEAL-22-a] a board sends only what it may: a member, a name, a brand or none` | MEAL-22-a |
+| `[MEAL-22] the brand row and the words › [MEAL-22-i] Home’s Needs you says how many grocery asks wait, and opens Groceries` | MEAL-22-i |
+| `[MEAL-30] ticking off and taking off at the board › [MEAL-30-c] the face picked stays 2 minutes` | MEAL-30-c |
+| `[MEAL-30] ticking off and taking off at the board › [MEAL-30-c] a child takes off only what they alone asked for; an adult anything` | MEAL-30-c |
+| `[MEAL-30] ticking off and taking off at the board › [MEAL-30-c] Got today: newest first, 5, then how many more` | MEAL-30-c |
+| `[MEAL-30] ticking off and taking off at the board › [MEAL-30-c] Got recently says who got it, and at which board` | MEAL-30-c |
 
 #### `apps/web/lib/grocery-brands.test.ts`
 
@@ -2376,6 +2414,15 @@ E2E · 1 tests
 |---|---|
 | `[BRD-08][US-1007] done-when: Larger on Boards zooms the board at once, and it stays Larger; Standard puts it back` | BRD-08, US-1007 |
 
+#### `e2e/tests/board-grocery-asks.spec.ts`
+
+E2E · 2 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-22-j][US-717] Maya asks at the board; it waits; Alex adds it; it is on the list as hers` | MEAL-22-j, US-717 |
+| `[MEAL-30-e][US-723] Sam ticks a thing off, takes another off and puts it back; Got recently says so` | MEAL-30-e, US-723 |
+
 #### `e2e/tests/board-home.spec.ts`
 
 E2E · 1 tests
@@ -2875,10 +2922,23 @@ UI · 4 tests
 
 | Test | Names |
 |---|---|
-| `[MEAL-18-e] the list by category, A to Z, with pictures, amounts and why, read-only, in ${theme}` | MEAL-18-e |
+| `[MEAL-18-e] the list by category, A to Z, with pictures, amounts and why, in ${theme}` | MEAL-18-e |
 | `[MEAL-18-e] store chips change only what the board shows` | MEAL-18-e |
 | `[MEAL-18-e] an emptied list says so; a household with none has no Groceries in the rail` | MEAL-18-e |
 | `[MEAL-29-k] each thing shows its brand after its name, softer` | MEAL-29-k |
+
+#### `e2e/ui/board-grocery-asks.spec.ts`
+
+UI · 6 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-22-h] Ask for something, the Asked for card and Got today, 28 px and 56 px, in ${theme}` | MEAL-22-h |
+| `[MEAL-22-h] a tile with brands shows its brand row; asking says it waits; Call off takes it back` | MEAL-22-h |
+| `[MEAL-22-h] Something else on the board’s keyboard, with matches; an adult’s ask goes on the list` | MEAL-22-h |
+| `[MEAL-22-h] with 5 waiting, a child’s tiles grey out and say why` | MEAL-22-h |
+| `[MEAL-30-d] a thing’s sheet: who, Got it, Take it off with Undo, Got today with Untick, in ${theme}` | MEAL-30-d |
+| `[MEAL-30-d] a child takes off what only they asked for` | MEAL-30-d |
 
 #### `e2e/ui/board-meals.spec.ts`
 
@@ -3174,6 +3234,16 @@ UI · 13 tests
 | `the preferred store › [MEAL-28-e] with no preferred store, New items go to says Any store and nothing is Preferred` | MEAL-28-e |
 | `the preferred store › [MEAL-28-e] the add field picks the preferred store’s chip for a new item and says so` | MEAL-28-e |
 | `the preferred store › [MEAL-28-e] the new-store hint shows in full on a phone` | MEAL-28-e |
+
+#### `e2e/ui/grocery-asks.spec.ts`
+
+UI · 3 tests
+
+| Test | Names |
+|---|---|
+| `grocery asks on ${device} › [MEAL-22-i] Asked for with Add it, Not this time, Add all and each child’s OK, in ${theme}` | MEAL-22-i |
+| `grocery asks on ${device} › [MEAL-22-i] Home’s Needs you counts the grocery asks and opens Asked for` | MEAL-22-i |
+| `grocery asks on ${device} › [MEAL-30-c] Got recently says who got a thing at the board` | MEAL-30-c |
 
 #### `e2e/ui/grocery-brands.spec.ts`
 
@@ -6005,5 +6075,60 @@ DB · 37 tests
 | `[MEAL-29-d] every item with it, the ticked one too, is Kirkland now` | MEAL-29-d |
 | `[MEAL-29-d] and Kirkland Signature is gone` | MEAL-29-d |
 | `[MEAL-29-d] another household's parent can't merge them` | MEAL-29-d |
+
+#### `supabase/tests/610_board_grocery_asks.test.sql`
+
+DB · 48 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-22-a] another household's board can't ask as this household's child` | MEAL-22-a |
+| `[MEAL-22-a] a board can't ask as another household's child` | MEAL-22-a |
+| `[MEAL-22-a] a parent's session is not a board` | MEAL-22-a |
+| `[MEAL-22-a] nobody writes the asks directly` | MEAL-22-a |
+| `[MEAL-22-a] an archived member can't ask` | MEAL-22-a |
+| `[MEAL-22-b] Pat's ask goes on the list` | MEAL-22-b |
+| `[MEAL-22-b] ... marked as Pat's ask` | MEAL-22-b |
+| `[MEAL-22-b] Maya's ask waits (her OK is on to start)` | MEAL-22-b |
+| `[MEAL-22-b] ... and is not on the list` | MEAL-22-b |
+| `[MEAL-22-b] asking again for the same thing is the same ask` | MEAL-22-b |
+| `[MEAL-22-b] ... not a second one` | MEAL-22-b |
+| `[MEAL-22-b] something on the list already: "already", never waits` | MEAL-22-b |
+| `[MEAL-22-b] ... Maya is a reason on Milk` | MEAL-22-b |
+| `[MEAL-22-d] a board can't set a child's OK` | MEAL-22-d |
+| `[MEAL-22-d] another household's parent can't` | MEAL-22-d |
+| `[MEAL-22-d] it is a child's setting` | MEAL-22-d |
+| `[MEAL-22-d] Pat turns Leo's OK off` | MEAL-22-d |
+| `[MEAL-22-b] with it off, Leo's ask goes straight on` | MEAL-22-b |
+| `[MEAL-22-b] ... Apples is on the list` | MEAL-22-b |
+| `[MEAL-22-c] a 6th waiting ask is refused` | MEAL-22-c |
+| `[MEAL-22-c] the board calls one off` | MEAL-22-c |
+| `[MEAL-22-c] ... and there is room again` | MEAL-22-c |
+| `[MEAL-22-c] another household's board can't call one off` | MEAL-22-c |
+| `[MEAL-22-c] a board can't decide` | MEAL-22-c |
+| `[MEAL-22-c] nor another household's parent` | MEAL-22-c |
+| `[MEAL-22-c] Pat adds two` | MEAL-22-c |
+| `[MEAL-22-c] ... through the merge, with the brand Maya picked` | MEAL-22-c |
+| `[MEAL-22-c] Not this time` | MEAL-22-c |
+| `[MEAL-22-c] ... Cookies is not on the list` | MEAL-22-c |
+| `[MEAL-22-c] a decided ask can't be called off` | MEAL-22-c |
+| `[MEAL-22-c] two still wait` | MEAL-22-c |
+| `[MEAL-22-e] a waiting ask calls the alert at once (once per transaction)` | MEAL-22-e |
+| `[MEAL-22-e] the alert counts them` | MEAL-22-e |
+| `[MEAL-22-e] with only asks waiting, it opens Groceries` | MEAL-22-e |
+| `[MEAL-30-a] another household's board can't tick this household's items` | MEAL-30-a |
+| `[MEAL-30-a] nor as another household's member` | MEAL-30-a |
+| `[MEAL-30-a] a parent's session is not a board` | MEAL-30-a |
+| `[MEAL-30-a] Leo ticks Rice` | MEAL-30-a |
+| `[MEAL-30-a] a buy, by Leo at the Kitchen board` | MEAL-30-a |
+| `[MEAL-30-a] Untick puts it back` | MEAL-30-a |
+| `[MEAL-30-b] Leo can't take off what Pat added` | MEAL-30-b |
+| `[MEAL-30-b] nor can Maya take off Milk, which she only joined` | MEAL-30-b |
+| `[MEAL-30-b] Leo takes off Apples, his own ask` | MEAL-30-b |
+| `[MEAL-30-b] Pat takes off Paper towels` | MEAL-30-b |
+| `[MEAL-30-a] the removal is Pat's, not a buy` | MEAL-30-a |
+| `[MEAL-30-b] another household's board can't undo it` | MEAL-30-b |
+| `[MEAL-30-b] Undo puts it back` | MEAL-30-b |
+| `[MEAL-30-b] ... once: the one added meanwhile is folded into it` | MEAL-30-b |
 
 <!-- /catalogue -->

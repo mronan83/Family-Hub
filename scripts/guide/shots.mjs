@@ -192,6 +192,27 @@ const SHOTS = [
     url: '/dev/board?groceries=1',
     act: (page) => person(page, 'Groceries').click(),
   },
+  // [MEAL-22][MEAL-30] WP-107: asking (Maya picked, the tiles), and a thing's sheet as Leo.
+  {
+    name: 'board-ask',
+    device: 'board',
+    url: '/dev/board?groceries=1',
+    act: async (page) => {
+      await person(page, 'Groceries').click();
+      await tap(page, 'Ask for something').click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Maya', exact: true }).click();
+    },
+  },
+  {
+    name: 'board-groceries-sheet',
+    device: 'board',
+    url: '/dev/board?groceries=1',
+    act: async (page) => {
+      await person(page, 'Groceries').click();
+      await page.getByRole('button', { name: /^Paper towels/ }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Leo', exact: true }).click();
+    },
+  },
   // [MENU-06] The school menu by section (WP-64): a buy day's whole menu at a tap, and the week's
   // menu a row a section under School lunch.
   {
@@ -557,7 +578,15 @@ const SHOTS = [
   { name: 'admin-meals-groceries-laptop', device: 'laptop', url: '/dev/meals?groceries=1' },
   // [MEAL-18][MEAL-23][MEAL-24] Groceries (WP-104): the list, adding with the suggestion, Select
   // and Move to, and the household's categories and stores.
-  { name: 'admin-groceries-phone', device: 'phone', url: '/dev/groceries', maxHeight: 1500 },
+  // [MEAL-22] Since WP-107, Asked for opens above the list while asks wait.
+  { name: 'admin-groceries-phone', device: 'phone', url: '/dev/groceries', maxHeight: 1700 },
+  // [MEAL-22] Groceries' Asked for (WP-107), with each child's OK.
+  {
+    name: 'admin-groceries-asked-phone',
+    device: 'phone',
+    url: '/dev/groceries',
+    element: '#asked',
+  },
   {
     name: 'admin-groceries-adding-phone',
     device: 'phone',

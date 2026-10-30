@@ -1,6 +1,7 @@
 import { Banner, Button, Fold, Icon, type IconName } from '@familywise/ui';
 import Link from 'next/link';
 import { time } from '@/lib/format';
+import { gotByWords } from '@/lib/grocery-asks';
 import { brandOf, brandUse, mergeTarget, withBrand } from '@/lib/grocery-brands';
 import {
   categoryOrder,
@@ -27,6 +28,7 @@ import {
 } from './actions';
 import { AddForm } from './add-form';
 import { BrandForm, EditForm, PlaceForm, PreferredStoreForm } from './forms';
+import { AskedFor } from './asked-for';
 import { ItemWords, SectionHead } from './rows';
 import { MoreMenu } from './more-menu';
 import { SelectList } from './select-list';
@@ -74,6 +76,8 @@ const NOTICES: Record<string, (name: string) => string> = {
   'brand-archived': (n) => `Archived ${n}. Items that have it keep it; it isn’t offered any more.`,
   'brand-restored': (n) => `${n} is back among your brands.`,
   branded: () => 'Saved.',
+  'ask-ok-on': () => 'Saved. Their asks wait for a grown-up’s OK.',
+  'ask-ok-off': () => 'Saved. Their asks go straight on the list.',
 };
 
 function noticeOf(did: string | undefined, name: string): string | null {
@@ -89,6 +93,13 @@ function noticeOf(did: string | undefined, name: string): string | null {
         : m[1] === 'branded'
           ? `${what} given a brand.`
           : `${what} given a store.`;
+  }
+  // [MEAL-22] Add it, Add all, Not this time (WP-107).
+  const a = /^asks-(added|declined)-(\d+)$/.exec(did);
+  if (a) {
+    const n = Number(a[2]);
+    const what = n === 1 ? '1 ask' : `${n} asks`;
+    return a[1] === 'added' ? `Added ${what} to the list.` : `Not this time: ${what}.`;
   }
   if (did === 'name-taken') return null;
   return NOTICES[did]?.(name) ?? null;
@@ -215,6 +226,14 @@ export function GroceriesView({
           initialBrand={dev?.brand}
         />
       </section>
+
+      <AskedFor
+        asks={data.asks ?? []}
+        people={people}
+        brands={brands}
+        timezone={timezone}
+        open={query.open === 'asked' || /^(asks-|ask-ok)/.test(query.did ?? '')}
+      />
 
       <section className="fw-card fw-groc__list" aria-labelledby="list-heading">
         <div className="fw-groc__listhead">
@@ -463,7 +482,10 @@ export function GroceriesView({
         ) : (
           <ul className="fw-groc__rows" aria-label="Got recently">
             {got.map((item) => {
-              const by = people.find((p) => p.userId !== null && p.userId === item.tickedBy);
+              // [MEAL-30] Ticked at a board: the member picked there, and the board (WP-107).
+              const by = item.tickedMemberId
+                ? people.find((p) => p.id === item.tickedMemberId)
+                : people.find((p) => p.userId !== null && p.userId === item.tickedBy);
               const amount = itemAmount(item);
               return (
                 <li key={item.id} className="fw-groc__row fw-groc__row--got">
@@ -474,7 +496,7 @@ export function GroceriesView({
                     </span>
                     <span className="fw-groc__l2">
                       Got {weekdayTime(item.tickedAt!, timezone)}
-                      {by ? ` by ${by.name}` : ''}
+                      {gotByWords(by?.name ?? null, item.tickedBoard ?? null)}
                     </span>
                   </span>
                   <form action={tickGrocery}>

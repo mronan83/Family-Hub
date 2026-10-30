@@ -47,6 +47,9 @@ export interface GroceryItem {
   status: 'open' | 'ticked';
   tickedAt: string | null;
   tickedBy: string | null;
+  /** [MEAL-30] Who ticked it at a board, and which board (WP-107); none in the admin app. */
+  tickedMemberId?: string | null;
+  tickedBoard?: string | null;
   createdAt: string;
   reasons: GroceryReason[];
 }
@@ -57,6 +60,20 @@ export interface Person {
   userId: string | null;
   avatarKey: string | null;
   color: string;
+  /** [MEAL-22] A child, whose asks can wait for a parent's OK (`askOk`, WP-107). */
+  role?: 'child' | 'adult';
+  askOk?: boolean;
+}
+
+/** [MEAL-22] A child's ask from the board, waiting for a parent (WP-107). */
+export interface WaitingAsk {
+  id: string;
+  memberId: string;
+  name: string;
+  brandId: string | null;
+  askedAt: string;
+  /** The board it was asked at, if it still exists. */
+  board: string | null;
 }
 
 /** [MEAL-20] What to buy of an item: its own amount and every reason's, combined. */
