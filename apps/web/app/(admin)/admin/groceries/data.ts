@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { GroceryBrand } from '@/lib/grocery-brands';
+import type { Bought, StapleChoice } from '@/lib/grocery-staples';
 import { GOT_RECENTLY_DAYS } from '@/lib/groceries';
 import type {
   GroceryCategory,
@@ -27,6 +28,9 @@ export interface GroceriesData {
   preferredStoreId: string | null;
   /** [MEAL-22] The children's asks waiting for a parent, oldest first (WP-107). */
   asks?: WaitingAsk[];
+  /** [MEAL-21] Each thing's buys, and the household's choices for them (WP-106). */
+  bought?: Bought[];
+  stapleChoices?: StapleChoice[];
 }
 
 const fail = (what: string, error: { message: string } | null) => {
@@ -39,50 +43,52 @@ export async function loadGroceries(
   now: number = Date.now(),
 ): Promise<GroceriesData> {
   const since = new Date(now - GOT_RECENTLY_DAYS * 86_400_000).toISOString();
-  const [cats, stores, brands, items, people, past, learned, list, asks] = await Promise.all([
-    db
-      .from('grocery_category')
-      .select('id, name, icon, starter_key, is_other, sort_order')
-      .eq('household_id', householdId),
-    db.from('grocery_store').select('id, name, sort_order').eq('household_id', householdId),
-    db.from('grocery_brand').select('id, name, archived_at').eq('household_id', householdId),
-    db
-      .from('grocery_item')
-      .select(
-        'id, name, amount, category_id, store_id, brand_id, status, ticked_at, ticked_by, created_at, ' +
-          'ticked_member_id, ticked_device:device!grocery_item_ticked_device_id_fkey(name), ' +
-          'grocery_item_reason(kind, by_user, member_id, meal_plan_entry_id, label, amount, created_at)',
-      )
-      .eq('household_id', householdId)
-      .or(`status.eq.open,and(status.eq.ticked,ticked_at.gte.${since})`),
-    db
-      .from('member')
-      .select('id, display_name, user_id, avatar_key, color, role, grocery_ask_ok')
-      .eq('household_id', householdId),
-    db
-      .from('grocery_item')
-      .select('name_key, category_id, store_id, brand_id, created_at')
-      .eq('household_id', householdId)
-      .order('created_at', { ascending: false })
-      .limit(2000),
-    db
-      .from('grocery_learned_word')
-      .select('word, category_id, weight')
-      .eq('household_id', householdId),
-    db
-      .from('grocery_list')
-      .select('preferred_store_id')
-      .eq('household_id', householdId)
-      .maybeSingle(),
-    db
-      .from('grocery_ask')
-      .select(
-        'id, member_id, name, brand_id, asked_at, board:device!grocery_ask_asked_by_fkey(name)',
-      )
-      .eq('household_id', householdId)
-      .eq('status', 'waiting')
-      .order('asked_at'),
-  ]);
+  const [cats, stores, brands, items, people, past, learned, list, asks, staples] =
+    await Promise.all([
+      db
+        .from('grocery_category')
+        .select('id, name, icon, starter_key, is_other, sort_order')
+        .eq('household_id', householdId),
+      db.from('grocery_store').select('id, name, sort_order').eq('household_id', householdId),
+      db.from('grocery_brand').select('id, name, archived_at').eq('household_id', householdId),
+      db
+        .from('grocery_item')
+        .select(
+          'id, name, amount, category_id, store_id, brand_id, status, ticked_at, ticked_by, created_at, ' +
+            'ticked_member_id, ticked_device:device!grocery_item_ticked_device_id_fkey(name), ' +
+            'grocery_item_reason(kind, by_user, member_id, meal_plan_entry_id, label, amount, created_at)',
+        )
+        .eq('household_id', householdId)
+        .or(`status.eq.open,and(status.eq.ticked,ticked_at.gte.${since})`),
+      db
+        .from('member')
+        .select('id, display_name, user_id, avatar_key, color, role, grocery_ask_ok')
+        .eq('household_id', householdId),
+      db
+        .from('grocery_item')
+        .select('name_key, category_id, store_id, brand_id, created_at')
+        .eq('household_id', householdId)
+        .order('created_at', { ascending: false })
+        .limit(2000),
+      db
+        .from('grocery_learned_word')
+        .select('word, category_id, weight')
+        .eq('household_id', householdId),
+      db
+        .from('grocery_list')
+        .select('preferred_store_id')
+        .eq('household_id', householdId)
+        .maybeSingle(),
+      db
+        .from('grocery_ask')
+        .select(
+          'id, member_id, name, brand_id, asked_at, board:device!grocery_ask_asked_by_fkey(name)',
+        )
+        .eq('household_id', householdId)
+        .eq('status', 'waiting')
+        .order('asked_at'),
+      loadStaples(db, householdId),
+    ]);
   fail('grocery categories', cats.error);
   fail('grocery stores', stores.error);
   fail('grocery brands', brands.error);
@@ -196,5 +202,37 @@ export async function loadGroceries(
       askedAt: a.asked_at,
       board: a.board?.name ?? null,
     })),
+    ...staples,
+  };
+}
+
+/**
+ * [MEAL-21] Each thing's buys (`grocery_buys()`, read from the history) and the household's Not now
+ * and Don't suggest (WP-106), for Running low?, Staples and Home's line.
+ */
+export async function loadStaples(
+  db: SupabaseClient,
+  householdId: string,
+): Promise<{ bought: Bought[]; stapleChoices: StapleChoice[] }> {
+  const [buys, choices] = await Promise.all([
+    db.rpc('grocery_buys', { p_household: householdId }),
+    db
+      .from('grocery_staple')
+      .select('name_key, not_now_until, off_at')
+      .eq('household_id', householdId),
+  ]);
+  fail('grocery buys', buys.error);
+  fail('staples', choices.error);
+  return {
+    bought: (
+      (buys.data ?? []) as { name_key: string; name: string; buys: number; days: string[] }[]
+    ).map((b) => ({ key: b.name_key, name: b.name, buys: b.buys, days: b.days ?? [] })),
+    stapleChoices: (
+      (choices.data ?? []) as {
+        name_key: string;
+        not_now_until: string | null;
+        off_at: string | null;
+      }[]
+    ).map((c) => ({ key: c.name_key, notNowUntil: c.not_now_until, offAt: c.off_at })),
   };
 }

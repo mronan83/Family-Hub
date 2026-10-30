@@ -795,6 +795,11 @@ body {
   font-size: var(--t-small);
   color: var(--text-soft);
 }
+/* [MEAL-21] Home's "3 running low · Review" (WP-106). */
+.fw-quick__low a {
+  color: var(--primary-text);
+  font-weight: 600;
+}
 .fw-quick__line:empty {
   display: none;
 }
@@ -6608,6 +6613,46 @@ textarea.fw-groc__addinput {
     grid-row: 1 / span 2;
     padding: 0;
   }
+}
+/* [MEAL-21] Running low? and Staples (WP-106): a thing's category in a tile, as the mockup. */
+.fw-groc__tile {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-groc__lowhelp {
+  margin: var(--s-2) 0 0;
+  font-size: 14px;
+}
+.fw-groc__lowhelp a {
+  color: var(--primary-text);
+  font-weight: 600;
+}
+.fw-groc__staph {
+  margin: var(--s-4) 0 var(--s-1);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.fw-groc__staph span {
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.fw-groc__low {
+  color: var(--reward-text);
+}
+.fw-groc__undo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--s-2);
 }
 .fw-groc__okset {
   display: grid;

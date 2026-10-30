@@ -13,6 +13,7 @@ import { daysToPick, lunchQuickWords, lunchWeekToOpen } from '@/lib/lunch-list';
 import { serverClient } from '@/lib/supabase/server';
 import { HomeView, type LunchQuick, type SchoolToday } from './home-view';
 import { loadGroceries } from './groceries/data';
+import { runningLowCount } from '@/lib/grocery-staples';
 import { loadLunch } from './meals/data';
 
 export const metadata: Metadata = { title: 'Home' };
@@ -250,6 +251,8 @@ export default async function AdminHome({
         past: groceries.past,
         learned: groceries.learned,
         preferredStoreId: groceries.preferredStoreId,
+        // [MEAL-21] How many staples are running low (WP-106, D-150).
+        runningLow: runningLowCount(groceries, today),
       }}
       notice={
         Object.keys(params).find((k) => k === 'welcome' || k === 'joined' || k === 'password') ??

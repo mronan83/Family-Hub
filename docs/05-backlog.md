@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.167: WP-106 (staples suggested by how often they run out) done (MEAL-21, US-716, D-150): Running low? and Staples on Groceries, and a line on Home's Groceries card; the refreshed mockup approved on 30 October.
 > v0.8.166: WP-107 follow-up: the board's Got today card keeps names to two lines, Untick under them (MEAL-30, D-149).
 > v0.8.165: WP-107 (children ask for groceries from the board, with an optional parent OK) done, with ticking off and taking off at the board added at the owner's request (MEAL-22, MEAL-30, US-717, US-723, D-149); the mockup approved on 30 October with brands on the board.
 > v0.8.164: WP-34 (quiet hours and burn-in mitigation, with sleep and wake per board) done (DEV-07, D-116, D-117): the owner confirmed on 29 October that the sleep schedule works on the Kitchen Pi 4 ("Y-11 - sleep schedule is working fine"), its last done-when line. Y-11 removed from §0. Its test cases are DEV-07-a to DEV-07-h, proved by the tests built with it, now named with their IDs (D-107).
@@ -321,7 +322,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-103 | The grocery list synced with Apple Reminders by the Mac Studio | P3 | L | WP-104, WP-07, WP-42 | Queued: SPIKE-08 and WP-104 first (mockup approved) |
 | WP-104 | Groceries on the board and in the admin app, with our own categories and stores | P3 | L | WP-48 | Done |
 | WP-105 | Meals → groceries: ingredients and recipes on meals, duplicates merged | P3 | L | WP-104, WP-25 | Done |
-| WP-106 | Staples suggested by how often they run out | P3 | M | WP-104 | Queued (mockup approved) |
+| WP-106 | Staples suggested by how often they run out | P3 | M | WP-104 | Done |
 | WP-107 | Children ask for groceries from the board, with an optional parent OK | P3 | M | WP-104, WP-63 | Done |
 | WP-112 | Groceries on Home, and a preferred store | P3 | M | WP-104 | Done |
 | WP-116 | Grocery brands | P3 | M | WP-104, WP-112 | Done |
@@ -2282,8 +2283,23 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 ### WP-106 — Staples suggested by how often they run out
 **Phase:** P3 · **Size:** M · **Depends on:** WP-104 · **Reqs:** MEAL-21
 - Added at the owner's request on 17 October (D-134); started by the owner on 29 October.
-- From the ticks in each item's history (WP-104), FamilyWise learns how often it is bought: at least 4 buys at a steady gap. It suggests it when it is not on the list and due again, a day early (two for gaps over a week), under **Running low?** on the admin app's Groceries only; it stops after 3 gaps with no buy. **Add** puts it on the list in one tap; **Not now** hides it for one gap; **Don't suggest**, in **Staples**, stops it until **Suggest again**. Nothing is added by itself (D-138).
+- From the ticks in each item's history (WP-104), FamilyWise learns how often it is bought: at least 4 buys at a steady gap. It suggests it when it is not on the list and due again, a day early (two for gaps over a week), under **Running low?** on the admin app's Groceries, with a line on Home's Groceries card (D-150); it stops after 3 gaps with no buy. **Add** puts it on the list in one tap; **Not now** hides it for one gap; **Don't suggest**, in **Staples**, stops it until **Suggest again**. Nothing is added by itself (D-138).
 - **Done when:** the side-by-side is in the PR; unit tests show the intervals on made-up histories (too few buys to suggest, a regular staple, one bought irregularly, a dismissed suggestion, one no longer bought); the UI suite covers the suggestions and Staples on the demo family.
+- **The refreshed mockup** ([Running Low Staples](https://claude.ai/artifact/L218usQpmNEn5UnWrHLUhx)), redrawn on the screens as they are after WP-107, WP-112 and WP-116: **approved by the owner on 30 October** ("Approve mockup and confirm D150"), with its four answers as recommended: Add fills in last time's store and brand; Home's Groceries card says "3 running low · Review" and the board stays as it is; a tick at a board is a buy; a child's ask waiting for a grown-up holds the same thing back (D-150).
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| MEAL-21-a | The usual gap: with fewer than 4 buys a thing is still being learned; a regular staple's gap is the median of the gaps between its last 8 buys, to the day; one bought at no steady gap (the middle half of its gaps spanning more than half the median) is never suggested; the gap in words ("every 9 days", "every week", "every 2 weeks") | Unit |
+| MEAL-21-b | Due a day before the gap is up, two days for a gap over a week, and not the day before; not suggested while it is on the list or a child's ask for it waits; stopped once 3 gaps pass with no buy, and its next buy starts it again; calendar days across the end of DST, a month and a year | Unit |
+| MEAL-21-c | A dismissed suggestion: Not now hides it until one gap from that day, back on its day unless it was bought meanwhile; Don't suggest moves it to Not suggested until Suggest again; Running low? most overdue first; Home's "3 running low", none at 0, leaving out what is on the list or asked for; Staples' summary; a Running low? row's words and each staple's state | Unit |
+| MEAL-21-d | The buys from a history (`grocery_buys()`): a tick is a buy, a board's too; an untick takes it back; two on one household day count once; a removal is never one; the count and the latest 8 days, oldest first, with the name of the latest buy | DB |
+| MEAL-21-e | Only the household's parents read its buys and set its choices (`set_grocery_staple()`: Not now to a day in the coming year, Don't suggest, Suggest again; one a thing); another household's parent and a board are refused, and nobody writes `grocery_staple` directly | DB |
+| MEAL-21-f | Add goes through the one way in (`add_groceries()`) with the reason "staple"; nothing else puts a staple on the list | DB |
+| MEAL-21-g | Groceries on the demo family, on a phone and a laptop, Day and Evening: Running low? under Asked for with Add and Not now; after Add (Butter on the list, Undo) and after Not now; Staples (learned, still learning, not suggested); nothing due; Home's "3 running low · Review"; nothing overflows, contrast AA, targets 44 px | UI |
+| MEAL-21-h | On the real preview, two things with a steady history are offered; Add puts one on the list as a staple, Not now hides the other for one gap | E2E |
+- **As built:** migration `20261030205957_grocery_staples.sql`: `grocery_staple` (RLS, audited), `grocery_buys()` (each thing's buys from its history), `set_grocery_staple()`. `lib/grocery-staples.ts` (the gap, due day, Running low?, Staples, Home's count and the words); `app/(admin)/admin/groceries/staples.tsx` (Running low? and Staples), `addStaple()` and `setStapleChoice()` in `actions.ts`, Groceries' Added banner with Undo; Home's line in `groceries-quick.tsx`. The demo family's made-up tick history in `seed.sql` and the dev fixture (`/dev/groceries`, `?open=staples`, `?staple=added`). Tests: Vitest `lib/grocery-staples.test.ts`; pgTAP `620_grocery_staples.test.sql`; the UI suite's `grocery-staples.spec.ts` (also as an iPhone in WebKit and Safari on a Mac); e2e `staples.spec.ts` (nightly). Screens in `scripts/screen-shots.mjs`: `staples-low`, `staples-added`, `staples-list`, `staples-none`, `staples-home`.
+- **Deferred, as plain facts:** a staple reaches Apple Reminders once the sync is built (WP-103).
 
 ### WP-107 — Children ask for groceries from the board, with an optional parent OK
 **Phase:** P3 · **Size:** M · **Depends on:** WP-104, WP-63 · **Reqs:** MEAL-22, MEAL-30
