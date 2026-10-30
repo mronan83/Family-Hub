@@ -281,9 +281,9 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 136 of 151 |
+| Requirements built (a Done item builds them) | 136 of 152 |
 | Built requirements with no test | 0 |
-| Stories built | 119 of 133 |
+| Stories built | 119 of 134 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
 | Test cases | 296 (with a test: 296) |
@@ -359,6 +359,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | CHR-20 | S | Covered | US-322 | WP-63, WP-92 | — | U 3 · DB 22 · UI 1 · E2E 1 |
 | CHR-21 | S | Covered | US-323 | WP-96 | CHR-21-a, CHR-21-b, CHR-21-c, CHR-21-d, CHR-21-e, CHR-21-f, CHR-21-g, CHR-21-h, CHR-21-i | U 21 · UI 6 · E2E 3 |
 | CHR-22 | S | Covered | US-324 | WP-96 | CHR-22-a, CHR-22-b | U 2 · E2E 1 |
+| CHR-24 | S | Not built | US-326 | WP-117 | — | — |
 | CHR-23 | S | Covered | US-325 | WP-96 | CHR-23-a, CHR-23-b, CHR-23-c | U 3 · DB 10 · UI 1 · E2E 1 |
 | RWD-01 | M | Covered | US-401 | WP-19 | — | U 5 · DB 1 · UI 2 · E2E 1 |
 | RWD-02 | M | Covered | US-312, US-401 | WP-15 | — | U 16 · UI 1 |
@@ -591,6 +592,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-114 | Done | RWD-21-a, RWD-21-b, RWD-21-c, RWD-21-d, RWD-21-e, RWD-21-f, RWD-21-g, RWD-21-h, RWD-21-i, RWD-21-j | 10 of 10 | — |
 | WP-115 | Done | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | 13 of 13 | — |
 | WP-116 | Done | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | 12 of 12 | — |
+| WP-117 | Queued: | — | — | — |
 
 Test cases and the tests that prove them:
 
@@ -935,6 +937,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-323 | CHR-21 | Covered | E2E 1 |
 | US-324 | CHR-22 | Covered | E2E 1 |
 | US-325 | CHR-23 | Covered | E2E 1 |
+| US-326 | CHR-24 | Not built | — |
 | US-312 | CHR-10, RWD-02 | Covered | E2E 1 |
 | US-313 | CHR-11 | Gap | — |
 | US-314 | CHR-12, CHR-07 | Gap | — |
