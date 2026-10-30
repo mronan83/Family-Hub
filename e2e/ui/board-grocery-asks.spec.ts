@@ -203,13 +203,14 @@ test('[MEAL-30-d] a child takes off what only they asked for', async ({ page }) 
 test.describe('a long list, by touch', () => {
   test.use({ hasTouch: true });
 
-  test('[MEAL-22-h][MEAL-30-d] 35 things: each name and brand in two lines at most; the last reached by touch', async ({
+  test('[MEAL-22-h][MEAL-30-d] 35 things: each name and brand in two lines at most, on the list and the cards; the last reached by touch', async ({
     page,
   }) => {
     await openGroceries(page, 'groceries=long');
     await expect(screen(page)).toContainText('35 to get');
     const over = await screen(page)
-      .locator('.fw-bgroc__nm')
+      // The list's names, and (WP-107 follow-up) those on the Asked for and Got today cards.
+      .locator('.fw-bgroc__nm, .fw-bgroc__ask-nm, .fw-bgroc__got-nm')
       .evaluateAll((els) =>
         els
           .filter((e) => {
