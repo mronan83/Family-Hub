@@ -1457,7 +1457,14 @@ export function fixtureGroceries(
   which: string | undefined,
   now: Date = new Date(),
 ): BoardGroceries | null {
-  if (which !== '1' && which !== 'busy' && which !== 'empty' && which !== 'full') return null;
+  if (
+    which !== '1' &&
+    which !== 'busy' &&
+    which !== 'empty' &&
+    which !== 'full' &&
+    which !== 'long'
+  )
+    return null;
   const people = new Map([
     [GROCERY_PEOPLE.find((p) => p.name === 'Leo')!.id, LEO],
     [GROCERY_PEOPLE.find((p) => p.name === 'Maya')!.id, MAYA],
@@ -1564,6 +1571,39 @@ export function fixtureGroceries(
     k('Yogurt tubes', 'yogurt tube', 0),
     k('Rice', 'rice', 0),
   ];
+  // [MEAL-22] 'long': 16 more made-up things, so the list runs well past the board's 1080 px (WP-107).
+  if (which === 'long') {
+    const more: [string, string][] = [
+      ['Blueberries', 'produce'],
+      ['Carrots', 'produce'],
+      ['Cucumbers', 'produce'],
+      ['Garlic', 'produce'],
+      ['Butter', 'dairy'],
+      ['Sour cream', 'dairy'],
+      ['Bagels', 'bakery'],
+      ['Hamburger buns', 'bakery'],
+      ['Chicken thighs', 'meat'],
+      ['Bacon', 'meat'],
+      ['Spaghetti', 'pantry'],
+      ['Tomato sauce', 'pantry'],
+      ['Olive oil', 'pantry'],
+      ['Trash bags', 'household'],
+      ['Laundry detergent', 'household'],
+      ['Sponges', 'household'],
+    ];
+    more.forEach(([name, key], i) =>
+      items.push({
+        ...items[0]!,
+        id: `f1a80000-0000-4000-8000-${String(i + 1).padStart(12, '0')}`,
+        name,
+        amount: null,
+        categoryId: cat(key),
+        storeId: null,
+        brandId: null,
+        reasons: [],
+      }),
+    );
+  }
   return {
     ever: true,
     categories: GROCERY_CATEGORIES,

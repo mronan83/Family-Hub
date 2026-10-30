@@ -199,3 +199,39 @@ test('[MEAL-30-d] a child takes off what only they asked for', async ({ page }) 
   await dialog(page).getByRole('button', { name: 'Take it off the list' }).click();
   await expect(bar(page)).toContainText('Took Apples off the list.');
 });
+
+test.describe('a long list, by touch', () => {
+  test.use({ hasTouch: true });
+
+  test('[MEAL-22-h][MEAL-30-d] 35 things: each name and brand in two lines at most; the last reached by touch', async ({
+    page,
+  }) => {
+    await openGroceries(page, 'groceries=long');
+    await expect(screen(page)).toContainText('35 to get');
+    const over = await screen(page)
+      .locator('.fw-bgroc__nm')
+      .evaluateAll((els) =>
+        els
+          .filter((e) => {
+            const line = parseFloat(getComputedStyle(e).lineHeight);
+            return Math.round(e.getBoundingClientRect().height / line) > 2;
+          })
+          .map((e) => e.textContent),
+      );
+    expect(over).toEqual([]);
+    // The screen scrolls inside itself; the list's last thing is below the fold until it does.
+    const scroller = page.locator('.fw-today__screen');
+    expect(
+      await scroller.evaluate((s) => ({
+        overflow: getComputedStyle(s).overflowY,
+        more: s.scrollHeight > s.clientHeight,
+      })),
+    ).toEqual({ overflow: 'auto', more: true });
+    const last = screen(page).getByRole('button', { name: /^Trash bags: got it/ });
+    await last.tap();
+    await expect(
+      page.getByRole('dialog').getByRole('heading', { name: /Trash bags/ }),
+    ).toBeVisible();
+    expect(await fit(page)).toEqual({ wide: 1920, small: [], tiny: [] });
+  });
+});

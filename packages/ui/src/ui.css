@@ -6794,6 +6794,11 @@ textarea.fw-groc__addinput {
 .fw-bgroc__brand {
   color: var(--text-soft);
 }
+/* [MEAL-22] The brand a step smaller (still 28 px), so a thing and its brand keep to two lines in
+   the three columns beside the Asked for card (WP-107). */
+.fw-bgroc__nm .fw-bgroc__brand {
+  font-size: var(--t-small);
+}
 .fw-bgroc__wy {
   grid-column: 2;
   display: flex;
@@ -6836,7 +6841,7 @@ textarea.fw-groc__addinput {
 }
 .fw-today__railcount {
   position: absolute;
-  top: -8px;
+  top: -16px;
   right: -8px;
   display: inline-grid;
   place-items: center;
@@ -6864,18 +6869,19 @@ textarea.fw-groc__addinput {
 }
 .fw-bgroc__body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 26%);
+  grid-template-columns: minmax(0, 1fr) 320px;
   gap: var(--s-6);
   align-items: start;
 }
 .fw-bgroc__body .fw-bgroc__cols {
   columns: 3 300px;
+  column-gap: var(--s-4);
 }
 .fw-bgroc__sec li {
   display: block;
 }
 button.fw-bgroc__it {
-  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
   width: 100%;
   border-right: 0;
   border-bottom: 0;

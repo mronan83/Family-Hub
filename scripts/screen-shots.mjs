@@ -187,6 +187,9 @@ export const BOARD = [
     ['Ask for something', 'Maya', 'Something else', 'Y', 'O', 'G'],
   ],
   ['board-ask-full', '?groceries=full', 'Groceries', 'whole', ['Ask for something', 'Maya']],
+  // A long list (35 things) from the top, and its last thing reached and opened.
+  ['board-groceries-long', '?groceries=long', 'Groceries', 'whole'],
+  ['board-groceries-long-end', '?groceries=long', 'Groceries', 'whole', ['Trash bags']],
   ['board-sheet', '?groceries=1', 'Groceries', 'whole', ['Paper towels', 'Sam']],
   ['board-sheet-child', '?groceries=1', 'Groceries', 'whole', ['Paper towels', 'Leo']],
   [
