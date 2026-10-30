@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.71: US-326 added at the owner's request (WP-117, CHR-24, D-151): a parent marks a missed or late chore done on time, so a goal done by a time counts it.
 > v0.8.70: US-723 added at the owner's request, and US-717 changed (WP-107, MEAL-30, D-149): ticking things off and taking them off at the board, as whoever's face is picked, with Undo; each child's OK now sits at the foot of Groceries' Asked for, and a board ask can pick a brand.
 > v0.8.69: US-722 added at the owner's request (WP-116, MEAL-29, D-148): an item's brand, from the household's own brands, remembered for next time.
 > v0.8.68: US-1110 added at the owner's request (WP-115, PTS-08, D-147): every points change in one register, filterable, with each bonus's payouts.
@@ -398,6 +399,15 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 **Priority:** Should · **Phase:** P3 · **Reqs:** CHR-23
 - Given "Clean out the garage" was done on Sunday for 20 points, when I choose ⋯ then **Do again** and pick Saturday, then a new one-time "Clean out the garage" is in Scheduled for Saturday, for the same people and points.
 - Given the first one, when the new one is added, then the first stays in Completed, done on Sunday, and Maya and Leo keep its 20 points and its goal credit.
+
+### US-326 — Mark a missed chore done on time
+**As a** parent **I want** to mark a chore my child did, but nobody ticked, as done on time **so that** a goal that counts it by a time isn't lost because we were away from the board.
+**Priority:** Should · **Phase:** P3 · **Reqs:** CHR-24
+- Given Maya brought her homework folder home on Thursday, due by 4:00 pm, but grandma picked her up and nobody ticked it, when I open Thursday on Today and choose **Mark done on time**, then it is done at 4:00 pm, credited to Maya with its points, and her goal "Folder home every school day by 4 pm" counts Thursday.
+- Given I give an earlier time, 3:40 pm, when I save, then it is recorded as done at 3:40 pm.
+- Given it is marked, when anyone looks at it on Today, Maya's page or the goal's days, then it says "Marked on time by Alex, Oct 30".
+- Given the goal's week had already closed as missed, when I mark Thursday on time, then I'm asked to confirm the new result, and the week's payout is paid once.
+- Given Maya or the kitchen board, when they look at Thursday's chore, then **Mark done on time** isn't offered.
 
 ### US-312 — Define household tags
 **As an** admin **I want** to define our own tags with a name, color, and icon **so that** we can filter the list and set measurable goals by category.
