@@ -1,7 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.71: US-326 added at the owner's request (WP-117, CHR-24, D-150): a parent marks a missed or late chore done on time, so a goal done by a time counts it.
+> v0.8.71: US-326 added at the owner's request (WP-117, CHR-24, D-151): a parent marks a missed or late chore done on time, so a goal done by a time counts it.
 > v0.8.70: US-723 added at the owner's request, and US-717 changed (WP-107, MEAL-30, D-149): ticking things off and taking them off at the board, as whoever's face is picked, with Undo; each child's OK now sits at the foot of Groceries' Asked for, and a board ask can pick a brand.
 > v0.8.69: US-722 added at the owner's request (WP-116, MEAL-29, D-148): an item's brand, from the household's own brands, remembered for next time.
 > v0.8.68: US-1110 added at the owner's request (WP-115, PTS-08, D-147): every points change in one register, filterable, with each bonus's payouts.
