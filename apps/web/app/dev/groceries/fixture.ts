@@ -25,6 +25,7 @@ export const PEOPLE: Person[] = [
     userId: ALEX_USER,
     avatarKey: 'owl',
     color: 'member-1',
+    role: 'adult',
   },
   {
     id: 'f3b00000-0000-4000-8000-000000000002',
@@ -32,6 +33,7 @@ export const PEOPLE: Person[] = [
     userId: SAM_USER,
     avatarKey: 'bear',
     color: 'member-2',
+    role: 'adult',
   },
   {
     id: 'f3b00000-0000-4000-8000-000000000003',
@@ -39,6 +41,8 @@ export const PEOPLE: Person[] = [
     userId: null,
     avatarKey: 'fox',
     color: 'member-3',
+    role: 'child',
+    askOk: true,
   },
   {
     id: 'f3b00000-0000-4000-8000-000000000004',
@@ -46,6 +50,8 @@ export const PEOPLE: Person[] = [
     userId: null,
     avatarKey: 'frog',
     color: 'member-4',
+    role: 'child',
+    askOk: true,
   },
 ];
 const [, , MAYA, LEO] = PEOPLE;
@@ -183,6 +189,9 @@ export const ITEMS: GroceryItem[] = [
     status: 'ticked',
     tickedAt: at(23 * 60 + 40),
     tickedBy: SAM_USER,
+    // [MEAL-30] Ticked at the board, as Sam (WP-107).
+    tickedMemberId: 'f3b00000-0000-4000-8000-000000000002',
+    tickedBoard: 'Kitchen',
   }),
   item('Pasta', 'pantry', [added('Sam', '×2')], {
     status: 'ticked',
@@ -229,6 +238,28 @@ export function groceriesData(
       { word: 'popcorn', categoryId: CAT.snacks!, weight: 2 },
     ],
     preferredStoreId: (preferred && STORE[preferred]) || null,
+    // [MEAL-22] Maya's popcorn and Leo's ice cream wait for a parent (WP-107).
+    asks:
+      state === 'empty'
+        ? []
+        : [
+            {
+              id: 'f3c00000-0000-4000-8000-000000000001',
+              memberId: MAYA!.id,
+              name: 'Popcorn',
+              brandId: null,
+              askedAt: at(40),
+              board: 'Kitchen',
+            },
+            {
+              id: 'f3c00000-0000-4000-8000-000000000002',
+              memberId: LEO!.id,
+              name: 'Orange juice',
+              brandId: BRAND.Kirkland!,
+              askedAt: at(17),
+              board: 'Kitchen',
+            },
+          ],
   };
 }
 

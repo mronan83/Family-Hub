@@ -52,6 +52,7 @@ import { type Chip, CHIP_WORDS, familyList, type ListRow } from '@/lib/dashboard
 import { CalendarScreen, type LoadCalendar } from './calendar-ui';
 import { Dashboard } from './dashboard';
 import { GroceriesBoard } from './groceries-ui';
+import type { PostGroceries } from '@/lib/grocery-asks';
 import type { LoadRecipes, SignRecipeFiles } from '@/lib/board-recipes';
 import { MealsWeek, TodayMeals } from './meals-ui';
 import { type LoadLunches, LunchesScreen } from './lunches-ui';
@@ -943,6 +944,7 @@ export function Today({
   loadLunches,
   askLunch = noLunch,
   seenLunch = noSeen,
+  postGroceries,
   refresh,
 }: {
   snapshot: BoardSnapshot;
@@ -968,6 +970,8 @@ export function Today({
   /** [MEAL-09][MEAL-11] Asks for a child's day (POST /api/lunches), and says they saw their week. */
   askLunch?: AskLunch;
   seenLunch?: SeenLunch;
+  /** [MEAL-22][MEAL-30] Asks, ticks and takes off on Groceries (POST /api/groceries, WP-107). */
+  postGroceries?: PostGroceries;
   /** [DEV-06] Where the outbox and what the board shows ahead of the snapshot outlast a reload. */
   store?: BoardStore | null;
   onQueue?: (q: QueueState) => void;
@@ -980,6 +984,7 @@ export function Today({
   const party = useCelebrations(snapshot.goals, markCelebrated);
   const online = useOnline();
   const { members, household, today } = snapshot;
+  const asksWaiting = (snapshot.groceries?.asks ?? []).filter((a) => a.status === 'waiting').length;
   // 'home' (the dashboard), 'chores', 'calendar', 'meals', 'groceries', 'lunches', or a member's id.
   const [view, setView] = useState<string>('home');
   // [MEAL-09] Whose lunches show, the item that opened them (Done checks it off) and where Done goes.
@@ -1190,6 +1195,13 @@ export function Today({
             >
               <Icon name="shopping-cart" size={64} />
               <span>Groceries</span>
+              {/* [MEAL-22] How many asks wait for a grown-up (WP-107). */}
+              {asksWaiting > 0 ? (
+                <span className="fw-today__railcount">
+                  {asksWaiting}
+                  <span className="fw-visually-hidden"> waiting</span>
+                </span>
+              ) : null}
             </button>
           </li>
         ) : null}
@@ -1432,7 +1444,13 @@ export function Today({
             }}
           />
         ) : view === 'groceries' ? (
-          <GroceriesBoard groceries={snapshot.groceries} members={members} />
+          <GroceriesBoard
+            groceries={snapshot.groceries}
+            members={members}
+            timeZone={household.timezone}
+            post={postGroceries}
+            refresh={refresh}
+          />
         ) : view === 'meals' ? (
           <MealsWeek
             meals={snapshot.meals}

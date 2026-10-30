@@ -1,4 +1,15 @@
 import type { BoardGroceries } from '@/lib/board-groceries';
+import {
+  type BoardAsk,
+  type BoardGot,
+  canTakeOff,
+  type KnownThing,
+  MAX_WAITING,
+  type PostGroceries,
+  waitingFor,
+} from '@/lib/grocery-asks';
+import { itemKey } from '@/lib/grocery-merge';
+import type { GroceryItem } from '@/lib/groceries';
 import type { BoardRecipe } from '@/lib/board-recipes';
 import {
   BRANDS as GROCERY_BRANDS,
@@ -1438,14 +1449,27 @@ export function withPerfect(s: BoardSnapshot, kind: 'going' | 'missed' | 'won'):
 /**
  * [MEAL-18] The made-up grocery list on the board (WP-104), as the admin page's fixture holds it,
  * the children's asks pointed at this board's Maya and Leo: 'busy', 'empty' (had items, none now),
- * or none (the household has never had one, so the rail has no Groceries).
+ * 'full' (busy, with Maya's 5 asks waiting), or none (the household has never had one, so the rail
+ * has no Groceries). [MEAL-22][MEAL-30] With the Asked for card's asks, Got today and the things the
+ * household has had (WP-107), as of `now`.
  */
-export function fixtureGroceries(which: string | undefined): BoardGroceries | null {
-  if (which !== '1' && which !== 'busy' && which !== 'empty') return null;
+export function fixtureGroceries(
+  which: string | undefined,
+  now: Date = new Date(),
+): BoardGroceries | null {
+  if (
+    which !== '1' &&
+    which !== 'busy' &&
+    which !== 'empty' &&
+    which !== 'full' &&
+    which !== 'long'
+  )
+    return null;
   const people = new Map([
     [GROCERY_PEOPLE.find((p) => p.name === 'Leo')!.id, LEO],
     [GROCERY_PEOPLE.find((p) => p.name === 'Maya')!.id, MAYA],
   ]);
+  const ago = (minutes: number) => new Date(now.getTime() - minutes * 60_000).toISOString();
   const items =
     which === 'empty'
       ? []
@@ -1456,12 +1480,316 @@ export function fixtureGroceries(which: string | undefined): BoardGroceries | nu
             memberId: r.memberId ? (people.get(r.memberId) ?? r.memberId) : null,
           })),
         }));
+  const idOf = (name: string) => GROCERY_ITEMS.find((i) => i.name === name)!.id;
+  const brand = (name: string) => GROCERY_BRANDS.find((b) => b.name === name)!.id;
+  const cat = (key: string) => GROCERY_CATEGORIES.find((c) => c.starterKey === key)!.id;
+  const ask = (
+    n: number,
+    memberId: string,
+    name: string,
+    status: BoardAsk['status'],
+    o: Partial<BoardAsk> = {},
+  ): BoardAsk => ({
+    id: `f1a50000-0000-4000-8000-00000000000${n}`,
+    memberId,
+    name,
+    brandId: null,
+    status,
+    itemStatus: null,
+    gotToday: false,
+    askedAt: ago(n * 7),
+    ...o,
+  });
+  const asks: BoardAsk[] =
+    which === 'empty'
+      ? [
+          ask(1, LEO, 'Apples', 'added', { itemStatus: 'ticked', gotToday: true }),
+          ask(2, MAYA, 'Chocolate cereal', 'declined'),
+        ]
+      : which === 'full'
+        ? ['Popcorn', 'Cookies', 'Grapes', 'Juice boxes', 'Ice cream'].map((n, i) =>
+            ask(i + 1, MAYA, n, 'waiting'),
+          )
+        : [
+            ask(1, MAYA, 'Popcorn', 'waiting'),
+            ask(2, LEO, 'Ice cream', 'waiting'),
+            ask(3, MAYA, 'Greek yogurt', 'added', {
+              itemStatus: 'open',
+              brandId: brand('Chobani'),
+            }),
+            ask(4, LEO, 'Chocolate cereal', 'declined'),
+          ];
+  const got: BoardGot[] =
+    which === 'empty'
+      ? [
+          {
+            id: idOf('Apples'),
+            name: 'Apples',
+            brandId: null,
+            categoryId: cat('produce'),
+            tickedAt: ago(10),
+            memberId: LEO,
+          },
+          {
+            id: idOf('Milk'),
+            name: 'Milk',
+            brandId: brand('Kirkland'),
+            categoryId: cat('dairy'),
+            tickedAt: ago(14),
+            memberId: ALEX,
+          },
+        ]
+      : [
+          {
+            id: idOf('Coffee'),
+            name: 'Coffee',
+            brandId: brand("Peet's"),
+            categoryId: cat('pantry'),
+            tickedAt: ago(24),
+            memberId: SAM,
+          },
+        ];
+  const k = (name: string, key: string, buys: number, brands: string[] = []): KnownThing => ({
+    key,
+    name,
+    categoryId: GROCERY_ITEMS.find((i) => i.name === name)?.categoryId ?? cat('pantry'),
+    buys,
+    brandIds: brands.map(brand),
+  });
+  const known: KnownThing[] = [
+    k('Milk', 'milk', 9, ['Kirkland', 'Fairlife']),
+    k('Bananas', 'banana', 8),
+    k('Apples', 'apple', 7),
+    k('Eggs', 'egg', 6),
+    k('Sourdough', 'sourdough', 5, ["Dave's Killer Bread"]),
+    k('Greek yogurt', 'greek yogurt', 4, ['Chobani']),
+    k('Peanut butter', 'peanut butter', 3, ['Jif']),
+    k('Coffee', 'coffee', 3, ["Peet's"]),
+    k('Strawberries', 'strawberry', 2),
+    k('Pasta', 'pasta', 2),
+    k('Tortillas', 'tortilla', 1, ['Mission']),
+    k('Yogurt tubes', 'yogurt tube', 0),
+    k('Rice', 'rice', 0),
+  ];
+  // [MEAL-22] 'long': 16 more made-up things, so the list runs well past the board's 1080 px (WP-107).
+  if (which === 'long') {
+    const more: [string, string][] = [
+      ['Blueberries', 'produce'],
+      ['Carrots', 'produce'],
+      ['Cucumbers', 'produce'],
+      ['Garlic', 'produce'],
+      ['Butter', 'dairy'],
+      ['Sour cream', 'dairy'],
+      ['Bagels', 'bakery'],
+      ['Hamburger buns', 'bakery'],
+      ['Chicken thighs', 'meat'],
+      ['Bacon', 'meat'],
+      ['Spaghetti', 'pantry'],
+      ['Tomato sauce', 'pantry'],
+      ['Olive oil', 'pantry'],
+      ['Trash bags', 'household'],
+      ['Laundry detergent', 'household'],
+      ['Sponges', 'household'],
+    ];
+    more.forEach(([name, key], i) =>
+      items.push({
+        ...items[0]!,
+        id: `f1a80000-0000-4000-8000-${String(i + 1).padStart(12, '0')}`,
+        name,
+        amount: null,
+        categoryId: cat(key),
+        storeId: null,
+        brandId: null,
+        reasons: [],
+      }),
+    );
+  }
   return {
     ever: true,
     categories: GROCERY_CATEGORIES,
     stores: GROCERY_STORES,
     brands: GROCERY_BRANDS,
     items,
+    today: now.toISOString().slice(0, 10),
+    asks,
+    got,
+    known,
+  };
+}
+
+/**
+ * [MEAL-22][MEAL-30] Answers like POST /api/groceries would (WP-107), a moment later, and shows the
+ * change on the board's list: an ask (a child's waits while there is room, an adult's or one on the
+ * list already goes on it), a call-off, a tick or untick, a removal and its Undo.
+ */
+export function fixtureGroceriesPost(
+  change: (f: (s: BoardSnapshot) => BoardSnapshot) => void,
+  members: readonly BoardMember[],
+): PostGroceries {
+  // What was ticked or taken off, so Untick and Undo can put it back.
+  const away = new Map<string, GroceryItem>();
+  let n = 0;
+  const on = (f: (g: BoardGroceries) => BoardGroceries) =>
+    change((s) => (s.groceries ? { ...s, groceries: f(s.groceries) } : s));
+  return async (a) => {
+    await new Promise((r) => setTimeout(r, 30));
+    const now = new Date().toISOString();
+    let data: unknown = 1;
+    let refused: string | null = null;
+    on((g) => {
+      const asks = g.asks ?? [];
+      switch (a.action) {
+        case 'ask': {
+          const m = members.find((x) => x.id === a.member_id)!;
+          const key = itemKey(a.name);
+          const open = g.items.find((i) => itemKey(i.name) === key);
+          const id = `f1a60000-0000-4000-8000-${String((n += 1)).padStart(12, '0')}`;
+          const reason = {
+            kind: 'ask' as const,
+            byUser: null,
+            memberId: m.id,
+            mealPlanEntryId: null,
+            label: null,
+            amount: null,
+            createdAt: now,
+          };
+          if (open) {
+            data = { status: 'added', already: true };
+            return {
+              ...g,
+              items: g.items.map((i) =>
+                i === open ? { ...i, reasons: [...i.reasons, reason] } : i,
+              ),
+              asks: [
+                {
+                  id,
+                  memberId: m.id,
+                  name: open.name,
+                  brandId: a.brand_id ?? null,
+                  status: 'added',
+                  itemStatus: 'open',
+                  gotToday: false,
+                  askedAt: now,
+                },
+                ...asks,
+              ],
+            };
+          }
+          if (m.role === 'child') {
+            if (waitingFor(asks, m.id) >= MAX_WAITING) {
+              refused = 'too_many';
+              return g;
+            }
+            data = { status: 'waiting', already: false };
+            return {
+              ...g,
+              asks: [
+                {
+                  id,
+                  memberId: m.id,
+                  name: a.name,
+                  brandId: a.brand_id ?? null,
+                  status: 'waiting',
+                  itemStatus: null,
+                  gotToday: false,
+                  askedAt: now,
+                },
+                ...asks,
+              ],
+            };
+          }
+          data = { status: 'added', already: false };
+          const other = g.categories.find((c) => c.isOther)!;
+          return {
+            ...g,
+            items: [
+              ...g.items,
+              {
+                id: `f1a70000-0000-4000-8000-${String(n).padStart(12, '0')}`,
+                name: a.name,
+                amount: null,
+                categoryId: other.id,
+                storeId: null,
+                brandId: a.brand_id ?? null,
+                status: 'open',
+                tickedAt: null,
+                tickedBy: null,
+                createdAt: now,
+                reasons: [reason],
+              },
+            ],
+            asks: [
+              {
+                id,
+                memberId: m.id,
+                name: a.name,
+                brandId: a.brand_id ?? null,
+                status: 'added',
+                itemStatus: 'open',
+                gotToday: false,
+                askedAt: now,
+              },
+              ...asks,
+            ],
+          };
+        }
+        case 'call_off':
+          return { ...g, asks: asks.filter((x) => x.id !== a.ask_id) };
+        case 'tick': {
+          if (a.ticked) {
+            const ticked = g.items.filter((i) => a.ids.includes(i.id));
+            for (const i of ticked) away.set(i.id, i);
+            return {
+              ...g,
+              items: g.items.filter((i) => !a.ids.includes(i.id)),
+              got: [
+                ...ticked.map((i) => ({
+                  id: i.id,
+                  name: i.name,
+                  brandId: i.brandId,
+                  categoryId: i.categoryId,
+                  tickedAt: now,
+                  memberId: a.member_id,
+                })),
+                ...(g.got ?? []),
+              ],
+              asks: asks.map((x) =>
+                ticked.some((i) => itemKey(i.name) === itemKey(x.name)) && x.status === 'added'
+                  ? { ...x, itemStatus: 'ticked', gotToday: true }
+                  : x,
+              ),
+            };
+          }
+          const back = a.ids.map((id) => away.get(id)).filter((i): i is GroceryItem => !!i);
+          return {
+            ...g,
+            items: [...g.items, ...back],
+            got: (g.got ?? []).filter((x) => !a.ids.includes(x.id)),
+            asks: asks.map((x) =>
+              back.some((i) => itemKey(i.name) === itemKey(x.name)) && x.status === 'added'
+                ? { ...x, itemStatus: 'open', gotToday: false }
+                : x,
+            ),
+          };
+        }
+        case 'remove': {
+          const m = members.find((x) => x.id === a.member_id)!;
+          const gone = g.items.filter((i) => a.ids.includes(i.id));
+          if (gone.some((i) => !canTakeOff(i, m))) {
+            refused = 'not_yours';
+            return g;
+          }
+          for (const i of gone) away.set(i.id, i);
+          return { ...g, items: g.items.filter((i) => !a.ids.includes(i.id)) };
+        }
+        case 'restore': {
+          const back = a.ids.map((id) => away.get(id)).filter((i): i is GroceryItem => !!i);
+          return { ...g, items: [...g.items, ...back] };
+        }
+      }
+      return g;
+    });
+    return refused ? { ok: false, reason: refused } : { ok: true, data };
   };
 }
 

@@ -144,10 +144,18 @@ export const ADMIN = [
   ['brands-home-prefill', '/dev/home?typed=coffee'],
   ['brands-home-typing', '/dev/home?typed=yogurt&brand=fair'],
   ['brands-home-added', '/dev/home?groceries=added-brand'],
+  // [MEAL-22][MEAL-30] WP-107: Groceries with Asked for and each child's OK, Got recently with a
+  // board's tick, and Home's Needs you line.
+  ['asks-groceries', '/dev/groceries'],
+  ['asks-got', '/dev/groceries?open=got'],
+  ['asks-home', '/dev/home?asks=1'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of
  * the rail drawn as the board shows it (WP-104's Groceries), after a tap on `then` if given (WP-105).
+ * [MEAL-22] `then` may be a list of taps (WP-107): the first on the screen, the rest in the dialog it
+ * opens (a single letter is a key of the board's keyboard); the picture waits for the dialog, or for
+ * the bar when the last tap closed it.
  */
 export const BOARD = [
   ['board-going', '?repeating=going', 'Maya'],
@@ -161,6 +169,36 @@ export const BOARD = [
   ['board-groceries-empty', '?groceries=empty', 'Groceries', 'whole'],
   // [MEAL-26] WP-105's recipe on the board: Meals, then a tap on Tacos.
   ['board-recipe', '?x=1', 'Meals', 'whole', 'Tacos: open the recipe'],
+  // [MEAL-22][MEAL-30] WP-107: asking (who and what, a brand, typed, 5 waiting), a thing's sheet as an
+  // adult and as a child, and the Undo bar after taking a thing off.
+  ['board-ask', '?groceries=1', 'Groceries', 'whole', ['Ask for something', 'Maya']],
+  [
+    'board-ask-brand',
+    '?groceries=1',
+    'Groceries',
+    'whole',
+    ['Ask for something', 'Maya', 'Sourdough'],
+  ],
+  [
+    'board-ask-type',
+    '?groceries=1',
+    'Groceries',
+    'whole',
+    ['Ask for something', 'Maya', 'Something else', 'Y', 'O', 'G'],
+  ],
+  ['board-ask-full', '?groceries=full', 'Groceries', 'whole', ['Ask for something', 'Maya']],
+  // A long list (35 things) from the top, and its last thing reached and opened.
+  ['board-groceries-long', '?groceries=long', 'Groceries', 'whole'],
+  ['board-groceries-long-end', '?groceries=long', 'Groceries', 'whole', ['Trash bags']],
+  ['board-sheet', '?groceries=1', 'Groceries', 'whole', ['Paper towels', 'Sam']],
+  ['board-sheet-child', '?groceries=1', 'Groceries', 'whole', ['Paper towels', 'Leo']],
+  [
+    'board-undo',
+    '?groceries=1',
+    'Groceries',
+    'whole',
+    ['Paper towels', 'Sam', 'Take it off the list'],
+  ],
 ];
 
 const only = arg('only', '');
@@ -175,14 +213,25 @@ async function shoot(context, url, file, person, whole = false, then = null) {
   // [D-128] A goal form shows its live summaries once they are worked out (WP-101).
   await page.waitForFunction(() => !document.querySelector('form[data-live="waiting"]'));
   if (person) {
+    // [MEAL-22] Groceries' rail button also says how many asks wait (WP-107).
     await page
       .getByRole('list', { name: 'Family', exact: true })
-      .getByRole('button', { name: person, exact: true })
+      .getByRole(
+        'button',
+        person === 'Groceries' ? { name: /^Groceries/ } : { name: person, exact: true },
+      )
       .click();
     await page.getByRole('heading', { name: person, level: 2 }).first().waitFor();
-    if (then) {
-      await page.getByRole('button', { name: then }).click();
-      await page.getByRole('dialog').waitFor();
+    const taps = then ? [then].flat() : [];
+    for (const [i, name] of taps.entries()) {
+      const within = i === 0 ? page : page.getByRole('dialog');
+      await within
+        .getByRole('button', { name, exact: name.length === 1 })
+        .first()
+        .click();
+    }
+    if (taps.length) {
+      await page.locator('[role="dialog"], .fw-bgroc__bar').first().waitFor();
     }
   }
   await page.evaluate(() => document.fonts.ready);

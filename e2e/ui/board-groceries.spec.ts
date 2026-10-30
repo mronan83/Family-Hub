@@ -5,8 +5,9 @@ import { floors } from '../support/floors';
 // [MEAL-18][MEAL-23][US-714] Groceries on the board (WP-104, D-138) on /dev/board, at the board's
 // 1920×1080: Groceries in the rail once the household has had an item; the list by category, A to Z,
 // each thing with its picture, amount, and why for a meal or a child's ask; store chips that change
-// only what the board shows; nothing that changes the list; an emptied list says so. The made-up list
-// is fixtureGroceries, the same as /dev/groceries's.
+// only what the board shows; an emptied list says so. The made-up list is fixtureGroceries, the same
+// as /dev/groceries's. Since WP-107 each thing is a button that opens its sheet (ticking off and
+// taking off: board-grocery-asks.spec.ts).
 test.use({ viewport: { width: 1920, height: 1080 } });
 
 const people = (page: Page) => page.getByRole('list', { name: 'Family', exact: true });
@@ -28,11 +29,12 @@ async function openGroceries(page: Page, query: string) {
 }
 
 for (const theme of ['day', 'evening'] as const) {
-  test(`[MEAL-18-e] the list by category, A to Z, with pictures, amounts and why, read-only, in ${theme}`, async ({
+  test(`[MEAL-18-e] the list by category, A to Z, with pictures, amounts and why, in ${theme}`, async ({
     page,
   }) => {
     await openGroceries(page, `groceries=1&theme=${theme}`);
     await expect(screen(page)).toContainText('19 to get');
+    // The categories, then (WP-107) the Asked for and Got today cards beside them.
     await expect(screen(page).getByRole('heading', { level: 3 })).toHaveText([
       /^Produce/,
       /^Dairy & Eggs/,
@@ -40,6 +42,8 @@ for (const theme of ['day', 'evening'] as const) {
       /^Meat & Seafood/,
       /^Pantry/,
       /^Household/,
+      'Asked for',
+      'Got today',
     ]);
     const produce = screen(page).getByRole('region', { name: /^Produce/ });
     await expect(produce.locator('.fw-bgroc__nm')).toHaveText([
@@ -57,12 +61,15 @@ for (const theme of ['day', 'evening'] as const) {
       'Leo asked',
     );
     // A picture where one fits: apples and bananas their own, spinach the salad's.
-    await expect(produce.locator('li > [data-icon]')).toHaveCount(6);
+    await expect(produce.locator('.fw-bgroc__it > [data-icon]')).toHaveCount(6);
     await expect(
-      produce.getByRole('listitem').filter({ hasText: 'Apples' }).locator('> [data-icon="apple"]'),
+      produce
+        .getByRole('listitem')
+        .filter({ hasText: 'Apples' })
+        .locator('.fw-bgroc__it > [data-icon="apple"]'),
     ).toHaveCount(1);
-    // Nothing on it changes the list: its only buttons are the store chips.
-    await expect(screen(page).getByRole('button')).toHaveCount(6);
+    // [MEAL-30] Each thing opens its sheet (WP-107); the list itself changes nothing, no checkbox.
+    await expect(produce.getByRole('button', { name: /got it or take it off$/ })).toHaveCount(6);
     await expect(screen(page).getByRole('checkbox')).toHaveCount(0);
     expect(await fit(page)).toEqual({ wide: 1920, small: [], tiny: [] });
     // The rail and the family still fit beside it, without scrolling.

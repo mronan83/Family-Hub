@@ -58,6 +58,7 @@ export default defineConfig({
         'day-folds.spec.ts',
         'points-register.spec.ts',
         'grocery-brands.spec.ts',
+        'grocery-asks.spec.ts',
       ],
     },
     // [NFR-16][D-132] Safari on a Mac (WP-96): the screens WP-96 changes again in desktop WebKit at
@@ -65,7 +66,7 @@ export default defineConfig({
     // drawn; WebKit is its engine, so its layout and form controls are. Limit as the iPhone's.
     // [MEAL-27] WP-112's Home Groceries card too. [NFR-18] WP-95's Rewards and Members folds too,
     // and WP-97's Today, My tasks and Insights. [RWD-21] WP-114's goal Some items. [PTS-08] WP-115's
-    // points register. [MEAL-29] WP-116's grocery brands.
+    // points register. [MEAL-29] WP-116's grocery brands. [MEAL-22] WP-107's grocery asks.
     {
       name: 'mac',
       use: {
@@ -82,6 +83,7 @@ export default defineConfig({
         'goal-items.spec.ts',
         'points-register.spec.ts',
         'grocery-brands.spec.ts',
+        'grocery-asks.spec.ts',
       ],
     },
   ],

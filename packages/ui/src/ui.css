@@ -6562,6 +6562,122 @@ textarea.fw-groc__addinput {
   align-items: center;
 }
 
+/* [MEAL-22] Groceries' Asked for (WP-107, D-149): each ask with who, when and where, Add it and Not
+   this time beside it on a laptop and under it on a phone; Add all; then each child's OK, set apart. */
+.fw-groc__askall {
+  display: flex;
+  justify-content: flex-end;
+}
+.fw-groc__asks {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-groc__ask {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 2px var(--s-3);
+  padding: var(--s-3) 0;
+  border-bottom: var(--border-w) solid var(--line);
+}
+.fw-groc__ask > :first-child {
+  grid-row: 1 / span 2;
+}
+.fw-groc__ask strong {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.fw-groc__ask-by {
+  font-size: 14px;
+}
+.fw-groc__ask-acts {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  padding-top: var(--s-1);
+}
+@media (min-width: 768px) {
+  .fw-groc__ask {
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+  }
+  .fw-groc__ask-acts {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    padding: 0;
+  }
+}
+.fw-groc__okset {
+  display: grid;
+  gap: var(--s-2);
+  margin-top: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: var(--border-w) dashed var(--line);
+}
+.fw-groc__okset h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.fw-groc__okset p {
+  margin: 0;
+}
+.fw-groc__oks {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-groc__ok {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 48px;
+}
+.fw-groc__switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 44px;
+  padding: 0 var(--s-1);
+  border: 0;
+  background: none;
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.fw-groc__switch:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+.fw-groc__switch-track {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--field-edge);
+}
+.fw-groc__switch-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+.fw-groc__switch[aria-checked='true'] .fw-groc__switch-track {
+  background: var(--primary);
+}
+.fw-groc__switch[aria-checked='true'] .fw-groc__switch-track::after {
+  left: 21px;
+  background: var(--on-primary);
+}
+
 /* [MEAL-18][MEAL-23] Groceries on the board (WP-104, D-138): the list by category in columns, read
    only; store chips change only what the board shows. Text 28 px or more. */
 .fw-bgroc {
@@ -6678,6 +6794,11 @@ textarea.fw-groc__addinput {
 .fw-bgroc__brand {
   color: var(--text-soft);
 }
+/* [MEAL-22] The brand a step smaller (still 28 px), so a thing and its brand keep to two lines in
+   the three columns beside the Asked for card (WP-107). */
+.fw-bgroc__nm .fw-bgroc__brand {
+  font-size: var(--t-small);
+}
 .fw-bgroc__wy {
   grid-column: 2;
   display: flex;
@@ -6708,6 +6829,412 @@ textarea.fw-groc__addinput {
   font-family: var(--font-display);
   font-size: var(--t-title);
   font-weight: 800;
+}
+
+/* [MEAL-22][MEAL-30] Asking, ticking off and taking off on the board's Groceries (WP-107, D-149):
+   Ask for something by the title; the list beside the Asked for and Got today cards; each thing a
+   button with a 56 px round tick, opening its sheet; the ask dialog's tiles, brand row and keyboard;
+   the bar at the foot, with Undo. Text 28 px or more, targets 56 px or more. */
+/* [MEAL-22] The count of asks waiting sits on the button's corner, so the rail keeps its height. */
+.fw-today__person[data-rail='groceries'] {
+  position: relative;
+}
+.fw-today__railcount {
+  position: absolute;
+  top: -16px;
+  right: -8px;
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 var(--s-2);
+  border-radius: 999px;
+  background: var(--reward);
+  color: var(--on-reward);
+  font-family: var(--font-body);
+  font-size: var(--t-small);
+  font-weight: 800;
+}
+.fw-bgroc__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-4);
+}
+.fw-bgroc__ask {
+  margin-left: auto;
+  min-height: var(--touch-primary);
+  padding: 0 var(--s-8);
+  font-size: var(--t-body);
+}
+.fw-bgroc__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--s-6);
+  align-items: start;
+}
+.fw-bgroc__body .fw-bgroc__cols {
+  columns: 3 300px;
+  column-gap: var(--s-4);
+}
+.fw-bgroc__sec li {
+  display: block;
+}
+button.fw-bgroc__it {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  width: 100%;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+button.fw-bgroc__it:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-bgroc__tk {
+  grid-column: 3;
+  grid-row: 1 / span 3;
+  justify-self: end;
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--field-edge);
+  border-radius: 50%;
+}
+.fw-bgroc__side {
+  display: grid;
+  gap: var(--s-6);
+}
+.fw-bgroc__card {
+  display: grid;
+  gap: var(--s-1);
+  padding: var(--s-4);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.fw-bgroc__card h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0 0 var(--s-1);
+  font-size: var(--t-heading);
+}
+.fw-bgroc__card h3 > svg {
+  color: var(--primary-text);
+}
+.fw-bgroc__card ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-bgroc__none {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-bgroc__ask-row,
+.fw-bgroc__got {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  grid-auto-rows: auto;
+  align-items: center;
+  gap: 0 var(--s-3);
+  min-height: 72px;
+  padding: var(--s-2) 0;
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-bgroc__ask-row > :first-child,
+.fw-bgroc__got > :first-child {
+  grid-row: 1 / span 2;
+}
+.fw-bgroc__ask-row {
+  grid-template-columns: 56px minmax(0, 1fr);
+}
+.fw-bgroc__got > svg {
+  justify-self: center;
+  color: var(--primary-text);
+}
+.fw-bgroc__ask-nm,
+.fw-bgroc__got-nm {
+  font-size: var(--t-body);
+  font-weight: 600;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.fw-bgroc__got-nm {
+  color: var(--text-soft);
+  text-decoration: line-through;
+}
+.fw-bgroc__ask-st,
+.fw-bgroc__got-by {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  line-height: 1.2;
+}
+.fw-bgroc__ask-row[data-state='on'] .fw-bgroc__ask-st,
+.fw-bgroc__ask-row[data-state='got'] .fw-bgroc__ask-st {
+  color: var(--primary-text);
+  font-weight: 600;
+}
+.fw-bgroc__ask-st > svg {
+  flex: none;
+}
+.fw-bgroc__calloff,
+.fw-bgroc__untick {
+  min-height: var(--touch);
+  font-size: var(--t-small);
+}
+/* Call off under the words, so "Waiting for a grown-up" keeps its line beside a narrow card. */
+.fw-bgroc__calloff {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: var(--s-2);
+}
+.fw-bgroc__untick {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+.fw-bgroc__empty p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: var(--t-body);
+}
+.fw-bgroc__dialog {
+  width: min(1400px, calc(94vw / var(--fw-zoom, 1)));
+  max-height: calc(96vh / var(--fw-zoom, 1));
+  overflow-y: auto;
+}
+.fw-bgroc__lbl {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-bgroc__faces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fw-bgroc__faces .fw-today__person {
+  flex-direction: row;
+  gap: var(--s-3);
+  width: auto;
+  min-height: var(--touch-primary);
+  padding: 0 var(--s-6) 0 var(--s-3);
+  font-size: var(--t-body);
+}
+.fw-bgroc__faces .fw-avatar,
+.fw-bgroc__faces .fw-avatar svg {
+  width: 72px;
+  height: 72px;
+}
+.fw-bgroc__tiles {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--s-4);
+}
+.fw-bgroc__tile {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--s-1);
+  min-height: 168px;
+  padding: var(--s-2);
+  border: 2px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--t-small);
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  cursor: pointer;
+}
+.fw-bgroc__tile > svg {
+  color: var(--primary-text);
+}
+.fw-bgroc__tile[data-mark] {
+  border-style: dashed;
+}
+.fw-bgroc__tile[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+.fw-bgroc__tile--else {
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+.fw-bgroc__tile:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.fw-bgroc__tile:focus-visible,
+.fw-bgroc__key:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+.fw-bgroc__mark {
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-weight: 500;
+}
+.fw-bgroc__brands {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-bgroc__last {
+  font-weight: 500;
+}
+.fw-bgroc__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+.fw-bgroc__note {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-bgroc__note > svg {
+  flex: none;
+}
+.fw-bgroc__note--warn {
+  color: var(--reward-text);
+  font-weight: 600;
+}
+.fw-bgroc__grow {
+  flex: 1 1 auto;
+}
+.fw-bgroc__what {
+  display: flex;
+  align-items: center;
+  gap: var(--s-6);
+}
+.fw-bgroc__pic {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+  border-radius: var(--r-lg);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+}
+.fw-bgroc__what h2 {
+  line-height: 1.1;
+}
+.fw-bgroc__field {
+  display: flex;
+  align-items: center;
+  min-height: 96px;
+  margin: 0;
+  padding: 0 var(--s-6);
+  border: 2px solid var(--field-edge);
+  border-radius: var(--r-lg);
+  background: var(--bg);
+  font-size: var(--t-title);
+  font-weight: 600;
+}
+.fw-bgroc__field[data-empty] {
+  color: var(--text-soft);
+}
+.fw-bgroc__caret {
+  width: 3px;
+  height: 1em;
+  margin-left: 2px;
+  background: var(--text);
+}
+.fw-bgroc__matches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+}
+.fw-bgroc__matches .fw-btn {
+  min-height: var(--touch);
+  font-size: var(--t-small);
+}
+.fw-bgroc__keys {
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-bgroc__keyrow {
+  display: flex;
+  justify-content: center;
+  gap: var(--s-3);
+}
+.fw-bgroc__key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  width: 104px;
+  height: 88px;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--t-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+.fw-bgroc__key--wide {
+  width: 220px;
+  font-size: var(--t-small);
+}
+.fw-bgroc__key--space {
+  width: 560px;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+}
+.fw-bgroc__bar-slot {
+  position: sticky;
+  bottom: var(--s-4);
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.fw-bgroc__bar-slot:empty {
+  display: none;
+}
+.fw-bgroc__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  margin: 0;
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-6);
+  border-radius: var(--r-lg);
+  background: var(--text);
+  color: var(--bg);
+  font-size: var(--t-body);
+  font-weight: 600;
+  box-shadow: var(--shadow-2);
+  pointer-events: auto;
+}
+.fw-bgroc__bar .fw-btn {
+  min-height: var(--touch-primary);
+  font-size: var(--t-body);
 }
 
 /* [MEAL-07] A meal's ingredients in its form (WP-105): the amount to buy, the name and ×, then We

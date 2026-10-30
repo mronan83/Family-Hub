@@ -30,6 +30,8 @@ export interface AlertFacts {
   requests: number;
   /** [MEAL-09] A child's lunch changes from the board, waiting for a parent (WP-49). */
   lunches?: number;
+  /** [MEAL-22] A child's grocery asks from the board, waiting for a parent (WP-107). */
+  groceryAsks?: number;
   /** [DEV-07] Each board, with when it counts as missed and its set times (WP-34). */
   boards: { name: string; lastSeenAt: string | null; revoked: boolean; sleep?: BoardSleep }[];
   /** [DEV-07] The household's time zone and recent school days, for boards' set times (WP-34). */
@@ -94,6 +96,16 @@ export function homeAlerts(f: AlertFacts): HomeAlert[] {
       icon: 'lunch',
       text: `${plural(n, 'lunch change')} ${n === 1 ? 'waits' : 'wait'} for you`,
       href: '/admin/today',
+      cta: 'Review',
+    });
+  }
+  if ((f.groceryAsks ?? 0) > 0) {
+    const n = f.groceryAsks!;
+    act({
+      key: 'grocery-asks',
+      icon: 'shopping-cart',
+      text: `${plural(n, 'grocery ask')} ${n === 1 ? 'waits' : 'wait'} for you`,
+      href: '/admin/groceries#asked',
       cta: 'Review',
     });
   }

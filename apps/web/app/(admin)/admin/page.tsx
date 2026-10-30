@@ -185,6 +185,8 @@ export default async function AdminHome({
     approvals: approvals.count ?? 0,
     requests: requests.count ?? 0,
     lunches: lunchChanges.count ?? 0,
+    // [MEAL-22] A child's grocery asks from the board (WP-107), read with Home's Groceries card.
+    groceryAsks: groceries.asks?.length ?? 0,
     boards: boardRows.map((b) => ({
       name: b.name,
       lastSeenAt: b.last_seen_at,

@@ -22,7 +22,8 @@ import { KITCHEN_SLEEP } from './fixture';
 // a goal done by a time and paid in steps (WP-81: ?steps=going|won|weighted, Maya's); a family goal
 // every child meets and Maya's perfect weeks (WP-82: ?perfect=going|missed|won); a request the server
 // took that Realtime never reports, shown by the board's own read (WP-110: ?missed=1); the grocery list
-// (WP-104: ?groceries=1, or ?groceries=empty for one emptied; none by default, no rail button).
+// (WP-104: ?groceries=1, or ?groceries=empty for one emptied; none by default, no rail button; WP-107: ?groceries=full
+// for Maya's 5 asks waiting, ?groceries=long for 35 things).
 export const metadata: Metadata = { title: 'Board Today', robots: { index: false } };
 
 export default async function DevBoardPage({

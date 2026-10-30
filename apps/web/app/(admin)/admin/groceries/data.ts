@@ -8,6 +8,7 @@ import type {
   LearnedWord,
   PastItem,
   Person,
+  WaitingAsk,
 } from '@/lib/groceries';
 
 // Groceries (WP-104), read through RLS as the parent: the household's categories and stores, the
@@ -24,6 +25,8 @@ export interface GroceriesData {
   learned: LearnedWord[];
   /** [MEAL-28] New items go to: the household's preferred store, none for Any store. */
   preferredStoreId: string | null;
+  /** [MEAL-22] The children's asks waiting for a parent, oldest first (WP-107). */
+  asks?: WaitingAsk[];
 }
 
 const fail = (what: string, error: { message: string } | null) => {
@@ -36,7 +39,7 @@ export async function loadGroceries(
   now: number = Date.now(),
 ): Promise<GroceriesData> {
   const since = new Date(now - GOT_RECENTLY_DAYS * 86_400_000).toISOString();
-  const [cats, stores, brands, items, people, past, learned, list] = await Promise.all([
+  const [cats, stores, brands, items, people, past, learned, list, asks] = await Promise.all([
     db
       .from('grocery_category')
       .select('id, name, icon, starter_key, is_other, sort_order')
@@ -47,13 +50,14 @@ export async function loadGroceries(
       .from('grocery_item')
       .select(
         'id, name, amount, category_id, store_id, brand_id, status, ticked_at, ticked_by, created_at, ' +
+          'ticked_member_id, ticked_device:device!grocery_item_ticked_device_id_fkey(name), ' +
           'grocery_item_reason(kind, by_user, member_id, meal_plan_entry_id, label, amount, created_at)',
       )
       .eq('household_id', householdId)
       .or(`status.eq.open,and(status.eq.ticked,ticked_at.gte.${since})`),
     db
       .from('member')
-      .select('id, display_name, user_id, avatar_key, color')
+      .select('id, display_name, user_id, avatar_key, color, role, grocery_ask_ok')
       .eq('household_id', householdId),
     db
       .from('grocery_item')
@@ -70,6 +74,14 @@ export async function loadGroceries(
       .select('preferred_store_id')
       .eq('household_id', householdId)
       .maybeSingle(),
+    db
+      .from('grocery_ask')
+      .select(
+        'id, member_id, name, brand_id, asked_at, board:device!grocery_ask_asked_by_fkey(name)',
+      )
+      .eq('household_id', householdId)
+      .eq('status', 'waiting')
+      .order('asked_at'),
   ]);
   fail('grocery categories', cats.error);
   fail('grocery stores', stores.error);
@@ -79,6 +91,7 @@ export async function loadGroceries(
   fail('grocery history', past.error);
   fail('learned words', learned.error);
   fail('the list', list.error);
+  fail('grocery asks', asks.error);
   type ItemRow = {
     id: string;
     name: string;
@@ -90,6 +103,8 @@ export async function loadGroceries(
     ticked_at: string | null;
     ticked_by: string | null;
     created_at: string;
+    ticked_member_id?: string | null;
+    ticked_device?: { name: string } | null;
     grocery_item_reason: {
       kind: GroceryItem['reasons'][number]['kind'];
       by_user: string | null;
@@ -129,6 +144,8 @@ export async function loadGroceries(
       status: i.status,
       tickedAt: i.ticked_at,
       tickedBy: i.ticked_by,
+      tickedMemberId: i.ticked_member_id ?? null,
+      tickedBoard: i.ticked_device?.name ?? null,
       createdAt: i.created_at,
       reasons: (i.grocery_item_reason ?? []).map((r) => ({
         kind: r.kind,
@@ -146,6 +163,8 @@ export async function loadGroceries(
       userId: (m.user_id as string | null) ?? null,
       avatarKey: (m.avatar_key as string | null) ?? null,
       color: m.color as string,
+      role: m.role as 'child' | 'adult',
+      askOk: m.grocery_ask_ok as boolean,
     })),
     past: (past.data ?? []).map((p) => ({
       key: p.name_key as string,
@@ -160,5 +179,22 @@ export async function loadGroceries(
       weight: w.weight as number,
     })),
     preferredStoreId: (list.data?.preferred_store_id as string | null | undefined) ?? null,
+    asks: (
+      (asks.data ?? []) as unknown as {
+        id: string;
+        member_id: string;
+        name: string;
+        brand_id: string | null;
+        asked_at: string;
+        board: { name: string } | null;
+      }[]
+    ).map((a) => ({
+      id: a.id,
+      memberId: a.member_id,
+      name: a.name,
+      brandId: a.brand_id,
+      askedAt: a.asked_at,
+      board: a.board?.name ?? null,
+    })),
   };
 }

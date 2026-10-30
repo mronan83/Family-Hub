@@ -1,3 +1,4 @@
+import type { BoardAsk, BoardGot, KnownThing } from './grocery-asks';
 import type { GroceryBrand } from './grocery-brands';
 import type { GroceryCategory, GroceryItem, GroceryStore } from './groceries';
 import { itemKey } from './grocery-merge';
@@ -14,6 +15,14 @@ export interface BoardGroceries {
   brands: GroceryBrand[];
   /** The open items. */
   items: GroceryItem[];
+  /** [MEAL-22] The household's day (YYYY-MM-DD) the asks and Got today are of; none before WP-107. */
+  today?: string | null;
+  /** [MEAL-22] The Asked for card's asks (WP-107). */
+  asks?: BoardAsk[];
+  /** [MEAL-30] What was ticked today (Got today). */
+  got?: BoardGot[];
+  /** [MEAL-22] The things the household has had, for the ask's tiles, matches and brand row. */
+  known?: KnownThing[];
 }
 
 const isObject = (x: unknown): x is Record<string, unknown> =>
@@ -75,7 +84,60 @@ export function readGroceries(x: unknown): BoardGroceries | null {
       })),
     });
   }
-  return { ever: x.ever === true || items.length > 0, categories, stores, brands, items };
+  const asks: BoardAsk[] = [];
+  for (const a of Array.isArray(x.asks) ? x.asks : []) {
+    if (!isObject(a) || !str(a.id) || !str(a.member_id) || !str(a.name)) continue;
+    if (a.status !== 'waiting' && a.status !== 'added' && a.status !== 'declined') continue;
+    asks.push({
+      id: a.id as string,
+      memberId: a.member_id as string,
+      name: a.name as string,
+      brandId: str(a.brand_id),
+      status: a.status,
+      itemStatus:
+        a.item_status === 'open' || a.item_status === 'ticked' || a.item_status === 'removed'
+          ? a.item_status
+          : null,
+      gotToday: a.got_today === true,
+      askedAt: str(a.asked_at) ?? '',
+    });
+  }
+  const got: BoardGot[] = [];
+  for (const g of Array.isArray(x.got) ? x.got : []) {
+    if (!isObject(g) || !str(g.id) || !str(g.name) || !str(g.ticked_at)) continue;
+    got.push({
+      id: g.id as string,
+      name: g.name as string,
+      brandId: str(g.brand_id),
+      categoryId: str(g.category_id) ?? '',
+      tickedAt: g.ticked_at as string,
+      memberId: str(g.member_id),
+    });
+  }
+  const known: KnownThing[] = [];
+  for (const k of Array.isArray(x.known) ? x.known : []) {
+    if (!isObject(k) || !str(k.key) || !str(k.name)) continue;
+    known.push({
+      key: k.key as string,
+      name: k.name as string,
+      categoryId: str(k.category_id) ?? '',
+      buys: typeof k.buys === 'number' ? k.buys : 0,
+      brandIds: (Array.isArray(k.brand_ids) ? k.brand_ids : []).filter(
+        (b): b is string => typeof b === 'string',
+      ),
+    });
+  }
+  return {
+    ever: x.ever === true || items.length > 0,
+    categories,
+    stores,
+    brands,
+    items,
+    today: str(x.today),
+    asks,
+    got,
+    known,
+  };
 }
 
 /** The snapshot's answer with board_groceries()'s beside it, for readSnapshot. */
