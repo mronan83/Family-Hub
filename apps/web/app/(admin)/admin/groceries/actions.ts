@@ -412,3 +412,55 @@ export async function setGroceryAskOk(form: FormData): Promise<void> {
   if (error) log('warn', 'grocery OK not set', { code: error.code, hint: error.hint });
   back(form, error ? 'failed' : ok ? 'ask-ok-on' : 'ask-ok-off', '#asked');
 }
+
+/**
+ * [MEAL-21] Running low?'s Add (WP-106, D-150): the staple goes on the list through the one way in,
+ * its reason "staple", in last time's category, store and brand (worked out on the page, D-142,
+ * D-148). Nothing adds a staple but this tap.
+ */
+export async function addStaple(form: FormData): Promise<void> {
+  const { db, household } = await context();
+  const name = parseItem(String(form.get('name') ?? '')).name;
+  const key = String(form.get('key') ?? '').trim();
+  if (!name || !key || name.length > 80 || key.length > 80) back(form, 'failed');
+  const { data, error } = await db.rpc('add_groceries', {
+    p_household: household.id,
+    p_items: [
+      {
+        name,
+        key,
+        category_id: guid(form.get('categoryId')),
+        store_id: guid(form.get('storeId')),
+        brand_id: guid(form.get('brandId')),
+        reason: { kind: 'staple' },
+      },
+    ],
+  });
+  if (error) log('warn', 'staple not added', { code: error.code, hint: error.hint });
+  const id = (data as { id: string }[] | null)?.[0]?.id;
+  if (error || !id) back(form, 'failed');
+  back(form, 'staple-added', `&id=${id}#low`);
+}
+
+/**
+ * [MEAL-21] A choice for a staple: Not now (hidden until the day given, one more gap), Don't
+ * suggest, or Suggest again.
+ */
+export async function setStapleChoice(form: FormData): Promise<void> {
+  const { db, household } = await context();
+  const key = String(form.get('key') ?? '').trim();
+  const name = String(form.get('name') ?? '').slice(0, 80);
+  const choice = String(form.get('choice') ?? '');
+  const until = String(form.get('until') ?? '');
+  if (!key || !['not_now', 'off', 'on'].includes(choice)) back(form, 'failed');
+  const { error } = await db.rpc('set_grocery_staple', {
+    p_household: household.id,
+    p_key: key,
+    p_choice: choice,
+    p_until: choice === 'not_now' && /^\d{4}-\d{2}-\d{2}$/.test(until) ? until : null,
+  });
+  if (error) log('warn', 'staple choice not set', { code: error.code, hint: error.hint });
+  const did = error ? 'failed' : `staple-${choice.replace('_', '-')}`;
+  const extra = `&name=${encodeURIComponent(name)}${choice === 'not_now' ? `&until=${until}` : ''}`;
+  back(form, did, `${extra}${choice === 'not_now' ? '#low' : '#staples'}`);
+}

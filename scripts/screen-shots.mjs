@@ -149,6 +149,12 @@ export const ADMIN = [
   ['asks-groceries', '/dev/groceries'],
   ['asks-got', '/dev/groceries?open=got'],
   ['asks-home', '/dev/home?asks=1'],
+  // [MEAL-21] WP-106's staples: Running low?, after Add, Staples open, nothing due, Home's line.
+  ['staples-low', '/dev/groceries'],
+  ['staples-added', '/dev/groceries?staple=added'],
+  ['staples-list', '/dev/groceries?open=staples'],
+  ['staples-none', '/dev/groceries?state=empty'],
+  ['staples-home', '/dev/home'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of

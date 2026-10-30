@@ -466,6 +466,41 @@ begin
    where household_id = v_demo and name = 'Coffee';
 end $$;
 
+-- [MEAL-21] Staples (WP-106): a made-up history of ticks, days before today. Butter every 9 days,
+-- Cereal every week and Trash bags every 3 weeks are running low; Milk (on the list) every 5 days;
+-- Coffee every 2 weeks (its latest buy is today's above); Birthday candles turned off.
+do $$
+declare
+  v_demo constant uuid := '0de00000-0000-4000-8000-000000000001';
+  v_sam  constant uuid := '0de00000-0000-4000-8000-0000000000a2';
+  v_list uuid := (select id from public.grocery_list where household_id = v_demo);
+begin
+  insert into public.grocery_item (id, household_id, list_id, name, name_key, category_id, store_id, brand_id,
+                                   status, ticked_at, ticked_by, created_by, created_at)
+  select ('0de00000-0000-4000-8000-000000075' || lpad((t.n * 10 + b)::text, 3, '0'))::uuid, v_demo, v_list,
+         t.name, t.k,
+         (select c.id from public.grocery_category c where c.household_id = v_demo and c.starter_key = t.cat),
+         (select s.id from public.grocery_store s where s.household_id = v_demo and s.name = t.store),
+         case when t.brand is null then null
+              else ('0de00000-0000-4000-8000-0000000740' || lpad(t.brand::text, 2, '0'))::uuid end,
+         'ticked', now() - make_interval(days => t.last + t.gap * b), v_sam, v_sam,
+         now() - make_interval(days => t.last + t.gap * b + 2)
+    from (values
+      (1, 'Butter', 'butter', 'dairy', 'Kroger', null::int, 9, 10, 5),
+      (2, 'Cereal', 'cereal', 'pantry', 'Kroger', null, 7, 8, 6),
+      (3, 'Trash bags', 'trash bag', 'household', 'Costco', 7, 21, 22, 5),
+      (4, 'Milk', 'milk', 'dairy', 'Costco', 6, 5, 9, 6),
+      (5, 'Coffee', 'coffee', 'pantry', null, 9, 14, 14, 3),
+      (6, 'Birthday candles', 'birthday candle', 'other', null, null, 40, 50, 3)
+    ) t (n, name, k, cat, store, brand, gap, last, buys)
+    cross join lateral generate_series(0, t.buys - 1) b;
+  insert into public.grocery_item_event (household_id, item_id, kind, at, by_user)
+  select v_demo, i.id, 'ticked', i.ticked_at, i.ticked_by from public.grocery_item i
+   where i.household_id = v_demo and i.id::text like '0de00000-0000-4000-8000-000000075%';
+  insert into public.grocery_staple (household_id, name_key, off_at)
+  values (v_demo, 'birthday candle', now() - interval '45 days');
+end $$;
+
 -- [MEAL-04] School lunch (WP-26): Leo buys on Wednesdays, Maya on Fridays; they bring the rest.
 insert into public.member_lunch (member_id, household_id, defaults)
 select m.id, m.household_id, case m.display_name when 'Leo' then '{"wed": "buy"}' else '{"fri": "buy"}' end::jsonb

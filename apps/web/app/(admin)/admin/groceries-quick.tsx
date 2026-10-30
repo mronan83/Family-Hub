@@ -19,6 +19,7 @@ import {
 } from '@/lib/groceries';
 import { quickAddGrocery, type QuickAddState } from './groceries/actions';
 import { BrandField } from './groceries/brand-field';
+import { runningLowLine } from '@/lib/grocery-staples';
 
 /** What Home's Groceries card needs: the list as it is, and what the suggestion learns from. */
 export interface GroceriesQuickData {
@@ -30,6 +31,8 @@ export interface GroceriesQuickData {
   past: PastItem[];
   learned: LearnedWord[];
   preferredStoreId: string | null;
+  /** [MEAL-21] How many staples are running low (WP-106); none shows no line. */
+  runningLow?: number;
 }
 
 /**
@@ -89,6 +92,12 @@ export function GroceriesQuick({
         Groceries
       </span>
       <p className="fw-quick__status fw-quick__words">{onTheList(data.open.length)}</p>
+      {runningLowLine(data.runningLow ?? 0) ? (
+        <p className="fw-quick__line fw-quick__low">
+          <b>{runningLowLine(data.runningLow ?? 0)}</b> ·{' '}
+          <Link href="/admin/groceries?open=low#low">Review</Link>
+        </p>
+      ) : null}
       <form onSubmit={onSubmit} className="fw-quick__add" aria-label="Add to groceries">
         <input type="hidden" name="categoryId" value={s?.categoryId ?? ''} />
         <input type="hidden" name="storeId" value={s?.storeId ?? ''} />

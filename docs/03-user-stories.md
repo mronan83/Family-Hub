@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.71: US-716 as built (WP-106, MEAL-21, D-150): Running low? fills in last time's store and brand, Home's Groceries card says how many are running low, and Staples' Don't suggest and Suggest again.
 > v0.8.70: US-723 added at the owner's request, and US-717 changed (WP-107, MEAL-30, D-149): ticking things off and taking them off at the board, as whoever's face is picked, with Undo; each child's OK now sits at the foot of Groceries' Asked for, and a board ask can pick a brand.
 > v0.8.69: US-722 added at the owner's request (WP-116, MEAL-29, D-148): an item's brand, from the household's own brands, remembered for next time.
 > v0.8.68: US-1110 added at the owner's request (WP-115, PTS-08, D-147): every points change in one register, filterable, with each bonus's payouts.
@@ -834,6 +835,10 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given milk is usually bought every 5 days and was last bought 6 days ago, and it isn't on the list, when I open Groceries, then **Milk** is suggested, with "usually every 5 days".
 - Given a suggestion, when I tap **Add**, then it is on the list; when I tap **Not now**, then it isn't suggested again until it is due again.
 - Given nothing is tapped, when a suggestion is shown, then nothing is added to the list by itself.
+- Given Butter was Kirkland at Costco last time, when I tap **Add** under Running low?, then Butter · Kirkland goes on the list at Costco, marked as a staple, with **Undo** (D-150).
+- Given 3 staples are running low, when I open Home, then the Groceries card says "3 running low · Review", and **Review** opens Running low? (D-150).
+- Given I tap **Don't suggest** on Birthday candles in Staples, when it is due again, then it isn't suggested until I tap **Suggest again**.
+- Given Leo's ask for orange juice waits for a grown-up, when orange juice is due, then it is under Asked for only, not also under Running low? (D-150).
 
 ### US-717 — Asking for something from the board
 **As a** kid **I want** to ask for a grocery item at the board **so that** my parents know I want yogurt without me remembering to tell them.
