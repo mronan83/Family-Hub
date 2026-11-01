@@ -14,6 +14,9 @@ import {
   type StoreFilter,
   toGet,
 } from '@/lib/groceries';
+import { isoDay } from '@/lib/format';
+import { itemKey } from '@/lib/grocery-merge';
+import { monthDay, staples as staplesOf } from '@/lib/grocery-staples';
 import type { GroceriesData } from './data';
 import { AdminHeader } from '../header';
 import {
@@ -29,6 +32,7 @@ import {
 import { AddForm } from './add-form';
 import { BrandForm, EditForm, PlaceForm, PreferredStoreForm } from './forms';
 import { AskedFor } from './asked-for';
+import { RunningLow, Staples } from './staples';
 import { ItemWords, SectionHead } from './rows';
 import { MoreMenu } from './more-menu';
 import { SelectList } from './select-list';
@@ -53,6 +57,9 @@ export interface GroceriesQuery {
   t?: string;
   /** [MEAL-27] An item's ⋯ open: Home's Change after Add (WP-112). */
   item?: string;
+  /** [MEAL-21] The staple just added (its Undo), and the day Not now hides one until (WP-106). */
+  id?: string;
+  until?: string;
 }
 
 const NOTICES: Record<string, (name: string) => string> = {
@@ -78,6 +85,8 @@ const NOTICES: Record<string, (name: string) => string> = {
   branded: () => 'Saved.',
   'ask-ok-on': () => 'Saved. Their asks wait for a grown-up’s OK.',
   'ask-ok-off': () => 'Saved. Their asks go straight on the list.',
+  'staple-off': (n) => `${n} won’t be suggested. Suggest again is in Staples.`,
+  'staple-on': (n) => `${n} can be suggested again.`,
 };
 
 function noticeOf(did: string | undefined, name: string): string | null {
@@ -101,7 +110,7 @@ function noticeOf(did: string | undefined, name: string): string | null {
     const what = n === 1 ? '1 ask' : `${n} asks`;
     return a[1] === 'added' ? `Added ${what} to the list.` : `Not this time: ${what}.`;
   }
-  if (did === 'name-taken') return null;
+  if (did === 'name-taken' || did === 'staple-added') return null;
   return NOTICES[did]?.(name) ?? null;
 }
 
@@ -185,6 +194,28 @@ export function GroceriesView({
   const liveBrands = brands.filter((b) => !b.archived).sort(byName);
   const archivedBrands = brands.filter((b) => b.archived).sort(byName);
   const countWords = (n: number) => (n === 0 ? 'Empty' : `${n} on the list`);
+  // [MEAL-21] Staples (WP-106): what's running low today, in the household's days.
+  const today = isoDay(timezone, new Date(now));
+  const staples = staplesOf(
+    data.bought ?? [],
+    data.stapleChoices ?? [],
+    today,
+    new Set(open.map((i) => itemKey(i.name))),
+    new Set((data.asks ?? []).map((a) => itemKey(a.name))),
+  );
+  const suggestCtx = {
+    categories,
+    past: data.past,
+    learned: data.learned,
+    preferredStoreId: data.preferredStoreId,
+    brands,
+  };
+  const stapleAdded =
+    query.did === 'staple-added' ? open.find((i) => i.id === query.id) : undefined;
+  const notNow =
+    query.did === 'staple-not-now' && /^\d{4}-\d{2}-\d{2}$/.test(query.until ?? '')
+      ? `${query.name ?? 'It'} won’t be suggested until ${monthDay(query.until!)}.`
+      : null;
 
   return (
     <main className="fw-page fw-page--wide fw-groc">
@@ -193,6 +224,29 @@ export function GroceriesView({
         <Banner kind="notice">{error ?? 'That didn’t change. Try again in a moment.'}</Banner>
       ) : query.did === 'name-taken' ? (
         <Banner kind="notice">That category name is taken. Pick it from the list instead.</Banner>
+      ) : stapleAdded ? (
+        <Banner kind="info">
+          <span className="fw-groc__undo">
+            Added {withBrand(stapleAdded.name, brandOf(stapleAdded.brandId, brands))} to{' '}
+            {categories.find((c) => c.id === stapleAdded.categoryId)?.name ?? 'the list'}
+            {stapleAdded.storeId
+              ? `, at ${stores.find((x) => x.id === stapleAdded.storeId)?.name ?? 'its store'}`
+              : ''}
+            .
+            <form action={removeGroceries}>
+              {hidden(stapleAdded.id)}
+              <Button
+                type="submit"
+                variant="ghost"
+                aria-label={`Undo: take ${stapleAdded.name} off the list`}
+              >
+                Undo
+              </Button>
+            </form>
+          </span>
+        </Banner>
+      ) : notNow ? (
+        <Banner kind="info">{notNow}</Banner>
       ) : notice ? (
         <Banner kind="info">{notice}</Banner>
       ) : null}
@@ -233,6 +287,15 @@ export function GroceriesView({
         brands={brands}
         timezone={timezone}
         open={query.open === 'asked' || /^(asks-|ask-ok)/.test(query.did ?? '')}
+      />
+
+      <RunningLow
+        view={staples}
+        ctx={suggestCtx}
+        stores={stores}
+        brands={brands}
+        today={today}
+        open={query.open === 'low' || /^staple-(added|not-now)/.test(query.did ?? '')}
       />
 
       <section className="fw-card fw-groc__list" aria-labelledby="list-heading">
@@ -518,6 +581,13 @@ export function GroceriesView({
           </ul>
         )}
       </Fold>
+
+      <Staples
+        view={staples}
+        ctx={suggestCtx}
+        timezone={timezone}
+        open={query.open === 'staples' || /^staple-(off|on)$/.test(query.did ?? '')}
+      />
 
       <Fold
         id="places"

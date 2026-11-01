@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [MEAL-27][MEAL-28][US-721] Home's Groceries card (WP-112, D-142) on /dev/home: the made-up demo
 // family, no database; 8 on the list (Onions ×3 among them), Ground beef had before at Kroger, Costco

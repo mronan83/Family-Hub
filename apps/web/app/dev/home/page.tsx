@@ -3,7 +3,8 @@ import { HomeView, type SchoolToday } from '../../(admin)/admin/home-view';
 import { isoDay } from '@/lib/format';
 import { type AlertFacts, homeAlerts } from '@/lib/home-alerts';
 import { lunchQuickWords, lunchWeekToOpen } from '@/lib/lunch-list';
-import { homeGroceries } from '../groceries/fixture';
+import { groceriesData, homeGroceries } from '../groceries/fixture';
+import { runningLowCount } from '@/lib/grocery-staples';
 
 // [NFR-17][US-109] Home at a glance (WP-57) with the made-up family and no database, for the UI suite
 // and the guide: Alex signed in; two check-offs and a reward request waiting, the Den board quiet,
@@ -111,6 +112,9 @@ export default async function DevHomePage({
           past: g.past,
           learned: g.learned,
           preferredStoreId: g.preferredStoreId,
+          // [MEAL-21] The demo family's staples on Sun, Oct 18 (WP-106): 3 running low.
+          runningLow:
+            p.groceries === 'empty' ? 0 : runningLowCount(groceriesData('busy'), '2026-10-18'),
         }}
         groceriesDev={{
           typed: p.typed,

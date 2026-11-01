@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [MEAL-29] Grocery brands (WP-116, D-148) on /dev/groceries and /dev/home: the made-up demo family,
 // no database. Kirkland, Kirkland Signature, Chobani, Peet's (Coffee's last time) and more; Horizon

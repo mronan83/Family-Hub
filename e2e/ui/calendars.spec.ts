@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { foldOf, unfold } from '../support/fold';
 
 // [CAL-01][CAL-03][CAL-06][CAL-09] The household's calendars (WP-22) on /dev/calendars: made-up

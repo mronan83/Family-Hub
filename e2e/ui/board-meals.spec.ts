@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Locator, test, type Page } from '@playwright/test';
+import { expect, type Locator, test, type Page } from './test';
 import { floors } from '../support/floors';
 
 // [MEAL-06][US-705] Meals on the board (WP-28, D-80) on /dev/board, at the board's 1920×1080: today's

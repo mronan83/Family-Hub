@@ -579,13 +579,33 @@ const SHOTS = [
   // [MEAL-18][MEAL-23][MEAL-24] Groceries (WP-104): the list, adding with the suggestion, Select
   // and Move to, and the household's categories and stores.
   // [MEAL-22] Since WP-107, Asked for opens above the list while asks wait.
-  { name: 'admin-groceries-phone', device: 'phone', url: '/dev/groceries', maxHeight: 1700 },
+  // [MEAL-21] The list itself, now under Asked for and Running low? (WP-106).
+  {
+    name: 'admin-groceries-phone',
+    device: 'phone',
+    url: '/dev/groceries',
+    element: '.fw-groc__list',
+    maxHeight: 1100,
+  },
   // [MEAL-22] Groceries' Asked for (WP-107), with each child's OK.
   {
     name: 'admin-groceries-asked-phone',
     device: 'phone',
     url: '/dev/groceries',
     element: '#asked',
+  },
+  // [MEAL-21] Groceries' Running low? and Staples (WP-106).
+  {
+    name: 'admin-groceries-low-phone',
+    device: 'phone',
+    url: '/dev/groceries',
+    element: '#low',
+  },
+  {
+    name: 'admin-groceries-staples-laptop',
+    device: 'laptop',
+    url: '/dev/groceries?open=staples',
+    element: '#staples',
   },
   {
     name: 'admin-groceries-adding-phone',
@@ -694,7 +714,21 @@ for (const shot of SHOTS) {
     if (shot.scroll) await page.evaluate((y) => window.scrollTo(0, y), shot.scroll);
     await page.waitForTimeout(shot.wait ?? 500);
     const jpeg = { path: file, type: 'jpeg', quality: shot.quality ?? 72 };
-    if (shot.element) {
+    if (shot.element && shot.maxHeight) {
+      // [MEAL-21] The top of a tall element, as the page lays it out (WP-106's list, under Running low?).
+      const box = await page.locator(shot.element).boundingBox();
+      const top = box.y + (await page.evaluate(() => window.scrollY));
+      await page.screenshot({
+        ...jpeg,
+        fullPage: true,
+        clip: {
+          x: 0,
+          y: top,
+          width: DEVICES[shot.device].viewport.width,
+          height: Math.min(box.height, shot.maxHeight),
+        },
+      });
+    } else if (shot.element) {
       await page.locator(shot.element).screenshot(jpeg);
     } else if (shot.full || shot.maxHeight) {
       const height = await page.evaluate(() => document.documentElement.scrollHeight);

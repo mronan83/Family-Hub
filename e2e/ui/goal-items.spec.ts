@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [RWD-21][D-146] A goal's Some items (WP-114), on the made-up family's /dev page with no database:
 // only Leo's items that repeat or are still to do, and every item the goal counts kept, flagged,

@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.50: Staples (WP-106, D-150): **Running low?** on Groceries with **Add** and **Not now**, Home's "3 running low" line, and **Staples** with **Don't suggest** and **Suggest again** (A17).
 > v0.49: Asking, ticking off and taking off at the board (WP-107, D-149): the board's **Ask for something** (your face, a picture tile or **Something else** on the board's keyboard, the brand), **Asked for** and **Got today**; tapping a thing to **Got it** or **Take it off the list**, with **Undo**; Groceries' **Asked for** in the admin app with **Add it**, **Not this time**, **Add all** and each child's **Wait for a grown-up's OK**; Home's Needs you line; B1.17 and B2.11 updated.
 > v0.48: Grocery brands (WP-116, D-148): a **Brand** when adding, picked from your own brands as you type or added to them, filled in from last time; **Brand…** on an item and in Select; **Brands** in Categories and stores (rename, merge, archive); the brand on the list and the board.
 > v0.47: The points register (WP-115, D-147): every points change for every child on Rewards → **Points register**, filtered by child, type, bonus and days, with **Show older**; each bonus's payouts on **Bonus points**; **All of (name)'s points** on a child's Points (A6, B1.6, B1.7).
@@ -1212,6 +1213,24 @@ What the children ask for at the board waits under **Asked for**, at the top of 
 
 ![Groceries on a phone with Asked for open: Popcorn, Maya asked at the Kitchen board, and Orange juice · Kirkland, Leo asked, each with Add it and Not this time, Add all, then Wait for a grown-up's OK with Maya and Leo both on.](guide/img/admin-groceries-asked-phone.jpg "Asked for")
 
+#### Running low?
+<!-- covers: US-716 -->
+
+FamilyWise learns how often you buy each thing from what's ticked as got, on **Groceries** and at the board. Once something has been bought 4 times at a steady gap, and it isn't on the list, it shows under **Running low?** a day before it's usually needed (two days for things bought less often than weekly). **Running low?** sits under **Asked for** on **Groceries**, and Home's Groceries card says how many ("3 running low", **Review**). Nothing goes on the list by itself.
+
+- **Add** puts it on the list, with the store and brand it had last time, marked as a staple. **Undo**, in the line that says what was added, takes it off again.
+- **Not now** hides it until another usual gap has passed.
+- A child's ask for the same thing, waiting under **Asked for**, keeps it off **Running low?**.
+- Something you stop buying stops showing once three usual gaps pass with no buy; buying it again starts it again.
+
+![Running low? on a phone: Butter · Kirkland, usually every 9 days, last got Fri, Oct 9, Costco; Trash bags · Kirkland Signature, usually every 3 weeks; Cereal, usually every week, at Kroger; each with Add and Not now.](guide/img/admin-groceries-low-phone.jpg "Running low?")
+
+#### Staples
+
+**Staples**, folded under **Got recently**, shows what FamilyWise has learned: each thing, how often you buy it, and where it stands ("On the list", "Running low", "Due Oct 29"). **Still learning** names what doesn't have 4 buys yet, or has no steady gap. **Don't suggest** stops one being suggested; it moves to **Not suggested**, where **Suggest again** brings it back.
+
+![Staples open on a laptop: 8 learned A to Z, each with how often and where it stands, and Don't suggest; Still learning, and Birthday candles under Not suggested with Suggest again.](guide/img/admin-groceries-staples-laptop.jpg "Staples")
+
 #### The list
 
 - **By category**, in your order, then A to Z. Each thing has its amount, its store, and why it's on the list: a meal ("Tacos, Tue"), a child's ask, or who added it.
@@ -1222,7 +1241,7 @@ What the children ask for at the board waits under **Asked for**, at the top of 
 
 Each move teaches FamilyWise your words, so the next time it suggests the right category.
 
-![Groceries on a phone: the add field at the top, Asked for with two waiting, then On the list with Select and the store chips All 19, Costco 3, Kroger 3, Aldi 3, Walmart 1 and Any store 9, then Produce with Apples ×6 (Leo asked), Avocados ×2 at Aldi, Lettuce for Tacos, Tue, Onions ×3 for Tacos and Chili.](guide/img/admin-groceries-phone.jpg "The grocery list, on a phone")
+![Groceries on a phone: On the list with Select and the store chips All 19, Costco 3, Kroger 3, Aldi 3, Walmart 1 and Any store 9, then Produce with Apples ×6 (Leo asked), Avocados ×2 at Aldi, Lettuce for Tacos, Tue, Onions ×3 for Tacos and Chili.](guide/img/admin-groceries-phone.jpg "The grocery list, on a phone")
 
 ![Select on a phone: Apples, Avocados and Bananas ticked, 3 selected, and Move 3 items to open with each category and New category….](guide/img/admin-groceries-select-phone.jpg "Moving several at once")
 

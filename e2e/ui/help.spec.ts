@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [D-72] Help: the user guide (docs/07) in the app at /help, open signed in or not. Its pictures
 // load, its four diagrams are drawn and readable on a phone and a laptop, its contents links land on

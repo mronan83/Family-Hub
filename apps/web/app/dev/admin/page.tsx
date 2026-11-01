@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { DayItem } from '@/lib/admin-day';
+import { localInstant } from '@/lib/board-sleep';
 import { isoDay } from '@/lib/format';
 import { MyTasksView } from '../../(admin)/admin/my/view';
 import type { WaitingItem } from '../../(admin)/admin/today/data';
@@ -309,8 +310,13 @@ export default async function DevAdminPage({
                     code: 2,
                     isDay: true,
                     unit: 'fahrenheit',
-                    readAt: `${today}T14:09:00Z`,
-                    failedAt: params.state === 'failing' ? `${today}T14:39:00Z` : null,
+                    // [BRD-04][D-110] 10:09 and 10:39 in the household's zone today, in any season
+                    // (WP-118): a fixed 14:09 UTC read 9:09 once New York left daylight time.
+                    readAt: new Date(localInstant(TZ, today, 10 * 60 + 9)).toISOString(),
+                    failedAt:
+                      params.state === 'failing'
+                        ? new Date(localInstant(TZ, today, 10 * 60 + 39)).toISOString()
+                        : null,
                     error:
                       params.state === 'failing'
                         ? 'The weather service answered 503 (Service Unavailable). FamilyWise tries again in 30 minutes.'

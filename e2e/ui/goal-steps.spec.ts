@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [RWD-17][RWD-18] A goal done by a time, and goals that pay in steps (WP-81, the approved mockups),
 // with the made-up family and no database: on /dev/goals the form's time, steps and weights, Goals

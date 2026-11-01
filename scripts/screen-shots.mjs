@@ -7,6 +7,7 @@
 //   node scripts/screen-shots.mjs [--base=http://localhost:3100] [--out=test-results/screens]
 import { mkdir } from 'node:fs/promises';
 import { chromium, devices, webkit } from '@playwright/test';
+import { answerPrefetches } from './next-prefetch.mjs';
 
 const arg = (name, fallback) =>
   process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3) ?? fallback;
@@ -149,6 +150,12 @@ export const ADMIN = [
   ['asks-groceries', '/dev/groceries'],
   ['asks-got', '/dev/groceries?open=got'],
   ['asks-home', '/dev/home?asks=1'],
+  // [MEAL-21] WP-106's staples: Running low?, after Add, Staples open, nothing due, Home's line.
+  ['staples-low', '/dev/groceries'],
+  ['staples-added', '/dev/groceries?staple=added'],
+  ['staples-list', '/dev/groceries?open=staples'],
+  ['staples-none', '/dev/groceries?state=empty'],
+  ['staples-home', '/dev/home'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of
@@ -263,15 +270,23 @@ const shapes = [
   ['iphone', { ...devices['iPhone 13'], deviceScaleFactor: 2 }],
   ['laptop', { viewport: { width: 1280, height: 800 } }],
 ];
+/**
+ * Every context of the run. No service worker: the pictures are of the pages, and under one WebKit's
+ * navigations can fail ("WebKit encountered an internal error", WP-113). [NFR-16-v][D-152] Next.js's
+ * router prefetches answered by the run: a page closed or left with one still in flight makes
+ * WebKit fail or never answer the next page load (WP-118).
+ */
+async function contextFor(options) {
+  const context = await browser.newContext({ ...options, serviceWorkers: 'block' });
+  await answerPrefetches(context);
+  return context;
+}
 let n = 0;
 for (const theme of ['day', 'evening']) {
   for (const [shape, options] of shapes) {
-    // No service worker: the pictures are of the pages, and under one WebKit's navigations can
-    // fail ("WebKit encountered an internal error", WP-113).
-    const context = await browser.newContext({
-      ...(engine === chromium ? { ...options, isMobile: false, hasTouch: false } : options),
-      serviceWorkers: 'block',
-    });
+    const context = await contextFor(
+      engine === chromium ? { ...options, isMobile: false, hasTouch: false } : options,
+    );
     for (const [name, path] of ADMIN.filter(([name]) => wanted(name))) {
       const url = `${base}${path}${path.includes('?') ? '&' : '?'}theme=${theme}`;
       await shoot(context, url, `${out}/${name}-${shape}-${theme}.png`);
@@ -279,10 +294,7 @@ for (const theme of ['day', 'evening']) {
     }
     await context.close();
   }
-  const board = await browser.newContext({
-    viewport: { width: 1920, height: 1080 },
-    serviceWorkers: 'block',
-  });
+  const board = await contextFor({ viewport: { width: 1920, height: 1080 } });
   for (const [name, query, person, whole, then] of BOARD.filter(([name]) => wanted(name))) {
     const url = `${base}/dev/board${query}&theme=${theme}`;
     await shoot(board, url, `${out}/${name}-${theme}.png`, person, whole === 'whole', then);

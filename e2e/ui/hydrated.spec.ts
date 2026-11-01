@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test';
 
 // [NFR-14][D-110] The app marks a page once React has hydrated it (apps/web/app/hydrated.tsx): e2e
 // waits for the mark after every page load, since a form submitted before it is the browser's own

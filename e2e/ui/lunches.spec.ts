@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { floors } from '../support/floors';
 
 // [MEAL-09][MEAL-11][US-707][D-95] Next week's lunches picked on the board (WP-49), with made-up

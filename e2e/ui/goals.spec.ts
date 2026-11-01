@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [RWD-01][RWD-04][RWD-09][RWD-10][RWD-13] Goals for a parent (WP-19, WP-39) on /dev/goals: a made-up
 // family, no database. The list (goals in play with their rules' meters and what they pay, then

@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { floors } from '../support/floors';
 
 // [MEAL-26][US-720] A meal's recipe on the board (WP-105, D-138 (6), Q22) on /dev/board, at the board's

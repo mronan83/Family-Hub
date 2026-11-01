@@ -1,6 +1,8 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.16: WebKit's page loads in CI (WP-118, D-152): the UI suite's specs take their `test` from `e2e/ui/test.ts`, and it and the screenshot script answer Next.js's link prefetches themselves; test cases NFR-16-u to NFR-16-w (one spec keeps the app's own prefetches); the catalogue regenerated.
+> v0.8.15: staples (WP-106, D-150): test cases MEAL-21-a to MEAL-21-h; the catalogue regenerated.
 > v0.8.14: the board's grocery asks, ticks and removals (WP-107, D-149): test cases MEAL-22-a to MEAL-22-j and MEAL-30-a to MEAL-30-e; the catalogue regenerated.
 > v0.8.13: grocery brands (WP-116, D-148): test cases MEAL-29-a to MEAL-29-l; the catalogue regenerated.
 > v0.8.12: Today, My tasks and Insights folded (WP-97, D-145): test cases CHR-12-a to CHR-12-d, CHR-14-a, CHR-14-b, RWD-12-a and RWD-12-b; `day-folds.spec.ts` runs in Chrome, as an iPhone and as Safari on a Mac.
@@ -59,7 +61,7 @@ Each type, with what it proves, where it runs, when, and how fast.
 | Static checks | Format, lint, types, traceability (`check_traceability.py`), the docs build and its layout on 13 devices | CI `checks` and `docs` jobs | Every PR, and the merge commit on `main` | About a minute each |
 | Unit (Vitest, node:test) | Pure logic: the rules engine, dates, menu reading, lunch picks, the board's layout choice, sleep and wake, the scripts CI runs | CI `checks` (`pnpm test`) | Every PR | Seconds |
 | Database (pgTAP) | Tables, functions and access rules; household isolation (RLS) | CI `database`, on native Postgres (`scripts/db-test.sh`) | Every PR | About a minute |
-| UI suite (Playwright) | Screens on made-up data with no shared database: every size, theme and text size; the 28 px and 56 px floors; a page's own interactions. Desktop Chrome, and an iPhone in WebKit (Safari's engine) for the controls, goal, form and admin layout specs (the `iphone` project, D-127) | CI `build` (`pnpm test:ui`) | Every PR | Minutes |
+| UI suite (Playwright) | Screens on made-up data with no shared database: every size, theme and text size; the 28 px and 56 px floors; a page's own interactions. Desktop Chrome, and an iPhone in WebKit (Safari's engine) for the controls, goal, form and admin layout specs (the `iphone` project, D-127). A spec imports `test` from `e2e/ui/test.ts`, which answers Next.js's link prefetches itself, so WebKit never cancels one in a page load (D-152) | CI `build` (`pnpm test:ui`) | Every PR | Minutes |
 | Visual and accessibility | Tile style snapshots, axe contrast, manifests, fonts, keyboard | CI `build`, in the UI suite | Every PR | In the UI suite's time |
 | E2E (Playwright) | Real flows across the board, the admin app, the database and the jobs, as the demo family | A preview of `main` that the run builds, on the test database (`e2e.yml`) | Nightly at 07:17 UTC; never on a PR, never after a deploy (D-108) | 22–34 min for the last four green full runs before D-108 (225, 228, 229, 234), one worker; 40 spec files |
 | Burn-in | A new or changed e2e spec passes 5 runs in a row | The nightly run (`node scripts/e2e-run.mjs --burn-in <spec>`) | Optional, after the spec is on `main` (D-110) | 5 × the spec's time |
@@ -277,16 +279,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3154** tests: Unit 991 · DB 1664 · UI 356 · E2E 143. 2632 name at least one ID; 522 name none.
+**3201** tests: Unit 1008 · DB 1687 · UI 362 · E2E 144. 2679 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 136 of 152 |
+| Requirements built (a Done item builds them) | 137 of 152 |
 | Built requirements with no test | 0 |
-| Stories built | 119 of 134 |
+| Stories built | 120 of 134 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 296 (with a test: 296) |
+| Test cases | 307 (with a test: 307) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -305,14 +307,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 124 | 159 | 85 | 19 | 387 |
+| Meals and lunch | 138 | 182 | 90 | 20 | 430 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 84 | 14 | 13 | 178 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
-| Platform | 197 | 167 | 61 | 18 | 443 |
+| Platform | 200 | 167 | 62 | 18 | 447 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **991** | **1664** | **356** | **143** | **3154** |
+| **Total** | **1008** | **1687** | **362** | **144** | **3201** |
 
 ### 9.3 By requirement
 
@@ -418,7 +420,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-18 | S | Covered | US-714 | WP-104 | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f | U 4 · DB 6 · UI 8 · E2E 1 |
 | MEAL-19 | S | Covered | US-715 | WP-105, WP-113 | MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f | U 4 · DB 2 · UI 2 · E2E 1 |
 | MEAL-20 | S | Covered | US-715 | WP-105 | MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d | U 8 · DB 2 · E2E 1 |
-| MEAL-21 | S | Not built | US-716 | WP-106 | — | — |
+| MEAL-21 | S | Covered | US-716 | WP-106 | MEAL-21-a, MEAL-21-b, MEAL-21-c, MEAL-21-d, MEAL-21-e, MEAL-21-f, MEAL-21-g, MEAL-21-h | U 14 · DB 23 · UI 5 · E2E 1 |
 | MEAL-22 | S | Covered | US-717 | WP-107 | MEAL-22-a, MEAL-22-b, MEAL-22-c, MEAL-22-d, MEAL-22-e, MEAL-22-f, MEAL-22-g, MEAL-22-h, MEAL-22-i, MEAL-22-j | U 9 · DB 34 · UI 7 · E2E 1 |
 | MEAL-23 | S | Covered | US-718 | WP-104 | MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e | U 3 · DB 3 · UI 3 · E2E 1 |
 | MEAL-24 | S | Covered | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 5 · DB 1 · UI 1 |
@@ -467,7 +469,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | U 10 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
-| NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110 | NFR-16-t, NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s | U 20 · DB 10 · UI 23 |
+| NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110, WP-118 | NFR-16-t, NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s, NFR-16-u, NFR-16-v, NFR-16-w | U 23 · DB 10 · UI 24 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Covered | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j, NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x, NFR-18-y, NFR-18-z | U 34 · UI 15 · E2E 7 |
 | NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102, WP-108, WP-109, WP-111 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r, NFR-14-s, NFR-14-t, NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 46 · DB 14 · UI 1 · E2E 19 |
@@ -581,7 +583,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-103 | Queued: | — | — | — |
 | WP-104 | Done | MEAL-18-a, MEAL-18-b, MEAL-18-c, MEAL-18-d, MEAL-18-e, MEAL-18-f, MEAL-23-a, MEAL-23-b, MEAL-23-c, MEAL-23-d, MEAL-23-e, MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | 16 of 16 | — |
 | WP-105 | Done | MEAL-07-a, MEAL-07-b, MEAL-19-a, MEAL-19-b, MEAL-19-c, MEAL-19-d, MEAL-19-e, MEAL-19-f, MEAL-20-a, MEAL-20-b, MEAL-20-c, MEAL-20-d, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g, MEAL-26-a | 20 of 20 | — |
-| WP-106 | Queued | — | — | — |
+| WP-106 | Done | MEAL-21-a, MEAL-21-b, MEAL-21-c, MEAL-21-d, MEAL-21-e, MEAL-21-f, MEAL-21-g, MEAL-21-h | 8 of 8 | — |
 | WP-107 | Done | MEAL-22-a, MEAL-22-b, MEAL-22-c, MEAL-22-d, MEAL-22-e, MEAL-22-f, MEAL-22-g, MEAL-22-h, MEAL-22-i, MEAL-22-j, MEAL-30-a, MEAL-30-b, MEAL-30-c, MEAL-30-d, MEAL-30-e | 15 of 15 | — |
 | WP-108 | Done | NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r | 4 of 4 | — |
 | WP-109 | Done | NFR-14-s, NFR-14-t | 2 of 2 | — |
@@ -593,6 +595,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-115 | Done | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | 13 of 13 | — |
 | WP-116 | Done | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | 12 of 12 | — |
 | WP-117 | Queued: | — | — | — |
+| WP-118 | Done | NFR-16-u, NFR-16-v, NFR-16-w | 3 of 3 | — |
 
 Test cases and the tests that prove them:
 
@@ -855,6 +858,14 @@ Test cases and the tests that prove them:
 | MEAL-25-f | WP-105 | A meal's recipe files are the household's own: up to 10 MB each, a photo or a PDF; another household's admin and board can't read or add them; the household's board reads them | DB | DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] a parent adds a photo to a meal's recipe`<br>DB `supabase/tests/550_meal_groceries.test.sql`: `[MEAL-25-f] another family's board reads none of them` |
 | MEAL-25-g | WP-105 | A meal's form shows its Recipe: the link with Read ingredients, its photos and PDFs each with Read ingredients and ×, Add a photo or PDF, and what was found filled in for the admin to check | UI | UI `e2e/ui/meal-groceries.spec.ts`: `with no service worker › [MEAL-25-g][US-720] a meal’s Recipe: the link with Read ingredients, its photos and PDFs, and what was read filled in to check` |
 | MEAL-26-a | WP-105 | On the board's Meals, a tap on a meal with a recipe opens it full screen, read-only: its photos and PDFs with chips between them, its ingredients and the link's steps, text 28 px or more, and Close goes back | UI | UI `e2e/ui/board-recipe.spec.ts`: `[MEAL-26-a][US-720] a tap on a meal opens its recipe full screen, read-only, and Close goes back, in ${theme}` |
+| MEAL-21-a | WP-106 | The usual gap: with fewer than 4 buys a thing is still being learned; a regular staple's gap is the median of the gaps between its last 8 buys, to the day; one bought at no steady gap (the middle half of its gaps spanning more than half the median) is never suggested; the gap in words ("every 9 days", "every week", "every 2 weeks") | Unit | Unit `apps/web/lib/grocery-staples.test.ts`: `the gap › [MEAL-21-a] with fewer than 4 buys a thing is still being learned`<br>Unit `apps/web/lib/grocery-staples.test.ts`: `the gap › [MEAL-21-a] a regular staple’s gap is the median of its last 8 buys’ gaps, to the day`<br>Unit `apps/web/lib/grocery-staples.test.ts`: `the gap › [MEAL-21-a] one bought irregularly is never suggested`<br>Unit `apps/web/lib/grocery-staples.test.ts`: `the gap › [MEAL-21-a] the gap in words` |
+| MEAL-21-b | WP-106 | Due a day before the gap is up, two days for a gap over a week, and not the day before; not suggested while it is on the list or a child's ask for it waits; stopped once 3 gaps pass with no buy, and its next buy starts it again; calendar days across the end of DST, a month and a year | Unit | Unit `apps/web/lib/grocery-staples.test.ts`: `when it is suggested › [MEAL-21-b] due a day early for a gap of a week or less, two days early for a longer one`<br>Unit `apps/web/lib/grocery-staples.test.ts`: `when it is suggested › [MEAL-21-b] a regular staple not on the list is running low from its due day, not the day before`<br>Unit `apps/web/lib/grocery-staples.test.ts`: `when it is suggested › [MEAL-21-b] on the list, or asked for by a child waiting for a grown-up, it is not suggested`<br>Unit `apps/web/lib/grocery-staples.test.ts`: `when it is suggested › [MEAL-21-b] one no longer bought stops after 3 gaps with no buy, and its next buy starts it again`<br>Unit `apps/web/lib/grocery-staples.test.ts`: `when it is suggested › [MEAL-21-b] dates across the end of DST, a month and a year work by calendar days` |
+| MEAL-21-c | WP-106 | A dismissed suggestion: Not now hides it until one gap from that day, back on its day unless it was bought meanwhile; Don't suggest moves it to Not suggested until Suggest again; Running low? most overdue first; Home's "3 running low", none at 0, leaving out what is on the list or asked for; Staples' summary; a Running low? row's words and each staple's state | Unit | Unit `apps/web/lib/grocery-staples.test.ts`: `Not now and Don’t suggest › [MEAL-21-c] a dismissed suggestion: Not now hides it until one more gap has passed`<br>Unit `apps/web/lib/grocery-staples.test.ts`: `Not now and Don’t suggest › [MEAL-21-c] Don’t suggest stops it, in Staples’ Not suggested, until Suggest again`<br>Unit `apps/web/lib/grocery-staples.test.ts`: `Not now and Don’t suggest › [MEAL-21-c] Running low? is most overdue first; Home’s line and Staples’ summary say how many`<br>Unit `apps/web/lib/grocery-staples.test.ts`: `the words › [MEAL-21-c] a Running low? row and each staple’s state in Staples`<br>Unit `apps/web/lib/grocery-staples.test.ts`: `Home’s count › [MEAL-21-c] counts the staples running low, leaving out what is open on the list or asked for` |
+| MEAL-21-d | WP-106 | The buys from a history (`grocery_buys()`): a tick is a buy, a board's too; an untick takes it back; two on one household day count once; a removal is never one; the count and the latest 8 days, oldest first, with the name of the latest buy | DB | DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-d] a tick is a buy, an untick takes it back, two on a day count once, the day is the household's`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-d] Milk has 4 buys, the board's among them`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-d] with the name of its latest buy`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-d] a removal is not a buy`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-d] Eggs were bought 10 times`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-d] and the latest 8 days come back`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-d] oldest first, the latest last` |
+| MEAL-21-e | WP-106 | Only the household's parents read its buys and set its choices (`set_grocery_staple()`: Not now to a day in the coming year, Don't suggest, Suggest again; one a thing); another household's parent and a board are refused, and nobody writes `grocery_staple` directly | DB | DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] another household's parent can't read the buys`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] nor can a board`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] a board can't set a choice`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] Not now on Milk`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] it is hidden until its day`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] Not now needs a day to come`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] within the coming year`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] only Not now, Don't suggest or Suggest again`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] Don't suggest stops it`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] Suggest again brings it back, Not now cleared`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] one choice a thing`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] nobody writes the table directly`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] another household's parent can't set one`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-e] nor read the household's choices` |
+| MEAL-21-f | WP-106 | Add goes through the one way in (`add_groceries()`) with the reason "staple"; nothing else puts a staple on the list | DB | DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-f] Add puts it on the list as a staple`<br>DB `supabase/tests/620_grocery_staples.test.sql`: `[MEAL-21-f] and nothing else is on the list: nothing is added by itself` |
+| MEAL-21-g | WP-106 | Groceries on the demo family, on a phone and a laptop, Day and Evening: Running low? under Asked for with Add and Not now; after Add (Butter on the list, Undo) and after Not now; Staples (learned, still learning, not suggested); nothing due; Home's "3 running low · Review"; nothing overflows, contrast AA, targets 44 px | UI | UI `e2e/ui/grocery-staples.spec.ts`: `staples on ${device} › [MEAL-21-g][US-716] Running low? with Add and Not now, under Asked for, in ${theme}`<br>UI `e2e/ui/grocery-staples.spec.ts`: `staples on ${device} › [MEAL-21-g] Staples: learned, still learning, not suggested, in ${theme}`<br>UI `e2e/ui/grocery-staples.spec.ts`: `staples on ${device} › [MEAL-21-g] after Add and after Not now, in ${theme}`<br>UI `e2e/ui/grocery-staples.spec.ts`: `staples on ${device} › [MEAL-21-g] nothing due folds Running low? to Nothing due, in ${theme}`<br>UI `e2e/ui/grocery-staples.spec.ts`: `staples on ${device} › [MEAL-21-g] Home’s Groceries card says 3 running low, with Review, in ${theme}` |
+| MEAL-21-h | WP-106 | On the real preview, two things with a steady history are offered; Add puts one on the list as a staple, Not now hides the other for one gap | E2E | E2E `e2e/tests/staples.spec.ts`: `[MEAL-21-h][US-716] Running low? offers what is due; Add puts it on the list, Not now hides it` |
 | MEAL-22-a | WP-107 | A board asks only for its own household and as one of its own members (`ask_groceries()`); a board of another household, a member of another household, an admin's session or an archived member is refused; nobody writes `grocery_ask` directly | DB | Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-22] the brand row and the words › [MEAL-22-a] a board sends only what it may: a member, a name, a brand or none`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-a] another household's board can't ask as this household's child`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-a] a board can't ask as another household's child`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-a] a parent's session is not a board`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-a] nobody writes the asks directly`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-a] an archived member can't ask` |
 | MEAL-22-b | WP-107 | An adult's ask goes on the list at once, its reason the ask with the member; a child's waits when their OK is on and is not on the list; with it off it goes on at once; something open on the list already takes the asker as a reason and never waits ("already") | DB | DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] Pat's ask goes on the list`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] ... marked as Pat's ask`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] Maya's ask waits (her OK is on to start)`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] ... and is not on the list`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] asking again for the same thing is the same ask`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] ... not a second one`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] something on the list already: "already", never waits`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] ... Maya is a reason on Milk`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] with it off, Leo's ask goes straight on`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-b] ... Apples is on the list` |
 | MEAL-22-c | WP-107 | Only a parent of the household puts a waiting ask on the list (`decide_grocery_asks()`, through the merge, with its brand); Not this time turns it down; a board can't decide; Call off takes back only a waiting ask, from a board of the household; a child has at most 5 waiting, the 6th refused | DB | Unit `apps/web/lib/grocery-asks.test.ts`: `[MEAL-22] the board’s Asked for card › [MEAL-22-c] counts a child’s waiting asks`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] a 6th waiting ask is refused`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] the board calls one off`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] ... and there is room again`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] another household's board can't call one off`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] a board can't decide`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] nor another household's parent`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] Pat adds two`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] ... through the merge, with the brand Maya picked`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] Not this time`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] ... Cookies is not on the list`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] a decided ask can't be called off`<br>DB `supabase/tests/610_board_grocery_asks.test.sql`: `[MEAL-22-c] two still wait` |
@@ -894,6 +905,9 @@ Test cases and the tests that prove them:
 | MEAL-29-j | WP-116 | Brands in Categories and stores: the list A to Z, ⋯ Rename, Merge into… and Archive, Archived with Restore, the new-brand field | UI | UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Brands: A to Z with their use, ⋯ Rename, Merge into… and Archive, Archived with Restore, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] folded, Categories and stores counts the brands too`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Merge into… picks the closest name and says what it does`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Rename opens in place with the brand’s name` |
 | MEAL-29-k | WP-116 | Home's Groceries card: the Brand field as something is typed, filled in from last time, and the Added line with the brand; the board shows "Milk · Kirkland" | UI | UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-29-k] each thing shows its brand after its name, softer`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s card: the Brand field as an item is typed, last time’s brand, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s line names the brand of something on the list already`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s Added line names the brand` |
 | MEAL-29-l | WP-116 | On the real preview, an admin adds an item with a new brand from Groceries and finds it among Brands; adding it again fills the brand in; merging two brands moves the item | E2E | E2E `e2e/tests/grocery-brands.spec.ts`: `[MEAL-29-l] done-when: a new brand is saved with its item, filled in next time, and a merge moves it` |
+| NFR-16-u | WP-118 | Only a router prefetch (`_rsc` and the `Next-Router-Prefetch` header, any of its kinds) is answered, at once with 204; a tap's navigation, a page load and a save go on to the server | Unit | Unit `scripts/next-prefetch.test.mjs`: `[NFR-16-u] a router prefetch is a GET with _rsc and the prefetch header; a tap or a page load is not`<br>Unit `scripts/next-prefetch.test.mjs`: `[NFR-16-u] answerPrefetches answers a prefetch 204 at once and passes every other request on` |
+| NFR-16-v | WP-118 | Every UI spec takes its `test` from `e2e/ui/test.ts`, and the screenshot script makes every context in one place that answers prefetches before a page opens | Unit | Unit `scripts/next-prefetch.test.mjs`: `[NFR-16-v] every UI spec takes its test from e2e/ui/test.ts, and every screenshot context answers prefetches` |
+| NFR-16-w | WP-118 | With the app's own prefetches kept (`realPrefetches`), a tap on a menu link while a prefetch is still on its way opens that page, in Chrome, as the iPhone and as the Mac | UI | UI `e2e/ui/prefetch.spec.ts`: `[NFR-16-w] a tap on a link while the app’s own prefetch is on its way opens the page` |
 
 ### 9.5 By user story
 
@@ -990,7 +1004,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-713 | MEAL-17 | Not built | — |
 | US-714 | MEAL-18 | Covered | UI 1 |
 | US-715 | MEAL-07, MEAL-19, MEAL-20 | Covered | UI 1 |
-| US-716 | MEAL-21 | Not built | — |
+| US-716 | MEAL-21 | Covered | UI 1 · E2E 1 |
 | US-717 | MEAL-22 | Covered | E2E 1 |
 | US-718 | MEAL-23 | Covered | UI 1 |
 | US-719 | MEAL-24 | Covered | UI 1 |
@@ -1720,6 +1734,27 @@ Unit · 9 tests
 | `the one merge › [MEAL-19-d] taking a meal’s share off recomputes the amount from the reasons left` | MEAL-19-d |
 | `reading an item as typed › [MEAL-20-b] takes the amount off before or after the name` | MEAL-20-b |
 | `reading an item as typed › [MEAL-20-b] reads amounts as counts, units or words` | MEAL-20-b |
+
+#### `apps/web/lib/grocery-staples.test.ts`
+
+Unit · 14 tests
+
+| Test | Names |
+|---|---|
+| `the gap › [MEAL-21-a] with fewer than 4 buys a thing is still being learned` | MEAL-21-a |
+| `the gap › [MEAL-21-a] a regular staple’s gap is the median of its last 8 buys’ gaps, to the day` | MEAL-21-a |
+| `the gap › [MEAL-21-a] one bought irregularly is never suggested` | MEAL-21-a |
+| `the gap › [MEAL-21-a] the gap in words` | MEAL-21-a |
+| `when it is suggested › [MEAL-21-b] due a day early for a gap of a week or less, two days early for a longer one` | MEAL-21-b |
+| `when it is suggested › [MEAL-21-b] a regular staple not on the list is running low from its due day, not the day before` | MEAL-21-b |
+| `when it is suggested › [MEAL-21-b] on the list, or asked for by a child waiting for a grown-up, it is not suggested` | MEAL-21-b |
+| `when it is suggested › [MEAL-21-b] one no longer bought stops after 3 gaps with no buy, and its next buy starts it again` | MEAL-21-b |
+| `when it is suggested › [MEAL-21-b] dates across the end of DST, a month and a year work by calendar days` | MEAL-21-b |
+| `Not now and Don’t suggest › [MEAL-21-c] a dismissed suggestion: Not now hides it until one more gap has passed` | MEAL-21-c |
+| `Not now and Don’t suggest › [MEAL-21-c] Don’t suggest stops it, in Staples’ Not suggested, until Suggest again` | MEAL-21-c |
+| `Not now and Don’t suggest › [MEAL-21-c] Running low? is most overdue first; Home’s line and Staples’ summary say how many` | MEAL-21-c |
+| `the words › [MEAL-21-c] a Running low? row and each staple’s state in Staples` | MEAL-21-c |
+| `Home’s count › [MEAL-21-c] counts the staples running low, leaving out what is open on the list or asked for` | MEAL-21-c |
 
 #### `apps/web/lib/health-db.test.ts`
 
@@ -2837,6 +2872,14 @@ E2E · 2 tests
 | `[NFR-14] health endpoint answers on the deployment` | NFR-14 |
 | `[NFR-14] board route renders` | NFR-14 |
 
+#### `e2e/tests/staples.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-21-h][US-716] Running low? offers what is due; Add puts it on the list, Not now hides it` | MEAL-21-h, US-716 |
+
 #### `e2e/tests/weather.spec.ts`
 
 E2E · 3 tests
@@ -3270,6 +3313,18 @@ UI · 14 tests
 | `[MEAL-29-k] Home’s line names the brand of something on the list already` | MEAL-29-k |
 | `[MEAL-29-k] Home’s Added line names the brand` | MEAL-29-k |
 
+#### `e2e/ui/grocery-staples.spec.ts`
+
+UI · 5 tests
+
+| Test | Names |
+|---|---|
+| `staples on ${device} › [MEAL-21-g][US-716] Running low? with Add and Not now, under Asked for, in ${theme}` | MEAL-21-g, US-716 |
+| `staples on ${device} › [MEAL-21-g] Staples: learned, still learning, not suggested, in ${theme}` | MEAL-21-g |
+| `staples on ${device} › [MEAL-21-g] after Add and after Not now, in ${theme}` | MEAL-21-g |
+| `staples on ${device} › [MEAL-21-g] nothing due folds Running low? to Nothing due, in ${theme}` | MEAL-21-g |
+| `staples on ${device} › [MEAL-21-g] Home’s Groceries card says 3 running low, with Review, in ${theme}` | MEAL-21-g |
+
 #### `e2e/ui/help.spec.ts`
 
 UI · 4 tests
@@ -3456,6 +3511,14 @@ UI · 5 tests
 | `[PTS-08-k] Show older adds the next 50 below, until the first entry` | PTS-08-k |
 | `[PTS-08-m] Rewards’ Points card, each bonus’s payouts and a child’s Points open the register` | PTS-08-m |
 | `[PTS-08-l] on a phone, the chosen days are written whole, as the mockup wraps them` | PTS-08-l |
+
+#### `e2e/ui/prefetch.spec.ts`
+
+UI · 1 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-16-w] a tap on a link while the app’s own prefetch is on its way opens the page` | NFR-16-w |
 
 #### `e2e/ui/reminders.spec.ts`
 
@@ -3952,6 +4015,16 @@ Unit · 8 tests
 | `[NFR-07] an invalid schedule produces no SQL` | NFR-07 |
 | `[NFR-07] quotes in names or cron cannot break out of the SQL` | NFR-07 |
 | `[NFR-07][D-85] --table-only lists the jobs for job_health and schedules nothing` | NFR-07 |
+
+#### `scripts/next-prefetch.test.mjs`
+
+Unit · 3 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-16-u] a router prefetch is a GET with _rsc and the prefetch header; a tap or a page load is not` | NFR-16-u |
+| `[NFR-16-u] answerPrefetches answers a prefetch 204 at once and passes every other request on` | NFR-16-u |
+| `[NFR-16-v] every UI spec takes its test from e2e/ui/test.ts, and every screenshot context answers prefetches` | NFR-16-v |
 
 #### `scripts/no-model-name.test.mjs`
 
@@ -6134,5 +6207,35 @@ DB · 48 tests
 | `[MEAL-30-b] another household's board can't undo it` | MEAL-30-b |
 | `[MEAL-30-b] Undo puts it back` | MEAL-30-b |
 | `[MEAL-30-b] ... once: the one added meanwhile is folded into it` | MEAL-30-b |
+
+#### `supabase/tests/620_grocery_staples.test.sql`
+
+DB · 23 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-21-d] a tick is a buy, an untick takes it back, two on a day count once, the day is the household's` | MEAL-21-d |
+| `[MEAL-21-d] Milk has 4 buys, the board's among them` | MEAL-21-d |
+| `[MEAL-21-d] with the name of its latest buy` | MEAL-21-d |
+| `[MEAL-21-d] a removal is not a buy` | MEAL-21-d |
+| `[MEAL-21-d] Eggs were bought 10 times` | MEAL-21-d |
+| `[MEAL-21-d] and the latest 8 days come back` | MEAL-21-d |
+| `[MEAL-21-d] oldest first, the latest last` | MEAL-21-d |
+| `[MEAL-21-e] another household's parent can't read the buys` | MEAL-21-e |
+| `[MEAL-21-e] nor can a board` | MEAL-21-e |
+| `[MEAL-21-e] a board can't set a choice` | MEAL-21-e |
+| `[MEAL-21-e] Not now on Milk` | MEAL-21-e |
+| `[MEAL-21-e] it is hidden until its day` | MEAL-21-e |
+| `[MEAL-21-e] Not now needs a day to come` | MEAL-21-e |
+| `[MEAL-21-e] within the coming year` | MEAL-21-e |
+| `[MEAL-21-e] only Not now, Don't suggest or Suggest again` | MEAL-21-e |
+| `[MEAL-21-e] Don't suggest stops it` | MEAL-21-e |
+| `[MEAL-21-e] Suggest again brings it back, Not now cleared` | MEAL-21-e |
+| `[MEAL-21-e] one choice a thing` | MEAL-21-e |
+| `[MEAL-21-e] nobody writes the table directly` | MEAL-21-e |
+| `[MEAL-21-e] another household's parent can't set one` | MEAL-21-e |
+| `[MEAL-21-e] nor read the household's choices` | MEAL-21-e |
+| `[MEAL-21-f] Add puts it on the list as a staple` | MEAL-21-f |
+| `[MEAL-21-f] and nothing else is on the list: nothing is added by itself` | MEAL-21-f |
 
 <!-- /catalogue -->

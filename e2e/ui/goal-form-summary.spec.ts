@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Route } from '@playwright/test';
+import { expect, test, type Page, type Route } from './test';
 
 // [NFR-16][D-128] The goal form's last four differences from its mockups, closed (WP-101), on the
 // made-up family's /dev pages with no database: a rule as one summary line with its weight, the live

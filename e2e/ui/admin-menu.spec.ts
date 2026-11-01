@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [NFR-15][US-107] The admin app's one menu and Settings (WP-51, D-81), on /dev/settings with the
 // made-up family and no database: on a laptop the menu stays down the left in three groups, Today

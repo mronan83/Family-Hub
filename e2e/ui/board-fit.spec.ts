@@ -1,5 +1,5 @@
 import { boardZoom, TEXT_SIZES } from '../../packages/ui/src/board-fit';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [BRD-08] The board fits the screen it is on (WP-47, D-73), on /dev/board with the made-up family:
 // laid out on the 1920×1080 canvas and zoomed to the screen, so a 4K panel shows it twice as large

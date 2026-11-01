@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [MEAL-07][MEAL-19][MEAL-25] Meals → groceries in the admin app (WP-105, D-138) on /dev/meals: a
 // made-up family, no database. A library meal's Ingredients in its form; the week's Add to groceries
