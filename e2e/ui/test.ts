@@ -5,12 +5,14 @@ import { answerPrefetches } from '../../scripts/next-prefetch.mjs';
 // answered by the suite (scripts/next-prefetch.mjs, WP-118). A page.goto that cancels a prefetch still
 // in flight fails in WebKit ("WebKit encountered an internal error") or never answers; every spec
 // imports `test` from here, so no page of the iPhone or Mac projects has one in flight.
+// [NFR-16-w] A spec that sets `realPrefetches` keeps the app's own prefetches (prefetch.spec.ts).
 
 export * from '@playwright/test';
 
-export const test = base.extend({
-  context: async ({ context }, use) => {
-    await answerPrefetches(context);
+export const test = base.extend<{ realPrefetches: boolean }>({
+  realPrefetches: [false, { option: true }],
+  context: async ({ context, realPrefetches }, use) => {
+    if (!realPrefetches) await answerPrefetches(context);
     await use(context);
   },
 });
