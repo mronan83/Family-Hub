@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { foldOf, unfold } from '../support/fold';
 
 // [PTS-03][PTS-04] The rewards shop for a parent (WP-18) on /dev/rewards: a made-up family, no

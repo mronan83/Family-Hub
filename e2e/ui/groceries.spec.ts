@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [MEAL-18][MEAL-23][MEAL-24] Groceries in the admin app (WP-104, D-138) on /dev/groceries: the made-up
 // demo family's list, no database. The page on a phone and a laptop in Day and Evening (it runs as an

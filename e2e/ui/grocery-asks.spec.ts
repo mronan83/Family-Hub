@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [MEAL-22][MEAL-30][US-717][US-723] The children's asks in the admin app (WP-107, D-149), on the made-up
 // demo family, no database: Groceries' Asked for (Maya's popcorn and Leo's orange juice wait, with

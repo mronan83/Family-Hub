@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 const THEMES = ['day', 'evening'] as const;
 const SURFACES = ['board', 'admin'] as const;

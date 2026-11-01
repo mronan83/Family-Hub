@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [NFR-16][D-127] The admin app's form controls as the approved mockups draw them (WP-100), on the
 // made-up family's /dev pages, no database. It runs as a desktop Chrome and as an iPhone in WebKit

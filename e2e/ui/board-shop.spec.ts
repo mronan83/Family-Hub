@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [PTS-02][PTS-03][PTS-04][RWD-07][RWD-08] The board's shop, requests and goals (WP-20) on /dev/board:
 // the made-up family, with a stand-in for the server that keeps each ask, call-off and celebration on

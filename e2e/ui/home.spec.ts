@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { foldOf, unfold } from '../support/fold';
 
 // [NFR-17][US-109][ACC-08][US-110] Home at a glance and Family options (WP-57, D-84), on /dev/home and

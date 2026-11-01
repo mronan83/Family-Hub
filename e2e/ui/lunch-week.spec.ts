@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [MEAL-13][US-710][D-98] The lunch week as a list of days (WP-74) on /dev/meals, with a made-up
 // family and menu, no database. Today there is Wednesday 14 October; Thursday is a day off. Leo's

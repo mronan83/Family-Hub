@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [MEAL-21][US-716] Staples by how often they run out (WP-106, D-138 (7), D-150), on the made-up demo
 // family on Sun, Oct 18, no database: Groceries' Running low? (Butter, Trash bags and Cereal due,

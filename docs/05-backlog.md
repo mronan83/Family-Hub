@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.168: WP-118 (WebKit's page loads in CI fail while a link prefetch is in flight, a bug) added at the owner's request and done in the same change (NFR-16, D-152): 7 of 65 `build` attempts from 18 to 30 October were red on a WebKit page load; the cause, a load that cancels a Next.js router prefetch still in flight, which Playwright's WebKit fails or never answers; the UI suite and the screenshot script now answer prefetches themselves. Its test cases are NFR-16-u to NFR-16-w.
 > v0.8.167: WP-106 (staples suggested by how often they run out) done (MEAL-21, US-716, D-150): Running low? and Staples on Groceries, and a line on Home's Groceries card; the refreshed mockup approved on 30 October.
 > v0.8.166: WP-107 follow-up: the board's Got today card keeps names to two lines, Untick under them (MEAL-30, D-149).
 > v0.8.165: WP-107 (children ask for groceries from the board, with an optional parent OK) done, with ticking off and taking off at the board added at the owner's request (MEAL-22, MEAL-30, US-717, US-723, D-149); the mockup approved on 30 October with brands on the board.
@@ -326,13 +327,14 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-107 | Children ask for groceries from the board, with an optional parent OK | P3 | M | WP-104, WP-63 | Done |
 | WP-112 | Groceries on Home, and a preferred store | P3 | M | WP-104 | Done |
 | WP-116 | Grocery brands | P3 | M | WP-104, WP-112 | Done |
+| WP-118 | WebKit's page loads in CI fail while a link prefetch is in flight (a bug) | P3 | S | WP-100, WP-113 | Done |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
 | WP-36 | Closure import | P3 | M | WP-22 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October.
+**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October. WP-118 (the WebKit CI fix), started by the owner on 1 November.
 
 ---
 
@@ -577,6 +579,8 @@ flowchart LR
     WP104 --> WP112[WP-112 Groceries on Home and a preferred store]
     WP104 --> WP116[WP-116 Grocery brands]
     WP112 --> WP116
+    WP100 --> WP118[WP-118 WebKit loads and prefetches in CI]
+    WP113 --> WP118
     WP85[WP-85 Test strategy and catalogue] --> WP86[WP-86 Close the known test gaps]
   end
 ```
@@ -2386,6 +2390,26 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 - **As built (D-148):** migration `20261028022825_grocery_brands.sql` (`grocery_brand`, `grocery_item.brand_id`, `private.grocery_brand_for()`, `add_grocery_brand()`, `rename_grocery_brand()`, `archive_grocery_brand()`, `merge_grocery_brands()`, `set_groceries_brand()`; `add_groceries()` and `board_groceries()` replaced with brands; Realtime; audited); `apps/web/lib/grocery-brands.ts` (`brandKey()`, `brandOffers()`, `resolveBrand()`, `withBrand()`, `mergeTarget()`), `lib/groceries.ts` (`lastBrand()`, the suggestion's `brandId`, Home's lines with the brand), `lib/meal-groceries.ts` (a week's items with their last brand), `lib/board-groceries.ts`; the Brand field `groceries/brand-field.tsx` in Groceries' add field, Home's card (`groceries-quick.tsx`), ⋯ **Brand…** (`BrandForm`) and Select's **Brand…**; Brands in Categories and stores; actions `setGroceryBrand()`, `setGroceriesBrand()`, `archiveBrand()`, `mergeBrands()`, `addPlace()`/`renamePlace()` for a brand; the board's `GroceriesBoard`; `ui.css` `.fw-groc__brand`, `.fw-groc__combo`, `.fw-groc__offers`, `.fw-groc__offer`, `.fw-groc__brandname`, `.fw-bgroc__brand`; the demo family's brands in `seed.sql` and the dev fixtures; `/dev/groceries?brand=&brandOf=&merge=&renameBrand=&panel=brand`, `/dev/home?brand=&groceries=added-brand`; the screens in `scripts/screen-shots.mjs` and the guide's. Tests: pgTAP `600_grocery_brands.test.sql` (MEAL-29-a to -e); Vitest `lib/grocery-brands.test.ts` (MEAL-29-f to -h) and `lib/meal-groceries.test.ts` (MEAL-29-g); UI suite `e2e/ui/grocery-brands.spec.ts` (MEAL-29-i to -k; in Chrome, as an iPhone in WebKit and as Safari on a Mac) and `e2e/ui/board-groceries.spec.ts` (MEAL-29-k); e2e `e2e/tests/grocery-brands.spec.ts` (MEAL-29-l), on its own household; it runs on a preview once the nightly run on `main` has migrated the test database. `070_board_snapshot.test.sql` lists `grocery_brand` among the board's Realtime tables.
 - **Deferred, as plain facts:** the brand in an Apple Reminders title is for WP-103, which is not built (SPIKE-08 first).
 
+### WP-118 — WebKit's page loads in CI fail while a link prefetch is in flight (a bug)
+**Phase:** P3 · **Size:** S · **Depends on:** WP-100, WP-113 · **Reqs:** NFR-16
+- Added at the owner's request on 1 November, in the planner session: "Start the WebKit CI fix: the build's iPhone and Mac WebKit steps fail with "WebKit encountered an internal error" (#162, WP-116, #180); find the cause and fix it". The goal: a cause for the WebKit reds of CI's `build` job (D-110), fixed where the cause is, with no retry, no test skipped, disabled, quarantined or loosened.
+- **How often (CI's `ci` runs from 18 to 30 October):** 65 `build` attempts, 7 of them red on a WebKit page load: 6 "WebKit encountered an internal error" and 1 `page.goto` time-out. 3 in the UI suite, all as the iPhone (`controls.spec.ts:93` twice, `grocery-brands.spec.ts:102` once, at test 526 to 663 of the run), and 4 in the screenshot step (after 135 to 301 pictures). Every one was a `page.goto` of a `/dev` page; none was in Chrome; a re-run of the same commit passed or failed elsewhere. Among them #162 (WP-97's deploy refused on 23 October), WP-116's first run and both runs of WP-117's backlog change. 7 more `build` reds in those runs were assertion failures, 6 of them in WebKit; the ones WP-113 explained (the service worker) are not this item's, and the rest are not shown to be.
+- **The cause.** Reproduced on a local copy of CI's build (`next start`, Playwright's WebKit, 2 workers): the iPhone's `controls.spec.ts:93`, which loads 22 `/dev` pages one after another in one page, failed 7 times in 20 runs. In the trace of each, a Next.js router prefetch (a `<Link>` that came into view fetches its route ahead of a tap: `GET /admin/…?_rsc=…` with a `Next-Router-Prefetch` header) was cancelled 2 to 10 ms before WebKit failed the next page load; the `/dev` pages draw the admin app's own links, so each prefetches `/admin` pages. A load that starts while one is in flight cancels it, and Playwright's WebKit then fails that load ("internal error", once "Frame load interrupted") or never answers it (the screenshot step's time-out); Chrome cancels them without harm. Not the cause: the redirect to sign-in that a prefetch without a session gets (with prefetches left out of the proxy and no redirect at all, 5 runs in 50 still failed, 2 of them as 100 s hangs). Not shown: whether Safari itself does this; Playwright's WebKit is its own build, and no iPhone here has shown it.
+- **The fix (D-152):** the UI suite and the screenshot script answer the router's prefetches themselves, at once, with nothing (204), so no page has one in flight when the next load starts (`scripts/next-prefetch.mjs`). Every UI spec takes its `test` from `e2e/ui/test.ts`, which does it for each test's browser context, in Chrome, the iPhone and the Mac alike; the screenshot script does it for each context it makes. Only requests with `_rsc` and the prefetch header are answered: a tap's navigation, the page's loads, fonts and saves go to the server as before. A prefetch answered 204 is dropped by the router, which then fetches the route when it is tapped. No app code changes; production prefetches as before. With it, the same local runs were green 50 times in 50. So that the suite can't hide an app bug, one spec keeps the app's own prefetches: a tap on a link while one is on its way opens the page, in all three projects (NFR-16-w). What the evidence shows reaching a person: nothing. Every failure was a load Playwright started (`page.goto`) during a prefetch; a tap on a `<Link>` is the router's own navigation, which doesn't unload the page. A typed address, a reload or a plain link during a prefetch is a load like `goto`'s, and whether Safari on an iPhone fails one is not shown here.
+- **One new decision:** D-152, for the owner to confirm.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| NFR-16-u | Only a router prefetch (`_rsc` and the `Next-Router-Prefetch` header, any of its kinds) is answered, at once with 204; a tap's navigation, a page load and a save go on to the server | Unit |
+| NFR-16-v | Every UI spec takes its `test` from `e2e/ui/test.ts`, and the screenshot script makes every context in one place that answers prefetches before a page opens | Unit |
+| NFR-16-w | With the app's own prefetches kept (`realPrefetches`), a tap on a menu link while a prefetch is still on its way opens that page, in Chrome, as the iPhone and as the Mac | UI |
+
+- **Done when:** every case above has a test; the fast checks are green; the `build` job is green 5 times in a row on this item's branch with no re-run of a failed job, and the local repro (`controls.spec.ts` as the iPhone, `--repeat-each`) is green where it failed before.
+- **As built:** `scripts/next-prefetch.mjs` (`isRouterPrefetch()`, `answerPrefetches()`) with its types; `e2e/ui/test.ts` (the UI suite's `test`, with the `realPrefetches` option); every `e2e/ui/*.spec.ts` imports from it; `scripts/screen-shots.mjs` (`contextFor()`); `e2e/ui/prefetch.spec.ts`, in the iPhone and Mac projects too (`e2e/ui.config.ts`). The weather demo's times: `apps/web/app/dev/admin/page.tsx`. Tests: node:test `scripts/next-prefetch.test.mjs` (NFR-16-u, NFR-16-v); UI `e2e/ui/prefetch.spec.ts` (NFR-16-w). No screen changes.
+- **Found while its CI ran:** the fifth `build` run on this branch (1 November, 04:32 UTC) was red in one Chrome test, `weather.spec.ts:148` (BRD-04): "Last read at 9:09 am" where it expects 10:09. The `/dev/admin?view=weather` demo read the weather at a fixed 14:09 UTC on the household's today, which is 10:09 in New York only on daylight time; 1 November is the day the clocks go back, so it is red on `main` too until March. The demo now reads at 10:09 and fails at 10:39 in the household's zone in any season (`localInstant()`, unit-tested across clock changes); the test and what it checks are unchanged. Not the WebKit cause: the other four runs were green before the change of clocks.
+- **Deferred, as plain facts:** the 6 WebKit assertion failures of 18 to 21 October that WP-113 did not explain (`goal-form-summary.spec.ts:286`, `meal-groceries.spec.ts:145`, `chores.spec.ts:184` as the iPhone, `goals.spec.ts:347`) have no cause found here; none has come back since 21 October. The same `/dev/admin` page builds last week's demo items at a fixed UTC hour (`h + 4`, daylight time); no test reads their times, and it is left as it is.
+
 ---
 
 ## 6. Size summary
@@ -2398,6 +2422,6 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82, WP-92 | Menu adapters, WP-49 and WP-80 are the Ls |
-| P3 | SPIKE-06, SPIKE-07, SPIKE-08, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-85, WP-86, WP-88 – WP-91, WP-93 – WP-99, WP-103 – WP-107, WP-112, WP-116 | WP-56, WP-58, WP-68, WP-72, WP-86, WP-99, WP-103, WP-104 and WP-105 are the Ls |
+| P3 | SPIKE-06, SPIKE-07, SPIKE-08, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-85, WP-86, WP-88 – WP-91, WP-93 – WP-99, WP-103 – WP-107, WP-112, WP-116, WP-118 | WP-56, WP-58, WP-68, WP-72, WP-86, WP-99, WP-103, WP-104 and WP-105 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.16: WebKit's page loads in CI (WP-118, D-152): the UI suite's specs take their `test` from `e2e/ui/test.ts`, and it and the screenshot script answer Next.js's link prefetches themselves; test cases NFR-16-u to NFR-16-w (one spec keeps the app's own prefetches); the catalogue regenerated.
 > v0.8.15: staples (WP-106, D-150): test cases MEAL-21-a to MEAL-21-h; the catalogue regenerated.
 > v0.8.14: the board's grocery asks, ticks and removals (WP-107, D-149): test cases MEAL-22-a to MEAL-22-j and MEAL-30-a to MEAL-30-e; the catalogue regenerated.
 > v0.8.13: grocery brands (WP-116, D-148): test cases MEAL-29-a to MEAL-29-l; the catalogue regenerated.
@@ -60,7 +61,7 @@ Each type, with what it proves, where it runs, when, and how fast.
 | Static checks | Format, lint, types, traceability (`check_traceability.py`), the docs build and its layout on 13 devices | CI `checks` and `docs` jobs | Every PR, and the merge commit on `main` | About a minute each |
 | Unit (Vitest, node:test) | Pure logic: the rules engine, dates, menu reading, lunch picks, the board's layout choice, sleep and wake, the scripts CI runs | CI `checks` (`pnpm test`) | Every PR | Seconds |
 | Database (pgTAP) | Tables, functions and access rules; household isolation (RLS) | CI `database`, on native Postgres (`scripts/db-test.sh`) | Every PR | About a minute |
-| UI suite (Playwright) | Screens on made-up data with no shared database: every size, theme and text size; the 28 px and 56 px floors; a page's own interactions. Desktop Chrome, and an iPhone in WebKit (Safari's engine) for the controls, goal, form and admin layout specs (the `iphone` project, D-127) | CI `build` (`pnpm test:ui`) | Every PR | Minutes |
+| UI suite (Playwright) | Screens on made-up data with no shared database: every size, theme and text size; the 28 px and 56 px floors; a page's own interactions. Desktop Chrome, and an iPhone in WebKit (Safari's engine) for the controls, goal, form and admin layout specs (the `iphone` project, D-127). A spec imports `test` from `e2e/ui/test.ts`, which answers Next.js's link prefetches itself, so WebKit never cancels one in a page load (D-152) | CI `build` (`pnpm test:ui`) | Every PR | Minutes |
 | Visual and accessibility | Tile style snapshots, axe contrast, manifests, fonts, keyboard | CI `build`, in the UI suite | Every PR | In the UI suite's time |
 | E2E (Playwright) | Real flows across the board, the admin app, the database and the jobs, as the demo family | A preview of `main` that the run builds, on the test database (`e2e.yml`) | Nightly at 07:17 UTC; never on a PR, never after a deploy (D-108) | 22–34 min for the last four green full runs before D-108 (225, 228, 229, 234), one worker; 40 spec files |
 | Burn-in | A new or changed e2e spec passes 5 runs in a row | The nightly run (`node scripts/e2e-run.mjs --burn-in <spec>`) | Optional, after the spec is on `main` (D-110) | 5 × the spec's time |
@@ -278,7 +279,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3197** tests: Unit 1005 · DB 1687 · UI 361 · E2E 144. 2675 name at least one ID; 522 name none.
+**3201** tests: Unit 1008 · DB 1687 · UI 362 · E2E 144. 2679 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
@@ -287,7 +288,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 120 of 133 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 304 (with a test: 304) |
+| Test cases | 307 (with a test: 307) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -311,9 +312,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 84 | 14 | 13 | 178 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
-| Platform | 197 | 167 | 61 | 18 | 443 |
+| Platform | 200 | 167 | 62 | 18 | 447 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **1005** | **1687** | **361** | **144** | **3197** |
+| **Total** | **1008** | **1687** | **362** | **144** | **3201** |
 
 ### 9.3 By requirement
 
@@ -467,7 +468,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | U 10 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
-| NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110 | NFR-16-t, NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s | U 20 · DB 10 · UI 23 |
+| NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110, WP-118 | NFR-16-t, NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s, NFR-16-u, NFR-16-v, NFR-16-w | U 23 · DB 10 · UI 24 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Covered | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j, NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x, NFR-18-y, NFR-18-z | U 34 · UI 15 · E2E 7 |
 | NFR-14 | M | Covered | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102, WP-108, WP-109, WP-111 | NFR-14-a, NFR-14-b, NFR-14-c, NFR-14-d, NFR-14-e, NFR-14-f, NFR-14-g, NFR-14-h, NFR-14-o, NFR-14-p, NFR-14-q, NFR-14-r, NFR-14-s, NFR-14-t, NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z, NFR-14-i, NFR-14-j, NFR-14-k, NFR-14-l, NFR-14-m, NFR-14-n | U 46 · DB 14 · UI 1 · E2E 19 |
@@ -592,6 +593,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-114 | Done | RWD-21-a, RWD-21-b, RWD-21-c, RWD-21-d, RWD-21-e, RWD-21-f, RWD-21-g, RWD-21-h, RWD-21-i, RWD-21-j | 10 of 10 | — |
 | WP-115 | Done | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | 13 of 13 | — |
 | WP-116 | Done | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | 12 of 12 | — |
+| WP-118 | Done | NFR-16-u, NFR-16-v, NFR-16-w | 3 of 3 | — |
 
 Test cases and the tests that prove them:
 
@@ -901,6 +903,9 @@ Test cases and the tests that prove them:
 | MEAL-29-j | WP-116 | Brands in Categories and stores: the list A to Z, ⋯ Rename, Merge into… and Archive, Archived with Restore, the new-brand field | UI | UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Brands: A to Z with their use, ⋯ Rename, Merge into… and Archive, Archived with Restore, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] folded, Categories and stores counts the brands too`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Merge into… picks the closest name and says what it does`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-j] Rename opens in place with the brand’s name` |
 | MEAL-29-k | WP-116 | Home's Groceries card: the Brand field as something is typed, filled in from last time, and the Added line with the brand; the board shows "Milk · Kirkland" | UI | UI `e2e/ui/board-groceries.spec.ts`: `[MEAL-29-k] each thing shows its brand after its name, softer`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s card: the Brand field as an item is typed, last time’s brand, in ${theme}`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s line names the brand of something on the list already`<br>UI `e2e/ui/grocery-brands.spec.ts`: `[MEAL-29-k] Home’s Added line names the brand` |
 | MEAL-29-l | WP-116 | On the real preview, an admin adds an item with a new brand from Groceries and finds it among Brands; adding it again fills the brand in; merging two brands moves the item | E2E | E2E `e2e/tests/grocery-brands.spec.ts`: `[MEAL-29-l] done-when: a new brand is saved with its item, filled in next time, and a merge moves it` |
+| NFR-16-u | WP-118 | Only a router prefetch (`_rsc` and the `Next-Router-Prefetch` header, any of its kinds) is answered, at once with 204; a tap's navigation, a page load and a save go on to the server | Unit | Unit `scripts/next-prefetch.test.mjs`: `[NFR-16-u] a router prefetch is a GET with _rsc and the prefetch header; a tap or a page load is not`<br>Unit `scripts/next-prefetch.test.mjs`: `[NFR-16-u] answerPrefetches answers a prefetch 204 at once and passes every other request on` |
+| NFR-16-v | WP-118 | Every UI spec takes its `test` from `e2e/ui/test.ts`, and the screenshot script makes every context in one place that answers prefetches before a page opens | Unit | Unit `scripts/next-prefetch.test.mjs`: `[NFR-16-v] every UI spec takes its test from e2e/ui/test.ts, and every screenshot context answers prefetches` |
+| NFR-16-w | WP-118 | With the app's own prefetches kept (`realPrefetches`), a tap on a menu link while a prefetch is still on its way opens that page, in Chrome, as the iPhone and as the Mac | UI | UI `e2e/ui/prefetch.spec.ts`: `[NFR-16-w] a tap on a link while the app’s own prefetch is on its way opens the page` |
 
 ### 9.5 By user story
 
@@ -3504,6 +3509,14 @@ UI · 5 tests
 | `[PTS-08-m] Rewards’ Points card, each bonus’s payouts and a child’s Points open the register` | PTS-08-m |
 | `[PTS-08-l] on a phone, the chosen days are written whole, as the mockup wraps them` | PTS-08-l |
 
+#### `e2e/ui/prefetch.spec.ts`
+
+UI · 1 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-16-w] a tap on a link while the app’s own prefetch is on its way opens the page` | NFR-16-w |
+
 #### `e2e/ui/reminders.spec.ts`
 
 UI · 6 tests
@@ -3999,6 +4012,16 @@ Unit · 8 tests
 | `[NFR-07] an invalid schedule produces no SQL` | NFR-07 |
 | `[NFR-07] quotes in names or cron cannot break out of the SQL` | NFR-07 |
 | `[NFR-07][D-85] --table-only lists the jobs for job_health and schedules nothing` | NFR-07 |
+
+#### `scripts/next-prefetch.test.mjs`
+
+Unit · 3 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-16-u] a router prefetch is a GET with _rsc and the prefetch header; a tap or a page load is not` | NFR-16-u |
+| `[NFR-16-u] answerPrefetches answers a prefetch 204 at once and passes every other request on` | NFR-16-u |
+| `[NFR-16-v] every UI spec takes its test from e2e/ui/test.ts, and every screenshot context answers prefetches` | NFR-16-v |
 
 #### `scripts/no-model-name.test.mjs`
 

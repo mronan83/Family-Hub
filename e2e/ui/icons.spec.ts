@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [CHR-01][CHR-10][ACC-04][CAL-05] The one icon picker and the sixteen colors (WP-46, D-70) on
 // /dev/forms: the chore, tag, member and calendar forms with a made-up family and no database. The

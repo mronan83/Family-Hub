@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { foldOf } from '../support/fold';
 
 // [NFR-18][D-120] Rewards, Members and a member's page folded (WP-95), on their /dev pages: made-up

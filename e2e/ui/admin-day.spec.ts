@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { foldOf, unfold } from '../support/fold';
 
 // [CHR-05][CHR-06][CHR-08][CHR-14] A parent's day and My tasks (WP-12) on /dev/admin: a made-up family,

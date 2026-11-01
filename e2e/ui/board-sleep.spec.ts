@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [DEV-07][US-207] Sleep and wake per board (WP-34, D-116, D-117), with the made-up family
 // and no database. The board, /dev/board?sleep=kitchen: Kitchen's set times from the mockup (school

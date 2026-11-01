@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { foldOf } from '../support/fold';
 
 // [PTS-08][D-147] The household points register (WP-115) on its /dev page: the demo family on Tuesday,

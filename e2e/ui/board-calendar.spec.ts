@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { floors } from '../support/floors';
 
 // [CAL-04][CAL-05][CAL-06][CAL-10][US-503][US-509] The board's calendar (WP-23; the time grid, WP-52,

@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [DEV-03][DEV-05][DEV-07][BRD-05][BRD-08][DEV-09][D-118][D-120] Boards folded (WP-91) on /dev/boards: the
 // made-up family, no database, Thursday 15 October 2026 at 7:42 am. Each board folded at first to
