@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [CHR-14][CHR-15][ACC-04] "Which one is you?" (D-61): a parent whose sign-in isn't linked to anyone in
 // the family links it to themselves in one tap, on Reminders (/dev/reminders?state=unlinked) and My

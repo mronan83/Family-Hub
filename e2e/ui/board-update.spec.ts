@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [DEV-05] A board picks up a new deploy by itself (WP-78, D-99), on /dev/board with made-up data and
 // no database: the board runs commit aaaaaaa (?deploy=aaaaaaa) and /api/health answers bbbbbbb. The

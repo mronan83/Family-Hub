@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { foldOf, unfold } from '../support/fold';
 
 // [MEAL-01][MEAL-02][MEAL-03][MEAL-08] Meals for a parent (WP-25) on /dev/meals: a made-up family, no

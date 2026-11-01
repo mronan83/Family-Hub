@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [RWD-15][RWD-16] A repeating goal on the board (WP-80, the approved mockup) on /dev/board with the
 // made-up family: Maya's "Homework home" each week, going, missed or won (?repeating=), with the

@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [CHR-21][CHR-22][CHR-23][NFR-16][NFR-18] Chores and tasks in four sections (WP-96, D-132) on
 // /dev/chores: the made-up demo family, no database, today Wed, Oct 14. The page at 390 and 1280 px

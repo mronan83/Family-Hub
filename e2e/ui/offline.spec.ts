@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [DEV-06][DEV-08][NFR-01] The board offline (WP-13) on /dev/board: a made-up family whose stand-in
 // server fails while the browser is offline, like a real post. The board keeps its outbox in

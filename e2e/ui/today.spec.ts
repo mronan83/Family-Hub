@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { floors } from '../support/floors';
 
 // [BRD-01][BRD-03][BRD-07][CHR-04][NFR-03][RWD-08] The board's Today (WP-11) on /dev/board: a made-up

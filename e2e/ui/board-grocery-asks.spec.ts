@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { floors } from '../support/floors';
 
 // [MEAL-22][MEAL-30][US-717][US-723] Asking, ticking off and taking off on the board's Groceries

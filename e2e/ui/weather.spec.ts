@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [BRD-04][US-1003] Weather on the board (WP-45, D-69) on /dev/board: the sky, the temperature now and
 // today's high beside the clock on one line, its credit in Help and on Home (D-74); none when there

@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [RWD-05][US-408] The board's streak flame (WP-17) on /dev/board: Leo has six good days to
 // yesterday and Maya two; the flame adds today once today is good, glows once on reaching a milestone

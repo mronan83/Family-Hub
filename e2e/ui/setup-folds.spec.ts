@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { foldOf, unfold } from '../support/fold';
 
 // [NFR-18][D-120] The set-up pages folded (WP-94), on their /dev pages: made-up family, no database.

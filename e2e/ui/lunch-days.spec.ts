@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test';
 
 // [CHR-19][US-321] The chore form's school lunch choice (WP-61, D-86) on /dev/forms, with a made-up
 // family and no database: choosing lunch days makes an item everyone's own, since each child has

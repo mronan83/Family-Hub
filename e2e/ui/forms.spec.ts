@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test';
 
 // [ACC-02] Admin forms keep what was typed when an action refuses it (React resets a form after a
 // form action by default; lib/forms.ts opts out). The CI build has no Supabase settings, so every

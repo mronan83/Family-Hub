@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { foldOf, unfold } from '../support/fold';
 
 // [CHR-15][CHR-16][CHR-17][CHR-20] A person's reminders (WP-40, WP-63) on /dev/reminders: made-up devices, no

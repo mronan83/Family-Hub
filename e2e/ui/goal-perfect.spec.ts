@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 
 // [RWD-19][RWD-20] Perfect weeks, and a family goal every child meets (WP-82, the approved mockup and
 // its addendum), with the made-up family and no database: on /dev/goals the two goals on Goals
