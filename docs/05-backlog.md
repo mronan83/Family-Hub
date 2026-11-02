@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.169: WP-117 (a parent marks a missed or late chore done on time) added at the owner's request, recorded only (CHR-24, US-326, D-151): from a missed or late chore on Today (any past day), the child's page or a goal's days, a parent's **Mark done on time** records it done at its due time (or an earlier time they give), credited to the child, so a goal done by a time counts it; shown as "Marked on time by <parent>". It changes D-102's statement about a parent's late tick, for the owner to confirm when built. Queued, mockup first. Nothing is built in this change.
 > v0.8.168: WP-118 (WebKit's page loads in CI fail while a link prefetch is in flight, a bug) added at the owner's request and done in the same change (NFR-16, D-152): 7 of 65 `build` attempts from 18 to 30 October were red on a WebKit page load; the cause, a load that cancels a Next.js router prefetch still in flight, which Playwright's WebKit fails or never answers; the UI suite and the screenshot script now answer prefetches themselves. Its test cases are NFR-16-u to NFR-16-w.
 > v0.8.167: WP-106 (staples suggested by how often they run out) done (MEAL-21, US-716, D-150): Running low? and Staples on Groceries, and a line on Home's Groceries card; the refreshed mockup approved on 30 October.
 > v0.8.166: WP-107 follow-up: the board's Got today card keeps names to two lines, Untick under them (MEAL-30, D-149).
@@ -328,13 +329,14 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-112 | Groceries on Home, and a preferred store | P3 | M | WP-104 | Done |
 | WP-116 | Grocery brands | P3 | M | WP-104, WP-112 | Done |
 | WP-118 | WebKit's page loads in CI fail while a link prefetch is in flight (a bug) | P3 | S | WP-100, WP-113 | Done |
+| WP-117 | A parent marks a missed or late chore done on time | P3 | M | WP-12, WP-81 | Queued: mockup first |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
 | WP-36 | Closure import | P3 | M | WP-22 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October. WP-118 (the WebKit CI fix), started by the owner on 1 November.
+**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October. WP-118 (the WebKit CI fix), started by the owner on 1 November. WP-117 (a missed chore marked done on time), added on 30 October, mockup first; not started.
 
 ---
 
@@ -536,6 +538,8 @@ flowchart LR
     WP30 --> WP115[WP-115 Points register]
     WP39 --> WP115
     WP95 --> WP115
+    WP12 --> WP117[WP-117 A missed chore marked done on time]
+    WP81 --> WP117
     WP90 --> SP07[SPIKE-07 e2e specs audited by layer]
     WP90 --> WP98[WP-98 e2e findings log]
     SP07 --> WP99[WP-99 Lean e2e]
@@ -2409,6 +2413,18 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 - **As built:** `scripts/next-prefetch.mjs` (`isRouterPrefetch()`, `answerPrefetches()`) with its types; `e2e/ui/test.ts` (the UI suite's `test`, with the `realPrefetches` option); every `e2e/ui/*.spec.ts` imports from it; `scripts/screen-shots.mjs` (`contextFor()`); `e2e/ui/prefetch.spec.ts`, in the iPhone and Mac projects too (`e2e/ui.config.ts`). The weather demo's times: `apps/web/app/dev/admin/page.tsx`. Tests: node:test `scripts/next-prefetch.test.mjs` (NFR-16-u, NFR-16-v); UI `e2e/ui/prefetch.spec.ts` (NFR-16-w). No screen changes.
 - **Found while its CI ran:** the fifth `build` run on this branch (1 November, 04:32 UTC) was red in one Chrome test, `weather.spec.ts:148` (BRD-04): "Last read at 9:09 am" where it expects 10:09. The `/dev/admin?view=weather` demo read the weather at a fixed 14:09 UTC on the household's today, which is 10:09 in New York only on daylight time; 1 November is the day the clocks go back, so it is red on `main` too until March. The demo now reads at 10:09 and fails at 10:39 in the household's zone in any season (`localInstant()`, unit-tested across clock changes); the test and what it checks are unchanged. Not the WebKit cause: the other four runs were green before the change of clocks.
 - **Deferred, as plain facts:** the 6 WebKit assertion failures of 18 to 21 October that WP-113 did not explain (`goal-form-summary.spec.ts:286`, `meal-groceries.spec.ts:145`, `chores.spec.ts:184` as the iPhone, `goals.spec.ts:347`) have no cause found here; none has come back since 21 October. The same `/dev/admin` page builds last week's demo items at a fixed UTC hour (`h + 4`, daylight time); no test reads their times, and it is left as it is.
+
+### WP-117 — A parent marks a missed or late chore done on time
+**Phase:** P3 · **Size:** M · **Depends on:** WP-12, WP-81 · **Reqs:** CHR-24
+- Added at the owner's request on 30 October, in the planner session: "There may be times that we are away from the kiosk and forget to check something off that was done. For example, [our daughter] has to bring home her homework folder every day there is school. There was an instance where grandma picked her up from the bus stop and the chore didn't get checked, even though it was brought home. There's a current rule that requires a chore to be checked the day it's due or it's counted as late. We need to have a parent overwrite that allows a parent to complete the chore and count it as done on time. This is especially critical when that chore is tied to a goal." Recorded as the planner recommended ("Record it"). Recorded only; not built.
+- **Why it's needed:** late credit for a past day exists (D-21, D-52: the admin app's Today, back to the day, **Mark done**), but it is stamped with the parent's click time, so a goal rule done by a time (D-102, RWD-17; `isLate()` in `packages/rules-engine/src/goal.ts` reads `done_at`) counts it as late and the day as missed ("A parent's tick after the time doesn't count toward a timed rule", RWD-17-f).
+- **What it is (D-151):** a parent-only **Mark done on time** on a missed chore, or on a chore ticked late, that records when it was done: by default on time (its due time, or the end of its day when it has none), or an earlier time the parent gives. It is credited to the child (the item's own person, or who did it for a shared item, as Mark done asks today), its points are restored, streaks and goals are worked out again, and a rule done by a time counts it. It keeps a visible trace: "Marked on time by Alex, Oct 30" wherever the check-off shows (the admin app's Today, the child's page, the goal's days, the points register). A child and a board can't do it.
+- **Where:** the missed or late chore on the admin app's Today (any past day), the child's page, and a goal's day-by-day view (WP-80's days).
+- **A goal already finished:** marking a chore on time may change its result (a week or goal won, or a higher step reached); the parent confirms first ("This makes Maya's week a win: 20 points"), and the payout or the difference is paid once, as a parent's fix does today (RWD-18-i).
+- **A decision to confirm when built (D-151):** it changes D-102's statement that a parent's tick after the time doesn't count toward a timed rule: a parent's ordinary late tick still doesn't count; **Mark done on time** does.
+- Mockup first, on the demo family, approved by the owner before it is built.
+- **Done when:** the mockup is approved; the item's test cases are written here (D-107) and each has a test; the side-by-side (D-127) is in the PR; the fast checks are green.
+
 
 ---
 
