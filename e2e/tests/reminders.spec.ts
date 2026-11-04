@@ -119,13 +119,20 @@ test('[CHR-15][US-317] a device: switched off and on, a test (live app only), re
   );
 });
 
-test('[CHR-16][US-318] the bell on an item in My tasks: off for this item only, then on again', async () => {
+test('[CHR-16][US-318][CHR-16-a] the bell on an item in My tasks: off for this item only, then on again', async () => {
   await page.goto('/admin/my');
+  // [CHR-16-a] The trip fee is due in 3 days, so it is under Coming up, folded (WP-97); after each
+  // tap on its bell the page comes back with Coming up open (NFR-18, CHR-14-c), so it is not opened
+  // again.
+  const comingUp = foldOf(page, 'Coming up');
+  await expect(comingUp).not.toHaveAttribute('open');
+  await unfold(comingUp);
   const bell = page.getByRole('button', { name: 'Remind me about Pay the school trip fee' });
   // His default is "remind me", so the bell is on until he says otherwise.
   await expect(bell).toHaveAttribute('aria-pressed', 'true');
   await bell.click();
   await expect(page.getByRole('status')).toHaveText('Pay the school trip fee won’t remind you.');
+  await expect(comingUp).toHaveAttribute('open', '');
   await expect(bell).toHaveAttribute('aria-pressed', 'false');
   expect(
     sql(
@@ -134,6 +141,7 @@ test('[CHR-16][US-318] the bell on an item in My tasks: off for this item only, 
   ).toBe('f');
   await bell.click();
   await expect(page.getByRole('status')).toHaveText('Pay the school trip fee reminds you.');
+  await expect(comingUp).toHaveAttribute('open', '');
   await expect(bell).toHaveAttribute('aria-pressed', 'true');
 });
 

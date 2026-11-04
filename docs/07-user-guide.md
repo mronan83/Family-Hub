@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.51: My tasks' **Coming up** stays open after a bell or a done on something in it (WP-119, D-153).
 > v0.50: Staples (WP-106, D-150): **Running low?** on Groceries with **Add** and **Not now**, Home's "3 running low" line, and **Staples** with **Don't suggest** and **Suggest again** (A17).
 > v0.49: Asking, ticking off and taking off at the board (WP-107, D-149): the board's **Ask for something** (your face, a picture tile or **Something else** on the board's keyboard, the brand), **Asked for** and **Got today**; tapping a thing to **Got it** or **Take it off the list**, with **Undo**; Groceries' **Asked for** in the admin app with **Add it**, **Not this time**, **Add all** and each child's **Wait for a grown-up's OK**; Home's Needs you line; B1.17 and B2.11 updated.
 > v0.48: Grocery brands (WP-116, D-148): a **Brand** when adding, picked from your own brands as you type or added to them, filled in from last time; **Brand…** on an item and in Select; **Brands** in Categories and stores (rename, merge, archive); the brand on the list and the board.
@@ -296,7 +297,7 @@ They go back to open (or to missed, if their day is over), and their points are 
 
 - **Overdue**: your tasks from earlier days that are still open.
 - **Today**: everything due today.
-- **Coming up**: the next seven days, folded to how many and the next one ("5 in the next 7 days · next: Leo's dentist, Tuesday 3:30 pm"). Tap it to see them all.
+- **Coming up**: the next seven days, folded to how many and the next one ("5 in the next 7 days · next: Leo's dentist, Tuesday 3:30 pm"). Tap it to see them all. After you change a bell or mark one done in it, it stays open.
 
 **Mark done** credits only you. **Uncheck** takes it back. The **Bell on** / **Bell off** button beside each open item says whether it reminds you (see [A3](#a3-reminders-on-your-phone)).
 

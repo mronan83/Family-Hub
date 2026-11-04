@@ -203,11 +203,11 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | CHR-09 | US-304, US-311, US-316, US-320 | WP-08, WP-09, WP-10, WP-43 | ADM, BRD, API, OCCGEN, DB | chore_assignee, chore_occurrence_assignee, chore_completion_event | DB, E2E | U 8 · DB 15 · UI 1 · E2E 3 |
 | CHR-10 | US-312 | WP-08, WP-15, WP-19, WP-46, WP-83 | ADM, RULES, DB | tag, chore_tag, reward_rule | DB, U, E2E | U 9 · DB 8 · UI 3 · E2E 2 |
 | CHR-11 | US-313 | WP-08, WP-09, WP-11 | ADM, BRD, OCCGEN | chore, chore_occurrence | E2E, U | U 9 · DB 5 · UI 1 · E2E 2 |
-| CHR-12 | US-303, US-314 | WP-09, WP-10, WP-11, WP-97 | OCCGEN, SCHED, DB, BRD | chore_occurrence | DB, INT, E2E | U 13 · DB 9 · UI 5 · E2E 2 |
+| CHR-12 | US-303, US-314 | WP-09, WP-10, WP-11, WP-97, WP-119 | OCCGEN, SCHED, DB, BRD | chore_occurrence | DB, INT, E2E | U 13 · DB 9 · UI 5 · E2E 3 |
 | CHR-13 | US-315 | WP-08 | ADM, BRD, API, DB | chore, chore_assignee, chore_tag, audit_log | U, DB, E2E | U 4 · DB 28 · E2E 3 |
-| CHR-14 | US-316 | WP-12, WP-97 | ADM | chore_occurrence_assignee | E2E | U 7 · DB 7 · UI 8 · E2E 2 |
+| CHR-14 | US-316 | WP-12, WP-97, WP-119 | ADM | chore_occurrence_assignee | E2E | U 9 · DB 7 · UI 8 · E2E 2 |
 | CHR-15 | US-317 | WP-40 | NOTIFY, ADM, DB | push_subscription, reminder_preference | E2E, DB, U | U 8 · DB 3 · UI 5 · E2E 4 |
-| CHR-16 | US-318 | WP-40 | NOTIFY, SCHED, ADM, DB | chore_assignee, reminder_delivery | DB, INT, E2E, U | U 5 · DB 6 · UI 2 · E2E 6 |
+| CHR-16 | US-318 | WP-40, WP-119 | NOTIFY, SCHED, ADM, DB | chore_assignee, reminder_delivery | DB, INT, E2E, U | U 5 · DB 6 · UI 2 · E2E 6 |
 | CHR-17 | US-319 | WP-40 | NOTIFY, ADM, DB | reminder_preference, reminder_delivery | DB, INT, E2E, U | U 2 · DB 2 · UI 1 · E2E 2 |
 | CHR-18 | US-320 | WP-43 | ADM, OCCGEN, DB | chore, chore_occurrence | DB, U, E2E | U 5 · DB 21 · E2E 2 |
 | CHR-19 | US-321 | WP-61 | ADM, OCCGEN, DB | chore, chore_occurrence, lunch_override, member_lunch | DB, U, E2E | U 2 · DB 14 · UI 1 · E2E 1 |
@@ -226,8 +226,8 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | RWD-08 | US-404 | WP-11, WP-20 | BRD | reward_goal | E2E | U 3 · DB 9 · UI 5 · E2E 1 |
 | RWD-09 | US-405 | WP-19, WP-95 | ADM, API | reward_goal, reward_goal_event | E2E | U 1 · DB 2 · UI 1 · E2E 2 |
 | RWD-10 | US-406 | WP-39 | ADM, RULES | reward_goal, reward_rule | U, E2E | U 3 · DB 2 · UI 1 · E2E 1 |
-| RWD-11 | US-408 | WP-15, WP-17 | DB, SCHED, RULES | member_daily_summary, streak_segment | U, DB, INT, E2E | U 21 · DB 3 · E2E 2 |
-| RWD-12 | US-408 | WP-17, WP-97 | ADM, RULES | member_daily_summary, streak_segment | E2E, U, DB | U 7 · DB 6 · UI 3 · E2E 1 |
+| RWD-11 | US-408 | WP-15, WP-17, WP-119 | DB, SCHED, RULES | member_daily_summary, streak_segment | U, DB, INT, E2E | U 21 · DB 3 · E2E 2 |
+| RWD-12 | US-408 | WP-17, WP-97, WP-119 | ADM, RULES | member_daily_summary, streak_segment | E2E, U, DB | U 7 · DB 6 · UI 3 · E2E 1 |
 | RWD-13 | US-409 | WP-39 | RULES, API, DB | reward_goal, points_ledger, redemption | U, INT, DB, E2E | U 3 · DB 4 · UI 3 · E2E 1 |
 | RWD-14 | US-401 | WP-79 | ADM | reward_goal | U, E2E | U 5 · DB 5 · UI 3 · E2E 1 |
 | RWD-15 | US-410, US-411 | WP-80 | RULES, ADM, BRD, DB, SCHED | reward_goal, reward_rule, reward_goal_period, reward_goal_event, points_ledger | U, DB, E2E | U 17 · DB 22 · UI 7 · E2E 1 |
@@ -281,7 +281,7 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | MEAL-26 | US-720 | WP-105 | BRD | meal, meal_recipe_file | U, E2E | U 1 · DB 1 · UI 1 |
 | MEAL-27 | US-721 | WP-112 | ADM, DB | grocery_item, grocery_category, grocery_store | U, E2E | U 2 · UI 7 · E2E 1 |
 | MEAL-28 | US-721 | WP-112 | ADM, DB | grocery_list, grocery_store, grocery_item | U, DB, E2E | U 2 · DB 13 · UI 4 · E2E 1 |
-| MEAL-29 | US-722 | WP-116 | ADM, DB | grocery_brand, grocery_item | U, DB, E2E | U 11 · DB 37 · UI 15 · E2E 1 |
+| MEAL-29 | US-722 | WP-116, WP-119 | ADM, DB | grocery_brand, grocery_item | U, DB, E2E | U 12 · DB 37 · UI 15 · E2E 1 |
 | MEAL-30 | US-723 | WP-107 | BRD, API, DB | grocery_item, grocery_item_event | U, DB, E2E | U 4 · DB 14 · UI 4 · E2E 1 |
 | MENU-01 | US-801 | WP-27 | ADM, MENUIMP | menu_source, member_lunch | U, DB, E2E | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | US-801 | WP-27 | MENUIMP | menu_source | U, DB, E2E | U 4 · DB 2 · UI 2 · E2E 1 |
@@ -312,14 +312,14 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | NFR-10 | US-903 | WP-24 | DB | — | REV | — |
 | NFR-11 | US-906 | WP-31, WP-46 | BRD, ADM, UI | — | E2E, REV | U 4 · UI 31 |
 | PTS-01 | US-309, US-1101, US-1106 | WP-16, WP-95 | DB, API, ADM | points_ledger, chore_occurrence | DB, U, E2E | U 12 · DB 42 · UI 1 · E2E 6 |
-| PTS-02 | US-1102 | WP-11, WP-16, WP-20 | BRD, DB | v_points_balance, points_ledger | E2E | U 4 · DB 11 · UI 1 · E2E 2 |
+| PTS-02 | US-1102 | WP-11, WP-16, WP-20, WP-119 | BRD, DB | v_points_balance, points_ledger | E2E | U 4 · DB 11 · UI 1 · E2E 2 |
 | PTS-03 | US-1103 | WP-18, WP-95 | ADM, API, BRD | reward_catalog_item | E2E, DB | U 7 · DB 6 · UI 7 · E2E 1 |
 | PTS-04 | US-1104, US-1105 | WP-18, WP-20, WP-95, WP-110 | BRD, ADM, API, DB, OUTBOX | redemption, points_ledger, reward_catalog_item | E2E, DB, INT | U 12 · DB 17 · UI 12 · E2E 3 |
 | PTS-05 | US-1107 | WP-30, WP-95 | SCHED, RULES, ADM, DB | points_rule, points_ledger, streak_segment, member_daily_summary | U, DB, E2E | U 8 · DB 4 · UI 3 · E2E 1 |
 | PTS-06 | US-1108 | WP-30 | BRD, API, ADM, DB | wishlist_pin, reward_catalog_item, v_points_balance | U, DB, E2E | U 5 · DB 2 · UI 7 · E2E 2 |
 | PTS-07 | US-1109 | WP-02, WP-04, WP-16 | ADM, DB, RULES | member, points_ledger | DB, E2E | U 2 · DB 15 · E2E 3 |
 | PTS-08 | US-1110 | WP-115 | ADM, DB | points_ledger, points_rule, reward_goal | U, DB, UI | U 12 · DB 17 · UI 5 |
-| NFR-12 | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113 | all | — | CI | U 10 |
+| NFR-12 | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119 | all | — | CI | U 14 |
 | NFR-13 | US-910 | WP-37, WP-46 | BRD, ADM, UI | — | E2E, REV | U 21 · UI 7 |
 | NFR-14 | US-911 | WP-01, WP-41, WP-60, WP-65, WP-66, WP-67, WP-70, WP-83, WP-85, WP-88, WP-89, WP-90, WP-98, WP-99, WP-102, WP-108, WP-109, WP-111 | CICD | — | CI, REV | U 46 · DB 14 · UI 1 · E2E 19 |
 | NFR-15 | US-107 | WP-51 | ADM, UI | chore_occurrence, tag, calendar_source, device, reminder_preference | U, E2E | U 2 · UI 6 · E2E 1 |
@@ -341,8 +341,8 @@ Stories and Work packages are generated from `03-user-stories.md` and `05-backlo
 | **Total** | **82** | **66** | **4** | **152** |
 
 - Requirements: **152** · with at least one story: **152** · stories: **134** (P0: 12 · P1: 52 · P2: 30 · P3: 40).
-- With at least one work package: **152** · work packages: **115**.
-- Tests: **3201** (2633 name a requirement) · built requirements with a test: **137 of 137** · known test gaps: **104** (`08` §9.6).
+- With at least one work package: **152** · work packages: **116**.
+- Tests: **3208** (2640 name a requirement) · built requirements with a test: **137 of 137** · known test gaps: **104** (`08` §9.6).
 - Generated by `check_traceability.py --fix`; do not edit by hand.
 
 ---
@@ -507,6 +507,7 @@ Work packages (`05-backlog.md`) are assigned to these milestones. A milestone is
 
 | Version | Changes |
 |---|---|
+| 0.8.175 | WP-119 The e2e reds of 23 October to 4 November (CHR-12, CHR-14, CHR-16, PTS-02, RWD-11, RWD-12, MEAL-29, NFR-12, D-153), added at the owner's request: no migration; the specs `admin-day`, `insights`, `points` and `reminders` open the folds WP-95 and WP-97 made before reading inside them, `grocery-brands` leads its names with the run's tag; My tasks' Coming up open after a save in it (`comingUpOpen()`); the run reads the preview's error log (`serverLogReadings()`, `scripts/e2e-run.mjs`); tests Vitest `day-folds.test.ts` (CHR-14-c), `grocery-brands.test.ts` (MEAL-29-m), node:test `e2e-infra.test.mjs` (NFR-12-f, NFR-12-g), e2e CHR-12-e, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c |
 | 0.8.174 | WP-117 A parent marks a missed or late chore done on time added at the owner's request, recorded only (CHR-24, US-326, D-151): a parent's Mark done on time on a missed or late chore, at its due time or an earlier time, credited to the child, counting for goals done by a time, shown as "Marked on time by <parent>"; from Today, the child's page and a goal's days. Queued, mockup first. No code. |
 | 0.8.173 | WP-118 WebKit's page loads in CI fail while a link prefetch is in flight, a bug (NFR-16, D-152), added at the owner's request: no migration; `scripts/next-prefetch.mjs` (`isRouterPrefetch()`, `answerPrefetches()`), `e2e/ui/test.ts` (the UI suite's `test`, which every UI spec now imports), `scripts/screen-shots.mjs` (`contextFor()`); node:test `scripts/next-prefetch.test.mjs` (NFR-16-u, NFR-16-v); UI `e2e/ui/prefetch.spec.ts` (NFR-16-w), with the app's own prefetches; the weather demo (`/dev/admin?view=weather`) reads at 10:09 in the household's zone in any season, so BRD-04's test passes after the clocks go back |
 | 0.8.172 | WP-106 Staples suggested by how often they run out (MEAL-21, US-716, D-150), from the refreshed mockup the owner approved on 30 October: migration `20261030205957_grocery_staples.sql` (`grocery_staple`, `grocery_buys()`, `set_grocery_staple()`); `lib/grocery-staples.ts` (the usual gap, the due day, Running low?, Staples, Home's count); Groceries' Running low? with Add and Not now and the Added banner with Undo, Staples with Don't suggest and Suggest again (`groceries/staples.tsx`, `addStaple()`, `setStapleChoice()`); Home's "3 running low · Review"; the demo family's tick history in `seed.sql`; Vitest `grocery-staples.test.ts`, pgTAP `620_grocery_staples.test.sql`, the UI suite's `grocery-staples.spec.ts`, e2e `staples.spec.ts`. |

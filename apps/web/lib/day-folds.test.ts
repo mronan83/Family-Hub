@@ -1,6 +1,13 @@
 import type { OccurrenceStatus } from '@familywise/rules-engine';
 import { describe, expect, it } from 'vitest';
-import { comingUpLine, longDay, overdueWaiting, partFacts, partOpen } from './day-folds';
+import {
+  comingUpLine,
+  comingUpOpen,
+  longDay,
+  overdueWaiting,
+  partFacts,
+  partOpen,
+} from './day-folds';
 import type { FoldLine } from './setup-facts';
 
 // [NFR-18][D-120] Today's and My tasks' folds (WP-97): a part of the day's count, when it folds, and
@@ -105,5 +112,21 @@ describe('[CHR-14-a] My tasks’ Coming up, folded', () => {
 
   it('nothing coming up', () => {
     expect(read(comingUpLine([], TODAY))).toBe('Nothing in the next 7 days');
+  });
+});
+
+describe('[CHR-14-c] My tasks’ Coming up, open again after a save inside it', () => {
+  const upcoming = [
+    { id: 'o-fee', choreId: 'c-fee' },
+    { id: 'o-dentist', choreId: 'c-dentist' },
+  ];
+  it('after a bell on one of its items, or a done or an uncheck on one', () => {
+    expect(comingUpOpen(upcoming, { chore: 'c-fee' })).toBe(true);
+    expect(comingUpOpen(upcoming, { item: 'o-dentist' })).toBe(true);
+  });
+  it('folded otherwise: a first load, or a save on something today or overdue', () => {
+    expect(comingUpOpen(upcoming, {})).toBe(false);
+    expect(comingUpOpen(upcoming, { chore: 'c-bins', item: 'o-bins' })).toBe(false);
+    expect(comingUpOpen([], { chore: 'c-fee' })).toBe(false);
   });
 });

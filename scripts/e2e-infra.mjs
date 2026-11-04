@@ -143,6 +143,73 @@ export function dbHealthReading(status, body) {
   return null;
 }
 
+/** A gateway's 5xx in words ("502 Bad Gateway"), as a Supabase or Vercel error page names it. */
+const GATEWAY_STATUS = /\b(502 Bad Gateway|503 Service Unavailable|504 Gateway Time-?out)\b/i;
+
+/** A field of a log record, or of the app's own JSON log line inside its message (lib/log.ts). */
+function logField(record, text, names) {
+  for (const name of names) {
+    const v = record?.[name];
+    if (typeof v === 'string' || typeof v === 'number') return v;
+  }
+  for (const name of names) {
+    // Inside the message the app's line is JSON in a string: its quotes come escaped (\").
+    const m = new RegExp(`\\\\?"${name}\\\\?"\\s*:\\s*\\\\?"([^"\\\\]+)`).exec(text);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+/** A log record's time in ms: its own timestamp, else the app's `time` inside it; null if none. */
+function logTime(record, text) {
+  const raw = logField(record, text, ['timestamp', 'timestampInMs', 'date', 'time']);
+  if (raw === null) return null;
+  const ms = typeof raw === 'number' ? raw : /^\d+$/.test(raw) ? Number(raw) : Date.parse(raw);
+  if (!Number.isFinite(ms)) return null;
+  // A timestamp in seconds, as some logs give it.
+  return ms < 1e12 ? ms * 1000 : ms;
+}
+
+/**
+ * [NFR-12-f] The preview's own server errors that name the infrastructure, as bad readings at the
+ * time each happened (WP-119): a page the preview renders on the server, or a server action, fails
+ * there when Supabase answers it 5xx (a "502 Bad Gateway" page from its gateway) or a statement times
+ * out, and the browser sees only the app's error page. `out` is `vercel logs --json`'s output, one
+ * JSON record a line, at error level; `seen` keeps the records already read, so a read that overlaps
+ * the last one adds nothing twice (a request's log line and its stack are one reading). An error that
+ * names nothing of INFRA_PATTERNS is the app's own and no reading.
+ */
+export function serverLogReadings(out, seen = new Set()) {
+  const readings = [];
+  for (const line of String(out ?? '').split('\n')) {
+    const text = line.trim();
+    if (!text.startsWith('{')) continue;
+    let record;
+    try {
+      record = JSON.parse(text);
+    } catch {
+      continue;
+    }
+    const cause = causeInText(text);
+    if (!cause) continue;
+    const at = logTime(record, text);
+    if (at === null) continue;
+    const method = logField(record, text, ['requestMethod', 'method']);
+    const path = logField(record, text, ['requestPath', 'path', 'route']);
+    const request = path ? `${method ? `${method} ` : ''}${path}` : 'a request';
+    const id = logField(record, text, ['requestId', 'id']);
+    const key = `${id ?? at}|${request}|${cause}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const status = GATEWAY_STATUS.exec(text)?.[1];
+    readings.push({
+      at,
+      what: `the preview's server failed on ${request}: ${cause}${status ? ` (${status})` : ''}, in its log`,
+    });
+  }
+  return readings;
+}
+
 /**
  * [NFR-12-d] The requests a failed test's browser was still waiting for from the preview when it
  * ended (e2e/support/test.ts: page loads and saves), in words, for the failure's cause: what it was

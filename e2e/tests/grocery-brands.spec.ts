@@ -13,12 +13,15 @@ const family = ownHousehold('grocery-brands');
 const db = process.env.SUPABASE_DB_URL;
 const HOUSEHOLD = family.id;
 const sql = (q: string) => query(db!, q);
-const SUFFIX = `e2e ${Math.random().toString(36).slice(2, 7)}`;
+// [MEAL-29-l] The run's tag leads each name, so the near-duplicate starts with the brand, as
+// "Kirkland Signature" starts with "Kirkland": Merge into… picks the brand whose name starts the
+// other's (mergeTarget(), MEAL-29-m). A tag at the end would leave neither name starting the other.
+const TAG = `e2e ${Math.random().toString(36).slice(2, 7)}`;
 const names = {
-  item: `Seltzer ${SUFFIX}`,
-  brand: `Fizzco ${SUFFIX}`,
-  twin: `Fizzco Signature ${SUFFIX}`,
-  other: `Tonic ${SUFFIX}`,
+  item: `${TAG} Seltzer`,
+  brand: `${TAG} Fizzco`,
+  twin: `${TAG} Fizzco Signature`,
+  other: `${TAG} Tonic`,
 };
 const esc = (s: string) => s.replace(/'/g, "''");
 
@@ -35,7 +38,7 @@ const brandOf = (name: string) =>
         order by i.created_at desc limit 1`);
 const brands = () =>
   sql(`select coalesce(string_agg(name, ',' order by name), '') from public.grocery_brand
-        where household_id = '${HOUSEHOLD}' and name like '%${SUFFIX}'`);
+        where household_id = '${HOUSEHOLD}' and name like '${TAG} %'`);
 
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
@@ -47,9 +50,9 @@ test.beforeAll(async ({ browser }) => {
 test.afterAll(async () => {
   sql(`update public.grocery_item set status = 'removed', removed_at = now(), ticked_at = null,
               brand_id = null
-        where household_id = '${HOUSEHOLD}' and name like '%${SUFFIX}'`);
+        where household_id = '${HOUSEHOLD}' and name like '${TAG} %'`);
   sql(
-    `delete from public.grocery_brand where household_id = '${HOUSEHOLD}' and name like '%${SUFFIX}'`,
+    `delete from public.grocery_brand where household_id = '${HOUSEHOLD}' and name like '${TAG} %'`,
   );
   await admin?.close();
 });
