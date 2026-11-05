@@ -141,4 +141,14 @@ describe('an item with its brand', () => {
     expect(mergeTarget(BRANDS[3]!, BRANDS)).toBe('dave');
     expect(mergeTarget(BRANDS[0]!, [BRANDS[0]!])).toBeNull();
   });
+
+  it('[MEAL-29-m] Merge into… with the e2e spec’s names: a tag first finds the brand, a tag last does not', () => {
+    // grocery-brands.spec.ts leads each name with its run's tag (WP-119): the near-duplicate then
+    // starts with the brand, as a family's own "Kirkland Signature" does.
+    const tagged = [b('f', 'e2e x1 Fizzco'), b('t', 'e2e x1 Fizzco Signature'), ...BRANDS];
+    expect(mergeTarget(tagged[1]!, tagged)).toBe('f');
+    // With the tag last neither name starts the other, so the first A to Z is picked.
+    const last = [b('f', 'Fizzco e2e x1'), b('t', 'Fizzco Signature e2e x1'), ...BRANDS];
+    expect(mergeTarget(last[1]!, last)).toBe('dave');
+  });
 });

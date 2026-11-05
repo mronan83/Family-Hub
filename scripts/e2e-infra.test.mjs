@@ -11,11 +11,15 @@ import {
   loadWords,
   probeReading,
   redact,
+  serverLogReadings,
   signInWords,
   slowReads,
   waitingWords,
 } from './e2e-infra.mjs';
-import { causeOf } from './e2e-run.mjs';
+import { causeOf, startProbe } from './e2e-run.mjs';
+import { chmodSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const failure = (over = {}) => ({
   errors: [],
@@ -289,5 +293,162 @@ test('[NFR-12-d] a failed test still waiting for a page load or a save says whic
   assert.equal(
     causeOf({ ...red, result: { ...red.result, annotations: [] } }),
     'Error: expect(locator).toHaveText(expected) failed',
+  );
+});
+
+// [NFR-12-f][NFR-12-g] The preview's own server errors (WP-119, #183): a Supabase 502 to a page the
+// preview renders on the server, which the browser sees only as the app's error page.
+const appLine = (fields) =>
+  JSON.stringify({
+    level: 'error',
+    msg: 'server error',
+    time: '2026-11-04T16:08:12.764Z',
+    requestId: 'iad1::abc',
+    method: 'GET',
+    route: '/admin/insights',
+    kind: 'render',
+    ...fields,
+  });
+const GATEWAY_PAGE =
+  'household lookup: <html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<center>cloudflare</center></html>';
+
+test('[NFR-12-f] a server error in the preview’s log naming the infrastructure is a bad reading at its own time; the app’s own errors are none', () => {
+  // As the log record carries it: fields of its own, the app's JSON line in its message.
+  const record = JSON.stringify({
+    timestamp: Date.parse('2026-11-04T16:08:12.765Z'),
+    requestPath: '/admin/insights',
+    requestMethod: 'GET',
+    level: 'error',
+    message: appLine({ error: { name: 'Error', message: GATEWAY_PAGE } }),
+  });
+  // The same request's stack, a second line: one reading, not two.
+  const stack = JSON.stringify({
+    timestamp: Date.parse('2026-11-04T16:08:12.763Z'),
+    requestPath: '/admin/insights',
+    requestMethod: 'GET',
+    requestId: 'iad1::abc',
+    message: `Error: ${GATEWAY_PAGE}\n    at g (.next/server/chunks/ssr/x.js:1:11978)`,
+  });
+  const seen = new Set();
+  const [one, ...more] = serverLogReadings(`${record}\n${stack}\nnot a record\n`, seen);
+  assert.deepEqual(more, []);
+  assert.equal(one.at, Date.parse('2026-11-04T16:08:12.765Z'));
+  assert.equal(
+    one.what,
+    "the preview's server failed on GET /admin/insights: gateway 5xx (502 Bad Gateway), in its log",
+  );
+  // A later read that overlaps this one adds nothing again.
+  assert.deepEqual(serverLogReadings(record, seen), []);
+  // Only the app's line in the message: its own time, request and id.
+  const [inner] = serverLogReadings(
+    JSON.stringify({
+      message: appLine({
+        error: { message: 'insights: canceling statement due to statement timeout' },
+      }),
+    }),
+  );
+  assert.equal(inner.at, Date.parse('2026-11-04T16:08:12.764Z'));
+  assert.match(inner.what, /GET \/admin\/insights: database statement timeout, in its log$/);
+  // A timestamp in seconds.
+  assert.equal(
+    serverLogReadings(JSON.stringify({ timestamp: 1793808492, message: 'ECONNRESET' }))[0].at,
+    1793808492000,
+  );
+  // The app's own error, a record without a time, or no record at all: no reading.
+  assert.deepEqual(
+    serverLogReadings(
+      [
+        JSON.stringify({
+          timestamp: 1793808492000,
+          message: appLine({ error: { message: 'TypeError: x is undefined' } }),
+        }),
+        JSON.stringify({ message: '502 Bad Gateway' }),
+        '502 Bad Gateway',
+        '',
+      ].join('\n'),
+    ),
+    [],
+  );
+});
+
+/** A stand-in `vercel` on the PATH that prints `out`, or fails with `err`, and records its arguments. */
+function fakeVercel({ out = '', err = '', code = 0 }) {
+  const dir = mkdtempSync(join(tmpdir(), 'fake-vercel-'));
+  const bin = join(dir, 'vercel');
+  writeFileSync(join(dir, 'out.txt'), out);
+  writeFileSync(join(dir, 'err.txt'), err);
+  writeFileSync(
+    bin,
+    `#!/bin/sh\nprintf '%s\\n' "$@" > "${dir}/args.txt"\ncat "${dir}/out.txt"\ncat "${dir}/err.txt" >&2\nexit ${code}\n`,
+  );
+  chmodSync(bin, 0o755);
+  return dir;
+}
+
+async function probeWith(dir, token = 'tok-secret-123') {
+  const env = { PATH: process.env.PATH, VERCEL_TOKEN: process.env.VERCEL_TOKEN };
+  process.env.PATH = `${dir}:${env.PATH}`;
+  process.env.VERCEL_TOKEN = token;
+  // A base nothing answers on: the health probe's timers are stopped before they fire.
+  const probe = startProbe({ db: undefined, base: 'http://127.0.0.1:9' });
+  try {
+    await probe.flush();
+    return {
+      degraded: [...probe.degraded],
+      notes: probe.notes.map((n) => (typeof n === 'function' ? n() : n)),
+    };
+  } finally {
+    probe.stop();
+    process.env.PATH = env.PATH;
+    if (env.VERCEL_TOKEN === undefined) delete process.env.VERCEL_TOKEN;
+    else process.env.VERCEL_TOKEN = env.VERCEL_TOKEN;
+  }
+}
+
+test('[NFR-12-g] the run reads the preview’s error log with the Vercel CLI, and a failed test while it named the infrastructure is infrastructure', async () => {
+  const line = JSON.stringify({
+    timestamp: Date.parse('2026-11-04T16:08:12.765Z'),
+    requestPath: '/admin/insights',
+    requestMethod: 'GET',
+    message: appLine({ error: { message: GATEWAY_PAGE } }),
+  });
+  const dir = fakeVercel({ out: `${line}\n` });
+  const { degraded, notes } = await probeWith(dir);
+  assert.equal(degraded.length, 1);
+  assert.match(degraded[0].what, /^the preview's server failed on GET \/admin\/insights/);
+  // Its deployment, error level, as JSON, from a minute before the probe started.
+  const args = (await import('node:fs')).readFileSync(join(dir, 'args.txt'), 'utf8').split('\n');
+  assert.deepEqual(args.slice(0, 2), ['logs', 'http://127.0.0.1:9']);
+  for (const flag of ['--since', '--level', '--json', '--token'])
+    assert.ok(args.includes(flag), flag);
+  assert.equal(args[args.indexOf('--level') + 1], 'error');
+  assert.match(notes.at(-1), /read 1 time\(s\), 1 error line\(s\).*1 naming the infrastructure/);
+  // The test that failed around then is infrastructure; one a minute later is not.
+  const at = Date.parse('2026-11-04T16:08:00Z');
+  const verdict = classify(failure({ start: at, end: at + 44_000 }), degraded);
+  assert.equal(
+    classify(failure({ start: at + 60_000, end: at + 90_000 }), degraded).kind,
+    'assertion',
+  );
+  assert.equal(verdict.kind, 'infra');
+  assert.match(verdict.cause, /502 Bad Gateway/);
+});
+
+test('[NFR-12-g] a read of the preview’s log that fails is a note, without the token, and no reading', async () => {
+  const dir = fakeVercel({ err: 'Error: The token tok-secret-123 is not valid', code: 1 });
+  const { degraded, notes } = await probeWith(dir);
+  assert.deepEqual(degraded, []);
+  assert.match(notes.at(-1), /1 read\(s\) failed \(Error: The token \*\*\* is not valid\)/);
+  assert.doesNotMatch(notes.at(-1), /tok-secret-123/);
+});
+
+test('[NFR-12-g] without a preview or a token there is no read, and the run says so', async () => {
+  const probe = startProbe({ db: undefined, base: undefined });
+  await probe.flush();
+  probe.stop();
+  assert.ok(
+    probe.notes.includes(
+      "no read of the preview's error log (E2E_BASE_URL or VERCEL_TOKEN not set)",
+    ),
   );
 });

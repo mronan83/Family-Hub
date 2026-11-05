@@ -3,6 +3,7 @@ import { expect, test, type Page } from '../support/test';
 import { addBoardForm, pairingCode, retireBoard } from '../support/board';
 import { sql as query } from '../support/db';
 import { addDays, householdToday } from '../support/day';
+import { foldOf, unfold } from '../support/fold';
 import { signIn } from '../support/session';
 import { ENGINE_VERSION } from '../../packages/rules-engine/src/index';
 import { ownHousehold } from '../support/household';
@@ -114,7 +115,7 @@ test.afterAll(async () => {
   removeChild();
 });
 
-test('[RWD-11][RWD-12][US-408][NFR-14-h] a child’s last week, as hand-computed', async () => {
+test('[RWD-11][RWD-12][US-408][NFR-14-h][RWD-12-c] a child’s last week, as hand-computed', async () => {
   await admin.goto(`/admin/insights?member=${KID}&days=7`);
   await expect(admin.getByRole('heading', { name: 'Insights', level: 1 })).toBeVisible();
   const streaks = admin.getByRole('region', { name: 'Streaks' });
@@ -124,6 +125,15 @@ test('[RWD-11][RWD-12][US-408][NFR-14-h] a child’s last week, as hand-computed
   await expect(admin.getByRole('region', { name: 'Done' })).toContainText(
     '90% 18 of 20 routines that counted',
   );
+  // [RWD-12-c] Day by day, Missed most and Checking are folded to their one-line findings (WP-97):
+  // each header says its finding, then each is opened to read what it holds.
+  await expect(foldOf(admin, 'Missed most').locator(':scope > summary')).toContainText(
+    `${TEETH.title}, missed once`,
+  );
+  await expect(foldOf(admin, 'Checking').locator(':scope > summary')).toContainText(
+    '18 check-offs · 0 unchecked by a parent',
+  );
+  for (const fold of ['Day by day', 'Missed most', 'Checking']) await unfold(foldOf(admin, fold));
   const heat = admin.getByRole('table', { name: 'Day by day' });
   await expect(heat.locator('td[data-class="good"]')).toHaveCount(5);
   await expect(heat.locator('td[data-class="bad"]')).toHaveCount(2);
@@ -153,13 +163,17 @@ test('[RWD-11][RWD-12][US-408][NFR-14-h] a child’s last week, as hand-computed
   ).toBe('0');
 });
 
-test('[RWD-11][US-408] a rebuild from history leaves every row identical', async () => {
+test('[RWD-11][US-408][RWD-11-a] a rebuild from history leaves every row identical', async () => {
   // The page first, so the history it builds when behind is what the rebuild is compared with.
   await admin.goto(`/admin/insights?member=${KID}&days=7`);
   await expect(admin.getByRole('heading', { name: 'Insights', level: 1 })).toBeVisible();
   const before = rows(KID);
-  await admin.getByRole('button', { name: 'Rebuild from history', exact: true }).click();
+  // [RWD-11-a] History is folded to its button (WP-97): opened, rebuilt, and back open after it.
+  const history = foldOf(admin, 'History');
+  await unfold(history);
+  await history.getByRole('button', { name: 'Rebuild from history', exact: true }).click();
   await expect(admin.getByRole('status')).toHaveText('History rebuilt from every check-off.');
+  await expect(history).toHaveAttribute('open', '');
   expect(rows(KID)).toBe(before);
 });
 

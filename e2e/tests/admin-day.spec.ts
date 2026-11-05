@@ -123,7 +123,7 @@ async function chores() {
   await expect(everyone(), "the board's Chores screen").toBeVisible();
 }
 
-test('[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batch, open again on the board, four reversals; Undo puts them back', async () => {
+test('[CHR-08][PTS-01][CHR-12-e] four of five check-offs unchecked in one action: one batch, open again on the board, four reversals; Undo puts them back', async () => {
   const [maya, leo] = [memberId('Maya'), memberId('Leo')];
   const four = [
     occ(MAKE_BED, maya),
@@ -145,8 +145,11 @@ test('[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batc
 
   await admin.goto('/admin/today');
   const day = admin.getByRole('region', { name: 'Today' });
-  // [NFR-18] A part with everything done is folded (WP-97): open them all to tick.
-  for (const part of await day.locator('details.fw-fold').all()) await unfold(part);
+  // [NFR-18][CHR-12-e] A part with everything done is folded (WP-97): open them all to tick. Every
+  // fold of the day: a part is a card fold, whose `fw-fold` class is on its section, not its details.
+  const parts = await day.locator('details').all();
+  expect(parts.length, "Today's parts").toBeGreaterThan(0);
+  for (const part of parts) await unfold(part);
   for (const name of [
     'Select Make bed (Maya)',
     'Select Make bed (Leo)',

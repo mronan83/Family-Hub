@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.17: the e2e reds of 23 October to 4 November (WP-119, D-153): five specs open the folds they read inside, grocery brands' names lead with the run's tag, and the run counts a server error in the preview's own log that names the infrastructure; test cases CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f and NFR-12-g; the catalogue regenerated.
 > v0.8.16: WebKit's page loads in CI (WP-118, D-152): the UI suite's specs take their `test` from `e2e/ui/test.ts`, and it and the screenshot script answer Next.js's link prefetches themselves; test cases NFR-16-u to NFR-16-w (one spec keeps the app's own prefetches); the catalogue regenerated.
 > v0.8.15: staples (WP-106, D-150): test cases MEAL-21-a to MEAL-21-h; the catalogue regenerated.
 > v0.8.14: the board's grocery asks, ticks and removals (WP-107, D-149): test cases MEAL-22-a to MEAL-22-j and MEAL-30-a to MEAL-30-e; the catalogue regenerated.
@@ -258,7 +259,7 @@ The test standard is in `CLAUDE.md` ("Tests", D-110). In short:
 |---|---|
 | A fast check | Red on the PR: the PR waits until it is fixed, and the deploy gate won't ship it |
 | A wrong result in the nightly run | Red, never re-run; the issue "E2E red on main: <spec>" opens or gains the run, with the test's kind and cause; it blocks nothing and is fixed as the next item (D-108) |
-| Infrastructure in the nightly run: a statement timeout, a refused or reset connection, a Supabase or Auth 5xx, the preview not answering, the test database or preview slow or down (the probe, the preview's `/api/health` answering in over 2 s, the preview taking over 2 s to reach the test database (`/api/health/db`, D-143), or the reads that would show a late change all taking over 2 s: a board's read of it, D-129, or a reloaded page's loads, D-135), the demo family's day turned since its load | That test re-runs once by itself, on that evidence only, and its cause is labelled in the run summary; a second fault is red, with its cause (D-110) |
+| Infrastructure in the nightly run: a statement timeout, a refused or reset connection, a Supabase or Auth 5xx, the preview not answering, the test database or preview slow or down (the probe, the preview's `/api/health` answering in over 2 s, the preview taking over 2 s to reach the test database (`/api/health/db`, D-143), the preview's own log naming one of these for a request (D-153), or the reads that would show a late change all taking over 2 s: a board's read of it, D-129, or a reloaded page's loads, D-135), the demo family's day turned since its load | That test re-runs once by itself, on that evidence only, and its cause is labelled in the run summary; a second fault is red, with its cause (D-110) |
 | A refused or failed deploy | The issue "Deploy refused: <commit>" opens or gains the run (D-108) |
 
 - Never skip, disable or quarantine a test, and never call a failure a flake without a cause.
@@ -279,7 +280,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3201** tests: Unit 1008 · DB 1687 · UI 362 · E2E 144. 2679 name at least one ID; 522 name none.
+**3208** tests: Unit 1015 · DB 1687 · UI 362 · E2E 144. 2686 name at least one ID; 522 name none.
 
 | Measure | Count |
 |---|---|
@@ -288,7 +289,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 120 of 134 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 307 (with a test: 307) |
+| Test cases | 316 (with a test: 316) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -302,19 +303,19 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
-| Chores | 127 | 202 | 42 | 34 | 405 |
+| Chores | 129 | 202 | 42 | 34 | 407 |
 | Points | 57 | 109 | 24 | 12 | 202 |
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 138 | 182 | 90 | 20 | 430 |
+| Meals and lunch | 139 | 182 | 90 | 20 | 431 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 84 | 14 | 13 | 178 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
-| Platform | 200 | 167 | 62 | 18 | 447 |
+| Platform | 204 | 167 | 62 | 18 | 451 |
 | Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **1008** | **1687** | **362** | **144** | **3201** |
+| **Total** | **1015** | **1687** | **362** | **144** | **3208** |
 
 ### 9.3 By requirement
 
@@ -350,11 +351,11 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | CHR-09 | M | Covered | US-304, US-311, US-316, US-320 | WP-08, WP-09, WP-10, WP-43 | — | U 8 · DB 15 · UI 1 · E2E 3 |
 | CHR-10 | M | Covered | US-312 | WP-08, WP-15, WP-19, WP-46, WP-83 | — | U 9 · DB 8 · UI 3 · E2E 2 |
 | CHR-11 | M | Covered | US-313 | WP-08, WP-09, WP-11 | — | U 9 · DB 5 · UI 1 · E2E 2 |
-| CHR-12 | M | Covered | US-303, US-314 | WP-09, WP-10, WP-11, WP-97 | CHR-12-a, CHR-12-b, CHR-12-c, CHR-12-d | U 13 · DB 9 · UI 5 · E2E 2 |
+| CHR-12 | M | Covered | US-303, US-314 | WP-09, WP-10, WP-11, WP-97, WP-119 | CHR-12-a, CHR-12-b, CHR-12-c, CHR-12-d, CHR-12-e | U 13 · DB 9 · UI 5 · E2E 3 |
 | CHR-13 | M | Covered | US-315 | WP-08 | — | U 4 · DB 28 · E2E 3 |
-| CHR-14 | M | Covered | US-316 | WP-12, WP-97 | CHR-14-a, CHR-14-b | U 7 · DB 7 · UI 8 · E2E 2 |
+| CHR-14 | M | Covered | US-316 | WP-12, WP-97, WP-119 | CHR-14-a, CHR-14-b, CHR-14-c | U 9 · DB 7 · UI 8 · E2E 2 |
 | CHR-15 | M | Covered | US-317 | WP-40 | — | U 8 · DB 3 · UI 5 · E2E 4 |
-| CHR-16 | M | Covered | US-318 | WP-40 | — | U 5 · DB 6 · UI 2 · E2E 6 |
+| CHR-16 | M | Covered | US-318 | WP-40, WP-119 | CHR-16-a | U 5 · DB 6 · UI 2 · E2E 6 |
 | CHR-17 | M | Covered | US-319 | WP-40 | — | U 2 · DB 2 · UI 1 · E2E 2 |
 | CHR-18 | M | Covered | US-320 | WP-43 | — | U 5 · DB 21 · E2E 2 |
 | CHR-19 | M | Covered | US-321 | WP-61 | — | U 2 · DB 14 · UI 1 · E2E 1 |
@@ -373,8 +374,8 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | RWD-08 | M | Covered | US-404 | WP-11, WP-20 | — | U 3 · DB 9 · UI 5 · E2E 1 |
 | RWD-09 | M | Covered | US-405 | WP-19, WP-95 | RWD-09-a | U 1 · DB 2 · UI 1 · E2E 2 |
 | RWD-10 | S | Covered | US-406 | WP-39 | — | U 3 · DB 2 · UI 1 · E2E 1 |
-| RWD-11 | M | Covered | US-408 | WP-15, WP-17 | — | U 21 · DB 3 · E2E 2 |
-| RWD-12 | S | Covered | US-408 | WP-17, WP-97 | RWD-12-a, RWD-12-b | U 7 · DB 6 · UI 3 · E2E 1 |
+| RWD-11 | M | Covered | US-408 | WP-15, WP-17, WP-119 | RWD-11-a | U 21 · DB 3 · E2E 2 |
+| RWD-12 | S | Covered | US-408 | WP-17, WP-97, WP-119 | RWD-12-a, RWD-12-b, RWD-12-c | U 7 · DB 6 · UI 3 · E2E 1 |
 | RWD-13 | S | Covered | US-409 | WP-39 | — | U 3 · DB 4 · UI 3 · E2E 1 |
 | RWD-14 | S | Covered | US-401 | WP-79 | — | U 5 · DB 5 · UI 3 · E2E 1 |
 | RWD-15 | S | Covered | US-410, US-411 | WP-80 | RWD-15-a, RWD-15-b, RWD-15-c, RWD-15-d, RWD-15-e, RWD-15-f, RWD-15-g, RWD-15-h, RWD-15-i, RWD-15-j, RWD-15-k, RWD-15-l, RWD-15-m | U 17 · DB 22 · UI 7 · E2E 1 |
@@ -428,7 +429,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-26 | S | Covered | US-720 | WP-105 | MEAL-26-a | U 1 · DB 1 · UI 1 |
 | MEAL-27 | S | Covered | US-721 | WP-112 | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e | U 2 · UI 7 · E2E 1 |
 | MEAL-28 | S | Covered | US-721 | WP-112 | MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | U 2 · DB 13 · UI 4 · E2E 1 |
-| MEAL-29 | S | Covered | US-722 | WP-116 | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | U 11 · DB 37 · UI 15 · E2E 1 |
+| MEAL-29 | S | Covered | US-722 | WP-116, WP-119 | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l, MEAL-29-m | U 12 · DB 37 · UI 15 · E2E 1 |
 | MEAL-30 | S | Covered | US-723 | WP-107 | MEAL-30-a, MEAL-30-b, MEAL-30-c, MEAL-30-d, MEAL-30-e | U 4 · DB 14 · UI 4 · E2E 1 |
 | MENU-01 | M | Covered | US-801 | WP-27 | — | U 3 · DB 1 · UI 2 · E2E 1 |
 | MENU-02 | M | Covered | US-801 | WP-27 | — | U 4 · DB 2 · UI 2 · E2E 1 |
@@ -459,14 +460,14 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-10 | M | Not built | US-903 | WP-24 | — | — |
 | NFR-11 | S | Covered | US-906 | WP-31, WP-46 | — | U 4 · UI 31 |
 | PTS-01 | M | Covered | US-309, US-1101, US-1106 | WP-16, WP-95 | PTS-01-a, PTS-01-b | U 12 · DB 42 · UI 1 · E2E 6 |
-| PTS-02 | M | Covered | US-1102 | WP-11, WP-16, WP-20 | — | U 4 · DB 11 · UI 1 · E2E 2 |
+| PTS-02 | M | Covered | US-1102 | WP-11, WP-16, WP-20, WP-119 | PTS-02-a | U 4 · DB 11 · UI 1 · E2E 2 |
 | PTS-03 | M | Covered | US-1103 | WP-18, WP-95 | PTS-03-a, PTS-03-b, PTS-03-c | U 7 · DB 6 · UI 7 · E2E 1 |
 | PTS-04 | M | Covered | US-1104, US-1105 | WP-18, WP-20, WP-95, WP-110 | PTS-04-b, PTS-04-a | U 12 · DB 17 · UI 12 · E2E 3 |
 | PTS-05 | S | Covered | US-1107 | WP-30, WP-95 | PTS-05-a | U 8 · DB 4 · UI 3 · E2E 1 |
 | PTS-06 | S | Covered | US-1108 | WP-30 | — | U 5 · DB 2 · UI 7 · E2E 2 |
 | PTS-07 | M | Covered | US-1109 | WP-02, WP-04, WP-16 | — | U 2 · DB 15 · E2E 3 |
 | PTS-08 | S | Covered | US-1110 | WP-115 | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | U 12 · DB 17 · UI 5 |
-| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | U 10 |
+| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g | U 14 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110, WP-118 | NFR-16-t, NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s, NFR-16-u, NFR-16-v, NFR-16-w | U 23 · DB 10 · UI 24 |
@@ -596,6 +597,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-116 | Done | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | 12 of 12 | — |
 | WP-117 | Queued: | — | — | — |
 | WP-118 | Done | NFR-16-u, NFR-16-v, NFR-16-w | 3 of 3 | — |
+| WP-119 | Done | CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f, NFR-12-g | 9 of 9 | — |
 
 Test cases and the tests that prove them:
 
@@ -764,7 +766,7 @@ Test cases and the tests that prove them:
 | NFR-14-e | WP-102 | A spec's clean-up never deletes an item with check-offs: its days with none are removed and it is archived | E2E | E2E `e2e/tests/goal-steps.spec.ts`: `[RWD-18-m][RWD-17-e][NFR-14-e][US-412][US-413] done-when: Maya’s homework by 6 pm in steps, a 6:05 pm tick that doesn’t count, a week of 4 on time paying 10`<br>E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][NFR-14-t][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row; thei…`<br>E2E `e2e/tests/repeating-goals.spec.ts`: `[RWD-15-m][US-410][US-411][NFR-14-e] done-when: Maya’s weekly homework goal, a 4-day week won and paid once, a missed Tuesday, the weeks on Goals and the board` |
 | NFR-14-f | WP-102 | Specs use the controls as WP-75 and WP-100 drew them: the icon picker opened by its header, the lunch week read from its own list, a meal's **Change** opened only if closed | E2E | E2E `e2e/tests/chores.spec.ts`: `[CHR-01][CHR-03][CHR-09][CHR-11][NFR-14-f] a parent enters the family’s list on a phone in under five minutes; each new item has its next two weeks planned`<br>E2E `e2e/tests/chores.spec.ts`: `[CHR-13][NFR-14-f] a private task stays with its creator, and reaches the other parent only if it’s theirs`<br>E2E `e2e/tests/lunch-quick.spec.ts`: `[MEAL-12][US-709][NFR-14-f] done-when: Pick lunches on Home opens the lunch week to pick, on the child chosen last`<br>E2E `e2e/tests/meal-edit.spec.ts`: `[MEAL-15][US-701][NFR-14-f] done-when: Alex edits a planned dinner in place, and Edit again shows what was saved` |
 | NFR-14-g | WP-102 | The board's Meals screen shows a feed's school menu on any day of the week, a Saturday and a Sunday included | E2E | E2E `e2e/tests/board-meals.spec.ts`: `[MENU-06][US-804][NFR-14-g] done-when: a feed’s day shows its entree options at home and three sections on Meals` |
-| NFR-14-h | WP-102 | A spec expects what the app is meant to do: history at the rules engine's current version, a calendar's people in the family's order | E2E | E2E `e2e/tests/board-calendar.spec.ts`: `[CAL-09-f][US-508][NFR-14-h] a calendar given two people on Calendars shows both faces on the board`<br>E2E `e2e/tests/insights.spec.ts`: `[RWD-11][RWD-12][US-408][NFR-14-h] a child’s last week, as hand-computed` |
+| NFR-14-h | WP-102 | A spec expects what the app is meant to do: history at the rules engine's current version, a calendar's people in the family's order | E2E | E2E `e2e/tests/board-calendar.spec.ts`: `[CAL-09-f][US-508][NFR-14-h] a calendar given two people on Calendars shows both faces on the board`<br>E2E `e2e/tests/insights.spec.ts`: `[RWD-11][RWD-12][US-408][NFR-14-h][RWD-12-c] a child’s last week, as hand-computed` |
 | NFR-14-o | WP-108 | The perfect-weeks goal's Target is found by its role, so the icon picker's "target" icon, in the form while folded, never matches it | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][NFR-14-t][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row; thei…` |
 | NFR-14-p | WP-108 | A DEV-05 miss is the test database slow only when the board's read of every late change took over 2 s, returned or still out; one read under 2 s keeps it an assertion; the budget stays p95 under 3 s | Unit | E2E `e2e/tests/devices.spec.ts`: `[DEV-05][NFR-14-p] a rename in the admin app reaches the board within 3 seconds (p95 of 20)`<br>Unit `scripts/e2e-infra.test.mjs`: `[NFR-14-p][D-129] a late change is the database slow only when every read of it took over 2 s` |
 | NFR-14-q | WP-108 | A missed wait for Meals in the admin app names each page load, the one still loading included, never blank; every load over 2 s is the database slow, one under keeps it an assertion | Unit | E2E `e2e/tests/lunches.spec.ts`: `[MEAL-09][MEAL-11][US-707][NFR-14-q] done-when: the item opens Maya’s week; she picks a buy day; Meals shows it within 3 s; a parent approves it; Done checks i…`<br>Unit `scripts/e2e-infra.test.mjs`: `[NFR-14-q][D-135] a missed page wait says each load, the one still loading included, and is evidence only if all were slow` |
@@ -908,6 +910,15 @@ Test cases and the tests that prove them:
 | NFR-16-u | WP-118 | Only a router prefetch (`_rsc` and the `Next-Router-Prefetch` header, any of its kinds) is answered, at once with 204; a tap's navigation, a page load and a save go on to the server | Unit | Unit `scripts/next-prefetch.test.mjs`: `[NFR-16-u] a router prefetch is a GET with _rsc and the prefetch header; a tap or a page load is not`<br>Unit `scripts/next-prefetch.test.mjs`: `[NFR-16-u] answerPrefetches answers a prefetch 204 at once and passes every other request on` |
 | NFR-16-v | WP-118 | Every UI spec takes its `test` from `e2e/ui/test.ts`, and the screenshot script makes every context in one place that answers prefetches before a page opens | Unit | Unit `scripts/next-prefetch.test.mjs`: `[NFR-16-v] every UI spec takes its test from e2e/ui/test.ts, and every screenshot context answers prefetches` |
 | NFR-16-w | WP-118 | With the app's own prefetches kept (`realPrefetches`), a tap on a menu link while a prefetch is still on its way opens that page, in Chrome, as the iPhone and as the Mac | UI | UI `e2e/ui/prefetch.spec.ts`: `[NFR-16-w] a tap on a link while the app’s own prefetch is on its way opens the page` |
+| CHR-12-e | WP-119 | On the real preview, Alex opens every folded part of Today and unchecks four of five check-offs in one action | E2E | E2E `e2e/tests/admin-day.spec.ts`: `[CHR-08][PTS-01][CHR-12-e] four of five check-offs unchecked in one action: one batch, open again on the board, four reversals; Undo puts them back` |
+| CHR-14-c | WP-119 | My tasks comes back with Coming up open after a bell, a done or an uncheck on something in it; folded on a first load or after a save on something today or overdue | Unit | Unit `apps/web/lib/day-folds.test.ts`: `[CHR-14-c] My tasks’ Coming up, open again after a save inside it › after a bell on one of its items, or a done or an uncheck on one`<br>Unit `apps/web/lib/day-folds.test.ts`: `[CHR-14-c] My tasks’ Coming up, open again after a save inside it › folded otherwise: a first load, or a save on something today or overdue` |
+| CHR-16-a | WP-119 | On the real preview, the trip fee's bell is under Coming up, folded; opened, it goes off and on again, and Coming up is open after each tap | E2E | E2E `e2e/tests/reminders.spec.ts`: `[CHR-16][US-318][CHR-16-a] the bell on an item in My tasks: off for this item only, then on again` |
+| PTS-02-a | WP-119 | On the real preview, Leo's Points is opened from its fold, and his latest 30 entries say where each came from | E2E | E2E `e2e/tests/points.spec.ts`: `[PTS-02][PTS-02-a] Members shows each child's balance; their page shows where it came from` |
+| RWD-11-a | WP-119 | On the real preview, History is opened from its button, Rebuild leaves every row identical, and History is open after it | E2E | E2E `e2e/tests/insights.spec.ts`: `[RWD-11][US-408][RWD-11-a] a rebuild from history leaves every row identical` |
+| RWD-12-c | WP-119 | On the real preview, Missed most and Checking fold to their findings, and Day by day, Missed most and Checking opened hold the hand-computed week | E2E | E2E `e2e/tests/insights.spec.ts`: `[RWD-11][RWD-12][US-408][NFR-14-h][RWD-12-c] a child’s last week, as hand-computed` |
+| MEAL-29-m | WP-119 | Merge into… with grocery-brands.spec's names: with the run's tag first the near-duplicate finds the brand; with it last the first A to Z is picked | Unit | Unit `apps/web/lib/grocery-brands.test.ts`: `an item with its brand › [MEAL-29-m] Merge into… with the e2e spec’s names: a tag first finds the brand, a tag last does not` |
+| NFR-12-f | WP-119 | A server error in the preview's log naming the infrastructure is a bad reading at its own time, once for a request's lines and across overlapping reads; the app's own errors, and lines without a time, are none | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-f] a server error in the preview’s log naming the infrastructure is a bad reading at its own time; the app’s own errors are none` |
+| NFR-12-g | WP-119 | The run reads the preview's error log with the Vercel CLI (the preview, error level, JSON) and a test failed while it named the infrastructure is infrastructure; a failed read is a note without the token; without a preview or a token there is no read, and the summary says so | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-g] the run reads the preview’s error log with the Vercel CLI, and a failed test while it named the infrastructure is infrastructure`<br>Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-g] a read of the preview’s log that fails is a note, without the token, and no reading`<br>Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-g] without a preview or a token there is no read, and the run says so` |
 
 ### 9.5 By user story
 
@@ -1505,7 +1516,7 @@ Unit · 8 tests
 
 #### `apps/web/lib/day-folds.test.ts`
 
-Unit · 11 tests
+Unit · 13 tests
 
 | Test | Names |
 |---|---|
@@ -1520,6 +1531,8 @@ Unit · 11 tests
 | `[CHR-14-a] My tasks’ Coming up, folded › how many in the next seven days, and the next with its day and time` | CHR-14-a |
 | `[CHR-14-a] My tasks’ Coming up, folded › a next one later in the week, over the month’s end and daylight saving, names its date` | CHR-14-a |
 | `[CHR-14-a] My tasks’ Coming up, folded › nothing coming up` | CHR-14-a |
+| `[CHR-14-c] My tasks’ Coming up, open again after a save inside it › after a bell on one of its items, or a done or an uncheck on one` | CHR-14-c |
+| `[CHR-14-c] My tasks’ Coming up, open again after a save inside it › folded otherwise: a first load, or a save on something today or overdue` | CHR-14-c |
 
 #### `apps/web/lib/devices.test.ts`
 
@@ -1704,7 +1717,7 @@ Unit · 13 tests
 
 #### `apps/web/lib/grocery-brands.test.ts`
 
-Unit · 10 tests
+Unit · 11 tests
 
 | Test | Names |
 |---|---|
@@ -1718,6 +1731,7 @@ Unit · 10 tests
 | `an item with its brand › [MEAL-29-h] reads "Milk · Kirkland", and alone when it has none` | MEAL-29-h |
 | `an item with its brand › [MEAL-29-h] Home’s lines name the brand` | MEAL-29-h |
 | `an item with its brand › [MEAL-29-h] Merge into… picks the closest name first, else the first A to Z` | MEAL-29-h |
+| `an item with its brand › [MEAL-29-m] Merge into… with the e2e spec’s names: a tag first finds the brand, a tag last does not` | MEAL-29-m |
 
 #### `apps/web/lib/grocery-merge.test.ts`
 
@@ -2405,7 +2419,7 @@ E2E · 5 tests
 
 | Test | Names |
 |---|---|
-| `[CHR-08][PTS-01] four of five check-offs unchecked in one action: one batch, open again on the board, four reversals; Undo puts them back` | CHR-08, PTS-01 |
+| `[CHR-08][PTS-01][CHR-12-e] four of five check-offs unchecked in one action: one batch, open again on the board, four reversals; Undo puts them back` | CHR-12-e, CHR-08, PTS-01 |
 | `[CHR-12-d][D-145] the last open item of a part marked done: open with its count, folded on the next load, opened to uncheck` | CHR-12-d |
 | `[CHR-06] late credit for yesterday, then unchecked again; a day ahead skipped and put back` | CHR-06 |
 | `[CHR-05][D-22][NFR-18-w] with approval on, a child’s check-off waits for a parent: approved, or sent back to try again` | NFR-18-w, CHR-05 |
@@ -2680,8 +2694,8 @@ E2E · 3 tests
 
 | Test | Names |
 |---|---|
-| `[RWD-11][RWD-12][US-408][NFR-14-h] a child’s last week, as hand-computed` | NFR-14-h, RWD-11, RWD-12, US-408 |
-| `[RWD-11][US-408] a rebuild from history leaves every row identical` | RWD-11, US-408 |
+| `[RWD-11][RWD-12][US-408][NFR-14-h][RWD-12-c] a child’s last week, as hand-computed` | NFR-14-h, RWD-12-c, RWD-11, US-408 |
+| `[RWD-11][US-408][RWD-11-a] a rebuild from history leaves every row identical` | RWD-11-a, US-408 |
 | `[RWD-05] a board shows Maya’s run from her stored history` | RWD-05 |
 
 #### `e2e/tests/jobs.spec.ts`
@@ -2805,7 +2819,7 @@ E2E · 5 tests
 
 | Test | Names |
 |---|---|
-| `[PTS-02] Members shows each child's balance; their page shows where it came from` | PTS-02 |
+| `[PTS-02][PTS-02-a] Members shows each child's balance; their page shows where it came from` | PTS-02-a |
 | `[PTS-01] a parent adds and takes away points with a reason; each is kept, never edited` | PTS-01 |
 | `[PTS-01-b][NFR-18] Alex changes Maya’s points and finds Points open after the save` | PTS-01-b, NFR-18 |
 | `[PTS-01] a reason is required, and an empty one is caught before anything is posted` | PTS-01 |
@@ -2831,7 +2845,7 @@ E2E · 4 tests
 |---|---|
 | `[CHR-15][CHR-16][CHR-17][US-319] Alex’s own settings: off until he turns them on; saved and read back` | CHR-15, CHR-16, CHR-17, US-319 |
 | `[CHR-15][US-317] a device: switched off and on, a test (live app only), removed` | CHR-15, US-317 |
-| `[CHR-16][US-318] the bell on an item in My tasks: off for this item only, then on again` | CHR-16, US-318 |
+| `[CHR-16][US-318][CHR-16-a] the bell on an item in My tasks: off for this item only, then on again` | CHR-16-a, US-318 |
 | `[CHR-16] an item’s reminder lead time, in the editor` | CHR-16 |
 
 #### `e2e/tests/repeating-goals.spec.ts`
@@ -3963,7 +3977,7 @@ Unit · 4 tests
 
 #### `scripts/e2e-infra.test.mjs`
 
-Unit · 14 tests
+Unit · 18 tests
 
 | Test | Names |
 |---|---|
@@ -3981,6 +3995,10 @@ Unit · 14 tests
 | `[NFR-12-a] a slow probe says how much of it the database spent on the query` | NFR-12-a |
 | `[NFR-12-c] the preview slow to reach the test database, or not reaching it, is a bad reading; a failure while it was is infrastructure` | NFR-12-c |
 | `[NFR-12-d] a failed test still waiting for a page load or a save says which in its cause, and stays an assertion failure` | NFR-12-d |
+| `[NFR-12-f] a server error in the preview’s log naming the infrastructure is a bad reading at its own time; the app’s own errors are none` | NFR-12-f |
+| `[NFR-12-g] the run reads the preview’s error log with the Vercel CLI, and a failed test while it named the infrastructure is infrastructure` | NFR-12-g |
+| `[NFR-12-g] a read of the preview’s log that fails is a note, without the token, and no reading` | NFR-12-g |
+| `[NFR-12-g] without a preview or a token there is no read, and the run says so` | NFR-12-g |
 
 #### `scripts/e2e-run-fixture/assertion.spec.ts`
 

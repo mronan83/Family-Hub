@@ -46,6 +46,7 @@ import {
   healthReading,
   probeReading,
   redact,
+  serverLogReadings,
   signInWords,
   waitingWords,
 } from './e2e-infra.mjs';
@@ -164,9 +165,73 @@ export function startProbe({
     );
   } else notes.push('no preview probe (E2E_BASE_URL not set)');
 
+  // [NFR-12-g] The preview's own server errors (WP-119). A page the preview renders on the server
+  // fails there when Supabase answers it 5xx, and the browser sees only the error page (#183: "502
+  // Bad Gateway" to Insights' household lookup). So once a minute, and once more before each verdict
+  // (flush()), the run reads the preview's error-level runtime log with the Vercel CLI the job
+  // installs (Hobby keeps an hour of it), and each error naming the infrastructure is a bad reading
+  // at its own time. Each read starts a minute before the last one ended, for lines that arrive late.
+  const token = process.env.VERCEL_TOKEN;
+  let readLogs = async () => {};
+  if (base && token) {
+    const seen = new Set();
+    let from = Date.now();
+    let reads = 0;
+    let lines = 0;
+    let named = 0;
+    let failures = 0;
+    let firstFailure = '';
+    let pendingRead = null;
+    const hide = (text) => redact(text).split(token).join('***');
+    readLogs = () => {
+      if (pendingRead) return pendingRead;
+      const until = Date.now();
+      pendingRead = new Promise((resolve) => {
+        const args = ['logs', base, '--since', new Date(from - 60_000).toISOString()];
+        args.push('--level', 'error', '--json', '--limit', '100', '--token', token);
+        const child = spawn('vercel', args, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+        let out = '';
+        let err = '';
+        child.stdout.on('data', (d) => (out += d));
+        child.stderr.on('data', (d) => (err += d));
+        const timer = setTimeout(() => child.kill(), 30_000);
+        let finished = false;
+        const done = (ok, why) => {
+          if (finished) return; // 'error' and 'close' can both come
+          finished = true;
+          clearTimeout(timer);
+          if (ok) {
+            reads += 1;
+            from = until;
+            lines += out.split('\n').filter((l) => l.trim().startsWith('{')).length;
+            const found = serverLogReadings(out, seen);
+            named += found.length;
+            degraded.push(...found);
+          } else {
+            failures += 1;
+            firstFailure ||= hide(why).split('\n').find(Boolean)?.slice(0, 160) ?? '';
+          }
+          pendingRead = null;
+          resolve();
+        };
+        child.on('error', (e) => done(false, e.message));
+        child.on('close', (code) => done(code === 0, err || `exit ${code}`));
+      });
+      return pendingRead;
+    };
+    timers.push(setInterval(() => void readLogs(), 60_000));
+    notes.push(() =>
+      failures
+        ? `the preview's error log: read ${reads} time(s), ${failures} read(s) failed (${firstFailure}); ${named} error(s) naming the infrastructure`
+        : `the preview's error log: read ${reads} time(s), ${lines} error line(s) (overlapping reads count again), ${named} naming the infrastructure`,
+    );
+  } else notes.push("no read of the preview's error log (E2E_BASE_URL or VERCEL_TOKEN not set)");
+
   return {
     degraded,
     notes,
+    /** [NFR-12-g] Reads the preview's error log up to now, before a verdict is made from it. */
+    flush: () => readLogs(),
     stop() {
       for (const t of timers) clearInterval(t);
       psql?.stdin.end();
@@ -313,6 +378,7 @@ async function main() {
   }
 
   const results = passes.flatMap((p) => resultsOf(p.report).map((r) => ({ ...r, pass: p.label })));
+  await probe.flush();
   const failures = failuresIn(results, probe.degraded);
   const globalErrors = passes.flatMap((p) =>
     (p.report?.errors ?? []).map((e) => redact(e.message ?? String(e))),
@@ -331,6 +397,7 @@ async function main() {
       if (!prev || failed(r)) rerun.set(key, r);
     }
     if (!again.report) missingReport.push(again);
+    await probe.flush();
   }
   probe.stop();
 
@@ -411,7 +478,7 @@ async function main() {
   }
   say();
   say('</details>');
-  for (const n of probe.notes) say(`\n_${n}_`);
+  for (const n of probe.notes) say(`\n_${typeof n === 'function' ? n() : n}_`);
 
   const text = `${lines.join('\n')}\n`;
   process.stdout.write(`\n${text}`);

@@ -27,13 +27,16 @@ export interface MyTasksViewProps {
   /** My default for items that don't say, and whether my reminders are on at all. */
   defaultOn: boolean;
   remindersOn: boolean;
+  /** [CHR-14-c] Coming up open: the page is back from a save on something in it (NFR-18). */
+  upcomingOpen?: boolean;
 }
 
 /**
  * [CHR-14][US-316] My tasks, for a parent on their phone: what I'm on, overdue first, then today's
  * and the week ahead, shared items included; done in one tap, credited to me; and quick add.
  * [NFR-18][D-120] As the fold audit draws it (WP-97): the title above the cards; Overdue and Today
- * open; Coming up folded to how many in the next seven days and the next one.
+ * open; Coming up folded to how many in the next seven days and the next one, and open again
+ * after a bell, a done or an uncheck on something in it (CHR-14-c).
  */
 export function MyTasksView({
   today,
@@ -47,6 +50,7 @@ export function MyTasksView({
   bells,
   defaultOn,
   remindersOn,
+  upcomingOpen = false,
 }: MyTasksViewProps) {
   if (!me) {
     return (
@@ -135,6 +139,7 @@ export function MyTasksView({
         <Fold
           title="Coming up"
           headingId="my-upcoming"
+          open={upcomingOpen}
           summary={[<Line key="l" line={comingUpLine(groups.upcoming, today)} />]}
         >
           {rows('upcoming', groups.upcoming, true)}

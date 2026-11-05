@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { noticeFor } from '@/lib/admin-day';
+import { myTaskGroups, noticeFor } from '@/lib/admin-day';
+import { comingUpOpen } from '@/lib/day-folds';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
 import { LINK_ERRORS, linkCandidates } from '@/lib/link-me';
@@ -81,6 +82,10 @@ export default async function MyTasksPage({
       bells={bells}
       defaultOn={settings?.defaultOn ?? true}
       remindersOn={settings?.enabled ?? false}
+      upcomingOpen={comingUpOpen(myTaskGroups(items, today).upcoming, {
+        chore: params.bell === 'on' || params.bell === 'off' ? params.chore : undefined,
+        item: params.did === 'done' || params.did === 'uncheck' ? params.item : undefined,
+      })}
     />
   );
 }

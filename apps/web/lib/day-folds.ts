@@ -89,3 +89,18 @@ export function comingUpLine(
   const when = next.dueTime ? `${day} ${clock(next.dueTime)}` : day;
   return [{ b: `${upcoming.length} in the next 7 days` }, ` · next: ${next.title}, ${when}`];
 }
+
+/**
+ * [CHR-14][NFR-18] My tasks' Coming up opens again after a save inside it (D-120): the page comes
+ * back from a bell (`chore`, the item's chore) or a done or an uncheck (`item`, the occurrence) on
+ * something it holds. Anything else, or nothing, leaves it folded. `upcoming` is Coming up's items
+ * (`myTaskGroups`).
+ */
+export function comingUpOpen(
+  upcoming: { id: string; choreId: string }[],
+  after: { chore?: string; item?: string },
+): boolean {
+  return upcoming.some(
+    (i) => (after.chore !== undefined && i.choreId === after.chore) || i.id === after.item,
+  );
+}

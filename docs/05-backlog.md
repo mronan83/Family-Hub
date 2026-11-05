@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.170: WP-119 (the e2e reds of 23 October to 4 November) added at the owner's request and done in the same change (CHR-12, CHR-14, CHR-16, PTS-02, RWD-11, RWD-12, MEAL-29, NFR-12, D-153): five tests read inside folds that WP-95 and WP-97 made without opening them (#163 to #166), grocery brands' spec gave its brands names whose tag came last (#174), and Insights failed on the preview's server when Supabase's gateway answered 502 (#183), which the run now reads in the preview's own log. Its test cases are CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f and NFR-12-g.
 > v0.8.169: WP-117 (a parent marks a missed or late chore done on time) added at the owner's request, recorded only (CHR-24, US-326, D-151): from a missed or late chore on Today (any past day), the child's page or a goal's days, a parent's **Mark done on time** records it done at its due time (or an earlier time they give), credited to the child, so a goal done by a time counts it; shown as "Marked on time by <parent>". It changes D-102's statement about a parent's late tick, for the owner to confirm when built. Queued, mockup first. Nothing is built in this change.
 > v0.8.168: WP-118 (WebKit's page loads in CI fail while a link prefetch is in flight, a bug) added at the owner's request and done in the same change (NFR-16, D-152): 7 of 65 `build` attempts from 18 to 30 October were red on a WebKit page load; the cause, a load that cancels a Next.js router prefetch still in flight, which Playwright's WebKit fails or never answers; the UI suite and the screenshot script now answer prefetches themselves. Its test cases are NFR-16-u to NFR-16-w.
 > v0.8.167: WP-106 (staples suggested by how often they run out) done (MEAL-21, US-716, D-150): Running low? and Staples on Groceries, and a line on Home's Groceries card; the refreshed mockup approved on 30 October.
@@ -329,6 +330,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-112 | Groceries on Home, and a preferred store | P3 | M | WP-104 | Done |
 | WP-116 | Grocery brands | P3 | M | WP-104, WP-112 | Done |
 | WP-118 | WebKit's page loads in CI fail while a link prefetch is in flight (a bug) | P3 | S | WP-100, WP-113 | Done |
+| WP-119 | The e2e reds of 23 October to 4 November: five specs reading folds unopened, grocery brands' names, a Supabase 502 on the server | P3 | S | WP-95, WP-97, WP-113, WP-116 | Done |
 | WP-117 | A parent marks a missed or late chore done on time | P3 | M | WP-12, WP-81 | Queued: mockup first |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
@@ -336,7 +338,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October. WP-118 (the WebKit CI fix), started by the owner on 1 November. WP-117 (a missed chore marked done on time), added on 30 October, mockup first; not started.
+**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October. WP-118 (the WebKit CI fix), started by the owner on 1 November. WP-119 (the e2e fix for #163 to #166, #174 and #183), started by the owner on 4 November. WP-117 (a missed chore marked done on time), added on 30 October, mockup first; not started.
 
 ---
 
@@ -585,6 +587,10 @@ flowchart LR
     WP112 --> WP116
     WP100 --> WP118[WP-118 WebKit loads and prefetches in CI]
     WP113 --> WP118
+    WP95 --> WP119[WP-119 e2e reds of 23 Oct to 4 Nov]
+    WP97 --> WP119
+    WP113 --> WP119
+    WP116 --> WP119
     WP85[WP-85 Test strategy and catalogue] --> WP86[WP-86 Close the known test gaps]
   end
 ```
@@ -2414,6 +2420,42 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 - **Found while its CI ran:** the fifth `build` run on this branch (1 November, 04:32 UTC) was red in one Chrome test, `weather.spec.ts:148` (BRD-04): "Last read at 9:09 am" where it expects 10:09. The `/dev/admin?view=weather` demo read the weather at a fixed 14:09 UTC on the household's today, which is 10:09 in New York only on daylight time; 1 November is the day the clocks go back, so it is red on `main` too until March. The demo now reads at 10:09 and fails at 10:39 in the household's zone in any season (`localInstant()`, unit-tested across clock changes); the test and what it checks are unchanged. Not the WebKit cause: the other four runs were green before the change of clocks.
 - **Deferred, as plain facts:** the 6 WebKit assertion failures of 18 to 21 October that WP-113 did not explain (`goal-form-summary.spec.ts:286`, `meal-groceries.spec.ts:145`, `chores.spec.ts:184` as the iPhone, `goals.spec.ts:347`) have no cause found here; none has come back since 21 October. The same `/dev/admin` page builds last week's demo items at a fixed UTC hour (`h + 4`, daylight time); no test reads their times, and it is left as it is.
 
+### WP-119 — The e2e reds of 23 October to 4 November: five specs reading folds unopened, grocery brands' names, a Supabase 502 on the server
+**Phase:** P3 · **Size:** S · **Depends on:** WP-95, WP-97, WP-113, WP-116 · **Reqs:** CHR-12, CHR-14, CHR-16, PTS-02, RWD-11, RWD-12, MEAL-29, NFR-12
+- Added at the owner's request on 4 November, in the planner session: "start the e2e fix for #163 to #166, #174 and #183". The nightly runs on `main` were red in these every night: #163 to #166 13 of 13 since 23 October, #174 8 of 8 since WP-116 shipped on 28 October, and #183 on 4 November (red in 1 of the last 27 runs, and once more on 24 October, when it passed on its infrastructure re-run). The goal: a cause for every red (D-110), the app or the test fixed where the cause is, no test skipped, disabled, quarantined, re-run blind or loosened. Out of scope, as a plain fact: the `board_snapshot()` statement timeouts on the test database (#168, #170, #179).
+- **The causes.** The public repository keeps no traces (D-48), so each was found from run 270's log (`4dc2742`, 4 November), the code, and for #183 the preview's own runtime log:
+
+| Test | Issue | Cause | Fix | Layer |
+|---|---|---|---|---|
+| admin-day, four of five check-offs unchecked in one action | #163 | Red since WP-97. The children's check-offs finish the morning, so its part is folded (D-145); the spec opens the parts with `details.fw-fold`, but a card fold (`Fold`'s default) has `fw-fold` on its `<section>`, not its `<details>`, so nothing was opened and `check()` waited on a hidden checkbox until the test's 90 s | Every `<details>` of the day is opened, and there must be at least one | Test |
+| insights, a child's last week as hand-computed; the rebuild | #164 | Red since WP-97. Day by day, Missed most and Checking fold to their findings and History to its button (D-145); the spec read the table and the list inside them folded, which a role query doesn't find (0 cells). The rebuild test, which never ran after it, clicks Rebuild inside History | Each fold's header is checked for its finding, then the fold is opened; History is opened for Rebuild and is open after it | Test |
+| points, Members shows each child's balance | #165 | Red since WP-95. A member's Points folds to the balance and the last change (D-144); the balance chip is read either way, but Leo's history list inside it was counted folded (0 of 19) | Points is opened before his history is read | Test |
+| reminders, the bell in My tasks | #166 | Red since WP-97. The trip fee is due in 3 days, so its bell is under Coming up, folded (D-145) | Coming up is checked folded, opened, and must still be open after each tap. The app now says so itself: My tasks comes back with Coming up open after a bell, a done or an uncheck on something in it (NFR-18), where before only the browser's kept `<details>` state did | Test, App |
+| grocery-brands, a merge moves the item | #174 | Red every night since WP-116. Merge into… picks first a brand whose name starts the other's (`mergeTarget()`, as "Kirkland" for "Kirkland Signature"), else the first A to Z. The spec named its brands "Fizzco e2e x" and "Fizzco Signature e2e x", the run's tag last, so neither name starts the other, and the first A to Z was picked: the app as specified | The tag leads each name ("e2e x Fizzco", "e2e x Fizzco Signature"), as a family's own brands would share a start | Test |
+| perfect-periods, the put-back's runs as before | #183 | Not DST, not a week boundary: the step failed on loading Insights, after every date-dependent check had passed, and the runs of 1 to 3 November after the clocks went back were green on the same weeks. The preview's runtime log at 16:08:12 UTC: Insights' render threw "household lookup: … 502 Bad Gateway … cloudflare", Supabase's gateway answering the preview's server, so the page was the error page. The run saw nothing of it, because only the browser's requests were watched, and called it an assertion failure | The run reads the preview's error log (below, D-153); a server error that names the infrastructure is a bad reading at its own time, so a test failing then re-runs once with that cause | Run |
+
+- **The run reads the preview's error log (D-153).** Once a minute while the specs run, and once more before each verdict, `scripts/e2e-run.mjs` reads the preview's error-level runtime log with the Vercel CLI the job already installs (`vercel logs <preview> --since … --level error --json`; Hobby keeps an hour). Each error whose words name the infrastructure as `INFRA_PATTERNS` do (a gateway's 502, 503 or 504, a statement timeout, a refused or reset connection, a full pool) is a bad reading at its own time, as the probe's are (`serverLogReadings()`); a test that failed within 10 s of it is infrastructure, its cause naming the request. The app's own errors are no reading. A read that fails is a note in the run summary without the token, and the summary says how many reads and error lines there were, so the first nightly run shows whether the CLI's lines are read.
+- **What this does not change:** no test's assertions or limits; the app's error page on a Supabase 5xx (a reload loads the page); the 3 s budgets.
+- **One new decision:** D-153, for the owner to confirm.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| CHR-12-e | On the real preview, Alex opens every folded part of Today and unchecks four of five check-offs in one action | E2E |
+| CHR-14-c | My tasks comes back with Coming up open after a bell, a done or an uncheck on something in it; folded on a first load or after a save on something today or overdue | Unit |
+| CHR-16-a | On the real preview, the trip fee's bell is under Coming up, folded; opened, it goes off and on again, and Coming up is open after each tap | E2E |
+| PTS-02-a | On the real preview, Leo's Points is opened from its fold, and his latest 30 entries say where each came from | E2E |
+| RWD-11-a | On the real preview, History is opened from its button, Rebuild leaves every row identical, and History is open after it | E2E |
+| RWD-12-c | On the real preview, Missed most and Checking fold to their findings, and Day by day, Missed most and Checking opened hold the hand-computed week | E2E |
+| MEAL-29-m | Merge into… with grocery-brands.spec's names: with the run's tag first the near-duplicate finds the brand; with it last the first A to Z is picked | Unit |
+| NFR-12-f | A server error in the preview's log naming the infrastructure is a bad reading at its own time, once for a request's lines and across overlapping reads; the app's own errors, and lines without a time, are none | Unit |
+| NFR-12-g | The run reads the preview's error log with the Vercel CLI (the preview, error level, JSON) and a test failed while it named the infrastructure is infrastructure; a failed read is a note without the token; without a preview or a token there is no read, and the summary says so | Unit |
+
+- **Done when:** every case above has a test; the fast checks are green; the next nightly run on `main` after the merge is green in #163, #164, #165, #166 and #174, runs the tests that did not run after them (insights 156 and 166, points 92, 133, 180 and 196, reminders 140), and says how many times it read the preview's error log; #183's test is green, or red with its cause named.
+- **Proving it:** e2e doesn't run on a pull request (D-108), and a run by hand starts only on `main` (D-121), so the fixes are proved by the nightly run after the merge; each issue is closed when that run shows its test green.
+- **As built:** specs `e2e/tests/admin-day.spec.ts` (CHR-12-e), `insights.spec.ts` (RWD-12-c, RWD-11-a), `points.spec.ts` (PTS-02-a), `reminders.spec.ts` (CHR-16-a), `grocery-brands.spec.ts` (its names, MEAL-29-l); `apps/web/lib/day-folds.ts` (`comingUpOpen()`), My tasks' `upcomingOpen` (`app/(admin)/admin/my/page.tsx`, `view.tsx`); `scripts/e2e-infra.mjs` (`serverLogReadings()`), `scripts/e2e-run.mjs` (the probe's read of the preview's error log, `flush()` before each verdict). Tests: Vitest `lib/day-folds.test.ts` (CHR-14-c), `lib/grocery-brands.test.ts` (MEAL-29-m); node:test `scripts/e2e-infra.test.mjs` (NFR-12-f, NFR-12-g). No migration, no screen changes.
+- **Deferred, as plain facts:** the `board_snapshot()` statement timeouts (#168, #170, #179) are not this item's. The rest of run 270's reds passed on their infrastructure re-run. **What a parent sees when it happens in production:** no admin page has an error boundary (only the board has one, `app/(board)/board/error.tsx`), so a page whose server render throws, as Insights did on the 502, shows Next.js's default page ("Application error: a server-side exception has occurred", with a digest), without the app's header, its menu or a Try again. An admin error state with Try again is a new screen state, so it needs a mockup on the demo family first; it is not built here, for the owner to decide.
+
 ### WP-117 — A parent marks a missed or late chore done on time
 **Phase:** P3 · **Size:** M · **Depends on:** WP-12, WP-81 · **Reqs:** CHR-24
 - Added at the owner's request on 30 October, in the planner session: "There may be times that we are away from the kiosk and forget to check something off that was done. For example, [our daughter] has to bring home her homework folder every day there is school. There was an instance where grandma picked her up from the bus stop and the chore didn't get checked, even though it was brought home. There's a current rule that requires a chore to be checked the day it's due or it's counted as late. We need to have a parent overwrite that allows a parent to complete the chore and count it as done on time. This is especially critical when that chore is tied to a goal." Recorded as the planner recommended ("Record it"). Recorded only; not built.
@@ -2438,6 +2480,6 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 | P1c | WP-19, WP-20, WP-39 | Two L |
 | P1d | SPIKE-02, WP-22 – WP-24 | ICS sync is the L |
 | P2 | SPIKE-04, WP-25 – WP-31, WP-40, WP-44, WP-49, WP-50, WP-54, WP-61 – WP-64, WP-74 – WP-82, WP-92 | Menu adapters, WP-49 and WP-80 are the Ls |
-| P3 | SPIKE-06, SPIKE-07, SPIKE-08, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-85, WP-86, WP-88 – WP-91, WP-93 – WP-99, WP-103 – WP-107, WP-112, WP-116, WP-118 | WP-56, WP-58, WP-68, WP-72, WP-86, WP-99, WP-103, WP-104 and WP-105 are the Ls |
+| P3 | SPIKE-06, SPIKE-07, SPIKE-08, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-85, WP-86, WP-88 – WP-91, WP-93 – WP-99, WP-103 – WP-107, WP-112, WP-116, WP-118, WP-119 | WP-56, WP-58, WP-68, WP-72, WP-86, WP-99, WP-103, WP-104 and WP-105 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.

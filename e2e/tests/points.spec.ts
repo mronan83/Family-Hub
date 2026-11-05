@@ -46,7 +46,7 @@ async function openPoints(page: Page) {
 test.describe.configure({ mode: 'serial' });
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
-test("[PTS-02] Members shows each child's balance; their page shows where it came from", async ({
+test("[PTS-02][PTS-02-a] Members shows each child's balance; their page shows where it came from", async ({
   page,
 }) => {
   const leo = memberId('Leo');
@@ -62,6 +62,8 @@ test("[PTS-02] Members shows each child's balance; their page shows where it cam
   await page.getByRole('link', { name: 'Edit Leo' }).click();
   const section = page.getByRole('region', { name: 'Points' });
   await expect(shown(page)).toHaveText(points.toLocaleString('en-US'));
+  // [PTS-02-a] Points is folded to the balance and the last change (WP-95): his history is inside.
+  await unfold(foldOf(page, 'Points'));
   // His latest 30 entries, newest first: the specs before this one add today's, so the seed's older
   // ones may be further back. Each says where its points came from: the item's title for a check-off,
   // the reason for anything else, as the database has them (a private item may show as private, so it
