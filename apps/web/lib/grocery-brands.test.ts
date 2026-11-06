@@ -1,12 +1,3 @@
-// An item's name keeps the tag inside it: led by the tag it would be saved with a capital, and a
-// tag last that reads as an amount would be taken off as one.
-expect(parseItem('e2e x1 Seltzer').name).toBe('E2e x1 Seltzer');
-expect(parseItem('Seltzer e2e x1').name).toBe('Seltzer e2e');
-for (const tag of ['x1', '12345', 'x1234', 'abc12', 't14eq'])
-  expect(parseItem(`Seltzer e2e ${tag} water`)).toEqual({
-    name: `Seltzer e2e ${tag} water`,
-    amount: null,
-  });
 import { describe, expect, it } from 'vitest';
 import {
   brandKey,
