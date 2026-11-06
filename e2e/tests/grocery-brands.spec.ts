@@ -13,15 +13,18 @@ const family = ownHousehold('grocery-brands');
 const db = process.env.SUPABASE_DB_URL;
 const HOUSEHOLD = family.id;
 const sql = (q: string) => query(db!, q);
-// [MEAL-29-l] The run's tag leads each name, so the near-duplicate starts with the brand, as
-// "Kirkland Signature" starts with "Kirkland": Merge into… picks the brand whose name starts the
-// other's (mergeTarget(), MEAL-29-m). A tag at the end would leave neither name starting the other.
+// [MEAL-29-l] Each brand's name leads with the run's tag, so the near-duplicate starts with the
+// brand, as "Kirkland Signature" starts with "Kirkland": Merge into… picks the brand whose name
+// starts the other's (mergeTarget(), MEAL-29-m). A tag at the end would leave neither name starting
+// the other. An item's name is read by parseItem(): its first letter is made a capital ("e2e…"
+// would be saved "E2e…") and a last word that reads as an amount ("x1234", "12345") is taken off,
+// so the tag sits inside each item's name, after a word and before "water" (WP-119).
 const TAG = `e2e ${Math.random().toString(36).slice(2, 7)}`;
 const names = {
-  item: `${TAG} Seltzer`,
+  item: `Seltzer ${TAG} water`,
   brand: `${TAG} Fizzco`,
   twin: `${TAG} Fizzco Signature`,
-  other: `${TAG} Tonic`,
+  other: `Tonic ${TAG} water`,
 };
 const esc = (s: string) => s.replace(/'/g, "''");
 
@@ -50,7 +53,7 @@ test.beforeAll(async ({ browser }) => {
 test.afterAll(async () => {
   sql(`update public.grocery_item set status = 'removed', removed_at = now(), ticked_at = null,
               brand_id = null
-        where household_id = '${HOUSEHOLD}' and name like '${TAG} %'`);
+        where household_id = '${HOUSEHOLD}' and name like '% ${TAG} water'`);
   sql(
     `delete from public.grocery_brand where household_id = '${HOUSEHOLD}' and name like '${TAG} %'`,
   );

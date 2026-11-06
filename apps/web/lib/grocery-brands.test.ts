@@ -8,6 +8,7 @@ import {
   withBrand,
 } from './grocery-brands';
 import { addedLine, alreadyLine, type GroceryItem, lastBrand, suggest } from './groceries';
+import { parseItem } from './grocery-merge';
 
 // [MEAL-29] Grocery brands (WP-116, D-148): the type-ahead, the brand filled in, and the words.
 
@@ -142,13 +143,22 @@ describe('an item with its brand', () => {
     expect(mergeTarget(BRANDS[0]!, [BRANDS[0]!])).toBeNull();
   });
 
-  it('[MEAL-29-m] Merge into… with the e2e spec’s names: a tag first finds the brand, a tag last does not', () => {
-    // grocery-brands.spec.ts leads each name with its run's tag (WP-119): the near-duplicate then
-    // starts with the brand, as a family's own "Kirkland Signature" does.
+  it('[MEAL-29-m] the e2e spec’s names: a brand led by the tag finds its near-duplicate, a tag last does not; an item keeps the tag inside its name', () => {
+    // grocery-brands.spec.ts leads each brand's name with its run's tag (WP-119): the near-duplicate
+    // then starts with the brand, as a family's own "Kirkland Signature" does.
     const tagged = [b('f', 'e2e x1 Fizzco'), b('t', 'e2e x1 Fizzco Signature'), ...BRANDS];
     expect(mergeTarget(tagged[1]!, tagged)).toBe('f');
     // With the tag last neither name starts the other, so the first A to Z is picked.
     const last = [b('f', 'Fizzco e2e x1'), b('t', 'Fizzco Signature e2e x1'), ...BRANDS];
     expect(mergeTarget(last[1]!, last)).toBe('dave');
+    // An item's name keeps the tag inside it: led by the tag it is saved with a capital ("E2e…"),
+    // and a tag last that reads as an amount ("x1") is taken off as one.
+    expect(parseItem('e2e x1 Seltzer').name).toBe('E2e x1 Seltzer');
+    expect(parseItem('Seltzer e2e x1').name).toBe('Seltzer e2e');
+    for (const tag of ['x1', '12345', 'x1234', '12lb3', 'abc12', 't14eq'])
+      expect(parseItem(`Seltzer e2e ${tag} water`)).toEqual({
+        name: `Seltzer e2e ${tag} water`,
+        amount: null,
+      });
   });
 });
