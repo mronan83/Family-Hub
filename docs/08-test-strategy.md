@@ -916,7 +916,7 @@ Test cases and the tests that prove them:
 | PTS-02-a | WP-119 | On the real preview, Leo's Points is opened from its fold, and his latest 30 entries say where each came from | E2E | E2E `e2e/tests/points.spec.ts`: `[PTS-02][PTS-02-a] Members shows each child's balance; their page shows where it came from` |
 | RWD-11-a | WP-119 | On the real preview, History is opened from its button, Rebuild leaves every row identical, and History is open after it | E2E | E2E `e2e/tests/insights.spec.ts`: `[RWD-11][US-408][RWD-11-a] a rebuild from history leaves every row identical` |
 | RWD-12-c | WP-119 | On the real preview, Missed most and Checking fold to their findings, and Day by day, Missed most and Checking opened hold the hand-computed week | E2E | E2E `e2e/tests/insights.spec.ts`: `[RWD-11][RWD-12][US-408][NFR-14-h][RWD-12-c] a child’s last week, as hand-computed` |
-| MEAL-29-m | WP-119 | Merge into… with grocery-brands.spec's names: with the run's tag first the near-duplicate finds the brand; with it last the first A to Z is picked | Unit | Unit `apps/web/lib/grocery-brands.test.ts`: `an item with its brand › [MEAL-29-m] Merge into… with the e2e spec’s names: a tag first finds the brand, a tag last does not` |
+| MEAL-29-m | WP-119 | Merge into… with grocery-brands.spec's names: with the run's tag first the near-duplicate finds the brand; with it last the first A to Z is picked | Unit | Unit `apps/web/lib/grocery-brands.test.ts`: `an item with its brand › [MEAL-29-m] the e2e spec’s names: a brand led by the tag finds its near-duplicate, a tag last does not; an item keeps the tag inside i…` |
 | NFR-12-f | WP-119 | A server error in the preview's log naming the infrastructure is a bad reading at its own time, once for a request's lines and across overlapping reads; the app's own errors, and lines without a time, are none | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-f] a server error in the preview’s log naming the infrastructure is a bad reading at its own time; the app’s own errors are none` |
 | NFR-12-g | WP-119 | The run reads the preview's error log with the Vercel CLI (the preview, error level, JSON) and a test failed while it named the infrastructure is infrastructure; a failed read is a note without the token; without a preview or a token there is no read, and the summary says so | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-g] the run reads the preview’s error log with the Vercel CLI, and a failed test while it named the infrastructure is infrastructure`<br>Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-g] a read of the preview’s log that fails is a note, without the token, and no reading`<br>Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-g] without a preview or a token there is no read, and the run says so` |
 
@@ -1731,7 +1731,7 @@ Unit · 11 tests
 | `an item with its brand › [MEAL-29-h] reads "Milk · Kirkland", and alone when it has none` | MEAL-29-h |
 | `an item with its brand › [MEAL-29-h] Home’s lines name the brand` | MEAL-29-h |
 | `an item with its brand › [MEAL-29-h] Merge into… picks the closest name first, else the first A to Z` | MEAL-29-h |
-| `an item with its brand › [MEAL-29-m] Merge into… with the e2e spec’s names: a tag first finds the brand, a tag last does not` | MEAL-29-m |
+| `an item with its brand › [MEAL-29-m] the e2e spec’s names: a brand led by the tag finds its near-duplicate, a tag last does not; an item keeps the tag inside i…` | MEAL-29-m |
 
 #### `apps/web/lib/grocery-merge.test.ts`
 
