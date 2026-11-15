@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.172: WP-120, WP-121 and WP-122 (penalties) added at the owner's request, recorded only (PTS-09, PTS-10, PTS-11, US-1111 to US-1113, D-154): one-time penalties in points or money and each person's penalty balance (WP-120); penalty rules for people, a tag or items, with start and end dates, an amount per miss and a max (WP-121); payback through a linked goal or reward, paused while nothing is owed (WP-122). Split in three from an L ask; queued after WP-117, mockup first. Nothing is built in this change.
 > v0.8.171: WP-119 follow-up: the first nightly run after the merge (run 271, 5 November) was green in #163 to #166 and #183, and red in grocery-brands (#174) on the item's first save: WP-119 had put the run's tag first in the item names too, and an item's name is saved with a capital first letter ("E2e …"), so the spec didn't find its own item. Only the brands lead with the tag now; each item has it inside its name, where `parseItem()` can't read it as an amount (MEAL-29-m).
 > v0.8.170: WP-119 (the e2e reds of 23 October to 4 November) added at the owner's request and done in the same change (CHR-12, CHR-14, CHR-16, PTS-02, RWD-11, RWD-12, MEAL-29, NFR-12, D-153): five tests read inside folds that WP-95 and WP-97 made without opening them (#163 to #166), grocery brands' spec gave its brands names whose tag came last (#174), and Insights failed on the preview's server when Supabase's gateway answered 502 (#183), which the run now reads in the preview's own log. Its test cases are CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f and NFR-12-g.
 > v0.8.169: WP-117 (a parent marks a missed or late chore done on time) added at the owner's request, recorded only (CHR-24, US-326, D-151): from a missed or late chore on Today (any past day), the child's page or a goal's days, a parent's **Mark done on time** records it done at its due time (or an earlier time they give), credited to the child, so a goal done by a time counts it; shown as "Marked on time by <parent>". It changes D-102's statement about a parent's late tick, for the owner to confirm when built. Queued, mockup first. Nothing is built in this change.
@@ -333,13 +334,16 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-118 | WebKit's page loads in CI fail while a link prefetch is in flight (a bug) | P3 | S | WP-100, WP-113 | Done |
 | WP-119 | The e2e reds of 23 October to 4 November: five specs reading folds unopened, grocery brands' names, a Supabase 502 on the server | P3 | S | WP-95, WP-97, WP-113, WP-116 | Done |
 | WP-117 | A parent marks a missed or late chore done on time | P3 | M | WP-12, WP-81 | Queued: mockup first |
+| WP-120 | Penalties: one-time penalties in points or money, and the penalty balance | P3 | M | WP-115, WP-117 | Queued: mockup first (one mockup for WP-120 to WP-122) |
+| WP-121 | Penalty rules that build up on missed items, with dates and a max | P3 | M | WP-120, WP-117 | Queued: WP-120 first |
+| WP-122 | Penalties paid back through a goal or reward | P3 | M | WP-121, WP-80, WP-81 | Queued: WP-121 first |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
 | WP-36 | Closure import | P3 | M | WP-22 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October. WP-118 (the WebKit CI fix), started by the owner on 1 November. WP-119 (the e2e fix for #163 to #166, #174 and #183), started by the owner on 4 November. WP-117 (a missed chore marked done on time), added on 30 October, mockup first; not started.
+**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October. WP-118 (the WebKit CI fix), started by the owner on 1 November. WP-119 (the e2e fix for #163 to #166, #174 and #183), started by the owner on 4 November. WP-117 (a missed chore marked done on time), added on 30 October, mockup first; not started. Penalties (15 November): WP-120, then WP-121, then WP-122, after WP-117, one mockup for the three first; not started.
 
 ---
 
@@ -543,6 +547,13 @@ flowchart LR
     WP95 --> WP115
     WP12 --> WP117[WP-117 A missed chore marked done on time]
     WP81 --> WP117
+    WP115 --> WP120[WP-120 One-time penalties and the penalty balance]
+    WP117 --> WP120
+    WP120 --> WP121[WP-121 Penalty rules on missed items]
+    WP117 --> WP121
+    WP121 --> WP122[WP-122 Penalties paid back through a goal]
+    WP80 --> WP122
+    WP81 --> WP122
     WP90 --> SP07[SPIKE-07 e2e specs audited by layer]
     WP90 --> WP98[WP-98 e2e findings log]
     SP07 --> WP99[WP-99 Lean e2e]
@@ -2485,3 +2496,28 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 | P3 | SPIKE-06, SPIKE-07, SPIKE-08, WP-32 – WP-36, WP-38, WP-45 – WP-48, WP-51 – WP-53, WP-55 – WP-60, WP-65 – WP-68, WP-70 – WP-73, WP-83, WP-85, WP-86, WP-88 – WP-91, WP-93 – WP-99, WP-103 – WP-107, WP-112, WP-116, WP-118, WP-119 | WP-56, WP-58, WP-68, WP-72, WP-86, WP-99, WP-103, WP-104 and WP-105 are the Ls |
 
 Sizes are relative effort for a single builder with Claude Code, not commitments; re-estimate at each milestone.
+
+### WP-120 — Penalties: one-time penalties in points or money, and the penalty balance
+**Phase:** P3 · **Size:** M · **Depends on:** WP-115, WP-117 · **Reqs:** PTS-09
+- Added at the owner's request on 15 November, in the planner session: "We need a way to add penalties. As we have rewards, penalties will allow a family to say when something is not done, here are the consequences. Example: [our daughter] has to bring home homework folder every day there is school. If she misses a day it costs her $1. We have a goal established for her that rewards her something if she brings her homework folder home every day for so many weeks. We also have a mini reward setup that pays her $1 back back if she has a successful week inside that goal. Essentially the penalty would be set up and track. It could then be related to a goal and reward setup. When the penalty is balance is depleted, the reward tied to it is stopped. If the balance gets back to greater than 0, then the mini reward is activated again. Penalties can be based on points as well as an arbitrary penalty. When based on points, it will maintain the penalty balance that is to be paid from the points balance for the individual. One time penalties can be administered as well for in the moment no recurring or goal/reward aligned. Penalty Requirements: Start and End dates; Related to rewards, goals, tags, individuals; Penalty accrual, max, payback" Recorded only; not built.
+- **The split:** the ask is L, so it is recorded as three items, built in order after WP-117, from one mockup approved first: WP-120 (one-time penalties and the penalty balance), WP-121 (penalty rules that build up on missed items), WP-122 (payback through a goal or reward).
+- **What it is (D-154):** a parent gives a member who earns rewards a penalty in the moment, from Home or the child's page, with a reason picked from the household's house rules (a list a parent keeps in Settings, each with an amount) or typed. In points, it is a `penalty` entry in the points ledger (D-49: append-only, by database functions only), taken at once, so a balance may go below zero as points to earn back. In money, it adds to what the person owes; FamilyWise has no money ledger, so the money is paid outside the app and a parent records **Paid** to settle it. Each person has a penalty balance per penalty (what they owe), with its history.
+- **Where it shows:** the child's page (what they owe, with history), the points register (WP-115) with Penalty and Penalty payback as their own types, and a household on/off in Settings (recommended off by default).
+- **Open questions for the mockup, each with a recommendation (D-154):** money tracked here and paid outside (recommended); points taken at once rather than as points allow (recommended); the board: D-50 holds, so a points penalty reads "A parent changed your points", a money balance is not on the board, and nothing on the board says a child was penalised (recommended); the on/off is per household (recommended).
+- Mockup first, on the demo family, approved by the owner before it is built.
+- **Done when:** the mockup is approved; the item's test cases are written here (D-107) and each has a test; the side-by-side (D-127) is in the PR; the fast checks are green.
+
+### WP-121 — Penalty rules that build up on missed items, with dates and a max
+**Phase:** P3 · **Size:** M · **Depends on:** WP-120, WP-117 · **Reqs:** PTS-10
+- Added at the owner's request on 15 November (the owner's words are under WP-120). Recorded only; not built.
+- **What it is (D-154):** a penalty rule for one or more people, a tag, or chosen items, with a start and an end date, an amount per miss (points or money) and a max. When a day closes, each linked item missed by the person adds the amount to what they owe on that penalty, up to the max. Our daughter's case: "Folder home, $1 a missed school day", linked to the chore "Homework folder home".
+- **What doesn't accrue (recommended, to confirm on the mockup):** a day the item was skipped or covered, a day off or a no-school day, a day before the start or after the end date. A parent's **Mark done on time** (WP-117, D-151) on a missed item takes back what that miss added.
+- **Done when:** the mockup (with WP-120's) is approved; the item's test cases are written here (D-107) and each has a test; the side-by-side (D-127) is in the PR; the fast checks are green.
+
+### WP-122 — Penalties paid back through a goal or reward
+**Phase:** P3 · **Size:** M · **Depends on:** WP-121, WP-80, WP-81 · **Reqs:** PTS-11
+- Added at the owner's request on 15 November (the owner's words are under WP-120). Recorded only; not built.
+- **What it is (D-154):** a penalty can be linked to a goal (a repeating goal's period, WP-80, or a step, WP-81) or a reward that pays back an amount each time it is won, never more than is owed. In points, the payback is a `penalty_payback` ledger entry. Our daughter's case: the weekly goal "Folder home every school day" pays back $1 for each week won.
+- **Paused at 0:** while nothing is owed, the payback is paused and the goal says so ("Nothing owed"); when a new miss makes the balance more than 0, it is active again. The owner wrote "When the penalty is balance is depleted, the reward tied to it is stopped": read as "paid back to 0", to confirm on the mockup. The goal itself (its own prize for so many weeks) is not stopped, only its payback.
+- **A win later undone:** the payback is taken back once, as a goal payout is today (RWD-13, D-75).
+- **Done when:** the mockup (with WP-120's) is approved; the item's test cases are written here (D-107) and each has a test; the side-by-side (D-127) is in the PR; the fast checks are green.

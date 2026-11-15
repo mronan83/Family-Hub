@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.73: US-1111, US-1112 and US-1113 added at the owner's request (WP-120, WP-121, WP-122, PTS-09, PTS-10, PTS-11, D-154): penalties, in points or money, issued once or built up by misses, and paid back by a goal.
 > v0.8.72: US-326 added at the owner's request (WP-117, CHR-24, D-151): a parent marks a missed or late chore done on time, so a goal done by a time counts it.
 > v0.8.71: US-716 as built (WP-106, MEAL-21, D-150): Running low? fills in last time's store and brand, Home's Groceries card says how many are running low, and Staples' Don't suggest and Suggest again.
 > v0.8.70: US-723 added at the owner's request, and US-717 changed (WP-107, MEAL-30, D-149): ticking things off and taking them off at the board, as whoever's face is picked, with Undo; each child's OK now sits at the foot of Groceries' Asked for, and a board ask can pick a brand.
@@ -1206,3 +1207,32 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given I choose Maya, By hand and Spent, and October, when the register shows, then it lists only those, and a line says how many there are and what they add up to.
 - Given more than 50 entries, when I tap **Show older**, then the next 50 are added below, back to the first entry ever.
 - Given Leo earned points on Sam's private item, when I (Alex) open the register, then that entry says "A private item".
+
+### US-1111 — Give a one-time penalty
+**As a** parent **I want** to give a penalty in the moment, in points or in money, **so that** a broken house rule has a consequence the family agreed on. Added at the owner's request (WP-120, D-154).
+**Priority:** Should · **Phase:** P3 · **Reqs:** PTS-09
+- Given penalties are on in Settings, when I choose **Give a penalty** for Leo from Home or Leo's page, pick the house rule "Screen time after bedtime: 20 points" and save, then one `penalty` entry of −20 is posted to Leo's points with that reason, by me, once even on a double tap.
+- Given I pick a money penalty "Left bike in the driveway: $1" for Maya, when I save, then Maya owes $1 on Maya's penalties, and nothing changes in Maya's points.
+- Given Maya owes $3, when I record **Paid $3**, then Maya owes $0 and the payment shows in Maya's penalty history.
+- Given a points penalty, when Leo looks at the board, then it reads "A parent changed your points", never the reason (D-50).
+- Given I open Rewards → Points register, when I filter by type Penalty, then I see each penalty with the child, the amount, the reason and who gave it.
+
+### US-1112 — A penalty that builds up when an item is missed
+**As a** parent **I want** a penalty rule that adds to what my child owes each time a chosen item is missed, between two dates and up to a max, **so that** the consequence is applied the same way every time without me tracking it. Added at the owner's request (WP-121, D-154).
+**Priority:** Should · **Phase:** P3 · **Reqs:** PTS-10
+- Given a penalty "Folder home, $1 a missed school day, max $10" for Maya from Nov 16 to Jan 31, linked to the chore "Homework folder home", when Thursday closes with it missed, then Maya owes $1 more on that penalty.
+- Given Maya already owes $10, when another day is missed, then Maya still owes $10 (the max).
+- Given Thursday was a day off, or the chore was skipped or covered, when the day closes, then nothing is added.
+- Given Thursday's $1 was added, when a parent uses **Mark done on time** on Thursday's chore (WP-117), then the $1 is taken off again.
+- Given a penalty linked to the tag "School" or to all of a person's items, when one of them is missed, then it adds once per missed item, up to the max.
+- Given the end date has passed, when items are missed, then nothing is added, and what is owed stays until it is paid or paid back.
+- Given the penalty is in points, when a miss is added, then a `penalty` entry is posted to Maya's points (taken at once, so Maya's balance may show as points to earn back; to confirm on the mockup).
+
+### US-1113 — Pay a penalty back through a goal
+**As a** parent **I want** a goal or reward to pay back part of what my child owes when they do well, and to stop when nothing is owed, **so that** a good week earns back a bad day. Added at the owner's request (WP-122, D-154).
+**Priority:** Should · **Phase:** P3 · **Reqs:** PTS-11
+- Given Maya owes $2 on "Folder home" and the weekly goal "Folder home every school day" pays back $1 a week, when Maya's week is a win, then Maya owes $1.
+- Given Maya owes $0, when Maya's week is a win, then nothing is paid back, and the goal shows its payback as paused ("Nothing owed").
+- Given the payback is paused, when a missed day makes Maya owe $1, then the payback is active again from that week.
+- Given the penalty is in points, when a week pays back 10 points, then a `penalty_payback` entry of +10 is posted, never more than Maya owes.
+- Given a week's win is later undone (a chore reversed), when the goal is worked out again, then the payback is taken back once.
