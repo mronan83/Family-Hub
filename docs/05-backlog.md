@@ -2437,7 +2437,7 @@ Added at the owner's request on 17 October in the planner session ("smart grocer
 
 - **The run reads the preview's error log (D-153).** Once a minute while the specs run, and once more before each verdict, `scripts/e2e-run.mjs` reads the preview's error-level runtime log with the Vercel CLI the job already installs (`vercel logs <preview> --since … --level error --json`; Hobby keeps an hour). Each error whose words name the infrastructure as `INFRA_PATTERNS` do (a gateway's 502, 503 or 504, a statement timeout, a refused or reset connection, a full pool) is a bad reading at its own time, as the probe's are (`serverLogReadings()`); a test that failed within 10 s of it is infrastructure, its cause naming the request. The app's own errors are no reading. A read that fails is a note in the run summary without the token, and the summary says how many reads and error lines there were, so the first nightly run shows whether the CLI's lines are read.
 - **What this does not change:** no test's assertions or limits; the app's error page on a Supabase 5xx (a reload loads the page); the 3 s budgets.
-- **One new decision:** D-153, for the owner to confirm.
+- **One new decision:** D-153, confirmed by the owner on 15 November.
 - Test cases:
 
 | Case | Test case | Layer |
