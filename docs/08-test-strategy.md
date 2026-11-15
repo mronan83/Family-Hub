@@ -285,9 +285,9 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 138 of 155 |
+| Requirements built (a Done item builds them) | 138 of 156 |
 | Built requirements with no test | 0 |
-| Stories built | 121 of 137 |
+| Stories built | 121 of 138 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
 | Test cases | 330 (with a test: 330) |
@@ -471,6 +471,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-09 | S | Not built | US-1111 | WP-120 | — | — |
 | PTS-10 | S | Not built | US-1112 | WP-121 | — | — |
 | PTS-11 | S | Not built | US-1113 | WP-122 | — | — |
+| PTS-12 | S | Not built | US-1114 | WP-123 | — | — |
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g | U 14 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
@@ -605,6 +606,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-120 | Queued: | — | — | — |
 | WP-121 | Queued: | — | — | — |
 | WP-122 | Queued: | — | — | — |
+| WP-123 | Ready | — | — | — |
 
 Test cases and the tests that prove them:
 
@@ -1084,6 +1086,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-1111 | PTS-09 | Not built | — |
 | US-1112 | PTS-10 | Not built | — |
 | US-1113 | PTS-11 | Not built | — |
+| US-1114 | PTS-12 | Not built | — |
 
 ### 9.6 Known gaps
 
