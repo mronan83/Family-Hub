@@ -55,6 +55,8 @@ export interface RegisterEntry {
   byType: 'system' | 'admin' | 'device';
   /** The parent who posted it (their user id). */
   by: string | null;
+  /** [CHR-24] An earn for a chore a parent marked done on time: "Marked on time by Alex, Nov 13". */
+  onTime?: string | null;
 }
 
 export interface RegisterFilters {

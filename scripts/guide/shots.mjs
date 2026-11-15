@@ -540,6 +540,32 @@ const SHOTS = [
     url: '/dev/admin?lunches=1',
     element: '.fw-lunchq',
   },
+  // [CHR-24] Mark done on time (WP-117): Done on time… open on a missed chore, on a phone; a settled
+  // week's confirm on a laptop; a child's Missed or late; a goal's missed day opened.
+  {
+    name: 'admin-on-time-phone',
+    device: 'phone',
+    url: '/dev/admin?ontime=open',
+    element: '#item-e2000000-0000-4000-8000-000000000001',
+  },
+  {
+    name: 'admin-on-time-confirm-laptop',
+    device: 'laptop',
+    url: '/dev/admin?ontime=confirm',
+    element: '#item-e2000000-0000-4000-8000-000000000001',
+  },
+  {
+    name: 'admin-missed-or-late-phone',
+    device: 'phone',
+    url: '/dev/members?page=member&late=1',
+    element: 'details:has(#missed-or-late-heading)',
+  },
+  {
+    name: 'admin-goal-day-phone',
+    device: 'phone',
+    url: '/dev/goals?day=open',
+    element: 'li:has(.fw-goal__day)',
+  },
   {
     name: 'admin-lunch-changes-phone',
     device: 'phone',

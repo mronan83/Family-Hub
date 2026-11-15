@@ -7,6 +7,8 @@ import {
   readParts,
   shownCount,
 } from '@/lib/points-register';
+import { onTimeTrace } from '@/lib/on-time';
+import { loadCheckOffs } from '../on-time';
 
 interface RawEntry {
   id: string;
@@ -24,7 +26,7 @@ interface RawEntry {
   created_by: string | null;
 }
 
-const toEntry = (r: RawEntry): RegisterEntry => ({
+const toEntry = (r: RawEntry): RegisterEntry & { occurrenceId: string | null } => ({
   id: r.id,
   memberId: r.member_id,
   kind: r.kind,
@@ -38,6 +40,7 @@ const toEntry = (r: RawEntry): RegisterEntry => ({
   ruleId: r.points_rule_id,
   byType: r.created_by_type,
   by: r.created_by,
+  occurrenceId: r.occurrence_id,
 });
 
 /** The filters as `points_register()` and `points_register_totals()` take them. */
@@ -69,12 +72,20 @@ export async function loadRegister(
     ),
     db.rpc('points_register_totals', args),
   ]);
-  const entries: RegisterEntry[] = [];
+  const entries: (RegisterEntry & { occurrenceId: string | null })[] = [];
   for (const { data, error } of parts) {
     if (error) throw new Error(`points register: ${error.message}`);
     entries.push(...(data as RawEntry[]).map(toEntry));
   }
   if (totals.error) throw new Error(`points register totals: ${totals.error.message}`);
+  // [CHR-24] An earn for a chore marked done on time says who marked it (WP-117).
+  const checks = await loadCheckOffs(
+    db,
+    entries.filter((e) => e.kind === 'earn' && e.occurrenceId).map((e) => e.occurrenceId!),
+  );
+  for (const e of entries) {
+    if (e.kind === 'earn' && e.occurrenceId) e.onTime = onTimeTrace(checks.get(e.occurrenceId));
+  }
   return {
     entries,
     totals: (

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { OccurrenceStatus } from '@familywise/rules-engine';
 import type { EventType } from './completions';
+import type { CheckOff } from './on-time';
 
 // A parent's day (WP-12, D-52): what they can do with each item, what each action records, and the
 // words for it. Pure, so the rules are tested without a database; the pages draw what they return.
@@ -23,6 +24,8 @@ export interface DayItem {
   status: OccurrenceStatus;
   doneBy: string[];
   points: number;
+  /** [CHR-24] How it was checked off, when it is done or waiting (`check_offs()`). */
+  checkOff?: CheckOff | null;
 }
 
 export type DayAction = 'done' | 'uncheck' | 'skip' | 'unskip' | 'approve' | 'reject';
