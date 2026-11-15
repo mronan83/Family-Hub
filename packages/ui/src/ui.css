@@ -1678,12 +1678,8 @@ select.fw-input.fw-input--short {
   align-items: center;
   gap: var(--s-2);
 }
-.fw-input.fw-ontime__time {
-  display: inline-block;
-  width: 9em;
-  color: var(--text);
-  background: var(--bg);
-  min-height: 48px;
+.fw-pick.fw-ontime__time {
+  width: 9.5em;
   font-variant-numeric: tabular-nums;
 }
 .fw-ontime__goals,

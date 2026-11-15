@@ -4,6 +4,7 @@ import { clock } from '@/lib/chores';
 import { monthDay, weekday } from '@/lib/goal-periods';
 import { latestTime, onTimeLine } from '@/lib/on-time';
 import { markOnTime } from './on-time-actions';
+import { OnTimeTime } from './on-time-time';
 
 export interface OnTimeConfirm {
   /** "This makes Maya’s week of Nov 9 a win: 10 points." */
@@ -82,15 +83,10 @@ export function OnTimePanel({
           <span>
             <span className="fw-ontime__earlier">
               <b>Earlier</b> at
-              <input
-                type="time"
-                className="fw-input fw-ontime__time"
+              <OnTimeTime
                 name={`at:${item.id}`}
-                max={latest}
-                // Whole minutes: Safari shows seconds without it.
-                step={60}
-                defaultValue={confirm?.at ?? latest}
-                aria-label={`The time ${item.title} was done`}
+                label={`The time ${item.title} was done`}
+                initial={confirm?.at ?? latest}
               />
             </span>
             <span className="fw-muted fw-ontime__hint">

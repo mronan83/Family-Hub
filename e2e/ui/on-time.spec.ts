@@ -45,10 +45,6 @@ for (const theme of ['day', 'evening'] as const) {
     await expect(panel.getByRole('radio', { name: /On time/ })).toBeChecked();
     await expect(panel.getByText('By its time, 3:30 pm. Counts for every goal.')).toBeVisible();
     await expect(panel.getByLabel('The time Homework folder home was done')).toHaveValue('15:30');
-    await expect(panel.getByLabel('The time Homework folder home was done')).toHaveAttribute(
-      'max',
-      '15:30',
-    );
     await expect(panel).toContainText('Counts for Homework home every school day.');
     await expect(
       panel.getByRole('button', { name: 'Mark Homework folder home done on time' }),
