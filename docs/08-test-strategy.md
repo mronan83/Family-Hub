@@ -284,9 +284,9 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 137 of 152 |
+| Requirements built (a Done item builds them) | 137 of 155 |
 | Built requirements with no test | 0 |
-| Stories built | 120 of 134 |
+| Stories built | 120 of 137 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
 | Test cases | 316 (with a test: 316) |
@@ -467,6 +467,9 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-06 | S | Covered | US-1108 | WP-30 | — | U 5 · DB 2 · UI 7 · E2E 2 |
 | PTS-07 | M | Covered | US-1109 | WP-02, WP-04, WP-16 | — | U 2 · DB 15 · E2E 3 |
 | PTS-08 | S | Covered | US-1110 | WP-115 | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | U 12 · DB 17 · UI 5 |
+| PTS-09 | S | Not built | US-1111 | WP-120 | — | — |
+| PTS-10 | S | Not built | US-1112 | WP-121 | — | — |
+| PTS-11 | S | Not built | US-1113 | WP-122 | — | — |
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g | U 14 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
@@ -598,6 +601,9 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-117 | Queued: | — | — | — |
 | WP-118 | Done | NFR-16-u, NFR-16-v, NFR-16-w | 3 of 3 | — |
 | WP-119 | Done | CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f, NFR-12-g | 9 of 9 | — |
+| WP-120 | Queued: | — | — | — |
+| WP-121 | Queued: | — | — | — |
+| WP-122 | Queued: | — | — | — |
 
 Test cases and the tests that prove them:
 
@@ -1060,6 +1066,9 @@ Status as in §9.3, for tests that name the story itself.
 | US-1108 | PTS-06 | Covered | U 1 · UI 2 · E2E 1 |
 | US-1109 | PTS-07 | Gap | — |
 | US-1110 | PTS-08 | Covered | UI 1 |
+| US-1111 | PTS-09 | Not built | — |
+| US-1112 | PTS-10 | Not built | — |
+| US-1113 | PTS-11 | Not built | — |
 
 ### 9.6 Known gaps
 
