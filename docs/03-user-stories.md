@@ -1,7 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
-> v0.8.73: US-1111, US-1112 and US-1113 added at the owner's request (WP-120, WP-121, WP-122, PTS-09, PTS-10, PTS-11, D-154): penalties, in points or money, issued once or built up by misses, and paid back by a goal.
+> v0.8.73: US-1111, US-1112 and US-1113 added at the owner's request (WP-120, WP-121, WP-122, PTS-09, PTS-10, PTS-11, D-154): penalties, in points or money, each with a reason from the household's list and shown on the board, issued once or built up by misses, and paid back by a goal.
 > v0.8.72: US-326 added at the owner's request (WP-117, CHR-24, D-151): a parent marks a missed or late chore done on time, so a goal done by a time counts it.
 > v0.8.71: US-716 as built (WP-106, MEAL-21, D-150): Running low? fills in last time's store and brand, Home's Groceries card says how many are running low, and Staples' Don't suggest and Suggest again.
 > v0.8.70: US-723 added at the owner's request, and US-717 changed (WP-107, MEAL-30, D-149): ticking things off and taking them off at the board, as whoever's face is picked, with Undo; each child's OK now sits at the foot of Groceries' Asked for, and a board ask can pick a brand.
@@ -1211,10 +1211,11 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 ### US-1111 — Give a one-time penalty
 **As a** parent **I want** to give a penalty in the moment, in points or in money, **so that** a broken house rule has a consequence the family agreed on. Added at the owner's request (WP-120, D-154).
 **Priority:** Should · **Phase:** P3 · **Reqs:** PTS-09
-- Given penalties are on in Settings, when I choose **Give a penalty** for Leo from Home or Leo's page, pick the house rule "Screen time after bedtime: 20 points" and save, then one `penalty` entry of −20 is posted to Leo's points with that reason, by me, once even on a double tap.
+- Given penalties are on in Settings, when I choose **Give a penalty** for Leo from Home or Leo's page, pick the penalty reason "Screen time after bedtime: 20 points" and save, then one `penalty` entry of −20 is posted to Leo's points with that reason, by me, once even on a double tap.
 - Given I pick a money penalty "Left bike in the driveway: $1" for Maya, when I save, then Maya owes $1 on Maya's penalties, and nothing changes in Maya's points.
 - Given Maya owes $3, when I record **Paid $3**, then Maya owes $0 and the payment shows in Maya's penalty history.
-- Given a points penalty, when Leo looks at the board, then it reads "A parent changed your points", never the reason (D-50).
+- Given a points penalty, when Leo looks at the board, then it shows "Screen time after bedtime, −20 points" (D-154 changes D-50 for penalties).
+- Given I open Settings → Penalty reasons, when I add "Left bike in the driveway, $1" or remove a reason, then the list I pick from changes; penalties already given keep their reason.
 - Given I open Rewards → Points register, when I filter by type Penalty, then I see each penalty with the child, the amount, the reason and who gave it.
 
 ### US-1112 — A penalty that builds up when an item is missed
@@ -1226,7 +1227,7 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given Thursday's $1 was added, when a parent uses **Mark done on time** on Thursday's chore (WP-117), then the $1 is taken off again.
 - Given a penalty linked to the tag "School" or to all of a person's items, when one of them is missed, then it adds once per missed item, up to the max.
 - Given the end date has passed, when items are missed, then nothing is added, and what is owed stays until it is paid or paid back.
-- Given the penalty is in points, when a miss is added, then a `penalty` entry is posted to Maya's points (taken at once, so Maya's balance may show as points to earn back; to confirm on the mockup).
+- Given the penalty is in points, when a miss is added, then a `penalty` entry is posted to Maya's points (taken at once, so Maya's balance may show as points to earn back).
 
 ### US-1113 — Pay a penalty back through a goal
 **As a** parent **I want** a goal or reward to pay back part of what my child owes when they do well, and to stop when nothing is owed, **so that** a good week earns back a bad day. Added at the owner's request (WP-122, D-154).
