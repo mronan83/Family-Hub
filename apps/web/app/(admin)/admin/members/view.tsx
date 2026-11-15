@@ -17,6 +17,10 @@ import { setArchived } from './actions';
 import type { MemberRow } from './data';
 import { type AdminOption, MemberForm } from './member-form';
 import { PointsForm } from './points-form';
+import type { DayItem } from '@/lib/admin-day';
+import type { MissedOrLateRow } from '@/lib/on-time';
+import type { OnTimeRow } from '../today/item-row';
+import { MissedOrLate } from './missed-or-late';
 
 /**
  * [ACC-04][PTS-07][PTS-02] The household's members: children and adults, with avatar, color, whether
@@ -141,6 +145,15 @@ export interface MemberViewProps {
   pointsOpen: boolean;
   /** A fresh id for the points form, so a double tap posts once. */
   requestId: string;
+  /** [CHR-24] Missed or late (WP-117): the rows, and what Done on time… needs. */
+  late?: {
+    rows: MissedOrLateRow<DayItem>[];
+    onTime: OnTimeRow;
+    people: { id: string; displayName: string }[];
+    open: boolean;
+    notice: string | null;
+    error: string | null;
+  } | null;
 }
 
 /**
@@ -162,6 +175,7 @@ export function MemberView({
   adjusted,
   pointsOpen,
   requestId,
+  late = null,
 }: MemberViewProps) {
   const showPoints = member.earnsRewards || points.entries.length > 0;
   const canChange = member.earnsRewards && !member.archivedAt;
@@ -278,6 +292,19 @@ export function MemberView({
             here is ever edited or deleted: to correct a mistake, add or take away points.
           </p>
         </Fold>
+      ) : null}
+      {late ? (
+        <>
+          {late.notice ? <Banner kind="info">{late.notice}</Banner> : null}
+          {late.error ? <Banner kind="notice">{late.error}</Banner> : null}
+          <MissedOrLate
+            rows={late.rows}
+            people={late.people}
+            request={requestId}
+            onTime={late.onTime}
+            open={late.open}
+          />
+        </>
       ) : null}
       {/* Set apart at the bottom, and rare (D-120). */}
       {!member.archivedAt ? (

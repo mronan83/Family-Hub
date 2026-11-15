@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.18: WP-117's test cases, CHR-24-a to CHR-24-n (D-151): Vitest, pgTAP, the UI suite and a nightly e2e spec (§9, regenerated).
 > v0.8.17: the e2e reds of 23 October to 4 November (WP-119, D-153): five specs open the folds they read inside, grocery brands' names lead with the run's tag, and the run counts a server error in the preview's own log that names the infrastructure; test cases CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f and NFR-12-g; the catalogue regenerated.
 > v0.8.16: WebKit's page loads in CI (WP-118, D-152): the UI suite's specs take their `test` from `e2e/ui/test.ts`, and it and the screenshot script answer Next.js's link prefetches themselves; test cases NFR-16-u to NFR-16-w (one spec keeps the app's own prefetches); the catalogue regenerated.
 > v0.8.15: staples (WP-106, D-150): test cases MEAL-21-a to MEAL-21-h; the catalogue regenerated.
@@ -280,16 +281,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3208** tests: Unit 1015 · DB 1687 · UI 362 · E2E 144. 2686 name at least one ID; 522 name none.
+**3264** tests: Unit 1030 · DB 1720 · UI 369 · E2E 145. 2741 name at least one ID; 523 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 137 of 156 |
+| Requirements built (a Done item builds them) | 138 of 156 |
 | Built requirements with no test | 0 |
-| Stories built | 120 of 138 |
+| Stories built | 121 of 138 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 316 (with a test: 316) |
+| Test cases | 330 (with a test: 330) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -303,7 +304,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
-| Chores | 129 | 202 | 42 | 34 | 407 |
+| Chores | 144 | 234 | 49 | 35 | 462 |
 | Points | 57 | 109 | 24 | 12 | 202 |
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
@@ -314,8 +315,8 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Boards and devices | 67 | 84 | 14 | 13 | 178 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 204 | 167 | 62 | 18 | 451 |
-| Not named | 58 | 499 | 10 | 1 | 568 |
-| **Total** | **1015** | **1687** | **362** | **144** | **3208** |
+| Not named | 58 | 500 | 10 | 1 | 569 |
+| **Total** | **1030** | **1720** | **369** | **145** | **3264** |
 
 ### 9.3 By requirement
 
@@ -362,7 +363,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | CHR-20 | S | Covered | US-322 | WP-63, WP-92 | — | U 3 · DB 22 · UI 1 · E2E 1 |
 | CHR-21 | S | Covered | US-323 | WP-96 | CHR-21-a, CHR-21-b, CHR-21-c, CHR-21-d, CHR-21-e, CHR-21-f, CHR-21-g, CHR-21-h, CHR-21-i | U 21 · UI 6 · E2E 3 |
 | CHR-22 | S | Covered | US-324 | WP-96 | CHR-22-a, CHR-22-b | U 2 · E2E 1 |
-| CHR-24 | S | Not built | US-326 | WP-117 | — | — |
+| CHR-24 | S | Covered | US-326 | WP-117 | CHR-24-a, CHR-24-b, CHR-24-c, CHR-24-d, CHR-24-e, CHR-24-f, CHR-24-g, CHR-24-h, CHR-24-i, CHR-24-j, CHR-24-k, CHR-24-l, CHR-24-m, CHR-24-n | U 15 · DB 32 · UI 7 · E2E 1 |
 | CHR-23 | S | Covered | US-325 | WP-96 | CHR-23-a, CHR-23-b, CHR-23-c | U 3 · DB 10 · UI 1 · E2E 1 |
 | RWD-01 | M | Covered | US-401 | WP-19 | — | U 5 · DB 1 · UI 2 · E2E 1 |
 | RWD-02 | M | Covered | US-312, US-401 | WP-15 | — | U 16 · UI 1 |
@@ -599,7 +600,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-114 | Done | RWD-21-a, RWD-21-b, RWD-21-c, RWD-21-d, RWD-21-e, RWD-21-f, RWD-21-g, RWD-21-h, RWD-21-i, RWD-21-j | 10 of 10 | — |
 | WP-115 | Done | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | 13 of 13 | — |
 | WP-116 | Done | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | 12 of 12 | — |
-| WP-117 | Queued: | — | — | — |
+| WP-117 | Done | CHR-24-a, CHR-24-b, CHR-24-c, CHR-24-d, CHR-24-e, CHR-24-f, CHR-24-g, CHR-24-h, CHR-24-i, CHR-24-j, CHR-24-k, CHR-24-l, CHR-24-m, CHR-24-n | 14 of 14 | — |
 | WP-118 | Done | NFR-16-u, NFR-16-v, NFR-16-w | 3 of 3 | — |
 | WP-119 | Done | CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f, NFR-12-g | 9 of 9 | — |
 | WP-120 | Queued: | — | — | — |
@@ -927,6 +928,20 @@ Test cases and the tests that prove them:
 | MEAL-29-m | WP-119 | Merge into… with grocery-brands.spec's names: with the run's tag first the near-duplicate finds the brand; with it last the first A to Z is picked | Unit | Unit `apps/web/lib/grocery-brands.test.ts`: `an item with its brand › [MEAL-29-m] the e2e spec’s names: a brand led by the tag finds its near-duplicate, a tag last does not; an item keeps the tag inside i…` |
 | NFR-12-f | WP-119 | A server error in the preview's log naming the infrastructure is a bad reading at its own time, once for a request's lines and across overlapping reads; the app's own errors, and lines without a time, are none | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-f] a server error in the preview’s log naming the infrastructure is a bad reading at its own time; the app’s own errors are none` |
 | NFR-12-g | WP-119 | The run reads the preview's error log with the Vercel CLI (the preview, error level, JSON) and a test failed while it named the infrastructure is infrastructure; a failed read is a note without the token; without a preview or a token there is no read, and the summary says so | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-g] the run reads the preview’s error log with the Vercel CLI, and a failed test while it named the infrastructure is infrastructure`<br>Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-g] a read of the preview’s log that fails is a note, without the token, and no reading`<br>Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-g] without a preview or a token there is no read, and the run says so` |
+| CHR-24-a | WP-117 | A parent's Mark done on time on a missed chore makes it approved, credited to its person, with its points earned once | DB | Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] the time it records › [CHR-24-a] marked on time, a shared chore is covered for those who didn’t do it`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-a] a parent marks a missed chore done on time`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-a] it is approved, credited to its person`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-a] its points are earned`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-a] the same form sent twice records once`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-a] and its points are earned once`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-a] the event says it was marked on time, by a parent, "On time"` |
+| CHR-24-b | WP-117 | "On time" counts for a goal done by its due time and for one done by a set time, a chore without a due time included; a parent's ordinary late Mark done still doesn't (D-151) | Unit, DB | Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] the time it records › [CHR-24-b] "On time" counts for a goal done by its due time and by a set time; a parent’s late Mark done doesn’t (D-151)`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-b] "On time" has no tick time for a goal: never late, by its due time or a set time`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-b] a parent's ordinary late Mark done is recorded`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-b] ... with its own time, so a goal done by a time still doesn't count it (D-151)`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-b] then marked on time`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-b] and now a goal counts it on time` |
+| CHR-24-c | WP-117 | An earlier time is the tick's time: on its due date, by its due time and not after now; any other time is refused | Unit, DB | Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] the time it records › [CHR-24-c] "On time", or an earlier time on its day, by its due time and not after now; anything else is refused`<br>Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] the time it records › [CHR-24-c] a time given is that instant on its day in the household’s zone, across DST and midnight UTC`<br>Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] the time it records › [CHR-24-c] a time given is the tick’s time: after a goal’s time, it is late for that goal`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-c] a time after its due time is refused`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-c] a time on another day is refused`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-c] a time later than now is refused`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-c] a time on its day, by its due time, is recorded`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-c] and a goal reads it as the tick's time`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-c] without a due time, any time on its day` |
+| CHR-24-d | WP-117 | A chore a board ticked after its due time, marked on time, counts for the goal, and its goals are marked to be worked out again | DB | DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-d] a board ticked it at 8:10 pm, after its 3:30 pm`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-d] a parent marks it on time`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-d] it stays done, now a parent's`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-d] and a goal counts it on time`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-d] its goals are marked to be worked out again, though its status didn't change` |
+| CHR-24-e | WP-117 | Only a parent (or the database itself) marks on time: a board is refused; a task is refused; a chore whose due time hasn't come is refused | DB | DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-e] a board can't mark on time`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-e] a task can't`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-e] a chore whose day hasn't come can't`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-e] only a parent's Mark done can be on time` |
+| CHR-24-f | WP-117 | **Done on time…** is offered on a missed chore, one done late and one open past its due time today; not on a task, a chore not due yet, or one done on time | Unit | Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] what a parent can mark on time › [CHR-24-f] Done on time… is offered on a missed chore, one done late and one open past its time today`<br>Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] what a parent can mark on time › [CHR-24-f] not on a task, a chore not due yet, one done on time, one skipped or one already marked on time`<br>Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] what a parent can mark on time › [CHR-24-f] on a goal’s day, a tick after the goal’s own time is late for it; the action takes any done chore not yet…`<br>Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] where it shows › [CHR-24-f] the panel names the goals that count a chore: its person’s or the family’s, in its dates and scope` |
+| CHR-24-g | WP-117 | The words: "Marked on time by Alex, Nov 13", with the time when one was given; a late tick reads "done late · ticked 8:10 pm, after 3:30 pm"; the notice after it | Unit | Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] the words › [CHR-24-g] the trace says who marked it on time and when, with the time when one was given`<br>Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] the words › [CHR-24-g] a late tick says when, after its time; on a later day, which day`<br>UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k][CHR-24-g] after it: the notice, done, and "Marked on time by Alex" (${theme})`<br>UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k][CHR-24-g] a goal’s day after it: done, with "Marked on time by Alex" (${theme})`<br>UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k][CHR-24-g] the points register says who marked an earn on time (${theme})` |
+| CHR-24-h | WP-117 | A settled week or goal that the fix changes asks first, saying what it pays ("This makes Maya's week of Nov 9 a win: 10 points"); one still going, or one it doesn't change, doesn't ask | Unit | Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] a week or goal already settled › [CHR-24-h] a settled week the fix wins asks first, saying what it pays`<br>Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] a week or goal already settled › [CHR-24-h] the week going now, or a change that doesn’t move a result, doesn’t ask`<br>Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] a week or goal already settled › [CHR-24-h] a goal that doesn’t repeat asks once reached or ended; steps say the difference`<br>UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k][CHR-24-h] a settled week asks first, saying what it pays (${theme})` |
+| CHR-24-i | WP-117 | `check_offs()` gives each done occurrence's check-off time and, for a Mark done on time, the time given, who marked it and when, through RLS | DB | DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-i] check_offs() says it was marked on time, by Alex, today`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-i] ... with the time given`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-i] a missed chore has no check-off`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-i] another household's parent reads none of them` |
+| CHR-24-j | WP-117 | The child's page lists their missed or late chores of the last 14 days, newest first, each one marked on time with its trace | Unit | Unit `apps/web/lib/on-time.test.ts`: `[CHR-24] where it shows › [CHR-24-j] a child’s page lists the last 14 days’ missed or late chores, newest first, each marked one with its trace`<br>UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k][CHR-24-j] Maya’s page: Missed or late, the last 14 days (${theme})` |
+| CHR-24-k | WP-117 | The screens as drawn: Today with the panel open and the confirm, the child's Missed or late, a goal's missed day, the register's trace, at 390 and 1280 px in both themes | UI | UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k][US-326] Today on a past day: Done on time… on the missed and the late chore, open as drawn (${theme})`<br>UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k][CHR-24-h] a settled week asks first, saying what it pays (${theme})`<br>UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k][CHR-24-g] after it: the notice, done, and "Marked on time by Alex" (${theme})`<br>UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k][CHR-24-j] Maya’s page: Missed or late, the last 14 days (${theme})`<br>UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k] a goal’s missed day opens, with Done on time… (${theme})`<br>UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k][CHR-24-g] a goal’s day after it: done, with "Marked on time by Alex" (${theme})`<br>UI `e2e/ui/on-time.spec.ts`: `[CHR-24-k][CHR-24-g] the points register says who marked an earn on time (${theme})` |
+| CHR-24-l | WP-117 | **Uncheck** on a chore marked on time takes it back: its points reversed, the day missed again | DB | DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-l] Uncheck makes the day missed again`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-l] and takes its points back` |
+| CHR-24-m | WP-117 | A parent marks a child's missed chore done on time from Today on a past day: the goal done by its due time counts the day, the points come back, and Today shows "Marked on time by" | E2E | E2E `e2e/tests/mark-on-time.spec.ts`: `[CHR-24-m][CHR-24-n][US-326] Alex marks Maya’s missed Wednesday done on time from Today: the settled week asks first, is won and paid once, and Today shows the…` |
+| CHR-24-n | WP-117 | Marked on time on a day of last week, after the confirm, the week is won and its payout paid once, however often it is worked out | E2E | E2E `e2e/tests/mark-on-time.spec.ts`: `[CHR-24-m][CHR-24-n][US-326] Alex marks Maya’s missed Wednesday done on time from Today: the settled week asks first, is won and paid once, and Today shows the…` |
 
 ### 9.5 By user story
 
@@ -970,7 +985,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-323 | CHR-21 | Covered | E2E 1 |
 | US-324 | CHR-22 | Covered | E2E 1 |
 | US-325 | CHR-23 | Covered | E2E 1 |
-| US-326 | CHR-24 | Not built | — |
+| US-326 | CHR-24 | Covered | UI 1 · E2E 1 |
 | US-312 | CHR-10, RWD-02 | Covered | E2E 1 |
 | US-313 | CHR-11 | Gap | — |
 | US-314 | CHR-12, CHR-07 | Gap | — |
@@ -2151,6 +2166,28 @@ Unit · 11 tests
 | `a school menu’s folded header › [NFR-18-d][MENU-04][US-803] a feed that can’t fetch has the warning and says when it last fetched` | NFR-18-d, MENU-04, US-803 |
 | `a school menu’s folded header › [NFR-18-e] "today" is the household’s day, across midnight UTC and the end of daylight saving` | NFR-18-e |
 
+#### `apps/web/lib/on-time.test.ts`
+
+Unit · 15 tests
+
+| Test | Names |
+|---|---|
+| `[CHR-24] what a parent can mark on time › [CHR-24-f] Done on time… is offered on a missed chore, one done late and one open past its time today` | CHR-24-f |
+| `[CHR-24] what a parent can mark on time › [CHR-24-f] not on a task, a chore not due yet, one done on time, one skipped or one already marked on time` | CHR-24-f |
+| `[CHR-24] what a parent can mark on time › [CHR-24-f] on a goal’s day, a tick after the goal’s own time is late for it; the action takes any done chore not yet…` | CHR-24-f |
+| `[CHR-24] the time it records › [CHR-24-c] "On time", or an earlier time on its day, by its due time and not after now; anything else is refused` | CHR-24-c |
+| `[CHR-24] the time it records › [CHR-24-c] a time given is that instant on its day in the household’s zone, across DST and midnight UTC` | CHR-24-c |
+| `[CHR-24] the time it records › [CHR-24-b] "On time" counts for a goal done by its due time and by a set time; a parent’s late Mark done doesn’t (D-151)` | CHR-24-b |
+| `[CHR-24] the time it records › [CHR-24-c] a time given is the tick’s time: after a goal’s time, it is late for that goal` | CHR-24-c |
+| `[CHR-24] the time it records › [CHR-24-a] marked on time, a shared chore is covered for those who didn’t do it` | CHR-24-a |
+| `[CHR-24] the words › [CHR-24-g] the trace says who marked it on time and when, with the time when one was given` | CHR-24-g |
+| `[CHR-24] the words › [CHR-24-g] a late tick says when, after its time; on a later day, which day` | CHR-24-g |
+| `[CHR-24] a week or goal already settled › [CHR-24-h] a settled week the fix wins asks first, saying what it pays` | CHR-24-h |
+| `[CHR-24] a week or goal already settled › [CHR-24-h] the week going now, or a change that doesn’t move a result, doesn’t ask` | CHR-24-h |
+| `[CHR-24] a week or goal already settled › [CHR-24-h] a goal that doesn’t repeat asks once reached or ended; steps say the difference` | CHR-24-h |
+| `[CHR-24] where it shows › [CHR-24-j] a child’s page lists the last 14 days’ missed or late chores, newest first, each marked one with its trace` | CHR-24-j |
+| `[CHR-24] where it shows › [CHR-24-f] the panel names the goals that count a chore: its person’s or the family’s, in its dates and scope` | CHR-24-f |
+
 #### `apps/web/lib/outbox.test.ts`
 
 Unit · 14 tests
@@ -2752,6 +2789,14 @@ E2E · 1 tests
 | Test | Names |
 |---|---|
 | `[MEAL-09][MEAL-11][US-707][NFR-14-q] done-when: the item opens Maya’s week; she picks a buy day; Meals shows it within 3 s; a parent approves it; Done checks i…` | NFR-14-q, MEAL-09, MEAL-11, US-707 |
+
+#### `e2e/tests/mark-on-time.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[CHR-24-m][CHR-24-n][US-326] Alex marks Maya’s missed Wednesday done on time from Today: the settled week asks first, is won and paid once, and Today shows the…` | CHR-24-m, CHR-24-n, US-326 |
 
 #### `e2e/tests/meal-days.spec.ts`
 
@@ -3525,6 +3570,20 @@ UI · 3 tests
 | `[DEV-06][NFR-01][US-205] three check-offs offline outlast a reload with no network and are sent once each when it returns` | DEV-06, NFR-01, US-205 |
 | `[NFR-01] a day offline: the board keeps running on its cached page, then sends what waited once` | NFR-01 |
 | `[DEV-08][US-206] says when its data is old or a job is behind, in the bar, legible in ${theme}` | DEV-08, US-206 |
+
+#### `e2e/ui/on-time.spec.ts`
+
+UI · 7 tests
+
+| Test | Names |
+|---|---|
+| `[CHR-24-k][US-326] Today on a past day: Done on time… on the missed and the late chore, open as drawn (${theme})` | CHR-24-k, US-326 |
+| `[CHR-24-k][CHR-24-h] a settled week asks first, saying what it pays (${theme})` | CHR-24-h, CHR-24-k |
+| `[CHR-24-k][CHR-24-g] after it: the notice, done, and "Marked on time by Alex" (${theme})` | CHR-24-g, CHR-24-k |
+| `[CHR-24-k][CHR-24-j] Maya’s page: Missed or late, the last 14 days (${theme})` | CHR-24-j, CHR-24-k |
+| `[CHR-24-k] a goal’s missed day opens, with Done on time… (${theme})` | CHR-24-k |
+| `[CHR-24-k][CHR-24-g] a goal’s day after it: done, with "Marked on time by Alex" (${theme})` | CHR-24-g, CHR-24-k |
+| `[CHR-24-k][CHR-24-g] the points register says who marked an earn on time (${theme})` | CHR-24-g, CHR-24-k |
 
 #### `e2e/ui/points-register.spec.ts`
 
@@ -6267,5 +6326,45 @@ DB · 23 tests
 | `[MEAL-21-e] nor read the household's choices` | MEAL-21-e |
 | `[MEAL-21-f] Add puts it on the list as a staple` | MEAL-21-f |
 | `[MEAL-21-f] and nothing else is on the list: nothing is added by itself` | MEAL-21-f |
+
+#### `supabase/tests/630_mark_done_on_time.test.sql`
+
+DB · 33 tests
+
+| Test | Names |
+|---|---|
+| `two days ago, Homework folder home was missed` | — |
+| `[CHR-24-a] a parent marks a missed chore done on time` | CHR-24-a |
+| `[CHR-24-a] it is approved, credited to its person` | CHR-24-a |
+| `[CHR-24-a] its points are earned` | CHR-24-a |
+| `[CHR-24-a] the same form sent twice records once` | CHR-24-a |
+| `[CHR-24-a] and its points are earned once` | CHR-24-a |
+| `[CHR-24-a] the event says it was marked on time, by a parent, "On time"` | CHR-24-a |
+| `[CHR-24-b] "On time" has no tick time for a goal: never late, by its due time or a set time` | CHR-24-b |
+| `[CHR-24-b] a parent's ordinary late Mark done is recorded` | CHR-24-b |
+| `[CHR-24-b] ... with its own time, so a goal done by a time still doesn't count it (D-151)` | CHR-24-b |
+| `[CHR-24-b] then marked on time` | CHR-24-b |
+| `[CHR-24-b] and now a goal counts it on time` | CHR-24-b |
+| `[CHR-24-c] a time after its due time is refused` | CHR-24-c |
+| `[CHR-24-c] a time on another day is refused` | CHR-24-c |
+| `[CHR-24-c] a time later than now is refused` | CHR-24-c |
+| `[CHR-24-c] a time on its day, by its due time, is recorded` | CHR-24-c |
+| `[CHR-24-c] and a goal reads it as the tick's time` | CHR-24-c |
+| `[CHR-24-c] without a due time, any time on its day` | CHR-24-c |
+| `[CHR-24-d] a board ticked it at 8:10 pm, after its 3:30 pm` | CHR-24-d |
+| `[CHR-24-d] a parent marks it on time` | CHR-24-d |
+| `[CHR-24-d] it stays done, now a parent's` | CHR-24-d |
+| `[CHR-24-d] and a goal counts it on time` | CHR-24-d |
+| `[CHR-24-d] its goals are marked to be worked out again, though its status didn't change` | CHR-24-d |
+| `[CHR-24-e] a board can't mark on time` | CHR-24-e |
+| `[CHR-24-e] a task can't` | CHR-24-e |
+| `[CHR-24-e] a chore whose day hasn't come can't` | CHR-24-e |
+| `[CHR-24-e] only a parent's Mark done can be on time` | CHR-24-e |
+| `[CHR-24-i] check_offs() says it was marked on time, by Alex, today` | CHR-24-i |
+| `[CHR-24-i] ... with the time given` | CHR-24-i |
+| `[CHR-24-i] a missed chore has no check-off` | CHR-24-i |
+| `[CHR-24-i] another household's parent reads none of them` | CHR-24-i |
+| `[CHR-24-l] Uncheck makes the day missed again` | CHR-24-l |
+| `[CHR-24-l] and takes its points back` | CHR-24-l |
 
 <!-- /catalogue -->

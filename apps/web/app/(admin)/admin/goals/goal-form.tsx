@@ -1476,7 +1476,8 @@ function OpenRule({
           <span className="fw-field__help">
             A tick after {onChoice === 'due_time' ? 'its due time' : 'the time'} still completes the
             chore and earns its points; it doesn’t count here. A board offline keeps the tick’s own
-            time; a parent’s tick after the time doesn’t count either.
+            time; a parent’s ordinary tick after the time doesn’t count either, but Mark done on
+            time does.
             {onChoice === 'due_time' ? ' A chore without a due time counts any time that day.' : ''}
           </span>
         ) : null}

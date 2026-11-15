@@ -11,6 +11,7 @@ export {
   onTimeParam,
   periodsWonParams,
 } from './goal';
+export { inScope } from './facts';
 export { evaluateHistory } from './history';
 
 /**

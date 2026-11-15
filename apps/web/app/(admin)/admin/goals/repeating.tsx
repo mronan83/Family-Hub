@@ -45,10 +45,15 @@ export function ChildRows({
   period,
   repeat,
   who,
+  link,
+  selected = null,
 }: {
   period: GoalPeriod;
   repeat: Exclude<Repeat, 'none'>;
   who: ChildNames;
+  /** [CHR-24] A missed or late day's link (WP-117). */
+  link?: (date: string, mark: string) => string | null;
+  selected?: string | null;
 }) {
   return (
     <ul className="fw-goal__kids" aria-label={`Each child ${thisPeriod(repeat).toLowerCase()}`}>
@@ -68,7 +73,7 @@ export function ChildRows({
               <b>{who.name(c.memberId)}</b>
               <span className="fw-muted">{childLine(c, period, repeat)}</span>
             </span>
-            {days.length ? <DayMarks days={days} /> : null}
+            {days.length ? <DayMarks days={days} link={link} selected={selected} /> : null}
           </li>
         );
       })}
@@ -112,6 +117,9 @@ export function PeriodProgress({
   who,
   points = null,
   children,
+  dayLink,
+  selectedDay = null,
+  dayPanel = null,
 }: {
   repeat: Exclude<Repeat, 'none'>;
   periods: GoalPeriod[];
@@ -129,6 +137,10 @@ export function PeriodProgress({
   points?: number | null;
   /** The rules' meters, for a goal without "every day it's due". */
   children?: React.ReactNode;
+  /** [CHR-24] A link for each missed or late day, and the day opened with what it shows (WP-117). */
+  dayLink?: (date: string) => string;
+  selectedDay?: string | null;
+  dayPanel?: React.ReactNode;
 }) {
   const now = currentPeriod(periods, today);
   const recent = periods.filter((p) => p.start <= today).slice(-5);
@@ -192,10 +204,35 @@ export function PeriodProgress({
             </p>
           ) : null}
           {family ? (
-            <ChildRows period={now} repeat={repeat} who={family} />
+            <ChildRows
+              period={now}
+              repeat={repeat}
+              who={family}
+              link={
+                dayLink
+                  ? (date, mark) =>
+                      mark === 'missed' || mark === 'late' || date === selectedDay
+                        ? dayLink(date)
+                        : null
+                  : undefined
+              }
+              selected={selectedDay}
+            />
           ) : days.length ? (
-            <DayMarks days={days} />
+            <DayMarks
+              days={days}
+              link={
+                dayLink
+                  ? (date, mark) =>
+                      mark === 'missed' || mark === 'late' || date === selectedDay
+                        ? dayLink(date)
+                        : null
+                  : undefined
+              }
+              selected={selectedDay}
+            />
           ) : null}
+          {dayPanel}
           {now.outcome === 'open' && lateLine(now.days, onTime) ? (
             <p className="fw-muted">{lateLine(now.days, onTime)}</p>
           ) : null}

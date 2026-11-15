@@ -123,6 +123,12 @@ export function RegisterView({
             ` · ${by}`
           ) : null}
         </span>
+        {e.onTime ? (
+          <span className="fw-row__l3 fw-ontime__trace">
+            <Icon name="clock" size={18} />
+            {e.onTime}
+          </span>
+        ) : null}
       </li>
     );
   };

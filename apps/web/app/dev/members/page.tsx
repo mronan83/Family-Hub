@@ -3,11 +3,15 @@ import type { MemberRow } from '../../(admin)/admin/members/data';
 import { MembersView, MemberView } from '../../(admin)/admin/members/view';
 import type { LedgerEntry } from '@/lib/points';
 import { memberOpen } from '@/lib/reward-facts';
+import type { DayItem } from '@/lib/admin-day';
+import { type CheckOff, missedOrLate } from '@/lib/on-time';
 
 // [ACC-04][PTS-01][NFR-18] Members and a member's page (WP-95) with the made-up family and no
 // database, for the UI suite and the side-by-side: Alex and Sam (adults), Maya and Leo (children),
 // Grandpa Joe archived. ?page=member for Maya's page; ?adjusted=5 as after a change of points, Points
 // open; ?archived=1 as after an archive, Archived open; ?theme=evening. Thursday, Oct 15, 2026.
+// [CHR-24] ?late=1: Maya's Missed or late open (WP-117), one missed, one ticked late and one marked on
+// time; ?late=open also opens the missed one's Done on time….
 export const metadata: Metadata = { title: 'Members', robots: { index: false } };
 
 const ALEX_USER = 'a1000000-0000-4000-8000-000000000001';
@@ -74,10 +78,107 @@ const ENTRIES = [
   entry(5, 'bonus', 20, '2026-10-12T05:00:00Z', '7 good days in a row'),
 ];
 
+/** [CHR-24] Maya's chores of the last 14 days that WP-117's Missed or late lists. */
+function lateFixture(mayaId: string, scene: string) {
+  const ids = (k: number) => `e3000000-0000-4000-8000-${String(k).padStart(12, '0')}`;
+  const chore = (k: number, o: Partial<DayItem>): DayItem => ({
+    id: ids(k),
+    choreId: `c-late-${k}`,
+    title: 'Homework folder home',
+    icon: 'chore-homework',
+    kind: 'chore',
+    dueDate: '2026-10-13',
+    dueTime: '15:30',
+    memberId: mayaId,
+    assignees: [mayaId],
+    status: 'missed',
+    doneBy: [],
+    points: 5,
+    ...o,
+  });
+  const items = [
+    chore(1, {}),
+    chore(2, {
+      title: 'Piano practice',
+      icon: 'list-check',
+      dueDate: '2026-10-12',
+      dueTime: '16:30',
+      status: 'completed',
+      doneBy: [mayaId],
+    }),
+    chore(3, { dueDate: '2026-10-07', status: 'approved', doneBy: [mayaId] }),
+    chore(4, {
+      title: 'Make bed',
+      icon: 'chore-bed',
+      dueDate: '2026-10-14',
+      dueTime: '07:30',
+      status: 'completed',
+      doneBy: [mayaId],
+    }),
+  ];
+  const checks = new Map<string, CheckOff>([
+    [
+      ids(2),
+      {
+        checkedAt: '2026-10-12T18:05',
+        markedOnTime: false,
+        onTimeAt: null,
+        markedBy: null,
+        markedOn: null,
+      },
+    ],
+    [
+      ids(3),
+      {
+        checkedAt: '2026-10-08T07:40',
+        markedOnTime: true,
+        onTimeAt: '15:45',
+        markedBy: 'Sam',
+        markedOn: '2026-10-08',
+      },
+    ],
+    [
+      ids(4),
+      {
+        checkedAt: '2026-10-14T07:10',
+        markedOnTime: false,
+        onTimeAt: null,
+        markedBy: null,
+        markedOn: null,
+      },
+    ],
+  ]);
+  const now = '2026-10-15T11:00';
+  return {
+    rows: missedOrLate(
+      items.map((i) => ({ ...i, checkOff: checks.get(i.id) ?? null })),
+      checks,
+      now,
+      '2026-10-02',
+    ),
+    onTime: {
+      now,
+      returnTo: `/admin/members/${mayaId}?open=late`,
+      goals: new Map([[ids(1), ['Homework home every school day']]]),
+      open: scene === 'open' ? ids(1) : null,
+    },
+    people: MEMBERS.filter((m) => !m.archivedAt),
+    open: true,
+    notice: null,
+    error: null,
+  };
+}
+
 export default async function DevMembersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; page?: string; adjusted?: string; archived?: string }>;
+  searchParams: Promise<{
+    theme?: string;
+    page?: string;
+    adjusted?: string;
+    archived?: string;
+    late?: string;
+  }>;
 }) {
   const p = await searchParams;
   const theme = p.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -102,6 +203,7 @@ export default async function DevMembersPage({
           adjusted={Number(p.adjusted)}
           pointsOpen={memberOpen(p).points}
           requestId="d0000000-0000-4000-8000-000000000001"
+          late={p.late ? lateFixture(maya.id, p.late) : null}
         />
       ) : (
         <MembersView

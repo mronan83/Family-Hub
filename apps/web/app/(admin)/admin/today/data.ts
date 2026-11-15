@@ -229,3 +229,33 @@ export async function loadWaitingLunches(
     return menu ? { ...w, menu } : w;
   });
 }
+
+/**
+ * [CHR-24] A member's chores from `from` through `to` (their own, or shared with them), for their
+ * page's Missed or late (WP-117); one whose item is archived is left out.
+ */
+export async function loadMemberChores(
+  db: SupabaseClient,
+  householdId: string,
+  memberId: string,
+  from: string,
+  to: string,
+): Promise<DayItem[]> {
+  const mine = await db
+    .from('chore_occurrence_assignee')
+    .select('occurrence_id')
+    .eq('household_id', householdId)
+    .eq('member_id', memberId)
+    .gte('due_date', from)
+    .lte('due_date', to);
+  if (mine.error) throw new Error(`member chores: ${mine.error.message}`);
+  const ids = [...new Set((mine.data as { occurrence_id: string }[]).map((a) => a.occurrence_id))];
+  if (ids.length === 0) return [];
+  const { data, error } = await db
+    .from('chore_occurrence')
+    .select(OCC_COLUMNS)
+    .in('id', ids)
+    .eq('kind', 'chore');
+  if (error) throw new Error(`member chores: ${error.message}`);
+  return complete(db, data as RawOcc[], { dropIfArchived: () => true });
+}

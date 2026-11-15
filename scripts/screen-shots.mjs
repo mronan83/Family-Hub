@@ -39,6 +39,14 @@ export const ADMIN = [
   // [NFR-18] WP-97: Today just after a part's last item was marked done (D-145), Insights back from
   // a rebuild with History open.
   ['admin-today-changed', '/dev/admin?changed=1'],
+  // [CHR-24] WP-117's Done on time…: Today on a past day with it open, a settled week's confirm, the
+  // page after; Maya's Missed or late; a goal's missed day; the register's trace.
+  ['ontime-today', '/dev/admin?ontime=open'],
+  ['ontime-confirm', '/dev/admin?ontime=confirm'],
+  ['ontime-after', '/dev/admin?ontime=after'],
+  ['ontime-member', '/dev/members?page=member&late=open'],
+  ['ontime-goal-day', '/dev/goals?day=open'],
+  ['ontime-register', '/dev/rewards/points?ontime=1'],
   ['forms', '/dev/forms'],
   ['family', '/dev/family'],
   ['rewards', '/dev/rewards'],
