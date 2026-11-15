@@ -87,6 +87,8 @@ export function OnTimePanel({
                 className="fw-input fw-ontime__time"
                 name={`at:${item.id}`}
                 max={latest}
+                // Whole minutes: Safari shows seconds without it.
+                step={60}
                 defaultValue={confirm?.at ?? latest}
                 aria-label={`The time ${item.title} was done`}
               />
