@@ -3,8 +3,10 @@ import { redirect } from 'next/navigation';
 import { noticeFor, type DayAction } from '@/lib/admin-day';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { isoDay } from '@/lib/format';
+import { householdNow, onTimeNotice } from '@/lib/on-time';
 import { serverClient } from '@/lib/supabase/server';
 import { loadMembers } from '../members/data';
+import { loadCheckOffs, onTimeRow } from '../on-time';
 import { loadDay, loadWaiting, loadWaitingLunches } from './data';
 import { itemLabel } from './item-row';
 import { TodayView } from './view';
@@ -19,6 +21,9 @@ const ERRORS: Record<string, string> = {
   who: 'Choose who did it.',
   gone: 'That item changed: it was taken off the list.',
   failed: 'That didn’t save. Try again in a moment.',
+  'ontime-time': 'Choose On time, or a time on its day up to its due time and not later than now.',
+  'ontime-who': 'Choose who did it.',
+  'ontime-not': 'That chore can’t be marked on time: it isn’t missed or late.',
 };
 
 type Params = {
@@ -30,6 +35,11 @@ type Params = {
   batch?: string;
   late?: string;
   error?: string;
+  /** [CHR-24] The item whose settled week or goal asks first, with the answers given. */
+  confirm?: string;
+  when?: string;
+  at?: string;
+  by?: string;
 };
 
 /** [MEAL-09] What a parent's answer to lunch changes did, in words. */
@@ -58,13 +68,30 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
   const today = isoDay(household.timezone);
   const date = params.date && ISO_DAY.test(params.date) ? params.date : today;
 
-  const [members, items, waiting, lunches] = await Promise.all([
+  const [members, dayItems, waiting, lunches] = await Promise.all([
     loadMembers(db!, household.id),
     loadDay(db!, household.id, date, today),
     loadWaiting(db!, household.id),
     loadWaitingLunches(db!, household.id),
   ]);
   const name = (id: string) => members.find((m) => m.id === id)?.displayName ?? 'Someone';
+
+  // [CHR-24] How each item was checked off, and Done on time… where it applies (WP-117).
+  const now = householdNow(household.timezone);
+  const checks = await loadCheckOffs(
+    db!,
+    dayItems.filter((i) => i.kind === 'chore').map((i) => i.id),
+  );
+  const items = dayItems.map((i) => ({ ...i, checkOff: checks.get(i.id) ?? null }));
+  const onTime = await onTimeRow(
+    db!,
+    household,
+    items,
+    params,
+    members,
+    `/admin/today?date=${date}`,
+    now,
+  );
 
   let notice: string | null = null;
   if (params.did === 'lunch-approved' || params.did === 'lunch-kept') {
@@ -82,6 +109,9 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
               ? ` ${kept} changed since and stayed as ${kept === 1 ? 'it was' : 'they were'}.`
               : ''
           }`;
+  } else if (params.did === 'ontime' && params.item) {
+    const known = items.find((i) => i.id === params.item);
+    notice = onTimeNotice(known?.title ?? 'it', known ? known.doneBy.map(name) : []);
   } else if (params.did && ACTIONS.includes(params.did as DayAction) && params.item) {
     const known = [...items, ...waiting].find((i) => i.id === params.item);
     notice = noticeFor(params.did as DayAction, known ? itemLabel(known, name) : 'it');
@@ -105,6 +135,7 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
       request={crypto.randomUUID()}
       // [D-145] The part holding what a parent just changed stays open until the next load.
       changed={params.item && GUID.test(params.item) ? params.item : null}
+      onTime={onTime}
     />
   );
 }

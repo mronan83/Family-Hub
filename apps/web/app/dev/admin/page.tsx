@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import type { DayItem } from '@/lib/admin-day';
 import { localInstant } from '@/lib/board-sleep';
 import { isoDay } from '@/lib/format';
+import { monthDay } from '@/lib/goal-periods';
+import { onTimeNotice } from '@/lib/on-time';
 import { MyTasksView } from '../../(admin)/admin/my/view';
 import type { WaitingItem } from '../../(admin)/admin/today/data';
 import { TodayView } from '../../(admin)/admin/today/view';
@@ -275,6 +277,110 @@ function fixture(today: string) {
   return { items, waiting, mine };
 }
 
+/**
+ * [CHR-24] WP-117's scene (the approved mockup): three days back, Maya's Homework folder home missed,
+ * Leo's reading ticked at 8:10 pm after its 3:30 pm, Maya's piano done on time. ?ontime=open opens the
+ * missed one's Done on time…; =confirm is the same for a week already settled; =after is the page
+ * back from marking it on time, with its trace.
+ */
+function onTimeFixture(today: string, scene: string) {
+  const day = shift(today, -3);
+  const ids = (k: number) => `e2000000-0000-4000-8000-${String(k).padStart(12, '0')}`;
+  const after = scene === 'after';
+  const items: DayItem[] = [
+    {
+      id: ids(1),
+      choreId: 'c-homework-folder',
+      title: 'Homework folder home',
+      icon: 'chore-homework',
+      kind: 'chore',
+      dueDate: day,
+      dueTime: '15:30',
+      memberId: MAYA,
+      assignees: [MAYA],
+      status: after ? 'approved' : 'missed',
+      doneBy: after ? [MAYA] : [],
+      points: 5,
+      checkOff: after
+        ? {
+            checkedAt: `${shift(day, 1)}T08:05`,
+            markedOnTime: true,
+            onTimeAt: null,
+            markedBy: 'Alex',
+            markedOn: shift(day, 1),
+          }
+        : null,
+    },
+    {
+      id: ids(2),
+      choreId: 'c-reading',
+      title: 'Reading, 20 minutes',
+      icon: 'chore-read',
+      kind: 'chore',
+      dueDate: day,
+      dueTime: '15:30',
+      memberId: LEO,
+      assignees: [LEO],
+      status: 'completed',
+      doneBy: [LEO],
+      points: 3,
+      checkOff: {
+        checkedAt: `${day}T20:10`,
+        markedOnTime: false,
+        onTimeAt: null,
+        markedBy: null,
+        markedOn: null,
+      },
+    },
+    {
+      id: ids(3),
+      choreId: 'c-piano',
+      title: 'Piano practice',
+      icon: 'list-check',
+      kind: 'chore',
+      dueDate: day,
+      dueTime: '16:30',
+      memberId: MAYA,
+      assignees: [MAYA],
+      status: 'completed',
+      doneBy: [MAYA],
+      points: 5,
+      checkOff: {
+        checkedAt: `${day}T16:20`,
+        markedOnTime: false,
+        onTimeAt: null,
+        markedBy: null,
+        markedOn: null,
+      },
+    },
+  ];
+  // The week the day is in: its Monday.
+  const dow = new Date(`${day}T12:00:00Z`).getUTCDay();
+  const monday = shift(day, -((dow + 6) % 7));
+  return {
+    day,
+    items,
+    onTime: {
+      now: `${today}T10:00`,
+      returnTo: `/admin/today?date=${day}`,
+      goals: new Map([[ids(1), ['Homework home every school day']]]),
+      confirm:
+        scene === 'confirm'
+          ? {
+              item: ids(1),
+              text: `This makes Maya’s week of ${monthDay(monday)} a win: 10 points.`,
+              pays: '10 points',
+              when: 'due' as const,
+              at: null,
+              by: [MAYA],
+            }
+          : null,
+      open: scene === 'open' ? ids(1) : null,
+    },
+    notice: after ? onTimeNotice('Homework folder home', ['Maya']) : null,
+  };
+}
+
 export default async function DevAdminPage({
   searchParams,
 }: {
@@ -285,6 +391,7 @@ export default async function DevAdminPage({
     state?: string;
     lunches?: string;
     changed?: string;
+    ontime?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -370,6 +477,26 @@ export default async function DevAdminPage({
           defaultOn
           remindersOn
         />
+      ) : params.ontime ? (
+        (() => {
+          const f = onTimeFixture(today, params.ontime);
+          return (
+            <TodayView
+              date={f.day}
+              today={today}
+              timezone={TZ}
+              items={f.items}
+              waiting={[]}
+              people={PEOPLE}
+              notice={f.notice}
+              error={null}
+              undoBatchId={null}
+              request={request}
+              changed={params.ontime === 'after' ? f.items[0]!.id : null}
+              onTime={f.onTime}
+            />
+          );
+        })()
       ) : (
         <TodayView
           date={today}

@@ -10,6 +10,13 @@ export type DayMarkState = 'done' | 'missed' | 'late' | 'open' | 'today' | 'late
 export interface DayMarksProps {
   /** Each day shown: its short name ("Mon") and its mark; `note` names a day with nothing due. */
   days: { date: string; label: string; mark: DayMarkState; note?: string }[];
+  /**
+   * [CHR-24] A link for a day, where one opens it (the admin app's missed and late days, WP-117);
+   * none on the board.
+   */
+  link?: (date: string, mark: DayMarkState) => string | null;
+  /** [CHR-24] The day a link opened. */
+  selected?: string | null;
 }
 
 const DAY_WORDS: Record<DayMarkState, string> = {
@@ -22,7 +29,7 @@ const DAY_WORDS: Record<DayMarkState, string> = {
   none: 'not due',
 };
 
-export function DayMarks({ days }: DayMarksProps) {
+export function DayMarks({ days, link, selected = null }: DayMarksProps) {
   return (
     <ol className="fw-days" aria-label="This week’s days">
       {days.map((d) => (
@@ -32,18 +39,37 @@ export function DayMarks({ days }: DayMarksProps) {
           data-mark={d.mark}
           aria-label={`${d.label}: ${d.note ?? DAY_WORDS[d.mark]}`}
         >
-          <span className="fw-days__mark" aria-hidden="true">
-            {d.mark === 'done' ? (
-              <Icon name="check" />
-            ) : d.mark === 'missed' || d.mark === 'late' ? (
-              <Icon name="close" />
-            ) : d.mark === 'none' ? (
-              <Icon name="minus" />
-            ) : null}
-          </span>
-          <span className="fw-days__label" aria-hidden="true">
-            {d.label}
-          </span>
+          {(() => {
+            const marks = (
+              <>
+                <span className="fw-days__mark" aria-hidden="true">
+                  {d.mark === 'done' ? (
+                    <Icon name="check" />
+                  ) : d.mark === 'missed' || d.mark === 'late' ? (
+                    <Icon name="close" />
+                  ) : d.mark === 'none' ? (
+                    <Icon name="minus" />
+                  ) : null}
+                </span>
+                <span className="fw-days__label" aria-hidden="true">
+                  {d.label}
+                </span>
+              </>
+            );
+            const href = link?.(d.date, d.mark) ?? null;
+            return href ? (
+              <a
+                className="fw-days__link"
+                href={href}
+                aria-label={`${d.label}: ${d.note ?? DAY_WORDS[d.mark]}. Open the day`}
+                aria-current={selected === d.date ? 'true' : undefined}
+              >
+                {marks}
+              </a>
+            ) : (
+              marks
+            );
+          })()}
         </li>
       ))}
     </ol>

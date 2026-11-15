@@ -1623,6 +1623,97 @@ select.fw-input.fw-input--short {
   display: grid;
   gap: var(--s-3);
 }
+/* [CHR-24] Done on time… (WP-117, the approved mockup): an outlined button that opens a panel framed
+   in the primary color; when it was done, who did it, the goals it counts for, and a settled week's
+   confirm in the reward tint. The trace under a check-off marked on time is a soft chip. */
+.fw-ontime > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--touch);
+  padding: 0 var(--s-4);
+  border: 2px solid var(--primary);
+  border-radius: var(--r-sm);
+  color: var(--primary-text);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+.fw-ontime[open] > summary {
+  justify-self: start;
+}
+.fw-ontime > summary::-webkit-details-marker {
+  display: none;
+}
+.fw-ontime[open] {
+  flex-basis: 100%;
+  display: grid;
+  gap: var(--s-3);
+}
+.fw-ontime__body {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 2px solid var(--primary);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.fw-ontime__when {
+  display: grid;
+  gap: var(--s-2);
+}
+.fw-ontime__choice {
+  align-items: flex-start;
+}
+.fw-ontime__choice > span {
+  display: grid;
+  gap: var(--s-1);
+}
+.fw-ontime__hint {
+  font-size: var(--t-small, 15px);
+}
+.fw-ontime__earlier {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+.fw-input.fw-ontime__time {
+  display: inline-block;
+  width: 9em;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 48px;
+  font-variant-numeric: tabular-nums;
+}
+.fw-ontime__goals,
+.fw-ontime__confirm {
+  display: flex;
+  gap: var(--s-2);
+  align-items: flex-start;
+  margin: 0;
+  padding: var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+}
+.fw-ontime__confirm {
+  color: var(--text);
+}
+.fw-ontime__confirm b {
+  color: var(--reward-text);
+}
+.fw-ontime__trace {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  width: fit-content;
+  padding: 2px var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-size: 15px;
+}
 .fw-day__undo {
   display: inline-flex;
   margin-left: var(--s-3);
@@ -5823,6 +5914,35 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
 .board .fw-days__day {
   min-width: 72px;
 }
+/* [CHR-24] A missed or late day that opens (WP-117): the mark and its name as one link, the day
+   opened ringed in the info color. */
+.fw-days__link {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-height: 44px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--r-sm);
+}
+.fw-days__link:hover .fw-days__label,
+.fw-days__link[aria-current='true'] .fw-days__label {
+  text-decoration: underline;
+}
+.fw-days__link[aria-current='true'] .fw-days__mark {
+  outline: 3px solid var(--info);
+  outline-offset: 2px;
+}
+.fw-goal__day {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 2px solid var(--primary);
+  border-radius: var(--r-md);
+}
+.fw-goal__day h3 {
+  margin: 0;
+}
 .fw-days__mark {
   display: grid;
   place-items: center;
@@ -7915,6 +8035,10 @@ button.fw-bgroc__it:focus-visible {
 }
 .fw-ledger > .fw-row__l1 {
   grid-row: 1;
+}
+/* [CHR-24] An earn's "Marked on time by" trace, under its second line (WP-117). */
+.fw-ledger > .fw-row__l3 {
+  grid-column: 2;
 }
 .fw-ledger__amt {
   grid-column: 3;

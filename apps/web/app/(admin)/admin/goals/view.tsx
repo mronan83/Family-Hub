@@ -22,6 +22,7 @@ import { describeRule, OPEN_STATUSES, payoutWords, STATUS_WORDS, streakLine } fr
 import { AdminHeader } from '../header';
 import { goalAction } from './actions';
 import type { GoalRow } from './data';
+import { GoalDay, type GoalDayProps } from './goal-day';
 import { type ChildNames, PeriodProgress, periodStatus } from './repeating';
 
 export interface GoalsViewProps {
@@ -43,6 +44,8 @@ export interface GoalsViewProps {
   today: string;
   notice: string | null;
   error: string | null;
+  /** [CHR-24] A goal's missed or late day, opened from its mark (WP-117). */
+  day?: GoalDayProps | null;
 }
 
 /** "Oct 7" for a household-local date. */
@@ -273,6 +276,7 @@ export function GoalsView({
   today,
   notice,
   error,
+  day = null,
 }: GoalsViewProps) {
   const pays = (g: GoalRow) => {
     const words = payoutWords(g.payout, g.memberId === null, (i) => prizes.get(i));
@@ -381,6 +385,9 @@ export function GoalsView({
                     onTime={g.rules[0]?.params.on_time ?? null}
                     who={g.eachChild ? childNames : undefined}
                     points={g.payout.type === 'points' ? g.payout.amount : null}
+                    dayLink={(d) => `/admin/goals?day=${g.id}:${d}`}
+                    selectedDay={day?.goalId === g.id ? day.date : null}
+                    dayPanel={day?.goalId === g.id ? <GoalDay {...day} /> : null}
                   >
                     {g.rules.some((r) => r.type !== 'DAYS_DUE') ? (
                       <RuleMeters goal={g} names={allNames} goals={goals} />

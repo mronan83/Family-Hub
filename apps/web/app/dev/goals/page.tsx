@@ -7,6 +7,7 @@ import type { GoalRow } from '../../(admin)/admin/goals/data';
 import { GoalForm } from '../../(admin)/admin/goals/goal-form';
 import { WeeksFold } from '../../(admin)/admin/goals/repeating';
 import { GoalHead, GoalStatusPill, GoalsView } from '../../(admin)/admin/goals/view';
+import type { GoalDayProps } from '../../(admin)/admin/goals/goal-day';
 import { goalSteps } from '@/lib/goal-steps';
 import type { IconName } from '@familywise/ui';
 import type { GoalItem } from '@/lib/goal-items';
@@ -88,6 +89,75 @@ function week(
   };
 }
 const SCHOOL_WEEK = ['done', 'done', 'done', 'done', 'done', 'none', 'none'] as const;
+
+/**
+ * [CHR-24] ?day=open (WP-117, the approved mockup): Maya's homework week with Wednesday missed, its
+ * mark opened, and the day's Homework folder home with Done on time… open; ?day=after, the same day
+ * back from marking it on time, with its trace.
+ */
+function dayGoals(scene: string): GoalRow[] {
+  const wed = scene === 'after' ? 'done' : 'missed';
+  return GOALS.map((g) =>
+    g.id === 'g8'
+      ? {
+          ...g,
+          periods: [
+            ...g.periods.slice(0, -1),
+            week('2026-10-12', scene === 'after' ? 'open' : 'missed', [
+              'done',
+              'done',
+              wed,
+              'today',
+              'none',
+              'none',
+              'none',
+            ]),
+          ],
+        }
+      : g,
+  );
+}
+
+function dayFixture(scene: string): GoalDayProps {
+  const id = 'e4000000-0000-4000-8000-000000000001';
+  return {
+    goalId: 'g8',
+    date: '2026-10-14',
+    rows: [
+      {
+        id,
+        choreId: HOMEWORK,
+        title: 'Homework folder home',
+        icon: 'chore-homework',
+        kind: 'chore',
+        dueDate: '2026-10-14',
+        dueTime: '15:30',
+        memberId: MAYA,
+        assignees: [MAYA],
+        status: scene === 'after' ? 'approved' : 'missed',
+        doneBy: scene === 'after' ? [MAYA] : [],
+        points: 5,
+        checkOff:
+          scene === 'after'
+            ? {
+                checkedAt: `${TODAY}T08:05`,
+                markedOnTime: true,
+                onTimeAt: null,
+                markedBy: 'Alex',
+                markedOn: TODAY,
+              }
+            : null,
+      },
+    ],
+    onTime: {
+      now: `${TODAY}T11:00`,
+      returnTo: '/admin/goals?day=g8:2026-10-14',
+      open: scene === 'open' ? id : null,
+    },
+    people: MEMBERS.map((m) => ({ id: m.id, displayName: m.displayName })),
+    request: 'd0000000-0000-4000-8000-000000000004',
+  };
+}
 
 /** [RWD-17][RWD-18] A week won or going at a step (WP-81). */
 const stepWeek = (
@@ -535,7 +605,13 @@ const ITEMS_114: GoalItem[] = [
 export default async function DevGoalsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; form?: string; list?: string; open?: string }>;
+  searchParams: Promise<{
+    theme?: string;
+    form?: string;
+    list?: string;
+    open?: string;
+    day?: string;
+  }>;
 }) {
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
@@ -1086,7 +1162,7 @@ export default async function DevGoalsPage({
   return (
     <div className={`admin ${theme}`}>
       <GoalsView
-        goals={GOALS}
+        goals={params.day ? dayGoals(params.day) : GOALS}
         members={MEMBERS}
         names={{
           tags: new Map(TAGS.map((t) => [t.id, t.name])),
@@ -1098,6 +1174,7 @@ export default async function DevGoalsPage({
         today={TODAY}
         notice={null}
         error={null}
+        day={params.day ? dayFixture(params.day) : null}
       />
     </div>
   );

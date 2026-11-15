@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.52: Mark a chore done on time (WP-117, D-151): **Done on time…** on Today, a child's **Missed or late** and a goal's missed day, with "Marked on time by" (A2, B1.2, B1.6).
 > v0.51: My tasks' **Coming up** stays open after a bell or a done on something in it (WP-119, D-153).
 > v0.50: Staples (WP-106, D-150): **Running low?** on Groceries with **Add** and **Not now**, Home's "3 running low" line, and **Staples** with **Don't suggest** and **Suggest again** (A17).
 > v0.49: Asking, ticking off and taking off at the board (WP-107, D-149): the board's **Ask for something** (your face, a picture tile or **Something else** on the board's keyboard, the brand), **Asked for** and **Got today**; tapping a thing to **Got it** or **Take it off the list**, with **Undo**; Groceries' **Asked for** in the admin app with **Add it**, **Not this time**, **Add all** and each child's **Wait for a grown-up's OK**; Home's Needs you line; B1.17 and B2.11 updated.
@@ -279,6 +280,27 @@ Each item on **Today** has the buttons that make sense for it:
 **Late credit.** Go back with **Day before** to a past day and use **Mark done** on a routine that was missed. It counts as done by a parent and earns its points; streaks and goals are worked out again. Only a parent can catch up a past day: the board shows today only.
 
 **Skipping ahead.** Go forward with **Day after** to skip a day in advance, for example for a sick day or a trip.
+
+#### Mark a chore done on time
+<!-- covers: US-326 -->
+
+**What this is.** A way to count a chore as done by its time when it was done but nobody ticked it, or it was ticked late. **When.** Your child brought the homework folder home, but grandma met the bus and the board never got the tick; or they ticked their reading at 8:10 pm when it was done by 3:30 pm. A goal done by a time would count that day as missed. **How.** On the chore, choose **Done on time…**.
+
+- **Where.** On **Today**, on any past day (and today, once a chore is past its time), on a chore that is **Missed**, still open, or ticked late ("Leo: done late · ticked 8:10 pm, after 3:30 pm"). On your child's page in **Members**, under **Missed or late** (the last 14 days). On **Goals**, tap a missed day under a goal's week to see what it missed that day.
+- **When it was done.** **On time** (the default) counts it as done by its time, for every goal, a goal "by 6:00 pm" included. Or choose **Earlier** and give the time it was done, on that day, up to its due time. A shared chore with several people asks **Who did** it.
+- **Choose Mark done on time.** It counts as done for your child, with its points, and their goals and streaks are worked out again. It shows "Marked on time by Alex, Nov 13" on **Today**, your child's page, the goal's day and the points register. The board shows it done, without who marked it.
+- **A week already over.** If it changes a week (or a goal) that has already ended, the panel says what changes first: "This makes Maya's week of Nov 9 a win: 10 points." Choose **Mark on time and pay 10 points** to confirm. It is paid once.
+- **Changed your mind?** **Uncheck** takes it back, as for any done chore: the points come back off and the day is missed again.
+
+Only a parent can do this, in the admin app. Your own **Mark done** on a past day still counts as late for a goal done by a time; **Done on time…** is the one that counts on time.
+
+![Done on time… open on Maya's missed Homework folder home, on a phone: When was Homework folder home done on Thursday? On time (by its time, 3:30 pm, counts for every goal) or Earlier at a time; Counts for Homework home every school day; Mark done on time.](guide/img/admin-on-time-phone.jpg "Done on time…, on a phone")
+
+![The same on a laptop, for a week already over: This makes Maya's week of Nov 9 a win: 10 points. It's paid once. Mark on time and pay 10 points.](guide/img/admin-on-time-confirm-laptop.jpg "A week already over asks first")
+
+![Maya's Missed or late on a phone: 2 to look at; Homework folder home missed on Tuesday with Done on time…; Piano practice done late, ticked 6:05 pm, after 4:30 pm; and one already marked on time (3:45 pm) by Sam.](guide/img/admin-missed-or-late-phone.jpg "Missed or late, on a child's page")
+
+![Homework home every school day on Goals on a phone: Wednesday's missed mark opened, showing Homework folder home missed with Done on time… open.](guide/img/admin-goal-day-phone.jpg "A goal's missed day")
 
 #### "Not actually done"
 
@@ -766,7 +788,7 @@ On the goal's page, **Weeks** is folded to "Won 3 of the last 4 weeks" and the p
 
 **What this is.** A goal that counts only what is done by a set time ("homework before 6 pm"), and a goal that pays less for less instead of nothing. **When.** When on time matters, or when nearly there should still earn something. **How.** In the goal form, under each rule, and under what it pays.
 
-- **Counts only when done**: **Any time that day** (as before), **By each chore's due time**, or **By** a time you set. A tick after the time still completes the chore and earns its points; it just doesn't count for this goal. A chore without a due time, under **By each chore's due time**, counts any time that day. The tick's own time decides, even when the board was offline. Your own tick after the time doesn't count either.
+- **Counts only when done**: **Any time that day** (as before), **By each chore's due time**, or **By** a time you set. A tick after the time still completes the chore and earns its points; it just doesn't count for this goal. A chore without a due time, under **By each chore's due time**, counts any time that day. The tick's own time decides, even when the board was offline. Your own tick after the time doesn't count either, unless you use **Done on time…** (see [Mark a chore done on time](#mark-a-chore-done-on-time)).
 - **Pay in steps** (when it pays points): the points you set are the top step. On **Every day it's due**, the steps are days missed: "All days 20, 1 missed 10, 2 missed 5", so a short week's top step is still all its days, and the lowest step sets the misses allowed. On a goal counted by number, a step is a number reached: "20 pays 20, 15 pays 10, 10 pays 5"; a goal like that that doesn't repeat needs an end date.
 - **Two or more rules in steps**: each rule gets a **Weight**, together 100%, beside its line ("Rule 1 · weight"). At the foot of the form a line adds them up as the week stands: "So far this week: Homework home 3 of 4 days (75%) × 60% = 45, Reading 4 of 5 (80%) × 40% = 32. 77%: 10 points if the week closes now."; with steps by days missed it says what each step pays this week: "all 4 on time pays 20, 3 pays 10, 2 pays 5".
 
@@ -1331,10 +1353,10 @@ Messages: "Added Ground beef 2 lb to Meat & Seafood.", "No school today. Today's
 |---|---|
 | **Waiting for you** | **Lunch changes** from the board, a group a child (each day: what it usually is, the change, the picks; **Approve**, **Keep Bring** / **Keep Buy** / **Keep as it was**; **Approve both** or **Approve all**), until the morning cut-off. Then **Check-offs** that need a parent, from any day: **Approve** or **Send back**. Shown only when something waits. |
 | The day | The day's name above, then its date in full, **Day before**, **Today**, **Day after**. Items by **Overdue**, **Morning**, **After school**, **Evening**, **Anytime**, each with who it is for, its status, and its buttons. Each part shows "N of M done"; one with everything done or skipped has a tick, and is folded to its count and first names the next time Today opens. **Overdue** stays open, with how many are open. |
-| Buttons per item | **Mark done** (or **Mark done…** with **Who did** it), **Skip**, **Put back**, **Uncheck**, **Approve**, **Send back**. See [Mark done, skip, uncheck](#mark-done-skip-uncheck). |
+| Buttons per item | **Mark done** (or **Mark done…** with **Who did** it), **Done on time…** (a missed, late or overdue chore: **On time** or **Earlier**, then **Mark done on time**), **Skip**, **Put back**, **Uncheck**, **Approve**, **Send back**. See [Mark done, skip, uncheck](#mark-done-skip-uncheck) and [Mark a chore done on time](#mark-a-chore-done-on-time). |
 | **Not actually done** | Unchecks every ticked done item together, then offers **Undo** in the banner. |
 
-Messages: "Approved 2 lunch changes.", "Kept the day as it was.", "… was past the morning cut-off, so that day stays as it was.", "Marked Make bed done.", "Unchecked … Its points are taken back.", "Skipped … It won't count for or against anyone.", "… is back on the list.", "Approved …", "Sent … back. It shows as open to try again." If something changed meanwhile: "That item changed: it was taken off the list."
+Messages: "Marked … done on time. It counts for Maya's goals.", "Approved 2 lunch changes.", "Kept the day as it was.", "… was past the morning cut-off, so that day stays as it was.", "Marked Make bed done.", "Unchecked … Its points are taken back.", "Skipped … It won't count for or against anyone.", "… is back on the list.", "Approved …", "Sent … back. It shows as open to try again." If something changed meanwhile: "That item changed: it was taken off the list."
 
 #### B1.3 My tasks
 <!-- covers: US-316 US-318 -->
@@ -1416,6 +1438,7 @@ If a device can no longer get notifications, it is removed and the page says so,
 | The form | **Name** (up to 40), **Who they are**, **Avatar**, **Color**, **Birth year (optional)**, **Earns rewards**, and for an adult **Their sign-in** (**Not linked**, or an admin's email). **Save changes**. |
 | **Is this you?** | **This is me**: links your own sign-in to this adult. Shown when your sign-in isn't on anyone still here. |
 | **Points** (folded) | Folded to the balance and the last change ("142 points · last: +5 Make bed, today 7:10 am"). Open: the balance, **Change points** (folded to its button: **Add** / **Take away**, **Points**, **Why**), and the history: day, what it was for (and who, for a change by hand), amount. Open again, with **Change points**, after a change. **All of (name)'s points** opens the points register for them. |
+| **Missed or late** (folded) | For a child or anyone who earns rewards: their chores of the last 14 days that were missed, are open past their time, or were ticked late, newest first, each with **Done on time…**; one already marked on time shows "Marked on time by …". Folded to how many there are to look at ("2 to look at"). See [Mark a chore done on time](#mark-a-chore-done-on-time). |
 | **Archive** (folded, at the bottom) | **Archive** (name): off the board, chores and goals stop showing, history kept. |
 
 A member who doesn't earn rewards can't be given points; what they earned before stays.

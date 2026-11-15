@@ -197,7 +197,11 @@ export default async function DevPointsRegisterPage({
   const params = await searchParams;
   const theme = params.theme === 'evening' ? 'theme-evening' : 'theme-day';
   const f = parseRegisterQuery(params);
-  const matching = filtered(entries(), f);
+  // [CHR-24] ?ontime=1: Leo's latest earn was for a chore Alex marked done on time (WP-117).
+  const all = entries();
+  if (params.ontime === '1' && all[0])
+    all[0] = { ...all[0], onTime: `Marked on time by Alex, Oct 27` };
+  const matching = filtered(all, f);
   return (
     <div className={`admin ${theme}`}>
       <RegisterView

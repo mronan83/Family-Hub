@@ -9,7 +9,7 @@ import { Line } from '../fold-line';
 import { AdminHeader } from '../header';
 import { dayAction, undoBatch } from './actions';
 import type { WaitingItem } from './data';
-import { ItemRow, type Person } from './item-row';
+import { ItemRow, type OnTimeRow, type Person } from './item-row';
 import { LunchChanges } from './lunch-changes';
 import type { WaitingLunch } from '@/lib/lunch';
 
@@ -33,6 +33,8 @@ export interface TodayViewProps {
   request: string;
   /** [D-145] The item a parent just changed: its part stays open, and folds on the next load. */
   changed?: string | null;
+  /** [CHR-24] Done on time… on a missed or late chore (WP-117). */
+  onTime?: OnTimeRow | null;
 }
 
 /**
@@ -56,6 +58,7 @@ export function TodayView({
   undoBatchId,
   request,
   changed = null,
+  onTime = null,
 }: TodayViewProps) {
   const parts = sections(items, date);
   const day = relativeDay(date, today);
@@ -156,7 +159,14 @@ export function TodayView({
                 >
                   <ul className="fw-list" aria-labelledby={`part-${p.key}-heading`}>
                     {p.items.map((i) => (
-                      <ItemRow key={i.id} item={i} today={today} people={people} selectable />
+                      <ItemRow
+                        key={i.id}
+                        item={i}
+                        today={today}
+                        people={people}
+                        selectable
+                        onTime={onTime}
+                      />
                     ))}
                   </ul>
                 </Fold>

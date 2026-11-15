@@ -61,6 +61,7 @@ export default defineConfig({
         'grocery-brands.spec.ts',
         'grocery-asks.spec.ts',
         'grocery-staples.spec.ts',
+        'on-time.spec.ts',
       ],
     },
     // [NFR-16][D-132] Safari on a Mac (WP-96): the screens WP-96 changes again in desktop WebKit at
@@ -69,7 +70,8 @@ export default defineConfig({
     // [MEAL-27] WP-112's Home Groceries card too. [NFR-18] WP-95's Rewards and Members folds too,
     // and WP-97's Today, My tasks and Insights. [RWD-21] WP-114's goal Some items. [PTS-08] WP-115's
     // points register. [MEAL-29] WP-116's grocery brands. [MEAL-22] WP-107's grocery asks. [MEAL-21]
-    // WP-106's staples. [NFR-16-w] WP-118's tap during a real prefetch.
+    // WP-106's staples. [NFR-16-w] WP-118's tap during a real prefetch. [CHR-24] WP-117's Done on
+    // time….
     {
       name: 'mac',
       use: {
@@ -89,6 +91,7 @@ export default defineConfig({
         'grocery-asks.spec.ts',
         'grocery-staples.spec.ts',
         'prefetch.spec.ts',
+        'on-time.spec.ts',
       ],
     },
   ],
