@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.75: US-1114 added at the owner's request (WP-123, PTS-12, D-155): the board shows the reason for points a parent took away.
 > v0.8.74: US-326 as built (WP-117, CHR-24, D-151): **Done on time…** on Today, a child's **Missed or late** and a goal's missed day, with the trace in the points register too.
 > v0.8.73: US-1111, US-1112 and US-1113 added at the owner's request (WP-120, WP-121, WP-122, PTS-09, PTS-10, PTS-11, D-154): penalties, in points or money, each with a reason from the household's list and shown on the board, issued once or built up by misses, and paid back by a goal.
 > v0.8.72: US-326 added at the owner's request (WP-117, CHR-24, D-151): a parent marks a missed or late chore done on time, so a goal done by a time counts it.
@@ -1239,3 +1240,10 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given the payback is paused, when a missed day makes Maya owe $1, then the payback is active again from that week.
 - Given the penalty is in points, when a week pays back 10 points, then a `penalty_payback` entry of +10 is posted, never more than Maya owes.
 - Given a week's win is later undone (a chore reversed), when the goal is worked out again, then the payback is taken back once.
+
+### US-1114 — See why a parent changed my points
+**As a** kid **I want** the board to say why a parent took points away **so that** I know what it was for and what to do differently. Added at the owner's request (WP-123, D-155).
+**Priority:** Should · **Phase:** P3 · **Reqs:** PTS-12
+- Given Sam took 5 points from Leo with the reason "Left the iPad on the couch", when Leo looks at Leo's points on the board, then it shows "Left the iPad on the couch −5".
+- Given Sam took points away last week, before this change, when Leo looks at Leo's points, then that entry shows its reason too.
+- Given I open Take away points in the admin app, when I type the reason, then the form says the reason shows on the board.
