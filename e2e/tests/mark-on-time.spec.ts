@@ -73,10 +73,10 @@ test.beforeAll(async ({ browser }) => {
   // Wednesday missed, as day close leaves it.
   sql(`update public.chore_occurrence set status = 'missed', finalized_at = now()
         where id = '${occurrence(addDays(lastWeek, 2))}'`);
-  goal =
-    sql(`insert into public.reward_goal (household_id, member_id, title, icon, start_date, end_date,
-                                              rule_logic, status, repeats, payout, created_by)
-              select '${HOUSEHOLD}', '${maya()}', '${TITLE}', 'backpack', '${lastWeek}', null, 'all', 'active',
+  // reward_goal.id has no default (the goal form makes its own), so the spec makes one too.
+  goal = sql(`insert into public.reward_goal (id, household_id, member_id, title, icon, start_date,
+                                              end_date, rule_logic, status, repeats, payout, created_by)
+              select gen_random_uuid(), '${HOUSEHOLD}', '${maya()}', '${TITLE}', 'backpack', '${lastWeek}', null, 'all', 'active',
                      'week', '{"type": "points", "amount": 10}', hu.user_id
                 from public.household_user hu where hu.household_id = '${HOUSEHOLD}' limit 1
               returning id`);
