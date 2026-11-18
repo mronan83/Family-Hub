@@ -281,7 +281,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3264** tests: Unit 1030 · DB 1720 · UI 369 · E2E 145. 2741 name at least one ID; 523 name none.
+**3273** tests: Unit 1030 · DB 1729 · UI 369 · E2E 145. 2750 name at least one ID; 523 name none.
 
 | Measure | Count |
 |---|---|
@@ -290,7 +290,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 121 of 138 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 330 (with a test: 330) |
+| Test cases | 334 (with a test: 333) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -312,11 +312,11 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Meals and lunch | 139 | 182 | 90 | 20 | 431 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
-| Boards and devices | 67 | 84 | 14 | 13 | 178 |
+| Boards and devices | 67 | 93 | 14 | 13 | 187 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 204 | 167 | 62 | 18 | 451 |
 | Not named | 58 | 500 | 10 | 1 | 569 |
-| **Total** | **1030** | **1720** | **369** | **145** | **3264** |
+| **Total** | **1030** | **1729** | **369** | **145** | **3273** |
 
 ### 9.3 By requirement
 
@@ -336,7 +336,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | DEV-02 | M | Covered | US-201, US-202 | WP-05, WP-59 | — | U 4 · DB 26 · E2E 3 |
 | DEV-03 | M | Covered | US-202 | WP-05 | — | U 2 · DB 7 · UI 1 · E2E 1 |
 | DEV-04 | M | Not built | US-203 | WP-14 | — | U 1 |
-| DEV-05 | M | Covered | US-204 | WP-06, WP-70, WP-78, WP-113, WP-124 | DEV-05-a, DEV-05-b | U 12 · DB 26 · UI 3 · E2E 6 |
+| DEV-05 | M | Covered | US-204 | WP-06, WP-70, WP-78, WP-113, WP-124 | DEV-05-a, DEV-05-b, DEV-05-c, DEV-05-d, DEV-05-e | U 12 · DB 35 · UI 3 · E2E 6 |
 | DEV-06 | M | Covered | US-205 | WP-13 | — | U 5 · UI 1 · E2E 1 |
 | DEV-07 | S | Covered | US-207 | WP-34 | DEV-07-a, DEV-07-b, DEV-07-c, DEV-07-d, DEV-07-e, DEV-07-f, DEV-07-g, DEV-07-h | U 41 · DB 17 · UI 4 · E2E 1 |
 | DEV-08 | S | Covered | US-206 | WP-13 | — | U 3 · UI 3 · E2E 1 |
@@ -472,7 +472,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-10 | S | Not built | US-1112 | WP-121 | — | — |
 | PTS-11 | S | Not built | US-1113 | WP-122 | — | — |
 | PTS-12 | S | Not built | US-1114 | WP-123 | — | — |
-| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119, WP-124 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g | U 14 |
+| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119, WP-124 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g, NFR-12-h | U 14 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110, WP-118 | NFR-16-t, NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s, NFR-16-u, NFR-16-v, NFR-16-w | U 23 · DB 10 · UI 24 |
@@ -596,7 +596,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-110 | Done | PTS-04-a, NFR-16-r, NFR-16-s | 3 of 3 | — |
 | WP-111 | Done | NFR-14-u, NFR-14-v, NFR-14-w, NFR-14-x, NFR-14-y, NFR-14-z | 6 of 6 | — |
 | WP-112 | Done | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e, MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | 12 of 12 | U 5 |
-| WP-113 | Done | DEV-05-a, DEV-05-b, NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | 7 of 7 | — |
+| WP-113 | Done | DEV-05-b, NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e | 6 of 6 | — |
 | WP-114 | Done | RWD-21-a, RWD-21-b, RWD-21-c, RWD-21-d, RWD-21-e, RWD-21-f, RWD-21-g, RWD-21-h, RWD-21-i, RWD-21-j | 10 of 10 | — |
 | WP-115 | Done | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | 13 of 13 | — |
 | WP-116 | Done | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l | 12 of 12 | — |
@@ -607,7 +607,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-121 | Queued: | — | — | — |
 | WP-122 | Queued: | — | — | — |
 | WP-123 | Ready | — | — | — |
-| WP-124 | In | — | — | — |
+| WP-124 | In | DEV-05-a, DEV-05-c, DEV-05-d, DEV-05-e, NFR-12-h | 4 of 5 | — |
 
 Test cases and the tests that prove them:
 
@@ -783,7 +783,7 @@ Test cases and the tests that prove them:
 | NFR-14-r | WP-108 | The preview answering `/api/health` in over 2 s, or with a 5xx, is a bad probe reading, and a test that failed while it was read is infrastructure | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-14-r][D-135] the preview answering /api/health in over 2 s, or with a 5xx, is a bad reading` |
 | NFR-14-s | WP-109 | Family options' The week, folded to its start day, is opened before its form is used; a new start day waits for the next week and Keep cancels it | E2E | E2E `e2e/tests/home.spec.ts`: `[NFR-14-s][ACC-08][US-110] the done-when: a new start day waits for the next week, and Keep cancels it` |
 | NFR-14-t | WP-109 | A spec whose items check off a child's days puts their history back: after its clean-up, Maya's and Leo's stored good and bad runs are as they were before it started | E2E | E2E `e2e/tests/perfect-periods.spec.ts`: `[RWD-20-k][RWD-19-j][NFR-14-e][NFR-14-o][NFR-14-t][US-414][US-415] done-when: every child meets the family’s homework goal; Maya’s perfect weeks in a row; thei…` |
-| DEV-05-a | WP-113 | `lunch_week()` works out each child's day type once: a week of two children is 14, not the 112 of `main` | DB | DB `supabase/tests/580_lunch_week_once.test.sql`: `[DEV-05-a] lunch_week() works out each child's day once: 2 children × 7 days` |
+| DEV-05-a | WP-124 | (changed) `lunch_week()` works out the week's day types in one query: one `day_types()` call and no `resolve_day_type()` call (WP-113 made it 14, one a child and day) | DB | DB `supabase/tests/580_lunch_week_once.test.sql`: `[DEV-05-a] lunch_week() works out the week's day types once: one day_types() query, no resolve_day_type() call` |
 | DEV-05-b | WP-113 | `lunch_week()` says for each child and day the type, mode and change that `resolve_day_type()`, `lunch_mode()` and `lunch_override` say, over a break, a child on their own school's year, a weekend, a day's change and a usual buy day | DB | DB `supabase/tests/580_lunch_week_once.test.sql`: `[DEV-05-b] each child, each day of the week`<br>DB `supabase/tests/580_lunch_week_once.test.sql`: `[DEV-05-b] each day's type, mode and change as resolve_day_type(), lunch_mode() and lunch_override say`<br>DB `supabase/tests/580_lunch_week_once.test.sql`: `[DEV-05-b] Maya: her Monday change to bring, a usual bring, the break with no lunch, the weekend`<br>DB `supabase/tests/580_lunch_week_once.test.sql`: `[DEV-05-b] Leo, on his own school's year: school all week, his Wednesday change to buy` |
 | NFR-12-a | WP-113 | A slow probe says how much of it the database spent on the query; one within 2 s is no reading | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-a] a slow probe says how much of it the database spent on the query` |
 | NFR-12-b | WP-113 | `GET /api/health/db` on a preview times one call to the database and answers 200, or 503 with the error and its time; nowhere but a preview | Unit | Unit `apps/web/lib/health-db.test.ts`: `[NFR-12-b] GET /api/health/db: the preview’s own path to the database, timed › [NFR-12-b] on a preview: one call, its time, 200 when it answered`<br>Unit `apps/web/lib/health-db.test.ts`: `[NFR-12-b] GET /api/health/db: the preview’s own path to the database, timed › [NFR-12-b] a call that fails, or throws, is 503 with its error and its time`<br>Unit `apps/web/lib/health-db.test.ts`: `[NFR-12-b] GET /api/health/db: the preview’s own path to the database, timed › [NFR-12-b] nowhere but a preview, and off without the database settings` |
@@ -943,6 +943,10 @@ Test cases and the tests that prove them:
 | CHR-24-l | WP-117 | **Uncheck** on a chore marked on time takes it back: its points reversed, the day missed again | DB | DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-l] Uncheck makes the day missed again`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-l] and takes its points back` |
 | CHR-24-m | WP-117 | A parent marks a child's missed chore done on time from Today on a past day: the goal done by its due time counts the day, the points come back, and Today shows "Marked on time by" | E2E | E2E `e2e/tests/mark-on-time.spec.ts`: `[CHR-24-m][CHR-24-n][US-326] Alex marks Maya’s missed Wednesday done on time from Today: the settled week asks first, is won and paid once, and Today shows the…` |
 | CHR-24-n | WP-117 | Marked on time on a day of last week, after the confirm, the week is won and its payout paid once, however often it is worked out | E2E | E2E `e2e/tests/mark-on-time.spec.ts`: `[CHR-24-m][CHR-24-n][US-326] Alex marks Maya’s missed Wednesday done on time from Today: the settled week asks first, is won and paid once, and Today shows the…` |
+| DEV-05-c | WP-124 | `private.day_types()` gives every member of the household a day type for every day of a range, the same as `resolve_day_type()` for each member and day: a child on the household's year with a break and a snow day, a child on their own school's year that ends first, an adult, an archived child, an archived year, weekends and summer | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] day_types(): every member of the household (archived too), every day of the range`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] day_types() says what resolve_day_type() says for each member and day`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] the range has each kind of day: school, a break, a snow day, weekends, summer`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] after Leo's own year ends, the household's year still covers him` |
+| DEV-05-d | WP-124 | `school_days()` gives the days it gave before (any member still in the household has school), through one `day_types()` call and no `resolve_day_type()` call | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-d] school_days() gives the days any member still in the household has school, as before`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-d] school_days() asks day_types() once and resolve_day_type() not at all` |
+| DEV-05-e | WP-124 | `job_health()` gives what it gave before for each job (never run, running, stuck, failing, stale, ok, a skipped run healthy, a run that finished after a later one started), the SQL jobs left out, each job's latest healthy run a row away by an index | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] job_health() says what it said before for each job: never, running, stuck, failing, stale, ok, a skipped run, a run that finished last`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] each job's state, the SQL job left out`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] each job's latest healthy run is a row away (job_run_last_ok_idx)` |
+| NFR-12-h | WP-124 | `scripts/db-health.sh` reads a database read only: every section, the board's read timed as each board (numbered), no member, item, household or id named, nothing changed, its sessions read only | Unit | **none** |
 
 ### 9.5 By user story
 
@@ -6169,7 +6173,7 @@ DB · 5 tests
 
 | Test | Names |
 |---|---|
-| `[DEV-05-a] lunch_week() works out each child's day once: 2 children × 7 days` | DEV-05-a |
+| `[DEV-05-a] lunch_week() works out the week's day types once: one day_types() query, no resolve_day_type() call` | DEV-05-a |
 | `[DEV-05-b] each child, each day of the week` | DEV-05-b |
 | `[DEV-05-b] each day's type, mode and change as resolve_day_type(), lunch_mode() and lunch_override say` | DEV-05-b |
 | `[DEV-05-b] Maya: her Monday change to bring, a usual bring, the break with no lunch, the weekend` | DEV-05-b |
@@ -6367,5 +6371,21 @@ DB · 33 tests
 | `[CHR-24-i] another household's parent reads none of them` | CHR-24-i |
 | `[CHR-24-l] Uncheck makes the day missed again` | CHR-24-l |
 | `[CHR-24-l] and takes its points back` | CHR-24-l |
+
+#### `supabase/tests/640_snapshot_day_types.test.sql`
+
+DB · 9 tests
+
+| Test | Names |
+|---|---|
+| `[DEV-05-c] day_types(): every member of the household (archived too), every day of the range` | DEV-05-c |
+| `[DEV-05-c] day_types() says what resolve_day_type() says for each member and day` | DEV-05-c |
+| `[DEV-05-c] the range has each kind of day: school, a break, a snow day, weekends, summer` | DEV-05-c |
+| `[DEV-05-c] after Leo's own year ends, the household's year still covers him` | DEV-05-c |
+| `[DEV-05-d] school_days() gives the days any member still in the household has school, as before` | DEV-05-d |
+| `[DEV-05-d] school_days() asks day_types() once and resolve_day_type() not at all` | DEV-05-d |
+| `[DEV-05-e] job_health() says what it said before for each job: never, running, stuck, failing, stale, ok, a skipped run, a run that finished last` | DEV-05-e |
+| `[DEV-05-e] each job's state, the SQL job left out` | DEV-05-e |
+| `[DEV-05-e] each job's latest healthy run is a row away (job_run_last_ok_idx)` | DEV-05-e |
 
 <!-- /catalogue -->
