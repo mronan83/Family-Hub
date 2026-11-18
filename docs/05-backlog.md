@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.175: WP-124 (the board's snapshot and other reads time out on the free test database) added at the owner's request (DEV-05, NFR-12): a cause for each statement timeout in #168, #170, #179 and #197, backed by measurements on a local copy, the test project and production (timings and counts only), then a fix where the cause is. In progress.
 > v0.8.174: WP-123 (the board shows the reason for every points change a parent makes) added at the owner's request, recorded only (PTS-12, US-1114, D-155): points a parent takes away show on the board with their reason, as points added do, replacing D-50's "A parent changed your points". Ready; not started. Nothing is built in this change.
 > v0.8.173: WP-117 (a parent marks a missed or late chore done on time) done (CHR-24, US-326, D-151), from the mockup the owner approved on 15 November with every recommendation: **Done on time…** on a missed chore, one ticked late, or one open past its time today, on the admin app's Today (any past day), the child's page (**Missed or late**, the last 14 days) and a goal's missed day; "On time" by default (counts for every goal) or an earlier time on its day; a week or goal already settled asks first and pays once; "Marked on time by <parent>" on Today, the child's page and the points register. Its test cases are CHR-24-a to CHR-24-n. D-151 changes D-102; the owner confirmed it on 15 November.
 > v0.8.172: WP-120, WP-121 and WP-122 (penalties) added at the owner's request, recorded only (PTS-09, PTS-10, PTS-11, US-1111 to US-1113, D-154): one-time penalties in points or money, with reasons from the household's list shown on the board, and each person's penalty balance (WP-120); penalty rules for people, a tag or items, with start and end dates, an amount per miss and a max (WP-121); payback through a linked goal or reward, paused while nothing is owed (WP-122). Split in three from an L ask; queued after WP-117, mockup first. Nothing is built in this change.
@@ -340,6 +341,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-121 | Penalty rules that build up on missed items, with dates and a max | P3 | M | WP-120, WP-117 | Queued: WP-120 first |
 | WP-122 | Penalties paid back through a goal or reward | P3 | M | WP-121, WP-80, WP-81 | Queued: WP-121 first |
 | WP-123 | The board shows the reason for every points change a parent makes | P3 | S | WP-11, WP-16 | Ready |
+| WP-124 | The board's snapshot and other reads time out on the free test database | P3 | M | WP-111, WP-113 | In progress |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
 | WP-36 | Closure import | P3 | M | WP-22 | Queued |
@@ -559,6 +561,8 @@ flowchart LR
     WP81 --> WP122
     WP11 --> WP123[WP-123 The reason for points taken away on the board]
     WP16 --> WP123
+    WP111 --> WP124[WP-124 Reads time out on the test database]
+    WP113 --> WP124
     WP90 --> SP07[SPIKE-07 e2e specs audited by layer]
     WP90 --> WP98[WP-98 e2e findings log]
     SP07 --> WP99[WP-99 Lean e2e]
@@ -2554,3 +2558,11 @@ Sizes are relative effort for a single builder with Claude Code, not commitments
 - **What changes (D-155):** points taken away show the parent's reason on the board, as points added do ("Left the iPad on the couch −5"), including entries already posted. The admin app's Take away points form says the reason shows on the board. `06` §2 and `07` (the board's points list, the FAQ "Why does the board say 'A parent changed your points'?") are updated with it.
 - No mockup: the screen keeps its layout and only the entry's words change.
 - **Done when:** the item's test cases are written here (D-107) and each has a test; the UI suite and the user guide's screenshots show a reason on a taken-away entry; the fast checks are green.
+
+### WP-124 — The board's snapshot and other reads time out on the free test database
+**Phase:** P3 · **Size:** M · **Depends on:** WP-111, WP-113 · **Reqs:** DEV-05, NFR-12
+- Added at the owner's request on 18 November, in the planner session: "Add the board_snapshot performance item to the backlog and start it". Started the same day.
+- **Why:** the nightly e2e run on `main` keeps going red on reads that run into the test database's statement timeout (8 s): `board_snapshot()` in `board-layout.spec.ts` (#168) and `devices.spec.ts` (#170), red again in run 282 (16 November); the same family of timeouts in #179; and `offline.spec.ts` (#197), where run 283 (17 November) saw the preview fail GET /admin on a statement timeout, and its re-run saw the test database take 2301 ms (2297 ms in the database) to answer the probe. WP-111 measured one household or 46 giving the board the same time on a local copy, and WP-113 made `lunch_week()` work out each child's day once (the snapshot 66 to 80 ms down to 28 to 35 ms locally); the free test project is still about ten times slower than a local copy, and the timeouts have risen since.
+- **The goal:** a cause for each timeout (D-110), backed by measurements: query plans (EXPLAIN ANALYZE on a local copy and, read-only, on the test project), indexes, functions that run per row, the cost of RLS policies, Realtime-triggered refetches, table and dead-row growth from the per-spec households (D-137), connection and pooler limits on the Free plan. The same reads measured on production, timings and counts only, so the change says whether the real board is slow too. Then the fix where the cause is, in the app or the database.
+- **Not allowed:** loosening a timeout or a test budget, skipping or quarantining a test, blind retries, or anything that wipes or resets a database other than `scripts/preview-db.sh`. Free plans only. A cause that needs the owner (a Supabase setting, a plan limit) is reported with the exact action; a fix that changes what anyone sees is reported first.
+- **Done when:** each timeout above has its cause with its measurements; the item's test cases are written here (D-107) and each has a test; the fast checks are green; the first nightly run after the deploy is green in #168, #170, #179 and #197, or names each red's cause.
