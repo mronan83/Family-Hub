@@ -79,8 +79,6 @@ jobs:
         run: bash scripts/usage-sample.test.sh
       - name: Reminders report
         run: bash scripts/reminders-report.test.sh
-      - name: Database health report
-        run: bash scripts/db-health.test.sh
 
   docs:
     runs-on: ubuntu-24.04

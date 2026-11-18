@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.64: the board's read, lighter (WP-124): `private.day_types()` (every member's day type over a range in one query, as `resolve_day_type()`); `school_days()` and `lunch_week()` use it; `job_health()` reads a row per job through `job_run_household_id_job_type_started_at_idx` and the new `job_run_last_ok_idx`.
 > v0.8.63: a parent marks a missed or late chore done on time (WP-117, D-151): `chore_completion_event.marked_on_time` and `on_time_at`, checked on insert; `trg_cce_on_time_goals_dirty`; `goal_facts_between()` reads the time given; `check_offs()` (§4.1, §4.7).
 > v0.8.62: staples (WP-106, D-150): `grocery_staple` (a household's Not now and Don't suggest for a thing); `grocery_buys()` (each thing's buys from its history); `set_grocery_staple()` (§3.8).
 > v0.8.61: the board's grocery asks, ticks and removals (WP-107, D-149): `grocery_ask`; `member.grocery_ask_ok`; `grocery_item.ticked_member_id`, `ticked_device_id`; `grocery_item_event.member_id`, `device_id` and the `restored` kind; `ask_groceries()`, `call_off_grocery_ask()`, `decide_grocery_asks()`, `set_grocery_ask_ok()`, `board_tick_groceries()`, `board_remove_groceries()`, `board_restore_groceries()`; `board_groceries()` gives the asks, today's ticks and what the household has had; the approvals alert counts grocery asks (§3.8).

@@ -17,11 +17,6 @@ on:
         description: 'Minutes to watch the busy connections (0 for none, at most 45)'
         type: number
         default: 0
-  # TEMPORARY (WP-124, removed before review): runs from the item's branch, which a manual run
-  # can't until the workflow is on main.
-  push:
-    branches: [claude/wp-124-snapshot-performance]
-    paths: [.github/workflows/db-health.yml, scripts/db-health*]
 
 permissions:
   contents: read
@@ -31,12 +26,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ${{ github.event_name == 'push' && fromJSON('["test","production"]') || fromJSON(format('["{0}"]', inputs.target)) }}
+        target: ['${{ inputs.target }}']
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:
       SUPABASE_DB_URL: ${{ matrix.target == 'production' && secrets.SUPABASE_DB_URL || secrets.TEST_SUPABASE_DB_URL }}
-      WATCH_MINUTES: ${{ github.event_name == 'push' && (matrix.target == 'test' && '45' || '0') || inputs.watch_minutes }}
+      WATCH_MINUTES: ${{ inputs.watch_minutes }}
     steps:
       - uses: actions/checkout@v7
       - name: Report (${{ matrix.target }})

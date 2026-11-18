@@ -281,7 +281,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3273** tests: Unit 1030 · DB 1729 · UI 369 · E2E 145. 2750 name at least one ID; 523 name none.
+**3274** tests: Unit 1031 · DB 1729 · UI 369 · E2E 145. 2751 name at least one ID; 523 name none.
 
 | Measure | Count |
 |---|---|
@@ -290,7 +290,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 121 of 138 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 334 (with a test: 333) |
+| Test cases | 334 (with a test: 334) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -314,9 +314,9 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 67 | 93 | 14 | 13 | 187 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
-| Platform | 204 | 167 | 62 | 18 | 451 |
+| Platform | 205 | 167 | 62 | 18 | 452 |
 | Not named | 58 | 500 | 10 | 1 | 569 |
-| **Total** | **1030** | **1729** | **369** | **145** | **3273** |
+| **Total** | **1031** | **1729** | **369** | **145** | **3274** |
 
 ### 9.3 By requirement
 
@@ -472,7 +472,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-10 | S | Not built | US-1112 | WP-121 | — | — |
 | PTS-11 | S | Not built | US-1113 | WP-122 | — | — |
 | PTS-12 | S | Not built | US-1114 | WP-123 | — | — |
-| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119, WP-124 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g, NFR-12-h | U 14 |
+| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119, WP-124 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g, NFR-12-h | U 15 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110, WP-118 | NFR-16-t, NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s, NFR-16-u, NFR-16-v, NFR-16-w | U 23 · DB 10 · UI 24 |
@@ -607,7 +607,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-121 | Queued: | — | — | — |
 | WP-122 | Queued: | — | — | — |
 | WP-123 | Ready | — | — | — |
-| WP-124 | In | DEV-05-a, DEV-05-c, DEV-05-d, DEV-05-e, NFR-12-h | 4 of 5 | — |
+| WP-124 | Done | DEV-05-a, DEV-05-c, DEV-05-d, DEV-05-e, NFR-12-h | 5 of 5 | — |
 
 Test cases and the tests that prove them:
 
@@ -946,7 +946,7 @@ Test cases and the tests that prove them:
 | DEV-05-c | WP-124 | `private.day_types()` gives every member of the household a day type for every day of a range, the same as `resolve_day_type()` for each member and day: a child on the household's year with a break and a snow day, a child on their own school's year that ends first, an adult, an archived child, an archived year, weekends and summer | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] day_types(): every member of the household (archived too), every day of the range`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] day_types() says what resolve_day_type() says for each member and day`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] the range has each kind of day: school, a break, a snow day, weekends, summer`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] after Leo's own year ends, the household's year still covers him` |
 | DEV-05-d | WP-124 | `school_days()` gives the days it gave before (any member still in the household has school), through one `day_types()` call and no `resolve_day_type()` call | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-d] school_days() gives the days any member still in the household has school, as before`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-d] school_days() asks day_types() once and resolve_day_type() not at all` |
 | DEV-05-e | WP-124 | `job_health()` gives what it gave before for each job (never run, running, stuck, failing, stale, ok, a skipped run healthy, a run that finished after a later one started), the SQL jobs left out, each job's latest healthy run a row away by an index | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] job_health() says what it said before for each job: never, running, stuck, failing, stale, ok, a skipped run, a run that finished last`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] each job's state, the SQL job left out`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] each job's latest healthy run is a row away (job_run_last_ok_idx)` |
-| NFR-12-h | WP-124 | `scripts/db-health.sh` reads a database read only: every section, the board's read timed as each board (numbered), no member, item, household or id named, nothing changed, its sessions read only | Unit | **none** |
+| NFR-12-h | WP-124 | `scripts/db-health.sh` reads a database read only: every section, the board's read timed as each board (numbered), no member, item, household or id named, nothing changed, its sessions read only | Unit | Unit `scripts/db-tests/db-health.test.mjs`: `[NFR-12-h] db-health reads a database read only: every section, the board timed as the board, nothing named, nothing changed` |
 
 ### 9.5 By user story
 
@@ -3978,6 +3978,14 @@ Unit · 4 tests
 | `tile states › [NFR-13] each status reads differently, so color is never the only cue` | NFR-13 |
 | `tile states › [NFR-13] uses the icons and words of the brand guide (06 §7.1)` | NFR-13 |
 | `tile states › [CHR-12][CHR-11][CHR-09] display states override the status: overdue, past its time, covered` | CHR-09, CHR-11, CHR-12 |
+
+#### `scripts/db-tests/db-health.test.mjs`
+
+Unit · 1 tests
+
+| Test | Names |
+|---|---|
+| `[NFR-12-h] db-health reads a database read only: every section, the board timed as the board, nothing named, nothing changed` | NFR-12-h |
 
 #### `scripts/db-tests/e2e-household.test.mjs`
 
