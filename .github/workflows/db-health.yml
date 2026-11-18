@@ -1,0 +1,46 @@
+# [NFR-12][DEV-05] Where a database spends its time (WP-124): reads the test project or production,
+# read only, and reports timings, sizes and counts only (households and boards numbered, nothing
+# named) to the log and the run summary. With "watch minutes", it also samples what the busy
+# connections wait on for that long, for example while an e2e run is going.
+# Actions → db-health → Run workflow.
+name: db-health
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Which database'
+        type: choice
+        options: [test, production]
+        default: test
+      watch_minutes:
+        description: 'Minutes to watch the busy connections (0 for none, at most 45)'
+        type: number
+        default: 0
+  # TEMPORARY (WP-124, removed before review): runs from the item's branch, which a manual run
+  # can't until the workflow is on main.
+  push:
+    branches: [claude/wp-124-snapshot-performance]
+    paths: [.github/workflows/db-health.yml, scripts/db-health*]
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ github.event_name == 'push' && fromJSON('["test","production"]') || fromJSON(format('["{0}"]', inputs.target)) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      SUPABASE_DB_URL: ${{ matrix.target == 'production' && secrets.SUPABASE_DB_URL || secrets.TEST_SUPABASE_DB_URL }}
+      WATCH_MINUTES: ${{ github.event_name == 'push' && (matrix.target == 'test' && '0' || '0') || inputs.watch_minutes }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Report (${{ matrix.target }})
+        shell: bash # pipefail: a failed read fails the step despite tee
+        run: |
+          [ "$WATCH_MINUTES" -le 45 ] || { echo "::error::watch at most 45 minutes"; exit 1; }
+          { echo '```'; bash scripts/db-health.sh; echo '```'; } | tee -a "$GITHUB_STEP_SUMMARY"
