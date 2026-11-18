@@ -36,7 +36,7 @@ jobs:
     timeout-minutes: 60
     env:
       SUPABASE_DB_URL: ${{ matrix.target == 'production' && secrets.SUPABASE_DB_URL || secrets.TEST_SUPABASE_DB_URL }}
-      WATCH_MINUTES: ${{ github.event_name == 'push' && (matrix.target == 'test' && '0' || '0') || inputs.watch_minutes }}
+      WATCH_MINUTES: ${{ github.event_name == 'push' && (matrix.target == 'test' && '45' || '0') || inputs.watch_minutes }}
     steps:
       - uses: actions/checkout@v7
       - name: Report (${{ matrix.target }})

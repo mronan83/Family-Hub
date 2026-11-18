@@ -81,6 +81,17 @@ select slot_name, plugin, active,
        pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), restart_lsn)) as wal_held
   from pg_replication_slots;
 
+\echo '## Logical decoding (Realtime): what spilled to disk'
+select slot_name, pg_size_pretty(spill_bytes) as spilled, spill_txns, pg_size_pretty(total_bytes) as decoded,
+       total_txns, stats_reset::date as since
+  from pg_stat_replication_slots;
+
+\echo '## Disk reads and writes by kind of backend (pg_stat_io), the largest'
+select backend_type, object, context, reads, writes, extends, round(read_time) as read_ms,
+       round(write_time) as write_ms
+  from pg_stat_io where coalesce(reads, 0) + coalesce(writes, 0) + coalesce(extends, 0) > 0
+ order by coalesce(reads, 0) + coalesce(writes, 0) + coalesce(extends, 0) desc limit 12;
+
 \echo '## A trivial query, 20 times (the e2e probe: a count of pg_class), ms'
 do $$
 declare t timestamptz; ms numeric[] := '{}'; n bigint;
@@ -98,18 +109,29 @@ end $$;
 select exists (select from pg_extension where extname = 'pg_stat_statements')
        and current_setting('shared_preload_libraries') like '%pg_stat_statements%' as statements \gset
 \if :statements
+-- A label for each statement: the data API's calls by the function or table they reach, others by
+-- their first words. Constants are already $n in pg_stat_statements. (A psql variable, not a view:
+-- the session is read only.)
+\set labelled '(select *, case when query like ''WITH pgrst_source%'' then ''api '' || coalesce(substring(query from ''"public"\\."([a-z_]+)"''), ''?'') else left(regexp_replace(query, ''\\s+'', '' '', ''g''), 80) end as private_label from extensions.pg_stat_statements) s'
 \echo '## The statements that took the most time since the statistics were reset'
 select calls, round(total_exec_time) as total_ms, round(mean_exec_time::numeric, 1) as mean_ms,
        round(max_exec_time) as max_ms, shared_blks_read as blks_read,
-       left(regexp_replace(query, '\s+', ' ', 'g'), 90) as statement
-  from extensions.pg_stat_statements
+       private_label as statement
+  from :labelled
  order by total_exec_time desc limit 25;
 
 \echo '## The slowest statements on average (called at least 5 times)'
 select calls, round(mean_exec_time::numeric, 1) as mean_ms, round(max_exec_time) as max_ms,
-       left(regexp_replace(query, '\s+', ' ', 'g'), 90) as statement
-  from extensions.pg_stat_statements where calls >= 5
+       private_label as statement
+  from :labelled where calls >= 5
  order by mean_exec_time desc limit 15;
+
+\echo '## The statements that wrote the most to temporary files (a sort or a result too big for work_mem)'
+select calls, pg_size_pretty(temp_blks_written * 8192) as temp_written,
+       pg_size_pretty(temp_blks_written * 8192 / greatest(calls, 1)) as per_call,
+       round(mean_exec_time::numeric, 1) as mean_ms, private_label as statement
+  from :labelled where temp_blks_written > 0
+ order by temp_blks_written desc limit 10;
 \else
 \echo 'pg_stat_statements is not loaded here'
 \endif
