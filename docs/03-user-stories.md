@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.76: US-1114 as built (WP-123, PTS-12, D-155): the board's points list shows the reason for points a parent took away, entries posted before included; the Take away points form says so.
 > v0.8.75: US-1114 added at the owner's request (WP-123, PTS-12, D-155): the board shows the reason for points a parent took away.
 > v0.8.74: US-326 as built (WP-117, CHR-24, D-151): **Done on time…** on Today, a child's **Missed or late** and a goal's missed day, with the trace in the points register too.
 > v0.8.73: US-1111, US-1112 and US-1113 added at the owner's request (WP-120, WP-121, WP-122, PTS-09, PTS-10, PTS-11, D-154): penalties, in points or money, each with a reason from the household's list and shown on the board, issued once or built up by misses, and paid back by a goal.

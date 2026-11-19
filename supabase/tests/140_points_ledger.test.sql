@@ -4,7 +4,7 @@
 -- checked nightly against the statuses. Events happen at distinct times a little before now, so they
 -- fold in the order they were sent.
 begin;
-select plan(73);
+select plan(74);
 
 -- Fixtures ---------------------------------------------------------------------------------------
 insert into auth.users (id, email) values
@@ -323,6 +323,11 @@ select is((select (m -> 'points' -> 'recent' -> 0) - 'id' - 'at' from snap, json
 select is((select m -> 'points' -> 'recent' -> 1 ->> 'label' from snap, jsonb_array_elements(s -> 'members') m
             where m ->> 'display_name' = 'Maya'), 'Kind words',
   '[PTS-02] an adjustment shows its reason');
+select is((select x - 'id' - 'at' from snap, jsonb_array_elements(s -> 'members') m,
+                  jsonb_array_elements(m -> 'points' -> 'recent') x
+            where m ->> 'display_name' = 'Leo' and x ->> 'type' = 'adjustment' and (x ->> 'amount')::int < 0),
+          '{"type": "adjustment", "amount": -50, "label": "Lost library book"}'::jsonb,
+  '[PTS-12-b] points a parent took away, posted earlier, reach the board with their reason');
 select ok((select m -> 'points' = 'null'::jsonb from snap, jsonb_array_elements(s -> 'members') m
             where m ->> 'display_name' = 'Pat'),
   '[PTS-07] a member who does not earn rewards has no points on the board');

@@ -246,15 +246,19 @@ test('[RWD-08] with reduced motion the balance changes at once, no count-up', as
   );
 });
 
-test('[PTS-02][D-50] the points list says what each was for, never why points were taken away', async ({
+test('[PTS-12-c][US-1114] the points list says what each was for, the reason for points taken away too', async ({
   page,
 }) => {
   await asMaya(page);
-  const list = page.getByRole('list', { name: 'Points' });
-  await expect(list).toContainText('A parent changed your points');
-  await expect(list).not.toContainText('Left the bike out');
-  await expect(list).toContainText('Helped carry the shopping');
-  await expect(list).toContainText('Feed the dog, undone');
+  const rows = page.getByRole('list', { name: 'Points' }).getByRole('listitem');
+  await expect(rows.filter({ hasText: 'Left the bike out' })).toHaveText(/Left the bike out\s*−5/);
+  await expect(rows.filter({ hasText: 'Helped carry the shopping' })).toHaveText(
+    /Helped carry the shopping\s*\+10/,
+  );
+  await expect(rows.filter({ hasText: 'Feed the dog, undone' })).toHaveCount(1);
+  await expect(page.getByRole('list', { name: 'Points' })).not.toContainText(
+    'A parent changed your points',
+  );
 });
 
 const wishes = (page: Page) =>

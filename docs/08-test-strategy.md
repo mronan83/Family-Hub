@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.19: WP-123's test cases, PTS-12-a to PTS-12-d (D-155): Vitest, pgTAP and the UI suite (§9, regenerated).
 > v0.8.18: WP-117's test cases, CHR-24-a to CHR-24-n (D-151): Vitest, pgTAP, the UI suite and a nightly e2e spec (§9, regenerated).
 > v0.8.17: the e2e reds of 23 October to 4 November (WP-119, D-153): five specs open the folds they read inside, grocery brands' names lead with the run's tag, and the run counts a server error in the preview's own log that names the infrastructure; test cases CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f and NFR-12-g; the catalogue regenerated.
 > v0.8.16: WebKit's page loads in CI (WP-118, D-152): the UI suite's specs take their `test` from `e2e/ui/test.ts`, and it and the screenshot script answer Next.js's link prefetches themselves; test cases NFR-16-u to NFR-16-w (one spec keeps the app's own prefetches); the catalogue regenerated.
@@ -281,16 +282,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3274** tests: Unit 1031 · DB 1729 · UI 369 · E2E 145. 2751 name at least one ID; 523 name none.
+**3277** tests: Unit 1032 · DB 1730 · UI 370 · E2E 145. 2754 name at least one ID; 523 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 138 of 156 |
+| Requirements built (a Done item builds them) | 139 of 156 |
 | Built requirements with no test | 0 |
-| Stories built | 121 of 138 |
+| Stories built | 122 of 138 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 334 (with a test: 334) |
+| Test cases | 338 (with a test: 338) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -305,7 +306,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
 | Chores | 144 | 234 | 49 | 35 | 462 |
-| Points | 57 | 109 | 24 | 12 | 202 |
+| Points | 58 | 110 | 25 | 12 | 205 |
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
@@ -316,7 +317,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 205 | 167 | 62 | 18 | 452 |
 | Not named | 58 | 500 | 10 | 1 | 569 |
-| **Total** | **1031** | **1729** | **369** | **145** | **3274** |
+| **Total** | **1032** | **1730** | **370** | **145** | **3277** |
 
 ### 9.3 By requirement
 
@@ -461,7 +462,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-10 | M | Not built | US-903 | WP-24 | — | — |
 | NFR-11 | S | Covered | US-906 | WP-31, WP-46 | — | U 4 · UI 31 |
 | PTS-01 | M | Covered | US-309, US-1101, US-1106 | WP-16, WP-95 | PTS-01-a, PTS-01-b | U 12 · DB 42 · UI 1 · E2E 6 |
-| PTS-02 | M | Covered | US-1102 | WP-11, WP-16, WP-20, WP-119 | PTS-02-a | U 4 · DB 11 · UI 1 · E2E 2 |
+| PTS-02 | M | Covered | US-1102 | WP-11, WP-16, WP-20, WP-119 | PTS-02-a | U 4 · DB 11 · E2E 2 |
 | PTS-03 | M | Covered | US-1103 | WP-18, WP-95 | PTS-03-a, PTS-03-b, PTS-03-c | U 7 · DB 6 · UI 7 · E2E 1 |
 | PTS-04 | M | Covered | US-1104, US-1105 | WP-18, WP-20, WP-95, WP-110 | PTS-04-b, PTS-04-a | U 12 · DB 17 · UI 12 · E2E 3 |
 | PTS-05 | S | Covered | US-1107 | WP-30, WP-95 | PTS-05-a | U 8 · DB 4 · UI 3 · E2E 1 |
@@ -471,7 +472,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-09 | S | Not built | US-1111 | WP-120 | — | — |
 | PTS-10 | S | Not built | US-1112 | WP-121 | — | — |
 | PTS-11 | S | Not built | US-1113 | WP-122 | — | — |
-| PTS-12 | S | Not built | US-1114 | WP-123 | — | — |
+| PTS-12 | S | Covered | US-1114 | WP-123 | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | U 1 · DB 1 · UI 2 |
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119, WP-124 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g, NFR-12-h | U 15 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
@@ -606,7 +607,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-120 | Queued: | — | — | — |
 | WP-121 | Queued: | — | — | — |
 | WP-122 | Queued: | — | — | — |
-| WP-123 | Ready | — | — | — |
+| WP-123 | Done | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | 4 of 4 | — |
 | WP-124 | Done | DEV-05-a, DEV-05-c, DEV-05-d, DEV-05-e, NFR-12-h | 5 of 5 | — |
 
 Test cases and the tests that prove them:
@@ -943,6 +944,10 @@ Test cases and the tests that prove them:
 | CHR-24-l | WP-117 | **Uncheck** on a chore marked on time takes it back: its points reversed, the day missed again | DB | DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-l] Uncheck makes the day missed again`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-l] and takes its points back` |
 | CHR-24-m | WP-117 | A parent marks a child's missed chore done on time from Today on a past day: the goal done by its due time counts the day, the points come back, and Today shows "Marked on time by" | E2E | E2E `e2e/tests/mark-on-time.spec.ts`: `[CHR-24-m][CHR-24-n][US-326] Alex marks Maya’s missed Wednesday done on time from Today: the settled week asks first, is won and paid once, and Today shows the…` |
 | CHR-24-n | WP-117 | Marked on time on a day of last week, after the confirm, the week is won and its payout paid once, however often it is worked out | E2E | E2E `e2e/tests/mark-on-time.spec.ts`: `[CHR-24-m][CHR-24-n][US-326] Alex marks Maya’s missed Wednesday done on time from Today: the settled week asks first, is won and paid once, and Today shows the…` |
+| PTS-12-a | WP-123 | The board's words for a points entry: points a parent took away read the reason the parent gave ("Left the iPad on the couch"), as points added do; an adjustment with no reason still reads "A parent changed your points" or "From a parent" | Unit | Unit `apps/web/lib/today.test.ts`: `points on the board › [PTS-12-a] points a parent took away show the reason the parent gave, as points added do` |
+| PTS-12-b | WP-123 | The board's snapshot carries the reason with points a parent took away, for an entry posted before the snapshot was read (the reason is stored with each entry, so entries posted before this change show theirs) | DB | DB `supabase/tests/140_points_ledger.test.sql`: `[PTS-12-b] points a parent took away, posted earlier, reach the board with their reason` |
+| PTS-12-c | WP-123 | A child's own screen on the board lists "Left the bike out −5" in their points, next to "Helped carry the shopping +10", and no longer "A parent changed your points" | UI | UI `e2e/ui/today.spec.ts`: `[PTS-12-c][US-1114] the points list says what each was for, the reason for points taken away too` |
+| PTS-12-d | WP-123 | The admin app's Take away points form says the reason is shown with the points in the child's history on the board | UI | UI `e2e/ui/reward-folds.spec.ts`: `take away points › [PTS-12-d] the Take away points form says the reason shows on the board` |
 | DEV-05-c | WP-124 | `private.day_types()` gives every member of the household a day type for every day of a range, the same as `resolve_day_type()` for each member and day: a child on the household's year with a break and a snow day, a child on their own school's year that ends first, an adult, an archived child, an archived year, weekends and summer | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] day_types(): every member of the household (archived too), every day of the range`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] day_types() says what resolve_day_type() says for each member and day`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] the range has each kind of day: school, a break, a snow day, weekends, summer`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-c] after Leo's own year ends, the household's year still covers him` |
 | DEV-05-d | WP-124 | `school_days()` gives the days it gave before (any member still in the household has school), through one `day_types()` call and no `resolve_day_type()` call | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-d] school_days() gives the days any member still in the household has school, as before`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-d] school_days() asks day_types() once and resolve_day_type() not at all` |
 | DEV-05-e | WP-124 | `job_health()` gives what it gave before for each job (never run, running, stuck, failing, stale, ok, a skipped run healthy, a run that finished after a later one started), the SQL jobs left out, each job's latest healthy run a row away by an index | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] job_health() says what it said before for each job: never, running, stuck, failing, stale, ok, a skipped run, a run that finished last`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] each job's state, the SQL job left out`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] each job's latest healthy run is a row away (job_run_last_ok_idx)` |
@@ -1091,7 +1096,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-1111 | PTS-09 | Not built | — |
 | US-1112 | PTS-10 | Not built | — |
 | US-1113 | PTS-11 | Not built | — |
-| US-1114 | PTS-12 | Not built | — |
+| US-1114 | PTS-12 | Covered | UI 1 |
 
 ### 9.6 Known gaps
 
@@ -2415,7 +2420,7 @@ Unit · 4 tests
 
 #### `apps/web/lib/today.test.ts`
 
-Unit · 17 tests
+Unit · 18 tests
 
 | Test | Names |
 |---|---|
@@ -2435,7 +2440,8 @@ Unit · 17 tests
 | `what a check-off will do › [PTS-01] a member holds an item's points only while it is done and theirs` | PTS-01 |
 | `what a check-off will do › [US-305][D-46] a check-off can be undone on the board until the window closes` | US-305 |
 | `what a check-off will do › [US-303] progress counts done and waiting, and leaves skipped out` | US-303 |
-| `points on the board › [PTS-02][D-50] says what each entry was for, and never why points were taken away` | PTS-02 |
+| `points on the board › [PTS-02] says what each entry was for` | PTS-02 |
+| `points on the board › [PTS-12-a] points a parent took away show the reason the parent gave, as points added do` | PTS-12-a |
 
 #### `apps/web/lib/weather.test.ts`
 
@@ -3625,13 +3631,14 @@ UI · 6 tests
 
 #### `e2e/ui/reward-folds.spec.ts`
 
-UI · 4 tests
+UI · 5 tests
 
 | Test | Names |
 |---|---|
 | `on ${name} › [PTS-03-b][ACC-04-b][NFR-11] Rewards, Members and a member’s page fit ${name} in ${theme}, folded and opened` | ACC-04-b, PTS-03-b, NFR-11 |
 | `folded › [PTS-03-b][PTS-04][PTS-05] Rewards: Asked for, To give and the shop open; Archived, Bonus points and Lately folded to their headers` | PTS-03-b, PTS-04, PTS-05 |
 | `folded › [ACC-04-b][PTS-01] Members: the list open, Archived folded to who; a member’s page: the form open, Points folded to the balance and the last change, A…` | ACC-04-b, PTS-01 |
+| `take away points › [PTS-12-d] the Take away points form says the reason shows on the board` | PTS-12-d |
 | `open again › [PTS-03-b][ACC-04-b][D-120] the fold a save comes back to is open, the others folded` | ACC-04-b, PTS-03-b |
 
 #### `e2e/ui/rewards.spec.ts`
@@ -3694,7 +3701,7 @@ UI · 19 tests
 | `[BRD-06] an unanswered "Who did …?" closes with the return home, recording nothing` | BRD-06 |
 | `[RWD-08][US-1006] a child's check-off celebrates; an adult's does not` | RWD-08, US-1006 |
 | `[RWD-08] with reduced motion the balance changes at once, no count-up` | RWD-08 |
-| `[PTS-02][D-50] the points list says what each was for, never why points were taken away` | PTS-02 |
+| `[PTS-12-c][US-1114] the points list says what each was for, the reason for points taken away too` | PTS-12-c, US-1114 |
 | `[PTS-06][US-1108] a child sees what they are saving for: their balance against its cost` | PTS-06, US-1108 |
 | `[PTS-06][US-1108] choosing a wish: picked at once, sent once; with enough, ask for it` | PTS-06, US-1108 |
 | `[PTS-06] cancelling the wish picker changes nothing` | PTS-06 |
@@ -4688,7 +4695,7 @@ DB · 19 tests
 
 #### `supabase/tests/140_points_ledger.test.sql`
 
-DB · 65 tests
+DB · 66 tests
 
 | Test | Names |
 |---|---|
@@ -4742,6 +4749,7 @@ DB · 65 tests
 | `[PTS-02] with the five latest entries` | PTS-02 |
 | `[PTS-02][CHR-14] newest first; a private item's points count but its title stays hidden` | CHR-14, PTS-02 |
 | `[PTS-02] an adjustment shows its reason` | PTS-02 |
+| `[PTS-12-b] points a parent took away, posted earlier, reach the board with their reason` | PTS-12-b |
 | `[PTS-07] a member who does not earn rewards has no points on the board` | PTS-07 |
 | `[NFR-06] the ledger agrees with every status` | NFR-06 |
 | `[NFR-06] a done status whose points were never posted is reported` | NFR-06 |

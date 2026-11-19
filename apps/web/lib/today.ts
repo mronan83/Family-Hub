@@ -193,9 +193,10 @@ export function progress(items: TodayItem[]): { done: number; total: number } {
 }
 
 /**
- * [PTS-02][D-50] A points entry on the board, in the board's voice (06 §2): what it was for, never a
- * telling-off. Points a parent took away say only that a parent changed them; the reason stays in
- * the admin history. An item the board may not see (private) is just "A chore".
+ * [PTS-02][PTS-12][D-155] A points entry on the board, in the board's voice (06 §2): what it was
+ * for. Points a parent added or took away show the reason the parent gave, entries posted before
+ * D-155 included (the reason is stored with each). An item the board may not see (private) is just
+ * "A chore".
  */
 export function boardActivity(e: Pick<LedgerEntry, 'type' | 'amount' | 'label'>): string {
   const item = e.label ?? 'A chore';
@@ -205,7 +206,7 @@ export function boardActivity(e: Pick<LedgerEntry, 'type' | 'amount' | 'label'>)
     case 'reversal':
       return `${item}, undone`;
     case 'adjustment':
-      return e.amount > 0 ? (e.label ?? 'From a parent') : 'A parent changed your points';
+      return e.label ?? (e.amount > 0 ? 'From a parent' : 'A parent changed your points');
     case 'bonus':
       return e.label ?? 'Bonus';
     case 'spend':

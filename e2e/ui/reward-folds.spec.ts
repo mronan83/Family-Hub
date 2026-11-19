@@ -189,6 +189,25 @@ test.describe('folded', () => {
   });
 });
 
+test.describe('take away points', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('[PTS-12-d] the Take away points form says the reason shows on the board', async ({
+    page,
+  }) => {
+    await open(page, '/dev/members?page=member');
+    await head(page, 'Points').click();
+    await head(page, 'Change points').click();
+    const form = page.getByRole('form', { name: 'Change Maya’s points' });
+    await form.getByLabel('Take away', { exact: true }).check();
+    await expect(form.getByRole('button', { name: 'Take away points' })).toBeVisible();
+    await expect(form.locator('.fw-field__help')).toHaveText(
+      'Shown with the points in Maya’s history on the board, so word it for the family.',
+    );
+    await expect(form).not.toContainText('A parent changed your points');
+  });
+});
+
 test.describe('open again', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 

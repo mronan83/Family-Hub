@@ -199,7 +199,7 @@ describe('what a check-off will do', () => {
 });
 
 describe('points on the board', () => {
-  it('[PTS-02][D-50] says what each entry was for, and never why points were taken away', () => {
+  it('[PTS-02] says what each entry was for', () => {
     expect(boardActivity({ type: 'earn', amount: 5, label: 'Make bed' })).toBe('Make bed');
     expect(boardActivity({ type: 'earn', amount: 7, label: null })).toBe('A chore');
     expect(boardActivity({ type: 'reversal', amount: -5, label: 'Make bed' })).toBe(
@@ -208,8 +208,19 @@ describe('points on the board', () => {
     expect(
       boardActivity({ type: 'adjustment', amount: 10, label: 'Helped carry the shopping' }),
     ).toBe('Helped carry the shopping');
-    expect(boardActivity({ type: 'adjustment', amount: -5, label: 'Hit his sister' })).toBe(
+  });
+
+  it('[PTS-12-a] points a parent took away show the reason the parent gave, as points added do', () => {
+    expect(
+      boardActivity({ type: 'adjustment', amount: -5, label: 'Left the iPad on the couch' }),
+    ).toBe('Left the iPad on the couch');
+    expect(boardActivity({ type: 'adjustment', amount: 10, label: 'Helped a neighbour' })).toBe(
+      'Helped a neighbour',
+    );
+    // The database stores a reason with every adjustment; without one the board still says who.
+    expect(boardActivity({ type: 'adjustment', amount: -5, label: null })).toBe(
       'A parent changed your points',
     );
+    expect(boardActivity({ type: 'adjustment', amount: 5, label: null })).toBe('From a parent');
   });
 });

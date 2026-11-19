@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.176: WP-123 (the board shows the reason for every points change a parent makes) done (PTS-12, US-1114, D-155): points a parent took away show the parent's reason on the board's points list, entries posted before included; the admin app's Take away points form says the reason shows on the board. No migration: the snapshot already carried each adjustment's reason. Test cases PTS-12-a to PTS-12-d.
 > v0.8.175: WP-124 (the board's snapshot and other reads time out on the free test database) added at the owner's request and done in the same change (DEV-05, NFR-12): the test database is CPU-bound during a run and stalls as a whole at times; the board's snapshot was its largest read, in hundreds of small queries; `job_health()` on production grows with every job run. The snapshot's school days in one query (`private.day_types()`), `job_health()` through an index, and `scripts/db-health.sh` with its workflow.
 > v0.8.174: WP-123 (the board shows the reason for every points change a parent makes) added at the owner's request, recorded only (PTS-12, US-1114, D-155): points a parent takes away show on the board with their reason, as points added do, replacing D-50's "A parent changed your points". Ready; not started. Nothing is built in this change.
 > v0.8.173: WP-117 (a parent marks a missed or late chore done on time) done (CHR-24, US-326, D-151), from the mockup the owner approved on 15 November with every recommendation: **Done on time…** on a missed chore, one ticked late, or one open past its time today, on the admin app's Today (any past day), the child's page (**Missed or late**, the last 14 days) and a goal's missed day; "On time" by default (counts for every goal) or an earlier time on its day; a week or goal already settled asks first and pays once; "Marked on time by <parent>" on Today, the child's page and the points register. Its test cases are CHR-24-a to CHR-24-n. D-151 changes D-102; the owner confirmed it on 15 November.
@@ -340,7 +341,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-120 | Penalties: one-time penalties in points or money, and the penalty balance | P3 | M | WP-115, WP-117 | Queued: mockup first (one mockup for WP-120 to WP-122) |
 | WP-121 | Penalty rules that build up on missed items, with dates and a max | P3 | M | WP-120, WP-117 | Queued: WP-120 first |
 | WP-122 | Penalties paid back through a goal or reward | P3 | M | WP-121, WP-80, WP-81 | Queued: WP-121 first |
-| WP-123 | The board shows the reason for every points change a parent makes | P3 | S | WP-11, WP-16 | Ready |
+| WP-123 | The board shows the reason for every points change a parent makes | P3 | S | WP-11, WP-16 | Done |
 | WP-124 | The board's snapshot and other reads time out on the free test database | P3 | M | WP-111, WP-113 | Done |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
@@ -348,7 +349,7 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October. WP-118 (the WebKit CI fix), started by the owner on 1 November. WP-119 (the e2e fix for #163 to #166, #174 and #183), started by the owner on 4 November. WP-117 (a missed chore marked done on time), added on 30 October, started by the owner on 15 November; done. Penalties (15 November): WP-120, then WP-121, then WP-122, after WP-117, one mockup for the three first; not started. WP-123 (the board shows the reason for points taken away, 15 November), ready; not started.
+**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October. WP-118 (the WebKit CI fix), started by the owner on 1 November. WP-119 (the e2e fix for #163 to #166, #174 and #183), started by the owner on 4 November. WP-117 (a missed chore marked done on time), added on 30 October, started by the owner on 15 November; done. Penalties (15 November): WP-120, then WP-121, then WP-122, after WP-117, one mockup for the three first; not started. WP-123 (the board shows the reason for points taken away, 15 November), started by the owner on 19 November; done.
 
 ---
 
@@ -2557,7 +2558,17 @@ Sizes are relative effort for a single builder with Claude Code, not commitments
 - **Today:** the board's points list shows the reason for points a parent added, and "A parent changed your points" for points taken away, with the reason kept in the admin app (D-50, `06` §2 Voice; `pointsEntryLabel` in `apps/web/lib/today.ts`, the hint on the admin app's points form in `apps/web/app/(admin)/admin/members/points-form.tsx`).
 - **What changes (D-155):** points taken away show the parent's reason on the board, as points added do ("Left the iPad on the couch −5"), including entries already posted. The admin app's Take away points form says the reason shows on the board. `06` §2 and `07` (the board's points list, the FAQ "Why does the board say 'A parent changed your points'?") are updated with it.
 - No mockup: the screen keeps its layout and only the entry's words change.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| PTS-12-a | The board's words for a points entry: points a parent took away read the reason the parent gave ("Left the iPad on the couch"), as points added do; an adjustment with no reason still reads "A parent changed your points" or "From a parent" | Unit |
+| PTS-12-b | The board's snapshot carries the reason with points a parent took away, for an entry posted before the snapshot was read (the reason is stored with each entry, so entries posted before this change show theirs) | DB |
+| PTS-12-c | A child's own screen on the board lists "Left the bike out −5" in their points, next to "Helped carry the shopping +10", and no longer "A parent changed your points" | UI |
+| PTS-12-d | The admin app's Take away points form says the reason is shown with the points in the child's history on the board | UI |
+
 - **Done when:** the item's test cases are written here (D-107) and each has a test; the UI suite and the user guide's screenshots show a reason on a taken-away entry; the fast checks are green.
+- **As built:** no migration: `board_snapshot()` already sent each adjustment's reason as its label, taken away or added, so entries posted before show theirs. `boardActivity()` in `apps/web/lib/today.ts` shows the reason for any adjustment ("A parent changed your points" only for one with no reason); the hint on the admin app's points form (`apps/web/app/(admin)/admin/members/points-form.tsx`) says the reason shows on the board for both directions. Tests: Vitest `apps/web/lib/today.test.ts` (PTS-12-a); pgTAP `140_points_ledger.test.sql` (PTS-12-b); the UI suite's `e2e/ui/today.spec.ts` (PTS-12-c) and `e2e/ui/reward-folds.spec.ts` (PTS-12-d). The user guide's `board-person` picture retaken.
 
 ### WP-124 — The board's snapshot and other reads time out on the free test database
 **Phase:** P3 · **Size:** M · **Depends on:** WP-111, WP-113 · **Reqs:** DEV-05, NFR-12

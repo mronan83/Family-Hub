@@ -173,6 +173,8 @@ export const ADMIN = [
  * the bar when the last tap closed it.
  */
 export const BOARD = [
+  // [PTS-12] WP-123: Maya's own screen, her points list with a parent's reason for points taken away.
+  ['board-person', '?x=1', 'Maya'],
   ['board-going', '?repeating=going', 'Maya'],
   ['board-missed', '?repeating=missed', 'Maya'],
   ['board-won', '?repeating=won', 'Maya'],
