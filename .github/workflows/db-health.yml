@@ -1,0 +1,41 @@
+# [NFR-12][DEV-05] Where a database spends its time (WP-124): reads the test project or production,
+# read only, and reports timings, sizes and counts only (households and boards numbered, nothing
+# named) to the log and the run summary. With "watch minutes", it also samples what the busy
+# connections wait on for that long, for example while an e2e run is going.
+# Actions → db-health → Run workflow.
+name: db-health
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Which database'
+        type: choice
+        options: [test, production]
+        default: test
+      watch_minutes:
+        description: 'Minutes to watch the busy connections (0 for none, at most 45)'
+        type: number
+        default: 0
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ['${{ inputs.target }}']
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      SUPABASE_DB_URL: ${{ matrix.target == 'production' && secrets.SUPABASE_DB_URL || secrets.TEST_SUPABASE_DB_URL }}
+      WATCH_MINUTES: ${{ inputs.watch_minutes }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Report (${{ matrix.target }})
+        shell: bash # pipefail: a failed read fails the step despite tee
+        run: |
+          [ "$WATCH_MINUTES" -le 45 ] || { echo "::error::watch at most 45 minutes"; exit 1; }
+          { echo '```'; bash scripts/db-health.sh; echo '```'; } | tee -a "$GITHUB_STEP_SUMMARY"

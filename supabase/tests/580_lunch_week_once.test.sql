@@ -1,4 +1,4 @@
--- [DEV-05][MEAL-09] lunch_week() works out each child's day once (WP-113), with the same answer. The
+-- [DEV-05][MEAL-09] lunch_week() works out each child's day once (WP-113; in one query, WP-124), with the same answer. The
 -- board reads it in every snapshot; on main it ran resolve_day_type() several times for each child's
 -- day (lunch_mode() copied into each of its seven uses), the snapshot's largest cost. A family of two
 -- children over a break week, a child on their own school year, a weekend, a day's change and a usual
@@ -49,12 +49,16 @@ select set_config('request.jwt.claims',
                   '{"sub": "58100000-0000-0000-0000-000000000001", "role": "authenticated"}', true);
 
 create temp table counted as
-  select pg_temp.calls('public.resolve_day_type(uuid, date)') as before;
+  select pg_temp.calls('public.resolve_day_type(uuid, date)') as before,
+         pg_temp.calls('private.day_types(uuid, date, date)') as types;
 create temp table week as select public.lunch_week('58000000-0000-0000-0000-000000000001', '2027-02-15') as v;
-update counted set before = pg_temp.calls('public.resolve_day_type(uuid, date)') - before;
+update counted set before = pg_temp.calls('public.resolve_day_type(uuid, date)') - before,
+                   types = pg_temp.calls('private.day_types(uuid, date, date)') - types;
 
-select is((select before from counted), 14::bigint,
-          '[DEV-05-a] lunch_week() works out each child''s day once: 2 children × 7 days');
+-- WP-113 brought it from 112 resolve_day_type() calls to 14, one each child and day; WP-124 to one
+-- query for the whole week (private.day_types(), which DEV-05-c checks against resolve_day_type()).
+select is((select (before, types)::text from counted), '(0,1)',
+          '[DEV-05-a] lunch_week() works out the week''s day types once: one day_types() query, no resolve_day_type() call');
 
 -- What lunch_week() says for each child and day, beside what the functions it stands for say.
 create temp table said as
