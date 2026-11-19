@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.53: The board shows the reason for points a parent took away, as for points added (WP-123, D-155): A4's **Give or take away points by hand**, B2.3's points list, the points table and the FAQ.
 > v0.52: Mark a chore done on time (WP-117, D-151): **Done on time…** on Today, a child's **Missed or late** and a goal's missed day, with "Marked on time by" (A2, B1.2, B1.6).
 > v0.51: My tasks' **Coming up** stays open after a bell or a done on something in it (WP-119, D-153).
 > v0.50: Staples (WP-106, D-150): **Running low?** on Groceries with **Add** and **Not now**, Home's "3 running low" line, and **Staples** with **Don't suggest** and **Suggest again** (A17).
@@ -532,7 +533,7 @@ For someone who earns rewards (usually a child), the screen also shows:
 
 Anyone's screen also lists **Today**: today's events from their own calendars and the family's, and **Today's meals**: what's planned for everyone and for them, and a child's own lunch.
 
-![Maya's screen: Maya's items as tiles on the left; on the right their points, the Shop button, their latest points, what they asked for, what they are saving for and their goals.](guide/img/board-person.jpg "A child's own screen")
+![Maya's screen: Maya's items as tiles on the left; on the right their points, the Shop button, their latest points (Left the bike out −5, Helped carry the shopping +10, Feed the dog, undone −5), what they asked for, what they are saving for and their goals.](guide/img/board-person.jpg "A child's own screen")
 
 #### The Chores screen
 
@@ -606,7 +607,7 @@ On **Members**, open a child and open **Points** (folded to their balance and th
 3. Say **Why** (up to 200 characters).
 4. Choose **Add points** or **Take away points**.
 
-The page comes back with **Points** open, the change on top of the history. The board's points list shows the reason for points added. Points taken away read only "A parent changed your points": the reason stays in the admin app, so the board never tells a child off.
+The page comes back with **Points** open, the change on top of the history. The board's points list shows the reason with the points, added or taken away ("Left the iPad on the couch −5"), so word it for the family. Points taken away before 19 November show their reason too.
 
 #### Build the shop
 
@@ -1649,13 +1650,13 @@ The board's name is beside the date.
 | **Today's meals** | Above **Today's list**, on a day with meals planned, unless the layout hides it: **Breakfast**, **Snack**, **Lunch**, **Dinner**, each thing planned with its picture and, when it's one person's, their face. On **Lunch**, each child: **Buys** and the day's entree choices on one line (or **No menu yet**), or **Brings** and what is planned for their lunch. Tap a buy day's choices: the day's whole menu, a section at a time, with **Close**. |
 
 #### B2.3 A person's screen
-<!-- covers: US-1002 US-1102 US-1108 US-403 -->
+<!-- covers: US-1002 US-1102 US-1108 US-403 US-1114 -->
 
 | Part | What it shows or does |
 |---|---|
 | Header | Avatar, name, "N of M done" (or "Nothing on the list today"), a goal nudge, the flame, and points counting up after a check-off. |
 | Tiles | Their items by part of the day. Tap: done for this person. **Undo**, then **Tap again to undo**, for 2 minutes. **More info** when needed. "All done today. Nice work!" when finished. |
-| **Points** | **Shop** (when the shop has rewards); "N to spend · M waiting for a grown-up" when something is asked for; the five latest points ("Make bed", "Feed the dog, undone", a parent's reason for points added, "A parent changed your points"); or "Points arrive as chores get done." |
+| **Points** | **Shop** (when the shop has rewards); "N to spend · M waiting for a grown-up" when something is asked for; the five latest points ("Make bed", "Feed the dog, undone", a parent's reason for points added or taken away, such as "Left the bike out"); or "Points arrive as chores get done." |
 | **Asked for** | Each request: "Waiting for a grown-up" (with **Call off**), "Yes! It's coming", "Not this time", "You got it!" or "Called off". Settled ones stay two days. |
 | **Saving for** | The wish with a **Saved** meter, "N more points to go." or "You have enough!", **Ask for it**, **Choose a wish** or **Change**. |
 | **Goals** | Their goals, then the family's: a meter per rule, "All of these:" or "Any one of these:", "Ends Saturday". |
@@ -1837,7 +1838,7 @@ Changing between the two takes effect today unless someone already checked off t
 | Bonus | A bonus rule pays, overnight or with **Pay bonuses now**. | The bonus |
 | Spent | A parent approves a request. | The reward |
 | Back | A parent cancels an approved request. | The reward |
-| Changed by a parent | **Add points** or **Take away points**. | The reason if added; "A parent changed your points" if taken away |
+| Changed by a parent | **Add points** or **Take away points**. | The reason the parent gave, added or taken away |
 
 Nothing in the points history is edited or deleted; every check-off, undo and parent decision is kept, so a day's result can always be worked out again. A balance below zero shows as "to earn back".
 
@@ -1938,7 +1939,7 @@ A parent can still mark a missed chore done later (late credit). Waiting check-o
 
 **Does the board show private items?** Never.
 
-**Why does the board say "A parent changed your points"?** That's how points taken away by hand show, so the board never tells a child off. The reason is on the child's page in the admin app.
+**Does the board say why points were taken away?** Yes. Points a parent takes away show on the board with the reason the parent typed, as points added do, so a child knows what it was for. Older entries show their reason too. Word the reason for the family.
 
 **Can a child spend points they don't have?** No. A request is accepted only if their points, less what they've already asked for, cover the cost.
 

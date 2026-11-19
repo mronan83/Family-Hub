@@ -1,6 +1,7 @@
 # 06 — FamilyWise Brand and Style Guide
 
 > Version 1.18 · Status: built (WP-37, WP-06, WP-11, WP-13, WP-17, WP-19, WP-30, WP-40, WP-20, WP-22, WP-23, WP-35, WP-45, WP-46, WP-47, WP-48, WP-28, WP-51, WP-52)
+> v1.31: points taken away show the parent's reason on the board, as points added do: "Left the iPad on the couch −5" (§2 Voice, WP-123, D-155, replacing v1.4's "A parent changed your points").
 > v1.30: the set-up pages folded (§7.3, WP-94, D-120, D-133): a count waiting for a parent on a fold's header (the invites waiting) in Sun tint without the sign, 600 weight; a school year's **Archive** last, its button the danger button; Home's **Add a day off** an inner fold.
 > v1.29: Calendars, School menus and the meal library folded (§7.3, WP-93, D-120, D-131): a calendar's colour before its name on its header; Rename set apart as a name field with its button; a menu day's **Change** a 44 px target, beside the day's date and menu; an event its title, then when; the fold's header 64 px tall, padding included, and 56 px inside another fold; on a phone a long title keeps its line and its button goes under it.
 > v1.28: the goal screens' dates and the form's callouts (WP-101, D-128): a whole date "Mon, Oct 12, 2026" and a time "6:00 pm" on the goal screens, written over the real picker; the callout (a soft fill with the primary colour's bar on its left); a rule folded to its summary line with a list's chevron, items with their picture (§2, §7).
@@ -63,7 +64,7 @@
 | Rejected | "Try again" | "You sent *Dishes* back. Sam sees it as open." |
 | Missed day | "Missed" (history only) | "Missed 2 of 6 on Tue." |
 | Reversal took points | "Make bed, undone −5" | "Reversed *Make bed*. −5 points." |
-| Points taken away | "A parent changed your points −5" (never the reason) | "Took away 5 points." The reason shows in the member's history. |
+| Points taken away | "Left the iPad on the couch −5" (the reason the parent gave, D-155) | "Took away 5 points." The reason shows in the member's history and on the board. |
 | Balance below zero | "−5 to earn back" | "Balance is −5 after a reversal." |
 | Goal un-achieved | "Almost there again: 4 of 5" | "*Movie night* dropped from achieved to 80% because *Dishes* was reversed." |
 | Offline | "Offline: your check-offs are saved" | "Board offline since 6:10 pm. 3 changes queued." |
