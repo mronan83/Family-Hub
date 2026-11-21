@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.66: penalty rules (WP-121, D-154, D-157; §4.2d): `penalty_rule`, `penalty_rule_member`, `penalty_rule_chore`; `penalty.rule_id`, `occurrence_id`, `missed_on`, `taken_back_on_time` (`given_by` null for a rule's miss); `save_penalty_rule()`, `record_penalty_rule_paid()`; day close works out the rules (`close_household_day()`); Mark done on time takes a miss back (`trg_cce_penalty_rules`); `board_snapshot()`'s `owes` groups a rule's misses; `points_register()`'s `penalty_rule`.
 > v0.8.65: penalties (WP-120, D-154, D-156; §4.2c): `household_settings.penalties_on`; `penalty_reason`, `penalty`, `penalty_payment`; the ledger's `penalty` type and `penalty_id`; `give_penalty()`, `take_back_penalty()`, `record_penalty_paid()`, the reasons' functions; `board_snapshot()`'s `owes`.
 > v0.8.64: the board's read, lighter (WP-124): `private.day_types()` (every member's day type over a range in one query, as `resolve_day_type()`); `school_days()` and `lunch_week()` use it; `job_health()` reads a row per job through `job_run_household_id_job_type_started_at_idx` and the new `job_run_last_ok_idx`.
 > v0.8.63: a parent marks a missed or late chore done on time (WP-117, D-151): `chore_completion_event.marked_on_time` and `on_time_at`, checked on insert; `trg_cce_on_time_goals_dirty`; `goal_facts_between()` reads the time given; `check_offs()` (§4.1, §4.7).
@@ -513,6 +514,9 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 | `penalty_reason` | `name` (1–80, one of a name at a time), `unit` (`points`/`money`), `amount` (points, or cents), `removed_at?`, `created_by`, `created_at` | The household's penalty reasons (WP-120, D-154): what a parent picks from, each with its default amount. Removed, not deleted: a penalty given with it keeps its reason. Audited. §4.2c. |
 | `penalty` | `member_id`, `reason_id?`, `reason` (copied), `unit`, `amount`, `given_by`, `given_at`, `dedupe_key` (unique), `taken_back_at?`, `taken_back_by?` | A penalty a parent gave (WP-120, D-154, D-156). In points it is a `penalty` ledger entry, taken at once; in money it is owed until paid. Changes once, when taken back. §4.2c. |
 | `penalty_payment` | `penalty_id`, `amount` (cents), `recorded_by`, `recorded_at`, `dedupe_key` (unique) | Money paid outside FamilyWise against one money penalty (WP-120). Append-only. §4.2c. |
+| `penalty_rule` | `name` (1–80), `reason_id`, `unit` (the reason's), `amount` (per miss), `max_amount`, `scope` (`items`/`tag`/`all`), `tag_id?`, `start_date`, `end_date`, `accrued_through?`, `created_by` | A parent's penalty rule (WP-121, D-154, D-157): each miss of a linked chore by one of its people, judged at day close between its dates, adds its amount up to its max. Audited. §4.2d. |
+| `penalty_rule_member` | PK `(rule_id, member_id)` | Who a penalty rule is for (WP-121). §4.2d. |
+| `penalty_rule_chore` | PK `(rule_id, chore_id)` | The chores a rule links, when it counts chosen items (WP-121). §4.2d. |
 | `reward_catalog_item` | `title`, `description`, `icon`, `image_path`, `cost_points`, `stock?`, `weekly_limit?`, `active`, `sort_order`, `archived_at` | Admin-defined reward and activity inventory (arcade-style prizes). **As built (WP-18):** `image_path` is `{household}/{item}/{file}` in the private `rewards` Storage bucket; `stock` counts requests waiting, approved and given (a denial or cancel frees one); `weekly_limit` is per child per household week. RLS: the household's admins read, add and change it (never delete; archive); its boards read it. |
 | `redemption` | `id` (client uuid), `member_id`, `catalog_item_id`, `cost_snapshot`, `status` (`requested`/`approved`/`denied`/`fulfilled`/`cancelled`), `requested_at`, `decided_at`, `decided_by`, `fulfilled_at`, `note` | Approval posts the `spend` entry. A request is accepted only if balance minus open requests is at least the cost. **As built (WP-18):** also `requested_by_type` (`device`/`admin`), `requested_by` and `cancelled_at`. Changed only by the functions in §4.2b; the household's admins and boards read it. `points_ledger.redemption_id` names a spend's or refund's redemption, and every spend and refund has one. **As built (WP-39):** `goal_id` and `goal_n` name the goal and achievement that paid it (one per achievement, unique); `cost_snapshot` is 0 for those and above 0 for every other; `requested_by_type` may be `system`. A goal's reward is approved at once, and a parent cancelling it refunds nothing. |
 | `points_rule` | `rule_type` (`streak_bonus`/`all_done_bonus`), `params jsonb`, `bonus_points`, `active` | P2 bonus automation (PTS-05). **As built (WP-30, D-57):** `streak_days` (2 to 365, set for a streak bonus and only then) in place of `params`; `bonus_points` 1 to 1,000; `counts_from` (days before it never pay); `active`; `archived_at`; `created_by` (the parent). RLS: the household's admins read, add and change it (never delete; archive). `points_ledger.points_rule_id` names the rule a `bonus` was paid by (only on bonuses). |
@@ -1066,7 +1070,40 @@ alter table public.points_ledger add column penalty_id uuid;   -- (household_id,
 - **RLS:** parents read all three tables; a board reads penalties and payments (`board_snapshot()` runs as its caller). Nobody inserts, updates or deletes but the functions; `trg_penalty_immutable` lets a penalty change only to be taken back, and a payment never, while the household exists. Penalties and payments are in the `supabase_realtime` publication; the reasons are audited.
 - **The board's snapshot:** each member's `points.recent` leaves out a penalty taken back (both of its entries); each member who earns rewards has `owes` while the household's penalties are on, `[{id, reason, owed}]` (cents, oldest first, only what is still owed), and `null` while off.
 - **The register:** `points_register()` lists penalty entries as their own kind, `penalty`.
-- pgTAP `650_penalties.test.sql`. WP-121's penalty rules and WP-122's payback add to these tables.
+- pgTAP `650_penalties.test.sql`. WP-121's penalty rules (§4.2d) and WP-122's payback add to these tables.
+
+### 4.2d Penalty rules
+
+As built (WP-121, `20261121114749_penalty_rules.sql`, D-154, D-157). A parent sets a rule for one or more people who earn rewards, counting chosen chores, a tag, or all their chores, with start and end dates, an amount per miss and a max, in its reason's unit. Each miss is a `penalty` (§4.2c) the system gave, so it is owed, paid, shown and listed as any penalty.
+
+```sql
+create table public.penalty_rule (               -- a parent's rule; changed by save_penalty_rule()
+  id, household_id, name text (1–80), reason_id → penalty_reason, unit text (the reason's),
+  amount integer (per miss), max_amount integer (≥ amount), scope text ('items','tag','all'),
+  tag_id → tag (scope 'tag'), start_date date, end_date date (≥ start),
+  accrued_through date,                          -- worked out through this day: each day once
+  created_by, created_at, updated_at
+);
+create table public.penalty_rule_member (household_id, rule_id, member_id);   -- who it is for
+create table public.penalty_rule_chore  (household_id, rule_id, chore_id);    -- its chores (items)
+
+alter table public.penalty
+  add column rule_id uuid,                       -- the rule that added it
+  add column occurrence_id uuid,                 -- the chore's day it was for (set null if removed)
+  add column missed_on date,                     -- that day
+  add column taken_back_on_time boolean,         -- taken back by Mark done on time (D-157)
+  alter column given_by drop not null;           -- null only on a rule's miss (the system)
+-- One live miss per rule, chore's day and person (penalty_rule_live).
+```
+
+- **What a rule has on a person** (`private.penalty_rule_held(rule, member)`): in money, what is owed on its misses less what was paid; in points, the points its misses took. Misses taken back count for nothing. It never goes over the max (D-157 (2)).
+- **Day close** (`close_household_day()` → `private.accrue_penalty_rules(household)`): for each rule, the days after `accrued_through` up to yesterday and its end date, in day order: each miss `private.rule_misses()` finds adds the amount, or what is left under the max (`private.add_rule_miss()`), as a `penalty` with `rule_id`, `occurrence_id`, `missed_on`, key `rule:{rule}:{occurrence}:{member}:{n}`; in points also a `penalty` ledger entry, "Name, missed Tuesday", by the system. Then `accrued_through` moves on, also while penalties are off, so a day is never worked out twice. A miss: a chore (never a task) the rule links, that person's own status `missed` in `v_member_occurrence` (covered and skipped are not), on a day between the rule's dates whose day type for them is one the chore is due on (a day off or a no-school day never counts).
+- **Mark done on time** (`trg_cce_penalty_rules` → `private.penalty_rules_on_event()`, after each check-off event): a chore whose status event is a parent's Mark done on time (D-151) takes back its live rule misses, as that parent, `taken_back_on_time`, and in points posts `+amount` ("…, marked on time", key `pen-back:{penalty}`). An event that makes the day `missed` again (Uncheck) adds back what Mark done on time took, up to the max, on a day the rule has worked out. An ordinary late Mark done takes nothing back.
+- **Functions**, each `SECURITY DEFINER`, for a parent of the household: `save_penalty_rule(household, rule jsonb)` (new, or changed with its `id`; refuses `penalties_off`, `bad_name`, `bad_reason`, `bad_people` (not earning, archived or another household's), `bad_scope`, `bad_items` (a task, archived, or another household's), `bad_tag`, `bad_dates`, `start_past` (a new start before today), `bad_amount`, `bad_max`, `unit_changed`; a change counts from the next day close); `record_penalty_rule_paid(rule, member, cents, request_id)` (money only, `not_money`; up to what is owed on the rule, `bad_amount`; spread over its misses oldest first, each a `penalty_payment` keyed `paid:{request_id}:{penalty}`; a resend records it once, `request_reused`).
+- **RLS:** parents read the three rule tables; nobody writes them but the functions; a board reads the misses a rule added (as `penalty` rows), never the rule. `trg_penalty_immutable` now also lets a miss's `taken_back_on_time` be set as it is taken back, and its `occurrence_id` be cleared when the occurrence goes.
+- **The board's snapshot:** `owes` keeps each one-time money penalty `{id, reason, owed}`, and gives each rule's money misses still owed as one entry, `{id: rule, reason: its name, owed, rule: true, missed: [days]}`.
+- **The register:** `points_register()` adds `penalty_rule`, the name of the rule a penalty entry came from.
+- pgTAP `660_penalty_rules.test.sql`.
 
 ### 4.3 Dirty-marking trigger
 

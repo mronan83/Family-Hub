@@ -357,6 +357,14 @@ const SHOTS = [
     url: '/dev/members?page=member&penalties=1',
     element: 'details:has(#penalties-heading)',
   },
+  // [PTS-10] Penalty rules (WP-121): Settings' Penalty rules, and the rule form.
+  {
+    name: 'admin-penalty-rules-phone',
+    device: 'phone',
+    url: '/dev/settings/penalties',
+    element: '#rules',
+  },
+  { name: 'admin-penalty-rule-phone', device: 'phone', url: '/dev/settings/penalties/rule' },
   {
     name: 'board-penalties',
     device: 'board',

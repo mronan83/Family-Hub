@@ -282,16 +282,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3340** tests: Unit 1042 · DB 1775 · UI 377 · E2E 146. 2817 name at least one ID; 523 name none.
+**3402** tests: Unit 1052 · DB 1821 · UI 382 · E2E 147. 2879 name at least one ID; 523 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 140 of 156 |
+| Requirements built (a Done item builds them) | 141 of 156 |
 | Built requirements with no test | 0 |
-| Stories built | 123 of 138 |
+| Stories built | 124 of 138 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 351 (with a test: 351) |
+| Test cases | 364 (with a test: 364) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -306,7 +306,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
 | Chores | 144 | 234 | 49 | 35 | 462 |
-| Points | 68 | 155 | 32 | 13 | 268 |
+| Points | 78 | 201 | 37 | 14 | 330 |
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
@@ -317,7 +317,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 205 | 167 | 62 | 18 | 452 |
 | Not named | 58 | 500 | 10 | 1 | 569 |
-| **Total** | **1042** | **1775** | **377** | **146** | **3340** |
+| **Total** | **1052** | **1821** | **382** | **147** | **3402** |
 
 ### 9.3 By requirement
 
@@ -470,7 +470,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-07 | M | Covered | US-1109 | WP-02, WP-04, WP-16 | — | U 2 · DB 15 · E2E 3 |
 | PTS-08 | S | Covered | US-1110 | WP-115 | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | U 12 · DB 17 · UI 5 |
 | PTS-09 | S | Covered | US-1111 | WP-120 | PTS-09-a, PTS-09-b, PTS-09-c, PTS-09-d, PTS-09-e, PTS-09-f, PTS-09-g, PTS-09-h, PTS-09-i, PTS-09-j, PTS-09-k, PTS-09-l, PTS-09-m | U 10 · DB 45 · UI 7 · E2E 1 |
-| PTS-10 | S | Not built | US-1112 | WP-121 | — | — |
+| PTS-10 | S | Covered | US-1112 | WP-121 | PTS-10-a, PTS-10-b, PTS-10-c, PTS-10-d, PTS-10-e, PTS-10-f, PTS-10-g, PTS-10-h, PTS-10-i, PTS-10-j, PTS-10-k, PTS-10-l, PTS-10-m | U 10 · DB 46 · UI 5 · E2E 1 |
 | PTS-11 | S | Not built | US-1113 | WP-122 | — | — |
 | PTS-12 | S | Covered | US-1114 | WP-123 | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | U 1 · DB 1 · UI 2 |
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119, WP-124 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g, NFR-12-h | U 15 |
@@ -604,8 +604,8 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-117 | Done | CHR-24-a, CHR-24-b, CHR-24-c, CHR-24-d, CHR-24-e, CHR-24-f, CHR-24-g, CHR-24-h, CHR-24-i, CHR-24-j, CHR-24-k, CHR-24-l, CHR-24-m, CHR-24-n | 14 of 14 | — |
 | WP-118 | Done | NFR-16-u, NFR-16-v, NFR-16-w | 3 of 3 | — |
 | WP-119 | Done | CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f, NFR-12-g | 9 of 9 | — |
-| WP-120 | Done | PTS-09-a, PTS-09-b, PTS-09-c, PTS-09-d, PTS-09-e, PTS-09-f, PTS-09-g, PTS-09-h, PTS-09-i, PTS-09-j, PTS-09-k, PTS-09-l, PTS-09-m | 13 of 13 | U 1 |
-| WP-121 | Queued: | — | — | — |
+| WP-120 | Done | PTS-09-a, PTS-09-b, PTS-09-c, PTS-09-d, PTS-09-e, PTS-09-f, PTS-09-g, PTS-09-h, PTS-09-i, PTS-09-j, PTS-09-k, PTS-09-l, PTS-09-m | 13 of 13 | U 2 |
+| WP-121 | Done | PTS-10-a, PTS-10-b, PTS-10-c, PTS-10-d, PTS-10-e, PTS-10-f, PTS-10-g, PTS-10-h, PTS-10-i, PTS-10-j, PTS-10-k, PTS-10-l, PTS-10-m | 13 of 13 | U 9 |
 | WP-122 | Queued: | — | — | — |
 | WP-123 | Done | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | 4 of 4 | — |
 | WP-124 | Done | DEV-05-a, DEV-05-c, DEV-05-d, DEV-05-e, NFR-12-h | 5 of 5 | — |
@@ -957,6 +957,19 @@ Test cases and the tests that prove them:
 | PTS-09-k | WP-120 | The board: a child's points list tags a penalty "Penalty" beside its reason; the **Owes** card lists each money penalty still owed with its reason and amount, in board-size text; the rail says "Owes $3"; with nothing owed, or penalties off, no card and no chip | UI | UI `e2e/ui/penalties.spec.ts`: `the board › [PTS-09-k][US-1111] a penalty shows with its reason, and what Maya owes on her screen and in the rail`<br>UI `e2e/ui/penalties.spec.ts`: `the board › [PTS-09-k] points below zero after a penalty: "to earn back" on Maya's screen, "−8" in the rail, nothing past its edge`<br>UI `e2e/ui/penalties.spec.ts`: `the board › [PTS-09-k] with nothing owed, or penalties off, there is no Owes card and no chip`<br>Unit `packages/ui/src/components.test.tsx`: `PointsChip › [PTS-09-k] in a narrow place, a negative balance is "−8" in the same calm tint` |
 | PTS-09-l | WP-120 | The admin app: Settings' Penalties tile and page (the on/off as a switch, the reasons, Add a reason in points or money); Home's **Give a penalty** only while on, nobody chosen for the parent, the amount filled in from the reason and what the board will show; a child's **Penalties** with what they owe, Record paid on each, and the history with Take back on each penalty not taken back; the register's Penalty type | UI | UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l] Settings: Penalties on, its reasons, and Add a reason`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l][US-1111] Home: Give a penalty fills the amount from the reason and says what the board will show`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l][US-1111] Maya’s Penalties: what she owes, Record paid on each, the history with Take back`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l] the points register lists penalties as their own type` |
 | PTS-09-m | WP-120 | On a preview, a parent turns penalties on, adds a reason, gives a money penalty and a points penalty from Home, records part paid and takes one back on the child's page, and the database agrees at each step | E2E | E2E `e2e/tests/penalties.spec.ts`: `[PTS-09-m][US-1111] a parent turns penalties on, adds a reason, gives, records paid and takes back` |
+| PTS-10-a | WP-121 | A parent of the household adds a penalty rule: a name, a reason from the list (its unit), one or more people who earn rewards, what counts (chosen items, a tag, or all their items), start and end dates, an amount per miss and a max, in the reason's unit; a missing or bad field, an end before the start, a start before today, a max below the amount, another household's people, items or tag, or another household's parent is refused; a parent edits it (the change counts from the next day close) | DB | DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] a parent adds a rule in its reason's unit, worked out from its start`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] and changes it`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] the change is kept, with its chores`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] an end before the start is refused`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] a new rule starting before today is refused`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] a max below the amount is refused`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] a rule without a name is refused`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] another household's chore is refused`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] a task is refused (a task is never missed)`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] another household's tag is refused`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] another household's child is refused`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] someone who doesn't earn rewards is refused`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-a] another household's parent cannot add a rule` |
+| PTS-10-b | WP-121 | At day close, each linked chore a rule's person missed on a day between its dates adds the rule's amount: one `penalty` row for the rule, the person and that chore's day; in points also a `penalty` ledger entry "Name, missed Tuesday", by the system; closing again adds nothing more | DB | DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-b] day close adds a penalty for each miss it counts`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-b] Maya's missed folder days and the Dishes nobody did, $1 each, the last only to the max`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-b] each with the rule's name, in money, given by nobody (the system)`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-b][PTS-10-d] a points miss is a penalty entry "Bed by 8, missed Tuesday", by the system, up to the max of 12`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-b] closing again adds nothing`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-b] and nothing is added twice` |
+| PTS-10-c | WP-121 | Nothing is added for a day that was done, skipped or covered, a day the item isn't due for them (a day off, a no-school day), a day before the start or after the end, a task, a chore the rule doesn't link, someone the rule isn't for, or while penalties are off | DB | DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-c] day close adds nothing while penalties are off`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-c] and those days are worked out, not added later`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-c] a day done or skipped adds nothing`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-c] a day covered (someone else did it) adds nothing`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-c] a day the item isn't due for them (a day off) adds nothing`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-c] a day before the start or after the end adds nothing`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-c] someone the rule isn't for (Leo's fish, Leo's Dishes) adds nothing`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-c] a task adds nothing` |
+| PTS-10-d | WP-121 | The max: what the rule has on a person (money owed on it; points it took) never goes over its max; a miss that would pass it adds only what is left, and nothing at the max; once paid down, later misses add again | DB | DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-b][PTS-10-d] a points miss is a penalty entry "Bed by 8, missed Tuesday", by the system, up to the max of 12`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-d] once paid down, a new miss adds again (and a day already added is not added twice)`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-d] up to the max again: $4 owed` |
+| PTS-10-e | WP-121 | Mark done on time (D-151) on a missed day takes back what that miss added (its points given back), once; an ordinary late Mark done does not; Uncheck after Mark done on time adds it again, up to the max | DB | DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-e] a parent marks Leo's Bed by 8 done on time`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-e] what that miss added is taken back, by the parent who marked it`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-e] its points are given back once`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-e] an ordinary late Mark done`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-e] takes nothing back`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-e] Uncheck after Mark done on time`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-e] adds the miss again, up to the max` |
+| PTS-10-f | WP-121 | Record paid on a rule spreads the payment over its misses, oldest first, up to what is owed on it, once on a resend | DB | DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-f] Record paid on a rule lowers what is owed on it`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-f] spread over its misses, oldest first`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-f] a resend records it once`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-f] more than is owed is refused`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-f] a points rule has nothing to pay` |
+| PTS-10-g | WP-121 | Only through the functions; another household's parent can neither add, edit nor read a rule; boards read the misses a rule added, not the rule's settings | DB | DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-g] nobody adds a rule but through save_penalty_rule()`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-g] another household's parent reads no rules`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-g] a board reads the misses a rule added, not the rule` |
+| PTS-10-h | WP-121 | The board's snapshot: what a person owes groups a rule's misses into one line with the rule's name, what is owed and the missed days; a points miss shows in the points list as a penalty with its words; the app reads both | DB, Unit | Unit `apps/web/lib/board.test.ts`: `penalties (WP-120) › [PTS-10-h] reads a rule's misses as one line of what someone owes, with the days still owed`<br>Unit `apps/web/lib/penalty-rules.test.ts`: `penalty rules in words (WP-121) › [PTS-10-h] the board's line for a rule's misses, and a one-time penalty as before`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-h] a rule's misses are one line of what Maya owes: its name, what is owed and the days still owed` |
+| PTS-10-i | WP-121 | The points register lists a rule's points miss as type Penalty, "Name, missed Saturday", with "rule Name" in place of who gave it | DB, Unit | Unit `apps/web/lib/penalty-rules.test.ts`: `penalty rules in words (WP-121) › [PTS-10-i] the register names the rule a miss came from`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-i] the register lists a rule's misses as Penalty, naming the rule` |
+| PTS-10-j | WP-121 | The rule form checked the way the database will check it; a rule's line in words ("Maya · Homework folder home · $1 a missed school day · max $10 · Nov 16 to Jan 31"); its misses on a child's page ("$1 a missed school day … missed Tue and Wed") and in the history ("Folder home, missed", tag Rule); what the database refused, in plain words | Unit | Unit `apps/web/lib/penalty-rules.test.ts`: `penalty rules in words (WP-121) › [PTS-10-j] a rule's line, as the mockup writes it`<br>Unit `apps/web/lib/penalty-rules.test.ts`: `penalty rules in words (WP-121) › [PTS-10-j] what a rule has on each person: owed in money, points taken, or nothing`<br>Unit `apps/web/lib/penalty-rules.test.ts`: `penalty rules in words (WP-121) › [PTS-10-j] the days missed: a weekday this week, a date before it`<br>Unit `apps/web/lib/penalty-rules.test.ts`: `penalty rules in words (WP-121) › [PTS-10-j] a rule's misses on a child's page: grouped by rule, oldest first, only what is owed`<br>Unit `apps/web/lib/penalty-rules.test.ts`: `penalty rules in words (WP-121) › [PTS-10-j] the history: a rule's miss is "Folder home, missed", tagged Rule, given by nobody`<br>Unit `apps/web/lib/penalty-rules.test.ts`: `the rule form (WP-121) › [PTS-10-j] a rule as save_penalty_rule() reads it, in the reason's unit`<br>Unit `apps/web/lib/penalty-rules.test.ts`: `the rule form (WP-121) › [PTS-10-j] refuses what the database would, in plain words` |
+| PTS-10-k | WP-121 | The admin app: Settings › Penalties lists the rules with what each person owes and Add a rule; the rule form (name, reason, for, counts a miss of, the items, starts, ends, each miss adds, max owed, what never adds); a child's Penalties shows a rule's misses with Record paid and its history rows tagged Rule; the register shows a rule's miss | UI | UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-10-k][US-1112] Settings: the penalty rules, each with its line and what it has on each person`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-10-k][US-1112] the rule form: name, reason, for, what counts, dates, each miss and the max`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-10-k][US-1112] Maya’s Penalties: a rule’s misses with Record paid, and its history rows tagged Rule`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-10-k] the points register shows a rule’s miss, naming its rule` |
+| PTS-10-l | WP-121 | The board's Owes card shows a rule's misses on one line, "Folder home: missed Tue and Wed", with what is owed, in board-size text | UI | UI `e2e/ui/penalties.spec.ts`: `the board: penalty rules › [PTS-10-l][US-1112] the Owes card shows a rule's misses on one line, in board-size text` |
+| PTS-10-m | WP-121 | On a preview, a parent adds a rule for a chore; a missed day closes and adds its amount; Mark done on time takes it back; the database agrees at each step | E2E | E2E `e2e/tests/penalty-rules.spec.ts`: `[PTS-10-m][US-1112] a parent adds a rule; a missed day adds to what is owed; Mark done on time takes it back` |
 | PTS-12-a | WP-123 | The board's words for a points entry: points a parent took away read the reason the parent gave ("Left the iPad on the couch"), as points added do; an adjustment with no reason still reads "A parent changed your points" or "From a parent" | Unit | Unit `apps/web/lib/today.test.ts`: `points on the board › [PTS-12-a] points a parent took away show the reason the parent gave, as points added do` |
 | PTS-12-b | WP-123 | The board's snapshot carries the reason with points a parent took away, for an entry posted before the snapshot was read (the reason is stored with each entry, so entries posted before this change show theirs) | DB | DB `supabase/tests/140_points_ledger.test.sql`: `[PTS-12-b] points a parent took away, posted earlier, reach the board with their reason` |
 | PTS-12-c | WP-123 | A child's own screen on the board lists "Left the bike out −5" in their points, next to "Helped carry the shopping +10", and no longer "A parent changed your points" | UI | UI `e2e/ui/today.spec.ts`: `[PTS-12-c][US-1114] the points list says what each was for, the reason for points taken away too` |
@@ -1107,7 +1120,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-1109 | PTS-07 | Gap | — |
 | US-1110 | PTS-08 | Covered | UI 1 |
 | US-1111 | PTS-09 | Covered | UI 3 · E2E 1 |
-| US-1112 | PTS-10 | Not built | — |
+| US-1112 | PTS-10 | Covered | UI 4 · E2E 1 |
 | US-1113 | PTS-11 | Not built | — |
 | US-1114 | PTS-12 | Covered | UI 1 |
 
@@ -1363,7 +1376,7 @@ Unit · 3 tests
 
 #### `apps/web/lib/board.test.ts`
 
-Unit · 23 tests
+Unit · 24 tests
 
 | Test | Names |
 |---|---|
@@ -1390,6 +1403,7 @@ Unit · 23 tests
 | `notify, then refetch › [CAL-05][WP-70] offline, the tries stop: three reads, then the board waits` | CAL-05, WP-70 |
 | `notify, then refetch › ticks on the minute` | — |
 | `penalties (WP-120) › [PTS-09-h] reads a penalty in the points list and what someone owes, in cents` | PTS-09-h, WP-120 |
+| `penalties (WP-120) › [PTS-10-h] reads a rule's misses as one line of what someone owes, with the days still owed` | PTS-10-h, WP-120 |
 
 #### `apps/web/lib/bonus.test.ts`
 
@@ -2248,6 +2262,22 @@ Unit · 8 tests
 | `[PTS-09] penalties in words and money › [PTS-09-j] works out what is owed, and the history newest first` | PTS-09-j |
 | `[PTS-09] penalties in words and money › [PTS-09-j] names a penalty in the ledger, the register and on the board` | PTS-09-j |
 
+#### `apps/web/lib/penalty-rules.test.ts`
+
+Unit · 9 tests
+
+| Test | Names |
+|---|---|
+| `penalty rules in words (WP-121) › [PTS-10-j] a rule's line, as the mockup writes it` | PTS-10-j, WP-121 |
+| `penalty rules in words (WP-121) › [PTS-10-j] what a rule has on each person: owed in money, points taken, or nothing` | PTS-10-j, WP-121 |
+| `penalty rules in words (WP-121) › [PTS-10-j] the days missed: a weekday this week, a date before it` | PTS-10-j, WP-121 |
+| `penalty rules in words (WP-121) › [PTS-10-j] a rule's misses on a child's page: grouped by rule, oldest first, only what is owed` | PTS-10-j, WP-121 |
+| `penalty rules in words (WP-121) › [PTS-10-j] the history: a rule's miss is "Folder home, missed", tagged Rule, given by nobody` | PTS-10-j, WP-121 |
+| `penalty rules in words (WP-121) › [PTS-10-h] the board's line for a rule's misses, and a one-time penalty as before` | PTS-10-h, WP-121 |
+| `penalty rules in words (WP-121) › [PTS-10-i] the register names the rule a miss came from` | PTS-10-i, WP-121 |
+| `the rule form (WP-121) › [PTS-10-j] a rule as save_penalty_rule() reads it, in the reason's unit` | PTS-10-j, WP-121 |
+| `the rule form (WP-121) › [PTS-10-j] refuses what the database would, in plain words` | PTS-10-j, WP-121 |
+
 #### `apps/web/lib/points-register.test.ts`
 
 Unit · 12 tests
@@ -2909,6 +2939,14 @@ E2E · 1 tests
 | Test | Names |
 |---|---|
 | `[PTS-09-m][US-1111] a parent turns penalties on, adds a reason, gives, records paid and takes back` | PTS-09-m, US-1111 |
+
+#### `e2e/tests/penalty-rules.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[PTS-10-m][US-1112] a parent adds a rule; a missed day adds to what is owed; Mark done on time takes it back` | PTS-10-m, US-1112 |
 
 #### `e2e/tests/perfect-periods.spec.ts`
 
@@ -3635,17 +3673,22 @@ UI · 7 tests
 
 #### `e2e/ui/penalties.spec.ts`
 
-UI · 7 tests
+UI · 12 tests
 
 | Test | Names |
 |---|---|
 | `the board › [PTS-09-k][US-1111] a penalty shows with its reason, and what Maya owes on her screen and in the rail` | PTS-09-k, US-1111 |
 | `the board › [PTS-09-k] points below zero after a penalty: "to earn back" on Maya's screen, "−8" in the rail, nothing past its edge` | PTS-09-k |
 | `the board › [PTS-09-k] with nothing owed, or penalties off, there is no Owes card and no chip` | PTS-09-k |
+| `the board: penalty rules › [PTS-10-l][US-1112] the Owes card shows a rule's misses on one line, in board-size text` | PTS-10-l, US-1112 |
 | `the admin app › [PTS-09-l] Settings: Penalties on, its reasons, and Add a reason` | PTS-09-l |
 | `the admin app › [PTS-09-l][US-1111] Home: Give a penalty fills the amount from the reason and says what the board will show` | PTS-09-l, US-1111 |
 | `the admin app › [PTS-09-l][US-1111] Maya’s Penalties: what she owes, Record paid on each, the history with Take back` | PTS-09-l, US-1111 |
 | `the admin app › [PTS-09-l] the points register lists penalties as their own type` | PTS-09-l |
+| `the admin app › [PTS-10-k][US-1112] Settings: the penalty rules, each with its line and what it has on each person` | PTS-10-k, US-1112 |
+| `the admin app › [PTS-10-k][US-1112] the rule form: name, reason, for, what counts, dates, each miss and the max` | PTS-10-k, US-1112 |
+| `the admin app › [PTS-10-k][US-1112] Maya’s Penalties: a rule’s misses with Record paid, and its history rows tagged Rule` | PTS-10-k, US-1112 |
+| `the admin app › [PTS-10-k] the points register shows a rule’s miss, naming its rule` | PTS-10-k |
 
 #### `e2e/ui/points-register.spec.ts`
 
@@ -6507,5 +6550,58 @@ DB · 45 tests
 | `[PTS-09-h] what Leo owes shows on the board, with its reason` | PTS-09-h |
 | `[PTS-09-h] with penalties off, nothing owed shows` | PTS-09-h |
 | `[PTS-09-i] the points register lists penalties as their own type, a take-back included` | PTS-09-i |
+
+#### `supabase/tests/660_penalty_rules.test.sql`
+
+DB · 46 tests
+
+| Test | Names |
+|---|---|
+| `[PTS-10-a] a parent adds a rule in its reason's unit, worked out from its start` | PTS-10-a |
+| `[PTS-10-a] and changes it` | PTS-10-a |
+| `[PTS-10-a] the change is kept, with its chores` | PTS-10-a |
+| `[PTS-10-a] an end before the start is refused` | PTS-10-a |
+| `[PTS-10-a] a new rule starting before today is refused` | PTS-10-a |
+| `[PTS-10-a] a max below the amount is refused` | PTS-10-a |
+| `[PTS-10-a] a rule without a name is refused` | PTS-10-a |
+| `[PTS-10-a] another household's chore is refused` | PTS-10-a |
+| `[PTS-10-a] a task is refused (a task is never missed)` | PTS-10-a |
+| `[PTS-10-a] another household's tag is refused` | PTS-10-a |
+| `[PTS-10-a] another household's child is refused` | PTS-10-a |
+| `[PTS-10-a] someone who doesn't earn rewards is refused` | PTS-10-a |
+| `[PTS-10-a] another household's parent cannot add a rule` | PTS-10-a |
+| `[PTS-10-c] day close adds nothing while penalties are off` | PTS-10-c |
+| `[PTS-10-c] and those days are worked out, not added later` | PTS-10-c |
+| `[PTS-10-b] day close adds a penalty for each miss it counts` | PTS-10-b |
+| `[PTS-10-b] Maya's missed folder days and the Dishes nobody did, $1 each, the last only to the max` | PTS-10-b |
+| `[PTS-10-b] each with the rule's name, in money, given by nobody (the system)` | PTS-10-b |
+| `[PTS-10-b][PTS-10-d] a points miss is a penalty entry "Bed by 8, missed Tuesday", by the system, up to the max of 12` | PTS-10-b, PTS-10-d |
+| `[PTS-10-b] closing again adds nothing` | PTS-10-b |
+| `[PTS-10-b] and nothing is added twice` | PTS-10-b |
+| `[PTS-10-c] a day done or skipped adds nothing` | PTS-10-c |
+| `[PTS-10-c] a day covered (someone else did it) adds nothing` | PTS-10-c |
+| `[PTS-10-c] a day the item isn't due for them (a day off) adds nothing` | PTS-10-c |
+| `[PTS-10-c] a day before the start or after the end adds nothing` | PTS-10-c |
+| `[PTS-10-c] someone the rule isn't for (Leo's fish, Leo's Dishes) adds nothing` | PTS-10-c |
+| `[PTS-10-c] a task adds nothing` | PTS-10-c |
+| `[PTS-10-f] Record paid on a rule lowers what is owed on it` | PTS-10-f |
+| `[PTS-10-f] spread over its misses, oldest first` | PTS-10-f |
+| `[PTS-10-f] a resend records it once` | PTS-10-f |
+| `[PTS-10-f] more than is owed is refused` | PTS-10-f |
+| `[PTS-10-f] a points rule has nothing to pay` | PTS-10-f |
+| `[PTS-10-d] once paid down, a new miss adds again (and a day already added is not added twice)` | PTS-10-d |
+| `[PTS-10-d] up to the max again: $4 owed` | PTS-10-d |
+| `[PTS-10-e] a parent marks Leo's Bed by 8 done on time` | PTS-10-e |
+| `[PTS-10-e] what that miss added is taken back, by the parent who marked it` | PTS-10-e |
+| `[PTS-10-e] its points are given back once` | PTS-10-e |
+| `[PTS-10-e] an ordinary late Mark done` | PTS-10-e |
+| `[PTS-10-e] takes nothing back` | PTS-10-e |
+| `[PTS-10-e] Uncheck after Mark done on time` | PTS-10-e |
+| `[PTS-10-e] adds the miss again, up to the max` | PTS-10-e |
+| `[PTS-10-g] nobody adds a rule but through save_penalty_rule()` | PTS-10-g |
+| `[PTS-10-g] another household's parent reads no rules` | PTS-10-g |
+| `[PTS-10-g] a board reads the misses a rule added, not the rule` | PTS-10-g |
+| `[PTS-10-h] a rule's misses are one line of what Maya owes: its name, what is owed and the days still owed` | PTS-10-h |
+| `[PTS-10-i] the register lists a rule's misses as Penalty, naming the rule` | PTS-10-i |
 
 <!-- /catalogue -->

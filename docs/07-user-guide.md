@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.55: Penalty rules (WP-121, D-157): Settings' **Penalty rules**, the rule form, what never adds, Mark done on time taking a miss back, **Record paid** on a rule, and a rule's misses on the board's **Owes** card and in the register (A6).
 > v0.54: Penalties (WP-120, D-154, D-156): Settings' **Penalties**, the reasons, **Give a penalty** on Home and a child's page, a child's **Penalties** (Record paid, Take back), the board's **Owes** card, and **Penalty** in the register (A6).
 > v0.53: The board shows the reason for points a parent took away, as for points added (WP-123, D-155): A4's **Give or take away points by hand**, B2.3's points list, the points table and the FAQ.
 > v0.52: Mark a chore done on time (WP-117, D-151): **Done on time…** on Today, a child's **Missed or late** and a goal's missed day, with "Marked on time by" (A2, B1.2, B1.6).
@@ -678,7 +679,7 @@ Each bonus on **Bonus points** says how many times it has paid and when last ("P
 
 Turn them on: in **Settings**, choose **Penalties**, then the switch beside **Penalties are off**. They are off for a new family. Turning them off again hides **Give a penalty** and what's owed on the board; the history stays.
 
-![Settings, Penalties on a phone: Penalties are on with its switch; Penalty reasons lists Rude to a sibling (10 points), Screen time after bedtime (20 points), Left bike in the driveway ($1) and Homework folder not home ($2), each with Remove; then Add a reason with Amount, Points or Money, and Add.](guide/img/admin-penalties-settings-phone.jpg "Settings, Penalties, on a phone")
+![Settings, Penalties on a phone: Penalties are on with its switch; Penalty reasons lists Rude to a sibling (10 points), Screen time after bedtime (20 points), Left bike in the driveway ($1) and Homework folder not home ($1, used by 1 rule), each with Remove; then Add a reason with Amount, Points or Money, and Add.](guide/img/admin-penalties-settings-phone.jpg "Settings, Penalties, on a phone")
 
 **Penalty reasons.** What you pick from: each has a name, an amount, and **Points** or **Money**. Under **Add a reason**, type the name, the amount (points, or dollars such as 1.50) and choose **Add**. **Remove** takes a reason off the list; penalties already given with it keep it.
 
@@ -695,11 +696,36 @@ Turn them on: in **Settings**, choose **Penalties**, then the switch beside **Pe
 
 **What a child owes.** On **Members**, open the child, then **Penalties** (folded to "Owes $3" or "Nothing owed"). It lists each money penalty still owed, with **Paid** filled in with what's owed on it: change it for part of it, then **Record paid**. **History** lists every penalty, take-back and payment, newest first, and who did it. **Take back** undoes a penalty given by mistake: in points it gives the points back, in money nothing is owed on it, and the board stops showing it. Nothing is ever edited or deleted.
 
-![Maya's Penalties on a laptop: Maya owes $3; Left bike in the driveway $1 with Paid and Record paid; Homework folder not home $2, $2 of $4 paid, with Record paid; Give a penalty; then History, newest first, with Take back on each penalty not taken back.](guide/img/admin-member-penalties-laptop.jpg "A child's Penalties, on a laptop")
+![Maya's Penalties on a laptop: Maya owes $3; Left bike in the driveway $1 with Paid and Record paid; Folder home $2, $1 a missed school day, missed Tue and Wed, with Record paid; Give a penalty; then History, newest first, with Take back on each penalty not taken back.](guide/img/admin-member-penalties-laptop.jpg "A child's Penalties, on a laptop")
 
 **On the board.** A child's own screen shows each penalty in their points list, tagged **Penalty** with its reason, and an **Owes** card with each money penalty still owed, its reason and the total. Everyone's view shows "Owes $3" under their points in the rail. The points register lists penalties as their own type, **Penalty**.
 
-![Maya's screen on the board with penalties: the rail shows Maya with 32 points and Owes $3; Points lists Penalty Rude to a sibling −10 first; the Owes card says $3: Left bike in the driveway $1, Homework folder not home $2.](guide/img/board-penalties.jpg "Penalties on the board")
+![Maya's screen on the board with penalties: the rail shows Maya with 32 points and Owes $3; Points lists Penalty Rude to a sibling −10 first; the Owes card says $3: Left bike in the driveway $1, Folder home: missed Tue and Wed $2.](guide/img/board-penalties.jpg "Penalties on the board")
+
+#### Penalty rules
+<!-- covers: US-1112 -->
+
+**What this is.** A penalty that adds up by itself each time a chore is missed: "Folder home, $1 a missed school day, max $10". **When.** For a habit you want to count every day, not only when you notice. **How.** Add a rule in **Settings**, **Penalties**; each day a linked chore is missed adds its amount when the day closes.
+
+Add one: in **Settings**, choose **Penalties**, then **Add a rule** under **Penalty rules** (penalties must be on).
+
+1. **Name** it (it fills in from the reason; the board and the child's page use the name).
+2. Choose the **Reason**. It sets **Points** or **Money**, and fills in what each miss adds.
+3. Choose who it's **For** (those who earn rewards).
+4. Choose what **Counts a miss of**: **Chosen items** (tick the chores), **A tag**, or **All their items**. Only chores count; a task is never missed.
+5. Choose when it **Starts** (today or later) and **Ends**.
+6. Check **Each miss adds** and set **Max owed**, then **Save the rule**.
+
+![The rule form on a phone: Name Folder home; Reason Homework folder not home; For with Maya chosen; Counts a miss of with Chosen items and Homework folder home ticked (school days); Starts and Ends; Each miss adds $1, Money; Max owed $10; what never adds; Save the rule.](guide/img/admin-penalty-rule-phone.jpg "A penalty rule, on a phone")
+
+- **What never adds:** a day the chore was skipped or done by someone else, a day off or a no-school day, a day before the start or after the end date, and any day while penalties are off.
+- **The max** is the most the rule has on a child at once: in money, what is owed on it; in points, the points it took. Once it's paid down, new misses add again.
+- **Mark done on time** on a missed day (on **Today** or the child's **Missed or late**) takes back what that day added. **Uncheck** it and the miss counts again.
+- **Edit** changes a rule from the next day close; what it already added stays. To stop a rule, set its end date. Settings lists each rule with what it has on each child ("Maya owes $2", "Leo: 10 of 25 points taken").
+
+![Penalty rules in Settings on a phone: Folder home, Maya · Homework folder home · $1 a missed school day · max $10 · Nov 16 to Jan 31, Maya owes $2, Edit; Bed by 8, Leo · tag Bedtime · 5 points a miss · max 25 points, Nothing owed, Edit; and Add a rule.](guide/img/admin-penalty-rules-phone.jpg "Penalty rules, on a phone")
+
+**What a child owes on a rule.** Under the child's **Penalties**, a rule's misses are one line: its name, what's owed, and the days missed ("missed Tue and Wed"), with **Record paid** for all or part of it (oldest days first). **History** lists each miss ("Folder home, missed", tagged **Rule**) on the day it was for. On the board, the **Owes** card shows it on one line, "Folder home: missed Tue and Wed $2". In points, each miss is taken at once and shows in the points list and the register as a **Penalty** ("Bed by 8, missed Saturday", "rule Bed by 8").
 
 #### Wishes: saving up
 
