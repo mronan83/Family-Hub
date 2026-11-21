@@ -13,6 +13,7 @@ import { RegisterView } from '../../../(admin)/admin/rewards/register-view';
 // [PTS-08] The points register (WP-115) with a made-up family and no database, for the UI suite and the
 // side-by-side with its mockup: the demo family on Tuesday, Oct 27, 2026, its entries filtered here as
 // points_register() filters them. ?theme=evening for Evening; the filters as on the real page.
+// [PTS-09] ?penalties=1 adds the penalties of WP-120's mockup (&type=penalty lists only them).
 export const metadata: Metadata = { title: 'Points register', robots: { index: false } };
 
 const ZONE = 'America/Chicago';
@@ -199,6 +200,41 @@ export default async function DevPointsRegisterPage({
   const f = parseRegisterQuery(params);
   // [CHR-24] ?ontime=1: Leo's latest earn was for a chore Alex marked done on time (WP-117).
   const all = entries();
+  if (params.penalties === '1') {
+    all.unshift(
+      entry(MAYA, TODAY, '18:41', {
+        kind: 'penalty',
+        amount: -10,
+        reason: 'Rude to a sibling',
+        byType: 'admin',
+        by: SAM,
+      }),
+    );
+    all.push(
+      entry(LEO, '2026-10-24', '20:52', {
+        kind: 'penalty',
+        amount: -20,
+        reason: 'Screen time after bedtime',
+        byType: 'admin',
+        by: ALEX,
+      }),
+      entry(MAYA, '2026-10-23', '08:10', {
+        kind: 'penalty',
+        amount: 5,
+        reason: 'Slammed a door',
+        byType: 'admin',
+        by: ALEX,
+      }),
+      entry(MAYA, '2026-10-22', '21:30', {
+        kind: 'penalty',
+        amount: -5,
+        reason: 'Slammed a door',
+        byType: 'admin',
+        by: SAM,
+      }),
+    );
+    all.sort((a, b) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id));
+  }
   if (params.ontime === '1' && all[0])
     all[0] = { ...all[0], onTime: `Marked on time by Alex, Oct 27` };
   const matching = filtered(all, f);

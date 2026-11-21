@@ -233,6 +233,37 @@ select m.household_id, m.id, 'adjustment', 10, 'Helped carry the shopping',
   from public.member m
  where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Leo';
 
+-- [PTS-09] Penalties (WP-120, the approved mockup): on for the demo family, with four reasons. Maya
+-- owes $3 (the bike $1 three days ago; the homework folder $4 two days ago, $2 of it paid yesterday),
+-- and Sam took 10 points from her today for being rude to a sibling. Made up.
+update public.household_settings set penalties_on = true
+ where household_id = '0de00000-0000-4000-8000-000000000001';
+insert into public.penalty_reason (id, household_id, name, unit, amount, created_by, created_at)
+values
+  ('0de00000-0000-4000-8000-0000000ae001', '0de00000-0000-4000-8000-000000000001', 'Rude to a sibling', 'points', 10, '0de00000-0000-4000-8000-0000000000a1', now() - interval '10 days'),
+  ('0de00000-0000-4000-8000-0000000ae002', '0de00000-0000-4000-8000-000000000001', 'Screen time after bedtime', 'points', 20, '0de00000-0000-4000-8000-0000000000a1', now() - interval '10 days' + interval '1 second'),
+  ('0de00000-0000-4000-8000-0000000ae003', '0de00000-0000-4000-8000-000000000001', 'Left bike in the driveway', 'money', 100, '0de00000-0000-4000-8000-0000000000a1', now() - interval '10 days' + interval '2 seconds'),
+  ('0de00000-0000-4000-8000-0000000ae004', '0de00000-0000-4000-8000-000000000001', 'Homework folder not home', 'money', 200, '0de00000-0000-4000-8000-0000000000a1', now() - interval '10 days' + interval '3 seconds');
+insert into public.penalty (id, household_id, member_id, reason_id, reason, unit, amount, given_by, given_at, dedupe_key)
+select x.id::uuid, m.household_id, m.id, x.reason_id::uuid, x.reason, x.unit, x.amount, x.by::uuid, now() - x.ago, 'pen:' || x.id
+  from public.member m
+  cross join (values
+    ('0de00000-0000-4000-8000-0000000af001', '0de00000-0000-4000-8000-0000000ae003', 'Left bike in the driveway', 'money', 100,
+     '0de00000-0000-4000-8000-0000000000a1', interval '3 days'),
+    ('0de00000-0000-4000-8000-0000000af002', '0de00000-0000-4000-8000-0000000ae004', 'Homework folder not home', 'money', 400,
+     '0de00000-0000-4000-8000-0000000000a1', interval '2 days'),
+    ('0de00000-0000-4000-8000-0000000af004', '0de00000-0000-4000-8000-0000000ae001', 'Rude to a sibling', 'points', 10,
+     '0de00000-0000-4000-8000-0000000000a2', interval '1 hour')) x (id, reason_id, reason, unit, amount, by, ago)
+ where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Maya';
+insert into public.penalty_payment (household_id, penalty_id, amount, recorded_by, recorded_at, dedupe_key)
+values ('0de00000-0000-4000-8000-000000000001', '0de00000-0000-4000-8000-0000000af002', 200,
+        '0de00000-0000-4000-8000-0000000000a2', now() - interval '1 day', 'paid:' || '0de00000-0000-4000-8000-0000000af002');
+insert into public.points_ledger (household_id, member_id, entry_type, amount, reason, dedupe_key,
+                                  created_by_type, created_by, created_at, penalty_id)
+select p.household_id, p.member_id, 'penalty', -p.amount, p.reason, 'pen:' || p.id, 'admin', p.given_by, p.given_at, p.id
+  from public.penalty p
+ where p.id = '0de00000-0000-4000-8000-0000000af004';
+
 -- The rewards shop (WP-18): four rewards, and Leo asking the board for "Pick the dinner" this
 -- morning, waiting for a parent.
 insert into public.reward_catalog_item (id, household_id, title, icon, cost_points, stock, weekly_limit, sort_order)

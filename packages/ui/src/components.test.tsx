@@ -73,6 +73,13 @@ describe('PointsChip', () => {
     expect(negative).toContain('−5 to earn back');
     expect(negative).toContain('fw-points--negative');
   });
+
+  it('[PTS-09-k] in a narrow place, a negative balance is "−8" in the same calm tint', () => {
+    const compact = html(<PointsChip points={-8} compact />);
+    expect(compact).toContain('>−8<');
+    expect(compact).not.toContain('to earn back');
+    expect(compact).toContain('fw-points--negative');
+  });
 });
 
 describe('GoalMeter', () => {

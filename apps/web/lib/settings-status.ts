@@ -58,6 +58,11 @@ export function tagsStatus(tags: { archived: boolean }[]): StatusLine {
   return ok(n ? plural(n, 'tag') : 'No tags yet');
 }
 
+/** [PTS-09] Penalties: off, or on with how many reasons (WP-120). */
+export function penaltiesStatus(on: boolean, reasons: number): StatusLine {
+  return ok(on ? `On · ${plural(reasons, 'reason')}` : 'Off');
+}
+
 /** [CHR-15] The signed-in parent's own reminders: off, or on for how many of their devices. */
 export function remindersStatus(
   linked: boolean,

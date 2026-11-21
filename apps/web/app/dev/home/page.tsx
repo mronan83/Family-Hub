@@ -5,6 +5,7 @@ import { type AlertFacts, homeAlerts } from '@/lib/home-alerts';
 import { lunchQuickWords, lunchWeekToOpen } from '@/lib/lunch-list';
 import { groceriesData, homeGroceries } from '../groceries/fixture';
 import { runningLowCount } from '@/lib/grocery-staples';
+import { PENALTY_PEOPLE, PENALTY_REASONS } from '../penalties-fixture';
 
 // [NFR-17][US-109] Home at a glance (WP-57) with the made-up family and no database, for the UI suite
 // and the guide: Alex signed in; two check-offs and a reward request waiting, the Den board quiet,
@@ -15,6 +16,7 @@ import { runningLowCount } from '@/lib/grocery-staples';
 // 2 lb); ?typed= what is typed in its field ("2 lb ground beef", "olive oil", "1 onion"). [MEAL-29]
 // WP-116's brands: ?brand= what is typed in the Brand field, its offers open; ?groceries=added-brand
 // (the line after adding Milk with Kirkland). [MEAL-22] ?asks=1: two grocery asks wait (WP-107).
+// [PTS-09] ?penalties=1: penalties on, Give a penalty under the tiles (WP-120).
 export const metadata: Metadata = { title: 'Home', robots: { index: false } };
 
 const TZ = 'America/New_York';
@@ -35,6 +37,7 @@ export default async function DevHomePage({
     typed?: string;
     brand?: string;
     asks?: string;
+    penalties?: string;
   }>;
 }) {
   const p = await searchParams;
@@ -137,6 +140,15 @@ export default async function DevHomePage({
                 : undefined,
         }}
         notice={p.notice ?? null}
+        penalty={
+          p.penalties
+            ? {
+                people: PENALTY_PEOPLE,
+                reasons: PENALTY_REASONS,
+                requestId: 'd0000000-0000-4000-8000-000000000003',
+              }
+            : null
+        }
         waiting={quiet ? 0 : 2}
         who={{ name: 'Alex', avatarKey: 'owl', color: 'member-1' }}
       />

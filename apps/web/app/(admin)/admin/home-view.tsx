@@ -1,3 +1,5 @@
+import type { PenaltyReason } from '@/lib/penalties';
+import { GivePenaltyForm, type PenaltyPerson } from './penalties/give-form';
 import { Banner, Button, Fold, Icon, type IconName } from '@familywise/ui';
 import Link from 'next/link';
 import type { HomeAlert } from '@/lib/home-alerts';
@@ -46,7 +48,16 @@ export const HOME_NOTICES: Record<string, { kind: 'info' | 'notice'; text: strin
   },
   'no-year': { kind: 'notice', text: 'Today isn’t in a school year. Set one up in School.' },
   failed: { kind: 'notice', text: 'That didn’t save. Try again in a moment.' },
+  // [PTS-09] Give a penalty (WP-120).
+  'penalty-given': { kind: 'info', text: 'Penalty given. It shows on the board with its reason.' },
 };
+
+/** [PTS-09] What Give a penalty on Home needs, while penalties are on (WP-120). */
+export interface PenaltyQuick {
+  people: PenaltyPerson[];
+  reasons: PenaltyReason[];
+  requestId: string;
+}
 
 function Tile({ icon, href, label }: { icon: IconName; href: string; label: string }) {
   return (
@@ -92,6 +103,7 @@ export function HomeView({
   groceries,
   groceriesDev,
   notice,
+  penalty = null,
   waiting,
   who,
 }: {
@@ -107,6 +119,8 @@ export function HomeView({
   /** For the dev page only: Groceries' field typed into, or its line after an Add. */
   groceriesDev?: { typed?: string; added?: QuickAddState['added']; brand?: string };
   notice?: string | null;
+  /** [PTS-09] Give a penalty, while penalties are on (WP-120); none while off. */
+  penalty?: PenaltyQuick | null;
   waiting?: number;
   who?: NavWho | null;
 }) {
@@ -157,6 +171,27 @@ export function HomeView({
           <Tile icon="target" href="/admin/goals/new" label="Add a goal" />
         </ul>
         <ul className="fw-quick fw-quick--cards" aria-label="More quick actions">
+          {/* [PTS-09][US-1111] Give a penalty, open, under the tiles (WP-120, the approved mockup). */}
+          {penalty ? (
+            <li
+              className="fw-quick__card fw-quick__card--full"
+              id="penalties"
+              aria-labelledby="penalty-heading"
+            >
+              <span className="fw-quick__icon fw-quick__icon--penalty">
+                <Icon name="minus-circle" size={24} />
+              </span>
+              <span className="fw-quick__name" id="penalty-heading">
+                Give a penalty
+              </span>
+              <GivePenaltyForm
+                people={penalty.people}
+                reasons={penalty.reasons}
+                requestId={penalty.requestId}
+                back="/admin"
+              />
+            </li>
+          ) : null}
           <GroceriesQuick data={groceries} dev={groceriesDev} />
           <li className="fw-quick__card" aria-labelledby="meal-heading">
             <span className="fw-quick__icon">

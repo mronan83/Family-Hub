@@ -2192,6 +2192,37 @@ html:has(.board) {
   gap: var(--s-4);
   font-size: var(--t-small);
 }
+/* [PTS-09][D-156] Penalties in the calm missed tint, never alarm red (WP-120). */
+.fw-today__neg {
+  color: var(--missed-text);
+}
+.fw-today__penalty-tag {
+  display: inline-block;
+  margin-right: var(--s-3);
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--missed-tint);
+  color: var(--missed-text);
+  /* Board text is at least 28 px (BRD-03): the list's own size. */
+  font-size: var(--t-small);
+  font-weight: 800;
+  line-height: 1.3;
+}
+.fw-today__owed {
+  color: var(--missed-text);
+  font-size: var(--t-heading);
+  font-weight: 800;
+}
+.fw-today__owes-chip {
+  display: inline-flex;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--missed-tint);
+  color: var(--missed-text);
+  font-weight: 800;
+  font-size: var(--t-small);
+  white-space: nowrap;
+}
 .fw-today__empty,
 .fw-today__muted {
   margin: 0;
@@ -8122,4 +8153,173 @@ details:not([open]) > .fw-fold__head .fw-fold__count {
   flex: none;
   margin-top: 1px;
   color: var(--success);
+}
+
+/* [PTS-09] Penalties in the admin app (WP-120, the approved mockup). ------------------------- */
+/* Home's Give a penalty: across the cards, its form under the title. */
+.fw-quick__card--full {
+  grid-column: 1 / -1;
+}
+.fw-quick__card > .fw-form {
+  grid-column: 1 / -1;
+}
+.fw-quick__icon--penalty {
+  background: var(--missed-tint);
+  color: var(--missed-text);
+}
+.fw-penalty__who {
+  gap: var(--s-2);
+}
+.fw-penalty__reason {
+  padding-block: 8px;
+  text-align: left;
+}
+.fw-penalty__reason small {
+  display: block;
+  color: var(--text-soft);
+  font-size: var(--t-small);
+  font-weight: 500;
+}
+.fw-penalty__reason:has(input:checked) small {
+  color: inherit;
+}
+.fw-penalty__amount {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.fw-penalty__amount .fw-input {
+  width: 110px;
+}
+.fw-penalty__preview {
+  margin: 0;
+  padding: 12px 14px;
+  border: var(--border-w) dashed var(--field-edge);
+  border-radius: 12px;
+  font-size: var(--t-small);
+}
+.fw-penalty__preview b,
+.fw-penalty__amt,
+.fw-penalty__owes {
+  color: var(--missed-text);
+}
+.fw-penalty__owes {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+}
+.fw-penalty__amt {
+  white-space: nowrap;
+}
+.fw-penalty__owing {
+  display: grid;
+  gap: var(--s-1);
+  padding: 14px 0;
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-penalty__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.fw-penalty__paid {
+  margin-top: var(--s-2);
+  padding: 14px;
+  border: var(--border-w) solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+}
+.fw-penalty__tag {
+  display: inline-block;
+  padding: 0 8px;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.fw-penalty__sect {
+  margin: var(--s-3) 0 0;
+  color: var(--text-soft);
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.fw-inline-form {
+  display: inline;
+}
+.fw-penalty__add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--s-3);
+}
+.fw-penalty__num .fw-input {
+  width: 110px;
+}
+/* Settings, Penalties: the on/off as a switch beside its heading. */
+.fw-penalty__switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+.fw-penalty__switch h2 {
+  margin: 0;
+}
+.fw-switch {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 32px;
+  padding: 0;
+  border: var(--border-w) solid var(--field-edge);
+  border-radius: var(--r-pill);
+  background: var(--bg);
+  cursor: pointer;
+}
+.fw-switch__knob {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--field-edge);
+  transition: left var(--dur-fast) var(--ease);
+}
+.fw-switch[aria-checked='true'] {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+.fw-switch[aria-checked='true'] .fw-switch__knob {
+  left: 22px;
+  background: var(--on-primary);
+}
+.fw-switch:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fw-switch__knob {
+    transition: none;
+  }
+}
+/* A history row: what happened, then its amount at the right; Take back under the words. */
+.fw-penalty__hrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-1) var(--s-3);
+  align-items: baseline;
+  padding: 10px 0;
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-penalty__hrow .fw-inline-form {
+  display: block;
+}
+.fw-penalty__hrow .fw-inline-form .fw-btn {
+  padding-inline: 0;
 }

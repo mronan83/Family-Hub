@@ -8,7 +8,7 @@ import type { FoldLine } from './setup-facts';
  * A type is the ledger's own, but a bonus a goal paid is a Goal payout, apart from a rule's Bonus.
  */
 export type RegisterKind =
-  'earn' | 'bonus' | 'goal' | 'adjustment' | 'spend' | 'refund' | 'reversal';
+  'earn' | 'bonus' | 'goal' | 'adjustment' | 'spend' | 'refund' | 'reversal' | 'penalty';
 
 /** The types in the order the filter shows them, with their words (the approved mockup's). */
 export const REGISTER_KINDS: { kind: RegisterKind; label: string }[] = [
@@ -19,6 +19,8 @@ export const REGISTER_KINDS: { kind: RegisterKind; label: string }[] = [
   { kind: 'spend', label: 'Spent' },
   { kind: 'refund', label: 'Refunded' },
   { kind: 'reversal', label: 'Reversed' },
+  // [PTS-09] A penalty's points, taken or given back (WP-120).
+  { kind: 'penalty', label: 'Penalty' },
 ];
 
 export const KIND_LABEL = Object.fromEntries(
@@ -188,6 +190,11 @@ export function entryWords(
       return { what: e.reason ?? 'A reward', by: parent ? `approved by ${parent}` : '' };
     case 'refund':
       return { what: e.reason ?? 'A reward', by: parent ? `cancelled by ${parent}` : 'cancelled' };
+    case 'penalty':
+      return {
+        what: e.amount > 0 ? `${e.reason ?? 'A penalty'}, taken back` : (e.reason ?? 'A penalty'),
+        by: `by ${parent ?? 'a parent'}`,
+      };
   }
 }
 
