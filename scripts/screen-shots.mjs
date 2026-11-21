@@ -184,6 +184,7 @@ export const BOARD = [
   ['board-person', '?x=1', 'Maya', 'whole'],
   // [PTS-09] WP-120: Maya's whole screen with a points penalty and what she owes, and the rail's chip.
   ['board-penalties', '?penalties=1', 'Maya', 'whole'],
+  ['board-penalties-below', '?penalties=below', 'Maya', 'whole'],
   ['board-going', '?repeating=going', 'Maya'],
   ['board-missed', '?repeating=missed', 'Maya'],
   ['board-won', '?repeating=won', 'Maya'],

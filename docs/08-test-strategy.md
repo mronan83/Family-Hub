@@ -282,7 +282,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3338** tests: Unit 1041 · DB 1775 · UI 376 · E2E 146. 2815 name at least one ID; 523 name none.
+**3340** tests: Unit 1042 · DB 1775 · UI 377 · E2E 146. 2817 name at least one ID; 523 name none.
 
 | Measure | Count |
 |---|---|
@@ -306,7 +306,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
 | Chores | 144 | 234 | 49 | 35 | 462 |
-| Points | 67 | 155 | 31 | 13 | 266 |
+| Points | 68 | 155 | 32 | 13 | 268 |
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
@@ -317,7 +317,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 205 | 167 | 62 | 18 | 452 |
 | Not named | 58 | 500 | 10 | 1 | 569 |
-| **Total** | **1041** | **1775** | **376** | **146** | **3338** |
+| **Total** | **1042** | **1775** | **377** | **146** | **3340** |
 
 ### 9.3 By requirement
 
@@ -469,7 +469,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-06 | S | Covered | US-1108 | WP-30 | — | U 5 · DB 2 · UI 7 · E2E 2 |
 | PTS-07 | M | Covered | US-1109 | WP-02, WP-04, WP-16 | — | U 2 · DB 15 · E2E 3 |
 | PTS-08 | S | Covered | US-1110 | WP-115 | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | U 12 · DB 17 · UI 5 |
-| PTS-09 | S | Covered | US-1111 | WP-120 | PTS-09-a, PTS-09-b, PTS-09-c, PTS-09-d, PTS-09-e, PTS-09-f, PTS-09-g, PTS-09-h, PTS-09-i, PTS-09-j, PTS-09-k, PTS-09-l, PTS-09-m | U 9 · DB 45 · UI 6 · E2E 1 |
+| PTS-09 | S | Covered | US-1111 | WP-120 | PTS-09-a, PTS-09-b, PTS-09-c, PTS-09-d, PTS-09-e, PTS-09-f, PTS-09-g, PTS-09-h, PTS-09-i, PTS-09-j, PTS-09-k, PTS-09-l, PTS-09-m | U 10 · DB 45 · UI 7 · E2E 1 |
 | PTS-10 | S | Not built | US-1112 | WP-121 | — | — |
 | PTS-11 | S | Not built | US-1113 | WP-122 | — | — |
 | PTS-12 | S | Covered | US-1114 | WP-123 | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | U 1 · DB 1 · UI 2 |
@@ -954,7 +954,7 @@ Test cases and the tests that prove them:
 | PTS-09-h | WP-120 | The board's snapshot: a penalty in the points list with its reason, one taken back left out both ways; what each person owes (cents, with the reason) while penalties are on, and nothing while off; the app reads both | DB, Unit | Unit `apps/web/lib/board.test.ts`: `penalties (WP-120) › [PTS-09-h] reads a penalty in the points list and what someone owes, in cents`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-h] Maya owes nothing now: one paid, one taken back`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-h] the board shows a penalty with its reason, and leaves one taken back out both ways`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-h] what Leo owes shows on the board, with its reason`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-h] with penalties off, nothing owed shows` |
 | PTS-09-i | WP-120 | The points register lists penalties as their own type, Penalty, a take-back included | DB | DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-i] the points register lists penalties as their own type, a take-back included` |
 | PTS-09-j | WP-120 | Money and points in words ($1, $2.50, $1,000; 1 point, 20 points); a typed amount of money in cents; Give a penalty, Record paid and a new reason checked the way the database will check them; what the database refused, in plain words; what is owed and the history newest first; a penalty named in the ledger, the register and on the board | Unit | Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] says money in dollars and points as points`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] reads a typed amount of money in cents`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] checks Give a penalty the way give_penalty() will`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] checks Record paid: up to what is owed`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] checks a new reason`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] says what the database refused, plainly`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] works out what is owed, and the history newest first`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] names a penalty in the ledger, the register and on the board` |
-| PTS-09-k | WP-120 | The board: a child's points list tags a penalty "Penalty" beside its reason; the **Owes** card lists each money penalty still owed with its reason and amount, in board-size text; the rail says "Owes $3"; with nothing owed, or penalties off, no card and no chip | UI | UI `e2e/ui/penalties.spec.ts`: `the board › [PTS-09-k][US-1111] a penalty shows with its reason, and what Maya owes on her screen and in the rail`<br>UI `e2e/ui/penalties.spec.ts`: `the board › [PTS-09-k] with nothing owed, or penalties off, there is no Owes card and no chip` |
+| PTS-09-k | WP-120 | The board: a child's points list tags a penalty "Penalty" beside its reason; the **Owes** card lists each money penalty still owed with its reason and amount, in board-size text; the rail says "Owes $3"; with nothing owed, or penalties off, no card and no chip | UI | UI `e2e/ui/penalties.spec.ts`: `the board › [PTS-09-k][US-1111] a penalty shows with its reason, and what Maya owes on her screen and in the rail`<br>UI `e2e/ui/penalties.spec.ts`: `the board › [PTS-09-k] points below zero after a penalty: "to earn back" on Maya's screen, "−8" in the rail, nothing past its edge`<br>UI `e2e/ui/penalties.spec.ts`: `the board › [PTS-09-k] with nothing owed, or penalties off, there is no Owes card and no chip`<br>Unit `packages/ui/src/components.test.tsx`: `PointsChip › [PTS-09-k] in a narrow place, a negative balance is "−8" in the same calm tint` |
 | PTS-09-l | WP-120 | The admin app: Settings' Penalties tile and page (the on/off as a switch, the reasons, Add a reason in points or money); Home's **Give a penalty** only while on, nobody chosen for the parent, the amount filled in from the reason and what the board will show; a child's **Penalties** with what they owe, Record paid on each, and the history with Take back on each penalty not taken back; the register's Penalty type | UI | UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l] Settings: Penalties on, its reasons, and Add a reason`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l][US-1111] Home: Give a penalty fills the amount from the reason and says what the board will show`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l][US-1111] Maya’s Penalties: what she owes, Record paid on each, the history with Take back`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l] the points register lists penalties as their own type` |
 | PTS-09-m | WP-120 | On a preview, a parent turns penalties on, adds a reason, gives a money penalty and a points penalty from Home, records part paid and takes one back on the child's page, and the database agrees at each step | E2E | E2E `e2e/tests/penalties.spec.ts`: `[PTS-09-m][US-1111] a parent turns penalties on, adds a reason, gives, records paid and takes back` |
 | PTS-12-a | WP-123 | The board's words for a points entry: points a parent took away read the reason the parent gave ("Left the iPad on the couch"), as points added do; an adjustment with no reason still reads "A parent changed your points" or "From a parent" | Unit | Unit `apps/web/lib/today.test.ts`: `points on the board › [PTS-12-a] points a parent took away show the reason the parent gave, as points added do` |
@@ -3635,11 +3635,12 @@ UI · 7 tests
 
 #### `e2e/ui/penalties.spec.ts`
 
-UI · 6 tests
+UI · 7 tests
 
 | Test | Names |
 |---|---|
 | `the board › [PTS-09-k][US-1111] a penalty shows with its reason, and what Maya owes on her screen and in the rail` | PTS-09-k, US-1111 |
+| `the board › [PTS-09-k] points below zero after a penalty: "to earn back" on Maya's screen, "−8" in the rail, nothing past its edge` | PTS-09-k |
 | `the board › [PTS-09-k] with nothing owed, or penalties off, there is no Owes card and no chip` | PTS-09-k |
 | `the admin app › [PTS-09-l] Settings: Penalties on, its reasons, and Add a reason` | PTS-09-l |
 | `the admin app › [PTS-09-l][US-1111] Home: Give a penalty fills the amount from the reason and says what the board will show` | PTS-09-l, US-1111 |
@@ -3951,7 +3952,7 @@ Unit · 3 tests
 
 #### `packages/ui/src/components.test.tsx`
 
-Unit · 15 tests
+Unit · 16 tests
 
 | Test | Names |
 |---|---|
@@ -3962,6 +3963,7 @@ Unit · 15 tests
 | `ChoreTile › [NFR-11] titles sit one level below the heading they are under` | NFR-11 |
 | `ChoreTile › [NFR-13] uses admin words in admin views` | NFR-13 |
 | `PointsChip › [NFR-13] shows a balance, a signed award, and a calm negative balance` | NFR-13 |
+| `PointsChip › [PTS-09-k] in a narrow place, a negative balance is "−8" in the same calm tint` | PTS-09-k |
 | `GoalMeter › [NFR-13] always writes the count and percentage, clamped to 0–100` | NFR-13 |
 | `Avatar, Banner, Button › [NFR-13] avatar shows the character, or initials on the member color` | NFR-13 |
 | `Avatar, Banner, Button › [NFR-13] banners pair an icon with words and announce politely` | NFR-13 |

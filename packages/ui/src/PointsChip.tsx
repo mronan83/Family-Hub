@@ -7,12 +7,23 @@ export interface PointsChipProps {
   /** Show a sign, as on a tile ("+5"), rather than a balance ("120"). */
   signed?: boolean;
   size?: 'board' | 'admin';
+  /**
+   * [PTS-09] A narrow place (the board's rail): a negative balance as "−8" in the same calm tint,
+   * without "to earn back", which the person's own screen says (WP-120).
+   */
+  compact?: boolean;
 }
 
-export function PointsChip({ points, signed, size = 'board' }: PointsChipProps) {
+export function PointsChip({ points, signed, size = 'board', compact = false }: PointsChipProps) {
   const negative = points < 0;
   const value = Math.abs(points).toLocaleString('en-US');
-  const text = negative ? `−${value} to earn back` : signed ? `+${value}` : value;
+  const text = negative
+    ? compact
+      ? `−${value}`
+      : `−${value} to earn back`
+    : signed
+      ? `+${value}`
+      : value;
   return (
     <span className={`fw-points${negative ? ' fw-points--negative' : ''}`} data-size={size}>
       <Icon name="star" size={size === 'board' ? 36 : 20} />

@@ -2203,10 +2203,10 @@ html:has(.board) {
   border-radius: var(--r-pill);
   background: var(--missed-tint);
   color: var(--missed-text);
-  font-size: 0.75em;
+  /* Board text is at least 28 px (BRD-03): the list's own size. */
+  font-size: var(--t-small);
   font-weight: 800;
-  line-height: 1.45;
-  vertical-align: 0.1em;
+  line-height: 1.3;
 }
 .fw-today__owed {
   color: var(--missed-text);
@@ -2220,7 +2220,7 @@ html:has(.board) {
   background: var(--missed-tint);
   color: var(--missed-text);
   font-weight: 800;
-  font-size: 0.85em;
+  font-size: var(--t-small);
   white-space: nowrap;
 }
 .fw-today__empty,

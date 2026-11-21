@@ -1142,7 +1142,7 @@ export function Today({
                   data-pill-balance={t.balance(m)}
                   aria-hidden
                 >
-                  <PointsChip points={t.balance(m)} />
+                  <PointsChip points={t.balance(m)} compact />
                 </span>
               ) : null}
               {/* [PTS-09][D-156] What they owe, in sight from everyone's view (WP-120). */}

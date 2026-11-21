@@ -40,8 +40,33 @@ test.describe('the board', () => {
       .first()
       .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
     expect(size, `the Owes card's text is ${size}px`).toBeGreaterThanOrEqual(28);
+    // The tag and the rail's chip are board text too.
+    for (const el of [
+      points.first().locator('.fw-today__penalty-tag'),
+      people(page).locator('[data-owes]'),
+    ]) {
+      const px = await el.evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+      expect(px, `the penalty's tag or chip is ${px}px`).toBeGreaterThanOrEqual(28);
+    }
     const axe = await new AxeBuilder({ page }).include('.fw-today__owes').analyze();
     expect(axe.violations.map((v) => v.id)).toEqual([]);
+  });
+
+  test('[PTS-09-k] points below zero after a penalty: "to earn back" on Maya\'s screen, "−8" in the rail, nothing past its edge', async ({
+    page,
+  }) => {
+    await open(page, '/dev/board?penalties=below');
+    const pill = people(page).locator('[data-pill-balance="-8"]');
+    await expect(pill).toHaveText('−8');
+    const rail = await people(page).boundingBox();
+    const box = await pill.boundingBox();
+    expect(box!.x + box!.width, "the rail's chip stays inside the rail").toBeLessThanOrEqual(
+      rail!.x + rail!.width,
+    );
+    await people(page).getByRole('button', { name: 'Maya', exact: true }).click();
+    await expect(
+      page.locator('.fw-today__me, main').getByText('−8 to earn back').first(),
+    ).toBeVisible();
   });
 
   test('[PTS-09-k] with nothing owed, or penalties off, there is no Owes card and no chip', async ({
