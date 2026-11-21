@@ -2563,6 +2563,24 @@ Sizes are relative effort for a single builder with Claude Code, not commitments
 - Added at the owner's request on 15 November (the owner's words are under WP-120). Recorded only; not built.
 - **What it is (D-154):** a penalty rule for one or more people, a tag, or chosen items, with a start and an end date, an amount per miss (points or money) and a max. When a day closes, each linked item missed by the person adds the amount to what they owe on that penalty, up to the max. Our daughter's case: "Folder home, $1 a missed school day", linked to the chore "Homework folder home".
 - **What doesn't accrue (confirmed by the owner, 15 November):** a day the item was skipped or covered, a day off or a no-school day, a day before the start or after the end date. A parent's **Mark done on time** (WP-117, D-151) on a missed item takes back what that miss added.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| PTS-10-a | A parent of the household adds a penalty rule: a name, a reason from the list (its unit), one or more people who earn rewards, what counts (chosen items, a tag, or all their items), start and end dates, an amount per miss and a max, in the reason's unit; a missing or bad field, an end before the start, a start before today, a max below the amount, another household's people, items or tag, or another household's parent is refused; a parent edits it (the change counts from the next day close) | DB |
+| PTS-10-b | At day close, each linked chore a rule's person missed on a day between its dates adds the rule's amount: one `penalty` row for the rule, the person and that chore's day; in points also a `penalty` ledger entry "Name, missed Tuesday", by the system; closing again adds nothing more | DB |
+| PTS-10-c | Nothing is added for a day that was done, skipped or covered, a day the item isn't due for them (a day off, a no-school day), a day before the start or after the end, a task, a chore the rule doesn't link, someone the rule isn't for, or while penalties are off | DB |
+| PTS-10-d | The max: what the rule has on a person (money owed on it; points it took) never goes over its max; a miss that would pass it adds only what is left, and nothing at the max; once paid down, later misses add again | DB |
+| PTS-10-e | Mark done on time (D-151) on a missed day takes back what that miss added (its points given back), once; an ordinary late Mark done does not; Uncheck after Mark done on time adds it again, up to the max | DB |
+| PTS-10-f | Record paid on a rule spreads the payment over its misses, oldest first, up to what is owed on it, once on a resend | DB |
+| PTS-10-g | Only through the functions; another household's parent can neither add, edit nor read a rule; boards read the misses a rule added, not the rule's settings | DB |
+| PTS-10-h | The board's snapshot: what a person owes groups a rule's misses into one line with the rule's name, what is owed and the missed days; a points miss shows in the points list as a penalty with its words; the app reads both | DB, Unit |
+| PTS-10-i | The points register lists a rule's points miss as type Penalty, "Name, missed Saturday", with "rule Name" in place of who gave it | DB, Unit |
+| PTS-10-j | The rule form checked the way the database will check it; a rule's line in words ("Maya · Homework folder home · $1 a missed school day · max $10 · Nov 16 to Jan 31"); its misses on a child's page ("$1 a missed school day … missed Tue and Wed") and in the history ("Folder home, missed", tag Rule); what the database refused, in plain words | Unit |
+| PTS-10-k | The admin app: Settings › Penalties lists the rules with what each person owes and Add a rule; the rule form (name, reason, for, counts a miss of, the items, starts, ends, each miss adds, max owed, what never adds); a child's Penalties shows a rule's misses with Record paid and its history rows tagged Rule; the register shows a rule's miss | UI |
+| PTS-10-l | The board's Owes card shows a rule's misses on one line, "Folder home: missed Tue and Wed", with what is owed, in board-size text | UI |
+| PTS-10-m | On a preview, a parent adds a rule for a chore; a missed day closes and adds its amount; Mark done on time takes it back; the database agrees at each step | E2E |
+
 - **Done when:** the mockup (with WP-120's) is approved; the item's test cases are written here (D-107) and each has a test; the side-by-side (D-127) is in the PR; the fast checks are green.
 
 ### WP-122 — Penalties paid back through a goal or reward
