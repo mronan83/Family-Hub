@@ -13,7 +13,8 @@ import { RegisterView } from '../../../(admin)/admin/rewards/register-view';
 // [PTS-08] The points register (WP-115) with a made-up family and no database, for the UI suite and the
 // side-by-side with its mockup: the demo family on Tuesday, Oct 27, 2026, its entries filtered here as
 // points_register() filters them. ?theme=evening for Evening; the filters as on the real page.
-// [PTS-09] ?penalties=1 adds the penalties of WP-120's mockup (&type=penalty lists only them).
+// [PTS-09] ?penalties=1 adds the penalties of WP-120's mockup (&type=penalty lists only them), and
+// [PTS-10] a penalty rule's miss (WP-121).
 export const metadata: Metadata = { title: 'Points register', robots: { index: false } };
 
 const ZONE = 'America/Chicago';
@@ -224,6 +225,15 @@ export default async function DevPointsRegisterPage({
         reason: 'Slammed a door',
         byType: 'admin',
         by: ALEX,
+      }),
+      // [PTS-10] A rule's miss (WP-121): Leo missed Bed by 8 on Saturday; day close took 5 points.
+      entry(LEO, '2026-10-25', '01:05', {
+        kind: 'penalty',
+        amount: -5,
+        reason: 'Bed by 8, missed Saturday',
+        byType: 'system',
+        by: null,
+        penaltyRule: 'Bed by 8',
       }),
       entry(MAYA, '2026-10-22', '21:30', {
         kind: 'penalty',

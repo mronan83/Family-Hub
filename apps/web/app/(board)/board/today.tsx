@@ -2,6 +2,7 @@
 
 import { Avatar, Button, ChoreTile, GoalMeter, Icon, PointsChip } from '@familywise/ui';
 import { money, owedTotal } from '@/lib/penalties';
+import { owedLine } from '@/lib/penalty-rules';
 import {
   type ReactNode,
   useCallback,
@@ -1337,8 +1338,9 @@ export function Today({
                       aria-label={`What ${member.displayName} owes`}
                     >
                       {member.owes.map((o) => (
-                        <li key={o.id}>
-                          <span>{o.reason}</span>
+                        <li key={o.id} data-rule={o.rule ? 'true' : undefined}>
+                          {/* [PTS-10] A rule's misses on one line: "Folder home: missed Tue and Wed". */}
+                          <span>{owedLine(o, today)}</span>
                           <strong className="fw-today__neg">{money(o.owed)}</strong>
                         </li>
                       ))}

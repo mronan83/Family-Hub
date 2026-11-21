@@ -24,6 +24,8 @@ interface RawEntry {
   points_rule_id: string | null;
   created_by_type: RegisterEntry['byType'];
   created_by: string | null;
+  /** [PTS-10] The penalty rule a penalty entry came from (WP-121). */
+  penalty_rule?: string | null;
 }
 
 const toEntry = (r: RawEntry): RegisterEntry & { occurrenceId: string | null } => ({
@@ -40,6 +42,7 @@ const toEntry = (r: RawEntry): RegisterEntry & { occurrenceId: string | null } =
   ruleId: r.points_rule_id,
   byType: r.created_by_type,
   by: r.created_by,
+  penaltyRule: r.penalty_rule ?? null,
   occurrenceId: r.occurrence_id,
 });
 

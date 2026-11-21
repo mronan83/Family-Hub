@@ -11,7 +11,7 @@ import { loadCheckOffs, type OnTimeParams, onTimeRow } from '../../on-time';
 import { loadMemberChores } from '../../today/data';
 import { loadAdmins, loadMembers, loadPoints } from '../data';
 import { MemberView } from '../view';
-import { loadMemberPenalties, loadPenaltySettings } from '../../penalties/data';
+import { loadMemberPenalties, loadPenaltyRules, loadPenaltySettings } from '../../penalties/data';
 import { MemberPenalties } from '../../penalties/member-penalties';
 
 export const metadata: Metadata = { title: 'Edit member' };
@@ -42,10 +42,11 @@ export default async function EditMemberPage({
   ]);
   const member = members.find((m) => m.id === id);
   if (!member) notFound();
-  const [points, penaltySettings, memberPenalties] = await Promise.all([
+  const [points, penaltySettings, memberPenalties, penaltyRules] = await Promise.all([
     loadPoints(db!, member.id),
     loadPenaltySettings(db!, household.id),
     loadMemberPenalties(db!, member.id),
+    loadPenaltyRules(db!, household.id),
   ]);
   const linkedElsewhere = new Set(
     members.filter((m) => m.id !== id && m.userId).map((m) => m.userId),
@@ -136,6 +137,7 @@ export default async function EditMemberPage({
             today={today}
             notice={query.penalty ?? null}
             open={Boolean(query.penalty) || query.open === 'penalties'}
+            rules={penaltyRules}
           />
         ) : null
       }

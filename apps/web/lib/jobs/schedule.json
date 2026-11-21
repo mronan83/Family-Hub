@@ -20,7 +20,7 @@
       "kind": "http",
       "cron": "4 * * * *",
       "everyMinutes": 60,
-      "purpose": "Finalizes each household's past routines once its local day has ended: those not done become missed; tasks carry over (WP-10)."
+      "purpose": "Finalizes each household's past routines once its local day has ended: those not done become missed; tasks carry over (WP-10). Then works out its penalty rules for the days that closed (WP-121)."
     },
     {
       "name": "status_check",

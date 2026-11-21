@@ -8308,6 +8308,60 @@ details:not([open]) > .fw-fold__head .fw-fold__count {
     transition: none;
   }
 }
+/* [PTS-10] Penalty rules (WP-121, the approved mockup): a rule's line of what it has on each person,
+   in the penalty's plum; the rule form's items, each a plain checkbox row; the unit, shown as the
+   reason sets it; the list of what never adds. */
+.fw-penalty__status {
+  color: var(--missed-text);
+  font-weight: 600;
+}
+.fw-rule__chip {
+  gap: 6px;
+  padding-left: 8px;
+}
+.fw-rule__items {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--s-2);
+}
+.fw-check {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: var(--touch);
+  cursor: pointer;
+}
+.fw-check input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--primary);
+  flex: none;
+}
+.fw-seg__item[data-on='true'] {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.fw-seg__item[data-on] {
+  cursor: default;
+}
+.fw-rule__end {
+  display: grid;
+  gap: var(--s-2);
+  justify-items: start;
+  padding-top: var(--s-3);
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-rule__end:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+.fw-rule__never {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-soft);
+}
 /* A history row: what happened, then its amount at the right; Take back under the words. */
 .fw-penalty__hrow {
   display: grid;

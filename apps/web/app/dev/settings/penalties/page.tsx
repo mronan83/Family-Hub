@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { PenaltySettingsView } from '../../../(admin)/admin/settings/penalties/view';
-import { PENALTY_REASONS } from '../../penalties-fixture';
+import { PENALTY_PEOPLE, PENALTY_REASONS, penaltyRules } from '../../penalties-fixture';
 
 // [PTS-09] Settings, Penalties (WP-120) with the made-up family and no database, for the UI suite and
-// the side-by-side: penalties on with four reasons. ?state=off for a new family's (off, no reasons);
+// the side-by-side: penalties on with four reasons, and [PTS-10] the two penalty rules (WP-121). ?state=off for a new family's (off, no reasons);
 // ?theme=evening; ?notice= one of its notices.
 export const metadata: Metadata = { title: 'Penalties', robots: { index: false } };
 
@@ -19,6 +19,8 @@ export default async function DevPenaltySettingsPage({
       <PenaltySettingsView
         on={!off}
         reasons={off ? [] : PENALTY_REASONS}
+        rules={off ? [] : penaltyRules('2026-11-19')}
+        names={Object.fromEntries(PENALTY_PEOPLE.map((m) => [m.id, m.displayName]))}
         notice={p.notice ?? null}
         waiting={2}
         who={{ name: 'Alex', avatarKey: 'owl', color: 'member-1' }}

@@ -59,6 +59,8 @@ export interface RegisterEntry {
   by: string | null;
   /** [CHR-24] An earn for a chore a parent marked done on time: "Marked on time by Alex, Nov 13". */
   onTime?: string | null;
+  /** [PTS-10] The penalty rule a penalty entry came from: "rule Bed by 8" (WP-121). */
+  penaltyRule?: string | null;
 }
 
 export interface RegisterFilters {
@@ -191,6 +193,14 @@ export function entryWords(
     case 'refund':
       return { what: e.reason ?? 'A reward', by: parent ? `cancelled by ${parent}` : 'cancelled' };
     case 'penalty':
+      // [PTS-10] A rule's miss (WP-121): "Bed by 8, missed Saturday", from "rule Bed by 8"; a Mark done
+      // on time that took it back already says so in its words.
+      if (e.penaltyRule) {
+        return {
+          what: e.reason ?? e.penaltyRule,
+          by: parent ? `rule ${e.penaltyRule} · by ${parent}` : `rule ${e.penaltyRule}`,
+        };
+      }
       return {
         what: e.amount > 0 ? `${e.reason ?? 'A penalty'}, taken back` : (e.reason ?? 'A penalty'),
         by: `by ${parent ?? 'a parent'}`,
