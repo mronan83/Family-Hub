@@ -8315,6 +8315,10 @@ details:not([open]) > .fw-fold__head .fw-fold__count {
   color: var(--missed-text);
   font-weight: 600;
 }
+.fw-rule__chip {
+  gap: 6px;
+  padding-left: 8px;
+}
 .fw-rule__items {
   display: flex;
   flex-direction: column;

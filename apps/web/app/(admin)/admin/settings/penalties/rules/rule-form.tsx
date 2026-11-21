@@ -124,10 +124,11 @@ export function RuleForm({
 
       <fieldset className="fw-field fw-fieldset">
         <legend className="fw-field__label">For</legend>
-        <div className="fw-choices">
+        <div className="fw-seg">
           {people.map((p) => (
-            <label key={p.id} className="fw-choice">
+            <label key={p.id} className="fw-seg__item fw-rule__chip">
               <input
+                className="fw-seg__input"
                 type="checkbox"
                 name="memberId"
                 value={p.id}
@@ -138,7 +139,7 @@ export function RuleForm({
                 name={p.displayName}
                 avatarKey={p.avatarKey}
                 color={p.color}
-                size={32}
+                size={26}
                 decorative
               />
               {p.displayName}
@@ -154,10 +155,11 @@ export function RuleForm({
 
       <fieldset className="fw-field fw-fieldset">
         <legend className="fw-field__label">Counts a miss of</legend>
-        <div className="fw-choices">
+        <div className="fw-seg">
           {SCOPES.map((s) => (
-            <label key={s.scope} className="fw-choice">
+            <label key={s.scope} className="fw-seg__item">
               <input
+                className="fw-seg__input"
                 type="radio"
                 name="scope"
                 value={s.scope}
