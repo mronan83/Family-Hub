@@ -57,7 +57,8 @@ export function RuleView({
           chores={chores}
           tags={tags}
           today={today}
-          on={on && !stopped}
+          on={on}
+          stopped={Boolean(stopped)}
         />
       </section>
       {/* [PTS-10] Stop now, and Remove while the rule has added nothing (the owner, 21 November). */}

@@ -37,6 +37,7 @@ export function RuleForm({
   tags,
   today,
   on,
+  stopped = false,
 }: {
   rule: PenaltyRule | null;
   reasons: PenaltyReason[];
@@ -45,6 +46,8 @@ export function RuleForm({
   tags: { id: string; name: string }[];
   today: string;
   on: boolean;
+  /** A stopped rule: the page's banner says why it can't be saved, so the form says nothing more. */
+  stopped?: boolean;
 }) {
   const [state, onSubmit, pending] = useFormAction(saveRule, {} as FormState);
   const [reasonId, setReasonId] = useState(rule?.reasonId ?? reasons[0]?.id ?? '');
@@ -302,10 +305,12 @@ export function RuleForm({
         <li>After the end date nothing is added; what’s owed stays until it’s paid.</li>
       </ul>
 
-      {!on ? <Banner kind="notice">Penalties are off. Turn them on to save a rule.</Banner> : null}
+      {!on && !stopped ? (
+        <Banner kind="notice">Penalties are off. Turn them on to save a rule.</Banner>
+      ) : null}
       {state.message ? <Banner kind="notice">{state.message}</Banner> : null}
       <div className="fw-actions">
-        <Button type="submit" disabled={pending || !on} icon="check">
+        <Button type="submit" disabled={pending || !on || stopped} icon="check">
           Save the rule
         </Button>
         <Link href="/admin/settings/penalties#rules">Cancel</Link>

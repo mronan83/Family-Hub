@@ -327,5 +327,7 @@ test.describe('the admin app', () => {
     await expect(page.getByText(/^Stopped Nov 19\. It adds nothing more/)).toBeVisible();
     await expect(page.getByRole('region', { name: 'Stop or remove' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Save the rule' })).toBeDisabled();
+    // A stopped rule says why it can't be saved once, not that penalties are off.
+    await expect(page.getByText('Penalties are off', { exact: false })).toHaveCount(0);
   });
 });
