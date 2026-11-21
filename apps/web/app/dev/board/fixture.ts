@@ -257,6 +257,7 @@ export function fixtureSnapshot(
         available: 17,
         requests: [],
         limited: [],
+        owes: null,
       },
       {
         id: MAYA,
@@ -306,6 +307,7 @@ export function fixtureSnapshot(
           },
         ],
         limited: ['r-dinner'],
+        owes: null,
       },
       {
         id: ALEX,
@@ -320,6 +322,7 @@ export function fixtureSnapshot(
         available: null,
         requests: [],
         limited: [],
+        owes: null,
       },
       {
         id: SAM,
@@ -334,6 +337,7 @@ export function fixtureSnapshot(
         available: null,
         requests: [],
         limited: [],
+        owes: null,
       },
     ],
     occurrences: [
@@ -705,6 +709,43 @@ export function withRepeating(
 }
 
 /** [RWD-08] The same family the moment Leo reaches his goal: the board celebrates it (WP-20). */
+/**
+ * [PTS-09] Penalties on (WP-120, the approved mockup): Sam took 10 points from Maya for "Rude to a
+ * sibling" today, and Maya owes $3 on two money penalties, oldest first.
+ */
+export function withPenalties(s: BoardSnapshot, now: Date): BoardSnapshot {
+  return {
+    ...s,
+    members: s.members.map((m) =>
+      m.id === MAYA && m.points
+        ? {
+            ...m,
+            points: {
+              balance: m.points.balance - 10,
+              recent: [
+                {
+                  id: 'p-pen',
+                  type: 'penalty' as const,
+                  amount: -10,
+                  at: now.toISOString(),
+                  label: 'Rude to a sibling',
+                },
+                ...m.points.recent,
+              ].slice(0, 5),
+            },
+            available: (m.available ?? 0) - 10,
+            owes: [
+              { id: 'pen-bike', reason: 'Left bike in the driveway', owed: 100 },
+              { id: 'pen-folder', reason: 'Homework folder not home', owed: 200 },
+            ],
+          }
+        : m.points
+          ? { ...m, owes: [] }
+          : m,
+    ),
+  };
+}
+
 export function reachedBike(s: BoardSnapshot, now: Date): BoardSnapshot {
   return {
     ...s,

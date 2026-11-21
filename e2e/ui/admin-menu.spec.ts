@@ -8,7 +8,16 @@ import { expect, test, type Page } from './test';
 // how it stands; a page it holds marks Settings and has the way back.
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Admin' });
-const SETTINGS = ['Family options', 'School', 'Calendars', 'Boards', 'Tags', 'Reminders', 'Health'];
+const SETTINGS = [
+  'Family options',
+  'School',
+  'Calendars',
+  'Boards',
+  'Tags',
+  'Penalties',
+  'Reminders',
+  'Health',
+];
 
 async function contrastOk(page: Page) {
   const { violations } = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze();

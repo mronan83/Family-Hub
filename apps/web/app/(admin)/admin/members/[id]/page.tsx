@@ -11,6 +11,8 @@ import { loadCheckOffs, type OnTimeParams, onTimeRow } from '../../on-time';
 import { loadMemberChores } from '../../today/data';
 import { loadAdmins, loadMembers, loadPoints } from '../data';
 import { MemberView } from '../view';
+import { loadMemberPenalties, loadPenaltySettings } from '../../penalties/data';
+import { MemberPenalties } from '../../penalties/member-penalties';
 
 export const metadata: Metadata = { title: 'Edit member' };
 
@@ -20,7 +22,13 @@ export default async function EditMemberPage({
 }: {
   params: Promise<{ id: string }>;
   searchParams: Promise<
-    { adjusted?: string; did?: string; error?: string; open?: string } & OnTimeParams
+    {
+      adjusted?: string;
+      did?: string;
+      error?: string;
+      open?: string;
+      penalty?: string;
+    } & OnTimeParams
   >;
 }) {
   const { id } = await params;
@@ -34,7 +42,11 @@ export default async function EditMemberPage({
   ]);
   const member = members.find((m) => m.id === id);
   if (!member) notFound();
-  const points = await loadPoints(db!, member.id);
+  const [points, penaltySettings, memberPenalties] = await Promise.all([
+    loadPoints(db!, member.id),
+    loadPenaltySettings(db!, household.id),
+    loadMemberPenalties(db!, member.id),
+  ]);
   const linkedElsewhere = new Set(
     members.filter((m) => m.id !== id && m.userId).map((m) => m.userId),
   );
@@ -90,6 +102,10 @@ export default async function EditMemberPage({
           member.displayName,
         ])
       : null;
+  const requestId = randomUUID();
+  // [PTS-09] Penalties (WP-120): while they're on, for someone who earns rewards, or anyone given one.
+  const showPenalties =
+    memberPenalties.penalties.length > 0 || (penaltySettings.on && member.earnsRewards);
   return (
     <MemberView
       member={member}
@@ -104,7 +120,25 @@ export default async function EditMemberPage({
       today={today}
       adjusted={Number(query.adjusted)}
       pointsOpen={memberOpen(query).points}
-      requestId={randomUUID()}
+      requestId={requestId}
+      penalties={
+        showPenalties ? (
+          <MemberPenalties
+            person={member}
+            on={penaltySettings.on}
+            canGive={member.earnsRewards && !member.archivedAt}
+            penalties={memberPenalties.penalties}
+            payments={memberPenalties.payments}
+            reasons={penaltySettings.reasons}
+            requestId={requestId}
+            adminName={adminName}
+            timezone={household.timezone}
+            today={today}
+            notice={query.penalty ?? null}
+            open={Boolean(query.penalty) || query.open === 'penalties'}
+          />
+        ) : null
+      }
       late={
         late
           ? {

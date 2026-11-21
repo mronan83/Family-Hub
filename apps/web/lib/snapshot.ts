@@ -235,6 +235,18 @@ export interface BoardMember {
   requests: BoardRequest[];
   /** [PTS-04] The rewards they've asked for as often as allowed this week (WP-20). */
   limited: string[];
+  /**
+   * [PTS-09][D-156] While the household's penalties are on, each money penalty they still owe on,
+   * oldest first (WP-120); null while penalties are off or for someone who doesn't earn rewards.
+   */
+  owes: BoardOwed[] | null;
+}
+
+/** [PTS-09] A money penalty with something still owed: its reason and what is owed, in cents. */
+export interface BoardOwed {
+  id: string;
+  reason: string;
+  owed: number;
 }
 
 /** The run going as of the last closed day, and the best good run (streak_segment). */
@@ -260,6 +272,7 @@ const ENTRY_TYPES: readonly LedgerEntryType[] = [
   'spend',
   'refund',
   'adjustment',
+  'penalty',
 ];
 
 const STATUSES: readonly OccurrenceStatus[] = [
@@ -279,6 +292,16 @@ const str = (o: Json, k: string): string => {
   if (typeof v !== 'string') throw new Error(`snapshot: ${k} is not text`);
   return v;
 };
+
+/** [PTS-09] What a member owes; a snapshot from before WP-120 has none, which reads as off. */
+function readOwes(o: unknown): BoardOwed[] | null {
+  if (!Array.isArray(o)) return null;
+  return o.filter(isObject).map((x) => ({
+    id: str(x, 'id'),
+    reason: str(x, 'reason'),
+    owed: Number(x.owed),
+  }));
+}
 
 function readPoints(p: unknown): BoardPoints | null {
   if (!isObject(p)) return null;
@@ -690,6 +713,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
               : null,
         requests: readRequests(m.requests),
         limited: ids(m.limited),
+        owes: readOwes(m.owes),
       };
     }),
     // A snapshot from before WP-11 (an older database) has no items.

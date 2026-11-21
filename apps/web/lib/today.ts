@@ -213,5 +213,8 @@ export function boardActivity(e: Pick<LedgerEntry, 'type' | 'amount' | 'label'>)
       return e.label ?? 'Spent';
     case 'refund':
       return e.label ?? 'Points back';
+    // [PTS-09][D-154] A penalty shows its reason; the board tags it "Penalty" beside it.
+    case 'penalty':
+      return e.label ?? 'Penalty';
   }
 }

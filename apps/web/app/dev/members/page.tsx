@@ -5,13 +5,22 @@ import type { LedgerEntry } from '@/lib/points';
 import { memberOpen } from '@/lib/reward-facts';
 import type { DayItem } from '@/lib/admin-day';
 import { type CheckOff, missedOrLate } from '@/lib/on-time';
+import { MemberPenalties } from '../../(admin)/admin/penalties/member-penalties';
+import {
+  mayaPenalties,
+  PENALTY_ADMINS,
+  PENALTY_PEOPLE,
+  PENALTY_REASONS,
+} from '../penalties-fixture';
 
 // [ACC-04][PTS-01][NFR-18] Members and a member's page (WP-95) with the made-up family and no
 // database, for the UI suite and the side-by-side: Alex and Sam (adults), Maya and Leo (children),
 // Grandpa Joe archived. ?page=member for Maya's page; ?adjusted=5 as after a change of points, Points
 // open; ?archived=1 as after an archive, Archived open; ?theme=evening. Thursday, Oct 15, 2026.
 // [CHR-24] ?late=1: Maya's Missed or late open (WP-117), one missed, one ticked late and one marked on
-// time; ?late=open also opens the missed one's Done on time….
+// time; ?late=open also opens the missed one's Done on time…. [PTS-09] ?penalties=1: penalties on and
+// Maya's Penalties open (WP-120): she owes $3, with today's points penalty and one taken back;
+// ?penalties=give also opens Give a penalty.
 export const metadata: Metadata = { title: 'Members', robots: { index: false } };
 
 const ALEX_USER = 'a1000000-0000-4000-8000-000000000001';
@@ -178,6 +187,7 @@ export default async function DevMembersPage({
     adjusted?: string;
     archived?: string;
     late?: string;
+    penalties?: string;
   }>;
 }) {
   const p = await searchParams;
@@ -204,6 +214,24 @@ export default async function DevMembersPage({
           pointsOpen={memberOpen(p).points}
           requestId="d0000000-0000-4000-8000-000000000001"
           late={p.late ? lateFixture(maya.id, p.late) : null}
+          penalties={
+            p.penalties ? (
+              <MemberPenalties
+                person={{ ...PENALTY_PEOPLE[0]!, id: maya.id }}
+                on
+                canGive
+                {...mayaPenalties('2026-10-15')}
+                reasons={PENALTY_REASONS}
+                requestId="d0000000-0000-4000-8000-000000000002"
+                adminName={(id) => PENALTY_ADMINS[id] ?? 'Sam'}
+                timezone="America/New_York"
+                today="2026-10-15"
+                notice={null}
+                open
+                giveOpen={p.penalties === 'give'}
+              />
+            ) : null
+          }
         />
       ) : (
         <MembersView

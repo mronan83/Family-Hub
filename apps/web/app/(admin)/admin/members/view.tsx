@@ -145,6 +145,8 @@ export interface MemberViewProps {
   pointsOpen: boolean;
   /** A fresh id for the points form, so a double tap posts once. */
   requestId: string;
+  /** [PTS-09] Penalties (WP-120), drawn by the page: what they owe, Give a penalty, the history. */
+  penalties?: React.ReactNode;
   /** [CHR-24] Missed or late (WP-117): the rows, and what Done on time… needs. */
   late?: {
     rows: MissedOrLateRow<DayItem>[];
@@ -175,6 +177,7 @@ export function MemberView({
   adjusted,
   pointsOpen,
   requestId,
+  penalties = null,
   late = null,
 }: MemberViewProps) {
   const showPoints = member.earnsRewards || points.entries.length > 0;
@@ -293,6 +296,7 @@ export function MemberView({
           </p>
         </Fold>
       ) : null}
+      {penalties}
       {late ? (
         <>
           {late.notice ? <Banner kind="info">{late.notice}</Banner> : null}

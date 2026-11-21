@@ -164,6 +164,13 @@ export const ADMIN = [
   ['staples-list', '/dev/groceries?open=staples'],
   ['staples-none', '/dev/groceries?state=empty'],
   ['staples-home', '/dev/home'],
+  // [PTS-09] WP-120's penalties, as its mockup draws them: Home's Give a penalty, Maya's Penalties
+  // (and with Give a penalty open), Settings' Penalties, and the register's Penalty type.
+  ['penalty-home', '/dev/home?penalties=1'],
+  ['penalty-member', '/dev/members?page=member&penalties=1'],
+  ['penalty-member-give', '/dev/members?page=member&penalties=give'],
+  ['penalty-settings', '/dev/settings/penalties'],
+  ['penalty-register', '/dev/rewards/points?penalties=1&type=penalty'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of
@@ -175,6 +182,8 @@ export const ADMIN = [
 export const BOARD = [
   // [PTS-12] WP-123: Maya's whole screen, her points list with a parent's reason for points taken away.
   ['board-person', '?x=1', 'Maya', 'whole'],
+  // [PTS-09] WP-120: Maya's whole screen with a points penalty and what she owes, and the rail's chip.
+  ['board-penalties', '?penalties=1', 'Maya', 'whole'],
   ['board-going', '?repeating=going', 'Maya'],
   ['board-missed', '?repeating=missed', 'Maya'],
   ['board-won', '?repeating=won', 'Maya'],

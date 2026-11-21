@@ -35,6 +35,7 @@ import {
   reachedBike,
   withRepeating,
   withPerfect,
+  withPenalties,
   withSteps,
   TZ,
   unreadChanges,
@@ -70,6 +71,7 @@ export function DevBoard({
   perfect,
   missed = false,
   groceries,
+  penalties = false,
 }: {
   theme: Theme;
   stale: boolean;
@@ -103,6 +105,8 @@ export function DevBoard({
   missed?: boolean;
   /** [MEAL-18] The grocery list (WP-104): see fixtureGroceries. */
   groceries?: string;
+  /** [PTS-09] Penalties on, Maya's points penalty and what she owes (WP-120): see withPenalties. */
+  penalties?: boolean;
 }) {
   // The family is made once, as of when the page opened; the clock ticks on like a board's.
   const [opened] = useState(() => new Date());
@@ -149,6 +153,7 @@ export function DevBoard({
     if (repeating) s = withRepeating(s, repeating, opened);
     if (steps) s = withSteps(s, steps);
     if (perfect) s = withPerfect(s, perfect);
+    if (penalties) s = withPenalties(s, opened);
     return celebrate ? reachedBike(s, opened) : s;
   });
   const post = useMemo(() => fixturePost(snapshot), [snapshot]);

@@ -53,6 +53,13 @@ export const SETTINGS_PAGES: readonly SettingsPage[] = [
     icon: 'tag',
     what: 'Labels like Morning or Kitchen that group chores and let goals count by kind.',
   },
+  // [PTS-09] Penalties (WP-120): the on/off and the reasons.
+  {
+    href: '/admin/settings/penalties',
+    label: 'Penalties',
+    icon: 'minus-circle',
+    what: 'Consequences in points or money, each with a reason the board shows.',
+  },
   {
     href: '/admin/reminders',
     label: 'Reminders',

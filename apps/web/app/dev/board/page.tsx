@@ -24,6 +24,7 @@ import { KITCHEN_SLEEP } from './fixture';
 // took that Realtime never reports, shown by the board's own read (WP-110: ?missed=1); the grocery list
 // (WP-104: ?groceries=1, or ?groceries=empty for one emptied; none by default, no rail button; WP-107: ?groceries=full
 // for Maya's 5 asks waiting, ?groceries=long for 35 things).
+// [PTS-09] Penalties on (WP-120: ?penalties=1, Maya's points penalty "Rude to a sibling" and the $3 she owes).
 export const metadata: Metadata = { title: 'Board Today', robots: { index: false } };
 
 export default async function DevBoardPage({
@@ -50,6 +51,7 @@ export default async function DevBoardPage({
     perfect?: string;
     missed?: string;
     groceries?: string;
+    penalties?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -118,6 +120,7 @@ export default async function DevBoardPage({
         }
         missed={params.missed === '1'}
         groceries={params.groceries}
+        penalties={params.penalties === '1'}
       />
     </div>
   );

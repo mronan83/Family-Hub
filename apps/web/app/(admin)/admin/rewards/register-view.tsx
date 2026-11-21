@@ -112,8 +112,10 @@ export function RegisterView({
           {signed(e.amount)}
         </span>
         <span className="fw-row__l2">
-          <span className="fw-kind">{KIND_LABEL[e.kind]}</span> {name(e.memberId)} ·{' '}
-          {time(e.at, timezone)}
+          <span className="fw-kind" data-kind={e.kind}>
+            {KIND_LABEL[e.kind]}
+          </span>{' '}
+          {name(e.memberId)} · {time(e.at, timezone)}
           {e.kind === 'goal' && e.goalId ? (
             <>
               {' · goal '}

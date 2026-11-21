@@ -27,6 +27,7 @@ export default async function DevSettingsPage({
           '/admin/calendars': quiet ? ok('3 calendars') : { text: 'School can’t sync', warn: true },
           '/admin/devices': ok('Kitchen'),
           '/admin/tags': ok('6 tags'),
+          '/admin/settings/penalties': ok('On · 4 reasons'),
           '/admin/reminders': ok('On for 2 devices'),
           '/admin/health': quiet
             ? ok('Everything is running')

@@ -1,6 +1,7 @@
 'use client';
 
 import { Avatar, Button, ChoreTile, GoalMeter, Icon, PointsChip } from '@familywise/ui';
+import { money, owedTotal } from '@/lib/penalties';
 import {
   type ReactNode,
   useCallback,
@@ -1144,6 +1145,12 @@ export function Today({
                   <PointsChip points={t.balance(m)} />
                 </span>
               ) : null}
+              {/* [PTS-09][D-156] What they owe, in sight from everyone's view (WP-120). */}
+              {m.owes && m.owes.length > 0 ? (
+                <span className="fw-today__owes-chip" data-owes={owedTotal(m.owes)} aria-hidden>
+                  Owes {money(owedTotal(m.owes))}
+                </span>
+              ) : null}
             </button>
           </li>
         ))}
@@ -1296,13 +1303,46 @@ export function Today({
                     ) : (
                       <ul className="fw-today__activity" aria-labelledby="me-points">
                         {member.points.recent.map((e) => (
-                          <li key={e.id}>
-                            <span>{boardActivity(e)}</span>
-                            <strong>{signed(e.amount)}</strong>
+                          <li key={e.id} data-type={e.type}>
+                            <span>
+                              {/* [PTS-09][D-154] A penalty is tagged, with its reason beside it. */}
+                              {e.type === 'penalty' ? (
+                                <span className="fw-today__penalty-tag">Penalty</span>
+                              ) : null}
+                              {boardActivity(e)}
+                            </span>
+                            <strong className={e.amount < 0 ? 'fw-today__neg' : undefined}>
+                              {signed(e.amount)}
+                            </strong>
                           </li>
                         ))}
                       </ul>
                     )}
+                  </section>
+                ) : null}
+                {/* [PTS-09][D-154][D-156] What they owe while penalties are on: each money penalty
+                    with its reason and what is still owed, paid outside FamilyWise (WP-120). */}
+                {member.owes && member.owes.length > 0 ? (
+                  <section
+                    className="fw-today__card fw-today__owes"
+                    aria-labelledby="me-owes"
+                    data-owed={owedTotal(member.owes)}
+                  >
+                    <div className="fw-today__card-head">
+                      <h3 id="me-owes">Owes</h3>
+                      <span className="fw-today__owed">{money(owedTotal(member.owes))}</span>
+                    </div>
+                    <ul
+                      className="fw-today__activity"
+                      aria-label={`What ${member.displayName} owes`}
+                    >
+                      {member.owes.map((o) => (
+                        <li key={o.id}>
+                          <span>{o.reason}</span>
+                          <strong className="fw-today__neg">{money(o.owed)}</strong>
+                        </li>
+                      ))}
+                    </ul>
                   </section>
                 ) : null}
                 {member.earnsRewards ? (

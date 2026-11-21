@@ -20,6 +20,9 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     { table: 'member', filter: `household_id=eq.${householdId}` },
     { table: 'device', filter: `id=eq.${deviceId}` },
     { table: 'points_ledger', filter: `household_id=eq.${householdId}` },
+    // [PTS-09] A money penalty or a payment changes what someone owes (WP-120).
+    { table: 'penalty', filter: `household_id=eq.${householdId}` },
+    { table: 'penalty_payment', filter: `household_id=eq.${householdId}` },
     { table: 'chore_occurrence', filter: `household_id=eq.${householdId}` },
     { table: 'chore', filter: `household_id=eq.${householdId}` },
     { table: 'streak_segment', filter: `household_id=eq.${householdId}` },

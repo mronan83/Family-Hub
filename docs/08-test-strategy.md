@@ -282,16 +282,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3277** tests: Unit 1032 · DB 1730 · UI 370 · E2E 145. 2754 name at least one ID; 523 name none.
+**3338** tests: Unit 1041 · DB 1775 · UI 376 · E2E 146. 2815 name at least one ID; 523 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 139 of 156 |
+| Requirements built (a Done item builds them) | 140 of 156 |
 | Built requirements with no test | 0 |
-| Stories built | 122 of 138 |
+| Stories built | 123 of 138 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 338 (with a test: 338) |
+| Test cases | 351 (with a test: 351) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -306,7 +306,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
 | Chores | 144 | 234 | 49 | 35 | 462 |
-| Points | 58 | 110 | 25 | 12 | 205 |
+| Points | 67 | 155 | 31 | 13 | 266 |
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
@@ -317,7 +317,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 205 | 167 | 62 | 18 | 452 |
 | Not named | 58 | 500 | 10 | 1 | 569 |
-| **Total** | **1032** | **1730** | **370** | **145** | **3277** |
+| **Total** | **1041** | **1775** | **376** | **146** | **3338** |
 
 ### 9.3 By requirement
 
@@ -469,7 +469,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-06 | S | Covered | US-1108 | WP-30 | — | U 5 · DB 2 · UI 7 · E2E 2 |
 | PTS-07 | M | Covered | US-1109 | WP-02, WP-04, WP-16 | — | U 2 · DB 15 · E2E 3 |
 | PTS-08 | S | Covered | US-1110 | WP-115 | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | U 12 · DB 17 · UI 5 |
-| PTS-09 | S | Not built | US-1111 | WP-120 | — | — |
+| PTS-09 | S | Covered | US-1111 | WP-120 | PTS-09-a, PTS-09-b, PTS-09-c, PTS-09-d, PTS-09-e, PTS-09-f, PTS-09-g, PTS-09-h, PTS-09-i, PTS-09-j, PTS-09-k, PTS-09-l, PTS-09-m | U 9 · DB 45 · UI 6 · E2E 1 |
 | PTS-10 | S | Not built | US-1112 | WP-121 | — | — |
 | PTS-11 | S | Not built | US-1113 | WP-122 | — | — |
 | PTS-12 | S | Covered | US-1114 | WP-123 | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | U 1 · DB 1 · UI 2 |
@@ -604,7 +604,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-117 | Done | CHR-24-a, CHR-24-b, CHR-24-c, CHR-24-d, CHR-24-e, CHR-24-f, CHR-24-g, CHR-24-h, CHR-24-i, CHR-24-j, CHR-24-k, CHR-24-l, CHR-24-m, CHR-24-n | 14 of 14 | — |
 | WP-118 | Done | NFR-16-u, NFR-16-v, NFR-16-w | 3 of 3 | — |
 | WP-119 | Done | CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f, NFR-12-g | 9 of 9 | — |
-| WP-120 | Queued: | — | — | — |
+| WP-120 | Done | PTS-09-a, PTS-09-b, PTS-09-c, PTS-09-d, PTS-09-e, PTS-09-f, PTS-09-g, PTS-09-h, PTS-09-i, PTS-09-j, PTS-09-k, PTS-09-l, PTS-09-m | 13 of 13 | U 1 |
 | WP-121 | Queued: | — | — | — |
 | WP-122 | Queued: | — | — | — |
 | WP-123 | Done | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | 4 of 4 | — |
@@ -944,6 +944,19 @@ Test cases and the tests that prove them:
 | CHR-24-l | WP-117 | **Uncheck** on a chore marked on time takes it back: its points reversed, the day missed again | DB | DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-l] Uncheck makes the day missed again`<br>DB `supabase/tests/630_mark_done_on_time.test.sql`: `[CHR-24-l] and takes its points back` |
 | CHR-24-m | WP-117 | A parent marks a child's missed chore done on time from Today on a past day: the goal done by its due time counts the day, the points come back, and Today shows "Marked on time by" | E2E | E2E `e2e/tests/mark-on-time.spec.ts`: `[CHR-24-m][CHR-24-n][US-326] Alex marks Maya’s missed Wednesday done on time from Today: the settled week asks first, is won and paid once, and Today shows the…` |
 | CHR-24-n | WP-117 | Marked on time on a day of last week, after the confirm, the week is won and its payout paid once, however often it is worked out | E2E | E2E `e2e/tests/mark-on-time.spec.ts`: `[CHR-24-m][CHR-24-n][US-326] Alex marks Maya’s missed Wednesday done on time from Today: the settled week asks first, is won and paid once, and Today shows the…` |
+| PTS-09-a | WP-120 | Penalties are off for a new household and no penalty can be given while off; a parent of the household turns them on, a parent of another household cannot | DB | DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-a] penalties are off for a new household`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-a] no penalty while penalties are off`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-a] a parent of another household cannot turn them on`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-a] a parent turns penalties on` |
+| PTS-09-b | WP-120 | Penalty reasons: a parent adds one in points or money (cents) with its amount, the name trimmed; a second of the same name, an amount out of range or another household's parent is refused; a removed reason is not offered again, a penalty given with it keeps its reason, and its name can be used again | DB | DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-b] a parent adds reasons in points or money (cents), each with its amount, the name trimmed`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-b] two reasons of one name are refused`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-b] a points reason is 1 to 10000 points`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-b] and never nothing`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-b] nor add a reason`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-b] a parent removes a reason`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-b] a removed reason is not offered again`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-b] a penalty given with it keeps its reason`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-b] and its name can be used again` |
+| PTS-09-c | WP-120 | A points penalty posts one `penalty` entry of −amount with the reason, by the parent, taken at once (the balance may go below zero) and owing nothing (D-156); a resend gives it once; a request used for another penalty is refused; the parent may change the amount | DB | DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-c] a points penalty is taken at once, the reason's amount, and owes nothing (D-156)`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-c] sending it again gives it once`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-c] one penalty entry of −10, with the reason, by Sam`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-c] the balance may go below zero, as points to earn back`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-c] a request used for another penalty is refused`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-c] the parent may change the amount for this one` |
+| PTS-09-d | WP-120 | A money penalty adds to what the person owes and changes nothing in their points | DB | DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-d] money penalties add to what Maya owes: $1 and $2.50`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-d] and change nothing in her points` |
+| PTS-09-e | WP-120 | Record paid lowers what is owed, from 1 cent up to what is owed on that penalty, once on a resend, and is kept in the history; a points penalty has nothing to pay | DB | DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-e] paying part of a penalty leaves the rest owed`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-e] sending it again records it once`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-e] never more than is owed`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-e] a points penalty has nothing to pay`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-e] paying the rest leaves nothing owed`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-e] each payment is kept in the history` |
+| PTS-09-f | WP-120 | Take back: a points penalty's points come back with a `penalty` entry; a money penalty owes nothing; taking it back again changes nothing | DB | DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-f] a parent takes back a points penalty`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-f] its points come back with a penalty entry`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-f] taking it back again`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-f] changes nothing more`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-f] a money penalty taken back owes nothing` |
+| PTS-09-g | WP-120 | Only for a member who earns rewards and is not archived; only through the functions (nobody inserts, a penalty is never changed, a payment never deleted); another household's parent can neither give one nor read them | DB | DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-g] nor read the reasons`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-g] only for someone who earns rewards`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-g] and not archived`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-g] nobody writes penalties but the functions`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-g] a penalty is never changed`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-g] nor a payment deleted`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-g] another household's parent cannot give one`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-g] nor read them` |
+| PTS-09-h | WP-120 | The board's snapshot: a penalty in the points list with its reason, one taken back left out both ways; what each person owes (cents, with the reason) while penalties are on, and nothing while off; the app reads both | DB, Unit | Unit `apps/web/lib/board.test.ts`: `penalties (WP-120) › [PTS-09-h] reads a penalty in the points list and what someone owes, in cents`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-h] Maya owes nothing now: one paid, one taken back`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-h] the board shows a penalty with its reason, and leaves one taken back out both ways`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-h] what Leo owes shows on the board, with its reason`<br>DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-h] with penalties off, nothing owed shows` |
+| PTS-09-i | WP-120 | The points register lists penalties as their own type, Penalty, a take-back included | DB | DB `supabase/tests/650_penalties.test.sql`: `[PTS-09-i] the points register lists penalties as their own type, a take-back included` |
+| PTS-09-j | WP-120 | Money and points in words ($1, $2.50, $1,000; 1 point, 20 points); a typed amount of money in cents; Give a penalty, Record paid and a new reason checked the way the database will check them; what the database refused, in plain words; what is owed and the history newest first; a penalty named in the ledger, the register and on the board | Unit | Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] says money in dollars and points as points`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] reads a typed amount of money in cents`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] checks Give a penalty the way give_penalty() will`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] checks Record paid: up to what is owed`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] checks a new reason`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] says what the database refused, plainly`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] works out what is owed, and the history newest first`<br>Unit `apps/web/lib/penalties.test.ts`: `[PTS-09] penalties in words and money › [PTS-09-j] names a penalty in the ledger, the register and on the board` |
+| PTS-09-k | WP-120 | The board: a child's points list tags a penalty "Penalty" beside its reason; the **Owes** card lists each money penalty still owed with its reason and amount, in board-size text; the rail says "Owes $3"; with nothing owed, or penalties off, no card and no chip | UI | UI `e2e/ui/penalties.spec.ts`: `the board › [PTS-09-k][US-1111] a penalty shows with its reason, and what Maya owes on her screen and in the rail`<br>UI `e2e/ui/penalties.spec.ts`: `the board › [PTS-09-k] with nothing owed, or penalties off, there is no Owes card and no chip` |
+| PTS-09-l | WP-120 | The admin app: Settings' Penalties tile and page (the on/off as a switch, the reasons, Add a reason in points or money); Home's **Give a penalty** only while on, nobody chosen for the parent, the amount filled in from the reason and what the board will show; a child's **Penalties** with what they owe, Record paid on each, and the history with Take back on each penalty not taken back; the register's Penalty type | UI | UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l] Settings: Penalties on, its reasons, and Add a reason`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l][US-1111] Home: Give a penalty fills the amount from the reason and says what the board will show`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l][US-1111] Maya’s Penalties: what she owes, Record paid on each, the history with Take back`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-09-l] the points register lists penalties as their own type` |
+| PTS-09-m | WP-120 | On a preview, a parent turns penalties on, adds a reason, gives a money penalty and a points penalty from Home, records part paid and takes one back on the child's page, and the database agrees at each step | E2E | E2E `e2e/tests/penalties.spec.ts`: `[PTS-09-m][US-1111] a parent turns penalties on, adds a reason, gives, records paid and takes back` |
 | PTS-12-a | WP-123 | The board's words for a points entry: points a parent took away read the reason the parent gave ("Left the iPad on the couch"), as points added do; an adjustment with no reason still reads "A parent changed your points" or "From a parent" | Unit | Unit `apps/web/lib/today.test.ts`: `points on the board › [PTS-12-a] points a parent took away show the reason the parent gave, as points added do` |
 | PTS-12-b | WP-123 | The board's snapshot carries the reason with points a parent took away, for an entry posted before the snapshot was read (the reason is stored with each entry, so entries posted before this change show theirs) | DB | DB `supabase/tests/140_points_ledger.test.sql`: `[PTS-12-b] points a parent took away, posted earlier, reach the board with their reason` |
 | PTS-12-c | WP-123 | A child's own screen on the board lists "Left the bike out −5" in their points, next to "Helped carry the shopping +10", and no longer "A parent changed your points" | UI | UI `e2e/ui/today.spec.ts`: `[PTS-12-c][US-1114] the points list says what each was for, the reason for points taken away too` |
@@ -1093,7 +1106,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-1108 | PTS-06 | Covered | U 1 · UI 2 · E2E 1 |
 | US-1109 | PTS-07 | Gap | — |
 | US-1110 | PTS-08 | Covered | UI 1 |
-| US-1111 | PTS-09 | Not built | — |
+| US-1111 | PTS-09 | Covered | UI 3 · E2E 1 |
 | US-1112 | PTS-10 | Not built | — |
 | US-1113 | PTS-11 | Not built | — |
 | US-1114 | PTS-12 | Covered | UI 1 |
@@ -1350,7 +1363,7 @@ Unit · 3 tests
 
 #### `apps/web/lib/board.test.ts`
 
-Unit · 22 tests
+Unit · 23 tests
 
 | Test | Names |
 |---|---|
@@ -1376,6 +1389,7 @@ Unit · 22 tests
 | `notify, then refetch › [CAL-05][WP-70] reads that never come back give up after the last has had twice as long` | CAL-05, WP-70 |
 | `notify, then refetch › [CAL-05][WP-70] offline, the tries stop: three reads, then the board waits` | CAL-05, WP-70 |
 | `notify, then refetch › ticks on the minute` | — |
+| `penalties (WP-120) › [PTS-09-h] reads a penalty in the points list and what someone owes, in cents` | PTS-09-h, WP-120 |
 
 #### `apps/web/lib/bonus.test.ts`
 
@@ -2219,6 +2233,21 @@ Unit · 14 tests
 | `the board sender › [CHR-04] posts JSON to /api/completions and reads each answer` | CHR-04 |
 | `the board sender › [CHR-04] answers a refused batch as invalid (retrying cannot help); retries a server fault` | CHR-04 |
 
+#### `apps/web/lib/penalties.test.ts`
+
+Unit · 8 tests
+
+| Test | Names |
+|---|---|
+| `[PTS-09] penalties in words and money › [PTS-09-j] says money in dollars and points as points` | PTS-09-j |
+| `[PTS-09] penalties in words and money › [PTS-09-j] reads a typed amount of money in cents` | PTS-09-j |
+| `[PTS-09] penalties in words and money › [PTS-09-j] checks Give a penalty the way give_penalty() will` | PTS-09-j |
+| `[PTS-09] penalties in words and money › [PTS-09-j] checks Record paid: up to what is owed` | PTS-09-j |
+| `[PTS-09] penalties in words and money › [PTS-09-j] checks a new reason` | PTS-09-j |
+| `[PTS-09] penalties in words and money › [PTS-09-j] says what the database refused, plainly` | PTS-09-j |
+| `[PTS-09] penalties in words and money › [PTS-09-j] works out what is owed, and the history newest first` | PTS-09-j |
+| `[PTS-09] penalties in words and money › [PTS-09-j] names a penalty in the ledger, the register and on the board` | PTS-09-j |
+
 #### `apps/web/lib/points-register.test.ts`
 
 Unit · 12 tests
@@ -2872,6 +2901,14 @@ E2E · 2 tests
 |---|---|
 | `[DEV-06][NFR-01][US-205] offline: three check-offs, a reload with no network, exactly three events; a parent’s later uncheck wins` | DEV-06, NFR-01, US-205 |
 | `[NFR-01][DEV-08][US-205] opened after a day offline, the board shows its last day and says how old it is` | DEV-08, NFR-01, US-205 |
+
+#### `e2e/tests/penalties.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[PTS-09-m][US-1111] a parent turns penalties on, adds a reason, gives, records paid and takes back` | PTS-09-m, US-1111 |
 
 #### `e2e/tests/perfect-periods.spec.ts`
 
@@ -3595,6 +3632,19 @@ UI · 7 tests
 | `[CHR-24-k] a goal’s missed day opens, with Done on time… (${theme})` | CHR-24-k |
 | `[CHR-24-k][CHR-24-g] a goal’s day after it: done, with "Marked on time by Alex" (${theme})` | CHR-24-g, CHR-24-k |
 | `[CHR-24-k][CHR-24-g] the points register says who marked an earn on time (${theme})` | CHR-24-g, CHR-24-k |
+
+#### `e2e/ui/penalties.spec.ts`
+
+UI · 6 tests
+
+| Test | Names |
+|---|---|
+| `the board › [PTS-09-k][US-1111] a penalty shows with its reason, and what Maya owes on her screen and in the rail` | PTS-09-k, US-1111 |
+| `the board › [PTS-09-k] with nothing owed, or penalties off, there is no Owes card and no chip` | PTS-09-k |
+| `the admin app › [PTS-09-l] Settings: Penalties on, its reasons, and Add a reason` | PTS-09-l |
+| `the admin app › [PTS-09-l][US-1111] Home: Give a penalty fills the amount from the reason and says what the board will show` | PTS-09-l, US-1111 |
+| `the admin app › [PTS-09-l][US-1111] Maya’s Penalties: what she owes, Record paid on each, the history with Take back` | PTS-09-l, US-1111 |
+| `the admin app › [PTS-09-l] the points register lists penalties as their own type` | PTS-09-l |
 
 #### `e2e/ui/points-register.spec.ts`
 
@@ -6403,5 +6453,57 @@ DB · 9 tests
 | `[DEV-05-e] job_health() says what it said before for each job: never, running, stuck, failing, stale, ok, a skipped run, a run that finished last` | DEV-05-e |
 | `[DEV-05-e] each job's state, the SQL job left out` | DEV-05-e |
 | `[DEV-05-e] each job's latest healthy run is a row away (job_run_last_ok_idx)` | DEV-05-e |
+
+#### `supabase/tests/650_penalties.test.sql`
+
+DB · 45 tests
+
+| Test | Names |
+|---|---|
+| `[PTS-09-a] penalties are off for a new household` | PTS-09-a |
+| `[PTS-09-b] a parent adds reasons in points or money (cents), each with its amount, the name trimmed` | PTS-09-b |
+| `[PTS-09-b] two reasons of one name are refused` | PTS-09-b |
+| `[PTS-09-b] a points reason is 1 to 10000 points` | PTS-09-b |
+| `[PTS-09-b] and never nothing` | PTS-09-b |
+| `[PTS-09-a] no penalty while penalties are off` | PTS-09-a |
+| `[PTS-09-a] a parent of another household cannot turn them on` | PTS-09-a |
+| `[PTS-09-b] nor add a reason` | PTS-09-b |
+| `[PTS-09-g] nor read the reasons` | PTS-09-g |
+| `[PTS-09-a] a parent turns penalties on` | PTS-09-a |
+| `[PTS-09-c] a points penalty is taken at once, the reason's amount, and owes nothing (D-156)` | PTS-09-c |
+| `[PTS-09-c] sending it again gives it once` | PTS-09-c |
+| `[PTS-09-c] one penalty entry of −10, with the reason, by Sam` | PTS-09-c |
+| `[PTS-09-c] the balance may go below zero, as points to earn back` | PTS-09-c |
+| `[PTS-09-c] a request used for another penalty is refused` | PTS-09-c |
+| `[PTS-09-c] the parent may change the amount for this one` | PTS-09-c |
+| `[PTS-09-d] money penalties add to what Maya owes: $1 and $2.50` | PTS-09-d |
+| `[PTS-09-d] and change nothing in her points` | PTS-09-d |
+| `[PTS-09-e] paying part of a penalty leaves the rest owed` | PTS-09-e |
+| `[PTS-09-e] sending it again records it once` | PTS-09-e |
+| `[PTS-09-e] never more than is owed` | PTS-09-e |
+| `[PTS-09-e] a points penalty has nothing to pay` | PTS-09-e |
+| `[PTS-09-e] paying the rest leaves nothing owed` | PTS-09-e |
+| `[PTS-09-e] each payment is kept in the history` | PTS-09-e |
+| `[PTS-09-b] a parent removes a reason` | PTS-09-b |
+| `[PTS-09-b] a removed reason is not offered again` | PTS-09-b |
+| `[PTS-09-b] a penalty given with it keeps its reason` | PTS-09-b |
+| `[PTS-09-b] and its name can be used again` | PTS-09-b |
+| `[PTS-09-f] a parent takes back a points penalty` | PTS-09-f |
+| `[PTS-09-f] its points come back with a penalty entry` | PTS-09-f |
+| `[PTS-09-f] taking it back again` | PTS-09-f |
+| `[PTS-09-f] changes nothing more` | PTS-09-f |
+| `[PTS-09-f] a money penalty taken back owes nothing` | PTS-09-f |
+| `[PTS-09-g] only for someone who earns rewards` | PTS-09-g |
+| `[PTS-09-g] and not archived` | PTS-09-g |
+| `[PTS-09-g] nobody writes penalties but the functions` | PTS-09-g |
+| `[PTS-09-g] a penalty is never changed` | PTS-09-g |
+| `[PTS-09-g] nor a payment deleted` | PTS-09-g |
+| `[PTS-09-g] another household's parent cannot give one` | PTS-09-g |
+| `[PTS-09-g] nor read them` | PTS-09-g |
+| `[PTS-09-h] Maya owes nothing now: one paid, one taken back` | PTS-09-h |
+| `[PTS-09-h] the board shows a penalty with its reason, and leaves one taken back out both ways` | PTS-09-h |
+| `[PTS-09-h] what Leo owes shows on the board, with its reason` | PTS-09-h |
+| `[PTS-09-h] with penalties off, nothing owed shows` | PTS-09-h |
+| `[PTS-09-i] the points register lists penalties as their own type, a take-back included` | PTS-09-i |
 
 <!-- /catalogue -->

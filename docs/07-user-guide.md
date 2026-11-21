@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.54: Penalties (WP-120, D-154, D-156): Settings' **Penalties**, the reasons, **Give a penalty** on Home and a child's page, a child's **Penalties** (Record paid, Take back), the board's **Owes** card, and **Penalty** in the register (A6).
 > v0.53: The board shows the reason for points a parent took away, as for points added (WP-123, D-155): A4's **Give or take away points by hand**, B2.3's points list, the points table and the FAQ.
 > v0.52: Mark a chore done on time (WP-117, D-151): **Done on time…** on Today, a child's **Missed or late** and a goal's missed day, with "Marked on time by" (A2, B1.2, B1.6).
 > v0.51: My tasks' **Coming up** stays open after a bell or a done on something in it (WP-119, D-153).
@@ -659,7 +660,7 @@ Set the **Bonus points** (1 to 1,000) and **Counts from** (days before it never 
 
 #### The points register
 
-Every points change for every child, in one list: on **Rewards**, choose **Points register** on the **Points** card (each child's balance). Newest first, under each day ("Today", "Yesterday", "Sun, Oct 25"), each entry shows the child, the time, what it was for, its type (**Earned**, **Bonus**, **Goal payout**, **By hand**, **Spent**, **Refunded**, **Reversed**), the points, and who or what gave them: "by Sam" for points changed by hand, "paid automatically" for a bonus, the goal for a goal payout, who approved a reward or cancelled it. An item someone else keeps private shows as "A private item", as it does everywhere else for you.
+Every points change for every child, in one list: on **Rewards**, choose **Points register** on the **Points** card (each child's balance). Newest first, under each day ("Today", "Yesterday", "Sun, Oct 25"), each entry shows the child, the time, what it was for, its type (**Earned**, **Bonus**, **Goal payout**, **By hand**, **Spent**, **Refunded**, **Reversed**, **Penalty**), the points, and who or what gave them: "by Sam" for points changed by hand, "paid automatically" for a bonus, the goal for a goal payout, who approved a reward or cancelled it. An item someone else keeps private shows as "A private item", as it does everywhere else for you.
 
 - Tap a child's face to see only theirs (tap more than one to see several); **Clear** shows everyone again.
 - Under **More filters**: tap one or more types, and choose **From** and **To** days, then **Show these days**. **Any day** takes the dates off.
@@ -669,6 +670,36 @@ Every points change for every child, in one list: on **Rewards**, choose **Point
 Each bonus on **Bonus points** says how many times it has paid and when last ("Paid 14 times, latest today"); **See them** opens the register with only that bonus's payouts, how many times and how much, to whom. A bonus's name in the register does the same. A child's **Points** on **Members** has **All of Maya's points**, the register for that child.
 
 ![The points register on an iPhone: Maya and Leo's faces, More filters folded, "95 entries" with what they add up to, then Today's entries: Feed the dog +5 for Leo, Movie night −100 for Maya approved by Alex, Helped carry the groceries +10 by Sam, and two bonuses paid automatically.](guide/img/admin-points-register-phone.jpg "The points register, on an iPhone")
+
+#### Penalties
+<!-- covers: US-1111 -->
+
+**What this is.** A consequence the family agreed on, given in the moment, in points or in money, with a reason everyone sees on the board. **When.** When a house rule is broken and you want it to count. **How.** Turn penalties on, keep a list of reasons, then give one from **Home** or a child's page.
+
+Turn them on: in **Settings**, choose **Penalties**, then the switch beside **Penalties are off**. They are off for a new family. Turning them off again hides **Give a penalty** and what's owed on the board; the history stays.
+
+![Settings, Penalties on a phone: Penalties are on with its switch; Penalty reasons lists Rude to a sibling (10 points), Screen time after bedtime (20 points), Left bike in the driveway ($1) and Homework folder not home ($2), each with Remove; then Add a reason with Amount, Points or Money, and Add.](guide/img/admin-penalties-settings-phone.jpg "Settings, Penalties, on a phone")
+
+**Penalty reasons.** What you pick from: each has a name, an amount, and **Points** or **Money**. Under **Add a reason**, type the name, the amount (points, or dollars such as 1.50) and choose **Add**. **Remove** takes a reason off the list; penalties already given with it keep it.
+
+**Give a penalty.** On **Home**, **Give a penalty** sits under the four tiles while penalties are on (a child's page has it under **Penalties** too):
+
+1. Choose **Who** (only those who earn rewards).
+2. Choose the **Reason**. Its amount fills in; change it for this one if you need to.
+3. Check the line saying what the board will show, then choose **Give the penalty**.
+
+![Give a penalty on Home, on a phone: Who with Maya and Leo; Reason with the four reasons and their amounts; Penalty, in points, 10; and the line "On the board, they see: Rude to a sibling −10. Points are taken at once, so their points can go below 0."](guide/img/admin-penalty-give-phone.jpg "Give a penalty, on Home")
+
+- **In points**, the points are taken at once, and the board's points list shows the penalty with its reason ("Penalty · Rude to a sibling −10"). A balance can go below zero; the board shows that as points to earn back. Nothing more is owed.
+- **In money**, it adds to what the child owes. FamilyWise doesn't hold money: it's paid outside the app (cash, or however you pay), and you record it.
+
+**What a child owes.** On **Members**, open the child, then **Penalties** (folded to "Owes $3" or "Nothing owed"). It lists each money penalty still owed, with **Paid** filled in with what's owed on it: change it for part of it, then **Record paid**. **History** lists every penalty, take-back and payment, newest first, and who did it. **Take back** undoes a penalty given by mistake: in points it gives the points back, in money nothing is owed on it, and the board stops showing it. Nothing is ever edited or deleted.
+
+![Maya's Penalties on a laptop: Maya owes $3; Left bike in the driveway $1 with Paid and Record paid; Homework folder not home $2, $2 of $4 paid, with Record paid; Give a penalty; then History, newest first, with Take back on each penalty not taken back.](guide/img/admin-member-penalties-laptop.jpg "A child's Penalties, on a laptop")
+
+**On the board.** A child's own screen shows each penalty in their points list, tagged **Penalty** with its reason, and an **Owes** card with each money penalty still owed, its reason and the total. Everyone's view shows "Owes $3" under their points in the rail. The points register lists penalties as their own type, **Penalty**.
+
+![Maya's screen on the board with penalties: the rail shows Maya with 32 points and Owes $3; Points lists Penalty Rude to a sibling −10 first; the Owes card says $3: Left bike in the driveway $1, Homework folder not home $2.](guide/img/board-penalties.jpg "Penalties on the board")
 
 #### Wishes: saving up
 

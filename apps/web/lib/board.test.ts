@@ -206,6 +206,8 @@ describe('board snapshot', () => {
           available: 35,
           requests: [],
           limited: [],
+          // [PTS-09] A snapshot from before WP-120 says nothing owed: penalties read as off.
+          owes: null,
         },
         {
           id: 'm2',
@@ -220,6 +222,7 @@ describe('board snapshot', () => {
           available: null,
           requests: [],
           limited: [],
+          owes: null,
         },
       ],
       shop: [
@@ -599,6 +602,8 @@ describe('notify, then refetch', () => {
       { table: 'member', filter: 'household_id=eq.h1' },
       { table: 'device', filter: 'id=eq.d1' },
       { table: 'points_ledger', filter: 'household_id=eq.h1' },
+      { table: 'penalty', filter: 'household_id=eq.h1' },
+      { table: 'penalty_payment', filter: 'household_id=eq.h1' },
       { table: 'chore_occurrence', filter: 'household_id=eq.h1' },
       { table: 'chore', filter: 'household_id=eq.h1' },
       { table: 'streak_segment', filter: 'household_id=eq.h1' },
@@ -769,5 +774,37 @@ describe('notify, then refetch', () => {
   it('ticks on the minute', () => {
     expect(untilNextMinute(new Date(2026, 9, 9, 7, 42, 0, 0))).toBe(60_000);
     expect(untilNextMinute(new Date(2026, 9, 9, 7, 42, 59, 500))).toBe(500);
+  });
+});
+
+describe('penalties (WP-120)', () => {
+  const maya = (RAW.members as Record<string, unknown>[])[0]!;
+  const read = (member: Record<string, unknown>) =>
+    readSnapshot({ ...RAW, members: [{ ...maya, ...member }] })!;
+
+  it('[PTS-09-h] reads a penalty in the points list and what someone owes, in cents', () => {
+    const s = read({
+      points: {
+        balance: -10,
+        recent: [
+          {
+            id: 'l1',
+            type: 'penalty',
+            amount: -10,
+            at: '2026-11-19T23:40:00Z',
+            label: 'Rude to a sibling',
+          },
+        ],
+      },
+      owes: [{ id: 'p1', reason: 'Left bike in the driveway', owed: 100 }],
+    });
+    expect(s.members[0]!.points!.recent[0]).toMatchObject({
+      type: 'penalty',
+      label: 'Rude to a sibling',
+    });
+    expect(s.members[0]!.owes).toEqual([
+      { id: 'p1', reason: 'Left bike in the driveway', owed: 100 },
+    ]);
+    expect(read({ owes: null }).members[0]!.owes).toBeNull();
   });
 });

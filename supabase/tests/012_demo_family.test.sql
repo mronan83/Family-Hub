@@ -122,7 +122,8 @@ select ok((select count(*) filter (where o.status = 'pending_approval')
                              and o.due_date < private.household_today(o.household_id) and o.finalized_at is null),
   '[CHR-05][CHR-07] the latest homework waits for a parent, and every past day is closed');
 
--- Points (WP-16): each member holds the points of their done occurrences plus adjustments.
+-- Points (WP-16): each member holds the points of their done occurrences plus adjustments, and their
+-- points penalties (WP-120).
 select is_empty(
   $$ select m.display_name
        from public.member m
@@ -131,7 +132,7 @@ select is_empty(
             <> (select coalesce(sum(o.points_snapshot), 0) from public.chore_occurrence o
                  where m.id = any (o.rewarded) and o.status in ('completed', 'approved'))
                + (select coalesce(sum(amount), 0) from public.points_ledger l
-                   where l.member_id = m.id and l.entry_type = 'adjustment') $$,
+                   where l.member_id = m.id and l.entry_type in ('adjustment', 'penalty')) $$,
   '[PTS-01] the demo family''s balances are their done chores'' points plus adjustments, after two runs');
 select results_eq(
   $$ select m.display_name::text, l.amount, l.reason

@@ -11,7 +11,10 @@ import {
 import { homeAlerts } from '@/lib/home-alerts';
 import { daysToPick, lunchQuickWords, lunchWeekToOpen } from '@/lib/lunch-list';
 import { serverClient } from '@/lib/supabase/server';
+import { randomUUID } from 'node:crypto';
 import { HomeView, type LunchQuick, type SchoolToday } from './home-view';
+import { loadMembers } from './members/data';
+import { loadPenaltySettings } from './penalties/data';
 import { loadGroceries } from './groceries/data';
 import { runningLowCount } from '@/lib/grocery-staples';
 import { loadLunch } from './meals/data';
@@ -75,6 +78,8 @@ export default async function AdminHome({
     lunchWeek,
     names,
     groceries,
+    penaltySettings,
+    members,
   ] = await Promise.all([
     db!
       .from('chore_occurrence')
@@ -132,6 +137,9 @@ export default async function AdminHome({
     db!.from('member').select('id, display_name').eq('household_id', h.id),
     // [MEAL-27] Home's Groceries card (WP-112): the list and what the suggestion learns from.
     loadGroceries(db!, h.id),
+    // [PTS-09] Give a penalty, while penalties are on (WP-120).
+    loadPenaltySettings(db!, h.id),
+    loadMembers(db!, h.id),
   ]);
   for (const r of [approvals, requests, boards, calendars, menus, jobs, years, closures, names]) {
     if (r.error) throw new Error(`home: ${r.error.message}`);
@@ -257,7 +265,23 @@ export default async function AdminHome({
       notice={
         Object.keys(params).find((k) => k === 'welcome' || k === 'joined' || k === 'password') ??
         params.done ??
-        null
+        (params.penalty === 'given' ? 'penalty-given' : null)
+      }
+      penalty={
+        penaltySettings.on
+          ? {
+              people: members
+                .filter((m) => m.earnsRewards && !m.archivedAt)
+                .map((m) => ({
+                  id: m.id,
+                  displayName: m.displayName,
+                  avatarKey: m.avatarKey,
+                  color: m.color,
+                })),
+              reasons: penaltySettings.reasons,
+              requestId: randomUUID(),
+            }
+          : null
       }
     />
   );

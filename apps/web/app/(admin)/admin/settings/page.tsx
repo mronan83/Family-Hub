@@ -7,6 +7,7 @@ import {
   calendarsStatus,
   familyStatus,
   healthStatus,
+  penaltiesStatus,
   remindersStatus,
   schoolStatus,
   tagsStatus,
@@ -15,6 +16,7 @@ import { serverClient } from '@/lib/supabase/server';
 import { loadApprovalMode, loadTags } from '../chores/data';
 import { loadMembers } from '../members/data';
 import { loadDevices, loadSettings } from '../reminders/data';
+import { loadPenaltySettings } from '../penalties/data';
 import { loadYears } from '../school/data';
 import { SettingsView } from './view';
 
@@ -26,24 +28,26 @@ export default async function SettingsPage() {
   const user = await requireSignedIn(db, '/admin/settings');
   const household = await adminHousehold(db!, user.userId);
   if (!household) redirect('/setup');
-  const [years, calendars, boards, tags, members, jobs, approval, week] = await Promise.all([
-    loadYears(db!, household.id),
-    db!.from('calendar_source').select('name, status').eq('household_id', household.id),
-    db!
-      .from('device')
-      .select('name, revoked_at')
-      .eq('household_id', household.id)
-      .order('created_at'),
-    loadTags(db!, household.id),
-    loadMembers(db!, household.id),
-    db!.rpc('job_health', { p_household_id: household.id }),
-    loadApprovalMode(db!, household.id),
-    db!
-      .from('household_settings')
-      .select('week_start_next, week_start_next_on')
-      .eq('household_id', household.id)
-      .maybeSingle(),
-  ]);
+  const [years, calendars, boards, tags, members, jobs, approval, week, penalties] =
+    await Promise.all([
+      loadYears(db!, household.id),
+      db!.from('calendar_source').select('name, status').eq('household_id', household.id),
+      db!
+        .from('device')
+        .select('name, revoked_at')
+        .eq('household_id', household.id)
+        .order('created_at'),
+      loadTags(db!, household.id),
+      loadMembers(db!, household.id),
+      db!.rpc('job_health', { p_household_id: household.id }),
+      loadApprovalMode(db!, household.id),
+      db!
+        .from('household_settings')
+        .select('week_start_next, week_start_next_on')
+        .eq('household_id', household.id)
+        .maybeSingle(),
+      loadPenaltySettings(db!, household.id),
+    ]);
   for (const r of [calendars, boards, jobs]) {
     if (r.error) throw new Error(`settings: ${r.error.message}`);
   }
@@ -84,6 +88,7 @@ export default async function SettingsPage() {
           })),
         ),
         '/admin/tags': tagsStatus(tags.map((t) => ({ archived: !!t.archivedAt }))),
+        '/admin/settings/penalties': penaltiesStatus(penalties.on, penalties.reasons.length),
         '/admin/reminders': remindersStatus(!!me, !!reminders?.enabled, devices),
         '/admin/health': healthStatus(needLook, cals.filter((c) => c.status === 'error').length),
       }}

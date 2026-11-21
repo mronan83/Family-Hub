@@ -342,6 +342,27 @@ const SHOTS = [
     full: true,
     quality: 64,
   },
+  // [PTS-09] Penalties (WP-120): Settings' Penalties, Home's Give a penalty, Maya's Penalties, and
+  // the board with a penalty and what Maya owes.
+  { name: 'admin-penalties-settings-phone', device: 'phone', url: '/dev/settings/penalties' },
+  {
+    name: 'admin-penalty-give-phone',
+    device: 'phone',
+    url: '/dev/home?penalties=1',
+    element: '#penalties',
+  },
+  {
+    name: 'admin-member-penalties-laptop',
+    device: 'laptop',
+    url: '/dev/members?page=member&penalties=1',
+    element: 'details:has(#penalties-heading)',
+  },
+  {
+    name: 'board-penalties',
+    device: 'board',
+    url: '/dev/board?penalties=1',
+    act: (page) => person(page, 'Maya').click(),
+  },
   // [PTS-08] The points register (WP-115): its filters and the first two days.
   {
     name: 'admin-points-register-phone',

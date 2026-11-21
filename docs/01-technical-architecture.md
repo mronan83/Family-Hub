@@ -1,6 +1,7 @@
 # 01 — Technical Architecture
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.92: penalties (WP-120, D-154, D-156): `penalty` and `penalty_payment` in Realtime, so a money penalty or a payment tells the board to read again; the snapshot's `owes` per member while penalties are on; the ledger's `penalty` entries (§5.7, §7; `02` §4.2c).
 > v0.8.91: a parent marks a missed or late chore done on time (WP-117, D-151): the check-off says so and goals read its time; the admin app asks first when a settled week changes (§5.2).
 > v0.8.90: the e2e run reads the preview's own error log (WP-119, D-153): once a minute and before each verdict, with the Vercel CLI; a server error naming the infrastructure (a Supabase gateway's 502, a statement timeout) is a bad reading at its time (§9.5).
 > v0.8.89: staples (WP-106, D-150): `grocery_buys()` reads each thing's buys from the history; the admin app learns each gap and what is running low (`lib/grocery-staples.ts`) for Groceries' Running low? and Staples and Home's line; `set_grocery_staple()` keeps Not now and Don't suggest (§5.12).

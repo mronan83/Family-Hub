@@ -32,6 +32,7 @@ describe('the admin menu', () => {
       'Calendars',
       'Boards',
       'Tags',
+      'Penalties',
       'Reminders',
       'Health',
     ]);

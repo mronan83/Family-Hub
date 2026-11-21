@@ -5,7 +5,15 @@ import { isoDay } from './format';
  * [PTS-01][PTS-02] The points ledger as the app reads it (02 §4.2b, D-49). The database posts every
  * entry; the app only reads them and asks for adjustments.
  */
-export type LedgerEntryType = 'earn' | 'reversal' | 'bonus' | 'spend' | 'refund' | 'adjustment';
+export type LedgerEntryType =
+  | 'earn'
+  | 'reversal'
+  | 'bonus'
+  | 'spend'
+  | 'refund'
+  | 'adjustment'
+  /** [PTS-09] A penalty's points: taken (negative), or given back when it is taken back (WP-120). */
+  | 'penalty';
 
 export interface LedgerEntry {
   id: string;
@@ -132,6 +140,10 @@ export function ledgerLine(entry: LedgerEntry, adminName: (userId: string) => st
       return entry.label ?? 'Spent';
     case 'refund':
       return entry.label ?? 'Refunded';
+    case 'penalty':
+      return `${entry.amount < 0 ? 'Penalty' : 'Penalty taken back'}: ${entry.label ?? 'a penalty'} · by ${
+        entry.by ? adminName(entry.by) : 'an admin'
+      }`;
   }
 }
 
