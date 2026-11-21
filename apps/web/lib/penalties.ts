@@ -25,9 +25,15 @@ export interface Penalty {
   /** Points, or cents. */
   amount: number;
   givenAt: string;
-  givenBy: string;
+  /** The parent who gave it; null for a rule's miss (the system, WP-121). */
+  givenBy: string | null;
   takenBackAt: string | null;
   takenBackBy: string | null;
+  /** [PTS-10] The rule that added it, and the day missed (WP-121); null for a one-time penalty. */
+  ruleId?: string | null;
+  missedOn?: string | null;
+  /** [PTS-10] Taken back by a parent's Mark done on time (D-157). */
+  takenBackOnTime?: boolean;
   /** Cents still owed: a money penalty not taken back, less what was paid. Points: 0 (D-156). */
   owed: number;
 }
@@ -127,9 +133,12 @@ export interface PaidInput {
   requestId: string;
 }
 
-/** [PTS-09][US-1111] Record paid: from $0.01 up to what is owed on the penalty (D-156 (4)). */
-export function parsePaid(form: FormData, owed: number): Parsed<PaidInput> {
-  const penaltyId = String(form.get('penaltyId') ?? '');
+/**
+ * [PTS-09][US-1111] Record paid: from $0.01 up to what is owed on the penalty (D-156 (4)), or on a
+ * rule's misses (`field` 'ruleId', WP-121).
+ */
+export function parsePaid(form: FormData, owed: number, field = 'penaltyId'): Parsed<PaidInput> {
+  const penaltyId = String(form.get(field) ?? '');
   const requestId = String(form.get('requestId') ?? '');
   if (!UUID.test(penaltyId) || !UUID.test(requestId)) return { ok: false, message: BROKEN };
   const amount = parseMoney(String(form.get('amount') ?? ''));
@@ -208,9 +217,11 @@ export interface PenaltyEvent {
   /** "Rude to a sibling", "Left bike in the driveway, taken back", "Paid". */
   what: string;
   /** The tag beside it. */
-  tag: 'Penalty' | 'Taken back' | 'Paid';
-  /** Who did it (a user id). */
-  by: string;
+  tag: 'Penalty' | 'Taken back' | 'Paid' | 'Rule';
+  /** Who did it (a user id); null for a rule's miss, which nobody gave. */
+  by: string | null;
+  /** [PTS-10] The day a rule's miss was for (YYYY-MM-DD), shown in place of when it was added. */
+  day?: string | null;
   /** "−10 pts", "+$1 owed", "−$2 owed". */
   amount: string;
   /** The penalty a Take back would take back, while it can be. */
@@ -220,6 +231,33 @@ export interface PenaltyEvent {
 export function penaltyHistory(penalties: Penalty[], payments: PenaltyPayment[]): PenaltyEvent[] {
   const events: PenaltyEvent[] = [];
   for (const p of penalties) {
+    // [PTS-10] A rule's miss (WP-121): "Folder home, missed", tagged Rule, on the day it was for;
+    // a Mark done on time that took it back, "Folder home, marked on time" (D-157).
+    if (p.ruleId) {
+      events.push({
+        key: `${p.id}:given`,
+        at: p.givenAt,
+        what: `${p.reason}, missed`,
+        tag: 'Rule',
+        by: null,
+        day: p.missedOn ?? null,
+        amount: p.unit === 'points' ? `−${p.amount} pts` : `+${money(p.amount)} owed`,
+        takeBack: null,
+      });
+      if (p.takenBackAt) {
+        events.push({
+          key: `${p.id}:back`,
+          at: p.takenBackAt,
+          what: `${p.reason}, ${p.takenBackOnTime ? 'marked on time' : 'taken back'}`,
+          tag: 'Taken back',
+          by: p.takenBackBy,
+          day: p.missedOn ?? null,
+          amount: p.unit === 'points' ? `+${p.amount} pts` : `−${money(p.amount)} owed`,
+          takeBack: null,
+        });
+      }
+      continue;
+    }
     events.push({
       key: `${p.id}:given`,
       at: p.givenAt,

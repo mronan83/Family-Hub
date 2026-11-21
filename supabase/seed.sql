@@ -233,9 +233,11 @@ select m.household_id, m.id, 'adjustment', 10, 'Helped carry the shopping',
   from public.member m
  where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Leo';
 
--- [PTS-09] Penalties (WP-120, the approved mockup): on for the demo family, with four reasons. Maya
--- owes $3 (the bike $1 three days ago; the homework folder $4 two days ago, $2 of it paid yesterday),
--- and Sam took 10 points from her today for being rude to a sibling. Made up.
+-- [PTS-09][PTS-10] Penalties (WP-120 and WP-121, the approved mockup): on for the demo family, with
+-- four reasons. Maya owes $3: the bike $1 three days ago, and the rule "Folder home" ($1 a missed
+-- Homework day, max $10) for the last two weekdays. Leo has the rule "Bed by 8" (5 points a missed
+-- Bedroom chore, max 25) with nothing missed yet. Sam took 10 points from Maya today for being rude to
+-- a sibling. Made up.
 update public.household_settings set penalties_on = true
  where household_id = '0de00000-0000-4000-8000-000000000001';
 insert into public.penalty_reason (id, household_id, name, unit, amount, created_by, created_at)
@@ -243,21 +245,41 @@ values
   ('0de00000-0000-4000-8000-0000000ae001', '0de00000-0000-4000-8000-000000000001', 'Rude to a sibling', 'points', 10, '0de00000-0000-4000-8000-0000000000a1', now() - interval '10 days'),
   ('0de00000-0000-4000-8000-0000000ae002', '0de00000-0000-4000-8000-000000000001', 'Screen time after bedtime', 'points', 20, '0de00000-0000-4000-8000-0000000000a1', now() - interval '10 days' + interval '1 second'),
   ('0de00000-0000-4000-8000-0000000ae003', '0de00000-0000-4000-8000-000000000001', 'Left bike in the driveway', 'money', 100, '0de00000-0000-4000-8000-0000000000a1', now() - interval '10 days' + interval '2 seconds'),
-  ('0de00000-0000-4000-8000-0000000ae004', '0de00000-0000-4000-8000-000000000001', 'Homework folder not home', 'money', 200, '0de00000-0000-4000-8000-0000000000a1', now() - interval '10 days' + interval '3 seconds');
+  ('0de00000-0000-4000-8000-0000000ae004', '0de00000-0000-4000-8000-000000000001', 'Homework folder not home', 'money', 100, '0de00000-0000-4000-8000-0000000000a1', now() - interval '10 days' + interval '3 seconds');
 insert into public.penalty (id, household_id, member_id, reason_id, reason, unit, amount, given_by, given_at, dedupe_key)
 select x.id::uuid, m.household_id, m.id, x.reason_id::uuid, x.reason, x.unit, x.amount, x.by::uuid, now() - x.ago, 'pen:' || x.id
   from public.member m
   cross join (values
     ('0de00000-0000-4000-8000-0000000af001', '0de00000-0000-4000-8000-0000000ae003', 'Left bike in the driveway', 'money', 100,
      '0de00000-0000-4000-8000-0000000000a1', interval '3 days'),
-    ('0de00000-0000-4000-8000-0000000af002', '0de00000-0000-4000-8000-0000000ae004', 'Homework folder not home', 'money', 400,
-     '0de00000-0000-4000-8000-0000000000a1', interval '2 days'),
     ('0de00000-0000-4000-8000-0000000af004', '0de00000-0000-4000-8000-0000000ae001', 'Rude to a sibling', 'points', 10,
      '0de00000-0000-4000-8000-0000000000a2', interval '1 hour')) x (id, reason_id, reason, unit, amount, by, ago)
  where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Maya';
-insert into public.penalty_payment (household_id, penalty_id, amount, recorded_by, recorded_at, dedupe_key)
-values ('0de00000-0000-4000-8000-000000000001', '0de00000-0000-4000-8000-0000000af002', 200,
-        '0de00000-0000-4000-8000-0000000000a2', now() - interval '1 day', 'paid:' || '0de00000-0000-4000-8000-0000000af002');
+with today as (select (now() at time zone 'America/New_York')::date as d)
+insert into public.penalty_rule (id, household_id, name, reason_id, unit, amount, max_amount, scope, tag_id,
+                                 start_date, end_date, accrued_through, created_by, created_at)
+select x.id::uuid, '0de00000-0000-4000-8000-000000000001', x.name, x.reason_id::uuid, x.unit, x.amount, x.max,
+       x.scope, x.tag_id::uuid, d - 5, d + 70, d - 1, '0de00000-0000-4000-8000-0000000000a1', now() - interval '6 days'
+  from today, (values
+    ('0de00000-0000-4000-8000-0000000a9001', 'Folder home', '0de00000-0000-4000-8000-0000000ae004', 'money', 100, 1000, 'items', null),
+    ('0de00000-0000-4000-8000-0000000a9002', 'Bed by 8', '0de00000-0000-4000-8000-0000000ae002', 'points', 5, 25, 'tag',
+     '0de00000-0000-4000-8000-0000000a0003')) x (id, name, reason_id, unit, amount, max, scope, tag_id);
+insert into public.penalty_rule_member (household_id, rule_id, member_id)
+select m.household_id, x.rule_id::uuid, m.id
+  from (values ('0de00000-0000-4000-8000-0000000a9001', 'Maya'), ('0de00000-0000-4000-8000-0000000a9002', 'Leo')) x (rule_id, name)
+  join public.member m on m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = x.name;
+insert into public.penalty_rule_chore (household_id, rule_id, chore_id)
+values ('0de00000-0000-4000-8000-000000000001', '0de00000-0000-4000-8000-0000000a9001', '0de00000-0000-4000-8000-0000000c0005');
+with today as (select (now() at time zone 'America/New_York')::date as d)
+insert into public.penalty (household_id, member_id, reason_id, reason, unit, amount, given_by, given_at, dedupe_key,
+                            rule_id, missed_on)
+select m.household_id, m.id, '0de00000-0000-4000-8000-0000000ae004', 'Folder home', 'money', 100, null,
+       (w.day + 1)::timestamp at time zone 'America/New_York' + interval '5 minutes',
+       'rule:0de00000-0000-4000-8000-0000000a9001:' || w.day, '0de00000-0000-4000-8000-0000000a9001', w.day
+  from public.member m,
+       (select g::date as day from today, generate_series(d - 7, d - 1, interval '1 day') g
+         where extract(isodow from g) < 6 order by g desc limit 2) w
+ where m.household_id = '0de00000-0000-4000-8000-000000000001' and m.display_name = 'Maya';
 insert into public.points_ledger (household_id, member_id, entry_type, amount, reason, dedupe_key,
                                   created_by_type, created_by, created_at, penalty_id)
 select p.household_id, p.member_id, 'penalty', -p.amount, p.reason, 'pen:' || p.id, 'admin', p.given_by, p.given_at, p.id

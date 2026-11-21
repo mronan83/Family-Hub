@@ -11,6 +11,7 @@ import {
   PENALTY_ADMINS,
   PENALTY_PEOPLE,
   PENALTY_REASONS,
+  penaltyRules,
 } from '../penalties-fixture';
 
 // [ACC-04][PTS-01][NFR-18] Members and a member's page (WP-95) with the made-up family and no
@@ -20,7 +21,8 @@ import {
 // [CHR-24] ?late=1: Maya's Missed or late open (WP-117), one missed, one ticked late and one marked on
 // time; ?late=open also opens the missed one's Done on time…. [PTS-09] ?penalties=1: penalties on and
 // Maya's Penalties open (WP-120): she owes $3, with today's points penalty and one taken back;
-// ?penalties=give also opens Give a penalty.
+// ?penalties=give also opens Give a penalty. [PTS-10] She owes $2 of it on the rule "Folder home",
+// missed Tue and Wed (WP-121).
 export const metadata: Metadata = { title: 'Members', robots: { index: false } };
 
 const ALEX_USER = 'a1000000-0000-4000-8000-000000000001';
@@ -229,6 +231,7 @@ export default async function DevMembersPage({
                 notice={null}
                 open
                 giveOpen={p.penalties === 'give'}
+                rules={penaltyRules('2026-10-15')}
               />
             ) : null
           }

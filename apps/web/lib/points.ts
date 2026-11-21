@@ -141,8 +141,9 @@ export function ledgerLine(entry: LedgerEntry, adminName: (userId: string) => st
     case 'refund':
       return entry.label ?? 'Refunded';
     case 'penalty':
-      return `${entry.amount < 0 ? 'Penalty' : 'Penalty taken back'}: ${entry.label ?? 'a penalty'} · by ${
-        entry.by ? adminName(entry.by) : 'an admin'
+      // [PTS-10] A rule's miss is the system's (WP-121): no parent gave it.
+      return `${entry.amount < 0 ? 'Penalty' : 'Penalty taken back'}: ${entry.label ?? 'a penalty'}${
+        entry.by ? ` · by ${adminName(entry.by)}` : ''
       }`;
   }
 }
