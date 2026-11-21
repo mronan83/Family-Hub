@@ -177,7 +177,8 @@ test.describe('the admin app', () => {
     await expect(history.first()).toContainText('Today Rude to a sibling Penalty by Sam');
     await expect(history.first()).toContainText('−10 pts');
     // Take back on each penalty not yet taken back, and never on a payment or a take-back.
-    await expect(page.getByRole('button', { name: 'Take back' })).toHaveCount(2);
+    // A rule's misses have Take back too (the owner, 21 November).
+    await expect(page.getByRole('button', { name: 'Take back' })).toHaveCount(4);
     await expect(history.filter({ hasText: 'Taken back' })).toHaveCount(1);
     await open(page, '/dev/members?page=member&penalties=give');
     const give = page.getByRole('form', { name: 'Give a penalty' });
@@ -280,8 +281,8 @@ test.describe('the admin app', () => {
     ).toHaveValue('2');
     const history = page.getByRole('list', { name: 'Maya’s penalties' }).getByRole('listitem');
     await expect(history.filter({ hasText: 'Folder home, missed' })).toHaveText([
-      /Yesterday Folder home, missed Rule\s*\+\$1 owed/,
-      /Tue, Oct 13 Folder home, missed Rule\s*\+\$1 owed/,
+      /Yesterday Folder home, missed Rule\s*Take back\s*\+\$1 owed/,
+      /Tue, Oct 13 Folder home, missed Rule\s*Take back\s*\+\$1 owed/,
     ]);
   });
 
@@ -290,5 +291,41 @@ test.describe('the admin app', () => {
     const row = page.locator('.fw-row', { hasText: 'Bed by 8, missed Saturday' });
     await expect(row).toContainText('rule Bed by 8');
     await expect(row).toContainText('−5');
+  });
+
+  test('[PTS-10-n] Maya’s Penalties: Take back on each rule miss not taken back', async ({
+    page,
+  }) => {
+    await open(page, '/dev/members?page=member&penalties=1');
+    const misses = page
+      .getByRole('list', { name: 'Maya’s penalties' })
+      .getByRole('listitem')
+      .filter({ hasText: 'Folder home, missed' });
+    await expect(misses).toHaveCount(2);
+    for (const row of await misses.all()) {
+      await expect(row.getByRole('button', { name: 'Take back' })).toBeVisible();
+    }
+  });
+
+  test('[PTS-10-o][PTS-10-p] the rule page: Stop now, and Remove only while it has added nothing', async ({
+    page,
+  }) => {
+    await open(page, '/dev/settings/penalties/rule');
+    const stop = page.getByRole('region', { name: 'Stop or remove' });
+    await expect(stop.getByRole('button', { name: 'Stop now' })).toBeVisible();
+    await expect(stop.getByRole('button', { name: 'Remove the rule' })).toHaveCount(0);
+    await expect(stop).toContainText(
+      'It has added 2 misses, so it can’t be removed; stop it instead.',
+    );
+    await open(page, '/dev/settings/penalties/rule?rule=bed');
+    await expect(
+      page
+        .getByRole('region', { name: 'Stop or remove' })
+        .getByRole('button', { name: 'Remove the rule' }),
+    ).toBeVisible();
+    await open(page, '/dev/settings/penalties/rule?state=stopped');
+    await expect(page.getByText(/^Stopped Nov 19\. It adds nothing more/)).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Stop or remove' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Save the rule' })).toBeDisabled();
   });
 });

@@ -16,5 +16,5 @@ export default async function PenaltyRulePage({ params }: { params: Promise<{ id
   if (!household) redirect('/setup');
   const f = await loadRuleForm(db!, household, id);
   if (!f.rule) notFound();
-  return <RuleView {...f} />;
+  return <RuleView {...f} timezone={household.timezone} />;
 }

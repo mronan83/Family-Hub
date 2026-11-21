@@ -10,7 +10,8 @@ import {
 
 // [PTS-10] A penalty rule's page (WP-121) with the made-up family and no database, for the UI suite and
 // the side-by-side: "Folder home", $1 a missed school day for Maya, max $10. ?state=new for Add a rule;
-// ?theme=evening.
+// ?rule=bed for "Bed by 8", which has added nothing (Remove offered); ?state=stopped for a stopped
+// rule; ?theme=evening.
 export const metadata: Metadata = { title: 'Penalty rule', robots: { index: false } };
 
 const TODAY = '2026-11-19';
@@ -18,13 +19,21 @@ const TODAY = '2026-11-19';
 export default async function DevPenaltyRulePage({
   searchParams,
 }: {
-  searchParams: Promise<{ theme?: string; state?: string }>;
+  searchParams: Promise<{ theme?: string; state?: string; rule?: string }>;
 }) {
   const p = await searchParams;
   return (
     <div className={`admin ${p.theme === 'evening' ? 'theme-evening' : 'theme-day'}`}>
       <RuleView
-        rule={p.state === 'new' ? null : penaltyRules(TODAY)[0]!}
+        rule={
+          p.state === 'new'
+            ? null
+            : {
+                ...penaltyRules(TODAY)[p.rule === 'bed' ? 1 : 0]!,
+                ...(p.state === 'stopped' ? { stoppedAt: '2026-11-19T15:00:00Z' } : {}),
+              }
+        }
+        timezone="America/Chicago"
         reasons={PENALTY_REASONS}
         people={PENALTY_PEOPLE}
         chores={RULE_CHORES}

@@ -721,11 +721,12 @@ Add one: in **Settings**, choose **Penalties**, then **Add a rule** under **Pena
 - **What never adds:** a day the chore was skipped or done by someone else, a day off or a no-school day, a day before the start or after the end date, and any day while penalties are off.
 - **The max** is the most the rule has on a child at once: in money, what is owed on it; in points, the points it took. Once it's paid down, new misses add again.
 - **Mark done on time** on a missed day (on **Today** or the child's **Missed or late**) takes back what that day added. **Uncheck** it and the miss counts again.
-- **Edit** changes a rule from the next day close; what it already added stays. To stop a rule, set its end date. Settings lists each rule with what it has on each child ("Maya owes $2", "Leo: 10 of 25 points taken").
+- **Edit** changes a rule from the next day close; what it already added stays. Settings lists each rule with what it has on each child ("Maya owes $2", "Leo: 10 of 25 points taken").
+- **Stop now**, under **Stop or remove** on the rule's page, ends it at once: nothing more is added, and what it added stays until it's paid or taken back. A stopped rule can't be changed or started again; add a new one instead. **Remove the rule** is there only while it hasn't added anything.
 
 ![Penalty rules in Settings on a phone: Folder home, Maya · Homework folder home · $1 a missed school day · max $10 · Nov 16 to Jan 31, Maya owes $2, Edit; Bed by 8, Leo · tag Bedtime · 5 points a miss · max 25 points, Nothing owed, Edit; and Add a rule.](guide/img/admin-penalty-rules-phone.jpg "Penalty rules, on a phone")
 
-**What a child owes on a rule.** Under the child's **Penalties**, a rule's misses are one line: its name, what's owed, and the days missed ("missed Tue and Wed"), with **Record paid** for all or part of it (oldest days first). **History** lists each miss ("Folder home, missed", tagged **Rule**) on the day it was for. On the board, the **Owes** card shows it on one line, "Folder home: missed Tue and Wed $2". In points, each miss is taken at once and shows in the points list and the register as a **Penalty** ("Bed by 8, missed Saturday", "rule Bed by 8").
+**What a child owes on a rule.** Under the child's **Penalties**, a rule's misses are one line: its name, what's owed, and the days missed ("missed Tue and Wed"), with **Record paid** for all or part of it (oldest days first). **History** lists each miss ("Folder home, missed", tagged **Rule**) on the day it was for, with **Take back** to undo one given by mistake. On the board, the **Owes** card shows it on one line, "Folder home: missed Tue and Wed $2". In points, each miss is taken at once and shows in the points list and the register as a **Penalty** ("Bed by 8, missed Saturday", "rule Bed by 8").
 
 #### Wishes: saving up
 

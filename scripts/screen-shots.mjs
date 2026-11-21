@@ -174,6 +174,9 @@ export const ADMIN = [
   // [PTS-10] WP-121's penalty rules: Settings' Penalty rules (penalty-settings above), the rule form,
   // and a rule's misses on Maya's page (penalty-member above) and in the register (penalty-register).
   ['penalty-rule', '/dev/settings/penalties/rule'],
+  // Remove offered while a rule has added nothing, and a stopped rule (the owner, 21 November).
+  ['penalty-rule-remove', '/dev/settings/penalties/rule?rule=bed'],
+  ['penalty-rule-stopped', '/dev/settings/penalties/rule?state=stopped'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of

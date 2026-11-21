@@ -12,6 +12,7 @@ import {
   ruleMessage,
   ruleOwing,
   ruleStatus,
+  stoppedWords,
 } from './penalty-rules';
 import { ledgerLine } from './points';
 import { entryWords, type RegisterEntry } from './points-register';
@@ -146,7 +147,7 @@ describe('penalty rules in words (WP-121)', () => {
     ]);
   });
 
-  it('[PTS-10-j] the history: a rule\'s miss is "Folder home, missed", tagged Rule, given by nobody', () => {
+  it('[PTS-10-j][PTS-10-n] the history: a rule\'s miss is "Folder home, missed", tagged Rule, given by nobody, with Take back until taken back', () => {
     const penalties = withOwed(
       [
         {
@@ -183,7 +184,7 @@ describe('penalty rules in words (WP-121)', () => {
       penaltyHistory(penalties, []).map((e) => [e.what, e.tag, e.by, e.day, e.amount, e.takeBack]),
     ).toEqual([
       ['Folder home, marked on time', 'Taken back', 'u-alex', '2026-11-16', '−$1 owed', null],
-      ['Folder home, missed', 'Rule', null, '2026-11-17', '+$1 owed', null],
+      ['Folder home, missed', 'Rule', null, '2026-11-17', '+$1 owed', 'p1'],
       ['Folder home, missed', 'Rule', null, '2026-11-16', '+$1 owed', null],
     ]);
     expect(penalties.map((p) => p.owed)).toEqual([100, 0]);
@@ -291,6 +292,15 @@ describe('the rule form (WP-121)', () => {
     expect(ruleMessage({ hint: 'start_past' })).toBe('A rule starts today or later.');
     expect(ruleMessage({ hint: 'unit_changed' })).toMatch(/keeps points or money/);
     expect(ruleMessage({ code: '42501' })).toBe('Only a parent of this household can do that.');
+    expect(ruleMessage({ hint: 'rule_stopped' })).toMatch(/was stopped/);
+    expect(ruleMessage({ hint: 'rule_used' })).toMatch(/Stop it instead/);
     expect(ruleMessage({})).toBe('Nothing was changed. Try again in a moment.');
+  });
+});
+
+describe('a stopped rule (WP-121)', () => {
+  it("[PTS-10-o] says when it was stopped, on the household's own day", () => {
+    expect(stoppedWords('2026-11-21T03:30:00Z', 'America/Chicago')).toBe('Stopped Nov 20');
+    expect(stoppedWords('2026-11-21T15:00:00Z', 'America/Chicago')).toBe('Stopped Nov 21');
   });
 });

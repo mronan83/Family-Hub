@@ -102,7 +102,7 @@ export async function loadPenaltyRules(
   const rules = await db
     .from('penalty_rule')
     .select(
-      'id, name, reason_id, unit, amount, max_amount, scope, tag_id, start_date, end_date, penalty_rule_member(member_id), penalty_rule_chore(chore_id), tag(name)',
+      'id, name, reason_id, unit, amount, max_amount, scope, tag_id, start_date, end_date, stopped_at, penalty_rule_member(member_id), penalty_rule_chore(chore_id), tag(name)',
     )
     .eq('household_id', householdId)
     .order('created_at')
@@ -122,15 +122,17 @@ export async function loadPenaltyRules(
     loadRuleChores(db, householdId, choreIds),
     db
       .from('penalty')
-      .select('id, rule_id, member_id, unit, amount, penalty_payment(amount)')
-      .in('rule_id', ruleIds)
-      .is('taken_back_at', null),
+      .select('id, rule_id, member_id, unit, amount, taken_back_at, penalty_payment(amount)')
+      .in('rule_id', ruleIds),
   ]);
   if (misses.error) throw new Error(`penalty rule misses: ${misses.error.message}`);
   return rows.map((r) => {
     const held: Record<string, number> = {};
+    let added = 0;
     for (const m of misses.data ?? []) {
       if (m.rule_id !== r.id) continue;
+      added += 1;
+      if (m.taken_back_at) continue;
       const paid = ((m.penalty_payment as { amount: number }[] | null) ?? []).reduce(
         (t, x) => t + x.amount,
         0,
@@ -159,6 +161,8 @@ export async function loadPenaltyRules(
       startDate: r.start_date as string,
       endDate: r.end_date as string,
       held,
+      stoppedAt: (r.stopped_at as string | null) ?? null,
+      added,
     };
   });
 }

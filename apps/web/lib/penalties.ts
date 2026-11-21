@@ -231,8 +231,8 @@ export interface PenaltyEvent {
 export function penaltyHistory(penalties: Penalty[], payments: PenaltyPayment[]): PenaltyEvent[] {
   const events: PenaltyEvent[] = [];
   for (const p of penalties) {
-    // [PTS-10] A rule's miss (WP-121): "Folder home, missed", tagged Rule, on the day it was for;
-    // a Mark done on time that took it back, "Folder home, marked on time" (D-157).
+    // [PTS-10] A rule's miss (WP-121): "Folder home, missed", tagged Rule, on the day it was for, with
+    // Take back; a Mark done on time or a Take back that took it back (D-157).
     if (p.ruleId) {
       events.push({
         key: `${p.id}:given`,
@@ -242,7 +242,8 @@ export function penaltyHistory(penalties: Penalty[], payments: PenaltyPayment[])
         by: null,
         day: p.missedOn ?? null,
         amount: p.unit === 'points' ? `−${p.amount} pts` : `+${money(p.amount)} owed`,
-        takeBack: null,
+        // A parent may take a rule's miss back too (the owner, 21 November; D-157).
+        takeBack: p.takenBackAt ? null : p.id,
       });
       if (p.takenBackAt) {
         events.push({

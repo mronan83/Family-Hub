@@ -185,6 +185,8 @@ export function penaltyRules(today: string): PenaltyRule[] {
       startDate: shift(-3),
       endDate: shift(73),
       held: { [maya!]: 200 },
+      stoppedAt: null,
+      added: 2,
     },
     {
       id: PENALTY_RULE_IDS.bed,
@@ -201,6 +203,8 @@ export function penaltyRules(today: string): PenaltyRule[] {
       startDate: shift(-17),
       endDate: shift(43),
       held: {},
+      stoppedAt: null,
+      added: 0,
     },
   ];
 }

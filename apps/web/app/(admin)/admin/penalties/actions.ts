@@ -217,3 +217,31 @@ export async function recordRulePaid(_prev: FormState, form: FormData): Promise<
   revalidatePath('/admin', 'layout');
   redirect(`${back}?penalty=paid#penalties`);
 }
+
+/** [PTS-10][US-1112] Stop now: the rule adds nothing more; what it added stays (stop_penalty_rule). */
+export async function stopRule(form: FormData): Promise<void> {
+  const { db } = await context(SETTINGS);
+  const { error } = await db.rpc('stop_penalty_rule', {
+    p_rule_id: String(form.get('ruleId') ?? ''),
+  });
+  if (error) {
+    log('warn', 'penalty rule not stopped', { code: error.code, hint: error.hint });
+    redirect(`${SETTINGS}?done=failed#rules`);
+  }
+  revalidatePath('/admin', 'layout');
+  redirect(`${SETTINGS}?done=rule-stopped#rules`);
+}
+
+/** [PTS-10][US-1112] Remove a rule that has added nothing (remove_penalty_rule). */
+export async function removeRule(form: FormData): Promise<void> {
+  const { db } = await context(SETTINGS);
+  const { error } = await db.rpc('remove_penalty_rule', {
+    p_rule_id: String(form.get('ruleId') ?? ''),
+  });
+  if (error) {
+    log('warn', 'penalty rule not removed', { code: error.code, hint: error.hint });
+    redirect(`${SETTINGS}?done=${error.hint === 'rule_used' ? 'rule-used' : 'failed'}#rules`);
+  }
+  revalidatePath('/admin', 'layout');
+  redirect(`${SETTINGS}?done=rule-removed#rules`);
+}

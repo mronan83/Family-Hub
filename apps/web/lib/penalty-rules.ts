@@ -46,6 +46,10 @@ export interface PenaltyRule {
   endDate: string;
   /** What it has on each person now: cents owed, or points it took (D-157). */
   held: Record<string, number>;
+  /** [PTS-10] When a parent stopped it (Stop now), or null while it runs (D-157). */
+  stoppedAt?: string | null;
+  /** [PTS-10] How many misses it has ever added, taken back ones included: Remove only at 0. */
+  added?: number;
 }
 
 export const MAX_RULE_NAME = 80;
@@ -267,9 +271,19 @@ export function ruleMessage(error: { code?: string; hint?: string | null }): str
       return 'A points penalty is settled when it’s taken; there’s nothing to pay.';
     case 'request_reused':
       return 'That form was already used. Reload the page to make another change.';
+    case 'rule_stopped':
+      return 'This rule was stopped, so it can’t be changed. Add a new rule instead.';
+    case 'rule_used':
+      return 'This rule has added misses, so it can’t be removed. Stop it instead.';
   }
   if (error.code === '42501') return 'Only a parent of this household can do that.';
   return 'Nothing was changed. Try again in a moment.';
+}
+
+/** [PTS-10] "Stopped Nov 21", from when a parent stopped it, in the household's time zone. */
+export function stoppedWords(stoppedAt: string, timezone: string): string {
+  const day = new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(new Date(stoppedAt));
+  return `Stopped ${monthDay(day)}`;
 }
 
 /** A rule's misses on one person, for their page: what is owed on it and the days still owed. */

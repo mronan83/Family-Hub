@@ -1,7 +1,7 @@
 import { Banner, Button } from '@familywise/ui';
 import Link from 'next/link';
 import { penaltyAmount, type PenaltyReason } from '@/lib/penalties';
-import { type PenaltyRule, ruleLine, ruleStatus } from '@/lib/penalty-rules';
+import { type PenaltyRule, ruleLine, ruleStatus, stoppedWords } from '@/lib/penalty-rules';
 import { AdminHeader } from '../../header';
 import type { NavWho } from '../../nav';
 import { removeReason, setPenaltiesOn } from '../../penalties/actions';
@@ -17,6 +17,15 @@ export const PENALTY_SETTINGS_NOTICES: Record<string, { kind: 'info' | 'notice';
     text: 'Rule added. Each miss adds to what’s owed when the day closes.',
   },
   'rule-saved': { kind: 'info', text: 'Rule saved. It counts from the next day close.' },
+  'rule-stopped': {
+    kind: 'info',
+    text: 'Rule stopped. It adds nothing more; what it added stays until it’s paid or taken back.',
+  },
+  'rule-removed': { kind: 'info', text: 'Rule removed.' },
+  'rule-used': {
+    kind: 'notice',
+    text: 'That rule has added misses, so it can’t be removed. Stop it instead.',
+  },
   failed: { kind: 'notice', text: 'That didn’t save. Try again in a moment.' },
 };
 
@@ -34,6 +43,7 @@ export function PenaltySettingsView({
   who,
   rules = [],
   names = {},
+  timezone = 'UTC',
 }: {
   on: boolean;
   reasons: PenaltyReason[];
@@ -41,6 +51,8 @@ export function PenaltySettingsView({
   rules?: PenaltyRule[];
   /** Display names by member id. */
   names?: Record<string, string>;
+  /** The household's time zone, for when a rule was stopped. */
+  timezone?: string;
   notice?: string | null;
   waiting?: number;
   who?: NavWho | null;
@@ -131,7 +143,10 @@ export function PenaltySettingsView({
                 <span className="fw-item__body">
                   <strong>{r.name}</strong>
                   <span className="fw-muted">{ruleLine(r, name)}</span>
-                  <span className="fw-penalty__status">{ruleStatus(r, name)}</span>
+                  <span className="fw-penalty__status">
+                    {r.stoppedAt ? `${stoppedWords(r.stoppedAt, timezone)} · ` : ''}
+                    {ruleStatus(r, name)}
+                  </span>
                 </span>
                 <Link
                   href={`/admin/settings/penalties/rules/${r.id}`}

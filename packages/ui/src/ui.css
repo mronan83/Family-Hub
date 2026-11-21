@@ -8346,6 +8346,17 @@ details:not([open]) > .fw-fold__head .fw-fold__count {
 .fw-seg__item[data-on] {
   cursor: default;
 }
+.fw-rule__end {
+  display: grid;
+  gap: var(--s-2);
+  justify-items: start;
+  padding-top: var(--s-3);
+  border-top: var(--border-w) solid var(--line);
+}
+.fw-rule__end:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
 .fw-rule__never {
   margin: 0;
   padding-left: 18px;

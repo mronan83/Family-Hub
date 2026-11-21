@@ -4,7 +4,7 @@
 -- penalties are off; Mark done on time takes a miss back and Uncheck adds it again; Record paid on a
 -- rule; who may; the board's snapshot; the points register.
 begin;
-select plan(46);
+select plan(59);
 
 insert into auth.users (id, email) values
   ('66100000-0000-0000-0000-0000000000a1', 'alex@example.com'),
@@ -289,6 +289,57 @@ select pg_temp.parent();
 select is((select array_agg(distinct penalty_rule) from public.points_register('66000000-0000-0000-0000-000000000001',
              array['66110000-0000-0000-0000-00000000000b']::uuid[], array['penalty'])),
   array['Bed by 8'], '[PTS-10-i] the register lists a rule''s misses as Penalty, naming the rule');
+
+
+-- PTS-10-n: Take back on a rule's miss (the owner, 21 November) --------------------------------------
+select pg_temp.parent();
+select is((public.take_back_penalty((select id from public.penalty where rule_id = pg_temp.id('r2')
+             and missed_on = pg_temp.today() - 4 and taken_back_at is null)) ->> 'owed')::integer, 0,
+  '[PTS-10-n] a parent takes back a rule''s points miss');
+select is((select count(*) from public.points_ledger l join public.penalty p on p.id = l.penalty_id
+            where p.missed_on = pg_temp.today() - 4 and p.rule_id = pg_temp.id('r2') and l.amount = 2), 1::bigint,
+  '[PTS-10-n] its points come back');
+select is((public.take_back_penalty((select id from public.penalty where rule_id = pg_temp.id('r1')
+             and missed_on = pg_temp.today() - 2)) ->> 'owed')::integer, 0,
+  '[PTS-10-n] and a money miss owes nothing more');
+select pg_temp.as_owner();
+select is(private.penalty_rule_held(pg_temp.id('r1'), '66110000-0000-0000-0000-00000000000a'), 300,
+  '[PTS-10-n] what the rule has on Maya drops by it');
+select pg_temp.parent();
+
+-- PTS-10-o: Stop now (the owner, 21 November) --------------------------------------------------------
+select is((public.stop_penalty_rule(pg_temp.id('r1')) ->> 'stopped_at') is not null, true,
+  '[PTS-10-o] a parent stops a rule now');
+select throws_ok(format('select public.save_penalty_rule(%L, %L)', '66000000-0000-0000-0000-000000000001',
+  pg_temp.rule('Folder home', 'folder', array['66110000-0000-0000-0000-00000000000a'], 'all', null, 0, 60, 100, 450,
+               null, pg_temp.id('r1'))),
+  '22023', 'this rule was stopped', '[PTS-10-o] a stopped rule can''t be changed');
+select pg_temp.as_owner();
+-- A day not yet worked out when it was stopped adds nothing.
+alter table public.penalty_rule disable trigger trg_penalty_rule_stopped;
+update public.penalty_rule set accrued_through = pg_temp.today() - 7 where id = pg_temp.id('r1');
+alter table public.penalty_rule enable trigger trg_penalty_rule_stopped;
+select is((public.close_household_day('66000000-0000-0000-0000-000000000001') ->> 'penalties')::integer, 0,
+  '[PTS-10-o] day close adds nothing more for a stopped rule');
+select is(private.penalty_rule_held(pg_temp.id('r1'), '66110000-0000-0000-0000-00000000000a'), 300,
+  '[PTS-10-o] what it added stays owed');
+select pg_temp.as_user('66100000-0000-0000-0000-0000000000b1');
+select throws_ok($$ select public.stop_penalty_rule(pg_temp.id('r2')) $$, '42501', 'not allowed',
+  '[PTS-10-o] another household''s parent cannot stop a rule');
+
+-- PTS-10-p: Remove, only while a rule has added nothing (the owner, 21 November) ----------------------
+select pg_temp.parent();
+insert into ids values ('r3', public.save_penalty_rule('66000000-0000-0000-0000-000000000001',
+  pg_temp.rule('Unused', 'folder', array['66110000-0000-0000-0000-00000000000a'], 'all', null, 0, 10, 100, 100)));
+select throws_ok($$ select public.remove_penalty_rule(pg_temp.id('r1')) $$, '22023',
+  'this rule has added misses; stop it instead', '[PTS-10-p] a rule that has added misses can''t be removed');
+select pg_temp.as_user('66100000-0000-0000-0000-0000000000b1');
+select throws_ok($$ select public.remove_penalty_rule(pg_temp.id('r3')) $$, '42501', 'not allowed',
+  '[PTS-10-p] another household''s parent cannot remove a rule');
+select pg_temp.parent();
+select lives_ok($$ select public.remove_penalty_rule(pg_temp.id('r3')) $$, '[PTS-10-p] a rule that has added nothing is removed');
+select is((select count(*) from public.penalty_rule where id = pg_temp.id('r3')), 0::bigint,
+  '[PTS-10-p] with its people and chores');
 
 select * from finish();
 rollback;

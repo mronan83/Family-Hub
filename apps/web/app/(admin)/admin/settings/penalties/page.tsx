@@ -33,6 +33,7 @@ export default async function PenaltySettingsPage({
       reasons={reasons}
       rules={rules}
       names={Object.fromEntries(members.map((m) => [m.id, m.displayName]))}
+      timezone={household.timezone}
       notice={params.done ?? null}
     />
   );
