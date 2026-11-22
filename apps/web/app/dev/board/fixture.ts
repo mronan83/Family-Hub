@@ -711,8 +711,14 @@ export function withRepeating(
 /** [RWD-08] The same family the moment Leo reaches his goal: the board celebrates it (WP-20). */
 /**
  * [PTS-09] Penalties on (WP-120, the approved mockup): Sam took 10 points from Maya for "Rude to a
- * sibling" today, and Maya owes $3 on two money penalties, oldest first.
+ * sibling" today, and Maya owes $3: the bike, and the rule "Folder home" for two missed days (WP-121).
  */
+function dayBefore(day: string, n: number): string {
+  const d = new Date(`${day}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+
 export function withPenalties(s: BoardSnapshot, now: Date, below = false): BoardSnapshot {
   // ?penalties=below: Maya's points below zero after the penalty, as points to earn back (D-154).
   const balance = (b: number) => (below ? -8 : b - 10);
@@ -738,7 +744,14 @@ export function withPenalties(s: BoardSnapshot, now: Date, below = false): Board
             available: below ? -8 : (m.available ?? 0) - 10,
             owes: [
               { id: 'pen-bike', reason: 'Left bike in the driveway', owed: 100 },
-              { id: 'pen-folder', reason: 'Homework folder not home', owed: 200 },
+              // [PTS-10] The rule "Folder home": missed the two days before today (WP-121).
+              {
+                id: 'rule-folder',
+                reason: 'Folder home',
+                owed: 200,
+                rule: true,
+                missed: [dayBefore(s.today, 2), dayBefore(s.today, 1)],
+              },
             ],
           }
         : m.points

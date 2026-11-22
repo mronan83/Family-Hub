@@ -242,11 +242,16 @@ export interface BoardMember {
   owes: BoardOwed[] | null;
 }
 
-/** [PTS-09] A money penalty with something still owed: its reason and what is owed, in cents. */
+/**
+ * [PTS-09] A money penalty with something still owed: its reason and what is owed, in cents. [PTS-10]
+ * A rule's misses are one (WP-121): `rule` true, its name, and the days still owed.
+ */
 export interface BoardOwed {
   id: string;
   reason: string;
   owed: number;
+  rule?: boolean;
+  missed?: string[];
 }
 
 /** The run going as of the last closed day, and the best good run (streak_segment). */
@@ -300,6 +305,14 @@ function readOwes(o: unknown): BoardOwed[] | null {
     id: str(x, 'id'),
     reason: str(x, 'reason'),
     owed: Number(x.owed),
+    ...(x.rule === true
+      ? {
+          rule: true,
+          missed: Array.isArray(x.missed)
+            ? x.missed.filter((d): d is string => typeof d === 'string')
+            : [],
+        }
+      : {}),
   }));
 }
 

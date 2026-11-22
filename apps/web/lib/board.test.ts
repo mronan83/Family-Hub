@@ -807,4 +807,29 @@ describe('penalties (WP-120)', () => {
     ]);
     expect(read({ owes: null }).members[0]!.owes).toBeNull();
   });
+
+  it("[PTS-10-h] reads a rule's misses as one line of what someone owes, with the days still owed", () => {
+    const s = read({
+      owes: [
+        { id: 'p1', reason: 'Left bike in the driveway', owed: 100 },
+        {
+          id: 'r1',
+          reason: 'Folder home',
+          owed: 200,
+          rule: true,
+          missed: ['2026-11-17', '2026-11-18'],
+        },
+      ],
+    });
+    expect(s.members[0]!.owes).toEqual([
+      { id: 'p1', reason: 'Left bike in the driveway', owed: 100 },
+      {
+        id: 'r1',
+        reason: 'Folder home',
+        owed: 200,
+        rule: true,
+        missed: ['2026-11-17', '2026-11-18'],
+      },
+    ]);
+  });
 });

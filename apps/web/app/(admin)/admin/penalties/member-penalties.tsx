@@ -7,6 +7,14 @@ import {
   type PenaltyReason,
   penaltyHistory,
 } from '@/lib/penalties';
+import {
+  missedDays,
+  type PenaltyRule,
+  perMiss,
+  ruleAmount,
+  ruleOwing,
+  monthDay,
+} from '@/lib/penalty-rules';
 import { ledgerDay } from '@/lib/points';
 import { takeBackPenalty } from './actions';
 import { GivePenaltyForm, type PenaltyPerson } from './give-form';
@@ -39,6 +47,7 @@ export function MemberPenalties({
   notice,
   open,
   giveOpen = false,
+  rules = [],
 }: {
   person: PenaltyPerson;
   /** Penalties are on for the household. */
@@ -56,9 +65,21 @@ export function MemberPenalties({
   open: boolean;
   /** Give a penalty open (the dev page's; a parent opens it with its button). */
   giveOpen?: boolean;
+  /** [PTS-10] The household's penalty rules, for what a rule's misses say (WP-121). */
+  rules?: PenaltyRule[];
 }) {
   const owed = owedTotal(penalties);
-  const owing = penalties.filter((p) => p.owed > 0).reverse();
+  // One-time penalties still owed; a rule's misses are one line each (WP-121, the approved mockup).
+  const owing = penalties.filter((p) => p.owed > 0 && !p.ruleId).reverse();
+  const byRule = ruleOwing(
+    penalties.map((p) => ({
+      ruleId: p.ruleId ?? null,
+      reason: p.reason,
+      owed: p.owed,
+      missedOn: p.missedOn ?? null,
+      givenAt: p.givenAt,
+    })),
+  );
   const history = penaltyHistory(penalties, payments);
   const back = `/admin/members/${person.id}`;
   const shown = notice ? PENALTY_NOTICES[notice] : null;
@@ -77,7 +98,7 @@ export function MemberPenalties({
           : `${person.displayName} owes nothing`}
       </p>
       <p className="fw-muted">Money is paid outside FamilyWise. Record it here when it’s paid.</p>
-      {owing.length > 0 ? (
+      {owing.length > 0 || byRule.length > 0 ? (
         <ul className="fw-list" aria-label={`What ${person.displayName} owes`}>
           {owing.map((p) => (
             <li key={p.id} className="fw-penalty__owing">
@@ -86,7 +107,8 @@ export function MemberPenalties({
                 <strong className="fw-penalty__amt">{money(p.owed)}</strong>
               </span>
               <span className="fw-muted">
-                Given {ledgerDay(p.givenAt, timezone, today)} by {adminName(p.givenBy)}
+                Given {ledgerDay(p.givenAt, timezone, today)}
+                {p.givenBy ? ` by ${adminName(p.givenBy)}` : ''}
                 {p.owed < p.amount
                   ? ` · ${money(p.amount - p.owed)} of ${money(p.amount)} paid`
                   : ''}
@@ -101,6 +123,32 @@ export function MemberPenalties({
               />
             </li>
           ))}
+          {/* [PTS-10] A rule's misses still owed: what it adds, its max and dates, the days missed. */}
+          {byRule.map((g) => {
+            const rule = rules.find((r) => r.id === g.ruleId);
+            return (
+              <li key={g.ruleId} className="fw-penalty__owing" data-rule={g.ruleId}>
+                <span className="fw-penalty__head">
+                  <strong>{g.name}</strong>
+                  <strong className="fw-penalty__amt">{money(g.owed)}</strong>
+                </span>
+                <span className="fw-muted">
+                  {rule
+                    ? `${perMiss(rule)} · max ${ruleAmount(rule.unit, rule.max)} · ${monthDay(rule.startDate)} to ${monthDay(rule.endDate)} · `
+                    : ''}
+                  missed {missedDays(g.missed, today)}
+                </span>
+                <PaidForm
+                  ruleId={g.ruleId}
+                  memberId={person.id}
+                  reason={g.name}
+                  owed={g.owed}
+                  requestId={`${requestId.slice(0, 24)}${g.ruleId.slice(24)}`}
+                  back={back}
+                />
+              </li>
+            );
+          })}
         </ul>
       ) : null}
       {canGive && on ? (
@@ -133,8 +181,13 @@ export function MemberPenalties({
             {history.map((e) => (
               <li key={e.key} className="fw-penalty__hrow">
                 <span>
-                  <strong>{ledgerDay(e.at, timezone, today)}</strong> {e.what}{' '}
-                  <span className="fw-penalty__tag">{e.tag}</span> by {adminName(e.by)}
+                  <strong>
+                    {e.day
+                      ? ledgerDay(`${e.day}T12:00:00Z`, 'UTC', today)
+                      : ledgerDay(e.at, timezone, today)}
+                  </strong>{' '}
+                  {e.what} <span className="fw-penalty__tag">{e.tag}</span>
+                  {e.by ? ` by ${adminName(e.by)}` : null}
                   {e.takeBack ? (
                     <form action={takeBackPenalty} className="fw-inline-form">
                       <input type="hidden" name="penaltyId" value={e.takeBack} />

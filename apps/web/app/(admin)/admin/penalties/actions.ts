@@ -6,8 +6,10 @@ import type { FormState } from '@/lib/auth/messages';
 import { adminHousehold, requireSignedIn } from '@/lib/auth/session';
 import { log } from '@/lib/log';
 import { parseGivePenalty, parsePaid, parseReason, penaltyMessage } from '@/lib/penalties';
+import { parseRule, ruleArgs, ruleMessage } from '@/lib/penalty-rules';
 import { serverClient } from '@/lib/supabase/server';
-import { loadMemberPenalties, loadPenaltySettings } from './data';
+import { isoDay } from '@/lib/format';
+import { loadMemberPenalties, loadPenaltyRules, loadPenaltySettings } from './data';
 
 async function context(path: string) {
   const db = await serverClient();
@@ -146,4 +148,100 @@ export async function removeReason(form: FormData): Promise<void> {
   }
   revalidatePath(SETTINGS);
   redirect(`${SETTINGS}?done=removed#reasons`);
+}
+
+/**
+ * [PTS-10][US-1112] Saves a penalty rule, new or changed (save_penalty_rule). The reason sets points or
+ * money; a new rule starts today or later; a changed one may keep its start. The database checks who
+ * may, for whom and what counts.
+ */
+export async function saveRule(_prev: FormState, form: FormData): Promise<FormState> {
+  const { db, household } = await context(SETTINGS);
+  const id = String(form.get('ruleId') ?? '');
+  const [{ reasons }, rules] = await Promise.all([
+    loadPenaltySettings(db, household.id),
+    id ? loadPenaltyRules(db, household.id) : Promise.resolve([]),
+  ]);
+  const old = rules.find((r) => r.id === id);
+  // A rule keeps its reason even once the reason is removed from the list.
+  const own = old
+    ? (
+        await db
+          .from('penalty_reason')
+          .select('id, name, unit, amount')
+          .eq('id', old.reasonId)
+          .maybeSingle()
+      ).data
+    : null;
+  const choices =
+    own && !reasons.some((r) => r.id === own.id)
+      ? [...reasons, own as (typeof reasons)[number]]
+      : reasons;
+  const parsed = parseRule(form, choices, isoDay(household.timezone), old?.startDate ?? null);
+  if (!parsed.ok) return { message: parsed.message };
+  const { error } = await db.rpc('save_penalty_rule', {
+    p_household: household.id,
+    p_rule: ruleArgs(parsed.value),
+  });
+  if (error) {
+    log('warn', 'penalty rule not saved', { code: error.code, hint: error.hint });
+    return { message: ruleMessage(error) };
+  }
+  revalidatePath('/admin', 'layout');
+  redirect(`${SETTINGS}?done=${parsed.value.id ? 'rule-saved' : 'rule-added'}#rules`);
+}
+
+/**
+ * [PTS-10][US-1112] Records money paid outside FamilyWise against a rule's misses for one person,
+ * spread over them oldest first (record_penalty_rule_paid).
+ */
+export async function recordRulePaid(_prev: FormState, form: FormData): Promise<FormState> {
+  const back = backTo(form, '/admin/members');
+  const { db, household } = await context(back);
+  const memberId = String(form.get('memberId') ?? '');
+  const ruleId = String(form.get('ruleId') ?? '');
+  const rules = await loadPenaltyRules(db, household.id);
+  const owed = rules.find((r) => r.id === ruleId)?.held[memberId] ?? 0;
+  const parsed = parsePaid(form, owed, 'ruleId');
+  if (!parsed.ok) return { message: parsed.message };
+  const { error } = await db.rpc('record_penalty_rule_paid', {
+    p_rule_id: ruleId,
+    p_member_id: memberId,
+    p_amount: parsed.value.amount,
+    p_request_id: parsed.value.requestId,
+  });
+  if (error) {
+    log('warn', 'penalty rule payment not recorded', { code: error.code, hint: error.hint });
+    return { message: ruleMessage(error) };
+  }
+  revalidatePath('/admin', 'layout');
+  redirect(`${back}?penalty=paid#penalties`);
+}
+
+/** [PTS-10][US-1112] Stop now: the rule adds nothing more; what it added stays (stop_penalty_rule). */
+export async function stopRule(form: FormData): Promise<void> {
+  const { db } = await context(SETTINGS);
+  const { error } = await db.rpc('stop_penalty_rule', {
+    p_rule_id: String(form.get('ruleId') ?? ''),
+  });
+  if (error) {
+    log('warn', 'penalty rule not stopped', { code: error.code, hint: error.hint });
+    redirect(`${SETTINGS}?done=failed#rules`);
+  }
+  revalidatePath('/admin', 'layout');
+  redirect(`${SETTINGS}?done=rule-stopped#rules`);
+}
+
+/** [PTS-10][US-1112] Remove a rule that has added nothing (remove_penalty_rule). */
+export async function removeRule(form: FormData): Promise<void> {
+  const { db } = await context(SETTINGS);
+  const { error } = await db.rpc('remove_penalty_rule', {
+    p_rule_id: String(form.get('ruleId') ?? ''),
+  });
+  if (error) {
+    log('warn', 'penalty rule not removed', { code: error.code, hint: error.hint });
+    redirect(`${SETTINGS}?done=${error.hint === 'rule_used' ? 'rule-used' : 'failed'}#rules`);
+  }
+  revalidatePath('/admin', 'layout');
+  redirect(`${SETTINGS}?done=rule-removed#rules`);
 }
