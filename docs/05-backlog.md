@@ -2592,10 +2592,29 @@ Sizes are relative effort for a single builder with Claude Code, not commitments
 
 ### WP-122 — Penalties paid back through a goal or reward
 **Phase:** P3 · **Size:** M · **Depends on:** WP-121, WP-80, WP-81 · **Reqs:** PTS-11
-- Added at the owner's request on 15 November (the owner's words are under WP-120). Recorded only; not built.
+- Added at the owner's request on 15 November (the owner's words are under WP-120).
 - **What it is (D-154):** a penalty can be linked to a goal (a repeating goal's period, WP-80, or a step, WP-81) or a reward that pays back an amount each time it is won, never more than is owed. In points, the payback is a `penalty_payback` ledger entry. Our daughter's case: the weekly goal "Folder home every school day" pays back $1 for each week won.
 - **Paused at 0:** while nothing is owed, the payback is paused and the goal says so ("Nothing owed"); when a new miss makes the balance more than 0, it is active again. The owner wrote "When the penalty is balance is depleted, the reward tied to it is stopped": meaning "paid back to 0" (confirmed by the owner, 15 November). The goal itself (its own prize for so many weeks) is not stopped, only its payback.
 - **A win later undone:** the payback is taken back once, as a goal payout is today (RWD-13, D-75).
+- Started by the owner on 22 November, in the planner session ("Start wp 122"); built from the mockup approved on 21 November (with WP-120's and WP-121's): the rule form's **Paid back by** card, the payback lines on Settings' rules, a child's **Penalties**, the board's goal card and **Owes** card, the paused "Nothing owed · payback paused", and the register's **Penalty payback** type. Claude Code's choices on it are D-158.
+- Test cases:
+
+| Case | Test case | Layer |
+|---|---|---|
+| PTS-11-a | A parent of the household links a rule to a goal and what each win pays back ("Paid back by"), in the rule's unit: a goal of the household, not archived, expired or cancelled, for one of the rule's people or the family; another household's goal, another person's goal, an amount out of range, or a goal without an amount is refused; no goal clears it; another household's parent can't | DB |
+| PTS-11-b | A won period of the goal (or a one-off goal reached) pays back each of the rule's people it is for (the goal's person; a family goal, each of the rule's people) the amount: in money as payments spread over their misses oldest first, in points as a `penalty_payback` ledger entry of +amount ("Week won: Folder home every school day"); once, however often the goal is worked out again | DB |
+| PTS-11-c | Never more than is owed: a win pays back only what is left on the rule; with nothing owed it pays nothing (paused); a new miss makes it owed again and the next win pays back | DB |
+| PTS-11-d | While penalties are off a win pays back nothing; a stopped rule, or one past its end date, still pays back what is owed on it | DB |
+| PTS-11-e | A win later undone takes its payback back once: in money what it paid is owed again; in points a `penalty_payback` entry of −amount; the period won again pays back again | DB |
+| PTS-11-f | A points rule: what it has on a person is the points its misses took less what was paid back, so the max counts it and later misses add again | DB |
+| PTS-11-g | Only through the functions: nobody writes a payback, and one changes only once, when it is taken back; a household's parents and boards read its paybacks, another household's can't; boards still don't read the rule | DB |
+| PTS-11-h | The board's snapshot: `paybacks`, one per rule with a goal and person (the rule's name, the goal, its period, what a win pays back, what is owed), while penalties are on; nothing while off; the app reads it | DB, Unit |
+| PTS-11-i | The points register lists a payback as its own type, Penalty payback, with "goal Bed by 8 all week" in place of who gave it, an undo included | DB, Unit |
+| PTS-11-j | "Paid back by" checked the way the database checks it; in words: Settings' line ("Maya owes $2 · paid back $1 a week won", "Nothing owed · payback paused"), a child's page ("Paid back $1 for each week won of Folder home every school day") and its history ("Folder home every school day, week won", tag Payback), the goal card ("A won week pays back $1 of the $2 Maya owes for Folder home", "Nothing owed · payback paused"), the **Owes** card ("Win a Folder home week: pays back $1"); what the database refused, in plain words | Unit |
+| PTS-11-k | The admin app: the rule form's **Paid back by** card (goal or reward, each win pays back, the hint, paying back or paused); Settings' rule lines; a child's **Penalties** with the payback line and the history's Payback rows; the register's **Penalty payback** type | UI |
+| PTS-11-l | The board: the goal card's payback line, paying back and paused ("Nothing owed · payback paused"), and the **Owes** card's "Win a Folder home week: pays back $1", in board-size text | UI |
+| PTS-11-m | On a preview, a parent links a rule to a weekly goal from the rule form; a won week pays back; undone, it is owed again; the database agrees at each step | E2E |
+
 - **Done when:** the mockup (with WP-120's) is approved; the item's test cases are written here (D-107) and each has a test; the side-by-side (D-127) is in the PR; the fast checks are green.
 
 ### WP-123 — The board shows the reason for every points change a parent makes
