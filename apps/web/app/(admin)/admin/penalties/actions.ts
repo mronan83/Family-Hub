@@ -9,7 +9,12 @@ import { parseGivePenalty, parsePaid, parseReason, penaltyMessage } from '@/lib/
 import { parseRule, ruleArgs, ruleMessage } from '@/lib/penalty-rules';
 import { serverClient } from '@/lib/supabase/server';
 import { isoDay } from '@/lib/format';
-import { loadMemberPenalties, loadPenaltyRules, loadPenaltySettings } from './data';
+import {
+  loadMemberPenalties,
+  loadPaybackGoals,
+  loadPenaltyRules,
+  loadPenaltySettings,
+} from './data';
 
 async function context(path: string) {
   const db = await serverClient();
@@ -158,9 +163,11 @@ export async function removeReason(form: FormData): Promise<void> {
 export async function saveRule(_prev: FormState, form: FormData): Promise<FormState> {
   const { db, household } = await context(SETTINGS);
   const id = String(form.get('ruleId') ?? '');
-  const [{ reasons }, rules] = await Promise.all([
+  const [{ reasons }, rules, goals] = await Promise.all([
     loadPenaltySettings(db, household.id),
     id ? loadPenaltyRules(db, household.id) : Promise.resolve([]),
+    // [PTS-11] What it can be paid back by (WP-122).
+    loadPaybackGoals(db, household.id),
   ]);
   const old = rules.find((r) => r.id === id);
   // A rule keeps its reason even once the reason is removed from the list.
@@ -177,7 +184,13 @@ export async function saveRule(_prev: FormState, form: FormData): Promise<FormSt
     own && !reasons.some((r) => r.id === own.id)
       ? [...reasons, own as (typeof reasons)[number]]
       : reasons;
-  const parsed = parseRule(form, choices, isoDay(household.timezone), old?.startDate ?? null);
+  const parsed = parseRule(
+    form,
+    choices,
+    isoDay(household.timezone),
+    old?.startDate ?? null,
+    goals,
+  );
   if (!parsed.ok) return { message: parsed.message };
   const { error } = await db.rpc('save_penalty_rule', {
     p_household: household.id,

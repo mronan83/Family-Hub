@@ -71,6 +71,28 @@ export interface BoardSnapshot {
   meals: BoardMeals | null;
   /** [MEAL-18] The grocery list (WP-104), read beside the snapshot (board_groceries); none before. */
   groceries?: BoardGroceries | null;
+  /**
+   * [PTS-11] What each penalty rule with a goal pays back, per person (WP-122): empty while penalties
+   * are off, and before WP-122.
+   */
+  paybacks: BoardPayback[];
+}
+
+/**
+ * [PTS-11] A rule's payback for one person: the rule's name, the goal that pays it back (its title
+ * and how it repeats), what a win pays back and what is owed now, in the rule's unit (points, or
+ * cents); owed 0 means the payback is paused.
+ */
+export interface BoardPayback {
+  ruleId: string;
+  rule: string;
+  memberId: string;
+  unit: 'points' | 'money';
+  amount: number;
+  owed: number;
+  goalId: string;
+  goal: string;
+  repeat: Repeat;
 }
 
 /** [BRD-04] The temperature now, today's high and low, and the sky, in the household's unit. */
@@ -278,6 +300,7 @@ const ENTRY_TYPES: readonly LedgerEntryType[] = [
   'refund',
   'adjustment',
   'penalty',
+  'penalty_payback',
 ];
 
 const STATUSES: readonly OccurrenceStatus[] = [
@@ -297,6 +320,22 @@ const str = (o: Json, k: string): string => {
   if (typeof v !== 'string') throw new Error(`snapshot: ${k} is not text`);
   return v;
 };
+
+/** [PTS-11] The rules' paybacks; a snapshot from before WP-122 has none. */
+export function readPaybacks(o: unknown): BoardPayback[] {
+  if (!Array.isArray(o)) return [];
+  return o.filter(isObject).map((x) => ({
+    ruleId: str(x, 'rule_id'),
+    rule: str(x, 'rule'),
+    memberId: str(x, 'member_id'),
+    unit: x.unit === 'points' ? 'points' : 'money',
+    amount: Number(x.amount),
+    owed: Number(x.owed),
+    goalId: str(x, 'goal_id'),
+    goal: str(x, 'goal'),
+    repeat: (typeof x.repeat === 'string' ? x.repeat : 'none') as Repeat,
+  }));
+}
 
 /** [PTS-09] What a member owes; a snapshot from before WP-120 has none, which reads as off. */
 function readOwes(o: unknown): BoardOwed[] | null {
@@ -745,5 +784,7 @@ export function readSnapshot(data: unknown): BoardSnapshot | null {
     meals: readMeals(data.meals),
     // Read beside the snapshot by board_groceries() (WP-104), and kept with it.
     groceries: readGroceries(data.groceries),
+    // [PTS-11] A snapshot from before WP-122 has no paybacks.
+    paybacks: readPaybacks(data.paybacks),
   };
 }

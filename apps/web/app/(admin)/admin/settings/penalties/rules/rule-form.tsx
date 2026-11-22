@@ -7,6 +7,13 @@ import type { FormState } from '@/lib/auth/messages';
 import { useFormAction } from '@/lib/forms';
 import { amountInput, type PenaltyReason } from '@/lib/penalties';
 import {
+  goalChoiceLabel,
+  type PaybackGoal,
+  paybackChoices,
+  periodNoun,
+  unitAmount,
+} from '@/lib/paybacks';
+import {
   MAX_RULE_NAME,
   type PenaltyRule,
   type RuleChore,
@@ -27,7 +34,9 @@ const SCOPES: { scope: RuleScope; label: string }[] = [
  * [PTS-10][US-1112] The penalty rule form (WP-121, the approved mockup): its name, a reason from the
  * household's list (which sets points or money), who it is for, what counts as a miss (chosen items, a
  * tag, or all their items), its start and end dates, what each miss adds and the most it can have on a
- * person. A new rule starts today or later.
+ * person. A new rule starts today or later. [PTS-11] Its "Paid back by" card (WP-122): a goal of its
+ * people or the family, and what each win pays back, never more than is owed; paying back, or paused
+ * while nothing is owed. The form holds both cards, with Save under them (the approved mockup).
  */
 export function RuleForm({
   rule,
@@ -38,6 +47,7 @@ export function RuleForm({
   today,
   on,
   stopped = false,
+  goals = [],
 }: {
   rule: PenaltyRule | null;
   reasons: PenaltyReason[];
@@ -48,6 +58,8 @@ export function RuleForm({
   on: boolean;
   /** A stopped rule: the page's banner says why it can't be saved, so the form says nothing more. */
   stopped?: boolean;
+  /** [PTS-11] The goals a rule can be paid back by (WP-122). */
+  goals?: PaybackGoal[];
 }) {
   const [state, onSubmit, pending] = useFormAction(saveRule, {} as FormState);
   const [reasonId, setReasonId] = useState(rule?.reasonId ?? reasons[0]?.id ?? '');
@@ -68,6 +80,24 @@ export function RuleForm({
         : '',
   );
   const [max, setMax] = useState(rule ? amountInput(rule.unit, rule.max) : '');
+  const [goalId, setGoalId] = useState(rule?.payback?.goalId ?? '');
+  const [back, setBack] = useState(
+    rule?.payback ? amountInput(rule.unit, rule.payback.amount) : '',
+  );
+  // A rule's own goal stays listed, even once it no longer could be chosen.
+  const own: PaybackGoal[] =
+    rule?.payback && !goals.some((g) => g.id === rule.payback!.goalId)
+      ? [
+          {
+            id: rule.payback.goalId,
+            title: rule.payback.goal,
+            memberId: null,
+            repeat: rule.payback.repeat,
+          },
+        ]
+      : [];
+  const goalList = [...paybackChoices(goals, who), ...own];
+  const goal = goalList.find((g) => g.id === goalId) ?? null;
   // The items listed: those of the people chosen (or every chore while nobody is), and any linked.
   const listed = chores.filter(
     (c) => picked.includes(c.id) || who.length === 0 || c.assignees.some((a) => who.includes(a)),
@@ -84,8 +114,14 @@ export function RuleForm({
   const each = Number.isFinite(Number(amount)) && amount ? amount : '1';
   const money = unit === 'money';
 
+  const personName = (id: string) => people.find((p) => p.id === id)?.displayName ?? 'Someone';
+  const saved = rule?.payback && rule.payback.goalId === goalId ? rule.payback : null;
+  const backWord = (n: number) => unitAmount(unit, n);
+
   return (
     <form onSubmit={onSubmit} className="fw-form fw-rule" aria-label="Penalty rule">
+      <section className="fw-card" aria-labelledby="rule-heading">
+      <h2 id="rule-heading">The rule</h2>
       {rule ? <input type="hidden" name="ruleId" value={rule.id} /> : null}
       <label className="fw-field">
         <span className="fw-field__label">Name</span>
@@ -302,8 +338,85 @@ export function RuleForm({
           Mark done on time on a missed day takes its{' '}
           {money ? `$${each}` : `${each} ${each === '1' ? 'point' : 'points'}`} back.
         </li>
-        <li>After the end date nothing is added; what’s owed stays until it’s paid.</li>
+        <li>After the end date nothing is added; what’s owed stays until it’s paid or paid back.</li>
       </ul>
+      </section>
+
+      {/* [PTS-11][US-1113] Paid back by a goal (WP-122, the approved mockup). */}
+      <section className="fw-card" aria-labelledby="payback-heading">
+        <h2 id="payback-heading">Paid back by</h2>
+        <div className="fw-field">
+          <label className="fw-field__label" htmlFor="rule-goal">
+            Goal or reward
+          </label>
+          <select
+            id="rule-goal"
+            className="fw-input"
+            name="paybackGoalId"
+            value={goalId}
+            onChange={(e) => setGoalId(e.target.value)}
+          >
+            <option value="">Not paid back</option>
+            {goalList.map((g) => (
+              <option key={g.id} value={g.id}>
+                {goalChoiceLabel(g)}
+              </option>
+            ))}
+          </select>
+          <span className="fw-field__help">
+            A goal of the people it’s for, or a family goal. A goal’s prize can be a reward from
+            the shop.
+          </span>
+        </div>
+        {goal ? (
+          <>
+            <div className="fw-field">
+              <label className="fw-field__label" htmlFor="rule-back">
+                Each win pays back
+              </label>
+              <span className="fw-penalty__amount">
+                {money ? <span aria-hidden>$</span> : null}
+                <input
+                  id="rule-back"
+                  className="fw-input"
+                  name="paybackAmount"
+                  inputMode={money ? 'decimal' : 'numeric'}
+                  value={back}
+                  onChange={(e) => setBack(e.target.value)}
+                  required
+                  autoComplete="off"
+                />
+                {money ? null : <span>points</span>}
+              </span>
+              <span className="fw-field__help">
+                Never more than is owed. The goal keeps its own prize; only the payback pauses.
+              </span>
+            </div>
+            {saved
+              ? (rule?.memberIds ?? []).map((id) => {
+                  const owed = rule?.held[id] ?? 0;
+                  return owed > 0 ? (
+                    <p key={id} className="fw-rule__state" data-member={id}>
+                      <strong>Paying back.</strong> {personName(id)} owes {backWord(owed)}; the next{' '}
+                      {periodNoun(saved.repeat) ? `${periodNoun(saved.repeat)} won` : 'win'} pays
+                      back {backWord(Math.min(saved.amount, owed))}.
+                    </p>
+                  ) : (
+                    <p key={id} className="fw-rule__state" data-member={id} data-paused="true">
+                      <strong>{personName(id)} owes nothing:</strong> payback paused, “Nothing owed”. It
+                      starts again on the next miss.
+                    </p>
+                  );
+                })
+              : (
+                  <p className="fw-rule__state" data-paused="true">
+                    <strong>When nothing is owed:</strong> payback paused, “Nothing owed”. It starts
+                    again on the next miss.
+                  </p>
+                )}
+          </>
+        ) : null}
+      </section>
 
       {!on && !stopped ? (
         <Banner kind="notice">Penalties are off. Turn them on to save a rule.</Banner>

@@ -1,4 +1,5 @@
-import { Banner, Button, Fold } from '@familywise/ui';
+import { Banner, Button, Fold, Icon } from '@familywise/ui';
+import { type PenaltyPaybackRow, paybackLead } from '@/lib/paybacks';
 import {
   money,
   owedTotal,
@@ -48,6 +49,7 @@ export function MemberPenalties({
   open,
   giveOpen = false,
   rules = [],
+  paybacks = [],
 }: {
   person: PenaltyPerson;
   /** Penalties are on for the household. */
@@ -67,6 +69,8 @@ export function MemberPenalties({
   giveOpen?: boolean;
   /** [PTS-10] The household's penalty rules, for what a rule's misses say (WP-121). */
   rules?: PenaltyRule[];
+  /** [PTS-11] What goals paid back on their rules, for the history (WP-122). */
+  paybacks?: PenaltyPaybackRow[];
 }) {
   const owed = owedTotal(penalties);
   // One-time penalties still owed; a rule's misses are one line each (WP-121, the approved mockup).
@@ -80,7 +84,7 @@ export function MemberPenalties({
       givenAt: p.givenAt,
     })),
   );
-  const history = penaltyHistory(penalties, payments);
+  const history = penaltyHistory(penalties, payments, paybacks);
   const back = `/admin/members/${person.id}`;
   const shown = notice ? PENALTY_NOTICES[notice] : null;
   return (
@@ -138,6 +142,15 @@ export function MemberPenalties({
                     : ''}
                   missed {missedDays(g.missed, today)}
                 </span>
+                {/* [PTS-11] Paid back by a goal (WP-122, the approved mockup). */}
+                {rule?.payback ? (
+                  <span className="fw-penalty__payback" data-payback={rule.payback.goalId}>
+                    <Icon name="undo" size={18} />
+                    <span>
+                      {paybackLead(rule.unit, rule.payback)} <strong>{rule.payback.goal}</strong>
+                    </span>
+                  </span>
+                ) : null}
                 <PaidForm
                   ruleId={g.ruleId}
                   memberId={person.id}

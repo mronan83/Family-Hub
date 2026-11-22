@@ -242,6 +242,16 @@ export default async function DevPointsRegisterPage({
         byType: 'admin',
         by: SAM,
       }),
+      // [PTS-11] A week Leo won of "Bed by 8 all week" paid back 5 points on Bed by 8 (WP-122).
+      entry(LEO, '2026-10-26', '00:10', {
+        kind: 'penalty_payback',
+        amount: 5,
+        reason: 'Week won: Bed by 8 all week',
+        byType: 'system',
+        by: null,
+        penaltyRule: 'Bed by 8',
+        goalTitle: 'Bed by 8 all week',
+      }),
     );
     all.sort((a, b) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id));
   }

@@ -13,7 +13,9 @@ export type LedgerEntryType =
   | 'refund'
   | 'adjustment'
   /** [PTS-09] A penalty's points: taken (negative), or given back when it is taken back (WP-120). */
-  | 'penalty';
+  | 'penalty'
+  /** [PTS-11] Points a goal's win paid back on a penalty rule, or took back with it (WP-122). */
+  | 'penalty_payback';
 
 export interface LedgerEntry {
   id: string;
@@ -145,6 +147,8 @@ export function ledgerLine(entry: LedgerEntry, adminName: (userId: string) => st
       return `${entry.amount < 0 ? 'Penalty' : 'Penalty taken back'}: ${entry.label ?? 'a penalty'}${
         entry.by ? ` · by ${adminName(entry.by)}` : ''
       }`;
+    case 'penalty_payback':
+      return `${entry.amount > 0 ? 'Penalty payback' : 'Penalty payback undone'}: ${entry.label ?? 'a goal'}`;
   }
 }
 

@@ -154,6 +154,7 @@ export function GoalItem({
   who,
   action,
   members = [],
+  paybacks,
 }: {
   goal: BoardGoal;
   today: string;
@@ -165,6 +166,8 @@ export function GoalItem({
   action?: ReactNode;
   /** [RWD-20] The family, for an every-child goal's children. */
   members?: BoardMember[];
+  /** [PTS-11] What a win pays back on a penalty rule, or that it is paused (WP-122). */
+  paybacks?: PaybackLine[];
 }) {
   if (goal.repeat !== 'none') {
     return (
@@ -177,6 +180,7 @@ export function GoalItem({
         who={who}
         action={action}
         members={members}
+        paybacks={paybacks}
       />
     );
   }
@@ -263,8 +267,38 @@ export function GoalItem({
           {ends ? <p className="fw-today__goal-ends">{ends}</p> : null}
         </>
       )}
+      <Paybacks lines={paybacks} />
       {action}
     </li>
+  );
+}
+
+/** [PTS-11] A payback line on a goal card: what a win pays back, or "Nothing owed · payback paused". */
+export interface PaybackLine {
+  key: string;
+  text: string;
+  paused: boolean;
+}
+
+/**
+ * [PTS-11][US-1113] The goal card's payback lines (WP-122, the approved mockup): paying back in the
+ * reward tint, paused with a dashed edge. Board-size text.
+ */
+function Paybacks({ lines }: { lines?: PaybackLine[] }) {
+  if (!lines || lines.length === 0) return null;
+  return (
+    <>
+      {lines.map((l) => (
+        <p
+          key={l.key}
+          className="fw-goal__payback"
+          data-paused={l.paused ? 'true' : undefined}
+          data-payback={l.key}
+        >
+          {l.text}
+        </p>
+      ))}
+    </>
   );
 }
 
@@ -282,6 +316,7 @@ function RepeatingGoal({
   who,
   action,
   members,
+  paybacks,
 }: {
   goal: BoardGoal;
   repeat: 'week' | 'month' | 'term';
@@ -291,6 +326,7 @@ function RepeatingGoal({
   who?: ReactNode;
   action?: ReactNode;
   members: BoardMember[];
+  paybacks?: PaybackLine[];
 }) {
   const p = goal.period;
   // [RWD-20] An every-child goal: each child's days, and who lost or won it.
@@ -450,6 +486,7 @@ function RepeatingGoal({
           />
         </div>
       ) : null}
+      <Paybacks lines={paybacks} />
       {action}
     </li>
   );
@@ -461,12 +498,15 @@ export function GoalsCard({
   today,
   photoUrl,
   members = [],
+  paybacks = {},
 }: {
   goals: BoardGoal[];
   today: string;
   photoUrl?: PhotoUrl;
   /** [RWD-20] The family, for an every-child goal's children. */
   members?: BoardMember[];
+  /** [PTS-11] Each goal's payback lines for this person, by goal id (WP-122). */
+  paybacks?: Record<string, PaybackLine[]>;
 }) {
   if (goals.length === 0) return null;
   return (
@@ -474,7 +514,14 @@ export function GoalsCard({
       <h3 id="me-goals">Goals</h3>
       <ul className="fw-today__goal-list" aria-labelledby="me-goals">
         {goals.map((g) => (
-          <GoalItem key={g.id} goal={g} today={today} photoUrl={photoUrl} members={members} />
+          <GoalItem
+            key={g.id}
+            goal={g}
+            today={today}
+            photoUrl={photoUrl}
+            members={members}
+            paybacks={paybacks[g.id]}
+          />
         ))}
       </ul>
     </section>
