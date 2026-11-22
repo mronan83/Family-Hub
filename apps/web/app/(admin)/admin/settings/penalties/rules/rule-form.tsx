@@ -121,225 +121,227 @@ export function RuleForm({
   return (
     <form onSubmit={onSubmit} className="fw-form fw-rule" aria-label="Penalty rule">
       <section className="fw-card" aria-labelledby="rule-heading">
-      <h2 id="rule-heading">The rule</h2>
-      {rule ? <input type="hidden" name="ruleId" value={rule.id} /> : null}
-      <label className="fw-field">
-        <span className="fw-field__label">Name</span>
-        <input
-          className="fw-input"
-          name="name"
-          value={name}
-          maxLength={MAX_RULE_NAME}
-          placeholder="Like “Folder home”"
-          onChange={(e) => {
-            setName(e.target.value);
-            setNamed(true);
-          }}
-          required
-          autoComplete="off"
-        />
-        <span className="fw-field__help">What the board and a child’s page call it.</span>
-      </label>
-
-      <div className="fw-field">
-        <label className="fw-field__label" htmlFor="rule-reason">
-          Reason
+        <h2 id="rule-heading">The rule</h2>
+        {rule ? <input type="hidden" name="ruleId" value={rule.id} /> : null}
+        <label className="fw-field">
+          <span className="fw-field__label">Name</span>
+          <input
+            className="fw-input"
+            name="name"
+            value={name}
+            maxLength={MAX_RULE_NAME}
+            placeholder="Like “Folder home”"
+            onChange={(e) => {
+              setName(e.target.value);
+              setNamed(true);
+            }}
+            required
+            autoComplete="off"
+          />
+          <span className="fw-field__help">What the board and a child’s page call it.</span>
         </label>
-        <select
-          id="rule-reason"
-          className="fw-input"
-          name="reasonId"
-          value={reasonId}
-          onChange={(e) => chooseReason(e.target.value)}
-          required
-        >
-          {reasons.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.name}
-            </option>
-          ))}
-        </select>
-      </div>
 
-      <fieldset className="fw-field fw-fieldset">
-        <legend className="fw-field__label">For</legend>
-        <div className="fw-seg">
-          {people.map((p) => (
-            <label key={p.id} className="fw-seg__item fw-rule__chip">
-              <input
-                className="fw-seg__input"
-                type="checkbox"
-                name="memberId"
-                value={p.id}
-                checked={who.includes(p.id)}
-                onChange={() => setWho((w) => toggle(w, p.id))}
-              />
-              <Avatar
-                name={p.displayName}
-                avatarKey={p.avatarKey}
-                color={p.color}
-                size={26}
-                decorative
-              />
-              {p.displayName}
-            </label>
-          ))}
-        </div>
-        {people.length === 0 ? (
-          <span className="fw-field__help">
-            Nobody earns rewards yet, so nobody can have a rule.
-          </span>
-        ) : null}
-      </fieldset>
-
-      <fieldset className="fw-field fw-fieldset">
-        <legend className="fw-field__label">Counts a miss of</legend>
-        <div className="fw-seg">
-          {SCOPES.map((s) => (
-            <label key={s.scope} className="fw-seg__item">
-              <input
-                className="fw-seg__input"
-                type="radio"
-                name="scope"
-                value={s.scope}
-                checked={scope === s.scope}
-                onChange={() => setScope(s.scope)}
-              />
-              {s.label}
-            </label>
-          ))}
-        </div>
-        {scope === 'items' ? (
-          <div className="fw-rule__items" role="group" aria-label="Items">
-            {listed.length === 0 ? (
-              <span className="fw-field__help">No chores for them yet.</span>
-            ) : (
-              listed.map((c) => (
-                <label key={c.id} className="fw-check">
-                  <input
-                    type="checkbox"
-                    name="choreId"
-                    value={c.id}
-                    checked={picked.includes(c.id)}
-                    onChange={() => setPicked((x) => toggle(x, c.id))}
-                  />
-                  <span>
-                    {c.title}
-                    {c.schoolDays ? <span className="fw-muted"> · school days</span> : null}
-                  </span>
-                </label>
-              ))
-            )}
-          </div>
-        ) : scope === 'tag' ? (
-          <div className="fw-field">
-            <label className="fw-field__label" htmlFor="rule-tag">
-              Tag
-            </label>
-            <select
-              id="rule-tag"
-              className="fw-input"
-              name="tagId"
-              defaultValue={rule?.tagId ?? ''}
-              required
-            >
-              <option value="" disabled>
-                Choose a tag
+        <div className="fw-field">
+          <label className="fw-field__label" htmlFor="rule-reason">
+            Reason
+          </label>
+          <select
+            id="rule-reason"
+            className="fw-input"
+            name="reasonId"
+            value={reasonId}
+            onChange={(e) => chooseReason(e.target.value)}
+            required
+          >
+            {reasons.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
               </option>
-              {tags.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : (
-          <span className="fw-field__help">
-            Every chore of theirs counts. A task is never missed.
-          </span>
-        )}
-      </fieldset>
-
-      <div className="fw-fgrid">
-        <label className="fw-field">
-          <span className="fw-field__label">Starts</span>
-          <DatePick
-            type="date"
-            name="startDate"
-            label="Starts"
-            required
-            min={rule && rule.startDate < today ? rule.startDate : today}
-            initial={rule?.startDate ?? today}
-            value={start}
-            onValue={setStart}
-          />
-        </label>
-        <label className="fw-field">
-          <span className="fw-field__label">Ends</span>
-          <DatePick
-            type="date"
-            name="endDate"
-            label="Ends"
-            required
-            min={start}
-            initial={rule?.endDate ?? ''}
-            value={end}
-            onValue={setEnd}
-          />
-        </label>
-      </div>
-
-      <div className="fw-field">
-        <label className="fw-field__label" htmlFor="rule-amount">
-          Each miss adds
-        </label>
-        <span className="fw-penalty__amount">
-          {money ? <span aria-hidden>$</span> : null}
-          <input
-            id="rule-amount"
-            className="fw-input"
-            name="amount"
-            inputMode={money ? 'decimal' : 'numeric'}
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            required
-            autoComplete="off"
-          />
-          <span className="fw-seg" aria-label="Points or money">
-            {(['points', 'money'] as const).map((u) => (
-              <span key={u} className="fw-seg__item" data-on={unit === u}>
-                {u === 'points' ? 'Points' : 'Money'}
-              </span>
             ))}
+          </select>
+        </div>
+
+        <fieldset className="fw-field fw-fieldset">
+          <legend className="fw-field__label">For</legend>
+          <div className="fw-seg">
+            {people.map((p) => (
+              <label key={p.id} className="fw-seg__item fw-rule__chip">
+                <input
+                  className="fw-seg__input"
+                  type="checkbox"
+                  name="memberId"
+                  value={p.id}
+                  checked={who.includes(p.id)}
+                  onChange={() => setWho((w) => toggle(w, p.id))}
+                />
+                <Avatar
+                  name={p.displayName}
+                  avatarKey={p.avatarKey}
+                  color={p.color}
+                  size={26}
+                  decorative
+                />
+                {p.displayName}
+              </label>
+            ))}
+          </div>
+          {people.length === 0 ? (
+            <span className="fw-field__help">
+              Nobody earns rewards yet, so nobody can have a rule.
+            </span>
+          ) : null}
+        </fieldset>
+
+        <fieldset className="fw-field fw-fieldset">
+          <legend className="fw-field__label">Counts a miss of</legend>
+          <div className="fw-seg">
+            {SCOPES.map((s) => (
+              <label key={s.scope} className="fw-seg__item">
+                <input
+                  className="fw-seg__input"
+                  type="radio"
+                  name="scope"
+                  value={s.scope}
+                  checked={scope === s.scope}
+                  onChange={() => setScope(s.scope)}
+                />
+                {s.label}
+              </label>
+            ))}
+          </div>
+          {scope === 'items' ? (
+            <div className="fw-rule__items" role="group" aria-label="Items">
+              {listed.length === 0 ? (
+                <span className="fw-field__help">No chores for them yet.</span>
+              ) : (
+                listed.map((c) => (
+                  <label key={c.id} className="fw-check">
+                    <input
+                      type="checkbox"
+                      name="choreId"
+                      value={c.id}
+                      checked={picked.includes(c.id)}
+                      onChange={() => setPicked((x) => toggle(x, c.id))}
+                    />
+                    <span>
+                      {c.title}
+                      {c.schoolDays ? <span className="fw-muted"> · school days</span> : null}
+                    </span>
+                  </label>
+                ))
+              )}
+            </div>
+          ) : scope === 'tag' ? (
+            <div className="fw-field">
+              <label className="fw-field__label" htmlFor="rule-tag">
+                Tag
+              </label>
+              <select
+                id="rule-tag"
+                className="fw-input"
+                name="tagId"
+                defaultValue={rule?.tagId ?? ''}
+                required
+              >
+                <option value="" disabled>
+                  Choose a tag
+                </option>
+                {tags.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <span className="fw-field__help">
+              Every chore of theirs counts. A task is never missed.
+            </span>
+          )}
+        </fieldset>
+
+        <div className="fw-fgrid">
+          <label className="fw-field">
+            <span className="fw-field__label">Starts</span>
+            <DatePick
+              type="date"
+              name="startDate"
+              label="Starts"
+              required
+              min={rule && rule.startDate < today ? rule.startDate : today}
+              initial={rule?.startDate ?? today}
+              value={start}
+              onValue={setStart}
+            />
+          </label>
+          <label className="fw-field">
+            <span className="fw-field__label">Ends</span>
+            <DatePick
+              type="date"
+              name="endDate"
+              label="Ends"
+              required
+              min={start}
+              initial={rule?.endDate ?? ''}
+              value={end}
+              onValue={setEnd}
+            />
+          </label>
+        </div>
+
+        <div className="fw-field">
+          <label className="fw-field__label" htmlFor="rule-amount">
+            Each miss adds
+          </label>
+          <span className="fw-penalty__amount">
+            {money ? <span aria-hidden>$</span> : null}
+            <input
+              id="rule-amount"
+              className="fw-input"
+              name="amount"
+              inputMode={money ? 'decimal' : 'numeric'}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+              autoComplete="off"
+            />
+            <span className="fw-seg" aria-label="Points or money">
+              {(['points', 'money'] as const).map((u) => (
+                <span key={u} className="fw-seg__item" data-on={unit === u}>
+                  {u === 'points' ? 'Points' : 'Money'}
+                </span>
+              ))}
+            </span>
           </span>
-        </span>
-        <span className="fw-field__help">Points or money comes from the reason.</span>
-      </div>
+          <span className="fw-field__help">Points or money comes from the reason.</span>
+        </div>
 
-      <label className="fw-field">
-        <span className="fw-field__label">Max owed</span>
-        <span className="fw-penalty__amount">
-          {money ? <span aria-hidden>$</span> : null}
-          <input
-            className="fw-input"
-            name="max"
-            inputMode={money ? 'decimal' : 'numeric'}
-            value={max}
-            onChange={(e) => setMax(e.target.value)}
-            required
-            autoComplete="off"
-          />
-        </span>
-      </label>
+        <label className="fw-field">
+          <span className="fw-field__label">Max owed</span>
+          <span className="fw-penalty__amount">
+            {money ? <span aria-hidden>$</span> : null}
+            <input
+              className="fw-input"
+              name="max"
+              inputMode={money ? 'decimal' : 'numeric'}
+              value={max}
+              onChange={(e) => setMax(e.target.value)}
+              required
+              autoComplete="off"
+            />
+          </span>
+        </label>
 
-      <ul className="fw-rule__never">
-        <li>A skipped or covered day, a day off or a no-school day adds nothing.</li>
-        <li>
-          Mark done on time on a missed day takes its{' '}
-          {money ? `$${each}` : `${each} ${each === '1' ? 'point' : 'points'}`} back.
-        </li>
-        <li>After the end date nothing is added; what’s owed stays until it’s paid or paid back.</li>
-      </ul>
+        <ul className="fw-rule__never">
+          <li>A skipped or covered day, a day off or a no-school day adds nothing.</li>
+          <li>
+            Mark done on time on a missed day takes its{' '}
+            {money ? `$${each}` : `${each} ${each === '1' ? 'point' : 'points'}`} back.
+          </li>
+          <li>
+            After the end date nothing is added; what’s owed stays until it’s paid or paid back.
+          </li>
+        </ul>
       </section>
 
       {/* [PTS-11][US-1113] Paid back by a goal (WP-122, the approved mockup). */}
@@ -364,8 +366,8 @@ export function RuleForm({
             ))}
           </select>
           <span className="fw-field__help">
-            A goal of the people it’s for, or a family goal. A goal’s prize can be a reward from
-            the shop.
+            A goal of the people it’s for, or a family goal. A goal’s prize can be a reward from the
+            shop.
           </span>
         </div>
         {goal ? (
@@ -392,28 +394,28 @@ export function RuleForm({
                 Never more than is owed. The goal keeps its own prize; only the payback pauses.
               </span>
             </div>
-            {saved
-              ? (rule?.memberIds ?? []).map((id) => {
-                  const owed = rule?.held[id] ?? 0;
-                  return owed > 0 ? (
-                    <p key={id} className="fw-rule__state" data-member={id}>
-                      <strong>Paying back.</strong> {personName(id)} owes {backWord(owed)}; the next{' '}
-                      {periodNoun(saved.repeat) ? `${periodNoun(saved.repeat)} won` : 'win'} pays
-                      back {backWord(Math.min(saved.amount, owed))}.
-                    </p>
-                  ) : (
-                    <p key={id} className="fw-rule__state" data-member={id} data-paused="true">
-                      <strong>{personName(id)} owes nothing:</strong> payback paused, “Nothing owed”. It
-                      starts again on the next miss.
-                    </p>
-                  );
-                })
-              : (
-                  <p className="fw-rule__state" data-paused="true">
-                    <strong>When nothing is owed:</strong> payback paused, “Nothing owed”. It starts
-                    again on the next miss.
+            {saved ? (
+              (rule?.memberIds ?? []).map((id) => {
+                const owed = rule?.held[id] ?? 0;
+                return owed > 0 ? (
+                  <p key={id} className="fw-rule__state" data-member={id}>
+                    <strong>Paying back.</strong> {personName(id)} owes {backWord(owed)}; the next{' '}
+                    {periodNoun(saved.repeat) ? `${periodNoun(saved.repeat)} won` : 'win'} pays back{' '}
+                    {backWord(Math.min(saved.amount, owed))}.
                   </p>
-                )}
+                ) : (
+                  <p key={id} className="fw-rule__state" data-member={id} data-paused="true">
+                    <strong>{personName(id)} owes nothing:</strong> payback paused, “Nothing owed”.
+                    It starts again on the next miss.
+                  </p>
+                );
+              })
+            ) : (
+              <p className="fw-rule__state" data-paused="true">
+                <strong>When nothing is owed:</strong> payback paused, “Nothing owed”. It starts
+                again on the next miss.
+              </p>
+            )}
           </>
         ) : null}
       </section>

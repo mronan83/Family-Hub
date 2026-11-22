@@ -78,7 +78,9 @@ export async function loadMemberPenalties(
   }));
   const back = await db
     .from('penalty_payback')
-    .select('id, rule_id, unit, amount, paid_at, taken_back_at, penalty_rule(name), reward_goal(title, repeats)')
+    .select(
+      'id, rule_id, unit, amount, paid_at, taken_back_at, penalty_rule(name), reward_goal(title, repeats)',
+    )
     .eq('member_id', memberId)
     .order('paid_at', { ascending: false })
     .limit(200);
@@ -181,9 +183,7 @@ export async function loadPenaltyRules(
       held[id] = Math.max(0, (held[id] ?? 0) - (b.amount as number));
     }
     const goal = r.reward_goal as
-      | { title: string; repeats: string }
-      | { title: string; repeats: string }[]
-      | null;
+      { title: string; repeats: string } | { title: string; repeats: string }[] | null;
     const g = Array.isArray(goal) ? goal[0] : goal;
     const linked = ((r.penalty_rule_chore as { chore_id: string }[] | null) ?? []).map(
       (c) => c.chore_id,

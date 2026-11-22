@@ -135,7 +135,9 @@ export function ruleStatus(rule: PenaltyRule, name: (memberId: string) => string
         : `${name(id)}: ${rule.held[id]} of ${rule.max} points taken`,
     );
   if (rule.payback) {
-    return parts.length ? `${parts.join(' · ')} · ${paybackPhrase(rule.unit, rule.payback)}` : PAUSED;
+    return parts.length
+      ? `${parts.join(' · ')} · ${paybackPhrase(rule.unit, rule.payback)}`
+      : PAUSED;
   }
   return parts.length ? parts.join(' · ') : 'Nothing owed';
 }

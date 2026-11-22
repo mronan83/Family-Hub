@@ -156,5 +156,7 @@ export function owesPaybacks<T extends BoardPaybackLike>(
   paybacks: T[] | undefined,
   memberId: string,
 ): T[] {
-  return (paybacks ?? []).filter((p) => p.memberId === memberId && p.unit === 'money' && p.owed > 0);
+  return (paybacks ?? []).filter(
+    (p) => p.memberId === memberId && p.unit === 'money' && p.owed > 0,
+  );
 }

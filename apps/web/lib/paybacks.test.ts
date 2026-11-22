@@ -101,7 +101,10 @@ describe('penalties paid back through a goal (WP-122)', () => {
         null,
         GOALS,
       ),
-    ).toEqual({ ok: false, message: 'Choose a goal of the people the rule is for, or a family goal.' });
+    ).toEqual({
+      ok: false,
+      message: 'Choose a goal of the people the rule is for, or a family goal.',
+    });
     expect(
       parseRule(
         form({ ...good, paybackGoalId: FAMILY, paybackAmount: '0' }),
@@ -120,7 +123,9 @@ describe('penalties paid back through a goal (WP-122)', () => {
     expect(ruleMessage({ hint: 'bad_payback_goal' })).toBe(
       'Choose a goal of the people the rule is for, or a family goal, still to be won.',
     );
-    expect(ruleMessage({ hint: 'bad_payback_amount' })).toBe('Enter what each win pays back, from 1.');
+    expect(ruleMessage({ hint: 'bad_payback_amount' })).toBe(
+      'Enter what each win pays back, from 1.',
+    );
   });
 
   it("[PTS-11-j] Settings' rule line: paying back, or paused", () => {
