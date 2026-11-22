@@ -138,6 +138,7 @@ export default async function EditMemberPage({
             notice={query.penalty ?? null}
             open={Boolean(query.penalty) || query.open === 'penalties'}
             rules={penaltyRules}
+            paybacks={memberPenalties.paybacks}
           />
         ) : null
       }

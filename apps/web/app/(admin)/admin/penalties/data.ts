@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { GoalRepeat, PaybackGoal, PenaltyPaybackRow } from '@/lib/paybacks';
 import type { PenaltyRule, RuleChore, RuleScope } from '@/lib/penalty-rules';
 import {
   type Penalty,
@@ -40,11 +41,14 @@ export async function loadPenaltySettings(
   };
 }
 
-/** [PTS-09] A member's penalties, newest first, each with what is owed, and the payments on them. */
+/**
+ * [PTS-09] A member's penalties, newest first, each with what is owed, and the payments on them.
+ * [PTS-11] And what goals paid back on their rules (WP-122), each with its rule and goal.
+ */
 export async function loadMemberPenalties(
   db: SupabaseClient,
   memberId: string,
-): Promise<{ penalties: Penalty[]; payments: PenaltyPayment[] }> {
+): Promise<{ penalties: Penalty[]; payments: PenaltyPayment[]; paybacks: PenaltyPaybackRow[] }> {
   const rows = await db
     .from('penalty')
     .select(
@@ -59,7 +63,7 @@ export async function loadMemberPenalties(
   const paid = ids.length
     ? await db
         .from('penalty_payment')
-        .select('id, penalty_id, amount, recorded_at, recorded_by')
+        .select('id, penalty_id, amount, recorded_at, recorded_by, payback_id')
         .in('penalty_id', ids)
         .order('recorded_at', { ascending: false })
     : { data: [], error: null };
@@ -69,8 +73,34 @@ export async function loadMemberPenalties(
     penaltyId: x.penalty_id as string,
     amount: x.amount as number,
     recordedAt: x.recorded_at as string,
-    recordedBy: x.recorded_by as string,
+    recordedBy: (x.recorded_by as string | null) ?? null,
+    paybackId: (x.payback_id as string | null) ?? null,
   }));
+  // Each embed names its key: penalty_payback links rules, goals and people more than one way.
+  const back = await db
+    .from('penalty_payback')
+    .select(
+      'id, rule_id, unit, amount, paid_at, taken_back_at, penalty_rule!penalty_payback_household_id_rule_id_fkey(name), reward_goal!penalty_payback_household_id_goal_id_fkey(title, repeats)',
+    )
+    .eq('member_id', memberId)
+    .order('paid_at', { ascending: false })
+    .limit(200);
+  if (back.error) throw new Error(`penalty paybacks: ${back.error.message}`);
+  const one = <T>(x: T | T[] | null): T | null => (Array.isArray(x) ? (x[0] ?? null) : x);
+  const paybacks: PenaltyPaybackRow[] = (back.data ?? []).map((b) => {
+    const goal = one(b.reward_goal as unknown as { title: string; repeats: string } | null);
+    return {
+      id: b.id as string,
+      ruleId: b.rule_id as string,
+      rule: one(b.penalty_rule as unknown as { name: string } | null)?.name ?? 'a rule',
+      goal: goal?.title ?? 'a goal',
+      repeat: (goal?.repeats ?? 'none') as GoalRepeat,
+      unit: b.unit as PenaltyUnit,
+      amount: b.amount as number,
+      paidAt: b.paid_at as string,
+      takenBackAt: (b.taken_back_at as string | null) ?? null,
+    };
+  });
   const penalties = withOwed(
     (rows.data ?? []).map((r) => ({
       id: r.id as string,
@@ -88,7 +118,7 @@ export async function loadMemberPenalties(
     })),
     payments,
   );
-  return { penalties, payments };
+  return { penalties, payments, paybacks };
 }
 
 /**
@@ -102,7 +132,7 @@ export async function loadPenaltyRules(
   const rules = await db
     .from('penalty_rule')
     .select(
-      'id, name, reason_id, unit, amount, max_amount, scope, tag_id, start_date, end_date, stopped_at, penalty_rule_member(member_id), penalty_rule_chore(chore_id), tag(name)',
+      'id, name, reason_id, unit, amount, max_amount, scope, tag_id, start_date, end_date, stopped_at, payback_goal_id, payback_amount, penalty_rule_member(member_id), penalty_rule_chore(chore_id), tag(name), reward_goal!penalty_rule_payback_goal_fk(title, repeats)',
     )
     .eq('household_id', householdId)
     .order('created_at')
@@ -118,14 +148,22 @@ export async function loadPenaltyRules(
       ),
     ),
   ];
-  const [chores, misses] = await Promise.all([
+  const [chores, misses, paidBack] = await Promise.all([
     loadRuleChores(db, householdId, choreIds),
     db
       .from('penalty')
       .select('id, rule_id, member_id, unit, amount, taken_back_at, penalty_payment(amount)')
       .in('rule_id', ruleIds),
+    // [PTS-11] Points a goal paid back count off what a points rule has on someone (D-158).
+    db
+      .from('penalty_payback')
+      .select('rule_id, member_id, amount')
+      .in('rule_id', ruleIds)
+      .eq('unit', 'points')
+      .is('taken_back_at', null),
   ]);
   if (misses.error) throw new Error(`penalty rule misses: ${misses.error.message}`);
+  if (paidBack.error) throw new Error(`penalty paybacks: ${paidBack.error.message}`);
   return rows.map((r) => {
     const held: Record<string, number> = {};
     let added = 0;
@@ -140,6 +178,14 @@ export async function loadPenaltyRules(
       const id = m.member_id as string;
       held[id] = (held[id] ?? 0) + (m.amount as number) - (m.unit === 'money' ? paid : 0);
     }
+    for (const b of paidBack.data ?? []) {
+      if (b.rule_id !== r.id) continue;
+      const id = b.member_id as string;
+      held[id] = Math.max(0, (held[id] ?? 0) - (b.amount as number));
+    }
+    const goal = r.reward_goal as
+      { title: string; repeats: string } | { title: string; repeats: string }[] | null;
+    const g = Array.isArray(goal) ? goal[0] : goal;
     const linked = ((r.penalty_rule_chore as { chore_id: string }[] | null) ?? []).map(
       (c) => c.chore_id,
     );
@@ -163,6 +209,15 @@ export async function loadPenaltyRules(
       held,
       stoppedAt: (r.stopped_at as string | null) ?? null,
       added,
+      payback:
+        r.payback_goal_id && g
+          ? {
+              goalId: r.payback_goal_id as string,
+              goal: g.title,
+              repeat: (g.repeats ?? 'none') as GoalRepeat,
+              amount: r.payback_amount as number,
+            }
+          : null,
     };
   });
 }
@@ -212,4 +267,29 @@ export async function loadRuleTags(
     .order('name');
   if (error) throw new Error(`tags: ${error.message}`);
   return (data ?? []).map((t) => ({ id: t.id as string, name: t.name as string }));
+}
+
+/**
+ * [PTS-11] The goals a rule can be paid back by (WP-122): the household's, not archived, still to be
+ * won (a draft, scheduled or going), as save_penalty_rule() checks.
+ */
+export async function loadPaybackGoals(
+  db: SupabaseClient,
+  householdId: string,
+): Promise<PaybackGoal[]> {
+  const { data, error } = await db
+    .from('reward_goal')
+    .select('id, title, member_id, repeats')
+    .eq('household_id', householdId)
+    .is('archived_at', null)
+    .in('status', ['draft', 'scheduled', 'active'])
+    .order('title')
+    .order('id');
+  if (error) throw new Error(`payback goals: ${error.message}`);
+  return (data ?? []).map((g) => ({
+    id: g.id as string,
+    title: g.title as string,
+    memberId: (g.member_id as string | null) ?? null,
+    repeat: ((g.repeats as string | null) ?? 'none') as GoalRepeat,
+  }));
 }

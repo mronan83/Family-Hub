@@ -1,6 +1,7 @@
 # 03 — User Stories
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.77: US-1113 as built (WP-122, PTS-11, D-158): a rule's **Paid back by** a goal, its words on the board's goal card and **Owes** card, Settings and a child's page, and a family goal's win paying back each of the rule's people.
 > v0.8.76: US-1114 as built (WP-123, PTS-12, D-155): the board's points list shows the reason for points a parent took away, entries posted before included; the Take away points form says so.
 > v0.8.75: US-1114 added at the owner's request (WP-123, PTS-12, D-155): the board shows the reason for points a parent took away.
 > v0.8.74: US-326 as built (WP-117, CHR-24, D-151): **Done on time…** on Today, a child's **Missed or late** and a goal's missed day, with the trace in the points register too.
@@ -1241,6 +1242,8 @@ Priority uses MoSCoW. Phases: **P0** foundation · **P1** kid loop and rewards (
 - Given the payback is paused, when a missed day makes Maya owe $1, then the payback is active again from that week.
 - Given the penalty is in points, when a week pays back 10 points, then a `penalty_payback` entry of +10 is posted, never more than Maya owes.
 - Given a week's win is later undone (a chore reversed), when the goal is worked out again, then the payback is taken back once.
+- Given the rule "Folder home" is for Maya and Leo and paid back by the family goal "Kitchen clear", when the family wins a week, then each of them is paid back, never more than each owes (D-158).
+- Given Maya owes $2 on "Folder home", when Maya looks at her screen on the board, then her goal card says "A won week pays back $1 of the $2 Maya owes for Folder home" and her **Owes** card says "Win a Folder home week: pays back $1" (D-158).
 
 ### US-1114 — See why a parent changed my points
 **As a** kid **I want** the board to say why a parent took points away **so that** I know what it was for and what to do differently. Added at the owner's request (WP-123, D-155).

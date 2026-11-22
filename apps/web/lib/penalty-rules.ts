@@ -15,6 +15,13 @@ import {
   type PenaltyUnit,
   parseAmount,
 } from './penalties';
+import {
+  PAUSED,
+  type PaybackGoal,
+  paybackChoices,
+  paybackPhrase,
+  type RulePayback,
+} from './paybacks';
 
 export type RuleScope = 'items' | 'tag' | 'all';
 
@@ -50,6 +57,8 @@ export interface PenaltyRule {
   stoppedAt?: string | null;
   /** [PTS-10] How many misses it has ever added, taken back ones included: Remove only at 0. */
   added?: number;
+  /** [PTS-11] Paid back by: the goal and what each win pays back (WP-122); null when none. */
+  payback?: RulePayback | null;
 }
 
 export const MAX_RULE_NAME = 80;
@@ -114,7 +123,8 @@ export function ruleLine(rule: PenaltyRule, name: (memberId: string) => string):
 
 /**
  * What a rule has on each of its people: "Maya owes $2"; "Leo: 10 of 25 points taken"; with nothing,
- * "Nothing owed".
+ * "Nothing owed". [PTS-11] Paid back by a goal: "Maya owes $2 · paid back $1 a week won"; with
+ * nothing owed, "Nothing owed · payback paused" (WP-122).
  */
 export function ruleStatus(rule: PenaltyRule, name: (memberId: string) => string): string {
   const parts = rule.memberIds
@@ -124,6 +134,11 @@ export function ruleStatus(rule: PenaltyRule, name: (memberId: string) => string
         ? `${name(id)} owes ${money(rule.held[id]!)}`
         : `${name(id)}: ${rule.held[id]} of ${rule.max} points taken`,
     );
+  if (rule.payback) {
+    return parts.length
+      ? `${parts.join(' · ')} · ${paybackPhrase(rule.unit, rule.payback)}`
+      : PAUSED;
+  }
   return parts.length ? parts.join(' · ') : 'Nothing owed';
 }
 
@@ -140,6 +155,9 @@ export interface RuleInput {
   endDate: string;
   amount: number;
   max: number;
+  /** [PTS-11] Paid back by: a goal and what each win pays back, or null for none. */
+  paybackGoalId: string | null;
+  paybackAmount: number | null;
 }
 
 const realDate = (s: string) =>
@@ -155,6 +173,7 @@ export function parseRule(
   reasons: PenaltyReason[],
   today: string,
   keptStart: string | null = null,
+  goals: PaybackGoal[] = [],
 ): Parsed<RuleInput> {
   const idRaw = String(form.get('ruleId') ?? '');
   const id = idRaw ? idRaw : null;
@@ -205,6 +224,29 @@ export function parseRule(
   if (max === null || max < amount) {
     return { ok: false, message: 'Enter a max owed no less than each miss adds.' };
   }
+  // [PTS-11] Paid back by: a goal of the rule's people or the family, and what each win pays back.
+  const goalRaw = String(form.get('paybackGoalId') ?? '');
+  let paybackGoalId: string | null = null;
+  let paybackAmount: number | null = null;
+  if (goalRaw) {
+    if (!paybackChoices(goals, memberIds).some((g) => g.id === goalRaw) || !UUID.test(goalRaw)) {
+      return {
+        ok: false,
+        message: 'Choose a goal of the people the rule is for, or a family goal.',
+      };
+    }
+    paybackAmount = parseAmount(reason.unit, String(form.get('paybackAmount') ?? ''));
+    if (paybackAmount === null) {
+      return {
+        ok: false,
+        message:
+          reason.unit === 'money'
+            ? `Enter what each win pays back, from $0.01 to ${money(cap)}.`
+            : `Enter the points each win pays back, from 1 to ${cap.toLocaleString('en-US')}.`,
+      };
+    }
+    paybackGoalId = goalRaw;
+  }
   return {
     ok: true,
     value: {
@@ -219,6 +261,8 @@ export function parseRule(
       endDate,
       amount,
       max,
+      paybackGoalId,
+      paybackAmount,
     },
   };
 }
@@ -237,6 +281,9 @@ export function ruleArgs(r: RuleInput): Record<string, unknown> {
     end_date: r.endDate,
     amount: r.amount,
     max_amount: r.max,
+    ...(r.paybackGoalId
+      ? { payback_goal_id: r.paybackGoalId, payback_amount: r.paybackAmount }
+      : {}),
   };
 }
 
@@ -273,6 +320,10 @@ export function ruleMessage(error: { code?: string; hint?: string | null }): str
       return 'That form was already used. Reload the page to make another change.';
     case 'rule_stopped':
       return 'This rule was stopped, so it can’t be changed. Add a new rule instead.';
+    case 'bad_payback_goal':
+      return 'Choose a goal of the people the rule is for, or a family goal, still to be won.';
+    case 'bad_payback_amount':
+      return 'Enter what each win pays back, from 1.';
     case 'rule_used':
       return 'This rule has added misses, so it can’t be removed. Stop it instead.';
   }

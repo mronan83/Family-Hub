@@ -185,6 +185,7 @@ describe('board snapshot', () => {
       },
       // A snapshot read without board_groceries() beside it (WP-104) has none.
       groceries: null,
+      paybacks: [],
       members: [
         {
           id: 'm1',
@@ -604,6 +605,7 @@ describe('notify, then refetch', () => {
       { table: 'points_ledger', filter: 'household_id=eq.h1' },
       { table: 'penalty', filter: 'household_id=eq.h1' },
       { table: 'penalty_payment', filter: 'household_id=eq.h1' },
+      { table: 'penalty_payback', filter: 'household_id=eq.h1' },
       { table: 'chore_occurrence', filter: 'household_id=eq.h1' },
       { table: 'chore', filter: 'household_id=eq.h1' },
       { table: 'streak_segment', filter: 'household_id=eq.h1' },
@@ -831,5 +833,65 @@ describe('penalties (WP-120)', () => {
         missed: ['2026-11-17', '2026-11-18'],
       },
     ]);
+  });
+});
+
+describe('penalty paybacks (WP-122)', () => {
+  it("[PTS-11-h] reads each rule's payback per person, and none from a snapshot before WP-122", () => {
+    const s = readSnapshot({
+      ...RAW,
+      paybacks: [
+        {
+          rule_id: 'r1',
+          rule: 'Folder home',
+          member_id: 'm1',
+          unit: 'money',
+          amount: 100,
+          owed: 200,
+          goal_id: 'g1',
+          goal: 'Folder home every school day',
+          repeat: 'week',
+        },
+      ],
+    })!;
+    expect(s.paybacks).toEqual([
+      {
+        ruleId: 'r1',
+        rule: 'Folder home',
+        memberId: 'm1',
+        unit: 'money',
+        amount: 100,
+        owed: 200,
+        goalId: 'g1',
+        goal: 'Folder home every school day',
+        repeat: 'week',
+      },
+    ]);
+    expect(readSnapshot({ ...RAW })!.paybacks).toEqual([]);
+  });
+
+  it('[PTS-11-i] reads a payback in the points list as its own type', () => {
+    const maya = (RAW.members as Record<string, unknown>[])[0]!;
+    const s = readSnapshot({
+      ...RAW,
+      members: [
+        {
+          ...maya,
+          points: {
+            balance: 5,
+            recent: [
+              {
+                id: 'l1',
+                type: 'penalty_payback',
+                amount: 5,
+                at: '2026-11-22T05:00:00Z',
+                label: 'Week won: Bed by 8 all week',
+              },
+            ],
+          },
+        },
+      ],
+    })!;
+    expect(s.members[0]!.points!.recent[0]).toMatchObject({ type: 'penalty_payback', amount: 5 });
   });
 });

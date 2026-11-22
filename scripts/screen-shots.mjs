@@ -177,6 +177,11 @@ export const ADMIN = [
   // Remove offered while a rule has added nothing, and a stopped rule (the owner, 21 November).
   ['penalty-rule-remove', '/dev/settings/penalties/rule?rule=bed'],
   ['penalty-rule-stopped', '/dev/settings/penalties/rule?state=stopped'],
+  // [PTS-11] WP-122: the rule form's Paid back by (penalty-rule, paying back; penalty-rule-remove,
+  // paused), Settings' payback lines (penalty-settings), Maya's payback line and a won week in her
+  // history, and the register's Penalty payback type.
+  ['penalty-member-payback', '/dev/members?page=member&penalties=payback'],
+  ['penalty-register-payback', '/dev/rewards/points?penalties=1&type=penalty_payback'],
 ];
 /**
  * [name, query, person, whole, then] per board screen: Maya's goal cards; with `whole`, a screen of
@@ -191,6 +196,11 @@ export const BOARD = [
   // [PTS-09] WP-120: Maya's whole screen with a points penalty and what she owes, and the rail's chip.
   ['board-penalties', '?penalties=1', 'Maya', 'whole'],
   ['board-penalties-below', '?penalties=below', 'Maya', 'whole'],
+  // [PTS-11] WP-122: Maya's whole screen paying back (the Owes card's line), her goal card paying back,
+  // and paused with nothing owed.
+  ['board-payback', '?penalties=payback', 'Maya', 'whole'],
+  ['board-payback-goal', '?penalties=payback', 'Maya'],
+  ['board-paused', '?penalties=paused', 'Maya'],
   ['board-going', '?repeating=going', 'Maya'],
   ['board-missed', '?repeating=missed', 'Maya'],
   ['board-won', '?repeating=won', 'Maya'],

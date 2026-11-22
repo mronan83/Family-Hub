@@ -3,6 +3,7 @@
 import { Avatar, Button, ChoreTile, GoalMeter, Icon, PointsChip } from '@familywise/ui';
 import { money, owedTotal } from '@/lib/penalties';
 import { owedLine } from '@/lib/penalty-rules';
+import { goalPaybacks, owesPaybackLine, owesPaybacks } from '@/lib/paybacks';
 import {
   type ReactNode,
   useCallback,
@@ -1345,6 +1346,12 @@ export function Today({
                         </li>
                       ))}
                     </ul>
+                    {/* [PTS-11] What a win pays back: "Win a Folder home week: pays back $1". */}
+                    {owesPaybacks(snapshot.paybacks, member.id).map((p) => (
+                      <p key={p.ruleId} className="fw-today__owes-foot" data-payback={p.ruleId}>
+                        {owesPaybackLine(p)}
+                      </p>
+                    ))}
                   </section>
                 ) : null}
                 {member.earnsRewards ? (
@@ -1402,6 +1409,7 @@ export function Today({
                     today={today}
                     photoUrl={photoUrl}
                     members={snapshot.members}
+                    paybacks={goalPaybacks(snapshot.paybacks, member)}
                   />
                 ) : null}
                 {(() => {

@@ -365,6 +365,20 @@ const SHOTS = [
     element: '#rules',
   },
   { name: 'admin-penalty-rule-phone', device: 'phone', url: '/dev/settings/penalties/rule' },
+  // [PTS-11] Paid back through a goal (WP-122): the rule form's Paid back by, and Maya's goal card.
+  {
+    name: 'admin-penalty-payback-phone',
+    device: 'phone',
+    url: '/dev/settings/penalties/rule',
+    element: 'section:has(#payback-heading)',
+  },
+  {
+    name: 'board-penalty-payback',
+    device: 'board',
+    url: '/dev/board?penalties=payback',
+    act: (page) => person(page, 'Maya').click(),
+    element: '[data-goal="g-folder"]',
+  },
   {
     name: 'board-penalties',
     device: 'board',

@@ -114,7 +114,7 @@ select is(
   array['calendar_member', 'calendar_source', 'chore', 'chore_occurrence', 'device', 'device_calendar', 'grocery_ask', 'grocery_brand', 'grocery_category',
         'grocery_item', 'grocery_item_reason', 'grocery_store', 'household',
         'household_settings', 'lunch_choice', 'lunch_override', 'lunch_request', 'meal', 'meal_plan_entry', 'member', 'member_lunch',
-        'penalty', 'penalty_payment', 'points_ledger', 'redemption', 'reward_catalog_item', 'reward_goal', 'reward_goal_period', 'reward_goal_progress',
+        'penalty', 'penalty_payback', 'penalty_payment', 'points_ledger', 'redemption', 'reward_catalog_item', 'reward_goal', 'reward_goal_period', 'reward_goal_progress',
         'reward_rule_progress', 'school_menu_day', 'streak_segment', 'weather_reading', 'wishlist_pin'],
   '[DEV-05] the board-readable tables notify the board (apps/web/lib/live.ts listens to each)');
 select ok((select bool_and(has_table_privilege('authenticated', format('public.%I', tablename), 'select'))

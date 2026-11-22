@@ -1,6 +1,7 @@
 # 02 — Data Model
 
 > Version 0.8 · Status: build baseline · Database: Supabase Postgres 15+ · Maintained by Claude Code
+> v0.8.67: penalties paid back through a goal (WP-122, D-154, D-158; §4.2e): `penalty_rule.payback_goal_id`, `payback_amount`; `penalty_payback`; `penalty_payment.payback_id` (a payback's money, posted again negative when undone); the ledger's `penalty_payback` type; a goal's `achieved` and `unachieved` events pay back and take back (`trg_goal_event_penalty_paybacks`); `private.penalty_rule_held()` counts points paid back; `save_penalty_rule()`'s payback; `board_snapshot()`'s `paybacks`; `points_register()`'s `penalty_payback`.
 > v0.8.66: penalty rules (WP-121, D-154, D-157; §4.2d): `penalty_rule`, `penalty_rule_member`, `penalty_rule_chore`; `penalty.rule_id`, `occurrence_id`, `missed_on`, `taken_back_on_time` (`given_by` null for a rule's miss); `save_penalty_rule()`, `record_penalty_rule_paid()`; day close works out the rules (`close_household_day()`); Mark done on time takes a miss back (`trg_cce_penalty_rules`); `board_snapshot()`'s `owes` groups a rule's misses; `points_register()`'s `penalty_rule`; Stop now (`penalty_rule.stopped_at`, `stop_penalty_rule()`) and Remove while a rule has added nothing (`remove_penalty_rule()`), at the owner's request.
 > v0.8.65: penalties (WP-120, D-154, D-156; §4.2c): `household_settings.penalties_on`; `penalty_reason`, `penalty`, `penalty_payment`; the ledger's `penalty` type and `penalty_id`; `give_penalty()`, `take_back_penalty()`, `record_penalty_paid()`, the reasons' functions; `board_snapshot()`'s `owes`.
 > v0.8.64: the board's read, lighter (WP-124): `private.day_types()` (every member's day type over a range in one query, as `resolve_day_type()`); `school_days()` and `lunch_week()` use it; `job_health()` reads a row per job through `job_run_household_id_job_type_started_at_idx` and the new `job_run_last_ok_idx`.
@@ -510,11 +511,12 @@ Per member (`v_member_occurrence`), a done or pending occurrence is `covered` fo
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `points_ledger` | `member_id`, `entry_type` (`earn`/`reversal`/`bonus`/`spend`/`refund`/`adjustment`/`penalty`), `penalty_id?`, `amount` (signed, never 0), `occurrence_id?`, `redemption_id?`, `goal_id?`, `goal_n?`, `reason`, `dedupe_key` (unique), `created_by_type`, `created_by`, `created_at` | **Append-only.** Balance is a sum. Each rewarded member holds a done occurrence's points, and nobody holds a not-done one's (D-32, D-49). A reversal after a spend may take the balance negative; the board shows it as points to earn back (R-12). **As built (WP-16):** without `redemption_id` and `goal_id`, which arrive with redemptions (WP-18) and goal payouts (WP-30); `created_at` is the posting time (`clock_timestamp()`), so entries keep their order within a transaction. |
+| `points_ledger` | `member_id`, `entry_type` (`earn`/`reversal`/`bonus`/`spend`/`refund`/`adjustment`/`penalty`/`penalty_payback`), `penalty_id?`, `penalty_payback_id?`, `amount` (signed, never 0), `occurrence_id?`, `redemption_id?`, `goal_id?`, `goal_n?`, `reason`, `dedupe_key` (unique), `created_by_type`, `created_by`, `created_at` | **Append-only.** Balance is a sum. Each rewarded member holds a done occurrence's points, and nobody holds a not-done one's (D-32, D-49). A reversal after a spend may take the balance negative; the board shows it as points to earn back (R-12). **As built (WP-16):** without `redemption_id` and `goal_id`, which arrive with redemptions (WP-18) and goal payouts (WP-30); `created_at` is the posting time (`clock_timestamp()`), so entries keep their order within a transaction. |
 | `penalty_reason` | `name` (1–80, one of a name at a time), `unit` (`points`/`money`), `amount` (points, or cents), `removed_at?`, `created_by`, `created_at` | The household's penalty reasons (WP-120, D-154): what a parent picks from, each with its default amount. Removed, not deleted: a penalty given with it keeps its reason. Audited. §4.2c. |
 | `penalty` | `member_id`, `reason_id?`, `reason` (copied), `unit`, `amount`, `given_by`, `given_at`, `dedupe_key` (unique), `taken_back_at?`, `taken_back_by?` | A penalty a parent gave (WP-120, D-154, D-156). In points it is a `penalty` ledger entry, taken at once; in money it is owed until paid. Changes once, when taken back. §4.2c. |
-| `penalty_payment` | `penalty_id`, `amount` (cents), `recorded_by`, `recorded_at`, `dedupe_key` (unique) | Money paid outside FamilyWise against one money penalty (WP-120). Append-only. §4.2c. |
-| `penalty_rule` | `name` (1–80), `reason_id`, `unit` (the reason's), `amount` (per miss), `max_amount`, `scope` (`items`/`tag`/`all`), `tag_id?`, `start_date`, `end_date`, `accrued_through?`, `created_by` | A parent's penalty rule (WP-121, D-154, D-157): each miss of a linked chore by one of its people, judged at day close between its dates, adds its amount up to its max. Audited. §4.2d. |
+| `penalty_payment` | `penalty_id`, `amount` (cents), `recorded_by?`, `recorded_at`, `dedupe_key` (unique), `payback_id?` | Money paid outside FamilyWise against one money penalty (WP-120). Append-only. §4.2c. A goal's payback is payments by nobody with `payback_id`, posted again negative when the win is undone (WP-122, §4.2e). |
+| `penalty_payback` | `rule_id`, `member_id`, `goal_id`, `goal_n` (unique with the rule, person and goal), `period_start?`, `period_end?`, `unit`, `amount`, `paid_at`, `taken_back_at?` | One goal win's payback on a penalty rule and person (WP-122, D-158): never more than was owed. Changes once, when the win is undone. §4.2e. |
+| `penalty_rule` | `name` (1–80), `reason_id`, `unit` (the reason's), `amount` (per miss), `max_amount`, `scope` (`items`/`tag`/`all`), `tag_id?`, `start_date`, `end_date`, `accrued_through?`, `created_by`, `payback_goal_id?`, `payback_amount?` | A parent's penalty rule (WP-121, D-154, D-157): each miss of a linked chore by one of its people, judged at day close between its dates, adds its amount up to its max. Audited. §4.2d. |
 | `penalty_rule_member` | PK `(rule_id, member_id)` | Who a penalty rule is for (WP-121). §4.2d. |
 | `penalty_rule_chore` | PK `(rule_id, chore_id)` | The chores a rule links, when it counts chosen items (WP-121). §4.2d. |
 | `reward_catalog_item` | `title`, `description`, `icon`, `image_path`, `cost_points`, `stock?`, `weekly_limit?`, `active`, `sort_order`, `archived_at` | Admin-defined reward and activity inventory (arcade-style prizes). **As built (WP-18):** `image_path` is `{household}/{item}/{file}` in the private `rewards` Storage bucket; `stock` counts requests waiting, approved and given (a denial or cancel frees one); `weekly_limit` is per child per household week. RLS: the household's admins read, add and change it (never delete; archive); its boards read it. |
@@ -1105,6 +1107,40 @@ alter table public.penalty
 - **The register:** `points_register()` adds `penalty_rule`, the name of the rule a penalty entry came from.
 - **Stop now and Remove** (the owner, 21 November; `20261121132921_penalty_rule_stop.sql`): `penalty_rule.stopped_at`, `stopped_by`; `stop_penalty_rule(rule)` (once; a stopped rule is left out of day close and of Uncheck's add-back, and `trg_penalty_rule_stopped` refuses any change to it, `rule_stopped`); `remove_penalty_rule(rule)` (only while no penalty has ever had its `rule_id`, else `rule_used`; its people and chores go with it). A rule's miss is taken back with WP-120's `take_back_penalty()`.
 - pgTAP `660_penalty_rules.test.sql`.
+
+### 4.2e Penalties paid back through a goal
+
+As built (WP-122, `20261122043530_penalty_paybacks.sql`, D-154, D-158). A rule's **Paid back by**: a goal of the household and what each win pays back, in the rule's unit. A won period of the goal (a repeating goal's week, month or term) or a one-off goal reached pays back each of the rule's people it is for, never more than is owed on the rule; with nothing owed it pays nothing (paused). A win undone takes its payback back once.
+
+```sql
+alter table public.penalty_rule
+  add column payback_goal_id uuid,               -- → reward_goal (same household); null: not paid back
+  add column payback_amount integer;             -- per win: points, or cents; set with the goal, else null
+
+create table public.penalty_payback (            -- one win's payback on a rule and person
+  id, household_id, rule_id → penalty_rule, member_id → member, goal_id → reward_goal,
+  goal_n integer,                                -- which achievement of the goal (unique per rule, person, goal, n)
+  period_start date, period_end date,            -- a repeating goal's period
+  unit text, amount integer,                     -- what it paid back (never more than was owed)
+  paid_at timestamptz, taken_back_at timestamptz -- changes once, when the win is undone
+);
+
+alter table public.penalty_payment
+  add column payback_id uuid,                    -- a payback's money; recorded_by null (the system)
+  alter column recorded_by drop not null;        -- amount negative only on a payback's undo
+
+alter table public.points_ledger
+  add column penalty_payback_id uuid;            -- entry_type 'penalty_payback' (+ paid back, − undone)
+```
+
+- **Paying back** (`trg_goal_event_penalty_paybacks` → `private.penalty_paybacks_on_goal_event()`, after each goal event): an `achieved` event (a won period, or a one-off goal reached; its payload has `n`) pays back each rule with that goal, for each of the rule's people the goal is for (its person; a family goal, each of them), while penalties are on: `private.pay_back_rule()` pays the least of the rule's payback amount and what the rule has on the person, once per (rule, person, goal, n). In money, as payments spread over the rule's misses oldest first (as `record_penalty_rule_paid()`); in points, a `penalty_payback` ledger entry "Week won: Folder home every school day" (`private.payback_words()`). A stopped rule, or one past its end date, still pays back what is owed on it.
+- **Undone** (an `unachieved` event for that `n`): `private.take_back_payback()` marks each of its paybacks taken back, and posts its payments again negative (owed again) or a `penalty_payback` entry of −amount.
+- **What a rule has on a person** (`private.penalty_rule_held()`) now subtracts a points rule's paybacks not taken back, so the max counts what is still to earn back (D-158 (3)). Every other sum of what is owed (`private.penalty_owed()`, the snapshot's `owes`) already sums all payments, paybacks and their undoing included.
+- **`save_penalty_rule()`** reads `payback_goal_id` and `payback_amount`: a goal of the household, not archived, in draft, scheduled or going, for one of the rule's people or the family (else `bad_payback_goal`), and an amount from 1 in the rule's unit (else `bad_payback_amount`); no goal clears it.
+- **RLS:** parents and the household's boards read `penalty_payback`; nobody writes it but the functions; `trg_penalty_payback_immutable` lets only `taken_back_at` change, once. Realtime publishes it, so the board reads again.
+- **The board's snapshot:** `paybacks`, from `private.board_paybacks(household)` (a definer function, so a board never reads the rule): `[{rule_id, rule, member_id, unit, amount, owed, goal_id, goal, repeat}]`, one per rule with a goal and person, while penalties are on; a rule stopped or past its end only while something is owed on it.
+- **The register:** `points_register()` lists a payback as its own kind, `penalty_payback`, with its goal (`goal_id`, `goal_title`) and rule (`penalty_rule`).
+- pgTAP `670_penalty_paybacks.test.sql`.
 
 ### 4.3 Dirty-marking trigger
 

@@ -565,6 +565,8 @@ export function fixtureSnapshot(
     calendar: fixtureCalendar(today, now, day(-1, today), day(21, today)),
     weather,
     meals,
+    // [PTS-11] No penalty rule is paid back by a goal (WP-122), unless the page says so.
+    paybacks: [],
   };
 }
 
@@ -758,6 +760,91 @@ export function withPenalties(s: BoardSnapshot, now: Date, below = false): Board
           ? { ...m, owes: [] }
           : m,
     ),
+  };
+}
+
+/**
+ * [PTS-11] Penalties paid back through a goal (WP-122, the approved mockup, ?penalties=payback or
+ * ?penalties=paused): Maya's weekly goal "Folder home every school day", the week from its Monday with
+ * every school day so far done, pays back $1 a week won on the rule "Folder home". Paying back, Maya
+ * owes $3 (the goal card and the Owes card say what a win pays back); paused, she owes nothing.
+ */
+export function withPayback(s: BoardSnapshot, now: Date, paused: boolean): BoardSnapshot {
+  const owing = withPenalties(s, now);
+  const idx = (new Date(`${s.today}T12:00:00Z`).getUTCDay() + 6) % 7;
+  const start = day(-idx, s.today);
+  const days = Array.from({ length: 7 }, (_, i) => ({
+    date: day(i, start),
+    mark: (i >= 5 ? 'none' : i < idx ? 'done' : i === idx ? 'today' : 'later') as DayMark,
+    dayType: i >= 5 ? 'weekend' : null,
+  }));
+  const period: GoalPeriod = {
+    start,
+    end: day(6, start),
+    outcome: 'open',
+    nextStart: day(7, start),
+    daysDue: 5,
+    daysDone: idx,
+    daysMissed: 0,
+    missesAllowed: 0,
+    days,
+  };
+  const goal: BoardGoal = {
+    id: 'g-folder',
+    memberId: MAYA,
+    title: 'Folder home every school day',
+    icon: 'backpack',
+    photo: null,
+    status: 'active',
+    n: 2,
+    achievedAt: null,
+    celebrate: false,
+    endDate: null,
+    logic: 'all',
+    pct: 80,
+    repeat: 'week',
+    period,
+    history: [-21, -14, -7].map((n) => ({
+      start: day(n, start),
+      end: day(n + 6, start),
+      outcome: 'won' as GoalPeriod['outcome'],
+      step: null,
+    })),
+    pays: null,
+    rules: [
+      {
+        id: 'gr-folder',
+        type: 'DAYS_DUE',
+        target: 5,
+        current: idx,
+        pct: 80,
+        met: false,
+        streak: null,
+        best: null,
+        weight: null,
+        onTime: null,
+      },
+    ],
+  };
+  return {
+    ...owing,
+    members: paused
+      ? owing.members.map((m) => (m.id === MAYA ? { ...m, owes: [] } : m))
+      : owing.members,
+    goals: [goal, ...owing.goals.filter((g) => g.memberId !== MAYA)],
+    paybacks: [
+      {
+        ruleId: 'rule-folder',
+        rule: 'Folder home',
+        memberId: MAYA,
+        unit: 'money',
+        amount: 100,
+        owed: paused ? 0 : 200,
+        goalId: 'g-folder',
+        goal: 'Folder home every school day',
+        repeat: 'week',
+      },
+    ],
   };
 }
 
