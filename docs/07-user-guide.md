@@ -1,6 +1,7 @@
 # 07 — User Guide and Manual
 
 > Version 0.6 · Status: living document · Maintained by Claude Code
+> v0.56: Penalties paid back through a goal (WP-122, D-158): a rule's **Paid back by**, paused while nothing is owed, a win undone taken back, and where it shows: Settings, a child's **Penalties**, the board's goal card and **Owes** card, the register's **Penalty payback**.
 > v0.55: Penalty rules (WP-121, D-157): Settings' **Penalty rules**, the rule form, what never adds, Mark done on time taking a miss back, **Record paid** on a rule, and a rule's misses on the board's **Owes** card and in the register (A6).
 > v0.54: Penalties (WP-120, D-154, D-156): Settings' **Penalties**, the reasons, **Give a penalty** on Home and a child's page, a child's **Penalties** (Record paid, Take back), the board's **Owes** card, and **Penalty** in the register (A6).
 > v0.53: The board shows the reason for points a parent took away, as for points added (WP-123, D-155): A4's **Give or take away points by hand**, B2.3's points list, the points table and the FAQ.
@@ -696,7 +697,7 @@ Turn them on: in **Settings**, choose **Penalties**, then the switch beside **Pe
 
 **What a child owes.** On **Members**, open the child, then **Penalties** (folded to "Owes $3" or "Nothing owed"). It lists each money penalty still owed, with **Paid** filled in with what's owed on it: change it for part of it, then **Record paid**. **History** lists every penalty, take-back and payment, newest first, and who did it. **Take back** undoes a penalty given by mistake: in points it gives the points back, in money nothing is owed on it, and the board stops showing it. Nothing is ever edited or deleted.
 
-![Maya's Penalties on a laptop: Maya owes $3; Left bike in the driveway $1 with Paid and Record paid; Folder home $2, $1 a missed school day, missed Tue and Wed, with Record paid; Give a penalty; then History, newest first, with Take back on each penalty not taken back.](guide/img/admin-member-penalties-laptop.jpg "A child's Penalties, on a laptop")
+![Maya's Penalties on a laptop: Maya owes $3; Left bike in the driveway $1 with Paid and Record paid; Folder home $2, $1 a missed school day, missed Tue and Wed, paid back $1 for each week won of Folder home every school day, with Record paid; Give a penalty; then History, newest first, with Take back on each penalty not taken back.](guide/img/admin-member-penalties-laptop.jpg "A child's Penalties, on a laptop")
 
 **On the board.** A child's own screen shows each penalty in their points list, tagged **Penalty** with its reason, and an **Owes** card with each money penalty still owed, its reason and the total. Everyone's view shows "Owes $3" under their points in the rail. The points register lists penalties as their own type, **Penalty**.
 
@@ -724,9 +725,29 @@ Add one: in **Settings**, choose **Penalties**, then **Add a rule** under **Pena
 - **Edit** changes a rule from the next day close; what it already added stays. Settings lists each rule with what it has on each child ("Maya owes $2", "Leo: 10 of 25 points taken").
 - **Stop now**, under **Stop or remove** on the rule's page, ends it at once: nothing more is added, and what it added stays until it's paid or taken back. A stopped rule can't be changed or started again; add a new one instead. **Remove the rule** is there only while it hasn't added anything.
 
-![Penalty rules in Settings on a phone: Folder home, Maya · Homework folder home · $1 a missed school day · max $10 · Nov 16 to Jan 31, Maya owes $2, Edit; Bed by 8, Leo · tag Bedtime · 5 points a miss · max 25 points, Nothing owed, Edit; and Add a rule.](guide/img/admin-penalty-rules-phone.jpg "Penalty rules, on a phone")
+![Penalty rules in Settings on a phone: Folder home, Maya · Homework folder home · $1 a missed school day · max $10 · Nov 16 to Jan 31, Maya owes $2 · paid back $1 a week won, Edit; Bed by 8, Leo · tag Bedtime · 5 points a miss · max 25 points, Nothing owed · payback paused, Edit; and Add a rule.](guide/img/admin-penalty-rules-phone.jpg "Penalty rules, on a phone")
 
 **What a child owes on a rule.** Under the child's **Penalties**, a rule's misses are one line: its name, what's owed, and the days missed ("missed Tue and Wed"), with **Record paid** for all or part of it (oldest days first). **History** lists each miss ("Folder home, missed", tagged **Rule**) on the day it was for, with **Take back** to undo one given by mistake. On the board, the **Owes** card shows it on one line, "Folder home: missed Tue and Wed $2". In points, each miss is taken at once and shows in the points list and the register as a **Penalty** ("Bed by 8, missed Saturday", "rule Bed by 8").
+
+#### Penalties paid back through a goal
+<!-- covers: US-1113 -->
+
+**What this is.** A rule's penalty that a goal pays back: "Folder home every school day" pays back $1 of what Maya owes on "Folder home" each week she wins it. **When.** To let a good week earn back a bad day. **How.** On the rule's page, under **Paid back by**, choose the goal and what each win pays back.
+
+1. Open the rule in **Settings**, **Penalties** (**Edit**), or add one.
+2. Under **Paid back by**, choose the **Goal or reward**: a goal of the people the rule is for, or a family goal. A goal's prize can be a reward from the shop; a shop reward on its own is bought, not won, so it isn't listed.
+3. Set what **Each win pays back** (points or money, as the rule is), then **Save the rule**.
+
+![Paid back by on a phone: Goal or reward, Folder home every school day · each week; Each win pays back $1; never more than is owed, the goal keeps its own prize; Paying back. Maya owes $2; the next week won pays back $1.](guide/img/admin-penalty-payback-phone.jpg "Paid back by, on a phone")
+
+- **Each win** is a week (or month, or term) the goal is won, or a goal that doesn't repeat being reached. It pays back the amount, never more than the child owes on the rule. The goal still gives its own prize.
+- **Nothing owed:** the payback pauses ("Nothing owed · payback paused") until a new miss adds to what's owed; then the next win pays back again. While penalties are off, a win pays back nothing.
+- **A family goal** pays back each child the rule is for.
+- **A win undone** (a chore unchecked, so the week is lost after all) takes its payback back: the amount is owed again.
+- **In points,** a payback gives the points back as a **Penalty payback** in the points list and the register ("Week won: Bed by 8 all week", "goal Bed by 8 all week").
+- **Where it shows:** Settings lists the rule with "Maya owes $2 · paid back $1 a week won"; the child's **Penalties** says "Paid back $1 for each week won of Folder home every school day" and lists each win in **History**, tagged **Payback**. On the board, the child's goal card says "A won week pays back $1 of the $2 Maya owes for Folder home" (or "Nothing owed · payback paused"), and the **Owes** card says "Win a Folder home week: pays back $1".
+
+![Maya's goal card on the board: Folder home every school day, every day it's due this week, with the days marked, and under it, A won week pays back $1 of the $2 Maya owes for Folder home.](guide/img/board-penalty-payback.jpg "A goal paying back a penalty, on the board")
 
 #### Wishes: saving up
 
