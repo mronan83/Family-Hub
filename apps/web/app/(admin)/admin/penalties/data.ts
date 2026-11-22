@@ -76,10 +76,11 @@ export async function loadMemberPenalties(
     recordedBy: (x.recorded_by as string | null) ?? null,
     paybackId: (x.payback_id as string | null) ?? null,
   }));
+  // Each embed names its key: penalty_payback links rules, goals and people more than one way.
   const back = await db
     .from('penalty_payback')
     .select(
-      'id, rule_id, unit, amount, paid_at, taken_back_at, penalty_rule(name), reward_goal(title, repeats)',
+      'id, rule_id, unit, amount, paid_at, taken_back_at, penalty_rule!penalty_payback_household_id_rule_id_fkey(name), reward_goal!penalty_payback_household_id_goal_id_fkey(title, repeats)',
     )
     .eq('member_id', memberId)
     .order('paid_at', { ascending: false })
@@ -131,7 +132,7 @@ export async function loadPenaltyRules(
   const rules = await db
     .from('penalty_rule')
     .select(
-      'id, name, reason_id, unit, amount, max_amount, scope, tag_id, start_date, end_date, stopped_at, payback_goal_id, payback_amount, penalty_rule_member(member_id), penalty_rule_chore(chore_id), tag(name), reward_goal(title, repeats)',
+      'id, name, reason_id, unit, amount, max_amount, scope, tag_id, start_date, end_date, stopped_at, payback_goal_id, payback_amount, penalty_rule_member(member_id), penalty_rule_chore(chore_id), tag(name), reward_goal!penalty_rule_payback_goal_fk(title, repeats)',
     )
     .eq('household_id', householdId)
     .order('created_at')
