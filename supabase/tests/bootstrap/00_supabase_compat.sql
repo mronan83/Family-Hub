@@ -142,3 +142,47 @@ end $$;
 grant usage on schema storage to anon, authenticated, service_role;
 grant select, insert, update, delete on storage.objects to authenticated, service_role;
 grant select on storage.buckets to anon, authenticated, service_role;
+
+-- realtime: the subset of Realtime's schema that Broadcast from Database uses (WP-126): the
+-- messages table that realtime.send() writes to and Realtime authorizes against with RLS, the
+-- channel topic a policy reads, and send() as Realtime defines it (it catches its own errors).
+create schema if not exists realtime;
+create table if not exists realtime.messages (
+  id          uuid not null default gen_random_uuid(),
+  topic       text not null,
+  extension   text not null,
+  payload     jsonb,
+  event       text,
+  private     boolean default false,
+  updated_at  timestamp not null default now(),
+  inserted_at timestamp not null default now(),
+  primary key (id, inserted_at)
+);
+alter table realtime.messages enable row level security;
+create or replace function realtime.topic() returns text
+language sql stable as $$
+  select nullif(current_setting('realtime.topic', true), '')::text
+$$;
+create or replace function realtime.send(payload jsonb, event text, topic text, private boolean default true)
+returns void language plpgsql as $$
+declare
+  generated_id uuid;
+  final_payload jsonb;
+begin
+  begin
+    generated_id := gen_random_uuid();
+    if jsonb_typeof(payload) <> 'object' or payload ? 'id' then
+      final_payload := payload;
+    else
+      final_payload := jsonb_set(payload, '{id}', to_jsonb(generated_id));
+    end if;
+    execute format('set local realtime.topic to %L', topic);
+    insert into realtime.messages (id, payload, event, topic, private, extension)
+    values (generated_id, final_payload, event, topic, private, 'broadcast');
+  exception when others then
+    raise warning 'WarnSendingBroadcastMessage: %', sqlerrm;
+  end;
+end $$;
+grant usage on schema realtime to anon, authenticated, service_role;
+grant select, insert on realtime.messages to anon, authenticated, service_role;
+grant execute on function realtime.topic() to anon, authenticated, service_role;

@@ -5,7 +5,7 @@ import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } fro
 import { boardHealth, type JobHealth, laterSnapshot } from '@/lib/board-health';
 import { type BoardStore, openBoardStore } from '@/lib/board-store';
 import { day, isoDay, time } from '@/lib/format';
-import { boardTables, coalesce, readSoon } from '@/lib/live';
+import { boardTopic, coalesce, listen, readSoon } from '@/lib/live';
 import { postCompletions } from '@/lib/outbox';
 import { withGroceries } from '@/lib/board-groceries';
 import { type BoardRecipe, readRecipes } from '@/lib/board-recipes';
@@ -40,11 +40,13 @@ const HEARTBEAT_MS = 5 * 60_000;
 const REFRESH_MS = 4 * 60_000;
 
 /**
- * [DEV-05] Notify, then refetch (01 §7): Realtime says that a board-readable row changed, and the
- * board reads its snapshot again, straight from the database with its own session (no server
- * round trip). It also reads again whenever Realtime (re)connects or the network returns, so
- * nothing changed while it was away is missed. RLS applies to both, so a disconnected board hears
- * nothing and reads nothing; when it finds that out, the server takes it to the pairing screen.
+ * [DEV-05] Notify, then refetch (01 §7): the database says that a board-readable row changed (a
+ * Broadcast message on the board's own private topic, WP-126), and the board reads its snapshot
+ * again, straight from the database with its own session (no server round trip). It also reads
+ * again whenever Realtime (re)connects or the network returns, so nothing changed while it was away
+ * is missed. The database sends only to active boards and RLS guards the read, so a disconnected
+ * board hears nothing and reads nothing; when it finds that out, the server takes it to the pairing
+ * screen.
  */
 function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: BoardStore | null) {
   const [snapshot, setSnapshot] = useState(initial);
@@ -130,33 +132,33 @@ function useLiveSnapshot(initial: BoardSnapshot, appVersion: string, store: Boar
     };
     void readJobs();
 
-    // `wait`: report SUBSCRIBED only once the server streams changes. By default it reports on
-    // joining, before the replication stream is up after a quiet spell, and a change made in that
-    // gap would be lost after the catch-up read had already run.
-    const channel = db.channel(`board:${householdId}`, {
-      config: { postgres_changes_options: { wait: true } },
-    });
+    // [DEV-05][WP-126] The board's own private topic (D-159): the database sends a message to it for
+    // each change the board may see, and only an active board may join it. Joined with the board's
+    // token, so Realtime checks this board's right to it.
+    const channel = db.channel(boardTopic(deviceId), { config: { private: true } });
     void db.auth.getSession().then(({ data }) => {
       if (cancelled) return;
-      // Join with the board's token, so Realtime applies RLS as this board.
-      if (data.session) db.realtime.setAuth(data.session.access_token);
-      for (const { table, filter } of boardTables(householdId, deviceId)) {
-        channel.on('postgres_changes', { event: '*', schema: 'public', table, filter }, () => {
+      void listen(
+        db,
+        channel,
+        data.session?.access_token ?? null,
+        () => {
           setEvents((n) => n + 1);
           mark(status, 'data-heard-at', Date.now());
           void reload();
-        });
-      }
-      channel.subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          setLink('live');
-          // Changes stream from here on; catch up on anything changed while connecting or
-          // disconnected (the first connection after a quiet spell takes seconds, SPIKE-01).
-          void reload();
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-          setLink('offline');
-        }
-      });
+        },
+        (state) => {
+          if (cancelled) return;
+          if (state === 'SUBSCRIBED') {
+            setLink('live');
+            // Changes arrive from here on; catch up on anything changed while connecting or
+            // disconnected.
+            void reload();
+          } else if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT' || state === 'CLOSED') {
+            setLink('offline');
+          }
+        },
+      );
     });
 
     // The board's sign-in ended (disconnected, or its session was lost): the server decides next.

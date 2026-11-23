@@ -116,7 +116,7 @@ select is(
         'household_settings', 'lunch_choice', 'lunch_override', 'lunch_request', 'meal', 'meal_plan_entry', 'member', 'member_lunch',
         'penalty', 'penalty_payback', 'penalty_payment', 'points_ledger', 'redemption', 'reward_catalog_item', 'reward_goal', 'reward_goal_period', 'reward_goal_progress',
         'reward_rule_progress', 'school_menu_day', 'streak_segment', 'weather_reading', 'wishlist_pin'],
-  '[DEV-05] the board-readable tables notify the board (apps/web/lib/live.ts listens to each)');
+  '[DEV-05] the board-readable tables notify the board (each sends to the boards, 680_board_broadcast)');
 select ok((select bool_and(has_table_privilege('authenticated', format('public.%I', tablename), 'select'))
              from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public'),
   '[DEV-05] and a board may read each of them (RLS still decides the rows)');

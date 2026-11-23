@@ -1,68 +1,47 @@
 /**
- * [DEV-05] Notify, then refetch (01 §7). Realtime only says that a board-readable row changed; the
+ * [DEV-05] Notify, then refetch (01 §7). The database says that a board-readable row changed; the
  * board then reads its whole snapshot again. These are the pieces that do not need a browser.
  */
 
-export interface BoardTable {
-  table: string;
-  filter: string;
+/**
+ * [DEV-05][WP-126] A board's own private Realtime topic (D-159). The database sends one message to
+ * it, event `change` with only the table's name, for each statement that changes a board-readable
+ * row the board may see: its household's rows, or the board's own (`private.board_notify()`,
+ * 680_board_broadcast.test.sql). Only an active board may join its topic (Realtime authorization),
+ * and the database sends only to active boards, so a disconnected board hears nothing at once.
+ */
+export function boardTopic(deviceId: string): string {
+  return `board:${deviceId}`;
+}
+
+/** [DEV-05][WP-126] The Broadcast event the database sends a board for a change. */
+export const BOARD_EVENT = 'change';
+
+/** The part of a Supabase client `listen()` uses, so a test can stand in for it. */
+export interface Live<C extends LiveChannel> {
+  channel(topic: string, options: { config: { private: true } }): C;
+  realtime: { setAuth(token?: string | null): Promise<void> | void };
+}
+export interface LiveChannel {
+  on(type: 'broadcast', filter: { event: string }, callback: () => void): LiveChannel;
+  subscribe(callback: (status: string) => void): unknown;
 }
 
 /**
- * The board-readable tables, each filtered to this board's household (or to the board itself).
- * They are the supabase_realtime publication, which 070_board_snapshot.test.sql pins: a work
- * package that publishes a new table adds it here too.
+ * [DEV-05][WP-126] Joins the board's private topic with its token (Realtime checks the board's
+ * right to it on joining), calls `heard` for each change sent to it, and `status` with each of the
+ * channel's states (SUBSCRIBED when joined; the board reads again then, to catch up).
  */
-export function boardTables(householdId: string, deviceId: string): BoardTable[] {
-  return [
-    { table: 'household', filter: `id=eq.${householdId}` },
-    { table: 'household_settings', filter: `household_id=eq.${householdId}` },
-    { table: 'member', filter: `household_id=eq.${householdId}` },
-    { table: 'device', filter: `id=eq.${deviceId}` },
-    { table: 'points_ledger', filter: `household_id=eq.${householdId}` },
-    // [PTS-09] A money penalty or a payment changes what someone owes (WP-120).
-    { table: 'penalty', filter: `household_id=eq.${householdId}` },
-    { table: 'penalty_payment', filter: `household_id=eq.${householdId}` },
-    // [PTS-11] A goal's win paid back, or taken back (WP-122).
-    { table: 'penalty_payback', filter: `household_id=eq.${householdId}` },
-    { table: 'chore_occurrence', filter: `household_id=eq.${householdId}` },
-    { table: 'chore', filter: `household_id=eq.${householdId}` },
-    { table: 'streak_segment', filter: `household_id=eq.${householdId}` },
-    { table: 'wishlist_pin', filter: `household_id=eq.${householdId}` },
-    // The shop, requests and goals (WP-20).
-    { table: 'reward_catalog_item', filter: `household_id=eq.${householdId}` },
-    { table: 'redemption', filter: `household_id=eq.${householdId}` },
-    { table: 'reward_goal', filter: `household_id=eq.${householdId}` },
-    { table: 'reward_goal_progress', filter: `household_id=eq.${householdId}` },
-    { table: 'reward_goal_period', filter: `household_id=eq.${householdId}` },
-    { table: 'reward_rule_progress', filter: `household_id=eq.${householdId}` },
-    // The calendars (WP-23): a sync updates its calendar's row last; a board's own choice; a
-    // calendar's people (WP-50), for a person removed for good.
-    { table: 'calendar_source', filter: `household_id=eq.${householdId}` },
-    { table: 'calendar_member', filter: `household_id=eq.${householdId}` },
-    { table: 'device_calendar', filter: `device_id=eq.${deviceId}` },
-    // The weather (WP-45): each read, or a read failing.
-    { table: 'weather_reading', filter: `household_id=eq.${householdId}` },
-    // Meals (WP-28): the plan and its library, school lunch, and the schools' menus.
-    { table: 'meal', filter: `household_id=eq.${householdId}` },
-    { table: 'meal_plan_entry', filter: `household_id=eq.${householdId}` },
-    { table: 'member_lunch', filter: `household_id=eq.${householdId}` },
-    { table: 'lunch_override', filter: `household_id=eq.${householdId}` },
-    { table: 'school_menu_day', filter: `household_id=eq.${householdId}` },
-    // Lunches picked on the board (WP-49): a child's changes and a day's picks.
-    { table: 'lunch_request', filter: `household_id=eq.${householdId}` },
-    { table: 'lunch_choice', filter: `household_id=eq.${householdId}` },
-    // Groceries (WP-104): the list's items, why each is on it, and the household's categories and
-    // stores; read with the snapshot (board_groceries).
-    { table: 'grocery_item', filter: `household_id=eq.${householdId}` },
-    { table: 'grocery_item_reason', filter: `household_id=eq.${householdId}` },
-    { table: 'grocery_category', filter: `household_id=eq.${householdId}` },
-    { table: 'grocery_store', filter: `household_id=eq.${householdId}` },
-    // [MEAL-29] A brand renamed on Groceries reads anew on the board (WP-116).
-    { table: 'grocery_brand', filter: `household_id=eq.${householdId}` },
-    // [MEAL-22] The asks, for the Asked for card (WP-107).
-    { table: 'grocery_ask', filter: `household_id=eq.${householdId}` },
-  ];
+export async function listen<C extends LiveChannel>(
+  db: Live<C>,
+  channel: C,
+  token: string | null,
+  heard: () => void,
+  status: (state: string) => void,
+): Promise<void> {
+  if (token) await db.realtime.setAuth(token);
+  channel.on('broadcast', { event: BOARD_EVENT }, () => heard());
+  channel.subscribe(status);
 }
 
 /**
@@ -93,57 +72,51 @@ export function coalesce(load: () => Promise<void>): () => Promise<void> {
 }
 
 /**
- * [CAL-05][WP-70] How long a snapshot read may be out before another starts beside it. The first is
- * not given up: on a slow database it may still be the first back.
+ * [CAL-05][DEV-05][WP-126] How long a board's read may be out before the board counts it lost and
+ * makes another: the database's statement timeout for a board (the `authenticated` role, 8 s on both
+ * projects, `scripts/db-health.sh`) and 2 s more. By then the database has ended the read itself
+ * (answered, or cancelled it at its timeout), so a read made then never runs beside it (D-159).
  */
-export const READ_DEADLINE_MS = 4_000;
+export const READ_DEADLINE_MS = 10_000;
 /** [CAL-05][WP-70] Reads made for one change, at most, before the board waits for the next. */
 export const READ_TRIES = 3;
 
 /**
- * [CAL-05][WP-70] A board's read after a change, made again when it fails or doesn't come back.
- * `read` gets a signal (aborted once the result is known) and says whether it read (false for an
- * error). One that fails or throws is made again at once; one still out after `deadlineMs` gets
- * another beside it, and the first to read wins. At most `tries` reads; when the last has been out
- * `2 × deadlineMs`, or every read has failed, it resolves false and all are aborted. Before WP-70 a
- * failed read was dropped and a hung one blocked every later read, so the board kept a change it
- * had heard off the screen until DEV-08's four-minute read.
+ * [CAL-05][WP-70][WP-126] A board's read after a change, made again when it fails or is lost.
+ * `read` gets a signal (aborted once the board stops waiting for it) and says whether it read
+ * (false for an error). One read at a time (D-159): one that fails or throws is made again at once;
+ * one still out after `deadlineMs`, which the database has ended by then, is aborted and made again.
+ * A slow read is never given up while the database may still answer it. At most `tries` reads;
+ * after the last fails or is lost it resolves false. Before WP-70 a failed read was dropped and a
+ * hung one blocked every later read; WP-70's second and third reads beside a slow one (from 4 s)
+ * tripled a board's load on a database that was already slow (WP-124's measurements).
  */
 export function readSoon(
   read: (signal: AbortSignal) => Promise<boolean>,
   { deadlineMs = READ_DEADLINE_MS, tries = READ_TRIES } = {},
 ): Promise<boolean> {
   return new Promise((resolve) => {
-    const reads: AbortController[] = [];
-    let failed = 0;
-    let done = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const finish = (ok: boolean) => {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      for (const r of reads) r.abort();
-      resolve(ok);
-    };
-    const start = () => {
-      if (done) return;
-      if (reads.length >= tries) return finish(false);
+    let made = 0;
+    const next = () => {
+      if (made >= tries) return resolve(false);
+      made += 1;
       const r = new AbortController();
-      reads.push(r);
-      clearTimeout(timer);
-      // Still out at the deadline: another beside it (the last gets twice as long, then gives up).
-      timer = setTimeout(start, reads.length < tries ? deadlineMs : 2 * deadlineMs);
+      let over = false;
+      const settle = (ok: boolean) => {
+        if (over) return;
+        over = true;
+        clearTimeout(lost);
+        if (ok) return resolve(true);
+        r.abort();
+        next();
+      };
+      // Still out at the deadline: lost (the database has ended it), so the next is made.
+      const lost = setTimeout(() => settle(false), deadlineMs);
       void read(r.signal)
         .catch(() => false)
-        .then((ok) => {
-          if (done) return;
-          if (ok) return finish(true);
-          failed += 1;
-          // Every read made so far has failed: the next at once, or give up after the last.
-          if (failed === reads.length) start();
-        });
+        .then(settle);
     };
-    start();
+    next();
   });
 }
 

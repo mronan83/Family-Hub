@@ -283,7 +283,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3477** tests: Unit 1061 · DB 1878 · UI 390 · E2E 148. 2953 name at least one ID; 524 name none.
+**3495** tests: Unit 1062 · DB 1895 · UI 390 · E2E 148. 2971 name at least one ID; 524 name none.
 
 | Measure | Count |
 |---|---|
@@ -292,7 +292,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 125 of 138 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 380 (with a test: 380) |
+| Test cases | 384 (with a test: 384) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -314,11 +314,11 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Meals and lunch | 139 | 182 | 90 | 20 | 431 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
-| Boards and devices | 67 | 93 | 14 | 13 | 187 |
+| Boards and devices | 68 | 110 | 14 | 13 | 205 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 205 | 167 | 62 | 18 | 452 |
 | Not named | 58 | 501 | 10 | 1 | 570 |
-| **Total** | **1061** | **1878** | **390** | **148** | **3477** |
+| **Total** | **1062** | **1895** | **390** | **148** | **3495** |
 
 ### 9.3 By requirement
 
@@ -335,10 +335,10 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | ACC-07 | S | Not built | US-108 | WP-55 | — | — |
 | ACC-08 | S | Covered | US-110 | WP-57 | — | U 2 · DB 13 · UI 4 · E2E 1 |
 | DEV-01 | M | Covered | US-201 | WP-05 | — | U 1 · DB 13 · UI 1 · E2E 2 |
-| DEV-02 | M | Covered | US-201, US-202 | WP-05, WP-59 | — | U 4 · DB 26 · E2E 3 |
+| DEV-02 | M | Covered | US-201, US-202 | WP-05, WP-59 | — | U 4 · DB 29 · E2E 3 |
 | DEV-03 | M | Covered | US-202 | WP-05 | — | U 2 · DB 7 · UI 1 · E2E 1 |
 | DEV-04 | M | Not built | US-203 | WP-14 | — | U 1 |
-| DEV-05 | M | Covered | US-204 | WP-06, WP-70, WP-78, WP-113, WP-124, WP-126 | DEV-05-a, DEV-05-b, DEV-05-c, DEV-05-d, DEV-05-e | U 12 · DB 35 · UI 3 · E2E 6 |
+| DEV-05 | M | Covered | US-204 | WP-06, WP-70, WP-78, WP-113, WP-124, WP-126 | DEV-05-a, DEV-05-b, DEV-05-c, DEV-05-d, DEV-05-e, DEV-05-f, DEV-05-g, DEV-05-h, DEV-05-i | U 16 · DB 52 · UI 3 · E2E 6 |
 | DEV-06 | M | Covered | US-205 | WP-13 | — | U 5 · UI 1 · E2E 1 |
 | DEV-07 | S | Covered | US-207 | WP-34 | DEV-07-a, DEV-07-b, DEV-07-c, DEV-07-d, DEV-07-e, DEV-07-f, DEV-07-g, DEV-07-h | U 41 · DB 17 · UI 4 · E2E 1 |
 | DEV-08 | S | Covered | US-206 | WP-13 | — | U 3 · UI 3 · E2E 1 |
@@ -454,7 +454,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | NFR-01 | M | Covered | US-205 | WP-13, WP-44 | — | U 11 · UI 2 · E2E 2 |
 | NFR-02 | M | Not built | US-905 | WP-14 | — | UI 1 |
 | NFR-03 | M | Covered | US-905 | WP-11 | — | UI 6 · E2E 1 |
-| NFR-04 | M | Covered | US-102, US-901 | WP-02, WP-03, WP-05 | — | U 1 · DB 82 |
+| NFR-04 | M | Covered | US-102, US-901 | WP-02, WP-03, WP-05 | — | U 1 · DB 84 |
 | NFR-05 | S | Not built | US-902 | WP-33 | — | U 1 |
 | NFR-06 | M | Covered | US-907 | WP-10 | — | U 7 · DB 20 |
 | NFR-07 | S | Covered | US-904 | WP-07, WP-42 | — | U 43 · DB 28 · UI 2 · E2E 4 |
@@ -557,7 +557,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-66 | Done | **No cases** | — | — |
 | WP-67 | Done | **No cases** | — | — |
 | WP-68 | Queued | — | — | — |
-| WP-70 | Done | **No cases** | — | U 9 |
+| WP-70 | Done | **No cases** | — | U 6 |
 | WP-71 | Done | **No cases** | — | — |
 | WP-72 | Queued | — | — | — |
 | WP-73 | Done | **No cases** | — | — |
@@ -610,7 +610,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-122 | Done | PTS-11-a, PTS-11-b, PTS-11-c, PTS-11-d, PTS-11-e, PTS-11-f, PTS-11-g, PTS-11-h, PTS-11-i, PTS-11-j, PTS-11-k, PTS-11-l, PTS-11-m | 13 of 13 | U 8 |
 | WP-123 | Done | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | 4 of 4 | — |
 | WP-124 | Done | DEV-05-a, DEV-05-c, DEV-05-d, DEV-05-e, NFR-12-h | 5 of 5 | — |
-| WP-126 | In | — | — | — |
+| WP-126 | Done | DEV-05-f, DEV-05-g, DEV-05-h, DEV-05-i | 4 of 4 | — |
 
 Test cases and the tests that prove them:
 
@@ -996,6 +996,10 @@ Test cases and the tests that prove them:
 | DEV-05-d | WP-124 | `school_days()` gives the days it gave before (any member still in the household has school), through one `day_types()` call and no `resolve_day_type()` call | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-d] school_days() gives the days any member still in the household has school, as before`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-d] school_days() asks day_types() once and resolve_day_type() not at all` |
 | DEV-05-e | WP-124 | `job_health()` gives what it gave before for each job (never run, running, stuck, failing, stale, ok, a skipped run healthy, a run that finished after a later one started), the SQL jobs left out, each job's latest healthy run a row away by an index | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] job_health() says what it said before for each job: never, running, stuck, failing, stale, ok, a skipped run, a run that finished last`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] each job's state, the SQL job left out`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] each job's latest healthy run is a row away (job_run_last_ok_idx)` |
 | NFR-12-h | WP-124 | `scripts/db-health.sh` reads a database read only: every section, the board's read timed as each board (numbered), no member, item, household or id named, nothing changed, its sessions read only | Unit | Unit `scripts/db-tests/db-health.test.mjs`: `[NFR-12-h] db-health reads a database read only: every section, the board timed as the board, nothing named, nothing changed` |
+| DEV-05-f | WP-126 | A change to any board-readable table (every table in the `supabase_realtime` publication) sends one Broadcast message a statement, however many rows, to each active board it concerns, on the board's private topic `board:<device id>`, event `change`, naming only the table: the household's boards for its tables, the board itself for `device` and `device_calendar`; nothing for a statement that changes no row, to another household's board, or to a disconnected board, from the moment it is disconnected | DB | DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] every board-readable table (the supabase_realtime publication) sends to the boards`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] once a statement, never once a row`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] a board's own rows go to that board only; every other table goes to its household's boards`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] three rows added: one private message to each of the household's active boards, naming the table only`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] an update sends once a board`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] and so does a delete`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] a statement that changes no row sends nothing`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f][NFR-04] another household's change reaches its own board only; a disconnected board hears nothing`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] a board's own settings go to that board only`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f][DEV-02] disconnecting a board sends it nothing`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f][DEV-02] and from then on it hears nothing of its household` |
+| DEV-05-g | WP-126 | Realtime authorization: an active board may receive on its own topic; another household's board, a parent, another board of the household and a disconnected board may not; no client may send on a board's topic, not even the board | DB | DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g] an active board may receive on its own topic`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g][NFR-04] another household's board may not join it`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g] nor may a parent, even of the same household`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g][DEV-02] a disconnected board may not join even its own topic`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g] a board may not join another board's topic in its household`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g] no client may send on a board's topic, not even the board` |
+| DEV-05-h | WP-126 | The board joins its own private topic with its token, listens for the database's `change` event only, and reads again on each, and on joining | Unit | Unit `apps/web/lib/board.test.ts`: `notify, then refetch › [DEV-05-h] the board joins its own private topic with its token and reads again on each change` |
+| DEV-05-i | WP-126 | A board's read is never joined by another while the database may still be running it: one read at a time; a read still out after the board's 8 s statement timeout and 2 s is aborted before the next starts; a slow read back within that is used; at most three, never two at once | Unit | Unit `apps/web/lib/board.test.ts`: `notify, then refetch › [DEV-05-i][CAL-05] a read still out gets no other beside it; lost at its deadline, it is aborted and made again`<br>Unit `apps/web/lib/board.test.ts`: `notify, then refetch › [DEV-05-i][CAL-05] a slow read is not given up while the database may still answer it`<br>Unit `apps/web/lib/board.test.ts`: `notify, then refetch › [DEV-05-i] the deadline is the database's 8 s statement timeout for a board, and 2 s more`<br>Unit `apps/web/lib/board.test.ts`: `notify, then refetch › [DEV-05-i][CAL-05] reads that never come back give up after three, one at a time` |
 
 ### 9.5 By user story
 
@@ -1394,7 +1398,7 @@ Unit · 3 tests
 
 #### `apps/web/lib/board.test.ts`
 
-Unit · 26 tests
+Unit · 27 tests
 
 | Test | Names |
 |---|---|
@@ -1411,13 +1415,14 @@ Unit · 26 tests
 | `the shop, requests and goals (WP-20) › [PTS-03] reads how many of a reward are left and its photo; a wish has neither` | PTS-03, WP-20 |
 | `the shop, requests and goals (WP-20) › [RWD-15-k] reads a repeating goal’s week going now and its last weeks` | RWD-15-k, WP-20 |
 | `the shop, requests and goals (WP-20) › [RWD-07] reads the goals in play with each rule; leaves out what it cannot draw` | RWD-07, WP-20 |
-| `notify, then refetch › [DEV-05] listens to every board-readable table, filtered to this board` | DEV-05 |
+| `notify, then refetch › [DEV-05-h] the board joins its own private topic with its token and reads again on each change` | DEV-05-h |
 | `notify, then refetch › [DEV-05] a burst of changes costs at most two reads, the last after the last change` | DEV-05 |
 | `notify, then refetch › [DEV-05] a read that fails does not stop the next one` | DEV-05 |
 | `notify, then refetch › [CAL-05][WP-70] a read that fails after a change is made again at once, not dropped` | CAL-05, WP-70 |
-| `notify, then refetch › [CAL-05][WP-70] a read still out at its deadline gets another beside it; the first back wins` | CAL-05, WP-70 |
-| `notify, then refetch › [CAL-05][WP-70] a slow read is not given up: on a slow database it may still be first back` | CAL-05, WP-70 |
-| `notify, then refetch › [CAL-05][WP-70] reads that never come back give up after the last has had twice as long` | CAL-05, WP-70 |
+| `notify, then refetch › [DEV-05-i][CAL-05] a read still out gets no other beside it; lost at its deadline, it is aborted and made again` | DEV-05-i, CAL-05 |
+| `notify, then refetch › [DEV-05-i][CAL-05] a slow read is not given up while the database may still answer it` | DEV-05-i, CAL-05 |
+| `notify, then refetch › [DEV-05-i] the deadline is the database's 8 s statement timeout for a board, and 2 s more` | DEV-05-i |
+| `notify, then refetch › [DEV-05-i][CAL-05] reads that never come back give up after three, one at a time` | DEV-05-i, CAL-05 |
 | `notify, then refetch › [CAL-05][WP-70] offline, the tries stop: three reads, then the board waits` | CAL-05, WP-70 |
 | `notify, then refetch › ticks on the minute` | — |
 | `penalties (WP-120) › [PTS-09-h] reads a penalty in the points list and what someone owes, in cents` | PTS-09-h, WP-120 |
@@ -4594,7 +4599,7 @@ DB · 19 tests
 | `[NFR-04] another household's board reads its own family only` | NFR-04 |
 | `[NFR-04] signed out, there is no snapshot` | NFR-04 |
 | `[DEV-02] a disconnected board gets nothing at once` | DEV-02 |
-| `[DEV-05] the board-readable tables notify the board (apps/web/lib/live.ts listens to each)` | DEV-05 |
+| `[DEV-05] the board-readable tables notify the board (each sends to the boards, 680_board_broadcast)` | DEV-05 |
 | `[DEV-05] and a board may read each of them (RLS still decides the rows)` | DEV-05 |
 
 #### `supabase/tests/080_system_health.test.sql`
@@ -6717,5 +6722,29 @@ DB · 44 tests
 | `[PTS-11-h] a stopped rule with nothing owed is left out` | PTS-11-h |
 | `[PTS-11-h] nothing while penalties are off` | PTS-11-h |
 | `[PTS-11-i] the register lists paybacks as their own type, with the goal and the rule, an undo included` | PTS-11-i |
+
+#### `supabase/tests/680_board_broadcast.test.sql`
+
+DB · 17 tests
+
+| Test | Names |
+|---|---|
+| `[DEV-05-f] every board-readable table (the supabase_realtime publication) sends to the boards` | DEV-05-f |
+| `[DEV-05-f] once a statement, never once a row` | DEV-05-f |
+| `[DEV-05-f] a board's own rows go to that board only; every other table goes to its household's boards` | DEV-05-f |
+| `[DEV-05-f] three rows added: one private message to each of the household's active boards, naming the table only` | DEV-05-f |
+| `[DEV-05-f] an update sends once a board` | DEV-05-f |
+| `[DEV-05-f] and so does a delete` | DEV-05-f |
+| `[DEV-05-f] a statement that changes no row sends nothing` | DEV-05-f |
+| `[DEV-05-f][NFR-04] another household's change reaches its own board only; a disconnected board hears nothing` | DEV-05-f, NFR-04 |
+| `[DEV-05-f] a board's own settings go to that board only` | DEV-05-f |
+| `[DEV-05-f][DEV-02] disconnecting a board sends it nothing` | DEV-05-f, DEV-02 |
+| `[DEV-05-f][DEV-02] and from then on it hears nothing of its household` | DEV-05-f, DEV-02 |
+| `[DEV-05-g] an active board may receive on its own topic` | DEV-05-g |
+| `[DEV-05-g][NFR-04] another household's board may not join it` | DEV-05-g, NFR-04 |
+| `[DEV-05-g] nor may a parent, even of the same household` | DEV-05-g |
+| `[DEV-05-g][DEV-02] a disconnected board may not join even its own topic` | DEV-05-g, DEV-02 |
+| `[DEV-05-g] a board may not join another board's topic in its household` | DEV-05-g |
+| `[DEV-05-g] no client may send on a board's topic, not even the board` | DEV-05-g |
 
 <!-- /catalogue -->
