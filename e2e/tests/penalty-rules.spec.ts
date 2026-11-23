@@ -86,9 +86,13 @@ test('[PTS-10-m][US-1112] a parent adds a rule; a missed day adds to what is owe
       sql(`select public.close_household_day('${HOUSEHOLD}')`);
       await expect.poll(misses).toBe(`100@${yesterday}`);
       await page.goto(`/admin/members/${mayaId}?open=penalties`);
-      await expect(
-        page.getByRole('list', { name: 'What Maya owes' }).locator('[data-rule]'),
-      ).toContainText(RULE);
+      // The household is a copy of the demo family, which has its own rule on Maya ("Folder
+      // home"), so this rule's line is found by its id.
+      const line = page
+        .getByRole('list', { name: 'What Maya owes' })
+        .locator(`[data-rule="${ruleId()}"]`);
+      await expect(line).toContainText(RULE);
+      await expect(line).toContainText('$1');
     });
 
     await test.step('Mark done on time on yesterday takes the $1 back', async () => {
