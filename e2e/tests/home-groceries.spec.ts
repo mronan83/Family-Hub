@@ -3,6 +3,7 @@ import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { signIn } from '../support/session';
 import { ownHousehold } from '../support/household';
+import { nameTag } from '../support/names';
 
 // [MEAL-27][MEAL-28] Groceries on Home and the preferred store on the preview (WP-112, D-142), as
 // Alex of the spec's own made-up household (D-137). The done-when: an admin adds an item from Home
@@ -13,7 +14,9 @@ const family = ownHousehold('home-groceries');
 const db = process.env.SUPABASE_DB_URL;
 const HOUSEHOLD = family.id;
 const sql = (q: string) => query(db!, q);
-const SUFFIX = `e2e ${Math.random().toString(36).slice(2, 7)}`;
+// [MEAL-27-f] The run's tag is letters only (nameTag()): one with digits can read as an amount at
+// the end of a name ("333kg", #190), and the item then keys differently from what is typed.
+const SUFFIX = `e2e ${nameTag()}`;
 const names = {
   quince: `Quince ${SUFFIX}`,
   rutabaga: `Rutabaga ${SUFFIX}`,

@@ -44,6 +44,7 @@ import {
   errorText,
   failureOf,
   healthReading,
+  hookEnd,
   probeReading,
   redact,
   serverLogReadings,
@@ -252,7 +253,7 @@ function playwright(args, label, dir) {
     });
     child.on('exit', (code) => {
       const report = existsSync(json) ? JSON.parse(readFileSync(json, 'utf8')) : null;
-      resolve({ label, code, report, ms: Date.now() - started });
+      resolve({ label, code, report, ms: Date.now() - started, end: Date.now() });
     });
   });
 }
@@ -305,9 +306,21 @@ const mins = (ms) =>
 
 /** Each failed test in a pass's results, classified: [{ ...result, verdict }]. */
 export function failuresIn(results, degraded) {
-  return results
-    .filter(failed)
-    .map((r) => ({ ...r, verdict: classify(failureOf(r.result, r.test), degraded) }));
+  return results.filter(failed).map((r) => ({
+    ...r,
+    verdict: classify(
+      failureOf(
+        r.result,
+        r.test,
+        hookEnd(
+          r,
+          results.filter((o) => o.pass === r.pass),
+          r.passEnd ?? null,
+        ),
+      ),
+      degraded,
+    ),
+  }));
 }
 
 /**
@@ -324,7 +337,16 @@ export function settle(failures, rerun, degraded) {
     const second = rerun.get(`${f.file}:${f.line}`);
     if (!second || failed(second) || notRun(second)) {
       const why =
-        second && failed(second) ? classify(failureOf(second.result, second.test), degraded) : null;
+        second && failed(second)
+          ? classify(
+              failureOf(
+                second.result,
+                second.test,
+                hookEnd(second, [...rerun.values()], second.passEnd ?? null),
+              ),
+              degraded,
+            )
+          : null;
       f.after =
         !second || notRun(second)
           ? 'did not run again'
@@ -377,7 +399,9 @@ async function main() {
     passes.push(await playwright([...burnIn, `--repeat-each=${BURN_IN}`], 'burn-in', dir));
   }
 
-  const results = passes.flatMap((p) => resultsOf(p.report).map((r) => ({ ...r, pass: p.label })));
+  const results = passes.flatMap((p) =>
+    resultsOf(p.report).map((r) => ({ ...r, pass: p.label, passEnd: p.end })),
+  );
   await probe.flush();
   const failures = failuresIn(results, probe.degraded);
   const globalErrors = passes.flatMap((p) =>
@@ -391,7 +415,7 @@ async function main() {
   if (infra.length) {
     const units = [...new Set(infra.map((f) => (serial(f.file) ? f.file : `${f.file}:${f.line}`)))];
     const again = await playwright(units, 'rerun', dir);
-    for (const r of resultsOf(again.report)) {
+    for (const r of resultsOf(again.report).map((x) => ({ ...x, passEnd: again.end }))) {
       const key = `${r.file}:${r.line}`;
       const prev = rerun.get(key);
       if (!prev || failed(r)) rerun.set(key, r);

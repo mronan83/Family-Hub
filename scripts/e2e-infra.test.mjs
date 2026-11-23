@@ -8,6 +8,7 @@ import {
   errorText,
   failureOf,
   healthReading,
+  hookEnd,
   loadWords,
   probeReading,
   redact,
@@ -451,4 +452,74 @@ test('[NFR-12-g] without a preview or a token there is no read, and the run says
       "no read of the preview's error log (E2E_BASE_URL or VERCEL_TOKEN not set)",
     ),
   );
+});
+
+// [NFR-12-i] A red's evidence window (WP-125, #191): a test failed in a beforeAll hook is reported
+// with no duration, and the preview's log stamps a request with its start.
+test('[NFR-12-i] a test failed in its beforeAll hook is judged over the hook’s whole time, to the next result its worker ran or the pass’s end', () => {
+  const at = Date.parse('2026-11-22T16:15:50Z');
+  const result = (startTime, duration, parallelIndex = 0) => ({
+    startTime: new Date(startTime).toISOString(),
+    duration,
+    parallelIndex,
+    errors: [{ message: 'expect(page).toHaveURL(expected) failed' }],
+    annotations: [],
+  });
+  const hook = { result: result(at, 0), test: { annotations: [] } };
+  const later = { result: result(at + 52_000, 9_000), test: { annotations: [] } };
+  const other = { result: result(at + 20_000, 4_000, 1), test: { annotations: [] } };
+  // Its end: the next result of its own worker, not another worker's.
+  assert.equal(hookEnd(hook, [hook, other, later], at + 600_000), at + 52_000);
+  // Alone in its pass (a re-run): the pass's end; a result with a duration has its own.
+  assert.equal(hookEnd(hook, [hook], at + 55_000), at + 55_000);
+  assert.equal(hookEnd(later, [hook, later], at + 600_000), null);
+  const f = failureOf(hook.result, hook.test, at + 52_000);
+  assert.deepEqual([f.start, f.end], [at, at + 52_000]);
+  // A duration wins over `until`.
+  assert.equal(failureOf(later.result, later.test, at + 900_000).end, at + 61_000);
+  // The board's snapshot timed out 30 s into the hook: with no duration the window was 10 s either
+  // side of its start and the verdict "assertion failure"; over the hook's time it is infrastructure.
+  const degraded = [
+    {
+      at: at + 30_000,
+      what: "the preview's server failed on GET /board: database statement timeout, in its log",
+    },
+  ];
+  assert.equal(classify(failureOf(hook.result, hook.test), degraded).kind, 'assertion');
+  const v = classify(f, degraded);
+  assert.equal(v.kind, 'infra');
+  assert.match(v.cause, /GET \/board: database statement timeout/);
+});
+
+test('[NFR-12-i] a server error in the preview’s log covers its request, from the log’s time (its start) to the app’s (when it failed)', () => {
+  const record = JSON.stringify({
+    timestamp: Date.parse('2026-11-22T16:16:20.000Z'),
+    requestPath: '/board',
+    requestMethod: 'GET',
+    level: 'error',
+    message: appLine({
+      time: '2026-11-22T16:16:35.450Z',
+      route: '/board',
+      error: { message: 'board snapshot: canceling statement due to statement timeout' },
+    }),
+  });
+  const [r] = serverLogReadings(record);
+  assert.equal(r.from, Date.parse('2026-11-22T16:16:20.000Z'));
+  assert.equal(r.at, Date.parse('2026-11-22T16:16:35.450Z'));
+  // A test that ended 12 s before the app wrote it, but while the request was going, is infrastructure.
+  const end = Date.parse('2026-11-22T16:16:23.000Z');
+  assert.equal(classify(failure({ start: end - 30_000, end }), [r]).kind, 'infra');
+  // One that ended more than 10 s before the request started is not.
+  assert.equal(
+    classify(failure({ start: end - 60_000, end: end - 14_000 }), [r]).kind,
+    'assertion',
+  );
+  // One time only: a reading at that time, with no span.
+  const [only] = serverLogReadings(
+    JSON.stringify({
+      message: appLine({ error: { message: 'canceling statement due to statement timeout' } }),
+    }),
+  );
+  assert.equal(only.at, Date.parse('2026-11-04T16:08:12.764Z'));
+  assert.equal(only.from, undefined);
 });

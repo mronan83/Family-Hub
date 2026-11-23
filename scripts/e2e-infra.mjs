@@ -48,7 +48,8 @@ export function causeInText(text) {
 /**
  * Classifies one failed attempt.
  *   failure: { errors: string[], annotations: {type, description}[], start: ms, end: ms }
- *   degraded: [{ at: ms, what: string }] — the probe's bad readings, each covering `slack` ms each side
+ *   degraded: [{ at: ms, from?: ms, what: string }] — the probe's bad readings, each covering
+ *     `slack` ms each side; one with `from` covers from then to `at` (a request in the preview's log)
  * Returns { kind: 'infra' | 'assertion', cause }.
  */
 export function classify(failure, degraded = [], slack = 10_000) {
@@ -59,7 +60,7 @@ export function classify(failure, degraded = [], slack = 10_000) {
   const seen = failure.annotations.filter((a) => a.type === 'infra');
   if (seen.length) return { kind: 'infra', cause: seen[0].description };
   const during = degraded.filter(
-    (d) => d.at >= failure.start - slack && d.at <= failure.end + slack,
+    (d) => d.at >= failure.start - slack && (d.from ?? d.at) <= failure.end + slack,
   );
   if (during.length) {
     const worst = during[0];
@@ -160,14 +161,27 @@ function logField(record, text, names) {
   return null;
 }
 
-/** A log record's time in ms: its own timestamp, else the app's `time` inside it; null if none. */
-function logTime(record, text) {
-  const raw = logField(record, text, ['timestamp', 'timestampInMs', 'date', 'time']);
-  if (raw === null) return null;
+/** A time in ms from a log's number or string (a timestamp in seconds too); null if none. */
+function toMs(raw) {
+  if (raw === null || raw === undefined) return null;
   const ms = typeof raw === 'number' ? raw : /^\d+$/.test(raw) ? Number(raw) : Date.parse(raw);
   if (!Number.isFinite(ms)) return null;
   // A timestamp in seconds, as some logs give it.
   return ms < 1e12 ? ms * 1000 : ms;
+}
+
+/**
+ * [NFR-12-i] A log record's times in ms: the record's own timestamp, and the app's `time` inside its
+ * message (lib/log.ts), when it wrote the error. Vercel stamps a request's lines with the request's
+ * start, so a render that waited 8 s for a statement timeout is stamped 8 s or more before it failed
+ * (WP-125: 16:16:20 for an error the app wrote at 16:16:35). Null when it has neither.
+ */
+function logTimes(record, text) {
+  const own = toMs(logField(record, '', ['timestamp', 'timestampInMs', 'date', 'time']));
+  const m = /\\?"time\\?"\s*:\s*\\?"([^"\\]+)/.exec(text);
+  const app = toMs(m?.[1] ?? null);
+  const times = [own, app].filter((t) => t !== null);
+  return times.length ? { from: Math.min(...times), at: Math.max(...times) } : null;
 }
 
 /**
@@ -177,7 +191,8 @@ function logTime(record, text) {
  * out, and the browser sees only the app's error page. `out` is `vercel logs --json`'s output, one
  * JSON record a line, at error level; `seen` keeps the records already read, so a read that overlaps
  * the last one adds nothing twice (a request's log line and its stack are one reading). An error that
- * names nothing of INFRA_PATTERNS is the app's own and no reading.
+ * names nothing of INFRA_PATTERNS is the app's own and no reading. [NFR-12-i] A reading covers its
+ * request, from the record's time (the request's start) to the app's (when the error was written).
  */
 export function serverLogReadings(out, seen = new Set()) {
   const readings = [];
@@ -192,8 +207,9 @@ export function serverLogReadings(out, seen = new Set()) {
     }
     const cause = causeInText(text);
     if (!cause) continue;
-    const at = logTime(record, text);
-    if (at === null) continue;
+    const times = logTimes(record, text);
+    if (times === null) continue;
+    const { from, at } = times;
     const method = logField(record, text, ['requestMethod', 'method']);
     const path = logField(record, text, ['requestPath', 'path', 'route']);
     const request = path ? `${method ? `${method} ` : ''}${path}` : 'a request';
@@ -204,6 +220,7 @@ export function serverLogReadings(out, seen = new Set()) {
     const status = GATEWAY_STATUS.exec(text)?.[1];
     readings.push({
       at,
+      ...(from < at ? { from } : {}),
       what: `the preview's server failed on ${request}: ${cause}${status ? ` (${status})` : ''}, in its log`,
     });
   }
@@ -249,16 +266,41 @@ export function errorText(e) {
   );
 }
 
-/** A failed result from Playwright's JSON report, as classify() takes it. */
-export function failureOf(result, test) {
+/**
+ * A failed result from Playwright's JSON report, as classify() takes it. [NFR-12-i] A test that failed
+ * in a beforeAll hook is reported from the hook's start with a duration of 0 (WP-125: board.spec's
+ * pairing, up to 2 minutes), so `until` gives its end where the run knows it (hookEnd()).
+ */
+export function failureOf(result, test, until = null) {
   const start = Date.parse(result.startTime);
   const errors = [...(result.errors ?? []), ...(result.error ? [result.error] : [])].map(errorText);
+  const end = start + (result.duration ?? 0);
   return {
     errors,
     annotations: [...(test.annotations ?? []), ...(result.annotations ?? [])],
     start,
-    end: start + (result.duration ?? 0),
+    end: until !== null && !result.duration && until > end ? until : end,
   };
+}
+
+/**
+ * [NFR-12-i] Where a failed result with no duration (a beforeAll hook's failure) ended: the start of
+ * the next result its worker ran in the same pass, else the pass's end (`passEnd`, ms). `results`:
+ * the pass's results as resultsOf() gives them. Null for a result with a duration.
+ */
+export function hookEnd(r, results, passEnd = null) {
+  if (!r.result || r.result.duration) return null;
+  const start = Date.parse(r.result.startTime);
+  const next = results
+    .filter(
+      (o) =>
+        o !== r &&
+        o.result &&
+        o.result.parallelIndex === r.result.parallelIndex &&
+        Date.parse(o.result.startTime) > start,
+    )
+    .map((o) => Date.parse(o.result.startTime));
+  return next.length ? Math.min(...next) : passEnd;
 }
 
 /** Supabase Auth's sign-ins per IP address in 5 minutes on the free plan (sign_in_sign_ups). */
