@@ -5,6 +5,7 @@ import { type PenaltyRule, type RuleChore, stoppedWords } from '@/lib/penalty-ru
 import { removeRule, stopRule } from '../../../penalties/actions';
 import { AdminHeader } from '../../../header';
 import type { NavWho } from '../../../nav';
+import type { PaybackGoal } from '@/lib/paybacks';
 import { RuleForm, type RulePerson } from './rule-form';
 
 /** [PTS-10][US-1112] A penalty rule's page (WP-121): back to Penalties, its name, and the form. */
@@ -19,6 +20,7 @@ export function RuleView({
   waiting,
   who,
   timezone = 'UTC',
+  goals = [],
 }: {
   rule: PenaltyRule | null;
   reasons: PenaltyReason[];
@@ -30,6 +32,8 @@ export function RuleView({
   waiting?: number;
   who?: NavWho | null;
   timezone?: string;
+  /** [PTS-11] The goals a rule can be paid back by (WP-122). */
+  goals?: PaybackGoal[];
 }) {
   const stopped = rule?.stoppedAt ?? null;
   return (
@@ -48,19 +52,18 @@ export function RuleView({
           added stays until it’s paid or taken back.
         </Banner>
       ) : null}
-      <section className="fw-card" aria-labelledby="rule-heading">
-        <h2 id="rule-heading">The rule</h2>
-        <RuleForm
-          rule={rule}
-          reasons={reasons}
-          people={people}
-          chores={chores}
-          tags={tags}
-          today={today}
-          on={on}
-          stopped={Boolean(stopped)}
-        />
-      </section>
+      {/* The form holds "The rule" and [PTS-11] "Paid back by", each a card (WP-122). */}
+      <RuleForm
+        rule={rule}
+        reasons={reasons}
+        people={people}
+        chores={chores}
+        tags={tags}
+        today={today}
+        on={on}
+        stopped={Boolean(stopped)}
+        goals={goals}
+      />
       {/* [PTS-10] Stop now, and Remove while the rule has added nothing (the owner, 21 November). */}
       {rule && !stopped ? (
         <section className="fw-card" id="stop" aria-labelledby="stop-heading">

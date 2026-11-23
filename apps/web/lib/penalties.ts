@@ -5,6 +5,8 @@
  * an error code, and says amounts the way people do. Money is kept in cents.
  */
 
+import { type PenaltyPaybackRow, paybackWhat } from './paybacks';
+
 export type PenaltyUnit = 'points' | 'money';
 
 /** A household's penalty reason: what a parent picks from, with its default amount. */
@@ -45,7 +47,10 @@ export interface PenaltyPayment {
   /** Cents. */
   amount: number;
   recordedAt: string;
-  recordedBy: string;
+  /** The parent who recorded it; null for a goal's payback (the system, WP-122). */
+  recordedBy: string | null;
+  /** [PTS-11] The payback it is part of (a goal's win), or null for money paid outside. */
+  paybackId?: string | null;
 }
 
 /** The most a penalty can be: 10,000 points, or $1,000. */
@@ -217,7 +222,7 @@ export interface PenaltyEvent {
   /** "Rude to a sibling", "Left bike in the driveway, taken back", "Paid". */
   what: string;
   /** The tag beside it. */
-  tag: 'Penalty' | 'Taken back' | 'Paid' | 'Rule';
+  tag: 'Penalty' | 'Taken back' | 'Paid' | 'Rule' | 'Payback';
   /** Who did it (a user id); null for a rule's miss, which nobody gave. */
   by: string | null;
   /** [PTS-10] The day a rule's miss was for (YYYY-MM-DD), shown in place of when it was added. */
@@ -228,7 +233,11 @@ export interface PenaltyEvent {
   takeBack: string | null;
 }
 
-export function penaltyHistory(penalties: Penalty[], payments: PenaltyPayment[]): PenaltyEvent[] {
+export function penaltyHistory(
+  penalties: Penalty[],
+  payments: PenaltyPayment[],
+  paybacks: PenaltyPaybackRow[] = [],
+): PenaltyEvent[] {
   const events: PenaltyEvent[] = [];
   for (const p of penalties) {
     // [PTS-10] A rule's miss (WP-121): "Folder home, missed", tagged Rule, on the day it was for, with
@@ -280,14 +289,40 @@ export function penaltyHistory(penalties: Penalty[], payments: PenaltyPayment[])
       });
     }
   }
+  // [PTS-11] A goal's win paid back (WP-122): one row per win, "Folder home every school day, week
+  // won", tagged Payback; undone, a row that owes it again.
+  for (const b of paybacks) {
+    const what = paybackWhat(b.goal, b.repeat);
+    events.push({
+      key: `${b.id}:paid`,
+      at: b.paidAt,
+      what,
+      tag: 'Payback',
+      by: null,
+      amount: b.unit === 'points' ? `+${b.amount} pts` : `−${money(b.amount)} owed`,
+      takeBack: null,
+    });
+    if (b.takenBackAt) {
+      events.push({
+        key: `${b.id}:back`,
+        at: b.takenBackAt,
+        what: `${what}, undone`,
+        tag: 'Taken back',
+        by: null,
+        amount: b.unit === 'points' ? `−${b.amount} pts` : `+${money(b.amount)} owed`,
+        takeBack: null,
+      });
+    }
+  }
   for (const x of payments) {
+    if (x.paybackId) continue;
     const p = penalties.find((q) => q.id === x.penaltyId);
     events.push({
       key: x.id,
       at: x.recordedAt,
       what: p ? `Paid for ${p.reason}` : 'Paid',
       tag: 'Paid',
-      by: x.recordedBy,
+      by: x.recordedBy ?? null,
       amount: `−${money(x.amount)} owed`,
       takeBack: null,
     });

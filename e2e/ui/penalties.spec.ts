@@ -245,7 +245,7 @@ test.describe('the admin app', () => {
     await expect(form.locator('.fw-rule__never li')).toHaveText([
       'A skipped or covered day, a day off or a no-school day adds nothing.',
       'Mark done on time on a missed day takes its $1 back.',
-      'After the end date nothing is added; what’s owed stays until it’s paid.',
+      'After the end date nothing is added; what’s owed stays until it’s paid or paid back.',
     ]);
     await form.getByRole('radio', { name: 'A tag' }).check();
     await expect(form.getByLabel('Tag', { exact: true })).toBeVisible();
@@ -329,5 +329,129 @@ test.describe('the admin app', () => {
     await expect(page.getByRole('button', { name: 'Save the rule' })).toBeDisabled();
     // A stopped rule says why it can't be saved once, not that penalties are off.
     await expect(page.getByText('Penalties are off', { exact: false })).toHaveCount(0);
+  });
+});
+
+// [PTS-11] Penalties paid back through a goal (WP-122, D-154, D-158), as the approved mockup draws them:
+// the board's goal card and Owes card (?penalties=payback, ?penalties=paused); the rule form's Paid back
+// by; Settings' rule lines; Maya's Penalties; the register's Penalty payback type. On the preview,
+// e2e/tests/penalty-paybacks.spec.ts links a rule to a goal and wins a week in the database (PTS-11-m).
+test.describe('the board: paid back through a goal', () => {
+  test('[PTS-11-l][US-1113] the goal card says what a won week pays back, and the Owes card how to win it back, in board-size text', async ({
+    page,
+  }) => {
+    await open(page, '/dev/board?penalties=payback');
+    await people(page).getByRole('button', { name: 'Maya', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Maya', level: 2 })).toBeVisible();
+    const goal = page.locator('[data-goal="g-folder"]');
+    const line = goal.locator('.fw-goal__payback');
+    await expect(line).toHaveText('A won week pays back $1 of the $2 Maya owes for Folder home');
+    await expect(line).not.toHaveAttribute('data-paused');
+    const foot = page.getByRole('region', { name: 'Owes' }).locator('.fw-today__owes-foot');
+    await expect(foot).toHaveText('Win a Folder home week: pays back $1');
+    for (const el of [line, foot]) {
+      const px = await el.evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+      expect(px, `the payback's line is ${px}px`).toBeGreaterThanOrEqual(28);
+    }
+    const axe = await new AxeBuilder({ page })
+      .include('.fw-goal__payback')
+      .include('.fw-today__owes-foot')
+      .analyze();
+    expect(axe.violations.map((v) => v.id)).toEqual([]);
+  });
+
+  test('[PTS-11-l][US-1113] with nothing owed the payback is paused: "Nothing owed · payback paused", and no Owes card', async ({
+    page,
+  }) => {
+    await open(page, '/dev/board?penalties=paused');
+    await expect(people(page).locator('[data-owes]')).toHaveCount(0);
+    await people(page).getByRole('button', { name: 'Maya', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Maya', level: 2 })).toBeVisible();
+    const line = page.locator('[data-goal="g-folder"] .fw-goal__payback');
+    await expect(line).toHaveText('Nothing owed · payback paused');
+    await expect(line).toHaveAttribute('data-paused', 'true');
+    await expect(page.getByRole('region', { name: 'Owes' })).toHaveCount(0);
+    const px = await line.evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+    expect(px, `the paused line is ${px}px`).toBeGreaterThanOrEqual(28);
+    const axe = await new AxeBuilder({ page }).include('.fw-goal__payback').analyze();
+    expect(axe.violations.map((v) => v.id)).toEqual([]);
+  });
+});
+
+test.describe('the admin app: paid back through a goal', () => {
+  test('[PTS-11-k][US-1113] the rule form: Paid back by, a goal of its people or the family, each win pays back, and its state', async ({
+    page,
+  }) => {
+    await open(page, '/dev/settings/penalties/rule');
+    const form = page.getByRole('form', { name: 'Penalty rule' });
+    await expect(form.getByRole('heading', { name: 'Paid back by', level: 2 })).toBeVisible();
+    const goal = form.getByLabel('Goal or reward');
+    await expect(goal).toHaveValue('0de0b000-0000-4000-8000-000000000001');
+    // Maya's goals and the family's; not Leo's.
+    await expect(goal.locator('option')).toHaveText([
+      'Not paid back',
+      'Folder home every school day · each week',
+      'Pizza night',
+    ]);
+    await expect(form.getByLabel('Each win pays back')).toHaveValue('1');
+    await expect(
+      form.getByText(
+        'Never more than is owed. The goal keeps its own prize; only the payback pauses.',
+      ),
+    ).toBeVisible();
+    await expect(form.locator('.fw-rule__state')).toHaveText(
+      'Paying back. Maya owes $2; the next week won pays back $1.',
+    );
+    await goal.selectOption({ label: 'Not paid back' });
+    await expect(form.getByLabel('Each win pays back')).toHaveCount(0);
+    // Leo's rule in points, with nothing owed: paused.
+    await open(page, '/dev/settings/penalties/rule?rule=bed');
+    const bed = page.getByRole('form', { name: 'Penalty rule' });
+    await expect(bed.getByLabel('Each win pays back')).toHaveValue('5');
+    await expect(bed.locator('.fw-rule__state')).toHaveText(
+      'Leo owes nothing: payback paused, “Nothing owed”. It starts again on the next miss.',
+    );
+    await expect(bed.locator('.fw-rule__state')).toHaveAttribute('data-paused', 'true');
+    const axe = await new AxeBuilder({ page }).include('.fw-rule').analyze();
+    expect(axe.violations.map((v) => v.id)).toEqual([]);
+  });
+
+  test("[PTS-11-k][US-1113] Settings: each rule's line says what a win pays back, or that it is paused", async ({
+    page,
+  }) => {
+    await open(page, '/dev/settings/penalties');
+    const rules = page.getByRole('list', { name: 'Penalty rules' }).getByRole('listitem');
+    await expect(rules.first().locator('.fw-penalty__status')).toHaveText(
+      'Maya owes $2 · paid back $1 a week won',
+    );
+    await expect(rules.nth(1).locator('.fw-penalty__status')).toHaveText(
+      'Nothing owed · payback paused',
+    );
+    await expect(rules.nth(1).locator('.fw-penalty__status')).toHaveAttribute(
+      'data-paused',
+      'true',
+    );
+  });
+
+  test('[PTS-11-k][US-1113] Maya’s Penalties: the rule’s payback line, and a won week in the history tagged Payback', async ({
+    page,
+  }) => {
+    await open(page, '/dev/members?page=member&penalties=payback');
+    const rule = page.getByRole('list', { name: 'What Maya owes' }).locator('[data-rule]');
+    await expect(rule.locator('.fw-penalty__payback')).toHaveText(
+      'Paid back $1 for each week won of Folder home every school day',
+    );
+    const history = page.getByRole('list', { name: 'Maya’s penalties' }).getByRole('listitem');
+    await expect(history.filter({ hasText: 'week won' })).toHaveText([
+      /Folder home every school day, week won Payback\s*−\$1 owed/,
+    ]);
+  });
+
+  test('[PTS-11-k] the points register has a Penalty payback type', async ({ page }) => {
+    await open(page, '/dev/rewards/points?penalties=1&type=penalty_payback');
+    await expect(page.locator('.fw-kind')).toHaveText(['Penalty payback']);
+    const row = page.locator('.fw-row', { hasText: 'Week won: Bed by 8 all week' });
+    await expect(row).toContainText('goal Bed by 8 all week');
+    await expect(row).toContainText('+5');
   });
 });

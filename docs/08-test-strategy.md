@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.20: WP-122's test cases, PTS-11-a to PTS-11-m (D-158): pgTAP, Vitest, the UI suite and a nightly e2e spec (§9, regenerated).
 > v0.8.19: WP-123's test cases, PTS-12-a to PTS-12-d (D-155): Vitest, pgTAP and the UI suite (§9, regenerated).
 > v0.8.18: WP-117's test cases, CHR-24-a to CHR-24-n (D-151): Vitest, pgTAP, the UI suite and a nightly e2e spec (§9, regenerated).
 > v0.8.17: the e2e reds of 23 October to 4 November (WP-119, D-153): five specs open the folds they read inside, grocery brands' names lead with the run's tag, and the run counts a server error in the preview's own log that names the infrastructure; test cases CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f and NFR-12-g; the catalogue regenerated.
@@ -282,16 +283,16 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3418** tests: Unit 1053 · DB 1834 · UI 384 · E2E 147. 2895 name at least one ID; 523 name none.
+**3477** tests: Unit 1061 · DB 1878 · UI 390 · E2E 148. 2953 name at least one ID; 524 name none.
 
 | Measure | Count |
 |---|---|
-| Requirements built (a Done item builds them) | 141 of 156 |
+| Requirements built (a Done item builds them) | 142 of 156 |
 | Built requirements with no test | 0 |
-| Stories built | 124 of 138 |
+| Stories built | 125 of 138 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 367 (with a test: 367) |
+| Test cases | 380 (with a test: 380) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -306,7 +307,7 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Area | Unit | DB | UI | E2E | Total |
 |---|---|---|---|---|---|
 | Chores | 144 | 234 | 49 | 35 | 462 |
-| Points | 79 | 214 | 39 | 14 | 346 |
+| Points | 87 | 257 | 45 | 15 | 404 |
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
@@ -316,8 +317,8 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Boards and devices | 67 | 93 | 14 | 13 | 187 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
 | Platform | 205 | 167 | 62 | 18 | 452 |
-| Not named | 58 | 500 | 10 | 1 | 569 |
-| **Total** | **1053** | **1834** | **384** | **147** | **3418** |
+| Not named | 58 | 501 | 10 | 1 | 570 |
+| **Total** | **1061** | **1878** | **390** | **148** | **3477** |
 
 ### 9.3 By requirement
 
@@ -471,7 +472,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-08 | S | Covered | US-1110 | WP-115 | PTS-08-a, PTS-08-b, PTS-08-c, PTS-08-d, PTS-08-e, PTS-08-f, PTS-08-g, PTS-08-h, PTS-08-i, PTS-08-j, PTS-08-k, PTS-08-l, PTS-08-m | U 12 · DB 17 · UI 5 |
 | PTS-09 | S | Covered | US-1111 | WP-120 | PTS-09-a, PTS-09-b, PTS-09-c, PTS-09-d, PTS-09-e, PTS-09-f, PTS-09-g, PTS-09-h, PTS-09-i, PTS-09-j, PTS-09-k, PTS-09-l, PTS-09-m | U 10 · DB 45 · UI 7 · E2E 1 |
 | PTS-10 | S | Covered | US-1112 | WP-121 | PTS-10-a, PTS-10-b, PTS-10-c, PTS-10-d, PTS-10-e, PTS-10-f, PTS-10-g, PTS-10-h, PTS-10-i, PTS-10-j, PTS-10-k, PTS-10-l, PTS-10-m, PTS-10-n, PTS-10-o, PTS-10-p | U 11 · DB 59 · UI 7 · E2E 1 |
-| PTS-11 | S | Not built | US-1113 | WP-122 | — | — |
+| PTS-11 | S | Covered | US-1113 | WP-122 | PTS-11-a, PTS-11-b, PTS-11-c, PTS-11-d, PTS-11-e, PTS-11-f, PTS-11-g, PTS-11-h, PTS-11-i, PTS-11-j, PTS-11-k, PTS-11-l, PTS-11-m | U 8 · DB 43 · UI 6 · E2E 1 |
 | PTS-12 | S | Covered | US-1114 | WP-123 | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | U 1 · DB 1 · UI 2 |
 | NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119, WP-124 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g, NFR-12-h | U 15 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
@@ -606,7 +607,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-119 | Done | CHR-12-e, CHR-14-c, CHR-16-a, PTS-02-a, RWD-11-a, RWD-12-c, MEAL-29-m, NFR-12-f, NFR-12-g | 9 of 9 | — |
 | WP-120 | Done | PTS-09-a, PTS-09-b, PTS-09-c, PTS-09-d, PTS-09-e, PTS-09-f, PTS-09-g, PTS-09-h, PTS-09-i, PTS-09-j, PTS-09-k, PTS-09-l, PTS-09-m | 13 of 13 | U 2 |
 | WP-121 | Done | PTS-10-a, PTS-10-b, PTS-10-c, PTS-10-d, PTS-10-e, PTS-10-f, PTS-10-g, PTS-10-h, PTS-10-i, PTS-10-j, PTS-10-k, PTS-10-l, PTS-10-m, PTS-10-n, PTS-10-o, PTS-10-p | 16 of 16 | U 10 |
-| WP-122 | Queued: | — | — | — |
+| WP-122 | Done | PTS-11-a, PTS-11-b, PTS-11-c, PTS-11-d, PTS-11-e, PTS-11-f, PTS-11-g, PTS-11-h, PTS-11-i, PTS-11-j, PTS-11-k, PTS-11-l, PTS-11-m | 13 of 13 | U 8 |
 | WP-123 | Done | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | 4 of 4 | — |
 | WP-124 | Done | DEV-05-a, DEV-05-c, DEV-05-d, DEV-05-e, NFR-12-h | 5 of 5 | — |
 
@@ -973,6 +974,19 @@ Test cases and the tests that prove them:
 | PTS-10-n | WP-121 | Take back on a rule's miss (added at the owner's request, 21 November): in points its points come back, in money nothing is owed on it, and what the rule has on the person drops by it; a child's page offers Take back on each miss not taken back | DB, Unit, UI | Unit `apps/web/lib/penalty-rules.test.ts`: `penalty rules in words (WP-121) › [PTS-10-j][PTS-10-n] the history: a rule's miss is "Folder home, missed", tagged Rule, given by nobody, with Take back until…`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-10-n] Maya’s Penalties: Take back on each rule miss not taken back`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-n] a parent takes back a rule's points miss`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-n] its points come back`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-n] and a money miss owes nothing more`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-n] what the rule has on Maya drops by it` |
 | PTS-10-o | WP-121 | Stop now (added at the owner's request, 21 November): a parent of the household stops a rule; day close adds nothing more for it, not even for a day not yet worked out; what it added stays; a stopped rule can't be changed; the rule's page says so; another household's parent can't stop it | DB, Unit, UI | Unit `apps/web/lib/penalty-rules.test.ts`: `a stopped rule (WP-121) › [PTS-10-o] says when it was stopped, on the household's own day`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-10-o][PTS-10-p] the rule page: Stop now, and Remove only while it has added nothing`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-o] a parent stops a rule now`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-o] a stopped rule can't be changed`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-o] day close adds nothing more for a stopped rule`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-o] what it added stays owed`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-o] another household's parent cannot stop a rule` |
 | PTS-10-p | WP-121 | Remove (added at the owner's request, 21 November): only while the rule has added nothing, with its people and chores; refused once it has added a miss, and for another household's parent; the rule's page offers Remove only then | DB, UI | UI `e2e/ui/penalties.spec.ts`: `the admin app › [PTS-10-o][PTS-10-p] the rule page: Stop now, and Remove only while it has added nothing`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-p] a rule that has added misses can't be removed`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-p] another household's parent cannot remove a rule`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-p] a rule that has added nothing is removed`<br>DB `supabase/tests/660_penalty_rules.test.sql`: `[PTS-10-p] with its people and chores` |
+| PTS-11-a | WP-122 | A parent of the household links a rule to a goal and what each win pays back ("Paid back by"), in the rule's unit: a goal of the household, not archived, expired or cancelled, for one of the rule's people or the family; another household's goal, another person's goal, an amount out of range, or a goal without an amount is refused; no goal clears it; another household's parent can't | DB | DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-a] a parent links a rule to a goal of its person and what each win pays back`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-a] or to a family goal`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-a] another household's goal is refused`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-a] another person's goal is refused`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-a] a goal that has ended is refused`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-a] an amount out of range is refused`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-a] points over 10,000 are refused`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-a] a goal without an amount is refused`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-a] no goal clears the payback`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-a] another household's parent can't` |
+| PTS-11-b | WP-122 | A won period of the goal (or a one-off goal reached) pays back each of the rule's people it is for (the goal's person; a family goal, each of the rule's people) the amount: in money as payments spread over their misses oldest first, in points as a `penalty_payback` ledger entry of +amount ("Week won: Folder home every school day"); once, however often the goal is worked out again | DB | DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-b] a won week pays back the rule's person once`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-b] in money, as a payment on the oldest miss`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-b] recorded by nobody, tied to the payback`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-b] what Maya owes on the rule drops by it`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-b] worked out again, it pays back once`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-b] in points, a penalty_payback entry with the win`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-b] a family goal pays back each of the rule's people` |
+| PTS-11-c | WP-122 | Never more than is owed: a win pays back only what is left on the rule; with nothing owed it pays nothing (paused); a new miss makes it owed again and the next win pays back | DB | DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-c] wins pay back until nothing is owed`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-c] with nothing owed, a win pays back nothing (paused)`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-c] a win pays back only what is left`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-c] a new miss makes it owed, and the next win pays back` |
+| PTS-11-d | WP-122 | While penalties are off a win pays back nothing; a stopped rule, or one past its end date, still pays back what is owed on it | DB | DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-d] while penalties are off a win pays back nothing`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-d] a stopped rule still pays back what is owed on it` |
+| PTS-11-e | WP-122 | A win later undone takes its payback back once: in money what it paid is owed again; in points a `penalty_payback` entry of −amount; the period won again pays back again | DB | DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-e] a win undone takes its payback back once: owed again`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-e] its payment posted again negative, nothing edited`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-e] won again, it pays back again`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-e] in points, an entry of −amount`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-e] what was paid back is to earn back again` |
+| PTS-11-f | WP-122 | A points rule: what it has on a person is the points its misses took less what was paid back, so the max counts it and later misses add again | DB | DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-f] a points rule has the points its misses took less paid back`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-f] so a miss adds again under the max`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-f] up to the max` |
+| PTS-11-g | WP-122 | Only through the functions: nobody writes a payback, and one changes only once, when it is taken back; a household's parents and boards read its paybacks, another household's can't; boards still don't read the rule | DB | DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-g] nobody writes a payback`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-g] the household's parents read its paybacks`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-g] a payback changes only when it is taken back`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-g] and once`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-g] its boards read them`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-g] boards still don't read the rule`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-g] another household's parent reads none`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-g] nor what the rules pay back` |
+| PTS-11-h | WP-122 | The board's snapshot: `paybacks`, one per rule with a goal and person (the rule's name, the goal, its period, what a win pays back, what is owed), while penalties are on; nothing while off; the app reads it | DB, Unit | Unit `apps/web/lib/board.test.ts`: `penalty paybacks (WP-122) › [PTS-11-h] reads each rule's payback per person, and none from a snapshot before WP-122`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-h] the snapshot has each rule's payback per person: the goal, what a win pays back, what is owed`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-h] a stopped rule with nothing owed is left out`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-h] nothing while penalties are off` |
+| PTS-11-i | WP-122 | The points register lists a payback as its own type, Penalty payback, with "goal Bed by 8 all week" in place of who gave it, an undo included | DB, Unit | Unit `apps/web/lib/board.test.ts`: `penalty paybacks (WP-122) › [PTS-11-i] reads a payback in the points list as its own type`<br>Unit `apps/web/lib/paybacks.test.ts`: `penalties paid back through a goal (WP-122) › [PTS-11-i] the register, the ledger and the board name a payback`<br>DB `supabase/tests/670_penalty_paybacks.test.sql`: `[PTS-11-i] the register lists paybacks as their own type, with the goal and the rule, an undo included` |
+| PTS-11-j | WP-122 | "Paid back by" checked the way the database checks it; in words: Settings' line ("Maya owes $2 · paid back $1 a week won", "Nothing owed · payback paused"), a child's page ("Paid back $1 for each week won of Folder home every school day") and its history ("Folder home every school day, week won", tag Payback), the goal card ("A won week pays back $1 of the $2 Maya owes for Folder home", "Nothing owed · payback paused"), the **Owes** card ("Win a Folder home week: pays back $1"); what the database refused, in plain words | Unit | Unit `apps/web/lib/paybacks.test.ts`: `penalties paid back through a goal (WP-122) › [PTS-11-j] "Paid back by" is checked the way the database checks it`<br>Unit `apps/web/lib/paybacks.test.ts`: `penalties paid back through a goal (WP-122) › [PTS-11-j] what the database refused, in plain words`<br>Unit `apps/web/lib/paybacks.test.ts`: `penalties paid back through a goal (WP-122) › [PTS-11-j] Settings' rule line: paying back, or paused`<br>Unit `apps/web/lib/paybacks.test.ts`: `penalties paid back through a goal (WP-122) › [PTS-11-j] a child's page: the payback line and the history's Payback rows`<br>Unit `apps/web/lib/paybacks.test.ts`: `penalties paid back through a goal (WP-122) › [PTS-11-j] the goal card and the Owes card, as the mockup writes them` |
+| PTS-11-k | WP-122 | The admin app: the rule form's **Paid back by** card (goal or reward, each win pays back, the hint, paying back or paused); Settings' rule lines; a child's **Penalties** with the payback line and the history's Payback rows; the register's **Penalty payback** type | UI | UI `e2e/ui/penalties.spec.ts`: `the admin app: paid back through a goal › [PTS-11-k][US-1113] the rule form: Paid back by, a goal of its people or the family, each win pays back, and its state`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app: paid back through a goal › [PTS-11-k][US-1113] Settings: each rule's line says what a win pays back, or that it is paused`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app: paid back through a goal › [PTS-11-k][US-1113] Maya’s Penalties: the rule’s payback line, and a won week in the history tagged Payback`<br>UI `e2e/ui/penalties.spec.ts`: `the admin app: paid back through a goal › [PTS-11-k] the points register has a Penalty payback type` |
+| PTS-11-l | WP-122 | The board: the goal card's payback line, paying back and paused ("Nothing owed · payback paused"), and the **Owes** card's "Win a Folder home week: pays back $1", in board-size text | UI | UI `e2e/ui/penalties.spec.ts`: `the board: paid back through a goal › [PTS-11-l][US-1113] the goal card says what a won week pays back, and the Owes card how to win it back, in board-size text`<br>UI `e2e/ui/penalties.spec.ts`: `the board: paid back through a goal › [PTS-11-l][US-1113] with nothing owed the payback is paused: "Nothing owed · payback paused", and no Owes card` |
+| PTS-11-m | WP-122 | On a preview, a parent links a rule to a weekly goal from the rule form; a won week pays back; undone, it is owed again; the database agrees at each step | E2E | E2E `e2e/tests/penalty-paybacks.spec.ts`: `[PTS-11-m][US-1113] a rule paid back by a weekly goal: a won week pays back, undone it is owed again` |
 | PTS-12-a | WP-123 | The board's words for a points entry: points a parent took away read the reason the parent gave ("Left the iPad on the couch"), as points added do; an adjustment with no reason still reads "A parent changed your points" or "From a parent" | Unit | Unit `apps/web/lib/today.test.ts`: `points on the board › [PTS-12-a] points a parent took away show the reason the parent gave, as points added do` |
 | PTS-12-b | WP-123 | The board's snapshot carries the reason with points a parent took away, for an entry posted before the snapshot was read (the reason is stored with each entry, so entries posted before this change show theirs) | DB | DB `supabase/tests/140_points_ledger.test.sql`: `[PTS-12-b] points a parent took away, posted earlier, reach the board with their reason` |
 | PTS-12-c | WP-123 | A child's own screen on the board lists "Left the bike out −5" in their points, next to "Helped carry the shopping +10", and no longer "A parent changed your points" | UI | UI `e2e/ui/today.spec.ts`: `[PTS-12-c][US-1114] the points list says what each was for, the reason for points taken away too` |
@@ -1124,7 +1138,7 @@ Status as in §9.3, for tests that name the story itself.
 | US-1110 | PTS-08 | Covered | UI 1 |
 | US-1111 | PTS-09 | Covered | UI 3 · E2E 1 |
 | US-1112 | PTS-10 | Covered | UI 4 · E2E 1 |
-| US-1113 | PTS-11 | Not built | — |
+| US-1113 | PTS-11 | Covered | UI 5 · E2E 1 |
 | US-1114 | PTS-12 | Covered | UI 1 |
 
 ### 9.6 Known gaps
@@ -1379,7 +1393,7 @@ Unit · 3 tests
 
 #### `apps/web/lib/board.test.ts`
 
-Unit · 24 tests
+Unit · 26 tests
 
 | Test | Names |
 |---|---|
@@ -1407,6 +1421,8 @@ Unit · 24 tests
 | `notify, then refetch › ticks on the minute` | — |
 | `penalties (WP-120) › [PTS-09-h] reads a penalty in the points list and what someone owes, in cents` | PTS-09-h, WP-120 |
 | `penalties (WP-120) › [PTS-10-h] reads a rule's misses as one line of what someone owes, with the days still owed` | PTS-10-h, WP-120 |
+| `penalty paybacks (WP-122) › [PTS-11-h] reads each rule's payback per person, and none from a snapshot before WP-122` | PTS-11-h, WP-122 |
+| `penalty paybacks (WP-122) › [PTS-11-i] reads a payback in the points list as its own type` | PTS-11-i, WP-122 |
 
 #### `apps/web/lib/bonus.test.ts`
 
@@ -2250,6 +2266,19 @@ Unit · 14 tests
 | `the board sender › [CHR-04] posts JSON to /api/completions and reads each answer` | CHR-04 |
 | `the board sender › [CHR-04] answers a refused batch as invalid (retrying cannot help); retries a server fault` | CHR-04 |
 
+#### `apps/web/lib/paybacks.test.ts`
+
+Unit · 6 tests
+
+| Test | Names |
+|---|---|
+| `penalties paid back through a goal (WP-122) › [PTS-11-j] "Paid back by" is checked the way the database checks it` | PTS-11-j, WP-122 |
+| `penalties paid back through a goal (WP-122) › [PTS-11-j] what the database refused, in plain words` | PTS-11-j, WP-122 |
+| `penalties paid back through a goal (WP-122) › [PTS-11-j] Settings' rule line: paying back, or paused` | PTS-11-j, WP-122 |
+| `penalties paid back through a goal (WP-122) › [PTS-11-j] a child's page: the payback line and the history's Payback rows` | PTS-11-j, WP-122 |
+| `penalties paid back through a goal (WP-122) › [PTS-11-j] the goal card and the Owes card, as the mockup writes them` | PTS-11-j, WP-122 |
+| `penalties paid back through a goal (WP-122) › [PTS-11-i] the register, the ledger and the board name a payback` | PTS-11-i, WP-122 |
+
 #### `apps/web/lib/penalties.test.ts`
 
 Unit · 8 tests
@@ -2943,6 +2972,14 @@ E2E · 1 tests
 | Test | Names |
 |---|---|
 | `[PTS-09-m][US-1111] a parent turns penalties on, adds a reason, gives, records paid and takes back` | PTS-09-m, US-1111 |
+
+#### `e2e/tests/penalty-paybacks.spec.ts`
+
+E2E · 1 tests
+
+| Test | Names |
+|---|---|
+| `[PTS-11-m][US-1113] a rule paid back by a weekly goal: a won week pays back, undone it is owed again` | PTS-11-m, US-1113 |
 
 #### `e2e/tests/penalty-rules.spec.ts`
 
@@ -3677,7 +3714,7 @@ UI · 7 tests
 
 #### `e2e/ui/penalties.spec.ts`
 
-UI · 14 tests
+UI · 20 tests
 
 | Test | Names |
 |---|---|
@@ -3695,6 +3732,12 @@ UI · 14 tests
 | `the admin app › [PTS-10-k] the points register shows a rule’s miss, naming its rule` | PTS-10-k |
 | `the admin app › [PTS-10-n] Maya’s Penalties: Take back on each rule miss not taken back` | PTS-10-n |
 | `the admin app › [PTS-10-o][PTS-10-p] the rule page: Stop now, and Remove only while it has added nothing` | PTS-10-o, PTS-10-p |
+| `the board: paid back through a goal › [PTS-11-l][US-1113] the goal card says what a won week pays back, and the Owes card how to win it back, in board-size text` | PTS-11-l, US-1113 |
+| `the board: paid back through a goal › [PTS-11-l][US-1113] with nothing owed the payback is paused: "Nothing owed · payback paused", and no Owes card` | PTS-11-l, US-1113 |
+| `the admin app: paid back through a goal › [PTS-11-k][US-1113] the rule form: Paid back by, a goal of its people or the family, each win pays back, and its state` | PTS-11-k, US-1113 |
+| `the admin app: paid back through a goal › [PTS-11-k][US-1113] Settings: each rule's line says what a win pays back, or that it is paused` | PTS-11-k, US-1113 |
+| `the admin app: paid back through a goal › [PTS-11-k][US-1113] Maya’s Penalties: the rule’s payback line, and a won week in the history tagged Payback` | PTS-11-k, US-1113 |
+| `the admin app: paid back through a goal › [PTS-11-k] the points register has a Penalty payback type` | PTS-11-k |
 
 #### `e2e/ui/points-register.spec.ts`
 
@@ -6622,5 +6665,56 @@ DB · 59 tests
 | `[PTS-10-p] another household's parent cannot remove a rule` | PTS-10-p |
 | `[PTS-10-p] a rule that has added nothing is removed` | PTS-10-p |
 | `[PTS-10-p] with its people and chores` | PTS-10-p |
+
+#### `supabase/tests/670_penalty_paybacks.test.sql`
+
+DB · 44 tests
+
+| Test | Names |
+|---|---|
+| `[PTS-11-a] a parent links a rule to a goal of its person and what each win pays back` | PTS-11-a |
+| `[PTS-11-a] or to a family goal` | PTS-11-a |
+| `[PTS-11-a] another household's goal is refused` | PTS-11-a |
+| `[PTS-11-a] another person's goal is refused` | PTS-11-a |
+| `[PTS-11-a] a goal that has ended is refused` | PTS-11-a |
+| `[PTS-11-a] an amount out of range is refused` | PTS-11-a |
+| `[PTS-11-a] points over 10,000 are refused` | PTS-11-a |
+| `[PTS-11-a] a goal without an amount is refused` | PTS-11-a |
+| `[PTS-11-a] no goal clears the payback` | PTS-11-a |
+| `[PTS-11-a] another household's parent can't` | PTS-11-a |
+| `the misses are owed` | — |
+| `[PTS-11-b] a won week pays back the rule's person once` | PTS-11-b |
+| `[PTS-11-b] in money, as a payment on the oldest miss` | PTS-11-b |
+| `[PTS-11-b] recorded by nobody, tied to the payback` | PTS-11-b |
+| `[PTS-11-b] what Maya owes on the rule drops by it` | PTS-11-b |
+| `[PTS-11-b] worked out again, it pays back once` | PTS-11-b |
+| `[PTS-11-b] in points, a penalty_payback entry with the win` | PTS-11-b |
+| `[PTS-11-b] a family goal pays back each of the rule's people` | PTS-11-b |
+| `[PTS-11-f] a points rule has the points its misses took less paid back` | PTS-11-f |
+| `[PTS-11-f] so a miss adds again under the max` | PTS-11-f |
+| `[PTS-11-f] up to the max` | PTS-11-f |
+| `[PTS-11-c] wins pay back until nothing is owed` | PTS-11-c |
+| `[PTS-11-c] with nothing owed, a win pays back nothing (paused)` | PTS-11-c |
+| `[PTS-11-c] a win pays back only what is left` | PTS-11-c |
+| `[PTS-11-c] a new miss makes it owed, and the next win pays back` | PTS-11-c |
+| `[PTS-11-e] a win undone takes its payback back once: owed again` | PTS-11-e |
+| `[PTS-11-e] its payment posted again negative, nothing edited` | PTS-11-e |
+| `[PTS-11-e] won again, it pays back again` | PTS-11-e |
+| `[PTS-11-e] in points, an entry of −amount` | PTS-11-e |
+| `[PTS-11-e] what was paid back is to earn back again` | PTS-11-e |
+| `[PTS-11-d] while penalties are off a win pays back nothing` | PTS-11-d |
+| `[PTS-11-d] a stopped rule still pays back what is owed on it` | PTS-11-d |
+| `[PTS-11-g] nobody writes a payback` | PTS-11-g |
+| `[PTS-11-g] the household's parents read its paybacks` | PTS-11-g |
+| `[PTS-11-g] a payback changes only when it is taken back` | PTS-11-g |
+| `[PTS-11-g] and once` | PTS-11-g |
+| `[PTS-11-g] its boards read them` | PTS-11-g |
+| `[PTS-11-g] boards still don't read the rule` | PTS-11-g |
+| `[PTS-11-g] another household's parent reads none` | PTS-11-g |
+| `[PTS-11-g] nor what the rules pay back` | PTS-11-g |
+| `[PTS-11-h] the snapshot has each rule's payback per person: the goal, what a win pays back, what is owed` | PTS-11-h |
+| `[PTS-11-h] a stopped rule with nothing owed is left out` | PTS-11-h |
+| `[PTS-11-h] nothing while penalties are off` | PTS-11-h |
+| `[PTS-11-i] the register lists paybacks as their own type, with the goal and the rule, an undo included` | PTS-11-i |
 
 <!-- /catalogue -->

@@ -7,6 +7,7 @@ import type { DayItem } from '@/lib/admin-day';
 import { type CheckOff, missedOrLate } from '@/lib/on-time';
 import { MemberPenalties } from '../../(admin)/admin/penalties/member-penalties';
 import {
+  mayaPaybacks,
   mayaPenalties,
   PENALTY_ADMINS,
   PENALTY_PEOPLE,
@@ -232,6 +233,7 @@ export default async function DevMembersPage({
                 open
                 giveOpen={p.penalties === 'give'}
                 rules={penaltyRules('2026-10-15')}
+                paybacks={p.penalties === 'payback' ? mayaPaybacks('2026-10-15') : []}
               />
             ) : null
           }

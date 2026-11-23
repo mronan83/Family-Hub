@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { isoDay } from '@/lib/format';
 import type { PenaltyReason, PenaltyUnit } from '@/lib/penalties';
 import {
+  loadPaybackGoals,
   loadPenaltyRules,
   loadPenaltySettings,
   loadRuleChores,
@@ -18,12 +19,13 @@ export async function loadRuleForm(
   household: { id: string; timezone: string },
   ruleId: string | null,
 ) {
-  const [{ on, reasons }, rules, members, chores, tags] = await Promise.all([
+  const [{ on, reasons }, rules, members, chores, tags, goals] = await Promise.all([
     loadPenaltySettings(db, household.id),
     ruleId ? loadPenaltyRules(db, household.id) : Promise.resolve([]),
     loadMembers(db, household.id),
     loadRuleChores(db, household.id),
     loadRuleTags(db, household.id),
+    loadPaybackGoals(db, household.id),
   ]);
   const rule = ruleId ? (rules.find((r) => r.id === ruleId) ?? null) : null;
   let choices: PenaltyReason[] = reasons;
@@ -50,6 +52,8 @@ export async function loadRuleForm(
     // A rule's own chores stay listed even once archived.
     chores: [...chores, ...(rule?.chores.filter((c) => !chores.some((x) => x.id === c.id)) ?? [])],
     tags,
+    // [PTS-11] The goals it can be paid back by (WP-122).
+    goals,
     today: isoDay(household.timezone),
   };
 }

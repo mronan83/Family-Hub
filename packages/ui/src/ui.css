@@ -2213,6 +2213,16 @@ html:has(.board) {
   font-size: var(--t-heading);
   font-weight: 800;
 }
+/* [PTS-11] The Owes card's "Win a Folder home week: pays back $1" (WP-122): under a rule, in the
+   primary text. */
+.fw-today__owes-foot {
+  margin: var(--s-2) 0 0;
+  padding-top: var(--s-2);
+  border-top: 2px solid var(--line);
+  color: var(--primary-text);
+  font-size: var(--t-small);
+  font-weight: 600;
+}
 .fw-today__owes-chip {
   display: inline-flex;
   padding: 0 var(--s-3);
@@ -6103,6 +6113,24 @@ details[open] > .fw-lunchday__head .fw-lunchday__chev {
   display: grid;
   gap: var(--s-2);
 }
+/* [PTS-11] A goal's payback on a penalty (WP-122, the approved mockup): paying back in the reward
+   tint; paused ("Nothing owed · payback paused") with a dashed edge in the soft text. Board text is at
+   least 28 px (BRD-03): the card's own size. */
+.fw-goal__payback {
+  margin: var(--s-2) 0 0;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--reward-tint);
+  color: var(--reward-text);
+  font-size: var(--t-small);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.fw-goal__payback[data-paused] {
+  background: none;
+  border: 2px dashed var(--text-soft);
+  color: var(--text-soft);
+}
 .fw-goal__weeks {
   display: flex;
   flex-wrap: wrap;
@@ -8314,6 +8342,31 @@ details:not([open]) > .fw-fold__head .fw-fold__count {
 .fw-penalty__status {
   color: var(--missed-text);
   font-weight: 600;
+}
+/* [PTS-11] Paid back by a goal (WP-122): the paused line in the soft text; the payback line on a
+   child's page and the rule form's state in the primary tint. */
+.fw-penalty__status[data-paused] {
+  color: var(--text-soft);
+}
+.fw-penalty__payback {
+  display: flex;
+  gap: var(--s-2);
+  align-items: flex-start;
+  color: var(--primary-text);
+  font-size: var(--t-small);
+}
+.fw-rule__state {
+  margin: var(--s-2) 0 0;
+  padding: var(--s-3);
+  border-radius: 12px;
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-size: var(--t-small);
+}
+.fw-rule__state[data-paused] {
+  background: none;
+  border: 1px dashed var(--text-soft);
+  color: var(--text-soft);
 }
 .fw-rule__chip {
   gap: 6px;

@@ -26,6 +26,8 @@ import { KITCHEN_SLEEP } from './fixture';
 // for Maya's 5 asks waiting, ?groceries=long for 35 things).
 // [PTS-09] Penalties on (WP-120: ?penalties=1, Maya's points penalty "Rude to a sibling" and the $3 she owes;
 // ?penalties=below, the same with her points below zero, as points to earn back).
+// [PTS-11] Paid back through a goal (WP-122: ?penalties=payback, Maya's "Folder home every school day"
+// paying back $1 a week won on the $2 she owes for Folder home; ?penalties=paused, nothing owed).
 export const metadata: Metadata = { title: 'Board Today', robots: { index: false } };
 
 export default async function DevBoardPage({
@@ -122,7 +124,13 @@ export default async function DevBoardPage({
         missed={params.missed === '1'}
         groceries={params.groceries}
         penalties={
-          params.penalties === '1' ? 'on' : params.penalties === 'below' ? 'below' : undefined
+          params.penalties === '1'
+            ? 'on'
+            : params.penalties === 'below' ||
+                params.penalties === 'payback' ||
+                params.penalties === 'paused'
+              ? params.penalties
+              : undefined
         }
       />
     </div>

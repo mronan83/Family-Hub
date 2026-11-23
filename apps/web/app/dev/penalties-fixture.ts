@@ -1,6 +1,7 @@
 import type { PenaltyPerson } from '../(admin)/admin/penalties/give-form';
 import type { Penalty, PenaltyPayment, PenaltyReason } from '@/lib/penalties';
 import { withOwed } from '@/lib/penalties';
+import type { PaybackGoal, PenaltyPaybackRow } from '@/lib/paybacks';
 import type { PenaltyRule, RuleChore } from '@/lib/penalty-rules';
 
 // [PTS-09] The made-up family's penalties (WP-120, the approved mockup), for the dev pages, the UI
@@ -152,6 +153,50 @@ export const RULE_CHORES: RuleChore[] = [
   },
 ];
 
+/** [PTS-11] The goals a rule can be paid back by (WP-122): Maya's, Leo's and the family's. */
+export const PAYBACK_GOALS: PaybackGoal[] = [
+  {
+    id: '0de0b000-0000-4000-8000-000000000001',
+    title: 'Folder home every school day',
+    memberId: PENALTY_PEOPLE[0]!.id,
+    repeat: 'week',
+  },
+  {
+    id: '0de0b000-0000-4000-8000-000000000002',
+    title: 'Bed by 8 all week',
+    memberId: PENALTY_PEOPLE[1]!.id,
+    repeat: 'week',
+  },
+  {
+    id: '0de0b000-0000-4000-8000-000000000003',
+    title: 'Pizza night',
+    memberId: null,
+    repeat: 'none',
+  },
+];
+
+/**
+ * [PTS-11] A week Maya won of "Folder home every school day" 8 days back, which paid back $1 on Folder
+ * home (WP-122), for the history's Payback row (?penalties=payback on the dev page).
+ */
+export function mayaPaybacks(today: string): PenaltyPaybackRow[] {
+  const d = new Date(`${today}T05:10:00Z`);
+  d.setUTCDate(d.getUTCDate() - 8);
+  return [
+    {
+      id: '0de0d000-0000-4000-8000-000000000001',
+      ruleId: PENALTY_RULE_IDS.folder,
+      rule: 'Folder home',
+      goal: PAYBACK_GOALS[0]!.title,
+      repeat: 'week',
+      unit: 'money',
+      amount: 100,
+      paidAt: d.toISOString(),
+      takenBackAt: null,
+    },
+  ];
+}
+
 export const RULE_TAGS = [
   { id: '0de0a000-0000-4000-8000-000000000003', name: 'Bedtime' },
   { id: '0de0a000-0000-4000-8000-000000000004', name: 'School' },
@@ -187,6 +232,13 @@ export function penaltyRules(today: string): PenaltyRule[] {
       held: { [maya!]: 200 },
       stoppedAt: null,
       added: 2,
+      // [PTS-11] Paid back $1 for each week won of her goal (WP-122, the approved mockup).
+      payback: {
+        goalId: PAYBACK_GOALS[0]!.id,
+        goal: PAYBACK_GOALS[0]!.title,
+        repeat: 'week',
+        amount: 100,
+      },
     },
     {
       id: PENALTY_RULE_IDS.bed,
@@ -205,6 +257,13 @@ export function penaltyRules(today: string): PenaltyRule[] {
       held: {},
       stoppedAt: null,
       added: 0,
+      // [PTS-11] Paid back 5 points a week won; nothing taken, so paused (WP-122).
+      payback: {
+        goalId: PAYBACK_GOALS[1]!.id,
+        goal: PAYBACK_GOALS[1]!.title,
+        repeat: 'week',
+        amount: 5,
+      },
     },
   ];
 }

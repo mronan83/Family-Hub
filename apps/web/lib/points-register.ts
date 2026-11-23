@@ -8,7 +8,15 @@ import type { FoldLine } from './setup-facts';
  * A type is the ledger's own, but a bonus a goal paid is a Goal payout, apart from a rule's Bonus.
  */
 export type RegisterKind =
-  'earn' | 'bonus' | 'goal' | 'adjustment' | 'spend' | 'refund' | 'reversal' | 'penalty';
+  | 'earn'
+  | 'bonus'
+  | 'goal'
+  | 'adjustment'
+  | 'spend'
+  | 'refund'
+  | 'reversal'
+  | 'penalty'
+  | 'penalty_payback';
 
 /** The types in the order the filter shows them, with their words (the approved mockup's). */
 export const REGISTER_KINDS: { kind: RegisterKind; label: string }[] = [
@@ -21,6 +29,8 @@ export const REGISTER_KINDS: { kind: RegisterKind; label: string }[] = [
   { kind: 'reversal', label: 'Reversed' },
   // [PTS-09] A penalty's points, taken or given back (WP-120).
   { kind: 'penalty', label: 'Penalty' },
+  // [PTS-11] Points a goal's win paid back on a penalty rule, or took back with it (WP-122).
+  { kind: 'penalty_payback', label: 'Penalty payback' },
 ];
 
 export const KIND_LABEL = Object.fromEntries(
@@ -204,6 +214,12 @@ export function entryWords(
       return {
         what: e.amount > 0 ? `${e.reason ?? 'A penalty'}, taken back` : (e.reason ?? 'A penalty'),
         by: `by ${parent ?? 'a parent'}`,
+      };
+    case 'penalty_payback':
+      // [PTS-11] "Week won: Bed by 8 all week", from "goal Bed by 8 all week" (WP-122).
+      return {
+        what: e.reason ?? `Paid back on ${e.penaltyRule ?? 'a rule'}`,
+        by: `goal ${e.goalTitle ?? 'a goal'}`,
       };
   }
 }

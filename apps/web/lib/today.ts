@@ -216,5 +216,8 @@ export function boardActivity(e: Pick<LedgerEntry, 'type' | 'amount' | 'label'>)
     // [PTS-09][D-154] A penalty shows its reason; the board tags it "Penalty" beside it.
     case 'penalty':
       return e.label ?? 'Penalty';
+    // [PTS-11] A goal's win paid back: "Week won: Folder home every school day".
+    case 'penalty_payback':
+      return e.label ?? 'Penalty payback';
   }
 }

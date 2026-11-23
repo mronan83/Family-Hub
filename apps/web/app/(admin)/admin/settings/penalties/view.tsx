@@ -1,6 +1,7 @@
 import { Banner, Button } from '@familywise/ui';
 import Link from 'next/link';
 import { penaltyAmount, type PenaltyReason } from '@/lib/penalties';
+import { PAUSED } from '@/lib/paybacks';
 import { type PenaltyRule, ruleLine, ruleStatus, stoppedWords } from '@/lib/penalty-rules';
 import { AdminHeader } from '../../header';
 import type { NavWho } from '../../nav';
@@ -143,7 +144,11 @@ export function PenaltySettingsView({
                 <span className="fw-item__body">
                   <strong>{r.name}</strong>
                   <span className="fw-muted">{ruleLine(r, name)}</span>
-                  <span className="fw-penalty__status">
+                  {/* [PTS-11] Paid back by a goal: "· paid back $1 a week won", or paused (WP-122). */}
+                  <span
+                    className="fw-penalty__status"
+                    data-paused={ruleStatus(r, name) === PAUSED ? 'true' : undefined}
+                  >
                     {r.stoppedAt ? `${stoppedWords(r.stoppedAt, timezone)} · ` : ''}
                     {ruleStatus(r, name)}
                   </span>

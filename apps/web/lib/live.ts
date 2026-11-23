@@ -23,6 +23,8 @@ export function boardTables(householdId: string, deviceId: string): BoardTable[]
     // [PTS-09] A money penalty or a payment changes what someone owes (WP-120).
     { table: 'penalty', filter: `household_id=eq.${householdId}` },
     { table: 'penalty_payment', filter: `household_id=eq.${householdId}` },
+    // [PTS-11] A goal's win paid back, or taken back (WP-122).
+    { table: 'penalty_payback', filter: `household_id=eq.${householdId}` },
     { table: 'chore_occurrence', filter: `household_id=eq.${householdId}` },
     { table: 'chore', filter: `household_id=eq.${householdId}` },
     { table: 'streak_segment', filter: `household_id=eq.${householdId}` },
