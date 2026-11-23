@@ -1,6 +1,7 @@
 # 05 — Backlog
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.180: WP-125 (the e2e reds of 13 to 22 November) added at the owner's request, recorded only (D-110): a cause for each of #189, #190, #191, #203, #206 and #208, then the fix where the cause is. Nothing is built in this change.
 > v0.8.179: WP-122 (penalties paid back through a goal or reward) done (PTS-11, US-1113, D-154, D-158): a rule's **Paid back by** a goal; a won week (or a goal reached) pays back what is owed, never more, paused while nothing is owed and while penalties are off, and taken back once when the win is undone; on the rule form, Settings, a child's page, the board's goal card and **Owes** card, and the register's **Penalty payback** type. Migration `20261122043530_penalty_paybacks.sql`. Test cases PTS-11-a to PTS-11-m.
 > v0.8.178: WP-121 (penalty rules that build up on missed items, with dates and a max) done (PTS-10, US-1112, D-154, D-157): rules in Settings, added at day close up to a max, taken back by Mark done on time, a rule's misses on a child's page, in the register and on the board's Owes card.
 > v0.8.177: WP-120 (one-time penalties in points or money, and the penalty balance) done (PTS-09, US-1111, D-154, D-156): the one mockup for WP-120 to WP-122 approved on 21 November; Settings' Penalties (on/off, the reasons), Give a penalty from Home or a child's page, a child's Penalties (what they owe, Record paid, Take back), the register's Penalty type, and the board's Penalty tag, Owes card and the rail's chip. Migration `20261121031038_penalties.sql`. Test cases PTS-09-a to PTS-09-m. WP-121 and WP-122 stay queued.
@@ -346,13 +347,14 @@ Statuses: **Done** (merged to `main`) · **In progress** (branch open) · **Read
 | WP-122 | Penalties paid back through a goal or reward | P3 | M | WP-121, WP-80, WP-81 | Done |
 | WP-123 | The board shows the reason for every points change a parent makes | P3 | S | WP-11, WP-16 | Done |
 | WP-124 | The board's snapshot and other reads time out on the free test database | P3 | M | WP-111, WP-113 | Done |
+| WP-125 | The e2e reds of 13 to 22 November: board-calendar, home-groceries, board, lunches, admin-menu, board-grocery-asks | P3 | S | WP-119, WP-124 | In progress |
 | WP-85 | The test strategy and the Test catalogue | P3 | M | — | Done |
 | WP-86 | Close the known test gaps | P3 | L | WP-85 | Ready |
 | WP-36 | Closure import | P3 | M | WP-22 | Queued |
 | WP-38 | Sign in with Apple and passkeys | P3 | M | WP-03 | Blocked: production domain (OQ-06b) and Apple Developer account |
 
 
-**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October. WP-118 (the WebKit CI fix), started by the owner on 1 November. WP-119 (the e2e fix for #163 to #166, #174 and #183), started by the owner on 4 November. WP-117 (a missed chore marked done on time), added on 30 October, started by the owner on 15 November; done. Penalties (15 November): WP-120, then WP-121, then WP-122, after WP-117, one mockup for the three first; WP-120 started by the owner on 19 November, the mockup approved on 21 November; done. WP-121 started by the owner on 21 November; done. WP-122 started by the owner on 22 November; done. WP-123 (the board shows the reason for points taken away, 15 November), started by the owner on 19 November; done.
+**Next, in order** (the owner's, 14 October): WP-70 (started by the owner on 14 October) and WP-65 before anything else; then (13 October) WP-62, WP-63, WP-58, WP-64 and WP-49 (mockups first for WP-64 and WP-49, together). WP-29 stays on hold. The grocery list (18 October, D-138, replacing 17 October's): WP-104 first; then SPIKE-08 and WP-103; then WP-105, WP-106 and WP-107. WP-112 (Groceries on Home and a preferred store), started by the owner on 18 October. WP-115 (the points register), started by the owner on 27 October. WP-116 (grocery brands), started by the owner on 28 October. WP-118 (the WebKit CI fix), started by the owner on 1 November. WP-119 (the e2e fix for #163 to #166, #174 and #183), started by the owner on 4 November. WP-117 (a missed chore marked done on time), added on 30 October, started by the owner on 15 November; done. Penalties (15 November): WP-120, then WP-121, then WP-122, after WP-117, one mockup for the three first; WP-120 started by the owner on 19 November, the mockup approved on 21 November; done. WP-121 started by the owner on 21 November; done. WP-122 started by the owner on 22 November; done. WP-123 (the board shows the reason for points taken away, 15 November), started by the owner on 19 November; done. WP-125 (the e2e fix for #189, #190, #191, #203, #206 and #208), started by the owner on 23 November.
 
 ---
 
@@ -567,6 +569,8 @@ flowchart LR
     WP16 --> WP123
     WP111 --> WP124[WP-124 Reads time out on the test database]
     WP113 --> WP124
+    WP119 --> WP125[WP-125 e2e reds of 13 to 22 November]
+    WP124 --> WP125
     WP90 --> SP07[SPIKE-07 e2e specs audited by layer]
     WP90 --> WP98[WP-98 e2e findings log]
     SP07 --> WP99[WP-99 Lean e2e]
@@ -2667,3 +2671,9 @@ Sizes are relative effort for a single builder with Claude Code, not commitments
 - **As built:** migration `20261118125556_snapshot_day_types.sql` (`private.day_types()`, `school_days()` and `lunch_week()` through it, `job_health()` and `job_run_last_ok_idx`); `scripts/db-health.sh`, `db-health.sql`, `db-health-board.sql` and the manual workflow `db-health.yml` (target `test` or `production`, an optional watch). Tests: pgTAP `640_snapshot_day_types.test.sql` (DEV-05-c, DEV-05-d, DEV-05-e), `580_lunch_week_once.test.sql` (DEV-05-a, now one query); node:test `scripts/db-tests/db-health.test.mjs` in CI's database job, which runs `scripts/db-health.test.sh` (NFR-12-h). No screen changes.
 - **Proving it:** e2e doesn't run on a pull request (D-108): the first nightly run after the deploy says whether #168, #170, #179 and #197 pass, or names each red's cause.
 - **Deferred, as plain facts:** `job_run` keeps every run (no retention); removing old runs deletes data, so it is for the owner to decide. The test project's whole-database stalls are the Free plan's and stay labelled infrastructure. Realtime's change polling stays as it is; moving the board to Broadcast would be a new decision. A board's read still makes a second and third try beside a read out over 4 s (WP-70), and an abandoned read runs on in the database until its timeout.
+
+### WP-125 — The e2e reds of 13 to 22 November: board-calendar, home-groceries, board, lunches, admin-menu, board-grocery-asks
+**Phase:** P3 · **Size:** S · **Depends on:** WP-119, WP-124 · **Reqs:** NFR-12
+- Added at the owner's request on 23 November, in the planner session: "Start an e2e fix for #189, #190, #191, #203, #206 and #208". The nightly runs on `main` are red in `board-calendar.spec.ts` (#189), `home-groceries.spec.ts` (#190), `board.spec.ts` (#191), `lunches.spec.ts` (#203), `admin-menu.spec.ts` (#206) and `board-grocery-asks.spec.ts` (#208); the latest, run 289 on `914a9d4` (22 November).
+- **The goal:** a cause for every red (D-110), backed by the runs' evidence (the run's log, the preview's error log per D-153, the probe), then the app or the test fixed where the cause is. No test skipped, disabled, quarantined, re-run blind or loosened; no fixed waits.
+- **Out of scope, as a plain fact:** where a red's proven cause is the free test database being CPU-starved (WP-124's finding), it is recorded with its evidence and its fix left to WP-126 (Realtime Broadcast and the board's extra reads). `penalty-rules.spec.ts` (#209) is WP-121's.

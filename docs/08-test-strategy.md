@@ -474,7 +474,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-10 | S | Covered | US-1112 | WP-121 | PTS-10-a, PTS-10-b, PTS-10-c, PTS-10-d, PTS-10-e, PTS-10-f, PTS-10-g, PTS-10-h, PTS-10-i, PTS-10-j, PTS-10-k, PTS-10-l, PTS-10-m, PTS-10-n, PTS-10-o, PTS-10-p | U 11 · DB 59 · UI 7 · E2E 1 |
 | PTS-11 | S | Covered | US-1113 | WP-122 | PTS-11-a, PTS-11-b, PTS-11-c, PTS-11-d, PTS-11-e, PTS-11-f, PTS-11-g, PTS-11-h, PTS-11-i, PTS-11-j, PTS-11-k, PTS-11-l, PTS-11-m | U 8 · DB 43 · UI 6 · E2E 1 |
 | PTS-12 | S | Covered | US-1114 | WP-123 | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | U 1 · DB 1 · UI 2 |
-| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119, WP-124 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g, NFR-12-h | U 15 |
+| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119, WP-124, WP-125 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g, NFR-12-h | U 15 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
 | NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110, WP-118 | NFR-16-t, NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s, NFR-16-u, NFR-16-v, NFR-16-w | U 23 · DB 10 · UI 24 |
@@ -610,6 +610,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-122 | Done | PTS-11-a, PTS-11-b, PTS-11-c, PTS-11-d, PTS-11-e, PTS-11-f, PTS-11-g, PTS-11-h, PTS-11-i, PTS-11-j, PTS-11-k, PTS-11-l, PTS-11-m | 13 of 13 | U 8 |
 | WP-123 | Done | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | 4 of 4 | — |
 | WP-124 | Done | DEV-05-a, DEV-05-c, DEV-05-d, DEV-05-e, NFR-12-h | 5 of 5 | — |
+| WP-125 | In | — | — | — |
 
 Test cases and the tests that prove them:
 
