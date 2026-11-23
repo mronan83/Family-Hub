@@ -2688,7 +2688,7 @@ Sizes are relative effort for a single builder with Claude Code, not commitments
   - **Expand, then contract.** The tables stay in the `supabase_realtime` publication, so a board still on the old app hears changes until DeployWatch reloads it; nothing polls them once no board subscribes.
 - **Before** (`scripts/db-health.sh`, 23 November, read only, timings and counts only):
   - Production, since 2 October: Realtime's change polling 7,123,009 calls, 61,932,987 ms in all (17.2 hours), 8.7 ms on average, 13.3 s at most, and 376 MB of temporary files; next, `board_snapshot` 53,514 calls at 193 ms (10.3 million ms) and `job_health` 18,181 at 539 ms. 35 Postgres Changes subscriptions, 4 active boards. `authenticated`'s statement timeout 8 s. The board's read today: 26 to 204 ms.
-  - Test project, a 45-minute watch during e2e run 290 (a run by hand on `main`): BEFORE_TEST.
+  - Test project, a 40-minute watch from 13:43 to 14:23 UTC during e2e run 290 (a run by hand on `main`): of the busy-connection samples, 1,220 on CPU (the watch's own sleeps aside), with up to 12 statements running at once; a whole-database stall at 14:12, when `BEGIN` waited up to 20 s. In the window, Realtime's change polling took the most time of any app statement: 4,918 calls at 50.6 ms, 248.8 s; then `board_snapshot` 160 calls at 1,468 ms (234.9 s) and `board_groceries` 164 at 651 ms (106.8 s). Since the test project's statistics were reset: the polling 380,716 calls, 13.9 million ms.
 - Test cases:
 
 | Case | Test case | Layer |
