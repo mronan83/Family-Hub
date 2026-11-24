@@ -65,6 +65,9 @@ select what, (xpath('/row/n/text()', query_to_xml(format('select count(*) as n f
                ('auth audit log', 'auth.audit_log_entries', ''),
                ('realtime subscriptions', 'realtime.subscription', ''),
                ('realtime messages', 'realtime.messages', ''),
+               -- [DEV-05][WP-126] Broadcast from the database to the boards (D-159).
+               ('board messages, last hour', 'realtime.messages',
+                'where topic like ''board:%'' and inserted_at > now() - interval ''1 hour'''),
                ('pg_net responses', 'net._http_response', ''),
                ('cron run history', 'cron.job_run_details', '')) t(what, rel, cond)
  where to_regclass(rel) is not null;
@@ -75,6 +78,16 @@ select coalesce(nullif(usename, ''), '-') as role, coalesce(nullif(application_n
        count(*) as n
   from pg_stat_activity where pid <> pg_backend_pid()
  group by 1, 2, 3, 4 order by n desc, 1 limit 25;
+
+\echo '## Broadcast from the database (WP-126): what the board triggers need'
+select current_user as "migrations run as",
+       to_regprocedure('realtime.send(jsonb, text, text, boolean)') is not null as "send() exists",
+       to_regprocedure('realtime.topic()') is not null as "topic() exists",
+       coalesce(has_function_privilege('realtime.send(jsonb, text, text, boolean)', 'execute'), false) as "may send",
+       coalesce(has_table_privilege('realtime.messages', 'insert'), false) as "may insert",
+       (select rolbypassrls from pg_roles where rolname = current_user) as "bypasses RLS",
+       (select count(*) from pg_trigger where tgname like 'board\_notify\_%') as "board triggers"
+ where to_regclass('realtime.messages') is not null;
 
 \echo '## Replication slots (Realtime reads changes through one)'
 select slot_name, plugin, active,

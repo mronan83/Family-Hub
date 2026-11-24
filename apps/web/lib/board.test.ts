@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { boardTables, coalesce, readSoon, untilNextMinute } from './live';
+import {
+  BOARD_EVENT,
+  boardTopic,
+  coalesce,
+  listen,
+  READ_DEADLINE_MS,
+  readSoon,
+  untilNextMinute,
+} from './live';
 import { readSnapshot } from './snapshot';
 
 const RAW = {
@@ -596,44 +604,53 @@ describe('the shop, requests and goals (WP-20)', () => {
 });
 
 describe('notify, then refetch', () => {
-  it('[DEV-05] listens to every board-readable table, filtered to this board', () => {
-    expect(boardTables('h1', 'd1')).toEqual([
-      { table: 'household', filter: 'id=eq.h1' },
-      { table: 'household_settings', filter: 'household_id=eq.h1' },
-      { table: 'member', filter: 'household_id=eq.h1' },
-      { table: 'device', filter: 'id=eq.d1' },
-      { table: 'points_ledger', filter: 'household_id=eq.h1' },
-      { table: 'penalty', filter: 'household_id=eq.h1' },
-      { table: 'penalty_payment', filter: 'household_id=eq.h1' },
-      { table: 'penalty_payback', filter: 'household_id=eq.h1' },
-      { table: 'chore_occurrence', filter: 'household_id=eq.h1' },
-      { table: 'chore', filter: 'household_id=eq.h1' },
-      { table: 'streak_segment', filter: 'household_id=eq.h1' },
-      { table: 'wishlist_pin', filter: 'household_id=eq.h1' },
-      { table: 'reward_catalog_item', filter: 'household_id=eq.h1' },
-      { table: 'redemption', filter: 'household_id=eq.h1' },
-      { table: 'reward_goal', filter: 'household_id=eq.h1' },
-      { table: 'reward_goal_progress', filter: 'household_id=eq.h1' },
-      { table: 'reward_goal_period', filter: 'household_id=eq.h1' },
-      { table: 'reward_rule_progress', filter: 'household_id=eq.h1' },
-      { table: 'calendar_source', filter: 'household_id=eq.h1' },
-      { table: 'calendar_member', filter: 'household_id=eq.h1' },
-      { table: 'device_calendar', filter: 'device_id=eq.d1' },
-      { table: 'weather_reading', filter: 'household_id=eq.h1' },
-      { table: 'meal', filter: 'household_id=eq.h1' },
-      { table: 'meal_plan_entry', filter: 'household_id=eq.h1' },
-      { table: 'member_lunch', filter: 'household_id=eq.h1' },
-      { table: 'lunch_override', filter: 'household_id=eq.h1' },
-      { table: 'school_menu_day', filter: 'household_id=eq.h1' },
-      { table: 'lunch_request', filter: 'household_id=eq.h1' },
-      { table: 'lunch_choice', filter: 'household_id=eq.h1' },
-      { table: 'grocery_item', filter: 'household_id=eq.h1' },
-      { table: 'grocery_item_reason', filter: 'household_id=eq.h1' },
-      { table: 'grocery_category', filter: 'household_id=eq.h1' },
-      { table: 'grocery_store', filter: 'household_id=eq.h1' },
-      { table: 'grocery_brand', filter: 'household_id=eq.h1' },
-      { table: 'grocery_ask', filter: 'household_id=eq.h1' },
+  it('[DEV-05-h] the board joins its own private topic with its token and reads again on each change', async () => {
+    const calls: string[] = [];
+    let onChange: (() => void) | undefined;
+    let onStatus: ((state: string) => void) | undefined;
+    const channel = {
+      on(type: 'broadcast', filter: { event: string }, callback: () => void) {
+        calls.push(`on ${type} ${filter.event}`);
+        onChange = callback;
+        return channel;
+      },
+      subscribe(callback: (state: string) => void) {
+        calls.push('subscribe');
+        onStatus = callback;
+      },
+    };
+    const db = {
+      channel: (topic: string, options: { config: { private: true } }) => {
+        calls.push(`channel ${topic} ${JSON.stringify(options)}`);
+        return channel;
+      },
+      realtime: {
+        setAuth: async (token?: string | null) => {
+          calls.push(`setAuth ${token}`);
+        },
+      },
+    };
+    const heard: string[] = [];
+    const ch = db.channel(boardTopic('d1'), { config: { private: true } });
+    await listen(
+      db,
+      ch,
+      'the-board-token',
+      () => heard.push('change'),
+      (state) => heard.push(state),
+    );
+    // Its own topic, private, the token set before it joins, and only the database's change event.
+    expect(calls).toEqual([
+      'channel board:d1 {"config":{"private":true}}',
+      'setAuth the-board-token',
+      `on broadcast ${BOARD_EVENT}`,
+      'subscribe',
     ]);
+    expect(BOARD_EVENT).toBe('change');
+    onStatus!('SUBSCRIBED');
+    onChange!();
+    onChange!();
+    expect(heard).toEqual(['SUBSCRIBED', 'change', 'change']);
   });
 
   function deferred() {
@@ -695,68 +712,74 @@ describe('notify, then refetch', () => {
     expect(thrown).toBe(2);
   });
 
-  it('[CAL-05][WP-70] a read still out at its deadline gets another beside it; the first back wins', async () => {
+  it('[DEV-05-i][CAL-05] a read still out gets no other beside it; lost at its deadline, it is aborted and made again', async () => {
     vi.useFakeTimers();
     try {
       const signals: AbortSignal[] = [];
       const done = readSoon(
         (signal) => {
           signals.push(signal);
-          // The first never comes back; the second does.
+          // The first never comes back (lost); the second does.
           return signals.length === 1 ? new Promise<boolean>(() => {}) : Promise.resolve(true);
         },
-        { deadlineMs: 4_000 },
+        { deadlineMs: 10_000 },
       );
-      await vi.advanceTimersByTimeAsync(3_999);
+      await vi.advanceTimersByTimeAsync(9_999);
       expect(signals).toHaveLength(1);
+      expect(signals[0]!.aborted).toBe(false);
       await vi.advanceTimersByTimeAsync(1);
+      // Given up before the next starts, so the two never run together.
+      expect(signals[0]!.aborted).toBe(true);
       expect(signals).toHaveLength(2);
       expect(await done).toBe(true);
-      // The hung one is aborted once the answer is in.
-      expect(signals[0]!.aborted).toBe(true);
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it('[CAL-05][WP-70] a slow read is not given up: on a slow database it may still be first back', async () => {
+  it('[DEV-05-i][CAL-05] a slow read is not given up while the database may still answer it', async () => {
     vi.useFakeTimers();
     try {
       let reads = 0;
-      const done = readSoon(
-        () => {
-          reads += 1;
-          // Each read takes 10 s; the first, started at 0, is back first.
-          return new Promise<boolean>((r) => setTimeout(() => r(true), 10_000));
-        },
-        { deadlineMs: 4_000 },
-      );
-      await vi.advanceTimersByTimeAsync(10_000);
+      const done = readSoon(() => {
+        reads += 1;
+        // 9 s: past WP-70's 4 s, within the database's 8 s timeout and the network's 2 s.
+        return new Promise<boolean>((r) => setTimeout(() => r(true), 9_000));
+      });
+      await vi.advanceTimersByTimeAsync(9_000);
       expect(await done).toBe(true);
-      expect(reads).toBe(3);
+      expect(reads).toBe(1);
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it('[CAL-05][WP-70] reads that never come back give up after the last has had twice as long', async () => {
+  it("[DEV-05-i] the deadline is the database's 8 s statement timeout for a board, and 2 s more", () => {
+    expect(READ_DEADLINE_MS).toBe(8_000 + 2_000);
+  });
+
+  it('[DEV-05-i][CAL-05] reads that never come back give up after three, one at a time', async () => {
     vi.useFakeTimers();
     try {
       const signals: AbortSignal[] = [];
       let result: boolean | undefined;
+      let most = 0;
       void readSoon(
         (signal) => {
           signals.push(signal);
+          most = Math.max(most, signals.filter((x) => !x.aborted).length);
           return new Promise<boolean>(() => {});
         },
-        { deadlineMs: 4_000 },
+        { deadlineMs: 10_000 },
       ).then((ok) => (result = ok));
-      await vi.advanceTimersByTimeAsync(15_999);
+      await vi.advanceTimersByTimeAsync(29_999);
       expect(result).toBeUndefined();
       await vi.advanceTimersByTimeAsync(1);
       expect(result).toBe(false);
       expect(signals).toHaveLength(3);
       expect(signals.every((x) => x.aborted)).toBe(true);
+      // Never two out at once.
+      expect(most).toBe(1);
     } finally {
       vi.useRealTimers();
     }
