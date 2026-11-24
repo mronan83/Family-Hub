@@ -6,8 +6,8 @@ import { ownHousehold } from '../support/household';
 
 // [NFR-15][US-107] The admin menu and Settings on the preview (WP-51, D-81), as Alex of the demo
 // family: Today carries how many check-offs wait for a parent, as the database counts them; Settings
-// has its seven pages (Family options first since WP-57), each saying how it stands; Tags is one of them, and a page Settings holds has
-// the way back.
+// has its eight pages (Family options first since WP-57, Penalties after Tags since WP-120), each
+// saying how it stands; Tags is one of them, and a page Settings holds has the way back.
 const family = ownHousehold('admin-menu');
 const db = process.env.SUPABASE_DB_URL;
 const HOUSEHOLD = family.id;
@@ -15,7 +15,7 @@ const sql = (q: string) => query(db!, q);
 
 test.skip(!db || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET, 'runs in the e2e workflow');
 
-test('[NFR-15][US-107] the menu, Today’s count, and Settings with Tags among its pages', async ({
+test('[NFR-15][NFR-15-a][US-107] the menu, Today’s count, and Settings with Tags among its pages', async ({
   page,
 }) => {
   await signIn(page);
@@ -38,6 +38,7 @@ test('[NFR-15][US-107] the menu, Today’s count, and Settings with Tags among i
     'Calendars',
     'Boards',
     'Tags',
+    'Penalties',
     'Reminders',
     'Health',
   ]);

@@ -3,6 +3,7 @@ import { expect, test, type Page } from '../support/test';
 import { sql as query } from '../support/db';
 import { signIn } from '../support/session';
 import { ownHousehold } from '../support/household';
+import { nameTag } from '../support/names';
 
 // [MEAL-18][MEAL-23] Groceries on the preview (WP-104, D-138), as Alex of the spec's own made-up
 // household (D-137). The done-when: an admin adds an item, ticks it, finds it under Got recently and
@@ -12,7 +13,8 @@ const family = ownHousehold('groceries');
 const db = process.env.SUPABASE_DB_URL;
 const HOUSEHOLD = family.id;
 const sql = (q: string) => query(db!, q);
-const SUFFIX = `e2e ${Math.random().toString(36).slice(2, 7)}`;
+// [MEAL-27-f] Letters only (nameTag()), so no name ends in what reads as an amount (#190).
+const SUFFIX = `e2e ${nameTag()}`;
 const names = { quince: `Quince ${SUFFIX}`, kale: `Kale ${SUFFIX}`, leek: `Leek ${SUFFIX}` };
 
 function report(line: string) {

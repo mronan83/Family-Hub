@@ -1,6 +1,7 @@
 # 08 — Test Strategy
 
 > Version 0.8 · Status: build baseline · Maintained by Claude Code
+> v0.8.21: WP-125's test cases, NFR-15-a, MEAL-27-f and NFR-12-i: an e2e spec, Vitest and node:test (§9, regenerated).
 > v0.8.20: WP-122's test cases, PTS-11-a to PTS-11-m (D-158): pgTAP, Vitest, the UI suite and a nightly e2e spec (§9, regenerated).
 > v0.8.19: WP-123's test cases, PTS-12-a to PTS-12-d (D-155): Vitest, pgTAP and the UI suite (§9, regenerated).
 > v0.8.18: WP-117's test cases, CHR-24-a to CHR-24-n (D-151): Vitest, pgTAP, the UI suite and a nightly e2e spec (§9, regenerated).
@@ -283,7 +284,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 
 ### 9.1 Coverage summary
 
-**3495** tests: Unit 1062 · DB 1895 · UI 390 · E2E 148. 2971 name at least one ID; 524 name none.
+**3499** tests: Unit 1066 · DB 1895 · UI 390 · E2E 148. 2975 name at least one ID; 524 name none.
 
 | Measure | Count |
 |---|---|
@@ -292,7 +293,7 @@ Generated from the tests by `python3 docs/check_traceability.py --docs docs --fi
 | Stories built | 125 of 138 |
 | Built stories with no test naming them | 42 |
 | Done items whose Done when has no test cases | 62 |
-| Test cases | 384 (with a test: 384) |
+| Test cases | 387 (with a test: 387) |
 | Done items' test cases with no test | 0 |
 | Must requirements covered only by e2e | 0 |
 | Tests naming an unknown ID | 0 |
@@ -311,14 +312,14 @@ Area is the domain of the first requirement a test names. Layers: Unit (Vitest, 
 | Goals and rewards | 198 | 140 | 47 | 8 | 393 |
 | Calendar | 67 | 92 | 19 | 5 | 183 |
 | School year | 10 | 43 | 1 | 4 | 58 |
-| Meals and lunch | 139 | 182 | 90 | 20 | 431 |
+| Meals and lunch | 141 | 182 | 90 | 20 | 433 |
 | School menu | 30 | 14 | 8 | 3 | 55 |
 | Board | 29 | 68 | 34 | 11 | 142 |
 | Boards and devices | 68 | 110 | 14 | 13 | 205 |
 | Admin and members | 27 | 87 | 11 | 15 | 140 |
-| Platform | 205 | 167 | 62 | 18 | 452 |
+| Platform | 207 | 167 | 62 | 18 | 454 |
 | Not named | 58 | 501 | 10 | 1 | 570 |
-| **Total** | **1062** | **1895** | **390** | **148** | **3495** |
+| **Total** | **1066** | **1895** | **390** | **148** | **3499** |
 
 ### 9.3 By requirement
 
@@ -430,7 +431,7 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | MEAL-24 | S | Covered | US-719 | WP-104 | MEAL-24-a, MEAL-24-b, MEAL-24-c, MEAL-24-d, MEAL-24-e | U 5 · DB 1 · UI 1 |
 | MEAL-25 | S | Covered | US-720 | WP-96, WP-105 | MEAL-25-h, MEAL-25-a, MEAL-25-b, MEAL-25-c, MEAL-25-d, MEAL-25-e, MEAL-25-f, MEAL-25-g | U 13 · DB 2 · UI 2 · E2E 1 |
 | MEAL-26 | S | Covered | US-720 | WP-105 | MEAL-26-a | U 1 · DB 1 · UI 1 |
-| MEAL-27 | S | Covered | US-721 | WP-112 | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e | U 2 · UI 7 · E2E 1 |
+| MEAL-27 | S | Covered | US-721 | WP-112, WP-125 | MEAL-27-a, MEAL-27-b, MEAL-27-c, MEAL-27-d, MEAL-27-e, MEAL-27-f | U 4 · UI 7 · E2E 1 |
 | MEAL-28 | S | Covered | US-721 | WP-112 | MEAL-28-a, MEAL-28-b, MEAL-28-c, MEAL-28-d, MEAL-28-e, MEAL-28-f, MEAL-28-g | U 2 · DB 13 · UI 4 · E2E 1 |
 | MEAL-29 | S | Covered | US-722 | WP-116, WP-119 | MEAL-29-a, MEAL-29-b, MEAL-29-c, MEAL-29-d, MEAL-29-e, MEAL-29-f, MEAL-29-g, MEAL-29-h, MEAL-29-i, MEAL-29-j, MEAL-29-k, MEAL-29-l, MEAL-29-m | U 12 · DB 37 · UI 15 · E2E 1 |
 | MEAL-30 | S | Covered | US-723 | WP-107 | MEAL-30-a, MEAL-30-b, MEAL-30-c, MEAL-30-d, MEAL-30-e | U 4 · DB 14 · UI 4 · E2E 1 |
@@ -474,9 +475,9 @@ Status: **Covered** (built, and at least one test names it), **Gap** (built, no 
 | PTS-10 | S | Covered | US-1112 | WP-121 | PTS-10-a, PTS-10-b, PTS-10-c, PTS-10-d, PTS-10-e, PTS-10-f, PTS-10-g, PTS-10-h, PTS-10-i, PTS-10-j, PTS-10-k, PTS-10-l, PTS-10-m, PTS-10-n, PTS-10-o, PTS-10-p | U 11 · DB 59 · UI 7 · E2E 1 |
 | PTS-11 | S | Covered | US-1113 | WP-122 | PTS-11-a, PTS-11-b, PTS-11-c, PTS-11-d, PTS-11-e, PTS-11-f, PTS-11-g, PTS-11-h, PTS-11-i, PTS-11-j, PTS-11-k, PTS-11-l, PTS-11-m | U 8 · DB 43 · UI 6 · E2E 1 |
 | PTS-12 | S | Covered | US-1114 | WP-123 | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | U 1 · DB 1 · UI 2 |
-| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119, WP-124, WP-126 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g, NFR-12-h | U 15 |
+| NFR-12 | M | Covered | US-908, US-911 | WP-01, WP-02, WP-15, WP-85, WP-113, WP-119, WP-124, WP-125, WP-126 | NFR-12-a, NFR-12-b, NFR-12-c, NFR-12-d, NFR-12-e, NFR-12-f, NFR-12-g, NFR-12-h, NFR-12-i | U 17 |
 | NFR-13 | M | Covered | US-910 | WP-37, WP-46 | — | U 21 · UI 7 |
-| NFR-15 | S | Covered | US-107 | WP-51 | — | U 2 · UI 6 · E2E 1 |
+| NFR-15 | S | Covered | US-107 | WP-51, WP-125 | NFR-15-a | U 2 · UI 6 · E2E 1 |
 | NFR-16 | S | Covered | US-912 | WP-53, WP-71, WP-96, WP-100, WP-101, WP-110, WP-118 | NFR-16-t, NFR-16-a, NFR-16-b, NFR-16-c, NFR-16-d, NFR-16-e, NFR-16-f, NFR-16-g, NFR-16-h, NFR-16-i, NFR-16-j, NFR-16-k, NFR-16-l, NFR-16-m, NFR-16-n, NFR-16-o, NFR-16-p, NFR-16-q, NFR-16-r, NFR-16-s, NFR-16-u, NFR-16-v, NFR-16-w | U 23 · DB 10 · UI 24 |
 | NFR-17 | S | Covered | US-109 | WP-57 | — | U 11 · DB 2 · UI 4 · E2E 2 |
 | NFR-18 | S | Covered | US-111 | WP-93, WP-94, WP-95, WP-96, WP-97 | NFR-18-a, NFR-18-b, NFR-18-c, NFR-18-d, NFR-18-e, NFR-18-f, NFR-18-g, NFR-18-h, NFR-18-i, NFR-18-j, NFR-18-k, NFR-18-l, NFR-18-m, NFR-18-n, NFR-18-o, NFR-18-p, NFR-18-q, NFR-18-r, NFR-18-s, NFR-18-t, NFR-18-u, NFR-18-v, NFR-18-w, NFR-18-x, NFR-18-y, NFR-18-z | U 34 · UI 15 · E2E 7 |
@@ -610,6 +611,7 @@ Each item's Done when, as test cases (§5 of `05`), and the tests that name the 
 | WP-122 | Done | PTS-11-a, PTS-11-b, PTS-11-c, PTS-11-d, PTS-11-e, PTS-11-f, PTS-11-g, PTS-11-h, PTS-11-i, PTS-11-j, PTS-11-k, PTS-11-l, PTS-11-m | 13 of 13 | U 8 |
 | WP-123 | Done | PTS-12-a, PTS-12-b, PTS-12-c, PTS-12-d | 4 of 4 | — |
 | WP-124 | Done | DEV-05-a, DEV-05-c, DEV-05-d, DEV-05-e, NFR-12-h | 5 of 5 | — |
+| WP-125 | Done | NFR-15-a, MEAL-27-f, NFR-12-i | 3 of 3 | U 1 |
 | WP-126 | Done | DEV-05-f, DEV-05-g, DEV-05-h, DEV-05-i | 4 of 4 | — |
 
 Test cases and the tests that prove them:
@@ -996,6 +998,9 @@ Test cases and the tests that prove them:
 | DEV-05-d | WP-124 | `school_days()` gives the days it gave before (any member still in the household has school), through one `day_types()` call and no `resolve_day_type()` call | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-d] school_days() gives the days any member still in the household has school, as before`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-d] school_days() asks day_types() once and resolve_day_type() not at all` |
 | DEV-05-e | WP-124 | `job_health()` gives what it gave before for each job (never run, running, stuck, failing, stale, ok, a skipped run healthy, a run that finished after a later one started), the SQL jobs left out, each job's latest healthy run a row away by an index | DB | DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] job_health() says what it said before for each job: never, running, stuck, failing, stale, ok, a skipped run, a run that finished last`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] each job's state, the SQL job left out`<br>DB `supabase/tests/640_snapshot_day_types.test.sql`: `[DEV-05-e] each job's latest healthy run is a row away (job_run_last_ok_idx)` |
 | NFR-12-h | WP-124 | `scripts/db-health.sh` reads a database read only: every section, the board's read timed as each board (numbered), no member, item, household or id named, nothing changed, its sessions read only | Unit | Unit `scripts/db-tests/db-health.test.mjs`: `[NFR-12-h] db-health reads a database read only: every section, the board timed as the board, nothing named, nothing changed` |
+| NFR-15-a | WP-125 | On the real preview, Settings has its eight pages, Penalties after Tags, and Tags says how many tags there are | E2E | E2E `e2e/tests/admin-menu.spec.ts`: `[NFR-15][NFR-15-a][US-107] the menu, Today’s count, and Settings with Tags among its pages` |
+| MEAL-27-f | WP-125 | A grocery name ending in a run tag of letters keys the same typed with an amount as saved; one ending "333kg" did not (the cause); the run's tag is letters only, of the length asked | Unit | Unit `apps/web/lib/grocery-merge.test.ts`: `home-groceries.spec’s names (WP-125, #190) › [MEAL-27-f] a name ending in a tag of letters keys the same typed with an amount as saved; one ending "333kg" did…`<br>Unit `scripts/e2e-names.test.mjs`: `[MEAL-27-f] a run’s tag is letters only, of the length asked` |
+| NFR-12-i | WP-125 | A test failed in its `beforeAll` hook is judged over the hook's time, to the next result its worker ran or the pass's end; a server error in the preview's log covers its request, from the log's time to the app's | Unit | Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-i] a test failed in its beforeAll hook is judged over the hook’s whole time, to the next result its worker ran or the pass’s end`<br>Unit `scripts/e2e-infra.test.mjs`: `[NFR-12-i] a server error in the preview’s log covers its request, from the log’s time (its start) to the app’s (when it failed)` |
 | DEV-05-f | WP-126 | A change to any board-readable table (every table in the `supabase_realtime` publication) sends one Broadcast message a statement, however many rows, to each active board it concerns, on the board's private topic `board:<device id>`, event `change`, naming only the table: the household's boards for its tables, the board itself for `device` and `device_calendar`; nothing for a statement that changes no row, to another household's board, or to a disconnected board, from the moment it is disconnected | DB | DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] every board-readable table (the supabase_realtime publication) sends to the boards`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] once a statement, never once a row`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] a board's own rows go to that board only; every other table goes to its household's boards`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] three rows added: one private message to each of the household's active boards, naming the table only`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] an update sends once a board`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] and so does a delete`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] a statement that changes no row sends nothing`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f][NFR-04] another household's change reaches its own board only; a disconnected board hears nothing`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f] a board's own settings go to that board only`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f][DEV-02] disconnecting a board sends it nothing`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-f][DEV-02] and from then on it hears nothing of its household` |
 | DEV-05-g | WP-126 | Realtime authorization: an active board may receive on its own topic; another household's board, a parent, another board of the household and a disconnected board may not; no client may send on a board's topic, not even the board | DB | DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g] an active board may receive on its own topic`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g][NFR-04] another household's board may not join it`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g] nor may a parent, even of the same household`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g][DEV-02] a disconnected board may not join even its own topic`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g] a board may not join another board's topic in its household`<br>DB `supabase/tests/680_board_broadcast.test.sql`: `[DEV-05-g] no client may send on a board's topic, not even the board` |
 | DEV-05-h | WP-126 | The board joins its own private topic with its token, listens for the database's `change` event only, and reads again on each, and on joining | Unit | Unit `apps/web/lib/board.test.ts`: `notify, then refetch › [DEV-05-h] the board joins its own private topic with its token and reads again on each change` |
@@ -1825,7 +1830,7 @@ Unit · 11 tests
 
 #### `apps/web/lib/grocery-merge.test.ts`
 
-Unit · 9 tests
+Unit · 10 tests
 
 | Test | Names |
 |---|---|
@@ -1838,6 +1843,7 @@ Unit · 9 tests
 | `the one merge › [MEAL-19-d] taking a meal’s share off recomputes the amount from the reasons left` | MEAL-19-d |
 | `reading an item as typed › [MEAL-20-b] takes the amount off before or after the name` | MEAL-20-b |
 | `reading an item as typed › [MEAL-20-b] reads amounts as counts, units or words` | MEAL-20-b |
+| `home-groceries.spec’s names (WP-125, #190) › [MEAL-27-f] a name ending in a tag of letters keys the same typed with an amount as saved; one ending "333kg" did…` | MEAL-27-f, WP-125 |
 
 #### `apps/web/lib/grocery-staples.test.ts`
 
@@ -2589,7 +2595,7 @@ E2E · 2 tests
 
 | Test | Names |
 |---|---|
-| `[NFR-15][US-107] the menu, Today’s count, and Settings with Tags among its pages` | NFR-15, US-107 |
+| `[NFR-15][NFR-15-a][US-107] the menu, Today’s count, and Settings with Tags among its pages` | NFR-15-a, US-107 |
 | `[NFR-14-y] a spec signs in to its own household: its admins are its own copies of Alex and Sam` | NFR-14-y |
 
 #### `e2e/tests/auth.spec.ts`
@@ -4218,7 +4224,7 @@ Unit · 4 tests
 
 #### `scripts/e2e-infra.test.mjs`
 
-Unit · 18 tests
+Unit · 20 tests
 
 | Test | Names |
 |---|---|
@@ -4240,6 +4246,16 @@ Unit · 18 tests
 | `[NFR-12-g] the run reads the preview’s error log with the Vercel CLI, and a failed test while it named the infrastructure is infrastructure` | NFR-12-g |
 | `[NFR-12-g] a read of the preview’s log that fails is a note, without the token, and no reading` | NFR-12-g |
 | `[NFR-12-g] without a preview or a token there is no read, and the run says so` | NFR-12-g |
+| `[NFR-12-i] a test failed in its beforeAll hook is judged over the hook’s whole time, to the next result its worker ran or the pass’s end` | NFR-12-i |
+| `[NFR-12-i] a server error in the preview’s log covers its request, from the log’s time (its start) to the app’s (when it failed)` | NFR-12-i |
+
+#### `scripts/e2e-names.test.mjs`
+
+Unit · 1 tests
+
+| Test | Names |
+|---|---|
+| `[MEAL-27-f] a run’s tag is letters only, of the length asked` | MEAL-27-f |
 
 #### `scripts/e2e-run-fixture/assertion.spec.ts`
 
