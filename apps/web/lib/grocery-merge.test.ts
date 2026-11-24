@@ -88,3 +88,24 @@ describe('reading an item as typed', () => {
     expect(amountOf('  ')).toBeNull();
   });
 });
+
+describe('home-groceries.spec’s names (WP-125, #190)', () => {
+  it('[MEAL-27-f] a name ending in a tag of letters keys the same typed with an amount as saved; one ending "333kg" did not', async () => {
+    const { nameTag } = await import('../../../scripts/e2e-names.mjs');
+    // The cause: typed "2 lb Quince e2e 333kg", it is saved whole, then its saved name is keyed with
+    // 333 kg taken off as an amount, so Home's "on the list already" didn't find it.
+    expect(parseItem('2 lb Quince e2e 333kg')).toEqual({
+      name: 'Quince e2e 333kg',
+      amount: '2 lb',
+    });
+    expect(itemKey('Quince e2e 333kg')).toBe('quince e2e');
+    expect(itemKey('1 lb quince e2e 333kg')).not.toBe(itemKey('Quince e2e 333kg'));
+    // With a tag of letters, the spec's typed and saved names are one thing, its amount aside.
+    for (let i = 0; i < 200; i += 1) {
+      const name = `Quince e2e ${nameTag()}`;
+      expect(parseItem(`2 lb ${name}`)).toEqual({ name, amount: '2 lb' });
+      expect(itemKey(`1 lb ${name.toLowerCase()}`)).toBe(itemKey(name));
+      expect(parseItem(name)).toEqual({ name, amount: null });
+    }
+  });
+});
